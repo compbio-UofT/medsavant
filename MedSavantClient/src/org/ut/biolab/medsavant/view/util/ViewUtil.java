@@ -222,6 +222,10 @@ public class ViewUtil {
         return new LineBorder(Color.lightGray, 1);
     }
 
+    public static Border getTinyLeftLineBorder() {
+        return BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray);
+    }
+
     public static Border getTopLineBorder() {
         return BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray);
     }
@@ -337,23 +341,22 @@ public class ViewUtil {
     }
 
     /*
-    public static JPanel alignTop(Component c) {
-        JPanel aligned = ViewUtil.getClearPanel();
-        aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
-        aligned.add(c);
-        aligned.add(Box.createHorizontalGlue());
-        return aligned;
-    }
+     public static JPanel alignTop(Component c) {
+     JPanel aligned = ViewUtil.getClearPanel();
+     aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
+     aligned.add(c);
+     aligned.add(Box.createHorizontalGlue());
+     return aligned;
+     }
 
-    public static JPanel alignBottom(Component c) {
-        JPanel aligned = ViewUtil.getClearPanel();
-        aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
-        aligned.add(Box.createHorizontalGlue());
-        aligned.add(c);
-        return aligned;
-    }
-    */
-
+     public static JPanel alignBottom(Component c) {
+     JPanel aligned = ViewUtil.getClearPanel();
+     aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
+     aligned.add(Box.createHorizontalGlue());
+     aligned.add(c);
+     return aligned;
+     }
+     */
     public static JPanel alignRight(Component c) {
         JPanel aligned = ViewUtil.getClearPanel();
         aligned.setLayout(new BoxLayout(aligned, BoxLayout.X_AXIS));
@@ -776,5 +779,42 @@ public class ViewUtil {
         JLabel b = new JLabel(text);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
+    }
+    
+    private final static String NON_THIN = "[^iIl1\\.,']";
+
+    private static int textWidth(String str) {
+        return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
+    }
+
+    public static String ellipsize(String text, int max) {
+
+        if (textWidth(text) <= max) {
+            return text;
+        }
+
+        // Start by chopping off at the word before max
+        // This is an over-approximation due to thin-characters...
+        int end = text.lastIndexOf(' ', max - 3);
+
+        // Just one long word. Chop it off.
+        if (end == -1) {
+            return text.substring(0, max - 3) + "...";
+        }
+
+        // Step forward as long as textWidth allows.
+        int newEnd = end;
+        do {
+            end = newEnd;
+            newEnd = text.indexOf(' ', end + 1);
+
+            // No more spaces.
+            if (newEnd == -1) {
+                newEnd = text.length();
+            }
+
+        } while (textWidth(text.substring(0, newEnd) + "...") < max);
+
+        return text.substring(0, end) + "...";
     }
 }

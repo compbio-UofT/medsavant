@@ -43,9 +43,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class NotificationPanel extends JComponent {
+public class UpdatesPanel extends JComponent {
 
-    private static final Log LOG = LogFactory.getLog(NotificationPanel.class);
+    private static final Log LOG = LogFactory.getLog(UpdatesPanel.class);
     private static final int UPDATE_INTERVAL = 1000 * 60; //one minute
     private static final Color ALERT_COLOUR = new Color(200,0,0);
     private static final int ICON_WIDTH = 17;
@@ -54,10 +54,10 @@ public class NotificationPanel extends JComponent {
     private Notification[] notifications;
     private JPopupMenu popup;
 
-    public NotificationPanel() {
+    public UpdatesPanel() {
         setOpaque(false);
         setPreferredSize(new Dimension(120, 20));
-        setBackground(Color.GREEN);
+        //setBackground(Color.GREEN);
         setVisible(false);
 
         setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -92,7 +92,7 @@ public class NotificationPanel extends JComponent {
                     protected Notification[] doInBackground() throws Exception {
                         return MedSavantClient.NotificationManager.getNotifications(LoginController.sessionId, LoginController.getInstance().getUserName());
                     }
-                    
+
                 }.execute();
             }
 

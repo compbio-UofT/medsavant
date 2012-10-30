@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.view.genetics.family;
 
+import org.ut.biolab.medsavant.view.Notification;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.Color;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,7 +37,9 @@ import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.ExportVCF;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.NotificationsPanel;
 import org.ut.biolab.medsavant.view.component.RoundedPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspectorDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -44,7 +48,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class FamilyOperation {
+class FamilyMattersOptionView {
 
     private List<IncludeExcludeStep> steps;
 
@@ -184,7 +188,7 @@ class FamilyOperation {
     private AggregateBy aggregateBy = AggregateBy.Variant;
     private JPanel view;
 
-    public FamilyOperation() {
+    public FamilyMattersOptionView() {
         setupView();
     }
 
@@ -198,8 +202,6 @@ class FamilyOperation {
         public String toString() {
             return "IncludeExcludeCriteria{" + "freqAmount=" + freqAmount + ", aggregationType=" + aggregationType + ", frequencyType=" + frequencyType + ", frequencyCount=" + frequencyCount + '}';
         }
-
-
         private int freqAmount;
         private AggregationType aggregationType;
         private FrequencyType frequencyType;
@@ -265,7 +267,7 @@ class FamilyOperation {
             typeBox = new JComboBox();
             typeBox.addItem("variant exists");
             typeBox.addItem("gene has variant");
-                        //typeBox.addItem("position has variant");
+            //typeBox.addItem("position has variant");
 
 
             typeBox.addActionListener(new ActionListener() {
@@ -427,6 +429,7 @@ class FamilyOperation {
         }
 
     }
+    int jobNumber = 0;
 
     private void setupView() {
         view = ViewUtil.getClearPanel();
@@ -525,58 +528,123 @@ class FamilyOperation {
 
         view.add(Box.createVerticalStrut(10));
 
-        JButton runButton = new JButton("Run Family Matters");
-
-        final JFrame frame = new JFrame("");
-        JPanel panel = new JPanel();
-        panel.setBorder(ViewUtil.getBigBorder());
-        ViewUtil.applyVerticalBoxLayout(panel);
-        final JLabel label = new JLabel("status");
-        final JProgressBar progress = new JProgressBar();
-        progress.setMinimum(0);
-        progress.setMaximum(100);
-        panel.add(ViewUtil.centerHorizontally(label));
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(progress);
-        frame.add(panel);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
+        JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                label.setText("Retrieving variants ...");
-                frame.setVisible(true);
+                new MedSavantWorker<Object>(FamilyMattersOptionView.class.getCanonicalName()) {
 
-                new MedSavantWorker<File>(FamilyOperation.class.getCanonicalName()) {
+                    MedSavantWorker currentWorker;
+
                     @Override
                     protected void showProgress(double fract) {
-                        progress.setValue((int) (fract * 100));
+                    }
+
+                    @Override
+                    protected void showSuccess(Object result) {
+                    }
+
+                    @Override
+                    protected Object doInBackground() throws Exception {
+
+                        jobNumber++;
+
+                        final Locks.FileResultLock fileLock = new Locks.FileResultLock();
+                        final Locks.DialogLock dialogLock = new Locks.DialogLock();
+
+                        Notification j = new Notification("Cohort Analysis #" + jobNumber) {
+                            @Override
+                            public void showResults() {
+                                dialogLock.getResultsDialog().setTitle(this.getTitle());
+                                dialogLock.getResultsDialog().setVisible(true);
+                            }
+
+                            @Override
+                            public void cancelJob() {
+                                if (currentWorker != null) {
+                                    currentWorker.cancel(true);
+                                }
+                            }
+                        };
+
+                        NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
+                        //AnalyticsJobsPanel.getInstance().addJob(j);
+
+                        j.setStatus(Notification.JobStatus.RUNNING);
+
+                        // File retriever
+                        currentWorker = getRetrieverWorker(j, fileLock);
+                        currentWorker.execute();
+                        try {
+                            synchronized (fileLock) {
+                                fileLock.wait();
+                            }
+                        } catch (InterruptedException ex) {
+                        }
+
+                        System.out.println("Running algorithm on file " + fileLock.getFile().getAbsolutePath());
+
+                        // Algorithm Runner
+                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, j, dialogLock);
+                        currentWorker.execute();
+
+                        try {
+                            synchronized (dialogLock) {
+                                dialogLock.wait();
+                            }
+                        } catch (InterruptedException ex) {
+                        }
+
+                        j.setStatus(Notification.JobStatus.FINISHED);
+                        j.setStatusMessage("Complete");
+
+                        return null;
+                    }
+                }.execute();
+            }
+
+            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, Notification j, Locks.DialogLock genericLock) {
+                FamilyMattersWorker w = new FamilyMattersWorker(steps, file);
+                w.setUIComponents(j);
+                w.setCompletionLock(genericLock);
+                return w;
+            }
+
+            private MedSavantWorker getRetrieverWorker(final Notification m, final Locks.FileResultLock fileLock) {
+                return new MedSavantWorker<File>(FamilyMattersOptionView.class.getCanonicalName()) {
+                    @Override
+                    protected void showProgress(double fract) {
+                        m.setProgress(fract);
                     }
 
                     @Override
                     protected void showSuccess(File result) {
-                        frame.setVisible(false);
-                        runFamilyMattersAlgorithm(result);
+                        m.setStatusMessage("Complete");
+                        synchronized (fileLock) {
+                            fileLock.setFile(result);
+                            fileLock.notify();
+                        }
                     }
 
                     @Override
                     protected File doInBackground() throws Exception {
+
+                        m.setStatusMessage("Retrieving Variants");
+
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
                         File tdfFile = new File(outdir, "dump.tdf");
-                        System.out.println("Dumping file to " + tdfFile.getAbsolutePath());
                         //ExportVCF.exportTDF(tdfFile, this);
-                        System.out.println("Done dumping file to " + tdfFile.getAbsolutePath());
 
                         // hard code for testing only
-                        //tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-10-10-11-38/dump.tdf");
-                        tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-10-11-11-11/dump.tdf");
+                        tdfFile = new File("/Users/mfiume/Desktop/dump.tdf");
 
                         int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
-                        System.out.println("Stripping file");
-                        File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
-                        System.out.println("Stripped file is " + strippedFile.getAbsolutePath());
+                        m.setStatusMessage("Stripping file");
+                        //File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
+                        File strippedFile = new File(tdfFile.getAbsolutePath() + ".awk");
+                        m.setStatusMessage("Stripped file is " + strippedFile.getAbsolutePath());
 
                         return strippedFile;
                     }
@@ -630,21 +698,11 @@ class FamilyOperation {
                             subsetLines[i] = null;
                         }
                     }
-                }.execute();
-
-
-
-
+                };
             }
         });
 
         view.add(ViewUtil.centerHorizontally(runButton));
-
-    }
-
-    private void runFamilyMattersAlgorithm(File result) {
-
-        new FamilyMatters(result,steps).runSteps();
 
     }
 }

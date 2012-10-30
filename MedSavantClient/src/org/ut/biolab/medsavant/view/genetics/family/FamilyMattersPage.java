@@ -21,10 +21,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class FamilyMattersPage extends SubSectionView {
 
     private JPanel view;
-    private FamilyOperation fo;
+    private FamilyMattersOptionView fo;
+
+    public static final String PAGE_NAME = "Cohort Analysis";
 
     public FamilyMattersPage(SectionView parent) {
-        super(parent, "Family Matters");
+        super(parent, PAGE_NAME);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class FamilyMattersPage extends SubSectionView {
             JPanel titlePanel = new JPanel();
             ViewUtil.applyHorizontalBoxLayout(titlePanel);
 
-            JLabel title = new JLabel("Family Matters");
+            JLabel title = new JLabel("Cohort Analysis");
             title.setOpaque(true);
             title.setBorder(ViewUtil.getBigBorder());
             title.setOpaque(false);
@@ -53,7 +55,7 @@ public class FamilyMattersPage extends SubSectionView {
             p.setBorder(ViewUtil.getBigBorder());
             p.setLayout(new BorderLayout());
 
-            fo = new FamilyOperation();
+            fo = new FamilyMattersOptionView();
             p.add(ViewUtil.centerHorizontally(fo.getView()),BorderLayout.NORTH);
 
             view.add(p, BorderLayout.CENTER);

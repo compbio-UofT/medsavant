@@ -53,7 +53,7 @@ public class GeneticsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
 
-        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Analytics");
+        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
 
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
@@ -68,8 +68,8 @@ public class GeneticsSection extends SectionView {
             new BrowserPage(this),
             new GeneticsChartPage(this),
             new AggregatePage(this),
-            new FamilyMattersPage(this),
-            variantCollectionPlugins
+            new FamilyMattersPage(this)
+                //,variantCollectionPlugins
         };
     }
 

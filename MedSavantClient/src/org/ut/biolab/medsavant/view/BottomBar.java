@@ -33,7 +33,8 @@ public class BottomBar extends JPanel {
     private final JLabel statusLabel;
     private final JLabel loginStatusLabel;
     private final ImagePanel loginImagePanel;
-    private final NotificationPanel notificationPanel;
+    private final UpdatesPanel notificationPanel;
+    private final NotificationsPanel analyticsJobsPanel;
 
     public BottomBar() {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -49,13 +50,16 @@ public class BottomBar extends JPanel {
 
         loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
 
-        notificationPanel = new NotificationPanel();
+        notificationPanel = new UpdatesPanel();
+        analyticsJobsPanel = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);//new Color(246,127,0));
 
         add(loginImagePanel);
         add(ViewUtil.getSmallSeparator());
         add(loginStatusLabel);
         add(ViewUtil.getLargeSeparator());
         add(notificationPanel);
+        add(ViewUtil.getLargeSeparator());
+        add(analyticsJobsPanel);
         add(Box.createHorizontalGlue());
 
         updateLoginStatus();
