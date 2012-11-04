@@ -26,7 +26,11 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -39,6 +43,8 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author tarkvara
  */
 public class MasterView extends JPanel {
+
+    private static final Log LOG = LogFactory.getLog(MasterView.class);
 
     //TODO: handle limits better!
     static final int LIMIT = 10000;
@@ -88,7 +94,7 @@ public class MasterView extends JPanel {
         gbc.gridx = GridBagConstraints.RELATIVE;
         gbc.gridy = 0;
         gbc.insets = new Insets(3, 3, 3, 3);
-        
+
         // Only for SavedFiltersPanel
         if (detailedEditor.doesImplementLoading()) {
             JButton loadButton = ViewUtil.getTexturedButton("Load", null);
@@ -99,7 +105,7 @@ public class MasterView extends JPanel {
                     detailedEditor.loadItems(selectionGrabber.getSelectedItems());
                 }
             });
-            
+
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             buttonPanel.add(loadButton, gbc);
             gbc.gridx = GridBagConstraints.RELATIVE;
@@ -133,6 +139,20 @@ public class MasterView extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     detailedEditor.importItems();
+                    refreshList();
+                }
+            });
+            buttonPanel.add(butt, gbc);
+        }
+
+        if (detailedEditor.doesImplementExporting()) {
+
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
+            butt.setToolTipText("Export");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.exportItems();
                     refreshList();
                 }
             });
@@ -191,8 +211,13 @@ public class MasterView extends JPanel {
 
     private synchronized void setList(Object[][] list) {
         this.data = list;
-        updateShowCard();
-        showShowCard();
+        try {
+            updateShowCard();
+            showShowCard();
+        } catch (Exception ex) {
+            LOG.error("Unable to load list.", ex);
+            showErrorCard(ClientMiscUtils.getMessage(ex));
+        }
     }
 
     void refreshList() {
