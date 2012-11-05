@@ -14,10 +14,11 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.genetics.inspector;
+package org.ut.biolab.medsavant.view.genetics.inspector.stat;
 
 import java.util.EnumMap;
 import javax.swing.JTabbedPane;
+import org.ut.biolab.medsavant.view.genetics.inspector.Inspector;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -26,35 +27,35 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class InspectorPanel extends JTabbedPane {
+public class StaticInspectorPanel extends JTabbedPane {
 
     /** Full width of the inspector panel (borders included). */
     public static final int INSPECTOR_WIDTH = 380;
-    
+
     /** Width of the inspector panel without borders.  The 80 is determined empirically. */
     public static final int INSPECTOR_INNER_WIDTH = INSPECTOR_WIDTH - 80;
 
     private enum InspectorEnum { VARIANT, GENE };
 
-    private static InspectorPanel instance;
+    private static StaticInspectorPanel instance;
 
     private EnumMap<InspectorEnum, Integer> inspectorsToTabIndexMap = new EnumMap<InspectorEnum,Integer>(InspectorEnum.class);
 
-    public static InspectorPanel getInstance() {
+    public static StaticInspectorPanel getInstance() {
         if (instance == null) {
-            instance = new InspectorPanel();
+            instance = new StaticInspectorPanel();
         }
         return instance;
     }
 
-    private InspectorPanel() {
+    private StaticInspectorPanel() {
 
         setTabPlacement(JTabbedPane.TOP);
         setBorder(ViewUtil.getBigBorder());
         setBackground(ViewUtil.getTertiaryMenuColor());
 
-        addTabPanel(InspectorEnum.VARIANT,VariantInspector.getInstance());
-        addTabPanel(InspectorEnum.GENE,GeneInspector.getInstance());
+        addTabPanel(InspectorEnum.VARIANT,StaticVariantInspector.getInstance());
+        addTabPanel(InspectorEnum.GENE,StaticGeneInspector.getInstance());
 
     }
 

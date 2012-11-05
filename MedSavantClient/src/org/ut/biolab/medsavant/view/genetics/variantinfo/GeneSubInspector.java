@@ -13,34 +13,46 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Collection;
 import javax.swing.*;
-import org.ut.biolab.medsavant.api.Listener;
 
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
+import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticGeneInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.variants.BrowserPage;
+import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
+
 
 /**
  *
  * @author mfiume
  */
-public class BasicGeneSubInspector extends SubInspector implements Listener<Gene> {
+public class GeneSubInspector extends SubInspector {
 
     private static String KEY_NAME = "Name";
     private static String KEY_POSITION = "Position";
@@ -50,7 +62,8 @@ public class BasicGeneSubInspector extends SubInspector implements Listener<Gene
     private KeyValuePairPanel panel;
     private Gene selectedGene;
 
-    public BasicGeneSubInspector() {
+    public GeneSubInspector(InspectorController c) {
+        super(c);
         //VariantInspector.addVariantSelectionChangedListener(this);
     }
 
@@ -110,8 +123,7 @@ public class BasicGeneSubInspector extends SubInspector implements Listener<Gene
         return false;
     }
 
-    @Override
-    public void handleEvent(Gene g) {
+    public void setGene(Gene g) {
         if (panel == null) {
             return;
         }
@@ -134,6 +146,5 @@ public class BasicGeneSubInspector extends SubInspector implements Listener<Gene
             panel.getComponent(KEY_NAME).setToolTipText("");
         }
     }
-
 
 }

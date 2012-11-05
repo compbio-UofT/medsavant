@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
@@ -103,9 +103,9 @@ public class GeneticsTablePage extends SubSectionView {
 
         Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
 
-        JTabbedPane inspectorPanel = InspectorPanel.getInstance();
+        JTabbedPane inspectorPanel = StaticInspectorPanel.getInstance();
 
-        detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, InspectorPanel.INSPECTOR_WIDTH);
+        detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
         detailView.setToggleBarVisible(false);
 
         panel.add(detailView, BorderLayout.EAST);

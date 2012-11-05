@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.genetics.inspector;
+package org.ut.biolab.medsavant.view.genetics.inspector.stat;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,10 +22,12 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.api.Listener;
 
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.genetics.TablePanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.CollapsibleInspector;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.SocialVariantSubInspector;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantSubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -33,20 +35,20 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class VariantInspector extends CollapsibleInspector implements VariantSelectionChangedListener {
+public class StaticVariantInspector extends CollapsibleInspector implements Listener<VariantRecord> {
 
-    private static VariantInspector instance;
-    private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+    private static StaticVariantInspector instance;
+    private static List<Listener<VariantRecord>> listeners = new ArrayList<Listener<VariantRecord>>();
     private static VariantRecord record;
 
-    public static VariantInspector getInstance() {
+    public static StaticVariantInspector getInstance() {
         if (instance == null) {
-            instance = new VariantInspector();
+            instance = new StaticVariantInspector();
         }
         return instance;
     }
 
-    private VariantInspector() {
+    private StaticVariantInspector() {
 
         JPanel messagePanel = new JPanel();
         //messagePanel.setBackground(Color.white);
@@ -79,20 +81,20 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
         return "Variant Inspector";
     }
 
-    public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
+    public static void addVariantSelectionChangedListener(Listener<VariantRecord> l) {
         listeners.add(l);
     }
 
     @Override
-    public void variantSelectionChanged(VariantRecord r) {
+    public void handleEvent(VariantRecord r) {
         if (r == null) {
             this.switchToMessage();
         } else {
             this.switchToPanes();
         }
-        InspectorPanel.getInstance().switchToVariantInspector();
-        for (VariantSelectionChangedListener l : listeners) {
-            l.variantSelectionChanged(r);
+        StaticInspectorPanel.getInstance().switchToVariantInspector();
+        for (Listener<VariantRecord> l : listeners) {
+            l.handleEvent(r);
         }
         record = r;
     }

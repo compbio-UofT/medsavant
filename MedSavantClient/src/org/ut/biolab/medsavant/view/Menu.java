@@ -67,14 +67,17 @@ public class Menu extends JPanel {
 
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
         secondaryMenu = new JPanel();//ViewUtil.getPrimaryBannerPanel();
-        secondaryMenu.setBackground(Color.darkGray);
+        secondaryMenu.setBackground(ViewUtil.getSecondaryMenuColor());
         //secondaryMenu.setOpaque(false);
 
         int padding = 5;
 
 
         primaryMenu.setLayout(new BoxLayout(primaryMenu, BoxLayout.X_AXIS));
-        primaryMenu.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
+        primaryMenu.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150,150,150)),
+                        BorderFactory.createEmptyBorder(padding, padding, padding, padding)));
 
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
@@ -143,6 +146,7 @@ public class Menu extends JPanel {
         sectionPanel.setVisible(false);
 
         HoverButton sectionButton = new SectionButton(section, sectionPanel);
+        sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
 
         ButtonGroup subSectionsGroup = new ButtonGroup();
 

@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.*;
@@ -29,15 +30,15 @@ import cytoscape.view.CyNetworkView;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genemania.plugin.cytoscape2.layout.FilteredLayout;
+import org.ut.biolab.medsavant.api.Listener;
 
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.region.RegionController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticGeneInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GenemaniaInfoRetriever.NoRelatedGenesInfoException;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -47,7 +48,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author khushi
  */
-public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelectionChangedListener {
+public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene> {
 
     private static final Log LOG = LogFactory.getLog(GeneManiaInfoSubPanel.class);
     private final String name;
@@ -133,7 +134,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     }
 
     @Override
-    public void geneSelectionChanged(Gene g) {
+    public void handleEvent(Gene g) {
         if (g == null || !dataPresent) {
             label.setText("None");
         } else {
@@ -248,8 +249,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                     geneInspectorButton.addActionListener(new ActionListener() {
                                         @Override
                                         public void actionPerformed(ActionEvent ae) {
-                                            GeneInspector.getInstance().setGene(finalGene);
-                                            InspectorPanel.getInstance().switchToGeneInspector();
+                                            StaticGeneInspector.getInstance().setGene(finalGene);
+                                            StaticInspectorPanel.getInstance().switchToGeneInspector();
                                         }
                                     });
 
@@ -294,8 +295,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                         geneInspectorButton.addActionListener(new ActionListener() {
                                             @Override
                                             public void actionPerformed(ActionEvent ae) {
-                                                GeneInspector.getInstance().setGene(finalGene);
-                                                InspectorPanel.getInstance().switchToGeneInspector();
+                                                StaticGeneInspector.getInstance().setGene(finalGene);
+                                                StaticInspectorPanel.getInstance().switchToGeneInspector();
                                             }
                                         });
                                         System.err.println("get region sets" + System.currentTimeMillis());

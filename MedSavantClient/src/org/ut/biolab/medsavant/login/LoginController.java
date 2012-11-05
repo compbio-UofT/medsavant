@@ -58,6 +58,8 @@ public class LoginController extends Controller<LoginEvent> {
         }
         return instance;
     }
+    private String dbname;
+    private String serverAddress;
 
     private synchronized void setLoggedIn(final boolean loggedIn) {
         Thread t = new Thread() {
@@ -117,6 +119,9 @@ public class LoginController extends Controller<LoginEvent> {
         //init registry
         try {
             MedSavantClient.initializeRegistry(serverAddress, serverPort);
+
+            this.serverAddress = serverAddress;
+            this.dbname = dbname;
 
             //register session
             userName = un;
@@ -233,5 +238,13 @@ public class LoginController extends Controller<LoginEvent> {
             pc.setDefaultReference();
         }
         return proj != null;
+    }
+
+    public String getServerAddress() {
+        return this.serverAddress;
+    }
+
+    public String getDatabaseName() {
+        return this.dbname;
     }
 }

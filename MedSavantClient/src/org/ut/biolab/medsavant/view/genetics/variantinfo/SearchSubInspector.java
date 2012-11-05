@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,8 +28,8 @@ import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.api.Listener;
 
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -38,7 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SearchSubInspector extends SubInspector implements VariantSelectionChangedListener {
+public class SearchSubInspector extends SubInspector implements Listener<VariantRecord> {
     private static final Log LOG = LogFactory.getLog(SearchSubInspector.class);
     private final String name;
     private ButtonGroup bg;
@@ -137,7 +138,7 @@ public class SearchSubInspector extends SubInspector implements VariantSelection
     }
 
     @Override
-    public void variantSelectionChanged(VariantRecord r) {
+    public void handleEvent(VariantRecord r) {
         if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {
             field.setText(r.getChrom() + " " + r.getPosition());
         } else {

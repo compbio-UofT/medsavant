@@ -18,18 +18,18 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume, AndrewBrook
  */
-public class ChromosomeDiagramPanel extends JPanel implements VariantSelectionChangedListener  {
+public class ChromosomeDiagramPanel extends JPanel implements Listener<VariantRecord>  {
 
     private long scaleWRTLength;
     private final Chromosome chr;
@@ -48,7 +48,7 @@ public class ChromosomeDiagramPanel extends JPanel implements VariantSelectionCh
         this.setMaximumSize(new Dimension(20,999));
         annotations = new ArrayList<RangeAnnotation>();
 
-        VariantInspector.addVariantSelectionChangedListener(this);
+        StaticVariantInspector.addVariantSelectionChangedListener(this);
     }
 
     public void paintComponent(Graphics g) {
@@ -204,7 +204,7 @@ public class ChromosomeDiagramPanel extends JPanel implements VariantSelectionCh
      */
 
     @Override
-    public void variantSelectionChanged(VariantRecord r) {
+    public void handleEvent(VariantRecord r) {
         this.selectedVariant = r;
         repaint();
     }

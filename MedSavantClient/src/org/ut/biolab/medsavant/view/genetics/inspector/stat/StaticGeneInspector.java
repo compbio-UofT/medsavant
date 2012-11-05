@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.genetics.inspector;
+package org.ut.biolab.medsavant.view.genetics.inspector.stat;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,13 +23,15 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.api.Listener;
 
 import org.ut.biolab.medsavant.model.Gene;
-import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.genetics.inspector.CollapsibleInspector;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicGeneSubInspector;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.OntologySubInspector;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -37,23 +39,23 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class GeneInspector extends CollapsibleInspector {
+public class StaticGeneInspector extends CollapsibleInspector {
 
-    private static GeneInspector instance;
+    private static StaticGeneInspector instance;
 
-    private static List<GeneSelectionChangedListener> listeners = new ArrayList<GeneSelectionChangedListener>();
+    private static List<Listener<Gene>> listeners = new ArrayList<Listener<Gene>>();
 
     boolean isShown = true;
 
-    public static GeneInspector getInstance() {
+    public static StaticGeneInspector getInstance() {
         if (instance == null) {
-            instance = new GeneInspector();
+            instance = new StaticGeneInspector();
         }
         return instance;
     }
     private Gene selectedGene;
 
-    private GeneInspector() {
+    private StaticGeneInspector() {
 
         JPanel messagePanel = new JPanel();
         //messagePanel.setBackground(Color.white);
@@ -98,14 +100,14 @@ public class GeneInspector extends CollapsibleInspector {
         geneSelectionChanged(g);
     }
 
-    public static void addGeneSelectionChangedListener(GeneSelectionChangedListener l) {
+    public static void addGeneSelectionChangedListener(Listener<Gene> l) {
         listeners.add(l);
     }
 
     public void geneSelectionChanged(Gene r) {
         if (isShown) {
-            for (GeneSelectionChangedListener l : listeners) {
-                l.geneSelectionChanged(r);
+            for (Listener<Gene> l : listeners) {
+                l.handleEvent(r);
             }
         }
         selectedGene = r;
@@ -114,6 +116,6 @@ public class GeneInspector extends CollapsibleInspector {
     @Override
     protected final void addSubInspector(SubInspector panel) {
         super.addSubInspector(panel);
-        listeners.add((GeneSelectionChangedListener)panel);
+        listeners.add((Listener<Gene>)panel);
     }
 }

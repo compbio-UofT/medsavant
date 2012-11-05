@@ -52,7 +52,7 @@ import savant.util.Range;
  *
  * @author mfiume
  */
-public class SimpleVariantSubInspector extends SubInspector {
+public class DetailedVariantSubInspector extends SubInspector {
 
     private static final String KEY_POSITION = "Position";
     private static final String KEY_GENES = "Genes";
@@ -66,13 +66,13 @@ public class SimpleVariantSubInspector extends SubInspector {
     private JComboBox geneBox;
     private SimpleVariant selectedVariant;
 
-    public SimpleVariantSubInspector(InspectorController c) {
+    public DetailedVariantSubInspector(InspectorController c) {
         super(c);
     }
 
     @Override
     public String getName() {
-        return "Basic Variant Information";
+        return "Detailed Variant Information";
     }
 
     @Override
@@ -102,13 +102,11 @@ public class SimpleVariantSubInspector extends SubInspector {
 
             JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
             geneInspectorButton.setToolTipText("Inspect this gene");
-
-            final InspectorController controller = this.getInspectorController();
-
             geneInspectorButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    controller.getGeneSubInspector().setGene((Gene) (geneBox).getSelectedItem());
+                    StaticGeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
+                    StaticInspectorPanel.getInstance().switchToGeneInspector();
                 }
             });
 
@@ -141,6 +139,28 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         return s;
+    }
+
+    public void setSimpleVariant(SimpleVariant r) {
+        if (p == null) {
+            return;
+        }
+        if (r == null) {
+            // TODO show other card
+            return;
+        }
+
+        selectedVariant = r;
+
+        p.setValue(KEY_POSITION, r.chr + ":"  + ViewUtil.numToString(r.pos));
+        p.setValue(KEY_REF, r.ref);
+        p.setValue(KEY_ALT, r.alt);
+
+        p.setValue(KEY_TYPE, checkNull(r.type));
+
+        p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
+
+        generateGeneIntersections(r);
     }
 
     private void generateGeneIntersections(SimpleVariant r) {
@@ -237,23 +257,5 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         return kvp;
-    }
-
-    public void setSimpleVariant(SimpleVariant r) {
-        if (p == null) {
-            return;
-        }
-
-        selectedVariant = r;
-
-        p.setValue(KEY_POSITION, r.chr + ":"  + ViewUtil.numToString(r.pos));
-        p.setValue(KEY_REF, r.ref);
-        p.setValue(KEY_ALT, r.alt);
-
-        p.setValue(KEY_TYPE, checkNull(r.type));
-
-        p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
-
-        generateGeneIntersections(r);
     }
 }

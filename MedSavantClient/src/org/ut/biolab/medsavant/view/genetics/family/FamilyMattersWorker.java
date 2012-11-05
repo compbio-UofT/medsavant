@@ -3,6 +3,8 @@ package org.ut.biolab.medsavant.view.genetics.family;
 import org.ut.biolab.medsavant.view.Notification;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,10 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.logging.Log;
@@ -48,7 +54,8 @@ import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.genetics.family.FamilyMattersOptionView.IncludeExcludeStep;
-import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspectorDialog;
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -104,7 +111,11 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 List<Object[]> rows = new ArrayList<Object[]>();
 
                 for (int i = 0; i < limit && (i + start) < variants.size(); i++) {
+
+
                     SimpleFamilyMattersVariant v = variants.get(i + start);
+                    if (i == 0) { System.out.println(v); }
+
                     String geneStr = "";
                     for (SimpleFamilyMattersGene g : v.getGenes()) {
                         geneStr += g.name + ", ";
@@ -145,11 +156,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 new int[]{},
                 true,
                 false,
-                50,
+                100,
                 true,
                 SearchableTablePanel.TableSelectionType.ROW,
-                50,
+                1000,
                 retriever);
+
+        final InspectorController vip = new InspectorController();
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -162,20 +175,35 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 int first = stp.getActualRowAcrossAllPages(e.getLastIndex());
 
                 SimpleFamilyMattersVariant fmv = variants.get(first);
-                VariantInspectorDialog.SimpleVariant v = new VariantInspectorDialog.SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
-                VariantInspectorDialog.getInstance().setSimpleVariant(v);
-                VariantInspectorDialog.getInstance().setDialogVisible(true);
+                SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
+                vip.getSimpleVariantInspector().setSimpleVariant(v);
             }
         });
 
         JDialog f = new JDialog();
+        f.setTitle("Cohort Analysis Results");
 
         LOG.info("Showing table of results");
-        f.getContentPane()
-                .add(stp);
+
+        JPanel aligned =new JPanel();
+        aligned.setBorder(null);
+        aligned.setBackground(Color.white);
+        aligned.add(vip);
+
+
+        JTabbedPane pane = new JTabbedPane();
+        pane.add("Variant Inspector", ViewUtil.getClearBorderlessScrollPane(aligned));
+
+        JPanel p = new JPanel();
+        p.setLayout(new BorderLayout());
+        p.add(stp,BorderLayout.CENTER);
+        p.add(pane,BorderLayout.EAST);
+
+        f.add(p);
+
+        stp.forceRefreshData();
         f.setPreferredSize(new Dimension(600, 600));
         f.setMinimumSize(new Dimension(600, 600));
-        stp.forceRefreshData();
 
         if (completionLock != null) {
             synchronized(completionLock) {

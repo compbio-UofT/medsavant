@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant;
 
 import java.rmi.*;
@@ -33,10 +32,9 @@ import org.ut.biolab.medsavant.serverapi.*;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 
-
 public class MedSavantClient implements MedSavantServerRegistry {
-    private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 
+    private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
     public static CustomTablesAdapter CustomTablesManager;
     public static AnnotationManagerAdapter AnnotationManagerAdapter;
     public static CohortManagerAdapter CohortManager;
@@ -55,9 +53,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static SetupAdapter SetupManager;
     public static VariantManagerAdapter VariantManager;
     public static NotificationManagerAdapter NotificationManager;
-
     public static boolean initialized = false;
-
     private static MedSavantFrame frame;
 
     static public void main(String args[]) {
@@ -74,36 +70,36 @@ public class MedSavantClient implements MedSavantServerRegistry {
         SettingsController.getInstance();
 
         Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
-            int c;
+        int c;
 
-            while ((c = g.getopt()) != -1) {
-                switch (c) {
-                    case 'h':
-                        String host = g.getOptarg();
-                        SettingsController.getInstance().setServerAddress(host);
-                        break;
-                    case 'p':
-                        int port = Integer.parseInt(g.getOptarg());
-                        SettingsController.getInstance().setServerPort(port + "");
-                        break;
-                    case 'd':
-                        String dbname = g.getOptarg();
-                        SettingsController.getInstance().setDBName(dbname);
-                        break;
-                    case 'u':
-                        String username = g.getOptarg();
-                        SettingsController.getInstance().setUsername(username);
-                        break;
-                    case 'w':
-                        String password = g.getOptarg();
-                        SettingsController.getInstance().setPassword(password);
-                        break;
-                    case '?':
-                        break; // getopt() already printed an error
-                    default:
-                        System.out.print("getopt() returned " + c + "\n");
-                }
+        while ((c = g.getopt()) != -1) {
+            switch (c) {
+                case 'h':
+                    String host = g.getOptarg();
+                    SettingsController.getInstance().setServerAddress(host);
+                    break;
+                case 'p':
+                    int port = Integer.parseInt(g.getOptarg());
+                    SettingsController.getInstance().setServerPort(port + "");
+                    break;
+                case 'd':
+                    String dbname = g.getOptarg();
+                    SettingsController.getInstance().setDBName(dbname);
+                    break;
+                case 'u':
+                    String username = g.getOptarg();
+                    SettingsController.getInstance().setUsername(username);
+                    break;
+                case 'w':
+                    String password = g.getOptarg();
+                    SettingsController.getInstance().setPassword(password);
+                    break;
+                case '?':
+                    break; // getopt() already printed an error
+                default:
+                    System.out.print("getopt() returned " + c + "\n");
             }
+        }
 
 
         frame = MedSavantFrame.getInstance();
@@ -117,11 +113,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
 
-        if (initialized) return;
+        if (initialized) {
+            return;
+        }
 
         Registry registry;
         LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
-        registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
+        registry = LocateRegistry.getRegistry(serverAddress, (new Integer(serverPort)).intValue());
         LOG.debug("Connected");
 
         // look up the remote object
@@ -132,24 +130,24 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
 
-        AnnotationManagerAdapter = (AnnotationManagerAdapter)registry.lookup(ANNOTATION_MANAGER);
+        AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
         CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
-        LogManager = (LogManagerAdapter)registry.lookup(LOG_MANAGER);
-        NetworkManager = (NetworkManagerAdapter)registry.lookup(NETWORK_MANAGER);
-        OntologyManager = (OntologyManagerAdapter)registry.lookup(ONTOLOGY_MANAGER);
-        PatientManager = (PatientManagerAdapter)registry.lookup(PATIENT_MANAGER);
-        ProjectManager = (ProjectManagerAdapter)registry.lookup(PROJECT_MANAGER);
-        GeneSetManager = (GeneSetManagerAdapter)registry.lookup(GENE_SET_MANAGER);
-        ReferenceManager = (ReferenceManagerAdapter)registry.lookup(REFERENCE_MANAGER);
-        RegionSetManager = (RegionSetManagerAdapter)registry.lookup(REGION_SET_MANAGER);
-        SessionManager = (SessionManagerAdapter)registry.lookup(SESSION_MANAGER);
-        SettingsManager = (SettingsManagerAdapter)registry.lookup(SETTINGS_MANAGER);
-        UserManager = (UserManagerAdapter)registry.lookup(USER_MANAGER);
-        VariantManager = (VariantManagerAdapter)registry.lookup(VARIANT_MANAGER);
-        DBUtils = (DBUtilsAdapter)registry.lookup(DB_UTIL_MANAGER);
-        SetupManager = (SetupAdapter)registry.lookup(SETUP_MANAGER);
-        CustomTablesManager = (CustomTablesAdapter)registry.lookup(CUSTOM_TABLES_MANAGER);
-        NotificationManager = (NotificationManagerAdapter)registry.lookup(NOTIFICATION_MANAGER);
+        LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
+        NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
+        OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
+        PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
+        ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
+        GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
+        ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
+        RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
+        SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
+        SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
+        UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
+        VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
+        DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
+        SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
+        CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
+        NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
     }
 
     private static void setLAF() {
@@ -163,9 +161,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
             //tooltips
-            UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
+            UIManager.put("ToolTip.background", new ColorUIResource(255, 255, 255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
             ToolTipManager.sharedInstance().setInitialDelay(500);
+
         } catch (Exception x) {
             LOG.error("Unable to install look & feel.", x);
         }

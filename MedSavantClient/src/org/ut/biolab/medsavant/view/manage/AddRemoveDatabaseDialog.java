@@ -223,7 +223,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                 }
             }
         } else {
-            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. <br><br>Please wait. This process can take up to an hour.</html>", dbName)) {
+            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", dbName)) {
                 @Override
                 public void run() {
                     try {

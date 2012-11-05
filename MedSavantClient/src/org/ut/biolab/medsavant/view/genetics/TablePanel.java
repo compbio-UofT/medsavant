@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.filter.*;
 import org.ut.biolab.medsavant.format.BasicVariantColumns;
@@ -47,7 +48,6 @@ import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.VariantComment;
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.region.RegionController;
@@ -71,7 +71,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private boolean updateRequired = true;
     private String pageName;
     private Map<Integer, List<VariantComment>> starMap = new HashMap<Integer, List<VariantComment>>();
-    private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+    private static List<Listener<VariantRecord>> listeners = new ArrayList<Listener<VariantRecord>>();
     private final JPanel activePanel;
     private final JPanel summaryContainer;
     private final JPanel tableContainer;
@@ -144,7 +144,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         }
     }
 
-    public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
+    public static void addVariantSelectionChangedListener(Listener<VariantRecord> l) {
         listeners.add(l);
     }
 
@@ -453,7 +453,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     }
                     return null;
                 }
-                
+
                 /**
                  * Hack to make sure that WaitPanel is drawn when appropriate.  This shouldn't be necessary; the fact that the
                  * WaitPanel is in the layer in front of the spreadsheet should be enough to prevent it from being over-painted.
@@ -536,8 +536,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
                         r.setGenotype(genotype);
 
-                        for (VariantSelectionChangedListener l: listeners) {
-                            l.variantSelectionChanged(r);
+                        for (Listener<VariantRecord> l: listeners) {
+                            l.handleEvent(r);
                         }
                     }
                 }

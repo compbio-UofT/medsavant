@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,10 +27,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
-import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
@@ -42,7 +43,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public class OntologySubInspector extends SubInspector implements GeneSelectionChangedListener {
+public class OntologySubInspector extends SubInspector implements Listener<Gene> {
 
     private JPanel panel;
     private JList termBox;
@@ -124,7 +125,7 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
     }
 
     @Override
-    public void geneSelectionChanged(Gene g) {
+    public void handleEvent(Gene g) {
         retrieveTerms(g);
     }
 

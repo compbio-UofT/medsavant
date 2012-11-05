@@ -146,13 +146,18 @@ public class ViewUtil {
         JPanel p = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
-                GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, 50, Color.BLACK);
+
+                //Color top = Color.darkGray;
+                //Color bottom = Color.black;
+
+                Color top = new Color(227,227,227);
+                Color bottom = new Color(179,179,179);
+
+                GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
                 g.fillRect(0, 0, this.getWidth(), this.getHeight());
             }
         };
-
-        p.setBorder(ViewUtil.getSmallBorder());
 
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 
@@ -235,7 +240,7 @@ public class ViewUtil {
      return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
      }*/
     public static Border getBottomLineBorder() {
-        return BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(50, 50, 50));
+        return BorderFactory.createMatteBorder(0, 0, 1, 0, Color.red);
     }
 
     public static Border getSideLineBorder() {
@@ -247,8 +252,14 @@ public class ViewUtil {
     }
 
     public static Color getTertiaryMenuColor() {
-        return new Color(80, 80, 80);
+        //return new Color(80, 80, 80);
+        return new Color(220,220,220);
     }
+
+    public static Color getSecondaryMenuColor() {
+        return new Color(41,46,53);
+    }
+
 
     public static Color getLightColor() {
         return new Color(200, 200, 200);
@@ -335,6 +346,14 @@ public class ViewUtil {
     public static JPanel alignLeft(Component c) {
         JPanel aligned = ViewUtil.getClearPanel();
         aligned.setLayout(new BoxLayout(aligned, BoxLayout.X_AXIS));
+        aligned.add(c);
+        aligned.add(Box.createHorizontalGlue());
+        return aligned;
+    }
+
+    public static JPanel alignTop(Component c) {
+        JPanel aligned = ViewUtil.getClearPanel();
+        aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
         aligned.add(c);
         aligned.add(Box.createHorizontalGlue());
         return aligned;
@@ -560,6 +579,8 @@ public class ViewUtil {
         return new Color(242, 245, 249);
     }
 
+
+
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
      p.setBackground(new Color(100,100,100));
@@ -780,7 +801,7 @@ public class ViewUtil {
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
-    
+
     private final static String NON_THIN = "[^iIl1\\.,']";
 
     private static int textWidth(String str) {

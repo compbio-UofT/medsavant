@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,18 +26,18 @@ import java.util.Collection;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticGeneInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -50,7 +51,7 @@ import savant.util.Range;
  *
  * @author mfiume
  */
-public class BasicVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
+public class BasicVariantSubInspector extends SubInspector implements Listener<VariantRecord> {
 
     private static final String KEY_DNAID = "DNA ID";
     private static final String KEY_POSITION = "Position";
@@ -71,7 +72,7 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
     @SuppressWarnings("LeakingThisInConstructor")
     public BasicVariantSubInspector() {
-        VariantInspector.addVariantSelectionChangedListener(this);
+        StaticVariantInspector.addVariantSelectionChangedListener(this);
     }
 
     @Override
@@ -143,8 +144,8 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             geneInspectorButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    GeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
-                    InspectorPanel.getInstance().switchToGeneInspector();
+                    StaticGeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
+                    StaticInspectorPanel.getInstance().switchToGeneInspector();
                 }
             });
 
@@ -199,7 +200,7 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
     }
 
     @Override
-    public void variantSelectionChanged(VariantRecord r) {
+    public void handleEvent(VariantRecord r) {
         if (p == null) {
             return;
         }
@@ -220,10 +221,10 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
         p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
         p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
-        p.ellipsifyValues(InspectorPanel.INSPECTOR_INNER_WIDTH);
+        p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
 
         KeyValuePairPanel infoPanel = getInfoKVPPanel(r.getCustomInfo());
-        infoPanel.ellipsifyValues(InspectorPanel.INSPECTOR_INNER_WIDTH);
+        infoPanel.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
         p.setDetailComponent(KEY_INFO, infoPanel);
 
         try {
@@ -242,7 +243,7 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             ClientMiscUtils.reportError("Unable to get BAM path for DNA ID: %s", ex);
         }
 
-        
+
         generateGeneIntersections(r);
     }
 

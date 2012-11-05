@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.genetics.inspector;
+package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -25,9 +25,9 @@ import java.util.List;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.VariantComment;
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.TablePanel;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SocialVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
+public class SocialVariantSubInspector extends SubInspector implements Listener<VariantRecord> {
 
     private VariantRecord selectedVariant;
     private final JTextArea ta = new JTextArea();
@@ -118,7 +118,7 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
     }
 
     @Override
-    public void variantSelectionChanged(VariantRecord r) {
+    public void handleEvent(VariantRecord r) {
         this.selectedVariant = r;
         ta.setText("");
         updateComments();

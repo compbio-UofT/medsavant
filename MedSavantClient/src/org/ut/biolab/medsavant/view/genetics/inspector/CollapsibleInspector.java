@@ -23,7 +23,6 @@ import javax.swing.JPanel;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
-import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**

@@ -106,7 +106,7 @@ public class SearchBar extends JPanel {
         setOpaque(false);
         setLayout(new GridBagLayout());
 
-        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(Color.white);
+        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20,20,20));
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));

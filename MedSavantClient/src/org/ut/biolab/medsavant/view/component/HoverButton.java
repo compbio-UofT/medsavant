@@ -128,4 +128,9 @@ public class HoverButton extends JButton {
     private void resetFont() {
         f = new Font(face, style, size);
     }
+
+    public void setSelectedColor(Color c) {
+        this.textColor = c;
+        this.repaint();
+    }
 }

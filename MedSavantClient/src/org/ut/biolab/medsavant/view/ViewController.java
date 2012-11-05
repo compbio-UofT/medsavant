@@ -142,7 +142,7 @@ public class ViewController {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
-            this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getRightLineBorder(), ViewUtil.getBigBorder()));
+            this.setBorder(ViewUtil.getBigBorder());
             this.setLayout(new BorderLayout());
         }
 

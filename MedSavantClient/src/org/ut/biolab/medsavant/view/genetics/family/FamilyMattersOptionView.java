@@ -33,13 +33,14 @@ import javax.swing.event.CaretListener;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
+import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.ExportVCF;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.NotificationsPanel;
 import org.ut.biolab.medsavant.view.component.RoundedPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspectorDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -535,7 +536,6 @@ class FamilyMattersOptionView {
             public void actionPerformed(ActionEvent ae) {
 
                 new MedSavantWorker<Object>(FamilyMattersOptionView.class.getCanonicalName()) {
-
                     MedSavantWorker currentWorker;
 
                     @Override
@@ -600,9 +600,16 @@ class FamilyMattersOptionView {
                         j.setStatus(Notification.JobStatus.FINISHED);
                         j.setStatusMessage("Complete");
 
+                        int result = DialogUtils.askYesNo("Cohort Analysis Complete", "<html>Would you like to view the<br/>results now?</html>");
+                        if (result == DialogUtils.YES) {
+                            dialogLock.getResultsDialog().setVisible(true);
+                        }
+
                         return null;
                     }
                 }.execute();
+
+                DialogUtils.displayMessage("Cohort Analysis Submitted");
             }
 
             private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, Notification j, Locks.DialogLock genericLock) {
@@ -633,18 +640,32 @@ class FamilyMattersOptionView {
 
                         m.setStatusMessage("Retrieving Variants");
 
+                        String session = LoginController.sessionId;
+                        int refID = ReferenceController.getInstance().getCurrentReferenceID();
+                        int projectID = ProjectController.getInstance().getCurrentProjectID();
+                        int updateID = MedSavantClient.ProjectManager.getNewestUpdateID(
+                                session,
+                                projectID,
+                                refID,
+                                true);
+
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
-                        File tdfFile = new File(outdir, "dump.tdf");
-                        //ExportVCF.exportTDF(tdfFile, this);
+                        File tdfFile = new File(outdir, (LoginController.getInstance().getServerAddress() + "_" + LoginController.getInstance().getDatabaseName() + "_" + projectID + " " + refID + " " + updateID + ".dump.tdf").replaceAll(" ", ""));
+                        System.out.println("Exporting to " + tdfFile.getAbsolutePath());
+                        //if (!tdfFile.exists()) {
+                            ExportVCF.exportTDF(tdfFile, this);
+                        //}
+                        System.out.println("Finished export");
 
                         // hard code for testing only
-                        tdfFile = new File("/Users/mfiume/Desktop/dump.tdf");
+                        //tdfFile = new File("/Users/mfiume/Desktop/dump.tdf");
 
                         int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
                         m.setStatusMessage("Stripping file");
-                        //File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
-                        File strippedFile = new File(tdfFile.getAbsolutePath() + ".awk");
-                        m.setStatusMessage("Stripped file is " + strippedFile.getAbsolutePath());
+
+                        File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
+                        //File strippedFile = new File(tdfFile.getAbsolutePath() + ".awk");
+                        System.out.println("Stripped file is " + strippedFile.getAbsolutePath());
 
                         return strippedFile;
                     }
