@@ -35,8 +35,12 @@ public class DetailedListEditor {
     public boolean doesImplementEditing() {
         return false;
     }
-    
+
     public boolean doesImplementImporting() {
+        return false;
+    }
+
+    public boolean doesImplementExporting() {
         return false;
     }
 
@@ -58,7 +62,10 @@ public class DetailedListEditor {
 
     public void importItems() {
     }
-    
+
+    public void exportItems() {
+    }
+
     public void loadItems(List<Object[]> item) {
     }
 }

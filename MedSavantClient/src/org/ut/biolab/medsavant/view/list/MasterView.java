@@ -210,7 +210,7 @@ public class MasterView extends JPanel {
     }
 
     private synchronized void setList(Object[][] list) {
-        this.data = list;
+        data = list;
         try {
             updateShowCard();
             showShowCard();
@@ -271,15 +271,14 @@ public class MasterView extends JPanel {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
 
-                    if(e.getValueIsAdjusting()) return;
-
-                    List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
-                    if (selectedItems.size() == 1) {
-                        detailedView.setSelectedItem(selectedItems.get(0));
-                    } else {
-                        detailedView.setMultipleSelections(selectedItems);
+                    if (!e.getValueIsAdjusting()) {
+                        List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
+                        if (selectedItems.size() == 1) {
+                            detailedView.setSelectedItem(selectedItems.get(0));
+                        } else {
+                            detailedView.setMultipleSelections(selectedItems);
+                        }
                     }
-
                 }
             });
 

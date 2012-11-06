@@ -17,37 +17,24 @@
 package org.ut.biolab.medsavant.patient;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
-import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.ViewController;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
 /**
@@ -75,8 +62,7 @@ public class AddPatientsForm extends JDialog {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int col) {
-                if (col == 0) return false;
-                return true;
+                return col != 0;
             }
         };
         model.addColumn("Short Name");
@@ -103,19 +89,20 @@ public class AddPatientsForm extends JDialog {
     private void setTip() {
         int index = table.getSelectedRow();
         Object o = table.getValueAt(index, 0);
-        if (o == null) return;
+        if (o != null) {
 
-        CustomField f = (CustomField)o;
-        String s = f.getAlias() + " | " + f.getColumnType().toString().toLowerCase();
-        switch(f.getColumnType()) {
-            case DATE:
-                s += "(yyyy-mm-dd)";
-                break;
-            case BOOLEAN:
-                s += "(true/false)";
-                break;
+            CustomField f = (CustomField)o;
+            String s = f.getAlias() + " | " + f.getColumnType().toString().toLowerCase();
+            switch(f.getColumnType()) {
+                case DATE:
+                    s += "(yyyy-mm-dd)";
+                    break;
+                case BOOLEAN:
+                    s += "(true/false)";
+                    break;
+            }
+            tipLabel.setText(s);
         }
-        this.tipLabel.setText(s);
     }
 
     private void addPatient() throws SQLException, RemoteException {
@@ -145,154 +132,6 @@ public class AddPatientsForm extends JDialog {
         }
     }
 
-    private void generateTemplate() throws SQLException, RemoteException {
-
-        File file = DialogUtils.chooseFileForSave("Export Individuals", "individuals.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
-        if (file == null) return;
-
-        progressBar.setIndeterminate(true);
-        progressMessage.setText("Exporting individuals...");
-
-        CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-        List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
-            CSVWriter out = new CSVWriter(writer, ',', '"');
-
-            //write header
-            String[] headerList = new String[fields.length - 1];
-            for (int i = 1; i < fields.length; i++) { //skip patientId
-                headerList[i-1] = fields[i].getAlias();
-            }
-            out.writeNext(headerList);
-
-            //write patients
-            for (Object[] patient : patients) {
-                String[] line = new String[patient.length - 1];
-                for (int i = 1; i < patient.length; i++) {
-                    line[i-1] = valueToString(patient[i]);
-                }
-                out.writeNext(line);
-            }
-
-            out.close();
-            writer.close();
-            progressMessage.setText("Export successful");
-        } catch (IOException ex) {
-            LOG.error("Error exporting individuals.", ex);
-            progressMessage.setText("Error exporting individuals");
-        }
-        progressBar.setIndeterminate(false);
-        progressBar.setValue(0);
-    }
-
-    private String valueToString(Object val) {
-        if (val == null) {
-            return "";
-        }
-        return val.toString();
-    }
-
-    private void importFile() throws SQLException, RemoteException {
-
-        //Warn that data will be replaced
-        if (DialogUtils.askYesNo("Confirm", "<html>Importing individuals will REPLACE all existing individuals.<br>Are you sure you want to do this?</html>") == DialogUtils.NO) {
-            return;
-        }
-
-        //remove current data
-        MedSavantClient.PatientManager.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-
-        final File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
-        if (file == null) return;
-
-        progressBar.setIndeterminate(true);
-        progressMessage.setText("Importing individuals...");
-        setButtonsEnabled(false);
-
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-
-                try {
-
-                    CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-
-                    BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-                    CSVReader in = new CSVReader(bufferedReader);
-
-                    String[] header = in.readNext();
-                    if (header == null) return;
-                    List<CustomField> headerToField = new ArrayList<CustomField>();
-                    for (String s : header) {
-                        boolean found = false;
-                        //TODO: This is inefficient. Use a sorted data structure to do searches
-                        for (CustomField f : fields) {
-                            if (s.equals(f.getAlias())) {
-                                headerToField.add(f);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            DialogUtils.displayError(String.format("<HTML>Column <i>%s</i> found in text file but not in database.<BR>Please regenerate the text file or modify the project.</HTML>", s));
-                            progressMessage.setText("Error importing individuals");
-                            progressBar.setIndeterminate(false);
-                            progressBar.setValue(0);
-                            setButtonsEnabled(true);
-                            return;
-                        }
-                    }
-
-                    String[] line;
-                    while ((line = in.readNext()) != null) {
-                        List<String> values = new ArrayList<String>();
-                        values.addAll(Arrays.asList(line));
-
-                        // replace empty strings for nulls and booleans with 0,1
-                        for (int i = 0; i < values.size(); i++) {
-                            String s = values.get(i);
-                            if (s.equals("") || s.equals("null")) {
-                                values.set(i, null);
-                            } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN) {
-                                if (s.toLowerCase().equals("true")) {
-                                    values.set(i, "1");
-                                } else if (s.toLowerCase().equals("false")) {
-                                    values.set(i, "0");
-                                }
-                            }
-                        }
-
-                        MedSavantClient.PatientManager.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
-                    }
-
-                    in.close();
-                    bufferedReader.close();
-                    progressMessage.setText("Import successful");
-                } catch (Exception ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                    LOG.error("Error importing individuals.", ex);
-                    progressMessage.setText("Error importing individuals");
-                } finally {
-                    setButtonsEnabled(true);
-                    progressBar.setIndeterminate(false);
-                    progressBar.setValue(0);
-                }
-
-            }
-        };
-        t.start();
-
-    }
-
-    private void setButtonsEnabled(boolean enabled) {
-        doneButton.setEnabled(enabled);
-        jButton1.setEnabled(enabled);
-        jButton2.setEnabled(enabled);
-        jButton3.setEnabled(enabled);
-    }
-
     private void close() {
         ViewController.getInstance().refreshView();
         this.setVisible(false);
@@ -311,18 +150,10 @@ public class AddPatientsForm extends JDialog {
 
         scrollPane = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
+        addButton = new javax.swing.JButton();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         doneButton = new javax.swing.JButton();
         tipLabel = new javax.swing.JLabel();
-        progressLabel = new javax.swing.JLabel();
-        progressBar = new javax.swing.JProgressBar();
-        progressMessage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Import Patients");
@@ -340,32 +171,15 @@ public class AddPatientsForm extends JDialog {
         ));
         scrollPane.setViewportView(table);
 
-        jButton1.setText("Add Patient");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        addButton.setText("Add Patient");
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Add Single Patient:");
-
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel2.setText("Batch Add:");
-
-        jButton2.setText("Export CSV");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jButton3.setText("Import CSV");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
 
         doneButton.setText("Done");
         doneButton.addActionListener(new java.awt.event.ActionListener() {
@@ -376,11 +190,6 @@ public class AddPatientsForm extends JDialog {
 
         tipLabel.setText(" ");
 
-        progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-
-        progressMessage.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        progressMessage.setText(" ");
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -388,25 +197,15 @@ public class AddPatientsForm extends JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(tipLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton1))
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .addComponent(addButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(progressMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                            .addComponent(progressLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)))
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                    .addComponent(doneButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(doneButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -418,22 +217,8 @@ public class AddPatientsForm extends JDialog {
                 .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
+                    .addComponent(addButton)
                     .addComponent(tipLabel))
-                .addGap(18, 18, 18)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3)
-                    .addComponent(progressLabel)
-                    .addComponent(progressMessage))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(doneButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -446,42 +231,17 @@ public class AddPatientsForm extends JDialog {
         close();
     }//GEN-LAST:event_doneButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         try {
             addPatient();
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error adding individual: %s", ex);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        try {
-            generateTemplate();
-        } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error generating template: %s", ex);
-        }
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        try {
-            importFile();
-        } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error importing file: %s", ex);
-        }
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_addButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JButton doneButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JLabel progressLabel;
-    private javax.swing.JLabel progressMessage;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTable table;
     private javax.swing.JLabel tipLabel;

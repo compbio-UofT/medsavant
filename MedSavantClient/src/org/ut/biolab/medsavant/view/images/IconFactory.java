@@ -59,6 +59,7 @@ public class IconFactory {
         COLLAPSE,
         EDIT,
         IMPORT,
+        EXPORT,
         FILTER,
         RESULTS,
         CHART,
@@ -96,7 +97,7 @@ public class IconFactory {
                 return getIcon(iconroot + "inspector2.png");
             case CLEAR:
                 return getIcon(iconroot + "clear.png");
-             case CONFIGURE:
+            case CONFIGURE:
                 return getIcon(iconroot + "configure.png");
             case CHART_SMALL:
                 return getIcon(iconroot + "chart_1.png");
@@ -146,6 +147,8 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_edit.png");
             case IMPORT:
                 return getIcon(iconroot + "import.png");
+            case EXPORT:
+                return getIcon(iconroot + "export.png");
             case RESULTS:
                 return getIcon(iconroot + "results.png");
             case CHART:

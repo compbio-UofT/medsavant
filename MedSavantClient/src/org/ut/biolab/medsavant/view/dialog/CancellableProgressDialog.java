@@ -34,13 +34,20 @@ import org.ut.biolab.medsavant.model.ProgressStatus;
  * @author tarkvara
  */
 public abstract class CancellableProgressDialog extends ProgressDialog {
-    
+
     protected boolean cancelled = false;
     private JLabel stageLabel;
     private JButton cancelButton;
 
+    /**
+     * Last status returned by checkProgress.  Alternatively, derived classes can just
+     * set this directly instead of overriding checkProgress.
+     */
+    protected ProgressStatus lastStatus;
+
     public CancellableProgressDialog(String title, String message) {
         super(title, message, true);
+        lastStatus = new ProgressStatus("Preparing...", 0.0);
         stageLabel = new JLabel("Preparing...");
         cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new ActionListener() {
@@ -98,7 +105,10 @@ public abstract class CancellableProgressDialog extends ProgressDialog {
     }
 
     /**
-     * Derived classes should override this to poll the server for progress.
+     * Derived classes should override this to poll the server for progress.  Alternatively,
+     * if there is no server-polling involved, derived classes can just set lastStatus directly.
      */
-    public abstract ProgressStatus checkProgress() throws Exception;
+    public ProgressStatus checkProgress() throws Exception {
+        return lastStatus;
+    }
 }

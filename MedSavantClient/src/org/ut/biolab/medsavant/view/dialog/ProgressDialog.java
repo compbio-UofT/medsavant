@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author Andrew
  */
 public abstract class ProgressDialog extends JDialog {
-    
+
     protected static final Log LOG = LogFactory.getLog(ProgressDialog.class);
 
     protected JProgressBar bar;
@@ -55,10 +55,10 @@ public abstract class ProgressDialog extends JDialog {
     ProgressDialog(String title, String message, boolean cancellable) {
         super(DialogUtils.getFrontWindow(), title, Dialog.ModalityType.APPLICATION_MODAL);
         setResizable(false);
-        
+
         Container p = getContentPane();
         p.setLayout(new GridBagLayout());
-        
+
         JLabel messageLabel = new JLabel(message);
 
         bar = new JProgressBar();
@@ -98,9 +98,10 @@ public abstract class ProgressDialog extends JDialog {
 
                 @Override
                 protected void showFailure(Throwable x) {
-                    super.showFailure(x);
-                    if (x instanceof Exception) {
+                    if ((x instanceof Exception) && !(x instanceof InterruptedException)) {
                         failure = (Exception)x;
+                    } else {
+                        super.showFailure(x);
                     }
                 }
 
@@ -127,7 +128,7 @@ public abstract class ProgressDialog extends JDialog {
      * Performs the actual work whose progress is being represented by this dialog.
      */
     public abstract void run() throws Exception;
-    
+
     /**
      * Sometimes the caller may want to know why the operation failed.  Classes which don't care about the exception, or which handle
      * everything internally to their <c>run()</c> methods, can just call <c>setVisible(true)</c>.
