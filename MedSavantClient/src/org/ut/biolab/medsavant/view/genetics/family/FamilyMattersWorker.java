@@ -54,7 +54,7 @@ import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.genetics.family.FamilyMattersOptionView.IncludeExcludeStep;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
+import org.ut.biolab.medsavant.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -162,7 +162,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 1000,
                 retriever);
 
-        final InspectorController vip = new InspectorController();
+        final ComprehensiveInspector vip = new ComprehensiveInspector();
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -176,7 +176,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 SimpleFamilyMattersVariant fmv = variants.get(first);
                 SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
-                vip.getSimpleVariantInspector().setSimpleVariant(v);
+                vip.setSimpleVariant(v);
             }
         });
 
@@ -185,19 +185,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         LOG.info("Showing table of results");
 
-        JPanel aligned =new JPanel();
+        JPanel aligned = new JPanel();
         aligned.setBorder(null);
+        aligned.setPreferredSize(new Dimension(450,999));
         aligned.setBackground(Color.white);
         aligned.add(vip);
-
-
-        JTabbedPane pane = new JTabbedPane();
-        pane.add("Variant Inspector", ViewUtil.getClearBorderlessScrollPane(aligned));
 
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         p.add(stp,BorderLayout.CENTER);
-        p.add(pane,BorderLayout.EAST);
+        p.add(aligned,BorderLayout.EAST);
 
         f.add(p);
 

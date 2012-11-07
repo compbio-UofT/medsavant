@@ -68,11 +68,16 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
     private boolean dataPresent;
     private int currSizeOfArray;
     private JPanel graph;
+    private Listener<Object> geneListener;
 
     public GeneManiaInfoSubPanel() {
         name = "Related Genes";
         dataPresent = true;
 
+    }
+
+    public void setGeneListener(Listener<Object> geneListener) {
+        this.geneListener = geneListener;
     }
 
     @Override
@@ -249,8 +254,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
                                     geneInspectorButton.addActionListener(new ActionListener() {
                                         @Override
                                         public void actionPerformed(ActionEvent ae) {
-                                            StaticGeneInspector.getInstance().setGene(finalGene);
-                                            StaticInspectorPanel.getInstance().switchToGeneInspector();
+                                            if (geneListener != null) {
+                                                geneListener.handleEvent(finalGene);
+                                            }
                                         }
                                     });
 
@@ -285,21 +291,22 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
                                     final org.ut.biolab.medsavant.model.Gene finalGene = GeneSetFetcher.getInstance().getGene(currGene);
                                     if (finalGene != null) {
                                         kvp.addKey(Integer.toString(i));
-                                        System.err.println("get link out button" + System.currentTimeMillis());
+                                        //System.err.println("get link out button" + System.currentTimeMillis());
                                         EntrezButton geneLinkButton = new EntrezButton(currGene);
                                         JLabel geneName = new JLabel(currGene);
                                         kvp.setValue(Integer.toString(i), geneName);
-                                        System.err.println("get inspector button" + System.currentTimeMillis());
+                                        //System.err.println("get inspector button" + System.currentTimeMillis());
                                         JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                         geneInspectorButton.setToolTipText("Inspect this gene");
                                         geneInspectorButton.addActionListener(new ActionListener() {
                                             @Override
                                             public void actionPerformed(ActionEvent ae) {
-                                                StaticGeneInspector.getInstance().setGene(finalGene);
-                                                StaticInspectorPanel.getInstance().switchToGeneInspector();
+                                                if (geneListener != null) {
+                                                    geneListener.handleEvent(finalGene);
+                                                }
                                             }
                                         });
-                                        System.err.println("get region sets" + System.currentTimeMillis());
+                                        //System.err.println("get region sets" + System.currentTimeMillis());
                                         final JButton addToRegionListButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADDKVP));
                                         addToRegionListButton.setToolTipText("Add to Region List");
                                         addToRegionListButton.addActionListener(new ActionListener() {
@@ -419,9 +426,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
         CyNetwork network = genemania.getGraph();
         System.out.println("Nodes " + network.getNodeCount());
         System.out.println("Edges " + network.getEdgeCount());
-        for (int i = 0; i < network.getEdgeCount(); i++) {
-            System.out.println(network.getEdge(i));
-        }
+        //for (int i = 0; i < network.getEdgeCount(); i++) {
+        //System.out.println(network.getEdge(i));
+        //}
 
         CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());
         Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, null);

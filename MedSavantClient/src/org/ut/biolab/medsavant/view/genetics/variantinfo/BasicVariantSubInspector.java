@@ -243,7 +243,6 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
             ClientMiscUtils.reportError("Unable to get BAM path for DNA ID: %s", ex);
         }
 
-
         generateGeneIntersections(r);
     }
 

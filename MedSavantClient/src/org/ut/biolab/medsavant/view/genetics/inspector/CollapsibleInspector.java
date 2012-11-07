@@ -22,6 +22,10 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.Box;
+import javax.swing.JLabel;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -64,13 +68,23 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         cl.show(container, MESSAGEPANEL);
     }
 
+    public void setMessage(String msg) {
+        JPanel messagePanel = new JPanel();
+        messagePanel.setBorder(ViewUtil.getHugeBorder());
+        ViewUtil.applyVerticalBoxLayout(messagePanel);
+        JLabel h2 = new JLabel(msg);
+        messagePanel.add(Box.createVerticalGlue());
+        messagePanel.add(ViewUtil.centerHorizontally(h2));
+        messagePanel.add(Box.createVerticalGlue());
+        setMessage(messagePanel);
+    }
+
     public void setMessage(JPanel msg) {
         messageContainer.removeAll();
         messageContainer.add(msg,BorderLayout.CENTER);
     }
 
     public final void switchToPanes() {
-        System.out.println("Switching to panes");
         CardLayout cl = (CardLayout)(container.getLayout());
         cl.show(container, PANESPANEL);
     }

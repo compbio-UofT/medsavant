@@ -145,6 +145,7 @@ public class MasterView extends JPanel {
             buttonPanel.add(butt, gbc);
         }
 
+        /*
         if (detailedEditor.doesImplementExporting()) {
 
             JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
@@ -158,6 +159,7 @@ public class MasterView extends JPanel {
             });
             buttonPanel.add(butt, gbc);
         }
+        */
 
         if (detailedEditor.doesImplementDeleting()) {
             JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));

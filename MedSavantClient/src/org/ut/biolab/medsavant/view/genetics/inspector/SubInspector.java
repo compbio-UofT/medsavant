@@ -19,9 +19,6 @@ package org.ut.biolab.medsavant.view.genetics.inspector;
 import com.jidesoft.pane.CollapsiblePane;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
-
 
 /**
  *
@@ -30,7 +27,6 @@ import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
 public abstract class SubInspector {
 
     protected CollapsiblePane parent;
-    private InspectorController controller;
 
     public abstract String getName();
     public abstract JPanel getInfoPanel();
@@ -38,17 +34,8 @@ public abstract class SubInspector {
     public SubInspector() {
     }
 
-    public SubInspector(InspectorController c) {
-        this.controller = c;
-    }
-
     public void setPaneParent(CollapsiblePane p) {
         this.parent = p;
     }
-
-    public InspectorController getInspectorController() {
-        return controller;
-    }
-
 
 }

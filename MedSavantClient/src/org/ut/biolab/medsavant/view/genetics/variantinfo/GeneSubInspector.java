@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
+import org.ut.biolab.medsavant.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticGeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticVariantInspector;
@@ -52,19 +52,14 @@ import savant.util.Range;
  *
  * @author mfiume
  */
-public class GeneSubInspector extends SubInspector {
+public class GeneSubInspector extends SubInspector implements Listener<Gene> {
 
     private static String KEY_NAME = "Name";
     private static String KEY_POSITION = "Position";
-    //private static String KEY_START = "Start";
-    //private static String KEY_END = "End";
-    //private static String KEY_DESCRIPTION = "Description";
     private KeyValuePairPanel panel;
     private Gene selectedGene;
 
-    public GeneSubInspector(InspectorController c) {
-        super(c);
-        //VariantInspector.addVariantSelectionChangedListener(this);
+    public GeneSubInspector() {
     }
 
     @Override
@@ -78,30 +73,7 @@ public class GeneSubInspector extends SubInspector {
         if (panel == null) {
             panel = new KeyValuePairPanel(2);
             panel.addKey(KEY_NAME);
-
-            /*JButton filterButton2 = ViewUtil.getTexturedButton("Card", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
-             filterButton2.setToolTipText("Lookup Gene Card");
-             panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
-
-             filterButton2.addActionListener(new ActionListener() {
-
-             String baseUrl = "http://www.genecards.org/cgi-bin/carddisp.pl?gene=";
-
-             @Override
-             public void actionPerformed(ActionEvent ae) {
-             try {
-             String geneName = panel.getValue(KEY_NAME);
-             URL url = new URL(baseUrl + URLEncoder.encode(geneName, charset));
-
-             java.awt.Desktop.getDesktop().browse(url.toURI());
-             } catch (Exception ex) {
-             DialogUtils.displayError("Problem launching website.");
-             }
-             }
-             });*/
-
             panel.addKey(KEY_POSITION);
-            //panel.addKey(KEY_DESCRIPTION);
 
             JButton genomeBrowserButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BROWSER));
             genomeBrowserButton.setToolTipText("View region in genome browser");
@@ -123,7 +95,8 @@ public class GeneSubInspector extends SubInspector {
         return false;
     }
 
-    public void setGene(Gene g) {
+    @Override
+    public void handleEvent(Gene g) {
         if (panel == null) {
             return;
         }

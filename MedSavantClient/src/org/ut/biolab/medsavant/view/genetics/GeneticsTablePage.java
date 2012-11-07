@@ -31,11 +31,16 @@ import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ThreadController;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -103,7 +108,14 @@ public class GeneticsTablePage extends SubSectionView {
 
         Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
 
-        JTabbedPane inspectorPanel = StaticInspectorPanel.getInstance();
+        final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(); //StaticInspectorPanel.getInstance();
+
+        TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
+            @Override
+            public void handleEvent(final VariantRecord r) {
+                inspectorPanel.setVariantRecord(r);
+            }
+        });
 
         detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
         detailView.setToggleBarVisible(false);

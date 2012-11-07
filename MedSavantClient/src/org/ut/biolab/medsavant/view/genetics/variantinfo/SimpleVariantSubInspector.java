@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import org.ut.biolab.medsavant.view.genetics.inspector.SubInspector;
@@ -32,21 +31,22 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorController;
+import org.ut.biolab.medsavant.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticGeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 import org.ut.biolab.medsavant.view.variants.BrowserPage;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
-
 
 /**
  *
@@ -54,20 +54,23 @@ import savant.util.Range;
  */
 public class SimpleVariantSubInspector extends SubInspector {
 
+    private Listener<Object> geneListener;
     private static final String KEY_POSITION = "Position";
     private static final String KEY_GENES = "Genes";
     private static final String KEY_REF = "Reference";
     private static final String KEY_ALT = "Alternate";
     private static final String KEY_TYPE = "Type";
     private static final String URL_CHARSET = "UTF-8";
-
     private Collection<Gene> genes;
     private KeyValuePairPanel p;
     private JComboBox geneBox;
     private SimpleVariant selectedVariant;
 
-    public SimpleVariantSubInspector(InspectorController c) {
-        super(c);
+    public SimpleVariantSubInspector() {
+    }
+
+    public void setGeneListener(Listener<Object> listener) {
+        this.geneListener = listener;
     }
 
     @Override
@@ -103,12 +106,10 @@ public class SimpleVariantSubInspector extends SubInspector {
             JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
             geneInspectorButton.setToolTipText("Inspect this gene");
 
-            final InspectorController controller = this.getInspectorController();
-
             geneInspectorButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    controller.getGeneSubInspector().setGene((Gene) (geneBox).getSelectedItem());
+                    if (geneListener != null) { geneListener.handleEvent((Gene) geneBox.getSelectedItem()); }
                 }
             });
 
@@ -118,7 +119,7 @@ public class SimpleVariantSubInspector extends SubInspector {
 
             int col = 0;
 
-            p.setAdditionalColumn(KEY_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_POSITION,p));
+            p.setAdditionalColumn(KEY_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_POSITION, p));
 
             col++;
             p.setAdditionalColumn(KEY_POSITION, col, genomeBrowserButton);
@@ -171,8 +172,6 @@ public class SimpleVariantSubInspector extends SubInspector {
             ClientMiscUtils.reportError("Error fetching genes: %s", ex);
         }
     }
-
-
 
     private Component getFilterButton(final String key) {
 
@@ -246,7 +245,7 @@ public class SimpleVariantSubInspector extends SubInspector {
 
         selectedVariant = r;
 
-        p.setValue(KEY_POSITION, r.chr + ":"  + ViewUtil.numToString(r.pos));
+        p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.pos));
         p.setValue(KEY_REF, r.ref);
         p.setValue(KEY_ALT, r.alt);
 
