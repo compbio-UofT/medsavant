@@ -27,7 +27,7 @@ public interface BasicPatientColumns {
 
     public static final CustomField PATIENT_ID = new CustomField("patient_id", ColumnType.INTEGER, 11, true, true, true, null, true, "Individual ID", "");
     public static final CustomField FAMILY_ID = new CustomField("family_id", ColumnType.VARCHAR, 100, false, false, false, null, true, "Family ID", "");
-    public static final CustomField HOSPITAL_ID = new CustomField("hospital_id", ColumnType.VARCHAR, 100, false, false, false, null, true, "Hospital ID", "");
+    public static final CustomField HOSPITAL_ID = new CustomField("hospital_id", ColumnType.VARCHAR, 100, false, true, false, null, true, "Hospital ID", "");
     public static final CustomField IDBIOMOM = new CustomField("idbiomom", ColumnType.VARCHAR, 100, false, false, false, null, true, "ID of Mother", "");
     public static final CustomField IDBIODAD = new CustomField("idbiodad", ColumnType.VARCHAR, 100, false, false, false, null, true, "ID of Father", "");
     public static final CustomField GENDER = new CustomField("gender", ColumnType.INTEGER, 1, false, false, false, null, true, "Gender", "");
