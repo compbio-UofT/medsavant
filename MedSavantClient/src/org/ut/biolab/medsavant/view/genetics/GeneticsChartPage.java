@@ -15,8 +15,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JPanel;
@@ -39,7 +37,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  */
 public class GeneticsChartPage extends SubSectionView {
 
-    private JPanel panel;
+    private JPanel view;
     private ChartView chartView;
     private boolean isLoaded = false;
 
@@ -63,28 +61,23 @@ public class GeneticsChartPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        try {
-            if (panel == null || update) {
-                setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            try {
+                view = new JPanel();
+                view.setLayout(new BorderLayout());
+
+                //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
+                //panel.add(detailView, BorderLayout.WEST);
+
+                chartView = new ChartView(pageName);
+                view.add(chartView, BorderLayout.CENTER);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error creating chart view: %s", ex);
             }
-            chartView.updateIfRequired();
-        } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error creating chart view: %s", ex);
         }
-        return panel;
-    }
-
-    private void setPanel() throws RemoteException, SQLException {
-
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
-        //panel.add(detailView, BorderLayout.WEST);
-
-        chartView = new ChartView(pageName);
-        panel.add(chartView, BorderLayout.CENTER);
+        chartView.updateIfRequired();
+        return view;
     }
 
     @Override

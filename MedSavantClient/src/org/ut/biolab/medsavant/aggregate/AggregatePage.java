@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  */
 public class AggregatePage extends SubSectionView {
 
-    private JPanel panel;
+    private JPanel view;
     private AggregatesStatsPanel statsPanel;
 
     public AggregatePage(SectionView parent) {
@@ -45,7 +45,7 @@ public class AggregatePage extends SubSectionView {
             public void handleEvent(FilterEvent event) {
                 ThreadController.getInstance().cancelWorkers(pageName);
                 if (statsPanel != null) {
-                    statsPanel.update(true);
+                    statsPanel.update();
                 }
             }
         });
@@ -53,25 +53,25 @@ public class AggregatePage extends SubSectionView {
             @Override
             public void handleEvent(ReferenceEvent evt) {
                 if (evt.getType() == ReferenceEvent.Type.CHANGED && statsPanel != null) {
-                    statsPanel.update(true);
+                    statsPanel.update();
                 }
             }
         });
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null) {
-            panel = new JPanel();
-            panel.setLayout(new BorderLayout());
+    public JPanel getView() {
+        if (view == null) {
+            view = new JPanel();
+            view.setLayout(new BorderLayout());
 
             statsPanel = new AggregatesStatsPanel(pageName);
-            panel.add(statsPanel, BorderLayout.CENTER);
+            view.add(statsPanel, BorderLayout.CENTER);
         }
         if (statsPanel != null) {
-            statsPanel.update(update);
+            statsPanel.update();
         }
-        return panel;
+        return view;
     }
 
     @Override

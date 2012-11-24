@@ -31,9 +31,8 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class RegionPage extends SubSectionView {
 
     private final RegionController controller;
-    int importID = 0;
-    SplitScreenView view;
-    
+    private SplitScreenView view;
+
 
     public RegionPage(SectionView parent) {
         super(parent, "Region Lists");
@@ -41,17 +40,18 @@ public class RegionPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        view = new SplitScreenView(
-                new SimpleDetailedListModel("Region List") {
-                    @Override
-                    public RegionSet[] getData() throws Exception {
-                        return controller.getRegionSets().toArray(new RegionSet[0]);
-                    }
-                },
-                new RegionDetailedView(pageName),
-                new RegionDetailedListEditor());
-
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel("Region List") {
+                        @Override
+                        public RegionSet[] getData() throws Exception {
+                            return controller.getRegionSets().toArray(new RegionSet[0]);
+                        }
+                    },
+                    new RegionDetailedView(pageName),
+                    new RegionDetailedListEditor());
+        }
         return view;
     }
 }

@@ -56,8 +56,8 @@ public class GeneticsFilterPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (view == null || update) {
+    public JPanel getView() {
+        if (view == null) {
             view = ViewUtil.getClearPanel();
             view.setName(pageName);
             view.setLayout(new BorderLayout());

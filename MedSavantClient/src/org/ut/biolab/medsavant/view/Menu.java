@@ -189,27 +189,28 @@ public class Menu extends JPanel {
     }
 
     public void setContentTo(SubSectionView v, boolean update) {
-        currentView = v;
-        contentContainer.removeAll();
-        contentContainer.add(v.getView(update || v.isUpdateRequired()), BorderLayout.CENTER);
+        if (currentView != v) {
+            currentView = v;
+            contentContainer.removeAll();
+            contentContainer.add(v.getView(), BorderLayout.CENTER);
 
-        sectionDetailedMenu.removeAll();
+            sectionDetailedMenu.removeAll();
 
-        if (v.getSubSectionMenuComponents() != null) {
-            for (Component c : v.getSubSectionMenuComponents()) {
-                sectionDetailedMenu.add(c);
+            if (v.getSubSectionMenuComponents() != null) {
+                for (Component c : v.getSubSectionMenuComponents()) {
+                    sectionDetailedMenu.add(c);
+                }
             }
-        }
 
-        if (v.getParent().getSectionMenuComponents() != null) {
-            for (Component c : v.getParent().getSectionMenuComponents()) {
-                sectionDetailedMenu.add(c);
+            if (v.getParent().getSectionMenuComponents() != null) {
+                for (Component c : v.getParent().getSectionMenuComponents()) {
+                    sectionDetailedMenu.add(c);
+                }
             }
-        }
 
-        v.setUpdateRequired(false);
-        contentContainer.updateUI();
-        ViewController.getInstance().changeSubSectionTo(v);
+            v.setUpdateRequired(false);
+            ViewController.getInstance().changeSubSectionTo(v);
+        }
     }
 
     public void refreshSelection() {

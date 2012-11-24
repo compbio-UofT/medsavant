@@ -45,23 +45,23 @@ public class PluginPage extends SubSectionView {
     private static PluginController controller = PluginController.getInstance();
 
     private MedSavantSectionPlugin plugin;
-    private final JPanel panel;
+    private final JPanel view;
 
     public PluginPage(SectionView parent, PluginDescriptor desc) {
         super(parent, desc.getName());
-        panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        view = new JPanel();
+        view.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
         plugin = (MedSavantSectionPlugin)controller.getPlugin(desc.getID());
         if (plugin != null) {
-            plugin.init(panel);
+            plugin.init(view);
         } else {
             JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
             placeholder.setFont(ViewUtil.getBigTitleFont());
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
-            panel.add(placeholder, gbc);
+            view.add(placeholder, gbc);
 
             // Not yet loaded.  We need to wait for PluginController to fire event.
             controller.addListener(new Listener<PluginEvent>() {
@@ -70,15 +70,15 @@ public class PluginPage extends SubSectionView {
                     LOG.debug(String.format("PluginPage.handleEvent(%s)", event.getType()));
                     switch (event.getType()) {
                         case LOADED:
-                            panel.removeAll();
+                            view.removeAll();
                             MedSavantPlugin plug = event.getPlugin();
                             if (plug instanceof MedSavantSectionPlugin) {
                                 plugin = (MedSavantSectionPlugin)plug;
-                                plugin.init(panel);
+                                plugin.init(view);
                             }
                             break;
                         case ERROR:
-                            ((JLabel)panel.getComponent(0)).setText(controller.getPluginStatus(event.getID()));
+                            ((JLabel)view.getComponent(0)).setText(controller.getPluginStatus(event.getID()));
                             break;
                     }
                     controller.removeListener(this);
@@ -88,8 +88,8 @@ public class PluginPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        return panel;
+    public JPanel getView() {
+        return view;
     }
 
     @Override

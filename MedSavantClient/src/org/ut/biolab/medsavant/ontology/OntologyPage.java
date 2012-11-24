@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.ontology;
 
 import javax.swing.JPanel;
@@ -32,25 +31,25 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  */
 public class OntologyPage extends SubSectionView {
 
-    int importID = 0;
-    SplitScreenView view;
+    private SplitScreenView view;
 
     public OntologyPage(SectionView parent) {
         super(parent, "Ontologies");
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        view = new SplitScreenView(
-                new SimpleDetailedListModel("Ontology") {
-                    @Override
-                    public Ontology[] getData() throws Exception {
-                        return MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId);
-                    }
-                },
-                new OntologyDetailedView(pageName),
-                new OntologyDetailedListEditor());
-
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel("Ontology") {
+                        @Override
+                        public Ontology[] getData() throws Exception {
+                            return MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId);
+                        }
+                    },
+                    new OntologyDetailedView(pageName),
+                    new OntologyDetailedListEditor());
+        }
         return view;
     }
 }

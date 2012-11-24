@@ -37,7 +37,7 @@ import javax.swing.JRadioButton;
 public class SubSectionViewCollection extends SubSectionView {
 
     Map<String, SubSectionView> subsectionMap;
-    private JPanel panel;
+    private JPanel view;
     private List<Component> menuComponents = new ArrayList<Component>();
     private final ButtonGroup buttonGroup;
     private JPanel contentPanel;
@@ -171,14 +171,13 @@ public class SubSectionViewCollection extends SubSectionView {
         }
         currentView = subsectionMap.get(pageName);
         contentPanel.removeAll();
-        contentPanel.add(currentView.getView(false),BorderLayout.CENTER);
-        contentPanel.updateUI();
+        contentPanel.add(currentView.getView(), BorderLayout.CENTER);
         currentView.viewDidLoad();
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        return panel;
+    public JPanel getView() {
+        return view;
     }
 
     @Override
@@ -200,8 +199,8 @@ public class SubSectionViewCollection extends SubSectionView {
     }
 
     private void initView() {
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        view = new JPanel();
+        view.setLayout(new BorderLayout());
 
         //menuPanel = new JPanel();//ViewUtil.getQuaternaryBannerPanel();
         //menuPanel.setBorder(ViewUtil.getSmallBorder());
@@ -217,6 +216,6 @@ public class SubSectionViewCollection extends SubSectionView {
         //contentPanel.setBackground(Color.red);
         contentPanel.setLayout(new BorderLayout());
 
-        panel.add(contentPanel, BorderLayout.CENTER);
+        view.add(contentPanel, BorderLayout.CENTER);
     }
 }

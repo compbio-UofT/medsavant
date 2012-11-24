@@ -56,25 +56,27 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class AnnotationsPage extends SubSectionView {
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
 
     public AnnotationsPage(SectionView parent) {
         super(parent, "Annotations");
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel<Annotation>("Program") {
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<Annotation>("Program") {
 
-                    @Override
-                    public Annotation[] getData() throws Exception {
-                        return ExternalAnnotationController.getInstance().getExternalAnnotations();
-                    }
-                },
-                new ExternalAnnotationDetailedView(),
-                new ExternalAnnotationDetailedListEditor());
-        return panel;
+                        @Override
+                        public Annotation[] getData() throws Exception {
+                            return ExternalAnnotationController.getInstance().getExternalAnnotations();
+                        }
+                    },
+                    new ExternalAnnotationDetailedView(),
+                    new ExternalAnnotationDetailedListEditor());
+        }
+        return view;
     }
 
     @Override
@@ -220,14 +222,14 @@ public class AnnotationsPage extends SubSectionView {
     }
 
     public void referenceAdded(String name) {
-        panel.refresh();
+        view.refresh();
     }
 
     public void referenceRemoved(String name) {
-        panel.refresh();
+        view.refresh();
     }
 
     public void referenceChanged(String name) {
-        panel.refresh();
+        view.refresh();
     }
 }

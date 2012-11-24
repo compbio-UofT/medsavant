@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.list;
 
 import java.awt.*;
@@ -30,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
@@ -45,19 +45,15 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
 public class MasterView extends JPanel {
 
     private static final Log LOG = LogFactory.getLog(MasterView.class);
-
     //TODO: handle limits better!
     static final int LIMIT = 10000;
-
     private static final String CARD_WAIT = "wait";
     private static final String CARD_SHOW = "show";
     private static final String CARD_ERROR = "error";
-
     private final String pageName;
     private final DetailedListModel detailedModel;
     private final DetailedView detailedView;
     private final DetailedListEditor detailedEditor;
-
     Object[][] data;
     private final JPanel showCard;
     private final JLabel errorMessage;
@@ -146,20 +142,20 @@ public class MasterView extends JPanel {
         }
 
         /*
-        if (detailedEditor.doesImplementExporting()) {
+         if (detailedEditor.doesImplementExporting()) {
 
-            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
-            butt.setToolTipText("Export");
-            butt.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    detailedEditor.exportItems();
-                    refreshList();
-                }
-            });
-            buttonPanel.add(butt, gbc);
-        }
-        */
+         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
+         butt.setToolTipText("Export");
+         butt.addMouseListener(new MouseAdapter() {
+         @Override
+         public void mouseClicked(MouseEvent e) {
+         detailedEditor.exportItems();
+         refreshList();
+         }
+         });
+         buttonPanel.add(butt, gbc);
+         }
+         */
 
         if (detailedEditor.doesImplementDeleting()) {
             JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
@@ -199,16 +195,16 @@ public class MasterView extends JPanel {
     }
 
     private void showWaitCard() {
-        ((CardLayout)getLayout()).show(this, CARD_WAIT);
+        ((CardLayout) getLayout()).show(this, CARD_WAIT);
     }
 
     private void showShowCard() {
-        ((CardLayout)getLayout()).show(this, CARD_SHOW);
+        ((CardLayout) getLayout()).show(this, CARD_SHOW);
     }
 
     private void showErrorCard(String message) {
         errorMessage.setText(String.format("<html><font color=\"#ff0000\">An error occurred:<br><font size=\"-2\">%s</font></font></html>", message));
-        ((CardLayout)getLayout()).show(this, CARD_ERROR);
+        ((CardLayout) getLayout()).show(this, CARD_ERROR);
     }
 
     private synchronized void setList(Object[][] list) {
@@ -232,7 +228,12 @@ public class MasterView extends JPanel {
         new MedSavantWorker<Object[][]>(pageName) {
             @Override
             protected Object[][] doInBackground() throws Exception {
-                return detailedModel.getList(LIMIT);
+                try {
+                    Object[][] result = detailedModel.getList(LIMIT);
+                    return result;
+                } catch (Throwable t) {
+                    return null;
+                }
             }
 
             @Override
@@ -242,6 +243,11 @@ public class MasterView extends JPanel {
             @Override
             protected void showSuccess(Object[][] result) {
                 setList(result);
+            }
+
+            @Override
+            protected ProgressStatus checkProgress() {
+                return new ProgressStatus("Working", 0.5);
             }
         }.execute();
     }
@@ -258,7 +264,6 @@ public class MasterView extends JPanel {
         int[] columnVisibility = detailedModel.getHiddenColumns();
 
         stp = new ListViewTablePanel(data, columnNames, columnClasses, columnVisibility) {
-
             @Override
             public void forceRefreshData() {
                 refreshList();
@@ -269,7 +274,6 @@ public class MasterView extends JPanel {
 
         if (detailedView != null) {
             stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
 

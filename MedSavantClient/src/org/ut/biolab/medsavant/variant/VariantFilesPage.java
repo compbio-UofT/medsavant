@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class VariantFilesPage extends SubSectionView {
     static final Log LOG = LogFactory.getLog(VariantFilesPage.class);
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
     private boolean updateRequired = false;
     private boolean showPeekOnUnload = false;
 
@@ -63,11 +63,19 @@ public class VariantFilesPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null || updateRequired) {
-            setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<SimpleVariantFile>("Variant File") {
+                        @Override
+                        public SimpleVariantFile[] getData() throws Exception {
+                            return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
+                        }
+                    },
+                    new VariantFilesDetailedView(pageName),
+                    new VariantFilesDetailedListEditor());
         }
-        return panel;
+        return view;
     }
 
     @Override
@@ -83,19 +91,7 @@ public class VariantFilesPage extends SubSectionView {
         super.viewDidUnload();
     }
 
-    public void setPanel() {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel<SimpleVariantFile>("Variant File") {
-                    @Override
-                    public SimpleVariantFile[] getData() throws Exception {
-                        return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
-                    }
-                },
-                new VariantFilesDetailedView(pageName),
-                new VariantFilesDetailedListEditor());
-    }
-
     public void update() {
-        panel.refresh();
+        view.refresh();
     }
 }

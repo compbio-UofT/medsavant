@@ -41,17 +41,18 @@ public class CohortsPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        view = new SplitScreenView(
-                new SimpleDetailedListModel<Cohort>("Cohort") {
-                    @Override
-                    public Cohort[] getData() throws Exception {
-                        return MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-                    }
-                },
-                new CohortDetailedView(pageName),
-                new CohortDetailedListEditor());
-
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<Cohort>("Cohort") {
+                        @Override
+                        public Cohort[] getData() throws Exception {
+                            return MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                        }
+                    },
+                    new CohortDetailedView(pageName),
+                    new CohortDetailedListEditor());
+        }
         return view;
     }
 }

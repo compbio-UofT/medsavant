@@ -38,9 +38,8 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
 public class ReferenceGenomePage extends SubSectionView {
 
     private ReferenceController controller;
-    private boolean updateRequired = false;
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
 
     public ReferenceGenomePage(SectionView parent) {
         super(parent, "Reference Genomes");
@@ -48,35 +47,31 @@ public class ReferenceGenomePage extends SubSectionView {
         controller.addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
-                if (panel != null) {
-                    panel.refresh();
+                if (view != null) {
+                    view.refresh();
                 }
             }
         });
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null || updateRequired) {
-            setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<Reference>("Reference") {
+                        @Override
+                        public Reference[] getData() throws Exception {
+                            return controller.getReferences();
+                        }
+                    },
+                    new ReferenceDetailedView(),
+                    new ReferenceDetailedListEditor());
         }
-        return panel;
-    }
-
-    public void setPanel() {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel<Reference>("Reference") {
-                    @Override
-                    public Reference[] getData() throws Exception {
-                        return controller.getReferences();
-                    }
-                },
-                new ReferenceDetailedView(),
-                new ReferenceDetailedListEditor());
+        return view;
     }
 
     public void update(){
-        panel.refresh();
+        view.refresh();
     }
 
 

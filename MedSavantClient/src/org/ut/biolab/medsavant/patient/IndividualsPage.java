@@ -36,14 +36,16 @@ public class IndividualsPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        try {
-            view = new SplitScreenView(
-                    new IndividualListModel(),
-                    new IndividualDetailedView(pageName),
-                    new IndividualDetailEditor());
-        } catch (Exception ex) {
-            ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);
+    public JPanel getView() {
+        if (view == null) {
+            try {
+                view = new SplitScreenView(
+                        new IndividualListModel(),
+                        new IndividualDetailedView(pageName),
+                        new IndividualDetailEditor());
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);
+            }
         }
         return view;
     }

@@ -58,38 +58,34 @@ public class ProjectManagementPage extends SubSectionView {
 
     private ProjectController controller = ProjectController.getInstance();
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
 
     public ProjectManagementPage(SectionView parent) {
         super(parent, "Projects");
         controller.addListener(new Listener<ProjectEvent>() {
             @Override
             public void handleEvent(ProjectEvent event) {
-                if (panel != null) {
-                    panel.refresh();
+                if (view != null) {
+                    view.refresh();
                 }
             }
         });
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null) {
-            setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                        new SimpleDetailedListModel<String>("Projects") {
+                            @Override
+                            public String[] getData() throws Exception {
+                                return ProjectController.getInstance().getProjectNames();
+                            }
+                        },
+                        new ProjectsDetailedView(),
+                        new ProjectDetailedListEditor());
         }
-        return panel;
-    }
-
-    public void setPanel() {
-        panel = new SplitScreenView(
-                    new SimpleDetailedListModel<String>("Projects") {
-                        @Override
-                        public String[] getData() throws Exception {
-                            return ProjectController.getInstance().getProjectNames();
-                        }
-                    },
-                    new ProjectsDetailedView(),
-                    new ProjectDetailedListEditor());
+        return view;
     }
 
     @Override

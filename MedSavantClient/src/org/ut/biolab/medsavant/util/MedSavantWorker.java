@@ -35,19 +35,19 @@ import org.ut.biolab.medsavant.model.ProgressStatus;
  */
 public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     private static final Log LOG = LogFactory.getLog(MedSavantWorker.class);
-    
+
     private String pageName;
     private Timer progressTimer;
-    
+
     /**
-     * 
+     *
      * @param pageName which view created this worker
-     */   
+     */
     public MedSavantWorker(String pageName) {
         this.pageName = pageName;
         ThreadController.getInstance().addWorker(pageName, this);
     }
-    
+
     @Override
     public void done() {
         if (progressTimer != null) {
@@ -56,7 +56,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
         showProgress(1.0);
         try {
             if (!isCancelled()) {
-                showSuccess(get()); 
+                showSuccess(get());
             } else {
                 // Send the server one last checkProgress call so that server knows that we've cancelled.
                 try {
@@ -75,20 +75,20 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             ThreadController.getInstance().removeWorker(pageName, this);
         }
     }
-    
+
 
     /**
      * Show progress during a lengthy operation.  As a special case, pass 1.0 to remove the progress display.
      * @param fract the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate indeterminate progress-bar).
      */
     protected abstract void showProgress(double fract);
-    
+
     /**
      * Called when the worker has successfully completed its task.
      * @param result the value returned by <code>doInBackground()</code>.
      */
     protected abstract void showSuccess(T result);
-    
+
     /**
      * Called when the task has thrown an exception.  Default behaviour is to log the exception
      * and put up a dialog box.
@@ -98,7 +98,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             ClientMiscUtils.reportError("Exception thrown by background task: %s", t);
         }
     }
-    
+
     /**
      * Base-class does no progress checking.
      */

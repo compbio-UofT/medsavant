@@ -34,11 +34,11 @@ public abstract class SubSectionView {
     private boolean updateRequired = true;
 
     public void setUpdateRequired(boolean required){
-        this.updateRequired = required;
+        updateRequired = required;
     }
 
     public boolean isUpdateRequired(){
-        return this.updateRequired;
+        return updateRequired;
     }
 
     public SubSectionView(SectionView parent, String page) {
@@ -46,7 +46,7 @@ public abstract class SubSectionView {
         pageName = page;
     }
 
-    public abstract JPanel getView(boolean update);
+    public abstract JPanel getView();
 
     public Component[] getSubSectionMenuComponents() { return null; }
 

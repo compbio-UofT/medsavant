@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class UserManagementPage extends SubSectionView implements Listener<UserEvent> {
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
 
     public UserManagementPage(SectionView parent) {
         super(parent, "Users");
@@ -54,23 +54,19 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null) {
-            setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<String>("User") {
+                        @Override
+                        public String[] getData() throws Exception {
+                            return UserController.getInstance().getUserNames();
+                        }
+                    },
+                    new UserDetailedView(),
+                    new UserDetailedListEditor());
         }
-        return panel;
-    }
-
-    public void setPanel() {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel<String>("User") {
-                    @Override
-                    public String[] getData() throws Exception {
-                        return UserController.getInstance().getUserNames();
-                    }
-                },
-                new UserDetailedView(),
-                new UserDetailedListEditor());
+        return view;
     }
 
     @Override
@@ -80,7 +76,7 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
 
     @Override
     public void handleEvent(UserEvent evt) {
-        panel.refresh();
+        view.refresh();
     }
 
     private class UserDetailedListEditor extends DetailedListEditor {

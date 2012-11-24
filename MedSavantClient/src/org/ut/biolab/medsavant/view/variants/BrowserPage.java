@@ -21,8 +21,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -47,14 +45,10 @@ import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
 import savant.controller.FrameController;
 import savant.controller.GenomeController;
-import savant.controller.LocationController;
 import savant.controller.TrackController;
-import savant.exception.SavantTrackCreationCancelledException;
 import savant.settings.PersistentSettings;
 import savant.util.ColourKey;
 import savant.view.swing.Savant;
-import savant.view.tracks.Track;
-import savant.view.tracks.TrackFactory;
 import savant.view.variation.VariationController;
 
 /**
@@ -63,7 +57,7 @@ import savant.view.variation.VariationController;
  */
 public class BrowserPage extends SubSectionView {
 
-    private JPanel panel;
+    private JPanel view;
     private JPanel browserPanel;
     private GenomeContainer genomeContainer;
     private PeekingPanel genomeView;
@@ -153,56 +147,51 @@ public class BrowserPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
+    public JPanel getView() {
         try {
-            if (panel == null || update) {
-                ThreadController.getInstance().cancelWorkers(pageName);
-                setPanel();
+            if (view == null) {
+                view = new JPanel();
+                view.setLayout(new BorderLayout());
+
+                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
+                genomeContainer = new GenomeContainer(pageName, chroms);
+
+                genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
+                genomeView.setToggleBarVisible(false);
+
+                view.add(genomeView, BorderLayout.NORTH);
+
+                browserPanel = new JPanel();
+                browserPanel.setLayout(new BorderLayout());
+
+                Savant savantInstance = Savant.getInstance(true, false);
+
+                PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
+                PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
+                PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
+
+                savantInstance.setTrackBackground(new Color(210, 210, 210));
+                savantInstance.setBookmarksVisibile(false);
+                savantInstance.setVariantsVisibile(false);
+
+                GenomeController.getInstance().setGenome(null);
+                addTrackFromURLString("http://genomesavant.com/savant/data/hg19/hg19.fa.savant", DataFormat.SEQUENCE);
+
+                browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
+
+                view.add(browserPanel, BorderLayout.CENTER);
+
+                variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, VariationController.getInstance().getModule(), false, 325);
+                variationPanel.setToggleBarVisible(false);
+
+                view.add(variationPanel, BorderLayout.EAST);
             } else {
                 genomeContainer.updateIfRequired();
             }
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error generating genome view: %s", ex);
         }
-        return panel;
-    }
-
-    private void setPanel() throws SQLException, RemoteException {
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
-        genomeContainer = new GenomeContainer(pageName, chroms);
-
-        genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
-        genomeView.setToggleBarVisible(false);
-
-        panel.add(genomeView, BorderLayout.NORTH);
-
-        browserPanel = new JPanel();
-        browserPanel.setLayout(new BorderLayout());
-
-        Savant savantInstance = Savant.getInstance(true, false);
-
-        PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
-        PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
-        PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
-
-        savantInstance.setTrackBackground(new Color(210, 210, 210));
-        savantInstance.setBookmarksVisibile(false);
-        savantInstance.setVariantsVisibile(false);
-
-        GenomeController.getInstance().setGenome(null);
-        addTrackFromURLString("http://genomesavant.com/savant/data/hg19/hg19.fa.savant", DataFormat.SEQUENCE);
-
-        browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
-
-        panel.add(browserPanel, BorderLayout.CENTER);
-
-        variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, VariationController.getInstance().getModule(), false, 325);
-        variationPanel.setToggleBarVisible(false);
-
-        panel.add(variationPanel, BorderLayout.EAST);
+        return view;
     }
 
     public static void addTrackFromURLString(String urlString, DataFormat format) {

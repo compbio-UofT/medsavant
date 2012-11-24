@@ -36,44 +36,44 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Nirvana Nursimulu
  */
 public class AggregatesStatsPanel extends JPanel {
-    
+
     private JComboBox generatorCombo;
     private JPanel toolBarPanel;
     private final String pageName;
-    
+
     public AggregatesStatsPanel(String pageName) {
         this.pageName = pageName;
         setLayout(new BorderLayout());
         initToolBar();
         updateRegionStats();
     }
-    
+
     private void updateRegionStats() {
-                  
-        ThreadController.getInstance().cancelWorkers(pageName);            
-      
+
+        ThreadController.getInstance().cancelWorkers(pageName);
+
         removeAll();
         add(toolBarPanel, BorderLayout.NORTH);
 
         AggregatePanelGenerator gen = (AggregatePanelGenerator)generatorCombo.getSelectedItem();
         AggregatePanel p = gen.getPanel();
         p.recalculate();
-        
+
         add(p);
         validate();
-    }    
-    
+    }
+
     private void initToolBar() {
-        
+
         toolBarPanel = ViewUtil.getSubBannerPanel("Aggregate variants by");
         //toolBarPanel.setLayout(new BoxLayout(toolBarPanel, BoxLayout.X_AXIS));
 
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         toolBarPanel.add(ViewUtil.clear(bar));
-        
+
         toolBarPanel.add(Box.createHorizontalGlue());
-        
+
         generatorCombo = new JComboBox();
         generatorCombo.addItem(new AggregatePanelGenerator() {
             @Override
@@ -104,23 +104,21 @@ public class AggregatesStatsPanel extends JPanel {
             public AggregatePanel generatePanel() { return new RegionListAggregatePanel(pageName); }
         });
         generatorCombo.setSelectedIndex(0);
-        
+
         generatorCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateRegionStats();
             }
         });
-        
+
         bar.add(generatorCombo);
-        add(toolBarPanel, BorderLayout.NORTH);   
+        add(toolBarPanel, BorderLayout.NORTH);
     }
-    
-    public void update(boolean forceUpdate) {
-        if (forceUpdate) {
-            for (int i = 0; i < generatorCombo.getItemCount(); i++) {
-                ((AggregatePanelGenerator)generatorCombo.getItemAt(i)).setUpdateRequired(true);
-            }
+
+    public void update() {
+        for (int i = 0; i < generatorCombo.getItemCount(); i++) {
+            ((AggregatePanelGenerator)generatorCombo.getItemAt(i)).setUpdateRequired(true);
         }
         ((AggregatePanelGenerator)generatorCombo.getSelectedItem()).updateIfRequired();
     }

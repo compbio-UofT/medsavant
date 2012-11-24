@@ -59,7 +59,7 @@ public class ServerLogPage extends SubSectionView {
     private boolean annotationTableRefreshed = false;
     private String currentCard;
 
-    private JPanel panel;
+    private JPanel view;
     private JPanel menuPanel;
     private JPanel listPanel;
     private SearchableTablePanel clientTable;
@@ -72,80 +72,75 @@ public class ServerLogPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (panel == null) {
-            setPanel();
+    public JPanel getView() {
+        if (view == null) {
+            view = new JPanel();
+            view.setLayout(new BorderLayout());
+
+            menuPanel = new JPanel();
+            ViewUtil.applyHorizontalBoxLayout(menuPanel);
+
+            ButtonGroup bg = new ButtonGroup();
+
+            JRadioButton b1 = new JRadioButton("Client");
+            //JRadioButton b2 = new JRadioButton("Server");
+            JRadioButton b3 = new JRadioButton("Annotations");
+
+            bg.add(b1);
+            //bg.add(b2);
+            bg.add(b3);
+
+            listPanel = new JPanel();
+            listPanel.setLayout(new CardLayout());
+
+            listPanel.add(getWaitPanel(), CARDNAME_WAIT);
+            listPanel.add(getClientCard(), CARDNAME_CLIENT);
+            //listPanel.add(getServerCard(), CARDNAME_SERVER);
+            listPanel.add(getAnnotationCard(), CARDNAME_ANNOTATION);
+
+            view.add(menuPanel, BorderLayout.NORTH);
+            view.add(listPanel, BorderLayout.CENTER);
+
+            b1.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    changeToCard(CARDNAME_CLIENT);
+
+                }
+            });
+            /*b2.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+                    changeToCard(CARDNAME_SERVER);
+                }
+            });*/
+            b3.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    changeToCard(CARDNAME_ANNOTATION);
+                }
+            });
+
+
+            b3.setSelected(true);
+            this.changeToCard(CARDNAME_ANNOTATION);
+
+            JButton refreshButton = new JButton("Refresh");
+            refreshButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    refreshCurrentCard();
+                }
+            });
+
+            menuPanel.add(Box.createHorizontalGlue());
+            menuPanel.add(b3);
+            menuPanel.add(b1);
+            //menuPanel.add(b2);
+            menuPanel.add(refreshButton);
+            menuPanel.add(Box.createHorizontalGlue());
         }
-        return panel;
-    }
-
-    public void setPanel() {
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        menuPanel = new JPanel();
-        ViewUtil.applyHorizontalBoxLayout(menuPanel);
-
-        ButtonGroup bg = new ButtonGroup();
-
-        JRadioButton b1 = new JRadioButton("Client");
-        //JRadioButton b2 = new JRadioButton("Server");
-        JRadioButton b3 = new JRadioButton("Annotations");
-
-        bg.add(b1);
-        //bg.add(b2);
-        bg.add(b3);
-
-        listPanel = new JPanel();
-        listPanel.setLayout(new CardLayout());
-
-        listPanel.add(getWaitPanel(), CARDNAME_WAIT);
-        listPanel.add(getClientCard(), CARDNAME_CLIENT);
-        //listPanel.add(getServerCard(), CARDNAME_SERVER);
-        listPanel.add(getAnnotationCard(), CARDNAME_ANNOTATION);
-
-        panel.add(menuPanel, BorderLayout.NORTH);
-        panel.add(listPanel, BorderLayout.CENTER);
-
-        b1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                changeToCard(CARDNAME_CLIENT);
-
-            }
-        });
-        /*b2.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                changeToCard(CARDNAME_SERVER);
-            }
-        });*/
-        b3.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                changeToCard(CARDNAME_ANNOTATION);
-            }
-        });
-
-
-        b3.setSelected(true);
-        this.changeToCard(CARDNAME_ANNOTATION);
-
-        JButton refreshButton = new JButton("Refresh");
-        refreshButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                refreshCurrentCard();
-            }
-        });
-
-        menuPanel.add(Box.createHorizontalGlue());
-        menuPanel.add(b3);
-        menuPanel.add(b1);
-        //menuPanel.add(b2);
-        menuPanel.add(refreshButton);
-        menuPanel.add(Box.createHorizontalGlue());
-
+        return view;
     }
 
     private void refreshCurrentCard() {

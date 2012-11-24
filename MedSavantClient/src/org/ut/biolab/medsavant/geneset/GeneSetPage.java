@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.serverapi.GeneSetManagerAdapter;
 import org.ut.biolab.medsavant.util.GeneFetcher;
@@ -40,7 +39,6 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class GeneSetPage extends SubSectionView {
 
     private SplitScreenView view;
-    private boolean updateRequired = false;
     private final GeneSetManagerAdapter manager;
 
     public GeneSetPage(SectionView parent) {
@@ -49,8 +47,8 @@ public class GeneSetPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-        if (view == null || updateRequired) {
+    public JPanel getView() {
+        if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<GeneSet>("Gene Sets") {
                         @Override

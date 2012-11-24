@@ -48,7 +48,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class GeneticsTablePage extends SubSectionView {
 
-    private JPanel panel;
+    private JPanel view;
     private TablePanel tablePanel;
     private Component[] settingComponents;
     private PeekingPanel detailView;
@@ -81,11 +81,28 @@ public class GeneticsTablePage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
+    public JPanel getView() {
         try {
-            if (panel == null || update) {
-                ThreadController.getInstance().cancelWorkers(pageName);
-                setPanel();
+            if (view == null) {
+                view = new JPanel();
+                view.setLayout(new BorderLayout());
+
+                final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(); //StaticInspectorPanel.getInstance();
+
+                TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
+                    @Override
+                    public void handleEvent(final VariantRecord r) {
+                        inspectorPanel.setVariantRecord(r);
+                    }
+                });
+
+                detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
+                detailView.setToggleBarVisible(false);
+
+                view.add(detailView, BorderLayout.EAST);
+
+                tablePanel = new TablePanel(pageName);
+                view.add(tablePanel, BorderLayout.CENTER);
             }
 
             /*else {
@@ -94,36 +111,12 @@ public class GeneticsTablePage extends SubSectionView {
              }
              */
 
-            return panel;
+            return view;
 
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error generating genome view: %s", ex);
         }
-        return panel;
-    }
-
-    private void setPanel() throws SQLException, RemoteException {
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
-
-        final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(); //StaticInspectorPanel.getInstance();
-
-        TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
-            @Override
-            public void handleEvent(final VariantRecord r) {
-                inspectorPanel.setVariantRecord(r);
-            }
-        });
-
-        detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
-        detailView.setToggleBarVisible(false);
-
-        panel.add(detailView, BorderLayout.EAST);
-
-        tablePanel = new TablePanel(pageName);
-        panel.add(tablePanel, BorderLayout.CENTER);
+        return view;
     }
 
     @Override

@@ -30,9 +30,7 @@ public class FamilyMattersPage extends SubSectionView {
     }
 
     @Override
-    public JPanel getView(boolean update) {
-
-        update = update || view == null;
+    public JPanel getView() {
 
         if (view == null) {
             view = new JPanel();
@@ -61,17 +59,8 @@ public class FamilyMattersPage extends SubSectionView {
             view.add(p, BorderLayout.CENTER);
         }
 
-
-        if (update) {
-            updateView();
-        }
-
         return view;
     }
-
-    private void updateView() {
-    }
-
 
     @Override
     public void viewDidLoad() {

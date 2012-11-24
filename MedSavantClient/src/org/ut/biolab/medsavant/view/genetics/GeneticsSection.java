@@ -77,7 +77,7 @@ public class GeneticsSection extends SectionView {
     public JPanel[] getPersistentPanels() {
         if (persistencePanels == null) {
             persistencePanels = new JPanel[] {
-                new GeneticsFilterPage(this).getView(true)
+                new GeneticsFilterPage(this).getView()
             };
         }
         return persistencePanels;
