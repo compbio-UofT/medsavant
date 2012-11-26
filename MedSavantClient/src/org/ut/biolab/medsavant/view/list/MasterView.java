@@ -141,21 +141,19 @@ public class MasterView extends JPanel {
             buttonPanel.add(butt, gbc);
         }
 
-        /*
-         if (detailedEditor.doesImplementExporting()) {
+        if (detailedEditor.doesImplementExporting()) {
 
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
-         butt.setToolTipText("Export");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mouseClicked(MouseEvent e) {
-         detailedEditor.exportItems();
-         refreshList();
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-         */
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
+            butt.setToolTipText("Export");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.exportItems();
+                    refreshList();
+                }
+            });
+            buttonPanel.add(butt, gbc);
+        }
 
         if (detailedEditor.doesImplementDeleting()) {
             JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));

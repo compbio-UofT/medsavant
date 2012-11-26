@@ -20,12 +20,24 @@ import org.ut.biolab.medsavant.aggregate.AggregatePage;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.filter.FilterEvent;
+import org.ut.biolab.medsavant.login.LoginController;
 
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.variant.ExportVCFWizard;
@@ -33,6 +45,7 @@ import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionViewCollection;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.variants.BrowserPage;
 
 
@@ -102,6 +115,9 @@ public class GeneticsSection extends SectionView {
     @Override
     public final Component[] getSectionMenuComponents() {
         isInitialized = true;
-        return new Component[] { createExportVCFButton() };
+        return new Component[] {
+            createExportVCFButton()
+        };
     }
+
 }

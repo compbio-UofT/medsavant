@@ -540,7 +540,9 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                         if (!modify) {
                             createNewProject();
                         } else {
+                            LOG.info("Requesting modification from server");
                             updateID = modifyProject(true,true,true);
+                            LOG.info("Modification complete");
                         }
                         return null;
                     }
@@ -548,6 +550,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     @Override
                     protected void showSuccess(Void result) {
                         if (modify) {
+                            LOG.info("Modification sucessful, allowing user to finish wizard");
                             ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been modified.");
                             super.showSuccess(result);
                         } else {
@@ -750,6 +753,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         }
 
+        // TODO: this looks like a hack, what is this used to do?
         ProjectController.getInstance().fireEvent(new ProjectEvent(ProjectEvent.Type.REMOVED, projectName));
         ProjectController.getInstance().fireEvent(new ProjectEvent(ProjectEvent.Type.ADDED, projectName));
 
@@ -869,7 +873,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     public boolean isModified() {
         return isModified;
     }
-    
+
     private class RemovalEnabler implements ListSelectionListener {
         private final int lockedRows;
         private final JButton button;

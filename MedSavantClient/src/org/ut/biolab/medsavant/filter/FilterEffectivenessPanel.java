@@ -26,9 +26,12 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -66,8 +69,8 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        this.setPreferredSize(new Dimension(250, 60));
-        this.setMaximumSize(new Dimension(250, 60));
+        this.setPreferredSize(new Dimension(250, 80));
+        this.setMaximumSize(new Dimension(250, 80));
 
         setLayout(new GridBagLayout());
 
@@ -86,6 +89,39 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
         JPanel infoPanel = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoPanel);
+
+        final JLabel a = new JLabel("");
+        a.setForeground(foregroundColor);
+        ViewUtil.makeSmall(a);
+        infoPanel.add(ViewUtil.centerHorizontally(a));
+
+        Listener<FilterEvent> fe = new Listener<FilterEvent>() {
+
+            @Override
+            public void handleEvent(FilterEvent event) {
+                try {
+
+                    if (
+                            MedSavantClient.VariantManager.willApproximateCountsForConditions(
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectID(),
+                                ReferenceController.getInstance().getCurrentReferenceID(),
+                                FilterController.getInstance().getAllFilterConditions())
+                       ) {
+                        a.setText("approximately");
+                    } else {
+                        a.setText("");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+        };
+
+        fe.handleEvent(null);
+        FilterController.getInstance().addListener(fe);
+
         infoPanel.add(ViewUtil.centerHorizontally(labelVariantsRemaining));
 
         JLabel l = new JLabel("of all variants pass search conditions");
