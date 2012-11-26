@@ -62,7 +62,6 @@ import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VCFIterator;
 
-
 /**
  *
  * @author Andrew
@@ -71,9 +70,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
-    private static final int BIN_TOTAL_THRESHOLD = 10000;
+    private static final int BIN_TOTAL_THRESHOLD = 1000000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
-
     // Stages within the upload process.
     private static final double LOG_FRACTION = 0.05;
     private static final double DUMP_FRACTION = 0.1;
@@ -85,9 +83,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final double CREATING_TABLES_FRACTION = 0.05;
     private static final double SUBSET_FRACTION = 0.05;
     private static final double LOAD_TABLE_FRACTION = 0.15;             // Happens twice
-
-
-
     private static VariantManager instance;
 
     private VariantManager() throws RemoteException {
@@ -177,8 +172,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     /**
-     * Perform updates to custom vcf fields and other annotations. Will result in the creation of a new, unpublished, up-to-date
-     * variant table.  This method is used only by ProjectWizard.modifyProject().
+     * Perform updates to custom vcf fields and other annotations. Will result
+     * in the creation of a new, unpublished, up-to-date variant table. This
+     * method is used only by ProjectWizard.modifyProject().
      */
     @Override
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception {
@@ -233,7 +229,21 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             makeProgress(sessID, "Annotating...", fract);
             String outputFilename = vcfAnnotatedVariants + "_annotated";
             LOG.info("File containing annotated variants, sorted by position: " + outputFilename);
-            VariantManagerUtils.annotateTDF(sessID, vcfAnnotatedVariants, outputFilename, annotIDs);
+
+            LOG.info("Annotating variants in " + vcfAnnotatedVariants + ", destination " + outputFilename);
+
+            long startTime = System.currentTimeMillis();
+
+            Annotation[] annotations = getAnnotationsFromIDs(annotIDs, sessID);
+            BatchVariantAnnotator bva = new BatchVariantAnnotator(new File(vcfAnnotatedVariants), new File(outputFilename), annotations, sessID);
+            bva.performBatchAnnotationInParallel();
+
+            long endTime = System.currentTimeMillis();
+
+            long duration = (endTime - startTime) / 1000 / 60;
+
+            LOG.info("Completed annotation, taking " + duration + " minutes");
+
             fract += ANNOTATING_FRACTION;
 
             //split
@@ -300,6 +310,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateId, Status.PENDING);
             makeProgress(sessID, "Variants updated.", 1.0);
 
+            LOG.info("Done");
+
             return updateId;
 
         } catch (Exception e) {
@@ -331,9 +343,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef);
     }
 
-
     /**
-     * Use when variant files are already on the server. Performs variant import of an entire directory.
+     * Use when variant files are already on the server. Performs variant import
+     * of an entire directory.
      */
     @Override
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
@@ -361,9 +373,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef);
     }
 
-
     /**
-     * Start the upload process for new vcf files. Will result in the creation of a new, unpublished, up-to-date variant table.
+     * Start the upload process for new vcf files. Will result in the creation
+     * of a new, unpublished, up-to-date variant table.
+     *
      * @param sessID uniquely identifies the client
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
@@ -463,7 +476,22 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     filesUsed.add(annotatedFilename);
                     LOG.info("File containing annotated variants, sorted by position: " + annotatedFilename);
                     makeProgress(sessID, "Annotating...", fract);
-                    VariantManagerUtils.annotateTDF(sessID, currentFilename, annotatedFilename, annotIDs);
+
+                    LOG.info("Annotating variants in " + currentFilename + ", destination " + annotatedFilename);
+
+                    long startTime = System.currentTimeMillis();
+
+                    Annotation[] annotations = getAnnotationsFromIDs(annotIDs, sessID);
+                    BatchVariantAnnotator bva = new BatchVariantAnnotator(new File(currentFilename), new File(annotatedFilename), annotations, sessID);
+                    bva.performBatchAnnotationInParallel();
+
+                    long endTime = System.currentTimeMillis();
+
+                    long duration = (endTime - startTime) / 1000 / 60;
+
+                    LOG.info("Completed annotation, taking " + duration + " minutes");
+
+
                     VariantManagerUtils.logFileSize(annotatedFilename);
                     currentFilename = annotatedFilename;
                     fract += ANNOTATING_FRACTION / vcfFiles.length;
@@ -697,7 +725,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
         if (orderByCols != null) {
-            query.addCustomOrderings((Object[])orderByCols);
+            query.addCustomOrderings((Object[]) orderByCols);
         }
 
         String queryString = query.toString();
@@ -800,6 +828,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Condition[] finalCondition = new Condition[]{ComboCondition.and(dnaCondition, ComboCondition.or(c1))};
 
         return getFilteredVariantCount(sessID, projID, refID, new Condition[][]{finalCondition});
+    }
+
+    @Override
+    public boolean willApproximateCountsForConditions(String sid, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
+        int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
+        return total >= BIN_TOTAL_THRESHOLD;
     }
 
     @Override
@@ -1093,12 +1127,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return results;
     }
 
-    private static String extractFileName (String fullName) {
-      Pattern p = Pattern.compile(".*?([^\\\\/]+)$");
-      Matcher m = p.matcher(fullName);
+    private static String extractFileName(String fullName) {
+        Pattern p = Pattern.compile(".*?([^\\\\/]+)$");
+        Matcher m = p.matcher(fullName);
 
-      return (m.find()) ? m.group(1) : "";
-   }
+        return (m.find()) ? m.group(1) : "";
+    }
 
     public void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException {
 
@@ -1335,8 +1369,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //add tags
             for (int i = 0; i < variantTags.length && !Thread.currentThread().isInterrupted(); i++) {
                 InsertQuery query = variantTagTable.insert(VariantTagColumns.UPLOAD_ID, uploadID,
-                                                        VariantTagColumns.TAGKEY, variantTags[i][0],
-                                                        VariantTagColumns.TAGVALUE, variantTags[i][1]);
+                        VariantTagColumns.TAGKEY, variantTags[i][0],
+                        VariantTagColumns.TAGVALUE, variantTags[i][1]);
                 conn.createStatement().executeUpdate(query.toString());
             }
             if (Thread.currentThread().isInterrupted()) {
@@ -1524,7 +1558,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * rs.getTimestamp(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP))); }
      * return result; }
      */
-
     @Override
     public List<VariantComment> getVariantComments(String sid, int projectId, int referenceId, int uploadId, int fileID, int variantID) throws SQLException, RemoteException {
 
@@ -1784,5 +1817,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryCondition.equalTo(column, "C"),
                 BinaryCondition.equalTo(column, "G"),
                 BinaryCondition.equalTo(column, "T"));
+    }
+
+    private Annotation[] getAnnotationsFromIDs(int[] annotIDs, String sessID) throws RemoteException, SQLException {
+        int numAnnotations = annotIDs.length;
+        Annotation[] annotations = new Annotation[numAnnotations];
+        for (int i = 0; i < numAnnotations; i++) {
+            annotations[i] = AnnotationManager.getInstance().getAnnotation(sessID, annotIDs[i]);
+            LOG.info("\t" + (i + 1) + ". " + annotations[i].getProgram() + " " + annotations[i].getReferenceName() + " " + annotations[i].getVersion());
+        }
+        return annotations;
     }
 }

@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.db.variants;
 
 import java.io.*;
@@ -43,17 +42,13 @@ public class VariantAnnotator {
     private static final int POS_ANNOT_INDEX_OF_POS = 1;
     private static final int POS_ANNOT_INDEX_OF_REF = 2;
     private static final int POS_ANNOT_INDEX_OF_ALT = 3;
-
     private static final int INT_ANNOT_INDEX_OF_CHR = 0;
     private static final int INT_ANNOT_INDEX_OF_START = 1;
     private static final int INT_ANNOT_INDEX_OF_END = 2;
-
     private static final int VARIANT_INDEX_OF_CHR = 4;
     private static final int VARIANT_INDEX_OF_POS = 5;
     private static final int VARIANT_INDEX_OF_REF = 7;
     private static final int VARIANT_INDEX_OF_ALT = 8;
-
-    //private static File variantFile = new File("/Users/mfiume/Desktop/temp_proj10_ref1_update20");
     private static final int JUMP_DISTANCE = 100000;
 
     private VariantRecord annotateForChromosome(String chrom, VariantRecord currentVariant, CSVReader recordReader, TabixReader annotationReader, CSVWriter writer, boolean annotationHasRef, boolean annotationHasAlt, int numFieldsInOutputFile, boolean isInterval) throws EOFException, IOException {
@@ -71,21 +66,17 @@ public class VariantAnnotator {
         String lastChr = currentVariant.chrom;
         int lastPosition = -1;
 
+        LOG.info("Moving annotation cursor to the start of " + currentVariant.chrom);
         TabixReader.Iterator it = annotationReader.query(currentVariant.chrom);
 
         while (lastChr.equals(currentVariant.chrom)) {
 
-            //if (lastPosition == currentVariant.position && lastChr.equals(currentVariant.chrom)) {
-            //    ServerLogger.log(Annotate.class,"Parser does not support multiple lines per position (" + lastChr + " " + lastPosition + ")", Level.WARNING);
-            //    numWarnings++;
-            //}
-
             boolean annotationHitEnd = false;
 
             // skip
-            //log(currentVariant.position + " " + lastPosition);
             if (currentVariant.position > lastPosition + JUMP_DISTANCE) {
-                //log("Skipping chunk in annotations to " + currentVariant.position + " in " + currentVariant.chrom);
+                //LOG.info("Skipping irrelevant chunk of annotation, moving annotation cursor to " + currentVariant.position + " of " + currentVariant.chrom);
+
                 it = annotationReader.query(annotationReader.chr2tid(currentVariant.chrom), currentVariant.position, Integer.MAX_VALUE);
 
                 // happens when there are no more annotations for this chrom
@@ -95,14 +86,13 @@ public class VariantAnnotator {
             }
 
             // update annotation pointer
-            //while (currentAnnotation.position < currentVariant.position) {
-            while (currentAnnotation.isBefore(currentVariant.position)){
+            while (currentAnnotation.isBefore(currentVariant.position)) {
 
                 String nextannot = readNextFromIterator(it);
 
                 // happens when there are no more annotations for this chrom
                 if (nextannot == null) {
-                    LOG.info("No more annotations for this chromosome");
+                    //LOG.info("No more annotations for this chromosome");
                     annotationHitEnd = true;
                     break;
                 }
@@ -119,7 +109,6 @@ public class VariantAnnotator {
             // CASE 2B: We found the first annotation position >= current variant position
 
             // CASE 2B(i): There is no annotation at this position
-            //if (currentAnnotation.position > currentVariant.position) {
             if (currentAnnotation.isAfter(currentVariant.position)) {
                 numLinesWrittenForChromosome++;
                 writer.writeNext(copyArray(currentVariant.line, outLine));
@@ -134,15 +123,14 @@ public class VariantAnnotator {
                 while (true) {
 
                     // found a match
-                    if((isInterval || (!annotationHasRef && !annotationHasAlt)) ||
-                            (annotationHasRef && annotationHasAlt && currentAnnotation.matchesRef(currentVariant.ref) && currentAnnotation.matchesAlt(currentVariant.alt)) ||
-                            (annotationHasRef && !annotationHasAlt && currentAnnotation.matchesRef(currentVariant.ref)) ||
-                            (!annotationHasRef && annotationHasAlt && currentAnnotation.matchesAlt(currentVariant.alt))){
+                    if ((isInterval || (!annotationHasRef && !annotationHasAlt))
+                            || (annotationHasRef && annotationHasAlt && currentAnnotation.matchesRef(currentVariant.ref) && currentAnnotation.matchesAlt(currentVariant.alt))
+                            || (annotationHasRef && !annotationHasAlt && currentAnnotation.matchesRef(currentVariant.ref))
+                            || (!annotationHasRef && annotationHasAlt && currentAnnotation.matchesAlt(currentVariant.alt))) {
                         foundMatch = true;
                         break;
                         // no match exists
-                    //} else if (currentAnnotation.position != currentVariant.position) {
-                    } else if (!currentAnnotation.matchesPosition(currentVariant.position)){
+                    } else if (!currentAnnotation.matchesPosition(currentVariant.position)) {
                         foundMatch = false;
                         break;
                         // not sure, keep looking
@@ -217,7 +205,7 @@ public class VariantAnnotator {
     private static String readNextFromIterator(Iterator it) throws IOException {
         String next = it.next();
         if (next == null) {
-            return next;
+            return null;
         }
         return removeNewLinesAndCarriageReturns(next);
     }
@@ -225,19 +213,18 @@ public class VariantAnnotator {
     private static String removeNewLinesAndCarriageReturns(String next) {
 
         //next = next.replaceAll("\r\n","");
-        next = next.replaceAll("\n","");
-        next = next.replaceAll("\r","");
+        next = next.replaceAll("\n", "");
+        next = next.replaceAll("\r", "");
         /*
-        if (next.length() > 2 && next.substring(next.length() - 2).equals("\r\n")) {
-            next = next.substring(0, next.length() - 2);
-        } else if (next.length() > 1 && next.charAt(next.length() - 1) == '\n') {
-            next = next.substring(0, next.length() - 1);
-        }
+         if (next.length() > 2 && next.substring(next.length() - 2).equals("\r\n")) {
+         next = next.substring(0, next.length() - 2);
+         } else if (next.length() > 1 && next.charAt(next.length() - 1) == '\n') {
+         next = next.substring(0, next.length() - 1);
+         }
          *
          */
         return next;
     }
-
     private String tdfFilename;
     private String outputFilename;
     private int[] annotationIds;
@@ -266,7 +253,7 @@ public class VariantAnnotator {
         // get annotation objects for all ids (from db)
         Annotation[] annotations = new Annotation[annotationIds.length];
         for (int i = 0; i < annotationIds.length; i++) {
-            annotations[i] = AnnotationManager.getInstance().getAnnotation(sid,annotationIds[i]);
+            annotations[i] = AnnotationManager.getInstance().getAnnotation(sid, annotationIds[i]);
         }
 
 
@@ -295,25 +282,14 @@ public class VariantAnnotator {
 
         // remove tmp files
         /*
-        for (File f : tmpFiles) {
-            f.delete();
-        }
+         for (File f : tmpFiles) {
+         f.delete();
+         }
          */
 
         ServerLogger.logByEmail("Annotation complete", "Annotation of " + tdfFilename + " completed. " + annotationIds.length + " annotations were performed.");
     }
 
-    /*
-    private static VariantRecord parsePosFromLine(String[] recordLine) {
-    VariantRecord p = new VariantRecord();
-    p.chrom = recordLine[VARIANT_INDEX_OF_CHR];
-    p.position = Integer.parseInt(recordLine[VARIANT_INDEX_OF_POS]);
-    p.ref = recordLine[VARIANT_INDEX_OF_REF];
-    p.alt = recordLine[VARIANT_INDEX_OF_ALT];
-    return p;
-    }
-     *
-     */
     private VariantRecord skipToNextChr(VariantRecord currentPos, CSVReader recordReader, CSVWriter writer, String[] outLine) throws EOFException, IOException {
 
         //ServerLogQueryUtil.getInstance().addServerLog(ServerLogQueryUtil.getInstance().LogType.INFO, "Done annotating " + currentPos.chrom);
@@ -358,7 +334,7 @@ public class VariantAnnotator {
         //log("Last variant: { chr=" + lastLine[VARIANT_INDEX_OF_CHR] + " pos=" + lastLine[VARIANT_INDEX_OF_POS] + "}");
 
         VariantRecord rec = new VariantRecord(recordLine);
-        LOG.info("Next variant: " + rec);
+        //LOG.info("Next variant: " + rec);
 
         return rec;
     }
@@ -367,7 +343,6 @@ public class VariantAnnotator {
         boolean b = annotationReader.chr2tid(chr) != -1;
         return b;
     }
-
     private int numMatchesForChromosome;
     private int totalNumLinesRead;
     private int numLinesWrittenForChromosome;
@@ -379,7 +354,7 @@ public class VariantAnnotator {
         LOG.info("Output file: " + outFile.getAbsolutePath());
 
         int numFieldsInInputFile = getNumFieldsInTDF(inFile);
-        if(numFieldsInInputFile == 0){
+        if (numFieldsInInputFile == 0) {
             outFile.createNewFile();
             LOG.info("Done annotating file. Nothing to annotate.");
             return;
@@ -406,7 +381,7 @@ public class VariantAnnotator {
         while (true) {
             try {
                 LOG.info("Annotating variants in " + nextPosition.chrom);
-                LOG.info("First variant for chrom: " + nextPosition.toString());
+                //LOG.info("First variant for chrom: " + nextPosition.toString());
                 numMatchesForChromosome = 0;
                 numLinesWrittenForChromosome = 0;
 
@@ -414,8 +389,8 @@ public class VariantAnnotator {
 
                 totalLinesWritten += numLinesWrittenForChromosome;
 
-                LOG.info("DONE THIS CHR:" + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
-                LOG.info("IN TOTAL: " + (totalNumLinesRead-1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
+                LOG.info("Finished annotating this chromosome: " + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
+                LOG.info("In total: " + (totalNumLinesRead - 1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
 
                 if (totalLinesWritten + 1 + totalNumWarnings != totalNumLinesRead) {
                     throw new Exception("error: missed some lines");
@@ -489,7 +464,7 @@ public class VariantAnnotator {
 
         public void setFromLine(String[] line) {
             this.line = line;
-            if(isInterval){
+            if (isInterval) {
                 setFromLineInterval(line);
             } else {
                 setFromLinePosition(line);
@@ -519,24 +494,24 @@ public class VariantAnnotator {
             alt = null;
         }
 
-        public int getNumRelevantFields(){
-            if(isInterval){
+        public int getNumRelevantFields() {
+            if (isInterval) {
                 return 3;
             } else {
                 return 4;
             }
         }
 
-        public boolean isBefore(int position){
-            if(isInterval){
+        public boolean isBefore(int position) {
+            if (isInterval) {
                 return this.end <= position;
             } else {
                 return this.position < position;
             }
         }
 
-        public boolean isAfter(int position){
-            if(isInterval){
+        public boolean isAfter(int position) {
+            if (isInterval) {
                 return this.start > position;
             } else {
                 return this.position > position;
@@ -545,23 +520,23 @@ public class VariantAnnotator {
 
         @Override
         public String toString() {
-            if(isInterval){
+            if (isInterval) {
                 return "AnnotationRecord{" + "chrom=" + chrom + ", start=" + start + ", end=" + end + '}';
             } else {
                 return "AnnotationRecord{" + "chrom=" + chrom + ", position=" + position + ", ref=" + ref + ", alt=" + alt + '}';
             }
         }
 
-        public boolean matchesRef(String ref){
+        public boolean matchesRef(String ref) {
             return this.ref != null && this.ref.equals(ref);
         }
 
-        public boolean matchesAlt(String alt){
+        public boolean matchesAlt(String alt) {
             return this.alt != null && this.alt.equals(alt);
         }
 
         public boolean matchesPosition(int position) {
-            if(isInterval){
+            if (isInterval) {
                 return this.start <= position && this.end > position;
             } else {
                 return this.position == position;
@@ -575,7 +550,9 @@ public class VariantAnnotator {
     private static int getNumFieldsInTDF(File inFile) throws FileNotFoundException, IOException {
         CSVReader reader = new CSVReader(new FileReader(inFile));
         String[] next = reader.readNext();
-        if(next == null) return 0;
+        if (next == null) {
+            return 0;
+        }
         int result = next.length;
         reader.close();
         return result;

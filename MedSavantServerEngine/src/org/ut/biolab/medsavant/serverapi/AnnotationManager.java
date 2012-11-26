@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.serverapi;
 
 import java.io.*;
@@ -65,7 +64,6 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
-
 /**
  *
  * @author mfiume
@@ -73,12 +71,7 @@ import org.ut.biolab.medsavant.util.NetworkUtils;
 public class AnnotationManager extends MedSavantServerUnicastRemoteObject implements AnnotationManagerAdapter, AnnotationColumns {
 
     private static final Log LOG = LogFactory.getLog(AnnotationManager.class);
-
     private static AnnotationManager instance;
-
-    private static File getInstallationDirectory(String programName, String version, String reference) {
-        return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
-    }
 
     private AnnotationManager() throws RemoteException {
     }
@@ -95,17 +88,38 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         LOG.info("Installing annotation " + info);
 
-        LOG.info("Checking if annotation exists locally...");
         try {
+
+            // if it's not installed
             if (!checkIfAnnotationIsInstalled(sessID, info)) {
-                LOG.info("... NO");
-                LOG.info("Downloading annotation, be patient...");
-                File zip = downloadAnnotation(info); // TODO: check for null zip file
-                LOG.info("... DONE");
-                installZipForProject(sessID, projectID, zip);
+
+                // is it already downloaded?
+                File installPath = getInstallationDirectory(info.getProgramName(), info.getProgramVersion(), info.getReference());
+                File doneFile = new File(installPath, "installed.touch");
+                
+                LOG.info("Checking for successful installation at " + installPath.getAbsolutePath());
+
+                if (!doneFile.exists()) {
+
+                    File downloadPath = new File(installPath, "tmp.zip");
+                    LOG.info("Downloading annotation, be patient...");
+                    downloadAnnotation(info, downloadPath);
+                    LOG.info("Registering annotation to project");
+                    unpackAnnotationZip(downloadPath);
+                    doneFile.createNewFile();
+
+                } else {
+                    LOG.info("Annotation files already on disk");
+                }
+
+                registerAnnotationWithProject(installPath, sessID);
+
+                LOG.info("Done installing annotation");
                 return true;
+
+                // annotation already installed
             } else {
-                LOG.info("... YES");
+                LOG.info("This annotation is already installed");
                 return false;
             }
         } catch (Exception ex) {
@@ -114,43 +128,15 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         return false;
     }
 
-    private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException {
-        LOG.info("Installing zip...");
-        File dir = unpackAnnotationZip(zip);
-        LOG.info("... DONE");
+    /*
+     private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException {
+     LOG.info("Installing zip...");
+     File dir = unpackAnnotationZip(zip);
+     LOG.info("... DONE");
 
-        LOG.info("Parsing format...");
-        AnnotationFormat format = parseFormat(getTabixFile(dir), getFormatFile(dir));
-        LOG.info("... DONE");
 
-        LOG.info("FORMAT: " + format);
-
-        LOG.info("TODO: register this annotation in the table");
-
-        int id = addAnnotation(
-                sessionID,
-                format.getProgram(),
-                format.getVersion(),
-                ReferenceManager.getInstance().getReferenceID(sessionID, format.getReferenceName()),
-                getTabixFile(dir).getAbsolutePath(),
-                format.hasRef(),
-                format.hasAlt(),
-                AnnotationType.toInt(format.getType()));
-
-        //populate
-        Connection conn = ConnectionController.connectPooled(sessionID);
-        conn.setAutoCommit(false);
-
-        int i = 0;
-        for (CustomField a : format.getCustomFields()) {
-            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
-        }
-        conn.commit();
-        conn.setAutoCommit(true);
-
-        LOG.info("Installed to " + dir.getAbsolutePath());
-    }
-
+     }
+     */
     public static void addAnnotationFormat(String sessionID, int annotationId, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException {
 
         TableSchema table = MedSavantDatabase.AnnotationFormatTableSchema;
@@ -207,7 +193,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         String referenceName = doc.getDocumentElement().getAttribute("reference");
         AnnotationType annotationType = AnnotationFormat.AnnotationType.fromString(doc.getDocumentElement().getAttribute("type"));
 
-        String prefix = program + "_" + version.replaceAll("\\.", "_") + "_";
+        //String prefix = program + "_" + version.replaceAll("\\.", "_") + "_";
 
 
         //get custom columns
@@ -217,7 +203,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         for (int i = 0; i < fields.getLength(); i++) {
             Element field = (Element) (fields.item(i));
             annotationFields[i] = new CustomField(
-                    prefix + field.getAttribute("name"),
+                    field.getAttribute("name"),
                     field.getAttribute("type"),
                     field.getAttribute("filterable").equals("true"),
                     field.getAttribute("alias"),
@@ -401,17 +387,27 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         br.close();
     }
 
-    public static File downloadAnnotation(AnnotationDownloadInformation adi) throws MalformedURLException, IOException {
+
+    /*
+     private static File getZipLocation(AnnotationDownloadInformation adi) {
+
+     File targetDir = getInstallationDirectory(adi.getProgramName(), adi.getProgramVersion(), adi.getReference());
+     String targetFileName = "tmp.zip";
+
+     return new File(targetDir, targetFileName);
+     }
+     */
+    public static void downloadAnnotation(AnnotationDownloadInformation adi, File location) throws MalformedURLException, IOException {
 
         URL u = new URL(adi.getURL());
-
-        File targetDir = getInstallationDirectory(adi.getProgramName(), adi.getProgramVersion(), adi.getReference());
-
+        File targetDir = location.getParentFile();
         targetDir.mkdirs();
-        String targetFileName = "tmp.zip";
-        NetworkUtils.downloadFile(u, targetDir, targetFileName);
+        String targetFilename = location.getName();
 
-        return new File(targetDir, targetFileName);
+        LOG.debug("Downloading " + u.toString() + " to " + ((new File(targetDir, targetFilename).getAbsolutePath())));
+
+        NetworkUtils.downloadFile(u, targetDir, targetFilename);
+
     }
 
     /**
@@ -545,6 +541,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 ReferenceManager.getInstance().getReferenceID(sessionID, info.getReference()))));
 
         ResultSet rs1 = ConnectionController.executeQuery(sessionID, query1.toString());
+
+        // true if there is a match and false otherwise
         return rs1.next();
     }
 
@@ -596,5 +594,42 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             }
         }
         return (path.delete());
+    }
+
+    private static File getInstallationDirectory(String programName, String version, String reference) {
+        return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
+    }
+
+    private static void registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException {
+        LOG.info("Parsing format...");
+        AnnotationFormat format = parseFormat(getTabixFile(dir), getFormatFile(dir));
+        LOG.info("... DONE");
+
+        LOG.info("FORMAT: " + format);
+
+        LOG.info("TODO: register this annotation in the table");
+
+        int id = addAnnotation(
+                sessionID,
+                format.getProgram(),
+                format.getVersion(),
+                ReferenceManager.getInstance().getReferenceID(sessionID, format.getReferenceName()),
+                getTabixFile(dir).getAbsolutePath(),
+                format.hasRef(),
+                format.hasAlt(),
+                AnnotationType.toInt(format.getType()));
+
+        //populate
+        Connection conn = ConnectionController.connectPooled(sessionID);
+        conn.setAutoCommit(false);
+
+        int i = 0;
+        for (CustomField a : format.getCustomFields()) {
+            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
+        }
+        conn.commit();
+        conn.setAutoCommit(true);
+
+        LOG.info("Installed to " + dir.getAbsolutePath());
     }
 }

@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Andrew
  */
 public class ConnectionPool {
-    
+
     private static final Log LOG = LogFactory.getLog(ConnectionPool.class);
     private static final long TIMEOUT = 60000;
 
@@ -81,13 +81,13 @@ public class ConnectionPool {
         }
 
         // Create a new connection
-        LOG.info("Creating new connection to " + dbName + " for " + user + ":" + password);
+        LOG.info("Creating new connection to " + dbName + " for " + user);// + ":" + password);
         Connection conn = DriverManager.getConnection(ConnectionController.getConnectionString(dbName), user, password);
         PooledConnection pooledConn = new PooledConnection(conn, this);
         pooledConn.lease();
         connections.add(pooledConn);
         return pooledConn;
-    } 
+    }
 
     public synchronized void returnConnection(PooledConnection conn) {
         conn.expireLease();

@@ -323,12 +323,12 @@ public class PooledConnection implements Connection {
     }
 
     public ResultSet executeQuery(String query) throws SQLException {
-        LOG.debug(query);
+        //LOG.debug(query);
         return createStatement().executeQuery(query);
     }
 
     public void executeUpdate(String query) throws SQLException {
-        LOG.debug(query);
+        //LOG.debug(query);
         createStatement().executeUpdate(query);
     }
 

@@ -54,7 +54,9 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     public synchronized String registerNewSession(String user, String password, String dbName) throws RemoteException, SQLException {
         int newSessionIdNumber = ++lastSessionId;
         String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
+
         ConnectionController.registerCredentials(sessionId, user, password, dbName);
+        System.out.println("Registered session " + sessionId + " for " + user);
         LOG.info("Registered session " + sessionId + " for " + user);
         return sessionId;
     }
@@ -62,6 +64,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     @Override
     public void unregisterSession(String sessID) throws RemoteException, SQLException {
         ConnectionController.removeSession(sessID);
+        System.out.println("Unregistered session " + sessID);
         LOG.info("Unregistered session " + sessID);
     }
 

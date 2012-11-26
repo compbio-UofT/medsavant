@@ -154,7 +154,7 @@ public class VariantManagerUtils {
     public static void sortFileByPosition(String inFile, String outfile) throws IOException, InterruptedException {
         String sortCommand = "sort -t , -k 5,5 -k 6,6n -k 7 " + ((new File(inFile)).getAbsolutePath());
 
-        LOG.info("Sorting file: " + (new File(inFile).getAbsolutePath()));
+        LOG.info("Sorting file: " + (new File(inFile).getAbsolutePath()) + " to " + outfile);
 
         if (!(new File(inFile)).exists()) {
             throw new IOException("File not found " + (new File(inFile).getAbsolutePath()));

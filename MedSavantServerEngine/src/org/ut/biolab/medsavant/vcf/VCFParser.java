@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
@@ -31,6 +34,10 @@ import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
  * @author mfiume
  */
 public class VCFParser {
+
+
+    private static final Log LOG = LogFactory.getLog(VCFParser.class);
+
     private static final String HEADER_CHARS = "#";
     private static final String COMMENT_SPLITTER = "=";
     private static final String COMMENT_CHARS = "##";
@@ -95,6 +102,11 @@ public class VCFParser {
                 System.out.println("reader returned null after " + numLinesWritten + " lines.");
                 break;
             }
+
+            if (numRecords % 100000 == 0 && numRecords != 0) {
+                LOG.info("Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...");
+            }
+
             String[] nextLine = nextLineString.split("\t");
 
             if (nextLine[0].startsWith(COMMENT_CHARS)) {
