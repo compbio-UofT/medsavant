@@ -83,6 +83,6 @@ public interface VariantManagerAdapter extends Remote {
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
     public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException;
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;
-
+    public boolean willApproximateCountsForConditions(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException;
 }
 
