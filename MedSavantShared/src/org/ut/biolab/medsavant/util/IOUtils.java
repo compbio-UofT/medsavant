@@ -13,9 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,15 +24,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
+import java.io.RandomAccessFile;
+import java.util.zip.GZIPInputStream;
 
 /**
- * I/O-related utility methods.  Functions for manipulating Savant
- * files are in SavantFileUtils.
+ * I/O-related utility methods. Functions for manipulating Savant files are in
+ * SavantFileUtils.
  *
  * @author mfiume, tarkvara
  */
 public class IOUtils {
+
     public static void copyFile(File srcFile, File destFile) throws IOException {
         if (srcFile.equals(destFile)) {
             return;
@@ -43,7 +45,7 @@ public class IOUtils {
     public static void copyDir(File srcDir, File destDir) throws IOException {
         File[] files = srcDir.listFiles();
         if (files != null) {
-            for (File f: files) {
+            for (File f : files) {
                 copyFile(f, new File(destDir, f.getName()));
             }
         }
@@ -53,7 +55,7 @@ public class IOUtils {
         byte[] buf = new byte[8192];
         int len;
         try {
-            while ((len = input.read(buf)) > 0 ){
+            while ((len = input.read(buf)) > 0) {
                 output.write(buf, 0, len);
             }
         } catch (IOException x) {
@@ -69,14 +71,15 @@ public class IOUtils {
     }
 
     /**
-     * Cheesy method which lets us read from an InputStream without having to instantiate a BufferedReader.
-     * Intended to get around some glitches reading GZIPInputStreams over an HTTP stream.
+     * Cheesy method which lets us read from an InputStream without having to
+     * instantiate a BufferedReader. Intended to get around some glitches
+     * reading GZIPInputStreams over an HTTP stream.
      */
     public static String readLine(InputStream input) throws IOException {
         StringBuilder buf = new StringBuilder();
         int c;
         while ((c = input.read()) >= 0 && c != '\n') {
-            buf.append((char)c);
+            buf.append((char) c);
         }
         return c >= 0 ? buf.toString() : null;
     }
@@ -87,7 +90,7 @@ public class IOUtils {
     public static boolean deleteDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
-            for (int i=0; i<files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
                     deleteDirectory(files[i]);
                 } else {
@@ -97,13 +100,14 @@ public class IOUtils {
         }
         return path.delete();
     }
-    
+
     /**
-     * Make sure this directory and all its parents have world execute permissions.
-     * This is necessary to ensure that MySQL can write files to the given directory.
+     * Make sure this directory and all its parents have world execute
+     * permissions. This is necessary to ensure that MySQL can write files to
+     * the given directory.
      *
      * @param base
-     * @return 
+     * @return
      */
     public static void checkForWorldExecute(File base) throws IOException {
         File f = base.isDirectory() ? base : base.getParentFile();
@@ -116,10 +120,11 @@ public class IOUtils {
         }
         throw new IOException(f + " did not have execute permissions.");
     }
-    
+
     /**
      * Retrieve the permission string (e.g. "rwxrwxrwx") for the given file.
      * TODO: implement this in a less Unix-specific manner.
+     *
      * @param f the file or directory whose permissions we are checking
      */
     private static String getPermissionString(File f) throws IOException {
@@ -135,10 +140,11 @@ public class IOUtils {
         }
         return result;
     }
-    
+
     /**
-     * Does the given directory have world-execute permissions?
-     * TODO: implement this in a less Unix-specific manner.
+     * Does the given directory have world-execute permissions? TODO: implement
+     * this in a less Unix-specific manner.
+     *
      * @param dir the directory to be checked
      */
     private static boolean hasWorldExecute(File f) throws IOException {
@@ -147,5 +153,45 @@ public class IOUtils {
             return perm.charAt(8) == 'x';
         }
         return false;
+    }
+
+    /**
+     * Checks if an input stream is gzipped.
+     *
+     * @param in
+     * @return
+     */
+    public static boolean isGZipped(InputStream in) {
+        if (!in.markSupported()) {
+            in = new BufferedInputStream(in);
+        }
+        in.mark(2);
+        int magic = 0;
+        try {
+            magic = in.read() & 0xff | ((in.read() << 8) & 0xff00);
+            in.reset();
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+            return false;
+        }
+        return magic == GZIPInputStream.GZIP_MAGIC;
+    }
+
+    /**
+     * Checks if a file is gzipped.
+     *
+     * @param f
+     * @return
+     */
+    public static boolean isGZipped(File f) {
+        int magic = 0;
+        try {
+            RandomAccessFile raf = new RandomAccessFile(f, "r");
+            magic = raf.read() & 0xff | ((raf.read() << 8) & 0xff00);
+            raf.close();
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+        }
+        return magic == GZIPInputStream.GZIP_MAGIC;
     }
 }

@@ -37,6 +37,7 @@ public class AnnotationFormat implements Serializable {
     private final boolean hasAlt;
     private final CustomField[] fields;
     private final AnnotationType type;
+    private final boolean isEndInclusive;
 
     public AnnotationFormat(
             String program,
@@ -46,6 +47,7 @@ public class AnnotationFormat implements Serializable {
             boolean hasRef,
             boolean hasAlt,
             AnnotationType type,
+            boolean isEndInclusive,
             CustomField[] fields){
         this.program = program;
         this.version = version;
@@ -55,6 +57,8 @@ public class AnnotationFormat implements Serializable {
         this.hasAlt = hasAlt;
         this.fields = fields;
         this.type = type;
+        this.isEndInclusive = isEndInclusive;
+
     }
 
     public int getNumNonDefaultFields(){
@@ -68,6 +72,8 @@ public class AnnotationFormat implements Serializable {
     public boolean hasAlt(){
         return hasAlt;
     }
+
+
 
     public CustomField[] getCustomFields(){
         return fields;
@@ -87,6 +93,10 @@ public class AnnotationFormat implements Serializable {
 
     public AnnotationType getType() {
         return type;
+    }
+
+    public boolean isEndInclusive() {
+        return isEndInclusive;
     }
 
     public static enum AnnotationType {
@@ -138,14 +148,14 @@ public class AnnotationFormat implements Serializable {
 
     @Override
     public String toString() {
-        return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName + ", path=" + path + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + '}';
+        return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName + ", path=" + path + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + ", isEndInclusive=" + isEndInclusive  + '}';
     }
 
     public static AnnotationFormat getDefaultAnnotationFormat() {
-        return new AnnotationFormat(ANNOTATION_FORMAT_DEFAULT, ANNOTATION_FORMAT_DEFAULT, "0", "", true, true, AnnotationType.POSITION, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
+        return new AnnotationFormat(ANNOTATION_FORMAT_DEFAULT, ANNOTATION_FORMAT_DEFAULT, "0", "", true, true, AnnotationType.POSITION, false, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
     }
 
     public static AnnotationFormat getCustomFieldAnnotationFormat(CustomField[] customFields) {
-        return new AnnotationFormat(ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, "0", "", true, true, AnnotationType.POSITION, customFields);
+        return new AnnotationFormat(ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, "0", "", true, true, AnnotationType.POSITION, false, customFields);
     }
 }
