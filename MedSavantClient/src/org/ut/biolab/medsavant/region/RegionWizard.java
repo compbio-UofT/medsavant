@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.region;
 
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;

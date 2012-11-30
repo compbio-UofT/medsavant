@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
