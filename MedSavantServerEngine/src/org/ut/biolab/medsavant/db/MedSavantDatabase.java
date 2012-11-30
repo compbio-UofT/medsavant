@@ -68,6 +68,11 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_TYPE = ColumnType.INTEGER;
         public static final int LENGTH_OF_TYPE = 11;
         public static final String COLUMNNAME_OF_TYPE = "type";
+        // annotation.is_end_inclusive
+        public static final int INDEX_OF_IS_END_INCLUSIVE = 8;
+        public static final ColumnType TYPE_OF_IS_END_INCLUSIVE = ColumnType.INTEGER;
+        public static final int LENGTH_OF_IS_END_INCLUSIVE = 1;
+        public static final String COLUMNNAME_OF_IS_END_INCLUSIVE = "is_end_inclusive";
 
         private void addColumns() {
             addColumn(COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
@@ -78,6 +83,7 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_HAS_REF, ColumnType.INTEGER, 1);
             addColumn(COLUMNNAME_OF_HAS_ALT, ColumnType.INTEGER, 1);
             addColumn(COLUMNNAME_OF_TYPE, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_IS_END_INCLUSIVE, ColumnType.INTEGER, 1);
         }
     }
 
@@ -146,6 +152,7 @@ public class MedSavantDatabase {
         static final ColumnDef HAS_REF = new ColumnDef("has_ref", ColumnType.BOOLEAN, 1);
         static final ColumnDef HAS_ALT = new ColumnDef("has_alt", ColumnType.BOOLEAN, 1);
         static final ColumnDef TYPE = new ColumnDef("type", ColumnType.INTEGER, 11);
+        static final ColumnDef IS_END_INCLUSIVE = new ColumnDef("is_end_inclusive", ColumnType.BOOLEAN, 11);
     }
 
     public interface AnnotationFormatColumns {

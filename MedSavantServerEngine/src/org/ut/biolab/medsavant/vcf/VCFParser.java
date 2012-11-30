@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.vcf;
 
 import java.io.*;
@@ -28,16 +27,13 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
 
-
 /**
  *
  * @author mfiume
  */
 public class VCFParser {
 
-
     private static final Log LOG = LogFactory.getLog(VCFParser.class);
-
     private static final String HEADER_CHARS = "#";
     private static final String COMMENT_SPLITTER = "=";
     private static final String COMMENT_CHARS = "##";
@@ -61,43 +57,40 @@ public class VCFParser {
         return null;
     }
 
-    public static int parseVariantsFromReader(BufferedReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
-        return parseVariantsFromReader(r, null, outputLinesLimit, outfile, updateId, fileId, false);
+    public static int parseVariantsFromReader(BufferedReader r, File outfile, int updateId, int fileId) throws IOException {
+        return parseVariantsFromReader(r, outfile, updateId, fileId, false);
     }
 
     /**
-     * Like parseVariantsFromReader, but use a pre-parsed header object (useful when
-     * reusing a header)
+     * Like parseVariantsFromReader, but use a pre-parsed header object (useful
+     * when reusing a header)
+     *
      * @param r A reader for .vcf file being parsed
-     * @param header The VCF header object to use. If header == null, the first header line in the file will be used
-     * @param outputLinesLimit The number of lines to write to output before returning
-     * @param outfile The temporary output file, with variants parsed 1 per position per individual
+     * @param header The VCF header object to use. If header == null, the first
+     * header line in the file will be used
+     * @param outputLinesLimit The number of lines to write to output before
+     * returning
+     * @param outfile The temporary output file, with variants parsed 1 per
+     * position per individual
      * @param updateId The updateId to prepend to each line
      * @param fileId The fileId to prepend to each line
      * @return number of lines written to outfile
      * @throws IOException
      */
-    public static int parseVariantsFromReader(BufferedReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
-        return parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, fileId, includeHomoRef, 0);
-    }
+    public static int parseVariantsFromReader(BufferedReader r, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
 
-    public static int parseVariantsFromReader(BufferedReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef, int variantIdOffset) throws IOException {
-
-        System.out.println("Starting to parse variants from reader");
+        VCFHeader header = null;
 
         String nextLineString;
         int numRecords = 0;
 
-
         BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
 
-        int variantId = variantIdOffset;
+        int variantId = 0;
         int numLinesWritten = 0;
 
         while (true) {
-            if (numLinesWritten >= outputLinesLimit) {
-                break;
-            }
+
             if ((nextLineString = r.readLine()) == null) {
                 System.out.println("reader returned null after " + numLinesWritten + " lines.");
                 break;
@@ -114,16 +107,19 @@ public class VCFParser {
                 //do nothing
             } else if (nextLine[0].startsWith(HEADER_CHARS)) {
                 // header line
-                if (header == null) {
-                    header = parseHeader(nextLine);
-                }
+                header = parseHeader(nextLine);
             } else {
+
+                if (header == null) {
+                    throw new IOException("Cannot parse headless VCF file");
+                }
+
                 // a data line
                 List<VariantRecord> records = null;
                 try {
                     records = parseRecord(nextLine, header);
                 } catch (Exception ex) {
-                    System.out.println("Next line: " + nextLineString);
+                    LOG.error("Erroneous line: " + nextLineString);
                     throw new IOException(ex);
                 }
                 //add records to tdf
@@ -147,7 +143,7 @@ public class VCFParser {
 
     public static void parseVariants(File vcffile, File outfile, int updateId, int fileId) throws FileNotFoundException, IOException {
         BufferedReader r = openFile(vcffile);
-        parseVariantsFromReader(r, Integer.MAX_VALUE, outfile, updateId, fileId);
+        parseVariantsFromReader(r, outfile, updateId, fileId);
         r.close();
     }
 
@@ -197,24 +193,47 @@ public class VCFParser {
 
         List<VariantRecord> records = new ArrayList<VariantRecord>();
 
+        int triedIndex = 0;
         try {
             VariantRecord r = new VariantRecord(line);
             int indexGT = getIndexGT(line);
             for (int i = 0; i < ids.size(); i++) {
+
+                triedIndex = 0;
+
                 String id = ids.get(i);
                 VariantRecord r2 = new VariantRecord(r);
                 r2.setDnaID(id);
 
                 //add gt and zygosity;
                 if (indexGT != -1) {
-                    r2.setGenotype(line[numMandatoryFields+i+1].split(":")[indexGT]);
+
+                    //LOG.info("GT index = " + indexGT + " chunk index= " + (numMandatoryFields + i + 1));
+                    String chunk = line[numMandatoryFields + i + 1];
+                    r2.setGenotype(chunk.split(":")[indexGT]);
                     r2.setZygosity(calculateZygosity(r2.getGenotype()));
+                    /*
+                     // find the GT value from the chunk
+                     if(chunk.contains(":")) {
+
+                     // only one info field, and it's the GT field
+                     } else if (indexGT == 0) {
+                     r2.setGenotype(chunk);
+                     r2.setZygosity(calculateZygosity(r2.getGenotype()));
+                     }
+                     */
                 }
 
                 records.add(r2);
             }
         } catch (Exception ex) {
-            System.err.println("Error parsing line " + line[0] + ": " + MiscUtils.getMessage(ex));
+            String lStr = "";
+            for (int i = 0; i < line.length; i++) {
+                lStr += line[i] + "\t";
+            }
+            LOG.info("Tried index " + triedIndex + " of line with " + line.length + " entries");
+            LOG.error("Error parsing line " + lStr + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
+            ex.printStackTrace();
         }
         return records;
     }
@@ -222,7 +241,7 @@ public class VCFParser {
     private static int getIndexGT(String[] line) {
         if (line.length >= VCFHeader.getNumMandatoryFields() + 1) {
             String[] list = line[VCFHeader.getNumMandatoryFields()].trim().split(":");
-            for(int i = 0; i < list.length; i++) {
+            for (int i = 0; i < list.length; i++) {
                 if (list[i].equals("GT")) {
                     return i;
                 }
@@ -233,7 +252,9 @@ public class VCFParser {
 
     public static Zygosity calculateZygosity(String gt) {
         String[] split = gt.split("/|\\\\|\\|"); // splits on / or \ or |
-        if (split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) return null;
+        if (split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) {
+            return null;
+        }
 
         try {
             int a = Integer.parseInt(split[0]);

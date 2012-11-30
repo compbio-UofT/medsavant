@@ -96,7 +96,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 // is it already downloaded?
                 File installPath = getInstallationDirectory(info.getProgramName(), info.getProgramVersion(), info.getReference());
                 File doneFile = new File(installPath, "installed.touch");
-                
+
                 LOG.info("Checking for successful installation at " + installPath.getAbsolutePath());
 
                 if (!doneFile.exists()) {
@@ -152,7 +152,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         ConnectionController.connectPooled(sessionID).createStatement().executeUpdate(query.toString());
     }
 
-    public static int addAnnotation(String sessionId, String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException {
+    public static int addAnnotation(String sessionId, String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type, boolean isEndInclusive) throws SQLException {
 
         LOG.info("Adding annotation...");
 
@@ -165,6 +165,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         query.addColumn(table.getDBColumn(MedSavantDatabase.AnnotationTableSchema.COLUMNNAME_OF_HAS_REF), hasRef);
         query.addColumn(table.getDBColumn(MedSavantDatabase.AnnotationTableSchema.COLUMNNAME_OF_HAS_ALT), hasAlt);
         query.addColumn(table.getDBColumn(MedSavantDatabase.AnnotationTableSchema.COLUMNNAME_OF_TYPE), type);
+        query.addColumn(table.getDBColumn(MedSavantDatabase.AnnotationTableSchema.COLUMNNAME_OF_IS_END_INCLUSIVE), isEndInclusive);
+
 
         PreparedStatement stmt = (ConnectionController.connectPooled(sessionId)).prepareStatement(
                 query.toString(),
@@ -188,6 +190,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         boolean hasRef = doc.getDocumentElement().getAttribute("hasref").equals("true");
         boolean hasAlt = doc.getDocumentElement().getAttribute("hasalt").equals("true");
+        boolean isEndInclusive = doc.getDocumentElement().getAttribute("isEndInclusive").isEmpty() ? false : true;
         String version = doc.getDocumentElement().getAttribute("version");
         String program = doc.getDocumentElement().getAttribute("program");
         String referenceName = doc.getDocumentElement().getAttribute("reference");
@@ -218,6 +221,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 hasRef,
                 hasAlt,
                 annotationType,
+                isEndInclusive,
                 annotationFields);
     }
 
@@ -255,7 +259,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                 rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                 rs.getString(PATH.getColumnName()),
-                AnnotationType.fromInt(rs.getInt(TYPE.getColumnName())));
+                AnnotationType.fromInt(rs.getInt(TYPE.getColumnName())),
+                rs.getBoolean(IS_END_INCLUSIVE.getColumnName()));
 
         return result;
     }
@@ -289,7 +294,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                     rs.getString(PATH.getColumnName()),
-                    AnnotationType.fromInt(rs.getInt(TYPE.getColumnName()))));
+                    AnnotationType.fromInt(rs.getInt(TYPE.getColumnName())),
+                    rs.getBoolean(IS_END_INCLUSIVE.getColumnName())));
         }
 
         return result.toArray(new Annotation[0]);
@@ -350,6 +356,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         String path = rs1.getString(PATH.getColumnName());
         boolean hasRef = rs1.getBoolean(HAS_REF.getColumnName());
         boolean hasAlt = rs1.getBoolean(HAS_ALT.getColumnName());
+        boolean isEndInclusive = rs1.getBoolean(IS_END_INCLUSIVE.getColumnName());
         AnnotationType type = AnnotationType.fromInt(rs1.getInt(TYPE.getColumnName()));
 
         TableSchema annFormatTable = MedSavantDatabase.AnnotationFormatTableSchema;
@@ -371,7 +378,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     rs2.getString(AnnotationFormatColumns.DESCRIPTION.getColumnName())));
         }
 
-        return new AnnotationFormat(program, version, referenceName, path, hasRef, hasAlt, type, fields.toArray(new CustomField[0]));
+        return new AnnotationFormat(program, version, referenceName, path, hasRef, hasAlt, type, isEndInclusive, fields.toArray(new CustomField[0]));
     }
     /**
      * HELPER FUNCTIONS
@@ -617,7 +624,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 getTabixFile(dir).getAbsolutePath(),
                 format.hasRef(),
                 format.hasAlt(),
-                AnnotationType.toInt(format.getType()));
+                AnnotationType.toInt(format.getType()),
+                format.isEndInclusive());
 
         //populate
         Connection conn = ConnectionController.connectPooled(sessionID);

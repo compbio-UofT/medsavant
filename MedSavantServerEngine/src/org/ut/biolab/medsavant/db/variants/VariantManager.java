@@ -29,6 +29,10 @@ import java.util.regex.Pattern;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,6 +65,7 @@ import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VCFIterator;
+import org.ut.biolab.medsavant.vcf.VCFParser;
 
 /**
  *
@@ -437,14 +442,34 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //get annotation ids
             int[] annotIDs = annotMgr.getAnnotationIDs(sessID, projID, refID);
 
+            // parse each vcf file in a separate thread with a separate file ID
+            ParserThread[] threads = new ParserThread[vcfFiles.length];
+            String stamp = System.nanoTime() + "";
+            int fileID = 0;
+            for (File vcfFile : vcfFiles) {
+                File outFile = new File(baseDir, "tmp_" + stamp + "_" + fileID + ".tdf");
+                ParserThread t = new ParserThread(vcfFile, outFile, updateID, fileID, includeHomoRef);
+                threads[fileID] = t;
+                fileID++;
 
-            VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateID, includeHomoRef);
-            File f;
-            while ((f = parser.next()) != null) {
+                LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
+                t.start();
+            }
 
-                List<String> filesUsed = new ArrayList<String>();
+            // wait for all the threads to finish
+            LOG.info("Waiting for all threads to finish...");
+            for (Thread t : threads) {
+                t.join();
+            }
+            LOG.info("All threads done");
 
-                String tempFilename = f.getAbsolutePath();
+
+
+            List<String> filesUsed = new ArrayList<String>();
+
+            for (ParserThread t : threads) {
+
+                String tempFilename = t.getOutputFile().getAbsolutePath();
                 filesUsed.add(tempFilename);
                 String currentFilename = tempFilename;
 
@@ -457,7 +482,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, INDEX_OF_CUSTOM_INFO); //last of the default fields
                     currentFilename = customFieldFilename;
                 }
-
 
                 if (annotIDs.length > 0) {
 
@@ -522,12 +546,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 uploadFileToVariantTable(sessID, new File(currentFilename), tableName);
                 fract += LOAD_TABLE_FRACTION;
 
-                //cleanup
-                System.gc();
-                for (String filename : filesUsed) {
-                    boolean deleted = (new File(filename)).delete();
-                    LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
-                }
+            }
+
+            //cleanup
+            System.gc();
+            for (String filename : filesUsed) {
+                boolean deleted = (new File(filename)).delete();
+                LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
             }
 
             //create sub table dump
@@ -678,10 +703,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir.getCanonicalPath());
         p.waitFor();
         File file = new File(baseDir, "export.tdf");
-        System.out.println(baseDir.getCanonicalPath());
+        //System.out.println(baseDir.getCanonicalPath());
 
         //select into
-        System.out.println("starting select into");
+        //System.out.println("starting select into");
         long start = System.nanoTime();
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true));
         SelectQuery query = new SelectQuery();
@@ -695,7 +720,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 + " LINES TERMINATED BY '\\r\\n' ";
         String queryString = query.toString().replace("FROM", intoString + "FROM");
         ConnectionController.executeQuery(sessID, queryString);
-        System.out.println("done: " + (System.nanoTime() - start));
+        //System.out.println("done: " + (System.nanoTime() - start));
 
         // add file to map and send the id back
         int fileID = NetworkManager.getInstance().openReaderOnServer(sessID, file);
@@ -1098,10 +1123,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
 
-        long start = System.nanoTime();
+        //long start = System.nanoTime();
         ResultSet rs = ConnectionController.executeQuery(sid, query);
-        System.out.println(query);
-        System.out.println("  time:" + (System.nanoTime() - start) / 1000000000);
+        //System.out.println(query);
+        //System.out.println("  time:" + (System.nanoTime() - start) / 1000000000);
 
         Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         while (rs.next()) {
@@ -1173,7 +1198,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                         + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
                         + "LINES TERMINATED BY '\\r\\n';";
 
-                System.out.println(query);
+                //System.out.println(query);
                 Statement s = c.createStatement();
                 s.setQueryTimeout(60 * 60); // 1 hour
                 s.execute(query);
@@ -1191,7 +1216,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
                     + "LINES TERMINATED BY '\\r\\n';";
 
-            System.out.println(query);
+            //System.out.println(query);
             Statement s = c.createStatement();
             s.setQueryTimeout(60 * 60); // 1 hour
             s.execute(query);
@@ -1580,7 +1605,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantID));
 
-        System.out.println(q.toString());
+        //System.out.println(q.toString());
 
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
@@ -1827,5 +1852,43 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("\t" + (i + 1) + ". " + annotations[i].getProgram() + " " + annotations[i].getReferenceName() + " " + annotations[i].getVersion());
         }
         return annotations;
+    }
+
+    private static class ParserThread extends Thread {
+
+        private final boolean includeHomoRef;
+        private final int updateID;
+        private final File vcfFile;
+        private final BufferedReader reader;
+        private final File outFile;
+        private final int fileID;
+
+        private ParserThread(File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
+            this.vcfFile = vcfFile;
+            this.outFile = outFile;
+            this.fileID = fileID;
+            this.updateID = updateID;
+            this.includeHomoRef = includeHomoRef;
+
+            if (IOUtils.isGZipped(vcfFile)) {
+                reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(vcfFile)));
+            } else {
+                reader = new BufferedReader(new FileReader(vcfFile));
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                VCFParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
+            } catch (IOException ex) {
+                LOG.error(ex);
+            }
+
+        }
+
+        private File getOutputFile() {
+            return outFile;
+        }
     }
 }

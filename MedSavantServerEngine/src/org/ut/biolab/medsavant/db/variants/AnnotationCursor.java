@@ -27,6 +27,8 @@ public class AnnotationCursor {
     private final boolean annotationHasRef;
     // does this annotation refer to positions or intervals
     private final boolean isInterval;
+    // are the endpoints inclusive (only relevant for interval annotations)
+    private final boolean isEndInclusive;
     // the number of fields (not including standard ones like chr, pos, ref, alt)
     private final int numNonDefaultFields;
     // a delimiter for cases where multiple annotations can be provided for a single variant
@@ -49,6 +51,7 @@ public class AnnotationCursor {
         annotationHasRef = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasRef();
         annotationHasAlt = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasAlt();
         isInterval = annotation.isInterval();
+        isEndInclusive = annotation.isEndInclusive();
         numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
 
         // log
@@ -56,6 +59,7 @@ public class AnnotationCursor {
         LOG.info("  has reference:\t" + annotationHasRef);
         LOG.info("  has alternate:\t" + annotationHasAlt);
         LOG.info("  is interval:\t" + isInterval);
+        LOG.info("  is end includive:\t" + isEndInclusive);
 
         String references = "";
         for (String s : reader.getReferenceNames()) {
@@ -319,7 +323,7 @@ public class AnnotationCursor {
 
         private boolean intersectsPosition(String chrom, int position) {
             return (!isInterval && this.chrom.equals(chrom) && this.position == position)
-                    || (isInterval && this.start <= position && this.end > position);
+                    || (isInterval && this.start <= position && (isEndInclusive ? (this.end >= position) : (this.end > position)));
         }
 
         private boolean matchesVariant(SimpleVariantRecord r) {

@@ -165,6 +165,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`has_ref` tinyint(1) NOT NULL,"
                     + "`has_alt` tinyint(1) NOT NULL,"
                     + "`type` int(11) unsigned NOT NULL,"
+                    + "`is_end_inclusive` tinyint(1) NOT NULL,"
                     + "PRIMARY KEY (`annotation_id`)"
                     + ") ENGINE=MyISAM;");
 

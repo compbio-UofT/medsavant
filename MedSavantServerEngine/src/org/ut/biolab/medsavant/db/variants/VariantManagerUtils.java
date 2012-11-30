@@ -40,9 +40,9 @@ public class VariantManagerUtils {
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
 
-    public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws IOException, SQLException {
+    /*public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws IOException, SQLException {
         new VariantAnnotator(tdfFilename, outputFilename, annotationIds).annotate(sid);
-    }
+    }*/
 
     public static void appendToFile(String baseFilename, String appendingFilename) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(baseFilename, true));
@@ -81,8 +81,6 @@ public class VariantManagerUtils {
         if (conditions != null && conditions.length()> 1) {
             query += " WHERE " + conditions;
         }
-
-        System.out.println(query);
 
         ConnectionController.executeQuery(sid, query);
     }
@@ -164,8 +162,6 @@ public class VariantManagerUtils {
 
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-        LOG.info("Writing results to file: " + (new File(outfile).getAbsolutePath()));
-
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
         String s;
         // read the output from the command
@@ -190,7 +186,7 @@ public class VariantManagerUtils {
 
     public static void addCustomVCFFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
 
-        System.out.println("Adding custom VCF fields infile=" + infile + " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
+        //System.out.println("Adding custom VCF fields infile=" + infile + " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
 
         String[] infoFields = new String[customFields.length];
         Class[] infoClasses = new Class[customFields.length];

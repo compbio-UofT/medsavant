@@ -18,13 +18,13 @@ import org.ut.biolab.medsavant.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.util.IOUtils;
 
 /**
- * 
+ *
  * @author mfiume
  */
 public class BatchVariantAnnotator {
 
     // the log
-    private static final Log LOG = LogFactory.getLog(VariantAnnotator.class);
+    private static final Log LOG = LogFactory.getLog(BatchVariantAnnotator.class);
     // input file to be annotated
     private File inputTDFFile;
     // output file
