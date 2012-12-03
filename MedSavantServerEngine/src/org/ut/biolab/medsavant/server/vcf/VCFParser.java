@@ -23,9 +23,9 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
 /**
  *

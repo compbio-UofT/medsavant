@@ -52,18 +52,18 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationFormatColum
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.format.AnnotationFormat;
-import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
-import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.model.Annotation;
-import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat.AnnotationType;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.AnnotationManagerAdapter;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.util.NetworkUtils;
+import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 /**
  *

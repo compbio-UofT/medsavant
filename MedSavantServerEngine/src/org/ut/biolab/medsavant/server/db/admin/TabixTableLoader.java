@@ -31,8 +31,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import net.sf.samtools.util.BlockCompressedInputStream;
 
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.util.IOUtils;
-import org.ut.biolab.medsavant.util.NetworkUtils;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
+import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 
 /**

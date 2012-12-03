@@ -27,9 +27,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
-import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.UserManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.UserManagerAdapter;
 
 
 /**

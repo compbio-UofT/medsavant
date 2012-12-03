@@ -7,9 +7,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broad.tabix.TabixReader;
 import org.ut.biolab.medsavant.server.db.variants.BatchVariantAnnotator.SimpleVariantRecord;
-import org.ut.biolab.medsavant.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *

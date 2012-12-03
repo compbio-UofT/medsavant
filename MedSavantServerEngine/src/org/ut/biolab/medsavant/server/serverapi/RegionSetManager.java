@@ -40,12 +40,12 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.RegionSetColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.RegionSetMembershipColumns;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
-import org.ut.biolab.medsavant.importing.FileFormat;
-import org.ut.biolab.medsavant.importing.ImportDelimitedFile;
-import org.ut.biolab.medsavant.model.GenomicRegion;
-import org.ut.biolab.medsavant.model.RegionSet;
+import org.ut.biolab.medsavant.shared.importing.FileFormat;
+import org.ut.biolab.medsavant.shared.importing.ImportDelimitedFile;
+import org.ut.biolab.medsavant.shared.model.GenomicRegion;
+import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.RegionSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
 
 /**

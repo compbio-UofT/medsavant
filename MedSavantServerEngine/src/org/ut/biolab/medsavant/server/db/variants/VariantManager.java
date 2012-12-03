@@ -15,6 +15,15 @@
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
+import org.ut.biolab.medsavant.shared.model.VariantTag;
+import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog;
+import org.ut.biolab.medsavant.shared.model.SimplePatient;
+import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
+import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
+import org.ut.biolab.medsavant.shared.model.Annotation;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -36,20 +45,19 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTagColumns;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
-import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.model.*;
-import org.ut.biolab.medsavant.model.AnnotationLog.Status;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
@@ -58,12 +66,12 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
-import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.ChromosomeComparator;
-import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.util.IOUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.server.vcf.VCFIterator;
 import org.ut.biolab.medsavant.server.vcf.VCFParser;
 
@@ -199,7 +207,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         LOG.info("Adding log and generating update id");
-        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, org.ut.biolab.medsavant.model.AnnotationLog.Action.ADD_VARIANTS, user);
+        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, org.ut.biolab.medsavant.shared.model.AnnotationLog.Action.ADD_VARIANTS, user);
         fract += LOG_FRACTION;
 
         try {
@@ -535,7 +543,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         LOG.info("Adding log and generating update id");
-        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, org.ut.biolab.medsavant.model.AnnotationLog.Action.REMOVE_VARIANTS, user);
+        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, org.ut.biolab.medsavant.shared.model.AnnotationLog.Action.REMOVE_VARIANTS, user);
 
         try {
 

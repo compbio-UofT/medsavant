@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
-import org.ut.biolab.medsavant.util.IOUtils;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  *

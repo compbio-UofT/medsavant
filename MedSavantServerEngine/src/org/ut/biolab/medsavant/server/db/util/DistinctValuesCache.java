@@ -28,8 +28,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 /**
  *

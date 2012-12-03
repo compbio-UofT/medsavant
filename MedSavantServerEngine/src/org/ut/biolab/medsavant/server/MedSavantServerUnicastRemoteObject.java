@@ -24,7 +24,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.model.ProgressStatus;
+import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 
 
 /**
@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.model.ProgressStatus;
  * @author mfiume
  */
 public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
-    
+
     private static final Log LOG = LogFactory.getLog(MedSavantServerUnicastRemoteObject.class);
     private static int CONNECT_PORT = 36800;
     private static int EXPORT_PORT = 36801;
@@ -63,7 +63,7 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
     public static void setExportPort(int port) {
         EXPORT_PORT = port;
     }
-    
+
     /**
      * Call which client uses to check the progress of a lengthy process, and optionally to tell the server to cancel.
      *
@@ -81,14 +81,14 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
             }
         }
     }
-    
+
     /**
      * Called by server-side code to update the progress for the given session, also checking for cancellation.
      * @param frac the progress from 0.0–1.0; 0.0 resets the progress, 1.0 indicates that it is finished, -1.0 indicates an indeterminate task
      */
     protected void makeProgress(String sessID, String msg, double frac) throws InterruptedException {
         synchronized (sessionProgresses) {
-            
+
             if (frac == 0.0) {
                 // As a side-effect, progress 0.0 always clears the cancelled flag.
                 sessionProgresses.put(sessID, new ProgressStatus(msg, frac));

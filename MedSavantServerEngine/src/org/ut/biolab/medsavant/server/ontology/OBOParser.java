@@ -26,9 +26,9 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.model.OntologyTerm;
-import org.ut.biolab.medsavant.model.OntologyType;
-import org.ut.biolab.medsavant.util.RemoteFileCache;
+import org.ut.biolab.medsavant.shared.model.OntologyTerm;
+import org.ut.biolab.medsavant.shared.model.OntologyType;
+import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
 
 
 /**

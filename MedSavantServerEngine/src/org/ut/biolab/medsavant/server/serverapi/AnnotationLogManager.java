@@ -29,13 +29,13 @@ import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
-import org.ut.biolab.medsavant.model.AnnotationLog;
-import org.ut.biolab.medsavant.model.AnnotationLog.Action;
-import org.ut.biolab.medsavant.model.AnnotationLog.Status;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.SQLUtils;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.SQLUtils;
 
 /**
  *

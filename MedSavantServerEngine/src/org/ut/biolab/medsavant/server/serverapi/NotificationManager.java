@@ -19,10 +19,10 @@ package org.ut.biolab.medsavant.server.serverapi;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-import org.ut.biolab.medsavant.model.Notification;
-import org.ut.biolab.medsavant.model.ProjectDetails;
+import org.ut.biolab.medsavant.shared.model.Notification;
+import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.NotificationManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.NotificationManagerAdapter;
 
 
 /**

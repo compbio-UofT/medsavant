@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
+import org.ut.biolab.medsavant.shared.model.Reference;
+import org.ut.biolab.medsavant.shared.model.Chromosome;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,13 +38,12 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ChromosomeTableSchema
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
-import org.ut.biolab.medsavant.model.*;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.ReferenceManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
 
 /**
  *

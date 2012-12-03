@@ -29,11 +29,11 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.model.Block;
-import org.ut.biolab.medsavant.model.Gene;
-import org.ut.biolab.medsavant.model.GeneSet;
+import org.ut.biolab.medsavant.shared.model.Block;
+import org.ut.biolab.medsavant.shared.model.Gene;
+import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.GeneSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 
 
 /**

@@ -30,15 +30,15 @@ import com.mysql.jdbc.CommunicationsException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
-import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.DBUtilsAdapter;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *

@@ -34,13 +34,13 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ProjectTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.model.AnnotationLog;
-import org.ut.biolab.medsavant.model.GeneralLog;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.LogManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
 
 /**

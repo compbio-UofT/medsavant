@@ -30,8 +30,8 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import org.ut.biolab.medsavant.db.MedSavantDatabaseExtras;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.MedSavantDatabaseExtras;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
@@ -40,12 +40,12 @@ import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
-import org.ut.biolab.medsavant.format.BasicPatientColumns;
-import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.PatientManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 
 
 /**

@@ -30,20 +30,20 @@ import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.ut.biolab.medsavant.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.CohortTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.CohortMembershipTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
-import org.ut.biolab.medsavant.model.Cohort;
-import org.ut.biolab.medsavant.model.SimplePatient;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.model.Cohort;
+import org.ut.biolab.medsavant.shared.model.SimplePatient;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.CohortManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
 
 
 /**

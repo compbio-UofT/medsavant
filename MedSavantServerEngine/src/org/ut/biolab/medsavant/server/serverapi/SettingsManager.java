@@ -26,12 +26,12 @@ import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.SettingsTableSchema;
-import org.ut.biolab.medsavant.db.TableSchema;
-import org.ut.biolab.medsavant.db.Settings;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.SettingsManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
 
 
 /**

@@ -20,10 +20,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.CustomTablesAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 
 /**
  *

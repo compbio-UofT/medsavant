@@ -27,7 +27,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
 import org.ut.biolab.medsavant.server.mail.Mail;
-import org.ut.biolab.medsavant.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 
 /**

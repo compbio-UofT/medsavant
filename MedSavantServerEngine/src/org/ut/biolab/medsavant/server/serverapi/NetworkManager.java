@@ -24,9 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.serverapi.NetworkManagerAdapter;
-import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 
 /**

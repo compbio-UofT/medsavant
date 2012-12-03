@@ -17,9 +17,9 @@ package org.ut.biolab.medsavant.server.db;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
-import org.ut.biolab.medsavant.db.ColumnDef;
-import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.shared.db.ColumnDef;
+import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 
 public class MedSavantDatabase {
 
