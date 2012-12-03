@@ -16,6 +16,18 @@
 
 package org.ut.biolab.medsavant.server;
 
+import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
+import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.server.serverapi.LogManager;
+import org.ut.biolab.medsavant.server.serverapi.NotificationManager;
+import org.ut.biolab.medsavant.server.serverapi.GeneSetManager;
+import org.ut.biolab.medsavant.server.serverapi.PatientManager;
+import org.ut.biolab.medsavant.server.serverapi.UserManager;
+import org.ut.biolab.medsavant.server.serverapi.CohortManager;
+import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
+import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
+import org.ut.biolab.medsavant.server.serverapi.RegionSetManager;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -24,13 +36,13 @@ import java.sql.SQLException;
 
 import gnu.getopt.Getopt;
 
-import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
-import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.db.util.CustomTables;
-import org.ut.biolab.medsavant.db.util.DBUtils;
-import org.ut.biolab.medsavant.db.variants.VariantManager;
-import org.ut.biolab.medsavant.ontology.OntologyManager;
-import org.ut.biolab.medsavant.serverapi.*;
+import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
+import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.server.db.util.CustomTables;
+import org.ut.biolab.medsavant.server.db.util.DBUtils;
+import org.ut.biolab.medsavant.server.db.variants.VariantManager;
+import org.ut.biolab.medsavant.server.ontology.OntologyManager;
+import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
 
 
 /**
