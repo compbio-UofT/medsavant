@@ -2,21 +2,4 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/login/LoginController.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/family/FamilyMattersWorker.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/charts/ChartView.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/charts/VariantFieldChartMapGenerator.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/GeneticsSection.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/ontology/OntologyAggregatePanel.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/filter/FilterEffectivenessPanel.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/broad/tabix/TabixReader.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/list/MasterView.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/TablePanel.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/manage/AnnotationsPage.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/component/ListViewTablePanel.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/variant/ImportVariantsWizard.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/controller/ResultController.java</file>
-        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/geneset/GeneSetPage.java</file>
-    </open-files>
 </project-private>

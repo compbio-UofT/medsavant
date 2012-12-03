@@ -15,6 +15,25 @@
  */
 package org.ut.biolab.medsavant;
 
+import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.UserManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.SetupAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.NotificationManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
+import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.awt.Insets;
@@ -27,10 +46,9 @@ import gnu.getopt.Getopt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.serverapi.*;
-import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.controller.SettingsController;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 public class MedSavantClient implements MedSavantServerRegistry {
 
