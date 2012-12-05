@@ -243,6 +243,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             } else {
                 if (explodeCommaSeparatedValues) {
                     String[] vals = val.split(",");
+                    for (int i = 0; i < vals.length; i++) {
+                        vals[i] = vals[i].trim();
+                    }
                     set.addAll(Arrays.asList(vals));
                 } else {
                     set.add(val);
