@@ -83,7 +83,7 @@ public class IconFactory {
         CHART_SMALL,
         CONFIGURE
     };
-    private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
+    private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {

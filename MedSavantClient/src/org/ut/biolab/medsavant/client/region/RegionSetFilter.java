@@ -27,9 +27,9 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.ut.biolab.medsavant.client.filter.Filter;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.client.filter.Filter;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 

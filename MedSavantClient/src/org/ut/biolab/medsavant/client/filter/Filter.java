@@ -16,13 +16,13 @@
 
 package org.ut.biolab.medsavant.client.filter;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InCondition;
+import java.rmi.RemoteException;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.client.project.ProjectController;
