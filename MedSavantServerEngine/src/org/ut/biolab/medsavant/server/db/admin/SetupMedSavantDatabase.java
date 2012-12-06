@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.server.db.admin;
 
 import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
@@ -43,6 +42,7 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  */
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
 
+    public static final boolean ENGINE_INFINIDB = false;
     private static SetupMedSavantDatabase instance;
 
     public static synchronized SetupMedSavantDatabase getInstance() throws RemoteException {
@@ -81,7 +81,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         populateGenes(sessID);
 
         // Grant permissions to everybody else.
-        for (String user: userMgr.getUserNames(sessID)) {
+        for (String user : userMgr.getUserNames(sessID)) {
             if (!user.equals(adminName)) {
                 userMgr.grantPrivileges(sessID, user, userMgr.getUserLevel(sessID, user));
             }
@@ -110,7 +110,6 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
     }
 
-
     private void createTables(String sessID) throws SQLException, RemoteException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -118,16 +117,15 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         try {
             conn.executeUpdate(
                     "CREATE TABLE `" + MedSavantDatabase.ServerlogTableSchema.getTableName() + "` ("
-                      + "`id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
-                      + "`user` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
-                      + "`event` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
-                      + "`description` blob,"
-                      + "`timestamp` datetime NOT NULL,"
-                      + "PRIMARY KEY (`id`)"
-                    + ") ENGINE=MyISAM;"
-                    );
+                    + "`id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
+                    + "`user` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
+                    + "`event` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
+                    + "`description` blob,"
+                    + "`timestamp` datetime NOT NULL,"
+                    + "PRIMARY KEY (`id`)"
+                    + ") ENGINE=MyISAM;");
             String[] users = UserManager.getInstance().getUserNames(sessID);
-            for (String u: users) {
+            for (String u : users) {
                 conn.executePreparedUpdate(String.format("GRANT INSERT ON %s TO ?", MedSavantDatabase.ServerlogTableSchema.getTableName()), u);
             }
 
@@ -220,7 +218,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`contig_length` int(11) unsigned NOT NULL,"
                     + "`centromere_pos` int(11) unsigned NOT NULL,"
                     + "PRIMARY KEY (`reference_id`,`contig_id`) USING BTREE"
-                    +") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
+                    + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
             conn.executeUpdate(
                     "CREATE TABLE  `" + MedSavantDatabase.AnnotationFormatTableSchema.getTableName() + "` ("
@@ -275,24 +273,46 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "PRIMARY KEY (`patient_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
-            conn.executeUpdate(
-                    "CREATE TABLE  `default_variant` ("
-                    + "`upload_id` int(11) NOT NULL,"
-                    + "`file_id` int(11) NOT NULL,"
-                    + "`variant_id` int(11) NOT NULL,"
-                    + "`dna_id` varchar(100) COLLATE latin1_bin NOT NULL,"
-                    + "`chrom` varchar(5) COLLATE latin1_bin NOT NULL DEFAULT '',"
-                    + "`position` int(11) NOT NULL,"
-                    + "`dbsnp_id` varchar(45) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`ref` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`alt` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`qual` float(10,0) DEFAULT NULL,"
-                    + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`variant_type` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`zygosity` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`gt` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`custom_info` varchar(10000) COLLATE latin1_bin DEFAULT NULL"
-                    + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
+            String createVariantStatement;
+            if (ENGINE_INFINIDB) {
+
+                createVariantStatement = "CREATE TABLE  default_variant "
+                        + "( upload_id  INTEGER, "
+                        + "file_id  INTEGER, "
+                        + "variant_id  INTEGER, "
+                        + "dna_id  varchar(100) ,"
+                        + "chrom  varchar(5), "
+                        + "position  INTEGER, "
+                        + "dbsnp_id  varchar(45)  ,"
+                        + "ref  varchar(30)  , "
+                        + "alt  varchar(30)  , "
+                        + "qual  float(10,0) , filter  varchar(500)  , "
+                        + "variant_type  varchar(10)  , "
+                        + "zygosity  varchar(20)  , "
+                        + "gt  varchar(10)  ,"
+                        + "custom_info  varchar(8000)  ) ENGINE=INFINIDB;";
+            } else {
+                createVariantStatement =
+                        "CREATE TABLE  `default_variant` ("
+                        + "`upload_id` int(11),"
+                        + "`file_id` int(11),"
+                        + "`variant_id` int(11),"
+                        + "`dna_id` varchar(100) COLLATE latin1_bin NOT NULL,"
+                        + "`chrom` varchar(5) COLLATE latin1_bin NOT NULL DEFAULT '',"
+                        + "`position` int(11),"
+                        + "`dbsnp_id` varchar(45) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`ref` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`alt` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`qual` float(10,0) DEFAULT NULL,"
+                        + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`variant_type` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`zygosity` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`gt` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
+                        + "`custom_info` varchar(10000) COLLATE latin1_bin DEFAULT NULL"
+                        + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
+            }
+            System.out.println(createVariantStatement);
+            conn.executeUpdate(createVariantStatement);
 
             conn.executeUpdate(MedSavantDatabase.GeneSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
             conn.executeUpdate(MedSavantDatabase.OntologyTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
@@ -333,6 +353,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
     /**
      * Create a <i>root</i> user if MySQL does not already have one.
+     *
      * @param c database connection
      * @param password a character array, supposedly for security's sake
      * @throws SQLException
@@ -344,9 +365,9 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     private static void addDefaultReferenceGenomes(String sessionId) throws SQLException, RemoteException {
-        ReferenceManager.getInstance().addReference(sessionId,"hg17", Chromosome.getHG17Chromosomes(), null);
-        ReferenceManager.getInstance().addReference(sessionId,"hg18", Chromosome.getHG18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
-        ReferenceManager.getInstance().addReference(sessionId,"hg19", Chromosome.getHG19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
+        ReferenceManager.getInstance().addReference(sessionId, "hg17", Chromosome.getHG17Chromosomes(), null);
+        ReferenceManager.getInstance().addReference(sessionId, "hg18", Chromosome.getHG18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
+        ReferenceManager.getInstance().addReference(sessionId, "hg19", Chromosome.getHG19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
     }
 
     private static void addDBSettings(String sid, String versionString) throws SQLException, RemoteException {

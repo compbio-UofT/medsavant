@@ -35,6 +35,7 @@ import java.rmi.registry.Registry;
 import java.sql.SQLException;
 
 import gnu.getopt.Getopt;
+import java.util.Scanner;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
@@ -43,6 +44,7 @@ import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 
 /**
@@ -94,8 +96,17 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             System.out.print("PASSWORD FOR " + rootUserName + ": ");
             System.out.flush();
 
-            char[] pass = System.console().readPassword();
-
+            boolean retrieveFromConsole = System.console() != null;
+            
+            char[] pass;
+            if (retrieveFromConsole) {
+                pass = System.console().readPassword();
+            } else {
+                Scanner sc = new Scanner(System.in);
+                String passStr = sc.nextLine();
+                pass = passStr.toCharArray();
+            }
+            
             System.out.println();
 
             System.out.print("Connecting to database ... ");

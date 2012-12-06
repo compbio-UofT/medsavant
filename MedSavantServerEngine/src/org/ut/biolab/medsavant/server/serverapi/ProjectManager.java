@@ -52,6 +52,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 
 /**
@@ -200,6 +201,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                     variantSchema.addColumn(f);
                 }
             }
+            String updateString;
+            if (SetupMedSavantDatabase.ENGINE_INFINIDB) {
+                updateString = "";
+            } else {
+                updateString = variantSchema.getCreateQuery() + " ENGINE=INFINIDB;";
+            }
+            System.out.println(updateString);
             conn.executeUpdate(variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
         } finally {
             conn.close();
