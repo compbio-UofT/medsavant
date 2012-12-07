@@ -23,128 +23,6 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 
 public class MedSavantDatabase {
 
-    public static class AnnotationTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "annotation";
-
-        public AnnotationTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // annotation.annotation_id
-        public static final int INDEX_OF_ANNOTATION_ID = 0;
-        public static final ColumnType TYPE_OF_ANNOTATION_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_ANNOTATION_ID = 11;
-        public static final String COLUMNNAME_OF_ANNOTATION_ID = "annotation_id";
-        // annotation.program
-        public static final int INDEX_OF_PROGRAM = 1;
-        public static final ColumnType TYPE_OF_PROGRAM = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_PROGRAM = 100;
-        public static final String COLUMNNAME_OF_PROGRAM = "program";
-        // annotation.version
-        public static final int INDEX_OF_VERSION = 2;
-        public static final ColumnType TYPE_OF_VERSION = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_VERSION = 100;
-        public static final String COLUMNNAME_OF_VERSION = "version";
-        // annotation.reference_id
-        public static final int INDEX_OF_REFERENCE_ID = 3;
-        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REFERENCE_ID = 11;
-        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
-        // annotation.path
-        public static final int INDEX_OF_PATH = 4;
-        public static final ColumnType TYPE_OF_PATH = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_PATH = 500;
-        public static final String COLUMNNAME_OF_PATH = "path";
-        // annotation.has_ref
-        public static final int INDEX_OF_HAS_REF = 5;
-        public static final ColumnType TYPE_OF_HAS_REF = ColumnType.INTEGER;
-        public static final int LENGTH_OF_HAS_REF = 1;
-        public static final String COLUMNNAME_OF_HAS_REF = "has_ref";
-        // annotation.has_alt
-        public static final int INDEX_OF_HAS_ALT = 6;
-        public static final ColumnType TYPE_OF_HAS_ALT = ColumnType.INTEGER;
-        public static final int LENGTH_OF_HAS_ALT = 1;
-        public static final String COLUMNNAME_OF_HAS_ALT = "has_alt";
-        // annotation.type
-        public static final int INDEX_OF_TYPE = 7;
-        public static final ColumnType TYPE_OF_TYPE = ColumnType.INTEGER;
-        public static final int LENGTH_OF_TYPE = 11;
-        public static final String COLUMNNAME_OF_TYPE = "type";
-        // annotation.is_end_inclusive
-        public static final int INDEX_OF_IS_END_INCLUSIVE = 8;
-        public static final ColumnType TYPE_OF_IS_END_INCLUSIVE = ColumnType.INTEGER;
-        public static final int LENGTH_OF_IS_END_INCLUSIVE = 1;
-        public static final String COLUMNNAME_OF_IS_END_INCLUSIVE = "is_end_inclusive";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROGRAM, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_VERSION, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PATH, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_HAS_REF, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_HAS_ALT, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_TYPE, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_IS_END_INCLUSIVE, ColumnType.INTEGER, 1);
-        }
-    }
-
-    public static class AnnotationFormatTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "annotation_format";
-
-        public AnnotationFormatTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // annotation_format.annotation_id
-        public static final int INDEX_OF_ANNOTATION_ID = 0;
-        public static final ColumnType TYPE_OF_ANNOTATION_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_ANNOTATION_ID = 11;
-        public static final String COLUMNNAME_OF_ANNOTATION_ID = "annotation_id";
-        // annotation_format.position
-        public static final int INDEX_OF_POSITION = 1;
-        public static final ColumnType TYPE_OF_POSITION = ColumnType.INTEGER;
-        public static final int LENGTH_OF_POSITION = 11;
-        public static final String COLUMNNAME_OF_POSITION = "position";
-        // annotation_format.column_name
-        public static final int INDEX_OF_COLUMN_NAME = 2;
-        public static final ColumnType TYPE_OF_COLUMN_NAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_COLUMN_NAME = 200;
-        public static final String COLUMNNAME_OF_COLUMN_NAME = "column_name";
-        // annotation_format.column_type
-        public static final int INDEX_OF_COLUMN_TYPE = 3;
-        public static final ColumnType TYPE_OF_COLUMN_TYPE = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_COLUMN_TYPE = 45;
-        public static final String COLUMNNAME_OF_COLUMN_TYPE = "column_type";
-        // annotation_format.filterable
-        public static final int INDEX_OF_FILTERABLE = 4;
-        public static final ColumnType TYPE_OF_FILTERABLE = ColumnType.INTEGER;
-        public static final int LENGTH_OF_FILTERABLE = 1;
-        public static final String COLUMNNAME_OF_FILTERABLE = "filterable";
-        // annotation_format.alias
-        public static final int INDEX_OF_ALIAS = 5;
-        public static final ColumnType TYPE_OF_ALIAS = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_ALIAS = 200;
-        public static final String COLUMNNAME_OF_ALIAS = "alias";
-        // annotation_format.description
-        public static final int INDEX_OF_DESCRIPTION = 6;
-        public static final ColumnType TYPE_OF_DESCRIPTION = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_DESCRIPTION = 500;
-        public static final String COLUMNNAME_OF_DESCRIPTION = "description";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
-            addColumn(COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
-        }
-    }
-
     public interface AnnotationColumns {
 
         static final ColumnDef ANNOTATION_ID = new ColumnDef("annotation_id", ColumnType.INTEGER, 11, true, true, true, null);
@@ -155,7 +33,7 @@ public class MedSavantDatabase {
         static final ColumnDef HAS_REF = new ColumnDef("has_ref", ColumnType.BOOLEAN, 1);
         static final ColumnDef HAS_ALT = new ColumnDef("has_alt", ColumnType.BOOLEAN, 1);
         static final ColumnDef TYPE = new ColumnDef("type", ColumnType.INTEGER, 11);
-        static final ColumnDef IS_END_INCLUSIVE = new ColumnDef("is_end_inclusive", ColumnType.BOOLEAN, 11);
+        static final ColumnDef IS_END_INCLUSIVE = new ColumnDef("is_end_inclusive", ColumnType.BOOLEAN, 1);
     }
 
     public interface AnnotationFormatColumns {
@@ -804,8 +682,8 @@ public class MedSavantDatabase {
         }
     }
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
-    public static final AnnotationTableSchema AnnotationTableSchema = new AnnotationTableSchema(schema);
-    public static final AnnotationFormatTableSchema AnnotationFormatTableSchema = new AnnotationFormatTableSchema(schema);
+    public static final TableSchema AnnotationTableSchema = new TableSchema(schema, "annotation", AnnotationColumns.class);
+    public static final TableSchema AnnotationFormatTableSchema = new TableSchema(schema, "annotation_format", AnnotationFormatColumns.class);
     public static final ChromosomeTableSchema ChromosomeTableSchema = new ChromosomeTableSchema(schema);
     public static final CohortTableSchema CohortTableSchema = new CohortTableSchema(schema);
     public static final CohortMembershipTableSchema CohortmembershipTableSchema = new CohortMembershipTableSchema(schema);

@@ -35,8 +35,8 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
-import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.server.db.connection.PooledConnection;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;

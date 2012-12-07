@@ -87,7 +87,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     /*
      * modify existing project
      */
-    public ProjectWizard(int projID, String projName, CustomField[] fields, ProjectDetails[] details) {
+    public ProjectWizard(int projID, String projName, CustomField[] fields, ProjectDetails[] details) throws SQLException, RemoteException {
         this.modify = true;
         this.projectID = projID;
         this.originalProjectName = projName;
@@ -103,7 +103,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     /*
      * create new project
      */
-    public ProjectWizard() {
+    public ProjectWizard() throws SQLException, RemoteException  {
         modify = false;
         projectID = -1;
         originalProjectName = null;
@@ -112,7 +112,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         setupWizard();
     }
 
-    private void setupWizard() {
+    private void setupWizard() throws SQLException, RemoteException {
         setTitle(modify ? "Modify Project" : "Create Project");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -429,7 +429,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         }
     }
 
-    private AbstractWizardPage getReferencePage() {
+    private AbstractWizardPage getReferencePage() throws SQLException, RemoteException {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_REF) {
@@ -463,8 +463,12 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                new NewReferenceDialog().setVisible(true);
+                try {
+                    new NewReferenceDialog().setVisible(true);
                 refreshReferencePanel(p);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Unable to retrieve references and annotations: %s", ex);
+                }
             }
         });
         page.addComponent(addRefButton);
@@ -472,17 +476,9 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         return page;
     }
 
-    private void refreshReferencePanel(JPanel p) {
-        Reference[] references = null;
-        Annotation[] annotations = null;
-        try {
-            references = MedSavantClient.ReferenceManager.getReferences(LoginController.sessionId);
-            annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.sessionId);
-        } catch (SQLException ex) {
-            LOG.error("Error getting references and annotations.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error getting references and annotations.", ex);
-        }
+    private void refreshReferencePanel(JPanel p) throws SQLException, RemoteException {
+        Reference[] references = MedSavantClient.ReferenceManager.getReferences(LoginController.sessionId);
+        Annotation[] annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.sessionId);
 
         p.removeAll();
         checkListItems.clear();

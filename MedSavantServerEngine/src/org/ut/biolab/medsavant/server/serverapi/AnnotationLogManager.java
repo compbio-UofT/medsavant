@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.SQLUtils;
 

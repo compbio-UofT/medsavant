@@ -115,7 +115,11 @@ public class ProjectManagementPage extends SubSectionView {
 
         @Override
         public void addItems() {
-            new ProjectWizard().setVisible(true);
+            try {
+                new ProjectWizard().setVisible(true);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Unable to launch project wizard: %s", ex);
+            }
         }
 
         @Override

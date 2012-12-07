@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.server.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 
