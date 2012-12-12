@@ -395,7 +395,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 connection.executePreparedUpdate(updStmt, omimGenes, omimTerm);
             }
         } finally {
-            connection.close();
+            if (connection != null) { connection.close(); }
         }
     }
 

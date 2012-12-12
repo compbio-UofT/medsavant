@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.shared.db.Settings;
@@ -41,7 +42,7 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  */
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
 
-    public static final boolean ENGINE_INFINIDB = false;
+    //public static final boolean ENGINE_INFINIDB = false;
     private static SetupMedSavantDatabase instance;
 
     public static synchronized SetupMedSavantDatabase getInstance() throws RemoteException {
@@ -273,7 +274,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
             String createVariantStatement;
-            if (ENGINE_INFINIDB) {
+            if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
 
                 createVariantStatement = "CREATE TABLE  default_variant "
                         + "( upload_id  INTEGER, "

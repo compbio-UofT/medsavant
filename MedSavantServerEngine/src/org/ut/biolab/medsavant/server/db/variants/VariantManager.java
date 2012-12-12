@@ -633,7 +633,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String intoString =
                 "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
-                + " LINES TERMINATED BY '\\r\\n' ";
+                //+ " LINES TERMINATED BY '\\r\\n' ";
+                ;
         String queryString = query.toString().replace("FROM", intoString + "FROM");
         ConnectionController.executeQuery(sessID, queryString);
         //System.out.println("done: " + (System.nanoTime() - start));
@@ -1112,7 +1113,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                         + "INTO TABLE " + tableName + " "
                         + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                        + "LINES TERMINATED BY '\\r\\n';";
+                        //+ "LINES TERMINATED BY '\\r\\n'";
+                        + ";";
 
                 //System.out.println(query);
                 LOG.info(query);
@@ -1131,7 +1133,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                     + "INTO TABLE " + tableName + " "
                     + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                    + "LINES TERMINATED BY '\\r\\n';";
+                    //+ "LINES TERMINATED BY '\\r\\n'"
+                    + ";";
 
             //System.out.println(query);
             Statement s = c.createStatement();

@@ -31,6 +31,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
@@ -202,7 +203,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 }
             }
             String updateString;
-            if (SetupMedSavantDatabase.ENGINE_INFINIDB) {
+            if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
                 updateString = "";
             } else {
                 updateString = variantSchema.getCreateQuery() + " ENGINE=INFINIDB;";

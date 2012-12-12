@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.server;
 
 import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
@@ -46,7 +45,6 @@ import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
-
 /**
  *
  * @author mfiume
@@ -56,13 +54,18 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-
+    public static boolean USE_INFINIDB_ENGINE;
 
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName) throws RemoteException, SQLException {
 
+        // try to get the server's address, first user specified, second by lookup
         try {
-            // get the address of this host.
-            thisAddress = (InetAddress.getLocalHost()).toString();
+            try {
+                thisAddress = System.getProperty("java.rmi.server.hostname");
+            } catch (Exception e) {
+                // get the address of this host.
+                thisAddress = (InetAddress.getLocalHost()).toString();
+            }
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
@@ -111,7 +114,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
             System.out.print("Connecting to database ... ");
             try {
-                ConnectionController.connectOnce(databaseHost,databasePort,"",rootUserName,new String(pass));
+                ConnectionController.connectOnce(databaseHost, databasePort, "", rootUserName, new String(pass));
             } catch (SQLException ex) {
                 System.out.println("FAILED");
 
@@ -131,17 +134,18 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     static public void main(String args[]) {
         try {
 
-            Getopt g = new Getopt("MedSavantServerEngine", args, "l:h:p:u:");
+            Getopt g = new Getopt("MedSavantServerEngine", args, "l:h:p:u:d");
             //
             int c;
 
             String user = "root";
             String host = "localhost";
             int port = 5029;
+            USE_INFINIDB_ENGINE = false;
 
             // print usage
             if (args.length > 0 && args[0].equals("--help")) {
-                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER]");
+                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER] [-d for InfiniDB]");
                 return;
             }
 
@@ -152,13 +156,16 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         System.out.println("Host " + g.getOptarg());
                         host = g.getOptarg();
                         break;
+                    case 'd':
+                        USE_INFINIDB_ENGINE = true;
+                        break;
                     case 'p':
                         port = Integer.parseInt(g.getOptarg());
                         break;
                     case 'l':
                         int listenOnPort = Integer.parseInt(g.getOptarg());
                         MedSavantServerUnicastRemoteObject.setListenPort(listenOnPort);
-                        MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort+1);
+                        MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
                         break;
                     case 'u':
                         user = g.getOptarg();
@@ -172,7 +179,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
 
 
-            new MedSavantServerEngine(host,port,user);
+            new MedSavantServerEngine(host, port, user);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

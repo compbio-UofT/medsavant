@@ -40,10 +40,6 @@ public class VariantManagerUtils {
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
 
-    /*public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws IOException, SQLException {
-        new VariantAnnotator(tdfFilename, outputFilename, annotationIds).annotate(sid);
-    }*/
-
     public static void appendToFile(String baseFilename, String appendingFilename) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(baseFilename, true));
         BufferedReader reader = new BufferedReader(new FileReader(appendingFilename));
@@ -67,7 +63,7 @@ public class VariantManagerUtils {
 
         query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
-                + " LINES TERMINATED BY '\\r\\n'"
+                //+ " LINES TERMINATED BY '\\r\\n'"
                 + " FROM " + tableName;
 
         if (step > 1) {
@@ -238,25 +234,7 @@ public class VariantManagerUtils {
             step = (int)Math.ceil((double)length / (double)targetSize);
         }
 
-
-
-        /*double ratio = (double)MAX_SUBSET_SIZE / length;
-        int step;
-
-        if (ratio >= 1) { // file is smaller than max size, copy directly
-            step = 1;
-        } else {
-            step = (int)Math.ceil(1.0 / ratio);
-        }*/
-
         System.out.println("length: " + length + "  step: " + step);
-
-        /*String sedCommand = "sed -n '0~" + step + "p' " + inFile.getAbsolutePath() + " > " + outFile.getAbsolutePath();
-        System.out.println(sedCommand);
-
-        Process p = Runtime.getRuntime().exec(sedCommand);
-        p.waitFor();
-         */
 
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
