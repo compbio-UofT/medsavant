@@ -43,7 +43,7 @@ public class SettingsController {
     private static SettingsController instance; // a singleton instance
 
     private static final String DELIM = "="; // delimiter used in the settings file
-    private static final String PERSISTENCE_FILE_PATH = "medsavant.prop"; // location to save settings file
+    private static final String PERSISTENCE_FILE_PATH = ".medsavant.prop"; // location to save settings file
 
     /**
      * Settings keys
@@ -272,9 +272,9 @@ public class SettingsController {
         } else if (key.equals(KEY_DB_DRIVER)) {
             return "com.mysql.jdbc.Driver";
         } else if (key.equals(KEY_SERVER_ADDRESS)) {
-            return "localhost";
+            return "";
         } else if (key.equals(KEY_SERVER_PORT)) {
-            return "3232";
+            return "";
         } else if (key.equals(KEY_DB_NAME)) {
             return "";
         } else {
