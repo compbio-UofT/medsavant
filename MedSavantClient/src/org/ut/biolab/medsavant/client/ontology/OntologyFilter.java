@@ -54,7 +54,7 @@ public class OntologyFilter extends RegionSetFilter {
     @Override
     public Condition[] getConditions() throws InterruptedException, SQLException, RemoteException {
         Set<Gene> genes = new HashSet<Gene>();
-        Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.sessionId, appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
+        Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
         for (String[] termGenes: allTermsGenes.values()) {
             for (String geneName: termGenes) {
                 Gene g = GeneSetController.getInstance().getGene(geneName);

@@ -153,7 +153,7 @@ public class BrowserPage extends SubSectionView {
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
 
-                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
+                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
                 genomeContainer = new GenomeContainer(pageName, chroms);
 
                 genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);

@@ -120,7 +120,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                     String bamPath;
                     try {
                         bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                                LoginController.sessionId,
+                                LoginController.getInstance().getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 dnaID);
                         if (bamPath != null && !bamPath.equals("")) {
@@ -229,7 +229,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
 
         try {
             String bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                    LoginController.sessionId,
+                    LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     r.getDnaID());
 

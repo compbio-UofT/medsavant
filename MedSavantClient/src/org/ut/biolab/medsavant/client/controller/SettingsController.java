@@ -22,7 +22,9 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+import savant.util.CryptoUtils;
 
 
 /**
@@ -44,6 +46,10 @@ public class SettingsController {
 
     private static final String DELIM = "="; // delimiter used in the settings file
     private static final String PERSISTENCE_FILE_PATH = ".medsavant.prop"; // location to save settings file
+
+    //static {
+        //PERSISTENCE_FILE_PATH = new File(DirectorySettings.getMedSavantDirectory(),".medsavant.prop").getAbsolutePath(); // location to save settings file
+    //}
 
     /**
      * Settings keys
@@ -169,6 +175,7 @@ public class SettingsController {
      * Read the settings in from file (usually performed once, on load)
      */
     private void readPersistenceMap() {
+         String s = new File(DirectorySettings.getMedSavantDirectory(),".medsavant.prop").getAbsolutePath();
         File pFile = new File(PERSISTENCE_FILE_PATH);
 
         if (!pFile.exists()) {
@@ -266,7 +273,7 @@ public class SettingsController {
         } else if (key.equals(KEY_PASSWORD)) {
             return "";
         } else if (key.equals(KEY_REMEMBER_PASSWORD)) {
-            return booleanToString(false);
+            return booleanToString(true);
         } else if (key.equals(KEY_AUTOLOGIN)) {
             return booleanToString(false);
         } else if (key.equals(KEY_DB_DRIVER)) {
@@ -311,11 +318,11 @@ public class SettingsController {
     }
 
     public void setPassword(String str) {
-        setValue(KEY_PASSWORD, str);
+        setValue(KEY_PASSWORD, CryptoUtils.encrypt(str));
     }
 
     public String getPassword() {
-        return getValue(SettingsController.KEY_PASSWORD);
+        return CryptoUtils.decrypt(getValue(SettingsController.KEY_PASSWORD));
     }
 
     public String getDBDriver() {

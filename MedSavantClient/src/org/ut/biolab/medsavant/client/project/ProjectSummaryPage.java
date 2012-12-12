@@ -109,14 +109,14 @@ public class ProjectSummaryPage extends SubSectionView {
         ValueFetcher pFetcher = new ValueFetcher() {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
-                return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.sessionId, projectID).size()));
+                return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), projectID).size()));
             }
         };
 
         ValueFetcher cFetcher = new ValueFetcher() {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
-                return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, projectID).length));
+                return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), projectID).length));
             }
         };
 

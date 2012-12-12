@@ -86,7 +86,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
 
-        fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+        fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -324,13 +324,13 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             public void actionPerformed(ActionEvent ae) {
                 if (patientIds != null && patientIds.length > 0) {
                     try {
-                        List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                        List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
                         Cohort selected = (Cohort) form.getSelectedValue();
                         if (selected == null) {
                             return;
                         }
-                        MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.sessionId, patientIds, selected.getId());
+                        MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIds, selected.getId());
                     } catch (Exception x) {
                         LOG.error("Error fetching cohorts.", x);
                     }
@@ -417,13 +417,13 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             public void actionPerformed(ActionEvent e) {
                 if (patientIDs != null && patientIDs.length > 0) {
                     try {
-                        Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                        Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts, "Select Cohort", "Select which cohort to add to:");
                         Cohort selected = (Cohort)form.getSelectedValue();
                         if (selected == null) {
                             return;
                         }
-                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.sessionId, patientIDs, selected.getId());
+                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIDs, selected.getId());
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error adding individuals to cohort: %s", ex);
                     }
@@ -444,7 +444,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         protected Object[] doInBackground() throws RemoteException, SQLException {
-            return MedSavantClient.PatientManager.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), patientID);
+            return MedSavantClient.PatientManager.getPatientRecord(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
         }
 
         @Override
@@ -469,10 +469,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         @Override
         protected File doInBackground() throws Exception {
 
-            List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), patientID);
+            List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
 
-            familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), patientID);
+            familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + patientID + ".csv");
 

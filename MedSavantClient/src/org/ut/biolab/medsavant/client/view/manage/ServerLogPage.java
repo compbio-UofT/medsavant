@@ -201,7 +201,7 @@ public class ServerLogPage extends SubSectionView {
             @Override
             public int getTotalNum() {
                 try {
-                    return MedSavantClient.LogManager.getClientLogSize(LoginController.sessionId);
+                    return MedSavantClient.LogManager.getClientLogSize(LoginController.getInstance().getSessionID());
                 } catch (Exception ex) {
                     return 0;
                 }
@@ -227,7 +227,7 @@ public class ServerLogPage extends SubSectionView {
             @Override
             public int getTotalNum() {
                 try {
-                    return MedSavantClient.LogManager.getAnnotationLogSize(LoginController.sessionId);
+                    return MedSavantClient.LogManager.getAnnotationLogSize(LoginController.getInstance().getSessionID());
                 } catch (Exception ex) {
                     return 0;
                 }
@@ -274,7 +274,7 @@ public class ServerLogPage extends SubSectionView {
 
 
         try {
-            List<AnnotationLog> logs = MedSavantClient.LogManager.getAnnotationLog(LoginController.sessionId, start, limit);
+            List<AnnotationLog> logs = MedSavantClient.LogManager.getAnnotationLog(LoginController.getInstance().getSessionID(), start, limit);
             v = new ArrayList<Object[]>();
             for(final AnnotationLog log : logs){
 
@@ -308,7 +308,7 @@ public class ServerLogPage extends SubSectionView {
         waitPanel.setStatus("");
         showWaitPanel();
         try {
-            List<GeneralLog> logs = MedSavantClient.LogManager.getClientLog(LoginController.sessionId, start, limit);
+            List<GeneralLog> logs = MedSavantClient.LogManager.getClientLog(LoginController.getInstance().getSessionID(), start, limit);
             v = new ArrayList<Object[]>();
             for(GeneralLog log : logs) {
                 v.add(new Object[] {

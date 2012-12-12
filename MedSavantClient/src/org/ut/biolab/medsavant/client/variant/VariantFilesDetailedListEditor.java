@@ -51,12 +51,12 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
             if (ProjectController.getInstance().promptForUnpublished()) {
                 try {
                     // Get lock.
-                    if (MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId)) {
+                    if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                         try {
                             new ImportVariantsWizard().setVisible(true);
                         } finally {
                             try {
-                                MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
                             } catch (Exception ex1) {
                                 VariantFilesPage.LOG.error("Error releasing database lock.", ex1);
                             }
@@ -86,12 +86,12 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
-                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId)) {
+                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                             try {
                                 new RemoveVariantsWizard(files).setVisible(true);
                             } finally {
                                 try {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
                                 } catch (Exception ex1) {
                                     VariantFilesPage.LOG.error("Error releasing database lock.", ex1);
                                 }

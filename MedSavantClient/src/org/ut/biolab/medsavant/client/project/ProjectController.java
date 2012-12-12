@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
@@ -88,7 +89,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             @Override
             public void run() {
                 try {
-                    manager.removeProject(LoginController.sessionId, projectName);
+                    manager.removeProject(LoginController.getInstance().getSessionID(), projectName);
                     fireEvent(new ProjectEvent(ProjectEvent.Type.REMOVED, projectName));
                 } catch (Throwable ex) {
                     ClientMiscUtils.reportError("Error removing project: %s", ex);
@@ -98,23 +99,23 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     public int addProject(String projName, CustomField[] fields) throws Exception {
-        int projectid = manager.addProject(LoginController.sessionId, projName, fields);
+        int projectid = manager.addProject(LoginController.getInstance().getSessionID(), projName, fields);
         fireEvent(new ProjectEvent(ProjectEvent.Type.ADDED, projName));
         return projectid;
     }
 
     public int getProjectID(String projName) throws SQLException, RemoteException {
-        return manager.getProjectID(LoginController.sessionId, projName);
+        return manager.getProjectID(LoginController.getInstance().getSessionID(), projName);
     }
 
-    public String getProjectName(int projID) throws SQLException, RemoteException {
-        return manager.getProjectName(LoginController.sessionId, projID);
+    public String getProjectNameFromID(int projID) throws SQLException, RemoteException {
+        return manager.getProjectName(LoginController.getInstance().getSessionID(), projID);
     }
 
     public void setProject(String projName) throws RemoteException, SQLException {
-        if (manager.containsProject(LoginController.sessionId, projName)) {
+        if (manager.containsProject(LoginController.getInstance().getSessionID(), projName)) {
 
-            if (manager.containsProject(LoginController.sessionId, currentProjectName) && FilterController.getInstance().hasFiltersApplied()) {
+            if (manager.containsProject(LoginController.getInstance().getSessionID(), currentProjectName) && FilterController.getInstance().hasFiltersApplied()) {
                 if (!DialogUtils.confirmChangeReference(true)) {
                     return;
                 }
@@ -140,15 +141,15 @@ public class ProjectController extends Controller<ProjectEvent> {
         if (manager == null) {
             return new String[0];
         }
-        return manager.getProjectNames(LoginController.sessionId);
+        return manager.getProjectNames(LoginController.getInstance().getSessionID());
     }
 
     public String getCurrentVariantTableName() throws SQLException, RemoteException {
-        return manager.getVariantTableName(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
+        return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
     }
 
     public String getCurrentVariantSubTableName() throws SQLException, RemoteException {
-        return manager.getVariantTableName(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true, true);
+        return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true, true);
     }
 
     public DbTable getCurrentVariantTable() {
@@ -160,11 +161,11 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentVariantTable() throws SQLException, RemoteException {
-        currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.sessionId, getCurrentVariantTableName());
+        currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
     }
 
     public String getCurrentPatientTableName() throws RemoteException, SQLException {
-        return MedSavantClient.PatientManager.getPatientTableName(LoginController.sessionId, currentProjectID);
+        return MedSavantClient.PatientManager.getPatientTableName(LoginController.getInstance().getSessionID(), currentProjectID);
     }
 
     public DbTable getCurrentPatientTable() {
@@ -177,26 +178,26 @@ public class ProjectController extends Controller<ProjectEvent> {
 
     private void setCurrentPatientTable() throws SQLException, RemoteException {
         DbColumn dbc = new DbColumn(null, "A", "B", 1);
-        currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());
+        currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentPatientTableName());
     }
 
     public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
         if (currentAnnotationFormats == null) {
-            int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.sessionId, this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
+            int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
             AnnotationFormat[] af = new AnnotationFormat[annotIDs.length+2];
             af[0] = AnnotationFormat.getDefaultAnnotationFormat();
             af[1] = AnnotationFormat.getCustomFieldAnnotationFormat(
                     manager.getCustomVariantFields(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         currentProjectID,
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         manager.getNewestUpdateID(
-                            LoginController.sessionId,
+                            LoginController.getInstance().getSessionID(),
                             currentProjectID,
                             ReferenceController.getInstance().getCurrentReferenceID(),
                             true)));
             for (int i = 0; i < annotIDs.length; i++) {
-                af[i+2] = MedSavantClient.AnnotationManagerAdapter.getAnnotationFormat(LoginController.sessionId, annotIDs[i]);
+                af[i+2] = MedSavantClient.AnnotationManagerAdapter.getAnnotationFormat(LoginController.getInstance().getSessionID(), annotIDs[i]);
             }
             currentAnnotationFormats = af;
         }
@@ -205,7 +206,7 @@ public class ProjectController extends Controller<ProjectEvent> {
 
     public CustomField[] getCurrentPatientFormat() throws RemoteException, SQLException {
         if (currentPatientFormat == null) {
-            currentPatientFormat = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, currentProjectID);
+            currentPatientFormat = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), currentProjectID);
         }
         return currentPatientFormat;
     }
@@ -218,7 +219,7 @@ public class ProjectController extends Controller<ProjectEvent> {
      * For the current project, set the best reference.
      */
     public void setDefaultReference() throws RemoteException, SQLException {
-        String[] references = manager.getReferenceNamesForProject(LoginController.sessionId, currentProjectID);
+        String[] references = manager.getReferenceNamesForProject(LoginController.getInstance().getSessionID(), currentProjectID);
         ReferenceController.getInstance().setReference(references[references.length - 1]);
     }
 
@@ -226,7 +227,7 @@ public class ProjectController extends Controller<ProjectEvent> {
      * Give user the option to publish unpublished changes or cancel them.
      */
     public boolean promptForUnpublished() throws SQLException, RemoteException {
-        ProjectDetails[] unpublishedTables = manager.getUnpublishedChanges(LoginController.sessionId);
+        ProjectDetails[] unpublishedTables = manager.getUnpublishedChanges(LoginController.getInstance().getSessionID());
         int refID = ReferenceController.getInstance().getCurrentReferenceID();
         for (ProjectDetails pd: unpublishedTables) {
             if (pd.getProjectID() == currentProjectID && pd.getReferenceID() == refID) {
@@ -248,14 +249,14 @@ public class ProjectController extends Controller<ProjectEvent> {
 
         if (option == JOptionPane.NO_OPTION) {
             try {
-                MedSavantClient.VariantManager.cancelPublish(LoginController.sessionId, pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
+                MedSavantClient.VariantManager.cancelPublish(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
                 return true;
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error cancelling publication of variants: %s", ex);
             }
         } else if (option == JOptionPane.YES_OPTION) {
             try {
-                MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
+                MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
                 LoginController.getInstance().logout();
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error publishing variants: %s", ex);

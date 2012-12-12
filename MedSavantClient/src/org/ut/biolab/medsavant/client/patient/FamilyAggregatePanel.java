@@ -152,7 +152,7 @@ public class FamilyAggregatePanel extends AggregatePanel implements PedigreeFiel
 
         @Override
         protected List<String> doInBackground() throws Exception {
-            return MedSavantClient.PatientManager.getFamilyIDs(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+            return MedSavantClient.PatientManager.getFamilyIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         }
 
         @Override
@@ -195,7 +195,7 @@ public class FamilyAggregatePanel extends AggregatePanel implements PedigreeFiel
         @Override
         protected Map<String, Integer> doInBackground() throws Exception {
             return MedSavantClient.VariantManager.getNumVariantsInFamily(
-                    LoginController.sessionId,
+                    LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     familyId, FilterController.getInstance().getAllFilterConditions());
@@ -222,7 +222,7 @@ public class FamilyAggregatePanel extends AggregatePanel implements PedigreeFiel
         @Override
         protected File doInBackground() throws Exception {
 
-            List<Object[]> results = MedSavantClient.PatientManager.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), familyId);
+            List<Object[]> results = MedSavantClient.PatientManager.getFamily(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), familyId);
 
             File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + familyId + ".csv");
 

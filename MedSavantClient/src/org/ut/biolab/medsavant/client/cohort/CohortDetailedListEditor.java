@@ -69,7 +69,7 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                     for (Object[] v : items) {
                         int id = ((Cohort) v[0]).getId();
                         try {
-                            MedSavantClient.CohortManager.removeCohort(LoginController.sessionId, id);
+                            MedSavantClient.CohortManager.removeCohort(LoginController.getInstance().getSessionID(), id);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
                             ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": %s", ex);

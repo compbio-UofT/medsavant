@@ -126,22 +126,22 @@ public class ProjectManagementPage extends SubSectionView {
         public void editItem(Object[] items) {
             try {
                 String projName = (String)items[0];
-                int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.sessionId, projName);
+                int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.getInstance().getSessionID(), projName);
 
                 // Check for existing unpublished changes to this project.
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
-                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId)) {
+                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                             try {
                                 ProjectWizard wiz = new ProjectWizard(projID, projName,
-                                                                      MedSavantClient.PatientManager.getCustomPatientFields(LoginController.sessionId, projID),
-                                                                      MedSavantClient.ProjectManager.getProjectDetails(LoginController.sessionId, projID));
+                                                                      MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
+                                                                      MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
                                 wiz.setVisible(true);
 
                             } finally {
                                 try {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
                                 } catch (Exception ex1) {
                                     LOG.error("Error releasing database lock.", ex1);
                                 }
@@ -268,7 +268,7 @@ public class ProjectManagementPage extends SubSectionView {
             @Override
             protected ProjectDetails[] doInBackground() throws Exception {
                 int projectId = ProjectController.getInstance().getProjectID(projectName);
-                return MedSavantClient.ProjectManager.getProjectDetails(LoginController.sessionId, projectId);
+                return MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projectId);
             }
 
             @Override
@@ -296,7 +296,7 @@ public class ProjectManagementPage extends SubSectionView {
 
             details.add(ViewUtil.getKeyValuePairList(values));
             try {
-                if (MedSavantClient.SettingsManager.getSetting(LoginController.sessionId, "db lock").equals("true")) {
+                if (MedSavantClient.SettingsManager.getSetting(LoginController.getInstance().getSessionID(), "db lock").equals("true")) {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
                     p.add(ViewUtil.alignLeft(new JLabel("The database is locked. Administrators cannot make further changes.")));
@@ -312,7 +312,7 @@ public class ProjectManagementPage extends SubSectionView {
                                         + "making changes. Are you sure you want to proceed?");
 
                                 if (result == DialogUtils.YES) {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
                                     refreshSelectedProject();
                                 }
                             } catch (Exception ex) {
@@ -333,7 +333,7 @@ public class ProjectManagementPage extends SubSectionView {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             try {
-                                MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId);
+                                MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID());
                                 refreshSelectedProject();
                             } catch (Exception ex) {
                             }

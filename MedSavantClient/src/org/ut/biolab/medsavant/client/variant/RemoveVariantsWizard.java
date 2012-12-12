@@ -136,7 +136,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                         new UpdateWorker("Removing variants", RemoveVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                updateID = MedSavantClient.VariantManager.removeVariants(LoginController.sessionId, projectID, referenceID, files);
+                                updateID = MedSavantClient.VariantManager.removeVariants(LoginController.getInstance().getSessionID(), projectID, referenceID, files);
                                 return null;
                             }
                         }.execute();

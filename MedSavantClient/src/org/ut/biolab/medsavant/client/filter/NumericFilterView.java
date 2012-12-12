@@ -103,7 +103,7 @@ public class NumericFilterView extends FilterView {
                 @Override
                 public void run() {
                     try {
-                        initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName));
+                        initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
                     } catch (Throwable ex) {
                         ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", whichTable, columnName), ex);
                     }
@@ -111,7 +111,7 @@ public class NumericFilterView extends FilterView {
 
                 @Override
                 public ProgressStatus checkProgress() throws RemoteException {
-                    return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
+                    return MedSavantClient.DBUtils.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
                 }
             }.setVisible(true);
         }
@@ -223,7 +223,7 @@ public class NumericFilterView extends FilterView {
                             }
                         } else {
                             return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                                    LoginController.sessionId,
+                                    LoginController.getInstance().getSessionID(),
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     columnName,
                                     appliedRange));

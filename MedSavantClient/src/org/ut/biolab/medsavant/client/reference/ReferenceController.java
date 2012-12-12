@@ -54,7 +54,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public Reference[] getReferences() throws SQLException, RemoteException {
-        return manager.getReferences(LoginController.sessionId);
+        return manager.getReferences(LoginController.getInstance().getSessionID());
     }
 
     public boolean setReference(String refName) throws SQLException, RemoteException{
@@ -62,7 +62,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public boolean setReference(String refName, boolean getConfirmation) throws SQLException, RemoteException {
-        if (manager.containsReference(LoginController.sessionId, refName)) {
+        if (manager.containsReference(LoginController.getInstance().getSessionID(), refName)) {
 
             if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
                 if(!DialogUtils.confirmChangeReference(false)){
@@ -80,7 +80,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public int getReferenceID(String refName) throws SQLException, RemoteException {
-        return manager.getReferenceID(LoginController.sessionId, refName);
+        return manager.getReferenceID(LoginController.getInstance().getSessionID(), refName);
     }
 
     public int getCurrentReferenceID() {
@@ -88,7 +88,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public String[] getReferenceNames() throws SQLException, RemoteException {
-        return manager.getReferenceNames(LoginController.sessionId);
+        return manager.getReferenceNames(LoginController.getInstance().getSessionID());
     }
 
     public String getCurrentReferenceName(){
@@ -97,7 +97,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public String getCurrentReferenceUrl(){
         try {
-            return manager.getReferenceUrl(LoginController.sessionId, currentReferenceID);
+            return manager.getReferenceUrl(LoginController.getInstance().getSessionID(), currentReferenceID);
         } catch (Exception e){
             return null;
         }
@@ -108,7 +108,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public Chromosome[] getChromosomes(int refID) throws SQLException, RemoteException {
-        return manager.getChromosomes(LoginController.sessionId, refID);
+        return manager.getChromosomes(LoginController.getInstance().getSessionID(), refID);
     }
 
     public boolean isReferenceSet(){
@@ -116,7 +116,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public void addReference(String name, Chromosome[] chroms, String url) throws SQLException, RemoteException {
-        manager.addReference(LoginController.sessionId, name, chroms, url);
+        manager.addReference(LoginController.getInstance().getSessionID(), name, chroms, url);
         fireEvent(new ReferenceEvent(ReferenceEvent.Type.ADDED, name));
     }
 
@@ -125,7 +125,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
             @Override
             public void run() {
                 try {
-                    manager.removeReference(LoginController.sessionId, manager.getReferenceID(LoginController.sessionId, refName));
+                    manager.removeReference(LoginController.getInstance().getSessionID(), manager.getReferenceID(LoginController.getInstance().getSessionID(), refName));
                     fireEvent(new ReferenceEvent(ReferenceEvent.Type.REMOVED, refName));
                 } catch (Throwable ex) {
                     setVisible(false);

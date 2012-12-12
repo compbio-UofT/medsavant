@@ -90,7 +90,7 @@ public class UpdatesPanel extends JComponent {
 
                     @Override
                     protected Notification[] doInBackground() throws Exception {
-                        return MedSavantClient.NotificationManager.getNotifications(LoginController.sessionId, LoginController.getInstance().getUserName());
+                        return MedSavantClient.NotificationManager.getNotifications(LoginController.getInstance().getSessionID(), LoginController.getInstance().getUserName());
                     }
 
                 }.execute();
@@ -230,12 +230,12 @@ public class UpdatesPanel extends JComponent {
 
                             //get db lock
                             try {
-                                if (MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId)) {
+                                if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                                     try {
                                         ProjectController.getInstance().promptToPublish((ProjectDetails)n.getData());
                                     } finally {
                                         try {
-                                            MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                            MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
                                         } catch (Exception ex1) {
                                             LOG.error("Error releasing database lock.", ex1);
                                         }

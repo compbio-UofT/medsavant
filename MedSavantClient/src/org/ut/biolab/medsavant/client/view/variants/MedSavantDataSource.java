@@ -94,7 +94,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
         //update chroms
         List<String> chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentVariantTableName(),
                 BasicVariantColumns.CHROM.getColumnName(),
                 false);
@@ -105,7 +105,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
         //update participants
         List<String> dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentVariantTableName(),
                 BasicVariantColumns.DNA_ID.getColumnName(),
                 false);
@@ -164,7 +164,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 }
 
                 List<Object[]> filteredVariants = MedSavantClient.VariantManager.getVariants(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         conditions,

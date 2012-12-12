@@ -362,6 +362,6 @@ public class InstallAnnotationWizard extends WizardDialog {
     }
 
     private boolean create() throws SQLException, IOException {
-        return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+        return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
     }
 }

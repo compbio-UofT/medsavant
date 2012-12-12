@@ -91,7 +91,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
             new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() throws InterruptedException, SQLException, RemoteException {
-                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, allowInexactMatch ,useCache);
+                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch ,useCache);
                     if (columnName.equals(CHROM.getColumnName())) {
                         Collections.sort(availableValues, new ChromosomeComparator());
                     }
@@ -99,7 +99,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
 
                 @Override
                 public ProgressStatus checkProgress() throws RemoteException {
-                    return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
+                    return MedSavantClient.DBUtils.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
                 }
             }.showDialog();
         }
@@ -167,7 +167,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
                         };
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
-                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId,
+                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getInstance().getSessionID(),
                                              ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
                                              allowInexactMatch));
                 }

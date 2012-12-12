@@ -69,7 +69,7 @@ public class VariantFilesPage extends SubSectionView {
                     new SimpleDetailedListModel<SimpleVariantFile>("Variant File") {
                         @Override
                         public SimpleVariantFile[] getData() throws Exception {
-                            return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
+                            return MedSavantClient.VariantManager.getUploadedFiles(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
                         }
                     },
                     new VariantFilesDetailedView(pageName),

@@ -81,7 +81,7 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         //populate individuals
         List<String> temp = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentPatientTableName(),
                 BasicPatientColumns.DNA_IDS.getColumnName(),
                 false,
@@ -126,7 +126,7 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         //get bookmarks
         Map<String, List<String>> map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIDs(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
                 FilterController.getInstance().getAllFilterConditions(),
@@ -134,7 +134,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 -1);
 
         //get BAM files
-        List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
+        List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
 
         //genome version
         String genomeName = ReferenceController.getInstance().getCurrentReferenceName();

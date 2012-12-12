@@ -103,8 +103,10 @@ public class ClientMiscUtils extends MiscUtils {
             message = String.format(message, "server refused connection");
         } else if (t instanceof UnmarshalException) {
             message = String.format(message, "connection to server lost");
+            LoginController.getInstance().logout();
         } else if (t instanceof NoSuchObjectException) {
             message = String.format(message, "server has been restarted");
+            LoginController.getInstance().logout();
         } else {
             message = String.format(message, getMessage(t));
         }

@@ -331,7 +331,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
      * List<Integer> selected = new ArrayList<Integer>(); starMap.clear();
      *
      * try { Set<StarredVariant> starred =
-     * MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId,
+     * MedSavantClient.VariantManager.getStarredVariants(LoginController.getInstance().getSessionID(),
      * ProjectController.getInstance().getCurrentProjectID(),
      * ReferenceController.getInstance().getCurrentReferenceID());
      *
@@ -507,7 +507,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         List<Object[]> rows;
                         try {
                             rows = MedSavantClient.VariantManager.getVariants(
-                                    LoginController.sessionId,
+                                    LoginController.getInstance().getSessionID(),
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
                                     conditions,

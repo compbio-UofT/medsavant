@@ -53,7 +53,7 @@ public class GeneSetPage extends SubSectionView {
                     new SimpleDetailedListModel<GeneSet>("Gene Sets") {
                         @Override
                         public GeneSet[] getData() throws Exception {
-                            return manager.getGeneSets(LoginController.sessionId);
+                            return manager.getGeneSets(LoginController.getInstance().getSessionID());
                         }
                     },
                     new GenesDetailedView(),

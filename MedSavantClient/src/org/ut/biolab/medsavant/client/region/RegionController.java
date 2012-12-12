@@ -48,18 +48,18 @@ public class RegionController extends Controller<RegionEvent> {
     }
 
     public void addRegionSet(String regionSetName, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException {
-        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), delim, fileFormat, numHeaderLines, fileID);
+        MedSavantClient.RegionSetManager.addRegionSet(LoginController.getInstance().getSessionID(), regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), delim, fileFormat, numHeaderLines, fileID);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
     }
 
     public void removeSet(int setID) throws SQLException, RemoteException {
-        MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, setID);
+        MedSavantClient.RegionSetManager.removeRegionSet(LoginController.getInstance().getSessionID(), setID);
         fireEvent(new RegionEvent(RegionEvent.Type.REMOVED));
     }
 
     public List<RegionSet> getRegionSets() throws SQLException, RemoteException {
         List<RegionSet> result = new ArrayList<RegionSet>();
-        result.addAll(MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId));
+        result.addAll(MedSavantClient.RegionSetManager.getRegionSets(LoginController.getInstance().getSessionID()));
         result.addAll(localRegionSets);
         return result;
     }
@@ -68,7 +68,7 @@ public class RegionController extends Controller<RegionEvent> {
         if (set instanceof AdHocRegionSet) {
             return ((AdHocRegionSet)set).regions;
         }
-        return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set);
+        return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.getInstance().getSessionID(), set);
     }
 
     public List<GenomicRegion> getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
@@ -84,13 +84,13 @@ public class RegionController extends Controller<RegionEvent> {
             }
         }
         if (!setsSet.isEmpty()) {
-            result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, setsSet));
+            result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.getInstance().getSessionID(), setsSet));
         }
         return result;
     }
 
     public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
-        MedSavantClient.RegionSetManager.addToRegionSet(LoginController.sessionId, set, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
+        MedSavantClient.RegionSetManager.addToRegionSet(LoginController.getInstance().getSessionID(), set, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
     }
 

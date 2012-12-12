@@ -63,7 +63,7 @@ public class ExternalAnnotationController {
     }
 
     public Annotation[] getExternalAnnotations() throws SQLException, RemoteException {
-        return MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.sessionId);
+        return MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
     }
 
     public void fireAnnotationAddedEvent(String projectName) {

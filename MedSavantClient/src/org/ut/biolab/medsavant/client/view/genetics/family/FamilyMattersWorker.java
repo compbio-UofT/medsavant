@@ -341,7 +341,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
 
-                List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.sessionId, criterion.getCohort().getId());
+                List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
                 Set<String> setOfDNAIDs = new HashSet<String>(dnaIDsInCohort);
 
 
@@ -460,7 +460,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         int frequencyThreshold = criterion.getFreqAmount();
 
         List<SimplePatient> patientsInCohort = MedSavantClient.CohortManager.getIndividualsInCohort(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 c.getId());
 

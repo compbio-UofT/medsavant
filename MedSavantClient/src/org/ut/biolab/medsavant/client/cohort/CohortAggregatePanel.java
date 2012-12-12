@@ -122,9 +122,9 @@ public class CohortAggregatePanel extends AggregatePanel {
                 add(container, BorderLayout.CENTER);
 
                 List rows = new ArrayList();
-                Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                 for (Cohort c : cohorts) {
-                    List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), c.getId());
+                    List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), c.getId());
                     CohortNode n = new CohortNode(c, simplePatients);
                     nodes.add(n);
                     n.addChild(new LoadingNode());
@@ -245,7 +245,7 @@ public class CohortAggregatePanel extends AggregatePanel {
 
                 @Override
                 protected Integer doInBackground() throws Exception {
-                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getAllFilterConditions());
+                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getAllFilterConditions());
                 }
 
                 @Override
@@ -281,7 +281,7 @@ public class CohortAggregatePanel extends AggregatePanel {
 
                     @Override
                     protected Map<SimplePatient, Integer> doInBackground() throws Exception {
-                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), patients);
+                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), patients);
                     }
 
                     @Override

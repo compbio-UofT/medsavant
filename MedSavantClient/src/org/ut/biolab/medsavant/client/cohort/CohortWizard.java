@@ -117,7 +117,7 @@ public class CohortWizard extends WizardDialog {
         if (cohortName != null && !cohortName.equals("")) {
             try {
                 if (validateName()) {
-                    MedSavantClient.CohortManager.addCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cohortName);
+                    MedSavantClient.CohortManager.addCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortName);
 
                     setVisible(false);
                 }
@@ -128,7 +128,7 @@ public class CohortWizard extends WizardDialog {
     }
 
     private boolean validateName() throws SQLException, RemoteException {
-        Cohort[] existingCohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+        Cohort[] existingCohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         for (Cohort coh: existingCohorts) {
             if (coh.getName().equals(cohortName)) {
                 DialogUtils.displayError("Sorry", "Cohort name already in use.");

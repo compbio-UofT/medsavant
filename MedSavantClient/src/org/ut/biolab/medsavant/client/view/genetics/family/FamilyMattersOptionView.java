@@ -407,7 +407,7 @@ class FamilyMattersOptionView {
         Cohort[] cohorts = null;
 
         try {
-            cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+            cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         } catch (Exception ex) {
             DialogUtils.displayErrorMessage("Error loading cohorts", ex);
         }
@@ -640,7 +640,7 @@ class FamilyMattersOptionView {
 
                         m.setStatusMessage("Retrieving Variants");
 
-                        String session = LoginController.sessionId;
+                        String session = LoginController.getInstance().getSessionID();
                         int refID = ReferenceController.getInstance().getCurrentReferenceID();
                         int projectID = ProjectController.getInstance().getCurrentProjectID();
                         int updateID = MedSavantClient.ProjectManager.getNewestUpdateID(

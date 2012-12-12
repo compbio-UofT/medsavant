@@ -59,7 +59,7 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
     public CohortFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
         availableValues = new ArrayList<Cohort>();
-        availableValues.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID())));
+        availableValues.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
         initContentPanel();
     }
 
@@ -98,7 +98,7 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
                 for (Cohort coh: appliedValues) {
                     cohNames.add(coh.getName());
                 }
-                return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cohNames));
+                return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohNames));
             }
             return FALSE_CONDITION;
         }

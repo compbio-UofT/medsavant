@@ -87,7 +87,7 @@ public class GeneSetFetcher {
     }
 
     public double getNormalizedVariantCount(Gene gene) throws SQLException, RemoteException, InterruptedException{
-        double varCount = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene.getChrom(), gene.getStart(), gene.getEnd());
+        double varCount = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene.getChrom(), gene.getStart(), gene.getEnd());
         double length = gene.getEnd()-gene.getStart();
         return ClientMiscUtils.round((varCount/length)*1000.00, 4);
     }

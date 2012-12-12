@@ -99,7 +99,7 @@ class CohortDetailedView extends DetailedView {
         @Override
         protected List<SimplePatient> doInBackground() throws Exception {
             List<SimplePatient> patientList = MedSavantClient.CohortManager.getIndividualsInCohort(
-                    LoginController.sessionId,
+                    LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     cohort.getId());
             return patientList;
@@ -200,7 +200,7 @@ class CohortDetailedView extends DetailedView {
                     }
 
                     try {
-                        MedSavantClient.CohortManager.removePatientsFromCohort(LoginController.sessionId, patientIDs, cohorts[0].getId());
+                        MedSavantClient.CohortManager.removePatientsFromCohort(LoginController.getInstance().getSessionID(), patientIDs, cohorts[0].getId());
                     } catch (Exception ex) {
                         LOG.error("Error removing patients from cohort.", ex);
                     }

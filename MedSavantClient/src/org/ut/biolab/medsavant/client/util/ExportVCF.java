@@ -63,7 +63,7 @@ public class ExportVCF implements BasicVariantColumns {
 
 
         int fileID = MedSavantClient.VariantManager.exportVariants(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
                 FilterController.getInstance().getAllFilterConditions());
@@ -83,7 +83,7 @@ public class ExportVCF implements BasicVariantColumns {
     public static void exportVCF(File destFile, MedSavantWorker worker) throws Exception {
 
         int fileID = MedSavantClient.VariantManager.exportVariants(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
                 FilterController.getInstance().getAllFilterConditions());

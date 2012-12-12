@@ -103,7 +103,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                 public void run() {
                     try {
                         MedSavantClient.PatientManager.removePatient(
-                                LoginController.sessionId,
+                                LoginController.getInstance().getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
                         setVisible(false);
@@ -130,7 +130,7 @@ class IndividualDetailEditor extends DetailedListEditor {
             File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[] { "csv" }), null);
             if (file != null) {
                 //remove current data
-                MedSavantClient.PatientManager.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                MedSavantClient.PatientManager.clearPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
 
                 new ImportProgressDialog(file).showDialog();
             }
@@ -162,7 +162,7 @@ class IndividualDetailEditor extends DetailedListEditor {
         @Override
         public void run() throws InterruptedException, SQLException, RemoteException, IOException {
             lastStatus = new ProgressStatus("Reading records...", -1.0);
-            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
 
             CSVReader in = new CSVReader(new BufferedReader(new FileReader(importFile)));
 
@@ -203,7 +203,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                         }
                     }
 
-                    MedSavantClient.PatientManager.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
+                    MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
                 }
 
                 in.close();
@@ -223,8 +223,8 @@ class IndividualDetailEditor extends DetailedListEditor {
         public void run() throws SQLException, RemoteException, IOException, InterruptedException {
             lastStatus = new ProgressStatus("Writing records...", 0.0);
 
-            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-            List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
 
             CSVWriter out = new CSVWriter(new BufferedWriter(new FileWriter(exportFile, false)), ',', '"');
 

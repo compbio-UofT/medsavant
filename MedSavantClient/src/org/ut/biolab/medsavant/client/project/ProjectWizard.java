@@ -337,10 +337,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         if (modify) {
             try {
-                int firstRef = manager.getReferenceIDsForProject(LoginController.sessionId, projectID)[0];
+                int firstRef = manager.getReferenceIDsForProject(LoginController.getInstance().getSessionID(), projectID)[0];
                 CustomField[] fields = manager.getCustomVariantFields(
-                        LoginController.sessionId, projectID, firstRef,
-                        manager.getNewestUpdateID(LoginController.sessionId, projectID, firstRef, false));
+                        LoginController.getInstance().getSessionID(), projectID, firstRef,
+                        manager.getNewestUpdateID(LoginController.getInstance().getSessionID(), projectID, firstRef, false));
                 for (CustomField f : fields) {
                     variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
@@ -477,8 +477,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private void refreshReferencePanel(JPanel p) throws SQLException, RemoteException {
-        Reference[] references = MedSavantClient.ReferenceManager.getReferences(LoginController.sessionId);
-        Annotation[] annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.sessionId);
+        Reference[] references = MedSavantClient.ReferenceManager.getReferences(LoginController.getInstance().getSessionID());
+        Annotation[] annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
 
         p.removeAll();
         checkListItems.clear();
@@ -598,7 +598,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
     private boolean validateProjectName() {
         try {
-            if (manager.containsProject(LoginController.sessionId, projectName) && (!modify || !projectName.equals(originalProjectName))) {
+            if (manager.containsProject(LoginController.getInstance().getSessionID(), projectName) && (!modify || !projectName.equals(originalProjectName))) {
                 JOptionPane.showMessageDialog(this, "Project name already in use. ", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 return true;
@@ -690,11 +690,11 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
                 //set custom vcf fields
                 int refID = cli.getReference().getID();
-                manager.setCustomVariantFields(LoginController.sessionId, projID, refID, 0, variantFields);
+                manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projID, refID, 0, variantFields);
 
                 int[] annIDs = cli.getAnnotationIDs();
-                String tablename = manager.createVariantTable(LoginController.sessionId, projID, refID, 0, annIDs, false);
-                manager.addTableToMap(LoginController.sessionId, projID, refID, 0, true, tablename, annIDs, null);
+                String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projID, refID, 0, annIDs, false);
+                manager.addTableToMap(LoginController.getInstance().getSessionID(), projID, refID, 0, true, tablename, annIDs, null);
             }
         }
     }
@@ -706,13 +706,13 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         if (modifyProjectName) {
             //change project name
             if (!projectName.equals(originalProjectName)) {
-                manager.renameProject(LoginController.sessionId, projectID, projectName);
+                manager.renameProject(LoginController.getInstance().getSessionID(), projectID, projectName);
             }
         }
 
         if (modifyPatientFields) {
             //modify patientFields
-            MedSavantClient.PatientManager.updateFields(LoginController.sessionId, projectID, customFields);
+            MedSavantClient.PatientManager.updateFields(LoginController.getInstance().getSessionID(), projectID, customFields);
         }
 
         if (modifyVariants) {
@@ -733,18 +733,18 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 //add new ref
                 if (pd == null && cli.isSelected()) {
                     int refID = cli.getReference().getID();
-                    String tablename = manager.createVariantTable(LoginController.sessionId, projectID, refID, 0, annIDs, false);
-                    manager.setCustomVariantFields(LoginController.sessionId, projectID, refID, 0, variantFields);
-                    manager.addTableToMap(LoginController.sessionId, projectID, refID, 0, true, tablename, annIDs, null);
+                    String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projectID, refID, 0, annIDs, false);
+                    manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projectID, refID, 0, variantFields);
+                    manager.addTableToMap(LoginController.getInstance().getSessionID(), projectID, refID, 0, true, tablename, annIDs, null);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
                     //remove existing ref
-                    manager.removeReferenceForProject(LoginController.sessionId, projectID, cli.getReference().getID());
+                    manager.removeReferenceForProject(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID());
                     continue;
                 }
 
                 //make modifications
-                updateID = MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getID(), annIDs, variantFields);
+                updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields);
 
             }
         }

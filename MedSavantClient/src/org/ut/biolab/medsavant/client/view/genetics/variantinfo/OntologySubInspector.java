@@ -158,7 +158,7 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
 
                 @Override
                 protected OntologyTerm[] doInBackground() throws Exception {
-                    return MedSavantClient.OntologyManager.getTermsForGene(LoginController.sessionId, null, g.getName());
+                    return MedSavantClient.OntologyManager.getTermsForGene(LoginController.getInstance().getSessionID(), null, g.getName());
                 }
             }.execute();
         } else {

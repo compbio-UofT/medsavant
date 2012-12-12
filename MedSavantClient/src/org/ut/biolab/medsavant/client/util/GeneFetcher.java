@@ -39,7 +39,7 @@ public abstract class GeneFetcher extends MedSavantWorker<Gene[]> {
 
     @Override
     protected Gene[] doInBackground() throws Exception {
-        return MedSavantClient.GeneSetManager.getGenes(LoginController.sessionId, selectedSet);
+        return MedSavantClient.GeneSetManager.getGenes(LoginController.getInstance().getSessionID(), selectedSet);
     }
 
     @Override

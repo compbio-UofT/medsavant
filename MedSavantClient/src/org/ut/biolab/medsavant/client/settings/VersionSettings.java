@@ -68,7 +68,7 @@ public class VersionSettings {
     }
 
     public static String getDatabaseVersion() throws SQLException, RemoteException {
-        return MedSavantClient.SettingsManager.getSetting(LoginController.sessionId, Settings.KEY_CLIENT_VERSION);
+        return MedSavantClient.SettingsManager.getSetting(LoginController.getInstance().getSessionID(), Settings.KEY_CLIENT_VERSION);
     }
 
     public static boolean isCompatible(String programVersion, String dbVersion, boolean isServer) throws ParserConfigurationException, IOException, SAXException{

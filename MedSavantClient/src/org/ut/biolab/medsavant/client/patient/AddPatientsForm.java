@@ -68,7 +68,7 @@ public class AddPatientsForm extends JDialog {
         model.addColumn("Short Name");
         model.addColumn("Value");
 
-        CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+        CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         for (int i = 1; i < fields.length; i++) { //skip patient id
             model.addRow(new Object[]{ fields[i], ""} );
         }
@@ -122,7 +122,7 @@ public class AddPatientsForm extends JDialog {
             values.set(i, values.get(i).equals("") ? null : values.get(i));
         }
 
-        MedSavantClient.PatientManager.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cols, values);
+        MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cols, values);
         clearTable();
     }
 

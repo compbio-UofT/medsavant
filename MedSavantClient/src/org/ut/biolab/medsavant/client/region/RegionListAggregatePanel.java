@@ -314,7 +314,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
             for (int i = 0; i < max; i++) {
                 GenomicRegion reg = currentRegions.get(i);
                 int recordsInRegion = MedSavantClient.VariantManager.getVariantCountInRange(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),
@@ -324,7 +324,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
                 updateVariantCount(reg, recordsInRegion);
                 updateProgress(100.0 * (i + 0.5) / max);
                 recordsInRegion = MedSavantClient.VariantManager.getPatientCountWithVariantsInRange(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),

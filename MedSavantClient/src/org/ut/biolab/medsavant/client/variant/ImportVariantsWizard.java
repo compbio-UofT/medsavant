@@ -433,12 +433,12 @@ public class ImportVariantsWizard extends WizardDialog {
                                         fileIndex++;
                                     }
                                     inUploading = false;
-                                    updateID = manager.uploadVariants(LoginController.sessionId, transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    updateID = manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     progressLabel.setText("Importing variants stored on server...");
-                                    updateID = manager.uploadVariants(LoginController.sessionId, new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    updateID = manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -465,9 +465,9 @@ public class ImportVariantsWizard extends WizardDialog {
                             protected ProgressStatus checkProgress() throws RemoteException {
                                 ProgressStatus stat;
                                 if (inUploading) {
-                                    stat = MedSavantClient.NetworkManager.checkProgress(LoginController.sessionId, isCancelled());
+                                    stat = MedSavantClient.NetworkManager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
                                 } else {
-                                    stat = manager.checkProgress(LoginController.sessionId, isCancelled());
+                                    stat = manager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
                                 }
                                 if (stat != null) {
                                     progressLabel.setText(stat.message);

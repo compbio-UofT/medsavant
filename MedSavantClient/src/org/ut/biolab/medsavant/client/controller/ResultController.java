@@ -116,7 +116,7 @@ public class ResultController {
         filterSetIDForRecords = filterController.getCurrentFilterSetID();
 
         filteredVariants = MedSavantClient.VariantManager.getVariants(
-                LoginController.sessionId,
+                LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
                 FilterController.getInstance().getAllFilterConditions(),
@@ -138,7 +138,7 @@ public class ResultController {
                 dbNameForFilteredCount = SettingsController.getInstance().getDBName();
                 int tempFilterId = filterController.getCurrentFilterSetID();
                 filteredVariantCount =  MedSavantClient.VariantManager.getFilteredVariantCount(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         filterController.getAllFilterConditions());
@@ -155,7 +155,7 @@ public class ResultController {
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForTotal ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForTotal)) {
                 totalVariantCount =  MedSavantClient.VariantManager.getVariantCount(
-                        LoginController.sessionId,
+                        LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID());
                 projectIDForTotal = ProjectController.getInstance().getCurrentProjectID();

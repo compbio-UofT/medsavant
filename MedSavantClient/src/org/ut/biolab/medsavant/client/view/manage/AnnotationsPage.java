@@ -210,7 +210,7 @@ public class AnnotationsPage extends SubSectionView {
                 int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
 
                 if (response == DialogUtils.YES) {
-                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.sessionId, an);
+                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
                     DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
                 }
 

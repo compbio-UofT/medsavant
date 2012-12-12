@@ -122,7 +122,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
 
         toolbar.add(Box.createHorizontalGlue());
 
-        bScatter = new JCheckBox("Scatter");
+        bScatter = new JCheckBox("Group By");
         bScatter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

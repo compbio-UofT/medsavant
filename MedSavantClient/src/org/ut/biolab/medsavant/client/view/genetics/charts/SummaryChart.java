@@ -29,6 +29,7 @@ import javax.swing.*;
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
+import com.jidesoft.chart.PointShape;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
@@ -459,6 +460,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         for (int i = 0; i < entries.getNumY(); i++) {
             models[i] = new DefaultChartModel();
         }
+        
         for (int i = 0; i < entries.getNumX(); i++) {
             //ScatterChartEntry[] x = entries[i];
             for (int j = 0; j < entries.getNumY(); j++) {
@@ -475,7 +477,10 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         //add models
         for (int i = 0; i < models.length; i++) {
-            chart.addModel(models[i], new ChartStyle(ViewUtil.getColor(i, models.length), true, mapGenerator.isNumeric()));
+            Color translucentGreen = ViewUtil.getColor(i, models.length);
+            ChartStyle style = new ChartStyle(translucentGreen, PointShape.DISC);
+            style.setPointSize(10);
+            chart.addModel(models[i], style);//new ChartStyle(ViewUtil.getColor(i, models.length), true, mapGenerator.isNumeric()));
         }
 
         //add axes
@@ -623,7 +628,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws SQLException, RemoteException{
             Map<Object, List<String>> map = MedSavantClient.PatientManager.getDNAIDsForValues(
-                    LoginController.sessionId,
+                    LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     generator.getFilterId());
             if (generator.getFilterId().equals(GENDER.getColumnName())) {
@@ -675,7 +680,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             }
 
             ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
-                    LoginController.sessionId,
+                    LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     FilterController.getInstance().getAllFilterConditions(),
@@ -795,7 +800,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
                                     ComboCondition.and(condition));
                         } else {
                             List<String> individuals = MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                                    LoginController.sessionId,
+                                    LoginController.getInstance().getSessionID(),
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     mapGenerator.getFilterId(),
                                     r);
@@ -831,7 +836,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
                             }
 
                             List<String> individuals = MedSavantClient.PatientManager.getDNAIDsForStringList(
-                                    LoginController.sessionId,
+                                    LoginController.getInstance().getSessionID(),
                                     patientTable,
                                     values,
                                     mapGenerator.getFilterId());

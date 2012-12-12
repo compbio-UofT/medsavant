@@ -50,7 +50,11 @@ public class LoginController extends Controller<LoginEvent> {
     private String password;
     private UserLevel level;
     private boolean loggedIn = false;
-    public static String sessionId;
+    private static String sessionId;
+
+    public static String getSessionID() {
+        return sessionId;
+    }
 
     public static LoginController getInstance() {
         if (instance == null) {

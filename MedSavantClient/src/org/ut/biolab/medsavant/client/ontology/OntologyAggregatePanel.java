@@ -143,7 +143,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                     @Override
                     protected OntologyTerm[] doInBackground() throws Exception {
                         showProgress(0.0);
-                        return MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ((OntologyListItem)chooser.getSelectedItem()).getType());
+                        return MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ((OntologyListItem)chooser.getSelectedItem()).getType());
                     }
 
                     @Override
@@ -172,7 +172,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
 
                     @Override
                     protected ProgressStatus checkProgress() throws RemoteException {
-                        ProgressStatus stat = MedSavantClient.OntologyManager.checkProgress(LoginController.sessionId, false);
+                        ProgressStatus stat = MedSavantClient.OntologyManager.checkProgress(LoginController.getInstance().getSessionID(), false);
                         LOG.info("OntologyManager returned status " + stat);
                         return stat;
                     }
@@ -469,7 +469,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                             Gene gene = GeneSetController.getInstance().getGene(geneName);
                             if (gene != null) {
                                 result = MedSavantClient.VariantManager.getVariantCountInRange(
-                                        LoginController.sessionId,
+                                        LoginController.getInstance().getSessionID(),
                                         ProjectController.getInstance().getCurrentProjectID(),
                                         ReferenceController.getInstance().getCurrentReferenceID(),
                                         FilterController.getInstance().getAllFilterConditions(),
@@ -503,7 +503,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
             for (int i = 0; i < terms.length; i++) {
                 terms[i] = nodeStack.get(i).term;
             }
-            Map<OntologyTerm, String[]> genes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.sessionId, terms, ReferenceController.getInstance().getCurrentReferenceName());
+            Map<OntologyTerm, String[]> genes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), terms, ReferenceController.getInstance().getCurrentReferenceName());
             for (OntologyNode node: nodeStack) {
                 String[] nodeGenes = genes.get(node.term);
                 if (nodeGenes != null) {

@@ -53,7 +53,7 @@ public class PublicationWorker extends VariantWorker {
     @Override
     protected Void doInBackground() throws Exception {
         // Publish.
-        MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), updateID);
+        MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), updateID);
         LoginController.getInstance().logout();
         return null;
     }

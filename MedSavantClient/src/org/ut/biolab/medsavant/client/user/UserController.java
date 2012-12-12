@@ -41,17 +41,17 @@ public class UserController extends Controller<UserEvent> {
     }
 
     public void addUser(String name, char[] pass, UserLevel level) throws SQLException, RemoteException {
-        MedSavantClient.UserManager.addUser(LoginController.sessionId, name, pass, level);
+        MedSavantClient.UserManager.addUser(LoginController.getInstance().getSessionID(), name, pass, level);
         fireEvent(new UserEvent(UserEvent.Type.ADDED, name));
     }
 
     public void removeUser(String name) throws SQLException, RemoteException {
-        MedSavantClient.UserManager.removeUser(LoginController.sessionId, name);
+        MedSavantClient.UserManager.removeUser(LoginController.getInstance().getSessionID(), name);
         fireEvent(new UserEvent(UserEvent.Type.REMOVED, name));
     }
 
     public String[] getUserNames() throws SQLException, RemoteException {
-        return MedSavantClient.UserManager.getUserNames(LoginController.sessionId);
+        return MedSavantClient.UserManager.getUserNames(LoginController.getInstance().getSessionID());
     }
 
     public void getUserLevel() {

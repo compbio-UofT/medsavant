@@ -263,7 +263,7 @@ public class OntologyWizard extends WizardDialog {
 
     private boolean validateName() {
         try {
-            for (Ontology ont: MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId)) {
+            for (Ontology ont: MedSavantClient.OntologyManager.getOntologies(LoginController.getInstance().getSessionID())) {
                 if (ont.getName().equals(name)) {
                     DialogUtils.displayError("Error", "Ontology name already in use.");
                     return false;
@@ -277,6 +277,6 @@ public class OntologyWizard extends WizardDialog {
     }
 
     private void create() throws InterruptedException, SQLException, IOException {
-        MedSavantClient.OntologyManager.addOntology(LoginController.sessionId, name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
+        MedSavantClient.OntologyManager.addOntology(LoginController.getInstance().getSessionID(), name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
     }
 }
