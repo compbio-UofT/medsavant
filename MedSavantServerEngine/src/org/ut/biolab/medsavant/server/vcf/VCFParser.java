@@ -232,7 +232,8 @@ public class VCFParser {
                 lStr += line[i] + "\t";
             }
             LOG.info("Tried index " + triedIndex + " of line with " + line.length + " entries");
-            LOG.error("Error parsing line " + lStr + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
+            String badString = lStr.length() > 300 ? lStr.substring(0,299) + "..." : lStr;
+            LOG.error("Error parsing line " + badString + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
             ex.printStackTrace();
         }
         return records;
