@@ -615,7 +615,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
 
         //generate directory
-        File baseDir = DirectorySettings.generateDateStampDirectory(new File("."));
+        File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir.getCanonicalPath());
         p.waitFor();
         File file = new File(baseDir, "export.tdf");
