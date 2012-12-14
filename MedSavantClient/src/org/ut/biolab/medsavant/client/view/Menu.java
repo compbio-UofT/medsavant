@@ -185,14 +185,17 @@ public class Menu extends JPanel {
     }
 
     public void switchToSubSection(SubSectionView view){
+        System.out.println("Switching to subsection " + view.getPageName());
         map.get(view).subSectionClicked();
     }
 
     public void setContentTo(SubSectionView v, boolean update) {
+        System.out.println("Setting content to " + v.getPageName());
         if (currentView != v) {
             currentView = v;
             contentContainer.removeAll();
             contentContainer.add(v.getView(), BorderLayout.CENTER);
+            contentContainer.updateUI();
 
             sectionDetailedMenu.removeAll();
 
