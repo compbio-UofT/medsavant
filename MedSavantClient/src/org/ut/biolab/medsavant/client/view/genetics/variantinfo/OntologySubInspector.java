@@ -167,6 +167,7 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
             gbc.fill = GridBagConstraints.HORIZONTAL;
             panel.add(noTermsLabel, gbc);
         }
+        panel.updateUI();
     }
 
     private GridBagConstraints getContentConstraints() {
