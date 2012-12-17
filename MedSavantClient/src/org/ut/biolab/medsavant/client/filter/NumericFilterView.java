@@ -99,7 +99,8 @@ public class NumericFilterView extends FilterView {
         } else if (col.equals("sb")) {
             initHelper(new Range(-100, 100));
         } else {
-            new CancellableProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>") {
+            new CancellableProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>",true) {
+
                 @Override
                 public void run() {
                     try {
@@ -113,6 +114,7 @@ public class NumericFilterView extends FilterView {
                 public ProgressStatus checkProgress() throws RemoteException {
                     return MedSavantClient.DBUtils.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
                 }
+
             }.setVisible(true);
         }
     }

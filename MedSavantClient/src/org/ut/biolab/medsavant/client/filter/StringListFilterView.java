@@ -88,7 +88,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         } else if (colName.equals(GENDER.getColumnName())) {
             availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
         } else {
-            new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
+            new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>",true) {
                 @Override
                 public void run() throws InterruptedException, SQLException, RemoteException {
                     availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch ,useCache);

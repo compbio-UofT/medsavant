@@ -650,15 +650,14 @@ class FamilyMattersOptionView {
                                 true);
 
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
-                        File tdfFile = new File(outdir, (LoginController.getInstance().getServerAddress() + "_" + LoginController.getInstance().getDatabaseName() + "_" + projectID + " " + refID + " " + updateID + ".dump.tdf").replaceAll(" ", ""));
-                        System.out.println("Exporting to " + tdfFile.getAbsolutePath());
-                        //if (!tdfFile.exists()) {
-                            ExportVCF.exportTDF(tdfFile, this);
-                        //}
-                        System.out.println("Finished export");
+                        //File tdfFile = new File(outdir, (LoginController.getInstance().getServerAddress() + "_" + LoginController.getInstance().getDatabaseName() + "_" + projectID + " " + refID + " " + updateID + ".dump.tdf").replaceAll(" ", ""));
 
                         // hard code for testing only
-                        //tdfFile = new File("/Users/mfiume/Desktop/dump.tdf");
+                        File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-12-16-23-51/medsavant.cs.toronto.edu_justfhs_131.dump.tdf");
+
+                        System.out.println("Exporting to " + tdfFile.getAbsolutePath());
+                        //ExportVCF.exportTDF(tdfFile, this);
+                        System.out.println("Finished export");
 
                         int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
                         m.setStatusMessage("Stripping file");

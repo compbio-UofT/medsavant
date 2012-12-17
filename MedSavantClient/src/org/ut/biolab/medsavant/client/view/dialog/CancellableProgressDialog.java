@@ -44,8 +44,13 @@ public abstract class CancellableProgressDialog extends ProgressDialog {
      * set this directly instead of overriding checkProgress.
      */
     protected ProgressStatus lastStatus;
+    private boolean waitForCancelConfirmation;
 
     public CancellableProgressDialog(String title, String message) {
+        this(title,message,true);
+    }
+
+    public CancellableProgressDialog(String title, String message, boolean waitForConfirmationOnCancel) {
         super(title, message, true);
         lastStatus = new ProgressStatus("Preparing...", 0.0);
         stageLabel = new JLabel("Preparing...");
@@ -63,6 +68,11 @@ public abstract class CancellableProgressDialog extends ProgressDialog {
                     // Call checkProgress() to tell the server that we've cancelled.
                     LOG.info("Calling checkProgress to tell server that we've cancelled.");
                     checkProgress();
+
+                    if (!waitForCancelConfirmation) {
+                        setVisible(false);
+                    }
+
                 } catch (Exception ex) {
                     LOG.info("Ignoring exception thrown while checking for progress.", ex);
                 }
@@ -100,8 +110,16 @@ public abstract class CancellableProgressDialog extends ProgressDialog {
                 }
             }
         });
+
+        setWaitForCancelConfirmation(waitForConfirmationOnCancel);
+
         pack();
         setLocationRelativeTo(getParent());
+    }
+
+
+    public final void setWaitForCancelConfirmation(boolean b) {
+        waitForCancelConfirmation = b;
     }
 
     /**

@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.util.WaitPanel;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
@@ -159,7 +160,7 @@ public class SimpleVariantSubInspector extends SubInspector {
                 if (g0 == null) {
                     g0 = g;
                 }
-                if (g.getChrom().equals(r.chr) && r.pos > g.getStart() && r.pos < g.getEnd()) {
+                if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.chr)) && r.pos > g.getStart() && r.pos < g.getEnd()) {
                     b.addItem(g);
                 }
             }

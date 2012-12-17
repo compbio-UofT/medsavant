@@ -145,8 +145,7 @@ public abstract class FilterHolder {
         try {
             parent.setDetailComponent(name, getFilterView());
             parent.toggleDetailVisibility(name);
-            parent.invalidate();
-            parent.repaint();
+            parent.updateUI();
         } catch (Exception ex) {
             filterView = null;
             editButton.setSelected(false);

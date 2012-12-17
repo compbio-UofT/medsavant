@@ -62,18 +62,21 @@ public class ExportVCF implements BasicVariantColumns {
     public static void exportTDF(File destFile, MedSavantWorker worker) throws Exception {
 
 
+        System.out.println("Requesting table export from server...");
         int fileID = MedSavantClient.VariantManager.exportVariants(
                 LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions());
+                FilterController.getInstance().getAllFilterConditions(),false);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }
 
         worker.showProgress(0.5);
 
+        System.out.println("Transferring export from server to " + destFile.getAbsolutePath() + " ...");
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
+        System.out.println("Table transferred");
 
         worker.showProgress(1);
     }
@@ -86,7 +89,7 @@ public class ExportVCF implements BasicVariantColumns {
                 LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions());
+                FilterController.getInstance().getAllFilterConditions(),true);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }

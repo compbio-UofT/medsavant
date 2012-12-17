@@ -58,7 +58,7 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
     public OntologyFilterView(OntologyType ont, int queryID) throws Exception {
         super(OntologyFilter.ontologyToTitle(ont), queryID);
         ontology = ont;
-        new CancellableProgressDialog("Fetching Ontology", String.format("Retrieving list of %s ontology terms.", ontology)) {
+        new CancellableProgressDialog("Fetching Ontology", String.format("Retrieving list of %s ontology terms.", ontology,true)) {
             @Override
             public void run() throws InterruptedException, SQLException, RemoteException {
                 OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);

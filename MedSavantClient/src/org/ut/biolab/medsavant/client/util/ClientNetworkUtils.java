@@ -130,6 +130,7 @@ public class ClientNetworkUtils extends NetworkUtils {
             byte[] buf;
             while ((buf = netMgr.readFromServer(LoginController.getInstance().getSessionID(), streamID)) != null) {
                 stream.write(buf);
+                stream.flush();
             }
         } finally {
             netMgr.closeReaderOnServer(LoginController.getInstance().getSessionID(), streamID);

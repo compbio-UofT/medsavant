@@ -114,7 +114,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
 
                     SimpleFamilyMattersVariant v = variants.get(i + start);
-                    if (i == 0) { System.out.println(v); }
+                    if (i == 0) {
+                        System.out.println(v);
+                    }
 
                     String geneStr = "";
                     for (SimpleFamilyMattersGene g : v.getGenes()) {
@@ -170,7 +172,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 LOG.info("Value changed " + e.getSource());
 
-                if (e.getValueIsAdjusting()) { return; }
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
 
                 int first = stp.getActualRowAcrossAllPages(e.getLastIndex());
 
@@ -186,15 +190,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         LOG.info("Showing table of results");
 
         JPanel aligned = new JPanel();
+        aligned.setLayout(new BorderLayout());
         aligned.setBorder(null);
-        aligned.setPreferredSize(new Dimension(450,999));
+        aligned.setPreferredSize(new Dimension(450, 999));
         aligned.setBackground(Color.white);
-        aligned.add(vip);
+        aligned.add(vip,BorderLayout.CENTER);
 
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        p.add(stp,BorderLayout.CENTER);
-        p.add(aligned,BorderLayout.EAST);
+        p.add(stp, BorderLayout.CENTER);
+        p.add(aligned, BorderLayout.EAST);
 
         f.add(p);
 
@@ -203,7 +208,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         f.setMinimumSize(new Dimension(600, 600));
 
         if (completionLock != null) {
-            synchronized(completionLock) {
+            synchronized (completionLock) {
                 completionLock.setResultsFrame(f);
                 completionLock.notify();
             }
@@ -253,10 +258,19 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         int stepNumber = 0;
 
-        // keys in a TreeMap are sorted
+        /**
+         * Map variants to samples
+         * NB: keys in a TreeMap are sorted
+         */
         TreeMap<SimpleFamilyMattersVariant, Set<String>> variantToSampleMap = readVariantToSampleMap(inFile);
 
         LOG.info("Unique variants " + variantToSampleMap.keySet().size());
+
+        for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+            if (variantToSampleMap.get(v) == null) {
+                throw new Exception("nwtf for " + v);
+            }
+        }
 
         List<SimpleFamilyMattersVariant> variants = new ArrayList<SimpleFamilyMattersVariant>(variantToSampleMap.keySet());
 
@@ -344,11 +358,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
                 Set<String> setOfDNAIDs = new HashSet<String>(dnaIDsInCohort);
 
-
+                /*
                 LOG.info("Samples in cohort " + criterion.getCohort().getName());
                 for (String sample : setOfDNAIDs) {
                     System.out.println(sample);
                 }
+                */
 
                 Set<SimpleFamilyMattersVariant> excludedVariantsFromThisStep;
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
@@ -407,12 +422,22 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         while ((line = readNext(r)) != null) {
             SimpleFamilyMattersVariant v = variantFromLine(line);
+
+            /*
+            if (v.chr.equals("chrM")) {
+                continue;
+            }
+            /*
+            if (v.chr.equals("chrM") && v.pos == 73) {
+                numWeirds++;
+            }
+            */
+
             String sample = line[0];
 
             Set<String> samples;
             if (map.containsKey(v)) {
                 samples = map.get(v);
-
             } else {
                 samples = new HashSet<String>();
             }
@@ -475,6 +500,15 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return frequencyThreshold;
     }
 
+    /**
+     * Flags objects in map for removal if the occurrence in a given set
+     * of DNA ids is either above, below, or equal to a frequency threshold
+     * @param map A map of object to sample ids relating to the object
+     * @param frequencyThreshold The threshold for the cutoff
+     * @param t Either ALL, NO, AT_LEAST, AT_MOST
+     * @param setOfDNAIDs The set of DNA ids to consider
+     * @return The set of objects to be removed
+     */
     private Set<Object> flagObjectsForRemovalByCriterion(Map<Object, Set<String>> map, int frequencyThreshold, FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
         Set<Object> removeThese = new HashSet<Object>();
         for (Object o : map.keySet()) {
@@ -482,10 +516,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             // value contains ALL samples having object as key, need to assess
             // only for this cohort
             int numberOfObjectsSamplesInCohort = 0;
-            for (String s : map.get(o)) {
-                if (setOfDNAIDs.contains(s)) {
-                    numberOfObjectsSamplesInCohort++;
+            try {
+                for (String s : map.get(o)) {
+                    if (setOfDNAIDs.contains(s)) {
+                        numberOfObjectsSamplesInCohort++;
+                    }
                 }
+            } catch (NullPointerException npe) {
+                if (map.get(o) == null) { System.out.println("No entry for object in map"); }
+                System.err.println(o);
+                throw npe;
             }
             //System.out.println(numberOfObjectsSamplesInCohort);
 
@@ -559,6 +599,4 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     private int binarySearchToVariant(long end, List<SimpleFamilyMattersVariant> variants) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
-
-
 }
