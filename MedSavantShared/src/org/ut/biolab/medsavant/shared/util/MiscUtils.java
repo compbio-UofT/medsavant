@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.shared.util;
 
 import java.awt.Color;
@@ -40,7 +39,6 @@ import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
 
-
 /**
  * Various utility methods and constants of general usefulness.
  *
@@ -52,8 +50,10 @@ public class MiscUtils {
     public static final boolean WINDOWS;
     public static final boolean LINUX;
     public static final String UNSAVED_MARK = " *";
-
-    /** OS-specific constant for determining menu-options. Either CTRL_MASK or META_MASK. */
+    /**
+     * OS-specific constant for determining menu-options. Either CTRL_MASK or
+     * META_MASK.
+     */
     public static final int MENU_MASK;
 
     static {
@@ -64,15 +64,28 @@ public class MiscUtils {
         MENU_MASK = MAC ? InputEvent.META_MASK : InputEvent.CTRL_MASK;
     }
 
-    /** [[ Miscellaneous Functions ]] */
+    /**
+     * [[ Miscellaneous Functions ]]
+     */
     /**
      * Format an integer to a string (adding commas)
+     *
      * @param num The number to format
      * @return A formatted string
      */
-     public static String numToString(double num) {
-         return numToString(num,0);
-     }
+    public static String numToString(double num) {
+        return numToString(num, 0);
+    }
+
+    public static String numToStringWithOrder(long count) {
+        if (count < 1000) {
+            return "" + count;
+        }
+        int exp = (int) (Math.log(count) / Math.log(1000));
+        return String.format("%.1f %c",
+                count / Math.pow(1000, exp),
+                "KMGTPE".charAt(exp - 1));
+    }
 
     public static String numToString(double num, int significantdigits) {
         String formatString = "###,###";
@@ -90,6 +103,7 @@ public class MiscUtils {
 
     /**
      * Get a string representation of the the current time
+     *
      * @return A string representing the current time
      */
     public static String now() {
@@ -97,10 +111,9 @@ public class MiscUtils {
         return DateFormat.getTimeInstance().format(cal.getTime());
     }
 
-
     public static String join(Collection<? extends Object> strs, String separator) {
         StringBuilder result = null;
-        for (Object o: strs) {
+        for (Object o : strs) {
             if (result == null) {
                 result = new StringBuilder();
             } else {
@@ -113,6 +126,7 @@ public class MiscUtils {
 
     /**
      * Remove the specified character from the given string.
+     *
      * @param s The string from which to remove the character
      * @param c The character to remove from the string
      * @return The string with the character removed
@@ -132,7 +146,7 @@ public class MiscUtils {
         if (lastSlashIndex == -1) {
             lastSlashIndex = path.lastIndexOf("/");
         }
-        return path.substring(lastSlashIndex+1, path.length());
+        return path.substring(lastSlashIndex + 1, path.length());
     }
 
     /**
@@ -192,18 +206,15 @@ public class MiscUtils {
             tmpDir = System.getenv("TMPDIR");
             if (tmpDir != null) {
                 return tmpDir;
-            }
-            else {
+            } else {
                 return "/tmp/savant";
             }
         } else {
             if ((tmpDir = System.getenv("TEMP")) != null) {
                 return tmpDir;
-            }
-            else if ((tmpDir = System.getenv("TMP")) != null) {
+            } else if ((tmpDir = System.getenv("TMP")) != null) {
                 return tmpDir;
-            }
-            else {
+            } else {
                 return System.getProperty("user.dir");
             }
         }
@@ -219,8 +230,9 @@ public class MiscUtils {
     }
 
     /**
-     * Sometimes Throwable.getMessage() returns a useless string (e.g. "null" for a NullPointerException).
-     * Return a string which is more meaningful to the end-user.
+     * Sometimes Throwable.getMessage() returns a useless string (e.g. "null"
+     * for a NullPointerException). Return a string which is more meaningful to
+     * the end-user.
      */
     public static String getMessage(Throwable t) {
         if (t instanceof NullPointerException) {
@@ -229,7 +241,7 @@ public class MiscUtils {
             return String.format("File %s not found", t.getMessage());
         } else if (t instanceof ArrayIndexOutOfBoundsException) {
             return "Array index out of bounds";
-        } else  {
+        } else {
             // Occasional
             String result = t.getMessage();
             if (result == null) {
@@ -243,31 +255,31 @@ public class MiscUtils {
         Writer result = new StringWriter();
         t.printStackTrace(new PrintWriter(result));
         return result.toString();
-   }
+    }
 
 
     /*
      * Return string without sequence title (chr, contig)
      */
-    public static String homogenizeSequence(String s){
+    public static String homogenizeSequence(String s) {
         String result = s;
-        if(result.contains("chr")){
+        if (result.contains("chr")) {
             result = result.replaceAll("chr", "");
         }
-        if(result.contains("Chr")){
+        if (result.contains("Chr")) {
             result = result.replaceAll("Chr", "");
         }
-        if(result.contains("contig")){
+        if (result.contains("contig")) {
             result = result.replaceAll("contig", "");
         }
-        if(result.contains("Contig")){
+        if (result.contains("Contig")) {
             result = result.replaceAll("Contig", "");
         }
         return result;
     }
 
-     public static double roundToSignificantDigits(double num, int n) {
-        if(num == 0) {
+    public static double roundToSignificantDigits(double num, int n) {
+        if (num == 0) {
             return 0;
         } else if (n == 0) {
             return Math.round(num);
@@ -278,33 +290,35 @@ public class MiscUtils {
         while (n >= s.length() - index) {
             s = s + "0";
         }
-        return Double.parseDouble(s.substring(0,index+n+1));
+        return Double.parseDouble(s.substring(0, index + n + 1));
     }
 
     public static String getSophisticatedByteString(long bytes) {
         if (bytes < 1000) {
             return bytes + " KB";
         } else if (bytes < 1000000000) {
-            return roundToSignificantDigits(((double) bytes/1000000),1) + " MB";
+            return roundToSignificantDigits(((double) bytes / 1000000), 1) + " MB";
         } else {
-            return roundToSignificantDigits(((double) bytes/1000000000),2) + " GB";
+            return roundToSignificantDigits(((double) bytes / 1000000000), 2) + " GB";
         }
     }
 
     /**
-     * If u is a file:// URI, return the absolute path.  If it's a network URI, leave
-     * it unchanged.
+     * If u is a file:// URI, return the absolute path. If it's a network URI,
+     * leave it unchanged.
      *
      * @param u the URI to be neatened
      * @return a canonical string representing the URI.
      */
     public static String getNeatPathFromURI(URI u) {
-        if(u == null) { return ""; }
+        if (u == null) {
+            return "";
+        }
         if ("file".equals(u.getScheme())) {
             return (new File(u)).getAbsolutePath();
         }
         return u.toString();
-     }
+    }
 
     /**
      * Invoke the given runnable on the AWT event thread.
@@ -323,7 +337,7 @@ public class MiscUtils {
         int strlen = str.length();
         char[] result = new char[strlen];
         for (int i = 1; i <= strlen; i++) {
-            result[strlen-i] = str.charAt(i-1);
+            result[strlen - i] = str.charAt(i - 1);
         }
         return new String(result);
     }
@@ -333,7 +347,8 @@ public class MiscUtils {
      *
      * @param rec1 first record
      * @param rec2 second record
-     * @param extraCheck if true, equality check is insufficient to avoid self-mating; check positions as well
+     * @param extraCheck if true, equality check is insufficient to avoid
+     * self-mating; check positions as well
      */
     public static boolean isMate(SAMRecord rec1, SAMRecord rec2, boolean extraCheck) {
 
@@ -360,15 +375,16 @@ public class MiscUtils {
         }
 
         //list of possible suffices...may grow over time.
-        String[][] suffices = {{"\\1","\\2"},{"_F","_R"},{"_F3","_R3"}};
+        String[][] suffices = {{"\\1", "\\2"}, {"_F", "_R"}, {"_F3", "_R3"}};
 
         //check suffices
-        for(String[] pair : suffices){
+        for (String[] pair : suffices) {
             int len = pair[0].length(); //assumes both suffices of same length
-            if(name1.substring(0, len1-len).equals(name2.substring(0, len2-len)) &&
-                ((name1.substring(len1-len).equals(pair[0]) && name2.substring(len2-len).equals(pair[1])) ||
-                (name1.substring(len1-len).equals(pair[1]) && name2.substring(len2-len).equals(pair[0]))))
+            if (name1.substring(0, len1 - len).equals(name2.substring(0, len2 - len))
+                    && ((name1.substring(len1 - len).equals(pair[0]) && name2.substring(len2 - len).equals(pair[1]))
+                    || (name1.substring(len1 - len).equals(pair[1]) && name2.substring(len2 - len).equals(pair[0])))) {
                 return true;
+            }
         }
 
         //not mates
@@ -376,7 +392,9 @@ public class MiscUtils {
     }
 
     /**
-     * Blend two colours, in the given proportions.  Resulting alpha is always 1.0.
+     * Blend two colours, in the given proportions. Resulting alpha is always
+     * 1.0.
+     *
      * @param col1 the first colour
      * @param col2 the second colour
      * @param weight1 the weight given to col1 (from 0.0-1.0)
@@ -392,10 +410,14 @@ public class MiscUtils {
 
     /**
      * Utility method to create a polygonal path from a list of coordinates
-     * @param coords a sequence of x,y coordinates (should be an even number and at least 4)
+     *
+     * @param coords a sequence of x,y coordinates (should be an even number and
+     * at least 4)
      */
     public static Path2D.Double createPolygon(double... coords) {
-        if (coords.length < 4 || (coords.length & 1) != 0) throw new IllegalArgumentException("Invalid coordinates for createPolygon");
+        if (coords.length < 4 || (coords.length & 1) != 0) {
+            throw new IllegalArgumentException("Invalid coordinates for createPolygon");
+        }
 
         Path2D.Double result = new Path2D.Double(Path2D.WIND_NON_ZERO, coords.length / 2);
         result.moveTo(coords[0], coords[1]);
@@ -407,15 +429,15 @@ public class MiscUtils {
     }
 
     public static String getTagValue(Element e, String tag) {
-	NodeList nlList = e.getElementsByTagName(tag).item(0).getChildNodes();
+        NodeList nlList = e.getElementsByTagName(tag).item(0).getChildNodes();
         Node nValue = (Node) nlList.item(0);
-	return nValue.getNodeValue();
+        return nValue.getNodeValue();
     }
 
     public static List<String> getTagValues(Element e, String tag) {
         NodeList nlList = e.getElementsByTagName(tag);
         List<String> result = new ArrayList<String>();
-        for(int i = 0; i < nlList.getLength(); i++){
+        for (int i = 0; i < nlList.getLength(); i++) {
             Node nValue = (Node) nlList.item(i).getChildNodes().item(0);
             result.add(nValue.getNodeValue());
         }
@@ -430,16 +452,18 @@ public class MiscUtils {
         String current = original;
         String result = "";
 
-        while(current.length() > 0){
+        while (current.length() > 0) {
 
-            if(current.length() <= maxCharsPerLine){
+            if (current.length() <= maxCharsPerLine) {
                 result += current;
                 break;
             }
 
             int index = current.substring(0, Math.min(current.length(), maxCharsPerLine)).lastIndexOf(" ");
-            if(index == -1) index = Math.min(current.length(), maxCharsPerLine);
-            index = Math.min(index+1, current.length());
+            if (index == -1) {
+                index = Math.min(current.length(), maxCharsPerLine);
+            }
+            index = Math.min(index + 1, current.length());
 
             result += current.substring(0, index) + "<BR>";
             current = current.substring(index);
@@ -489,18 +513,18 @@ public class MiscUtils {
         return digits;
     }
 
-    public static String doubleToString(double d, int sigDigs){
+    public static String doubleToString(double d, int sigDigs) {
         String s = Double.toString(d);
-        if(Math.abs(d) < 10){
+        if (Math.abs(d) < 10) {
             int pos = s.indexOf(".");
-            if(pos != -1){
-                s = s.substring(0, Math.min(pos+3, s.length()));
+            if (pos != -1) {
+                s = s.substring(0, Math.min(pos + 3, s.length()));
             }
         }
         return s;
     }
 
-   public static Object parseStringValueAs(Class c, String value) {
+    public static Object parseStringValueAs(Class c, String value) {
 
         if (c == String.class) {
             return value;
@@ -522,17 +546,19 @@ public class MiscUtils {
         }
 
         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
-   }
+    }
 
-   /**
-    * Unforunately List.toArray can't directly convert a List<Integer> to an int[].  Apache Lang Commons has a utility functioin for
-    * this, so if we ever decide to add Apache Lang Commons, we can eliminate this function here.
-    */
-   public static int[] toIntArray(List<Integer> list) {
-       int[] result = new int[list.size()];
-       for (int i = 0; i < result.length; i++) {
-           result[i] = list.get(i);
-       }
-       return result;
-   }
+    /**
+     * Unforunately List.toArray can't directly convert a List<Integer> to an
+     * int[]. Apache Lang Commons has a utility functioin for this, so if we
+     * ever decide to add Apache Lang Commons, we can eliminate this function
+     * here.
+     */
+    public static int[] toIntArray(List<Integer> list) {
+        int[] result = new int[list.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = list.get(i);
+        }
+        return result;
+    }
 }

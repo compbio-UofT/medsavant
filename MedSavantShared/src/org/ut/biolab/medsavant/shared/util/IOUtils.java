@@ -16,16 +16,26 @@
 package org.ut.biolab.medsavant.shared.util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * I/O-related utility methods. Functions for manipulating Savant files are in
@@ -193,5 +203,116 @@ public class IOUtils {
             e.printStackTrace(System.err);
         }
         return magic == GZIPInputStream.GZIP_MAGIC;
+    }
+
+     /**
+     * Checks if a file is zipped.
+     *
+     * @param f
+     * @return
+     */
+    public static boolean isZipped(File f) {
+
+        try {
+            RandomAccessFile raf = new RandomAccessFile(f, "r");
+            long n = raf.readInt();
+            raf.close();
+            if (n == 0x504B0304) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+            return false;
+        }
+
+    }
+
+    /**
+     * Unzip a zip file
+     *
+     * @param zipFile Path to the zip file
+     * @param toPath Destination path
+     * @throws ZipException
+     * @throws IOException
+     */
+    public static List<File> unzipFile(File file, String toPath) throws ZipException, IOException {
+        int BUFFER = 2048;
+
+        ZipFile zip = new ZipFile(file);
+
+        //new File(newPath).mkdir();
+        Enumeration zipFileEntries = zip.entries();
+
+        List<File> files = new ArrayList<File>();
+
+        // Process each entry
+        while (zipFileEntries.hasMoreElements()) {
+            // grab a zip file entry
+            ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
+            String currentEntry = entry.getName();
+            File destFile = new File(toPath, currentEntry);
+            File destinationParent = destFile.getParentFile();
+
+            // create the parent directory structure if needed
+            destinationParent.mkdirs();
+
+            if (!entry.isDirectory()) {
+                BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+                int currentByte;
+                // establish buffer for writing file
+                byte data[] = new byte[BUFFER];
+
+                // write the current file to disk
+                FileOutputStream fos = new FileOutputStream(destFile);
+                BufferedOutputStream dest = new BufferedOutputStream(fos,
+                        BUFFER);
+
+                // read and write until last byte is encountered
+                while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, currentByte);
+                }
+                dest.flush();
+                dest.close();
+                is.close();
+            }
+
+            if (currentEntry.endsWith(".zip")) {
+                // found a zip file, try to open
+                unzipFile(destFile, new File(destFile.getAbsolutePath()).getParent());
+            } else {
+                files.add(destFile);
+            }
+        }
+
+        return files;
+    }
+
+    public static File zipFile(File file) throws FileNotFoundException, IOException {
+
+        FileInputStream in = new FileInputStream(file);
+        // out put file
+
+        File outputFile = new File(file.getAbsolutePath() + ".zip");
+
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outputFile));
+
+        // name the file inside the zip  file
+        out.putNextEntry(new ZipEntry(file.getName()));
+
+        byte[] b = new byte[1024];
+
+        int count;
+
+        while ((count = in.read(b)) > 0) {
+            System.out.println();
+
+            out.write(b, 0, count);
+        }
+        out.close();
+        in.close();
+
+        return outputFile;
     }
 }

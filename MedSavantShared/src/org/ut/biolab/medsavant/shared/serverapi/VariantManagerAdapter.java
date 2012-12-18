@@ -56,7 +56,7 @@ public interface VariantManagerAdapter extends Remote {
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception;
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files) throws Exception;
-    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException;
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipped) throws SQLException, RemoteException, IOException, InterruptedException;
 
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException;
