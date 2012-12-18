@@ -54,7 +54,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-    public static boolean USE_INFINIDB_ENGINE;
+    public static boolean USE_INFINIDB_ENGINE = false;
 
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName) throws RemoteException, SQLException {
 

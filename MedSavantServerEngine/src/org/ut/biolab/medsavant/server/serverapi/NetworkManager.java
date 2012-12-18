@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.server.serverapi;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

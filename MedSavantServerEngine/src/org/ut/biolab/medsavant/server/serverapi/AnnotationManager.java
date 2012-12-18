@@ -62,6 +62,7 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 /**
@@ -213,7 +214,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     private static File unpackAnnotationZip(File zip) throws ZipException, IOException {
-        extractFolder(zip.getAbsolutePath(), new File(zip.getAbsolutePath()).getParent());
+        IOUtils.unzipFile(zip, new File(zip.getAbsolutePath()).getParent());
         zip.delete();
         return new File(new File(zip.getAbsolutePath()).getParent());
     }
@@ -404,60 +405,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
     }
 
-    /**
-     * Unzip a zip file
-     *
-     * @param zipFile Path to the zip file
-     * @param toPath Destination path
-     * @throws ZipException
-     * @throws IOException
-     */
-    private static void extractFolder(String zipFile, String toPath) throws ZipException, IOException {
-        int BUFFER = 2048;
-        File file = new File(zipFile);
 
-        ZipFile zip = new ZipFile(file);
-
-        //new File(newPath).mkdir();
-        Enumeration zipFileEntries = zip.entries();
-
-        // Process each entry
-        while (zipFileEntries.hasMoreElements()) {
-            // grab a zip file entry
-            ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
-            String currentEntry = entry.getName();
-            File destFile = new File(toPath, currentEntry);
-            File destinationParent = destFile.getParentFile();
-
-            // create the parent directory structure if needed
-            destinationParent.mkdirs();
-
-            if (!entry.isDirectory()) {
-                BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-                int currentByte;
-                // establish buffer for writing file
-                byte data[] = new byte[BUFFER];
-
-                // write the current file to disk
-                FileOutputStream fos = new FileOutputStream(destFile);
-                BufferedOutputStream dest = new BufferedOutputStream(fos,
-                        BUFFER);
-
-                // read and write until last byte is encountered
-                while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
-                    dest.write(data, 0, currentByte);
-                }
-                dest.flush();
-                dest.close();
-                is.close();
-            }
-
-            if (currentEntry.endsWith(".zip")) {
-                // found a zip file, try to open
-                extractFolder(destFile.getAbsolutePath(), new File(destFile.getAbsolutePath()).getParent());
-            }
-        }
-    }
 
     /**
      * Get the prescribed directory for the given annotation

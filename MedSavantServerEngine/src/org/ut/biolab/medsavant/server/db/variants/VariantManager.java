@@ -38,9 +38,6 @@ import java.util.regex.Pattern;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -612,32 +609,45 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipOutputFile) throws SQLException, RemoteException, IOException, InterruptedException {
 
         //generate directory
         File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir.getCanonicalPath());
         p.waitFor();
-        File file = new File(baseDir, "export.tdf");
-        //System.out.println(baseDir.getCanonicalPath());
 
-        //select into
-        //System.out.println("starting select into");
-        long start = System.nanoTime();
+        String filename = ProjectManager.getInstance().getProjectName(sessID, projID).replace(" ","") + "-varexport-" + System.currentTimeMillis() + ".tdf";
+        File file = new File(baseDir, filename);
+
+        LOG.info("Exporting variants to " + file.getAbsolutePath());
+
+        long start = System.currentTimeMillis();
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        query.addOrderings(table.getDBColumn(POSITION));
+        if (orderedByPosition) { query.addOrderings(table.getDBColumn(POSITION)); }
         String intoString =
                 "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
-                + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
+                + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
                 //+ " LINES TERMINATED BY '\\r\\n' ";
                 ;
         String queryString = query.toString().replace("FROM", intoString + "FROM");
+
+        LOG.info(queryString);
         ConnectionController.executeQuery(sessID, queryString);
-        //System.out.println("done: " + (System.nanoTime() - start));
+
+        LOG.info("Done exporting variants to " + file.getAbsolutePath());
+        LOG.info("Export took " + ((System.currentTimeMillis() - start)/1000) + " seconds");
+
+        if (zipOutputFile) {
+            LOG.info("Zipping export...");
+            File zipFile = IOUtils.zipFile(file);
+            file.delete();
+            file = zipFile;
+            LOG.info("Done zipping");
+        }
 
         // add file to map and send the id back
         int fileID = NetworkManager.getInstance().openReaderOnServer(sessID, file);
