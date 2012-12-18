@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -26,11 +27,12 @@ public class NotificationsPanel extends JPanel {
 
     private final Color color;
     private final String name;
-    private int notificationNumber;
+    private int notificationCount;
     private static final int width = 17;
     private static final int height = width;
     private final JPopupMenu notifications;
     private final JPopupMenu noNotifications;
+    private final HashSet<Integer> completedNotifications = new HashSet<Integer>();
 
     public NotificationsPanel(String name, Color c) {
         this.name = name;
@@ -53,7 +55,7 @@ public class NotificationsPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent me) {
                 JPopupMenu m;
-                if (notificationNumber == 0) {
+                if (notificationCount == 0 && completedNotifications.isEmpty()) {
                     m = noNotifications;
                 } else {
                     m = notifications;
@@ -82,7 +84,7 @@ public class NotificationsPanel extends JPanel {
     }
 
     public void setNotificationNumber(int notificationNumber) {
-        this.notificationNumber = notificationNumber;
+        this.notificationCount = notificationNumber;
         this.repaint();
     }
     private static Font f = new Font("Arial", Font.BOLD, 11);
@@ -91,7 +93,7 @@ public class NotificationsPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        if (notificationNumber == 0) {
+        if (notificationCount == 0) {
             g.setColor(Color.lightGray);
         } else {
             g.setColor(color);
@@ -107,19 +109,26 @@ public class NotificationsPanel extends JPanel {
             ascent = fm.getAscent();
             fh = ascent + fm.getDescent();
         }
-        String str = ViewUtil.numToString(notificationNumber);
+        String str = ViewUtil.numToString(notificationCount);
         g.drawString(str, (width / 2) - fm.stringWidth(str) / 2, height / 2 + ascent / 2);
     }
 
-    public void addNotification(JPanel notification) {
+    static int notificationID = 0;
+    static Map<Integer,JPanel> notificationIDToPanelMap = new HashMap<Integer,JPanel>();
+
+    public int addNotification(JPanel notification) {
+        notificationID++;
+        notificationIDToPanelMap.put(notificationID,notification);
         this.notifications.add(notification);
-        this.notificationNumber++;
+        this.notificationCount++;
         this.repaint();
+        return notificationID;
     }
 
-    public void removeNotification(JPanel notification) {
-        this.notifications.remove(notification);
-        this.notificationNumber--;
+    public void removeNotification(int notificationID) {
+        this.notifications.remove(notificationIDToPanelMap.get(notificationID));
+        notificationIDToPanelMap.remove(notificationID);
+        markNotificationAsComplete(notificationID);
         this.repaint();
     }
 
@@ -135,5 +144,13 @@ public class NotificationsPanel extends JPanel {
             p = panels.get(name);
         }
         return p;
+    }
+
+    public void markNotificationAsComplete(int notificationID) {
+        if (!completedNotifications.contains(notificationID)) {
+            this.notificationCount--;
+            this.repaint();
+            completedNotifications.add(notificationID);
+        }
     }
 }

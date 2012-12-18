@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  *
@@ -59,15 +60,14 @@ public class ExportVCF implements BasicVariantColumns {
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
 
 
-    public static void exportTDF(File destFile, MedSavantWorker worker) throws Exception {
-
+    public static File exportTDF(File destFile, MedSavantWorker worker) throws Exception {
 
         System.out.println("Requesting table export from server...");
         int fileID = MedSavantClient.VariantManager.exportVariants(
                 LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),false);
+                FilterController.getInstance().getAllFilterConditions(),false,true);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }
@@ -78,7 +78,18 @@ public class ExportVCF implements BasicVariantColumns {
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
         System.out.println("Table transferred");
 
+        File resultingFile;
+
+        if (IOUtils.isZipped(destFile)) {
+            resultingFile = IOUtils.unzipFile(destFile, destFile.getParentFile().getAbsolutePath()).get(0);
+            destFile.delete();
+        } else {
+            resultingFile = destFile;
+        }
+
         worker.showProgress(1);
+
+        return resultingFile;
     }
 
 
@@ -89,7 +100,7 @@ public class ExportVCF implements BasicVariantColumns {
                 LoginController.getInstance().getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),true);
+                FilterController.getInstance().getAllFilterConditions(),true,false);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }

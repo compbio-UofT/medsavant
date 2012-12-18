@@ -13,13 +13,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -48,16 +51,15 @@ public class Menu extends JPanel {
     private SubSectionView currentView;
     private final JPanel contentContainer;
     List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
-    private Component primaryGlue;
     private final JPanel primaryMenu;
     private final JPanel secondaryMenu;
-
     ButtonGroup sectionButtons;
     private final JPanel sectionDetailedMenu;
-    private final JPanel sectionMenu;
+    private final JPanel subSectionMenu;
     private JPanel previousSectionPanel;
-
-    Map<SubSectionView,SubSectionButton> map;
+    Map<SubSectionView, SubSectionButton> map;
+    private final JPanel sectionMenu;
+    private JLabel loginStatusLabel;
 
     public Menu(JPanel panel) {
 
@@ -76,17 +78,22 @@ public class Menu extends JPanel {
         primaryMenu.setLayout(new BoxLayout(primaryMenu, BoxLayout.X_AXIS));
         primaryMenu.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150,150,150)),
-                        BorderFactory.createEmptyBorder(padding, padding, padding, padding)));
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
+                BorderFactory.createEmptyBorder(padding, padding, padding, padding)));
 
+        sectionMenu = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(sectionMenu);
+        primaryMenu.add(sectionMenu);
+        primaryMenu.add(Box.createHorizontalGlue());
+        primaryMenu.add(getLoginMenuItem());
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
         secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
 
-        secondaryMenu.setPreferredSize(new Dimension(150,100));
+        secondaryMenu.setPreferredSize(new Dimension(150, 100));
 
         setLayout(new BorderLayout());
-        add(primaryMenu,BorderLayout.NORTH);
+        add(primaryMenu, BorderLayout.NORTH);
 
         contentContainer = panel;
 
@@ -122,14 +129,12 @@ public class Menu extends JPanel {
             }
         });
 
-        sectionMenu = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(sectionMenu);
+        subSectionMenu = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(subSectionMenu);
 
         sectionDetailedMenu = new JPanel();
         sectionDetailedMenu.setOpaque(false);
         ViewUtil.applyVerticalBoxLayout(sectionDetailedMenu);
-
-        primaryGlue = Box.createHorizontalGlue();
 
         clearMenu();
     }
@@ -138,11 +143,10 @@ public class Menu extends JPanel {
         return secondaryMenu;
     }
 
-
     public void addSection(SectionView section) {
 
         JPanel sectionPanel = ViewUtil.getClearPanel();
-        sectionPanel.setLayout(new BoxLayout(sectionPanel,BoxLayout.Y_AXIS));
+        sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
         sectionPanel.setVisible(false);
 
         HoverButton sectionButton = new SectionButton(section, sectionPanel);
@@ -157,7 +161,7 @@ public class Menu extends JPanel {
             sectionPanel.add(subSectionButton);
             subSectionsGroup.add(subSectionButton);
 
-            map.put(v,subSectionButton);
+            map.put(v, subSectionButton);
         }
 
         sectionButtons.add(sectionButton);
@@ -169,10 +173,9 @@ public class Menu extends JPanel {
             sectionPanel.add(box);
         }
 
-        primaryMenu.remove(primaryGlue);
-        primaryMenu.add(sectionButton);
+        sectionMenu.add(sectionButton);
 
-        sectionMenu.add(sectionPanel);
+        subSectionMenu.add(sectionPanel);
     }
 
     public void updateSections() {
@@ -184,7 +187,7 @@ public class Menu extends JPanel {
         }
     }
 
-    public void switchToSubSection(SubSectionView view){
+    public void switchToSubSection(SubSectionView view) {
         System.out.println("Switching to subsection " + view.getPageName());
         map.get(view).subSectionClicked();
     }
@@ -228,23 +231,57 @@ public class Menu extends JPanel {
             sectionButtons.remove(sectionButtons.getElements().nextElement());
         }
 
-        primaryMenu.removeAll();
+        sectionMenu.removeAll();
         secondaryMenu.removeAll();
 
-        sectionMenu.removeAll();
-        secondaryMenu.add(sectionMenu);
+        subSectionMenu.removeAll();
+        secondaryMenu.add(subSectionMenu);
 
         sectionDetailedMenu.removeAll();
         secondaryMenu.add(sectionDetailedMenu);
 
-        primaryMenu.add(primaryGlue);
     }
 
     private void resetMap() {
-        map = new HashMap<SubSectionView,SubSectionButton>();
+        map = new HashMap<SubSectionView, SubSectionButton>();
+    }
+
+    private JPanel getLoginMenuItem() {
+
+        loginStatusLabel = new JLabel("");
+
+        final JPanel loginMenu = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(loginMenu);
+
+        loginMenu.add(loginStatusLabel);
+        loginMenu.add(ViewUtil.getLargeSeparator());
+        JButton logoutButton = ViewUtil.getTexturedButton("Logout",null);
+        logoutButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                LoginController.getInstance().logout();
+            }
+
+        });
+        loginMenu.add(logoutButton);
+        loginMenu.add(ViewUtil.getSmallSeparator());
+
+        return loginMenu;
+    }
+
+    public void updateLoginStatus() {
+        if (LoginController.getInstance().isLoggedIn()) {
+            loginStatusLabel.setText(LoginController.getInstance().getUserName());
+            loginStatusLabel.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
+        } else {
+            loginStatusLabel.setText("Not signed in");
+            loginStatusLabel.setToolTipText(null);
+        }
     }
 
     class SectionButton extends HoverButton {
+
         private final JPanel panel;
 
         SectionButton(SectionView v, JPanel p) {
@@ -252,7 +289,6 @@ public class Menu extends JPanel {
             panel = p;
 
             addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     sectionButtonClicked();
@@ -266,7 +302,7 @@ public class Menu extends JPanel {
                 previousSectionPanel.setVisible(false);
             }
             // Act as if we clicked the first sub-section button.
-            ((SubSectionButton)panel.getComponent(0)).subSectionClicked();
+            ((SubSectionButton) panel.getComponent(0)).subSectionClicked();
             panel.setVisible(true);
 
             previousSectionPanel = panel;
@@ -275,6 +311,7 @@ public class Menu extends JPanel {
     }
 
     private class SubSectionButton extends HoverButton {
+
         private final SubSectionView view;
         private final ButtonGroup group;
 

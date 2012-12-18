@@ -103,10 +103,8 @@ public abstract class Notification {
     }
 
     public void setStatusMessage(String statusMessage) {
-        System.out.println(statusMessage);
         this.statusMessage = statusMessage;
         this.statusLabel.setText(ViewUtil.ellipsize(statusMessage, 15));
-        //this.statusLabel.setText(statusMessage);
         this.statusLabel.setToolTipText(statusMessage);
     }
 

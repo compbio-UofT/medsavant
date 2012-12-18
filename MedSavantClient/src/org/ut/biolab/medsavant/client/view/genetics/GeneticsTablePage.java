@@ -87,7 +87,7 @@ public class GeneticsTablePage extends SubSectionView {
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
 
-                final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(); //StaticInspectorPanel.getInstance();
+                final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(true,true,true,true,true,true); //StaticInspectorPanel.getInstance();
 
                 TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
                     @Override

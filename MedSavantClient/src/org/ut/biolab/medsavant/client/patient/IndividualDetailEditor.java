@@ -142,7 +142,8 @@ class IndividualDetailEditor extends DetailedListEditor {
     @Override
     public void exportItems() {
         try {
-            File file = DialogUtils.chooseFileForSave("Export Individuals", "individuals.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
+            String filename = ProjectController.getInstance().getCurrentProjectName().replace(" ", "") + "-patients-" + System.currentTimeMillis() + ".csv";
+            File file = DialogUtils.chooseFileForSave("Export Individuals", filename, ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
             if (file != null) {
                 new ExportProgressDialog(file).showDialog();
             }

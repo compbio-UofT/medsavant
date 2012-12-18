@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.BorderLayout;
@@ -50,19 +49,16 @@ import org.ut.biolab.medsavant.client.view.util.WaitPanel;
  * @author mfiume
  */
 public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
+
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
-
     private static MedSavantFrame instance;
-
     private JPanel view;
     private CardLayout viewCardLayout;
     private JPanel sessionView;
-    private JMenuItem logOutItem;
     private LoginView loginView;
     private BottomBar bottomBar;
-
     private String currentCard;
     private boolean queuedForExit = false;
 
@@ -78,10 +74,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         super("MedSavant");
 
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(500,500));
+        setMinimumSize(new Dimension(500, 500));
 
         view = new JPanel();
-        view.setBackground(new Color(217,222,229));
+        view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
 
@@ -100,19 +96,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             public void actionPerformed(ActionEvent ae) {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
-
         });
 
-        logOutItem = new JMenuItem("Sign out");
-        logOutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                LoginController.getInstance().logout();
-            }
-        });
         //fileMenu.add(manageDBItem);
         fileMenu.add(pluginsItem);
-        fileMenu.add(logOutItem);
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");
             closeItem.addActionListener(new ActionListener() {
@@ -128,7 +115,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         setJMenuBar(menu);
 
         bottomBar = new BottomBar();
-        add(bottomBar,BorderLayout.SOUTH);
+        add(bottomBar, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -141,10 +128,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         SettingsController settings = SettingsController.getInstance();
         if (settings.getAutoLogin()) {
             LoginController.getInstance().login(settings.getUsername(),
-                                                settings.getPassword(),
-                                                settings.getDBName(),
-                                                settings.getServerAddress(),
-                                                settings.getServerPort());
+                    settings.getPassword(),
+                    settings.getDBName(),
+                    settings.getServerAddress(),
+                    settings.getServerPort());
         } else {
             switchToLoginView();
         }
@@ -163,16 +150,18 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             public void run() {
                 sessionView = new LoggedInView();
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
-                logOutItem.setEnabled(true);
 
-                bottomBar.updateLoginStatus();
+                ViewController.getInstance().getMenu().updateLoginStatus();
+                //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
             }
         });
     }
 
     public final void switchToLoginView() {
-        if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) { return; }
+        if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {
+            return;
+        }
         if (sessionView != null) {
             view.remove(sessionView);
         }
@@ -184,14 +173,13 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         LoginController.getInstance().addListener(loginView);
         view.add(loginView, LOGIN_CARD_NAME);
 
-        logOutItem.setEnabled(false);
-        bottomBar.updateLoginStatus();
         switchToView(LOGIN_CARD_NAME);
+
     }
 
     private void switchToView(String cardname) {
-         viewCardLayout.show(view, cardname);
-         currentCard = cardname;
+        viewCardLayout.show(view, cardname);
+        currentCard = cardname;
     }
 
     public void requestClose() {
@@ -231,13 +219,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 //            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
             Application macOSXApplication = Application.getApplication();
             macOSXApplication.setAboutHandler(new AboutHandler() {
-
                 @Override
                 public void handleAbout(AboutEvent evt) {
-                    JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant " +
-                            MedSavantProgramInformation.getVersion() + " " +
-                            MedSavantProgramInformation.getReleaseType() +
-                            "\nCreated by Biolab at University of Toronto.");
+                    JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
+                            + MedSavantProgramInformation.getVersion() + " "
+                            + MedSavantProgramInformation.getReleaseType()
+                            + "\nCreated by Biolab at University of Toronto.");
                 }
             });
             macOSXApplication.setPreferencesHandler(new PreferencesHandler() {

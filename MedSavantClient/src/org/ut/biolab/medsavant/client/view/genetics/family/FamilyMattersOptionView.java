@@ -31,6 +31,9 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.filter.FilterController;
+import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
@@ -52,6 +55,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 class FamilyMattersOptionView {
 
     private List<IncludeExcludeStep> steps;
+
+    private File lastTDFFile;
+    private boolean filtersChangedSinceLastDump;
 
     protected static class IncludeExcludeStep {
 
@@ -191,6 +197,15 @@ class FamilyMattersOptionView {
 
     public FamilyMattersOptionView() {
         setupView();
+
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+
+            @Override
+            public void handleEvent(FilterEvent event) {
+                filtersChangedSinceLastDump = true;
+            }
+
+        });
     }
 
     public JPanel getView() {
@@ -222,7 +237,7 @@ class FamilyMattersOptionView {
             ALL, NO, AT_LEAST, AT_MOST
         };
 
-        public FrequencyType getFequencyType() {
+        public FrequencyType getFrequencyType() {
             return frequencyType;
         }
 
@@ -569,7 +584,7 @@ class FamilyMattersOptionView {
                             }
                         };
 
-                        NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
+                        int notificationID = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
                         //AnalyticsJobsPanel.getInstance().addJob(j);
 
                         j.setStatus(Notification.JobStatus.RUNNING);
@@ -595,6 +610,8 @@ class FamilyMattersOptionView {
                                 dialogLock.wait();
                             }
                         } catch (InterruptedException ex) {
+                        } finally {
+                            NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                         }
 
                         j.setStatus(Notification.JobStatus.FINISHED);
@@ -650,14 +667,41 @@ class FamilyMattersOptionView {
                                 true);
 
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
-                        //File tdfFile = new File(outdir, (LoginController.getInstance().getServerAddress() + "_" + LoginController.getInstance().getDatabaseName() + "_" + projectID + " " + refID + " " + updateID + ".dump.tdf").replaceAll(" ", ""));
 
                         // hard code for testing only
-                        File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-12-16-23-51/medsavant.cs.toronto.edu_justfhs_131.dump.tdf");
+                        File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-12-18-14-36/Floating Harbour-varexport-1355859238961.tdf");
 
-                        System.out.println("Exporting to " + tdfFile.getAbsolutePath());
-                        //ExportVCF.exportTDF(tdfFile, this);
-                        System.out.println("Finished export");
+                        /*
+                        File tdfFile;
+                        if (filtersChangedSinceLastDump || (lastTDFFile == null)) {
+
+                            if (lastTDFFile == null) {
+                                System.out.println("No previous dump");
+                            } else {
+                                System.out.println("Filters changed since last dump");
+                            }
+
+                            File zipFile = new File(outdir, System.currentTimeMillis() + "-variantdump.tdf.zip");
+
+                            System.out.println("Exporting to " + zipFile.getAbsolutePath());
+                            tdfFile = ExportVCF.exportTDF(zipFile, this);
+                            System.out.println("Finished export");
+
+                            // remove the old tdf file, it's out of date
+                            if (lastTDFFile != null) { lastTDFFile.delete(); }
+
+                            // replace with the new one
+                            lastTDFFile = tdfFile;
+                        } else {
+                            System.out.println("Reusing previous dump");
+                            tdfFile = lastTDFFile;
+                        }
+                        */
+
+                        System.out.println("Imported from server " + tdfFile.getAbsolutePath());
+
+                        filtersChangedSinceLastDump = false;
+
 
                         int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
                         m.setStatusMessage("Stripping file");
@@ -725,4 +769,5 @@ class FamilyMattersOptionView {
         view.add(ViewUtil.centerHorizontally(runButton));
 
     }
+
 }

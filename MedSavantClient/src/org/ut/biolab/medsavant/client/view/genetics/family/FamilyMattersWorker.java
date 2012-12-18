@@ -164,7 +164,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 1000,
                 retriever);
 
-        final ComprehensiveInspector vip = new ComprehensiveInspector();
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true,false,false,true,true,true);
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -316,33 +316,25 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 e = variants.size();
             }
 
-            //LOG.info("Variants intersecting " + g.chr + " " + g.start + "-" + g.end + " are from positions " + s + " - " + e);
             Set<SimpleFamilyMattersVariant> variantsMappingToGene = new HashSet<SimpleFamilyMattersVariant>();
 
             for (int i = s; i < e; i++) {
                 SimpleFamilyMattersVariant v = variants.get(i);
                 v.addGene(g);
                 variantsMappingToGene.add(v);
-
-                //LOG.info("\t" + variants.get(i).chr + " " + variants.get(i).pos + " intersecting " + g.chr + " " + g.start + "-" + g.end);
             }
 
             genesToVariantsMap.put(g, variantsMappingToGene);
         }
-        //this.setLabelText("Done mapping variants to genes");
 
         for (FamilyMattersOptionView.IncludeExcludeStep step : steps) {
 
             ++stepNumber;
 
-            //this.setLabelText("Executing step " + stepNumber + " of " + steps.size());
-            //this.jobModel.setProgress(((double)stepNumber) / steps.size());
-
             LOG.info("Getting gene to sample map");
             Map<SimpleFamilyMattersGene, Set<String>> geneToSampleMap = getGeneToSampleMap(variantToSampleMap);
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
-
 
             int criteriaNumber = 0;
 
@@ -358,33 +350,27 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
                 Set<String> setOfDNAIDs = new HashSet<String>(dnaIDsInCohort);
 
-                /*
-                LOG.info("Samples in cohort " + criterion.getCohort().getName());
-                for (String sample : setOfDNAIDs) {
-                    System.out.println(sample);
-                }
-                */
-
                 Set<SimpleFamilyMattersVariant> excludedVariantsFromThisStep;
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
                 LOG.info("Threshold is " + frequencyThreshold);
+                LOG.info("Threshold type is " + criterion.getFrequencyType());
 
                 FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType at = criterion.getAggregationType();
                 if (at == FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType.Variant) {
                     LOG.info("Type is variant");
-                    excludedVariantsFromThisStep = (Set<SimpleFamilyMattersVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<String>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFequencyType(), setOfDNAIDs));
+                    excludedVariantsFromThisStep = (Set<SimpleFamilyMattersVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<String>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
                 } else {
                     LOG.info("Type is gene");
 
-                    System.out.println("Size of gene map is " + geneToSampleMap.keySet().size());
+                    LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
 
-                    Set<SimpleFamilyMattersGene> toExclude = (Set<SimpleFamilyMattersGene>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<String>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFequencyType(), setOfDNAIDs));
+                    Set<SimpleFamilyMattersGene> genesToRemove = (Set<SimpleFamilyMattersGene>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<String>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
 
-                    System.out.println("Excluding " + toExclude.size() + " genes");
+                    LOG.info("Excluding " + genesToRemove.size() + " genes");
 
                     excludedVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
-                    for (SimpleFamilyMattersGene g : toExclude) {
+                    for (SimpleFamilyMattersGene g : genesToRemove) {
                         Set<SimpleFamilyMattersVariant> variantsToExclude = genesToVariantsMap.get(g);
                         excludedVariantsFromThisStep.addAll(variantsToExclude);
                     }
@@ -422,16 +408,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         while ((line = readNext(r)) != null) {
             SimpleFamilyMattersVariant v = variantFromLine(line);
-
-            /*
-            if (v.chr.equals("chrM")) {
-                continue;
-            }
-            /*
-            if (v.chr.equals("chrM") && v.pos == 73) {
-                numWeirds++;
-            }
-            */
 
             String sample = line[0];
 
@@ -479,7 +455,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     }
 
     private int getFrequencyThresholdForCriterion(FamilyMattersOptionView.IncludeExcludeCriteria criterion) throws SQLException, RemoteException {
-        FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType ft = criterion.getFequencyType(); // all, no, some
+        FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType ft = criterion.getFrequencyType(); // all, no, some
         FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount fc = criterion.getFequencyCount(); // count, percent
         Cohort c = criterion.getCohort();
         int frequencyThreshold = criterion.getFreqAmount();
@@ -494,7 +470,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         } else if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO)) {
             frequencyThreshold = 0;
         } else if (fc.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount.Percent)) {
-            frequencyThreshold = (int) Math.round(frequencyThreshold * patientsInCohort.size());
+            frequencyThreshold = (int) Math.round(frequencyThreshold/100.0 * patientsInCohort.size());
         }
 
         return frequencyThreshold;
@@ -527,7 +503,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 System.err.println(o);
                 throw npe;
             }
-            //System.out.println(numberOfObjectsSamplesInCohort);
 
             if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO) {
                 if (numberOfObjectsSamplesInCohort != frequencyThreshold) {

@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
@@ -56,6 +57,7 @@ public class GeneSubInspector extends SubInspector implements Listener<Gene> {
 
     private static String KEY_NAME = "Name";
     private static String KEY_POSITION = "Position";
+    private static String KEY_LENGTH = "Length";
     private KeyValuePairPanel panel;
     private Gene selectedGene;
 
@@ -74,6 +76,7 @@ public class GeneSubInspector extends SubInspector implements Listener<Gene> {
             panel = new KeyValuePairPanel(2);
             panel.addKey(KEY_NAME);
             panel.addKey(KEY_POSITION);
+            panel.addKey(KEY_LENGTH);
 
             JButton genomeBrowserButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BROWSER));
             genomeBrowserButton.setToolTipText("View region in genome browser");
@@ -111,6 +114,8 @@ public class GeneSubInspector extends SubInspector implements Listener<Gene> {
         JButton filterButton2 = new EntrezButton(g.getName());
         panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
         panel.setValue(KEY_POSITION, g.getChrom() + ":" + ViewUtil.numToString(g.getStart()) + "-" + ViewUtil.numToString(g.getEnd()));
+        panel.setValue(KEY_LENGTH, MiscUtils.numToStringWithOrder(g.getEnd()-g.getStart()) + "bp");
+
         try {
             String s = ClientMiscUtils.breakString(g.getDescription(), "", 45);
             panel.getComponent(KEY_NAME).setToolTipText(s);

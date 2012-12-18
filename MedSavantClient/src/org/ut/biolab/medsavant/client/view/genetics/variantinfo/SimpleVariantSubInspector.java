@@ -17,11 +17,18 @@ package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -90,6 +97,10 @@ public class SimpleVariantSubInspector extends SubInspector {
             p.addKey(KEY_GENES);
 
             geneBox = new JComboBox();
+            Dimension d = new Dimension(150,22);
+            geneBox.setMinimumSize(d);
+            geneBox.setPreferredSize(d);
+            geneBox.setMaximumSize(d);
             ViewUtil.makeSmall(geneBox);
             p.setValue(KEY_GENES, geneBox);
 
@@ -152,23 +163,47 @@ public class SimpleVariantSubInspector extends SubInspector {
                 genes = GeneSetController.getInstance().getCurrentGenes();
             }
 
-            Gene g0 = null;
             JComboBox b = geneBox;
             b.removeAllItems();
 
-            for (Gene g : genes) {
-                if (g0 == null) {
-                    g0 = g;
+            b.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list,
+                                                           Object value,
+                                                           int index,
+                                                           boolean isSelected,
+                                                           boolean cellHasFocus) {
+                    Gene g = (Gene)value;
+                    value = g.getName() + "  " + MiscUtils.numToStringWithOrder(g.getEnd()-g.getStart()) + "bp";
+                    return super.getListCellRendererComponent(list, value,
+                            index, isSelected, cellHasFocus);
                 }
-                if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.chr)) && r.pos > g.getStart() && r.pos < g.getEnd()) {
-                    b.addItem(g);
+            });
+
+            List<Gene> intersectingGenes = new ArrayList<Gene>();
+
+            for (Gene g : genes) {
+                if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.chr))
+                        && r.pos > g.getStart() && r.pos < g.getEnd()) {
+                    intersectingGenes.add(g);
                 }
             }
 
-            /*if (g0 != null) {
-             GeneInspector.getInstance().setGene(g0);
-             }
-             */
+            Collections.sort(intersectingGenes, new Comparator<Gene>() {
+
+                @Override
+                public int compare(Gene t, Gene t1) {
+                    int l = Math.abs(t.getEnd()- t.getStart());
+                    int l1 = Math.abs(t1.getEnd()-t1.getStart());
+                    return new Integer(l).compareTo(new Integer(l1));
+                }
+
+            });
+
+            for (Gene g : intersectingGenes) {
+                b.addItem(g);
+            }
+
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error fetching genes: %s", ex);
         }

@@ -37,6 +37,7 @@ public abstract class Controller<E> {
     protected List<Listener<E>> listeners = new ArrayList<Listener<E>>();
     private List<Listener<E>> listenersToAdd;
     private List<Listener<E>> listenersToRemove;
+    private boolean looping;
 
     /**
      * Fire the specified event to all our listeners.
@@ -44,6 +45,7 @@ public abstract class Controller<E> {
     public synchronized void fireEvent(E event) {
         listenersToAdd = new ArrayList<Listener<E>>();
         listenersToRemove = new ArrayList<Listener<E>>();
+        looping = true;
         for (final Listener l: listeners) {
             try {
                 l.handleEvent(event);
@@ -51,6 +53,7 @@ public abstract class Controller<E> {
                 LOG.warn(String.format("%s threw exception while handling event.", l), ex);
             }
         }
+        looping = false;
         for (Listener<E> l: listenersToAdd) {
             listeners.add(l);
         }
@@ -62,7 +65,7 @@ public abstract class Controller<E> {
     }
 
     public void addListener(Listener<E> l) {
-        if (listenersToAdd != null) {
+        if (looping) {
             // Currently enumerating, so delay the add until the loop is done.
             listenersToAdd.add(l);
         } else {
@@ -72,7 +75,7 @@ public abstract class Controller<E> {
     }
 
     public void removeListener(Listener<E> l) {
-        if (listenersToRemove != null) {
+        if (looping) {
             // Currently enumerating, so delay the removal until the loop is done.
             listenersToRemove.add(l);
         } else {

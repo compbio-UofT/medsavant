@@ -31,8 +31,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class BottomBar extends JPanel {
 
     private final JLabel statusLabel;
-    private final JLabel loginStatusLabel;
-    private final ImagePanel loginImagePanel;
+   // private final JLabel loginStatusLabel;
+   // private final ImagePanel loginImagePanel;
     private final UpdatesPanel notificationPanel;
     private final NotificationsPanel analyticsJobsPanel;
 
@@ -41,28 +41,28 @@ public class BottomBar extends JPanel {
         setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(),ViewUtil.getSmallBorder()));
         setPreferredSize(new Dimension(25,25));
 
-        loginStatusLabel = new JLabel();
+        //loginStatusLabel = new JLabel();
 
         statusLabel = new JLabel("");
         statusLabel.setFont(ViewUtil.getMediumTitleFont());
 
-        ImageIcon im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGGED_IN);
+        //ImageIcon im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGGED_IN);
 
-        loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
+        //loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
 
         notificationPanel = new UpdatesPanel();
         analyticsJobsPanel = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);//new Color(246,127,0));
 
-        add(loginImagePanel);
-        add(ViewUtil.getSmallSeparator());
-        add(loginStatusLabel);
+        //add(loginImagePanel);
+        //add(ViewUtil.getSmallSeparator());
+        //add(loginStatusLabel);
         add(ViewUtil.getLargeSeparator());
         add(notificationPanel);
         add(ViewUtil.getLargeSeparator());
         add(analyticsJobsPanel);
         add(Box.createHorizontalGlue());
 
-        updateLoginStatus();
+        //updateLoginStatus();
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BottomBar extends JPanel {
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
 
-    public final void updateLoginStatus() {
+    /*public final void updateLoginStatus() {
         if (LoginController.getInstance().isLoggedIn()) {
 
             loginStatusLabel.setText("Signed in as " + LoginController.getInstance().getUserName());
@@ -85,4 +85,5 @@ public class BottomBar extends JPanel {
              loginImagePanel.setVisible(false);
         }
     }
+    */
 }

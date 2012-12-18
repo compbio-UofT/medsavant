@@ -60,21 +60,21 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private GeneManiaInfoSubPanel geneManiaInspector;
     private SocialVariantSubInspector socialSubInspector;
 
-    private void createSubInspectors() {
+    public DetailedVariantSubInspector getDetailedVariantSubInspector() {
+        return detailedVariantSubInspector;
+    }
 
-        // Variant
-        simpleVariantInspector = new SimpleVariantSubInspector();
-        detailedVariantSubInspector = new DetailedVariantSubInspector();
-        socialSubInspector = new SocialVariantSubInspector();
+    public SocialVariantSubInspector getSocialSubInspector() {
+        return socialSubInspector;
+    }
 
-        // Gene
-        geneSubInspector = new GeneSubInspector();
-        ontologySubInspector = new OntologySubInspector();
-        geneManiaInspector = new GeneManiaInfoSubPanel();
-
-
-        simpleVariantInspector.setGeneListener(this);
-        geneManiaInspector.setGeneListener(this);
+    private void createSubInspectors(
+            boolean createSimpleVariantInspector,
+            boolean createDetailedVariantInspector,
+            boolean createSocialVariantInspector,
+            boolean createGeneSubInspector,
+            boolean createOntologySubInspector,
+            boolean createGeneManiaInspector) {
 
 
         // Assemble the variant inspector
@@ -84,11 +84,10 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 return "Variant";
             }
         };
-        variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
-        variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);
-        variantCollapsibleInspector.addSubInspector(socialSubInspector);
+
         variantCollapsibleInspector.setMessage("No variant selected");
         variantCollapsibleInspector.switchToMessage();
+
 
         // Assemble the gene inspector
         geneCollapsibleInspector = new CollapsibleInspector() {
@@ -97,10 +96,43 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 return "Gene";
             }
         };
-        geneCollapsibleInspector.addSubInspector(geneSubInspector);
-        geneCollapsibleInspector.addSubInspector(ontologySubInspector);
-        geneCollapsibleInspector.addSubInspector(geneManiaInspector);
+
         geneCollapsibleInspector.setMessage("No gene selected");
+
+
+        // Variant
+        if (createSimpleVariantInspector) {
+            simpleVariantInspector = new SimpleVariantSubInspector();
+            variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
+            simpleVariantInspector.setGeneListener(this);
+        }
+
+        if (createDetailedVariantInspector) {
+            detailedVariantSubInspector = new DetailedVariantSubInspector();
+            variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);
+        }
+
+        if (createSocialVariantInspector) {
+            socialSubInspector = new SocialVariantSubInspector();
+            variantCollapsibleInspector.addSubInspector(socialSubInspector);
+        }
+
+        // Gene
+        if (createGeneSubInspector) {
+            geneSubInspector = new GeneSubInspector();
+            geneCollapsibleInspector.addSubInspector(geneSubInspector);
+        }
+
+        if (createOntologySubInspector) {
+            ontologySubInspector = new OntologySubInspector();
+            geneCollapsibleInspector.addSubInspector(ontologySubInspector);
+        }
+
+        if (createGeneManiaInspector) {
+            geneManiaInspector = new GeneManiaInfoSubPanel();
+            geneCollapsibleInspector.addSubInspector(geneManiaInspector);
+            geneManiaInspector.setGeneListener(this);
+        }
 
 
         // Assemble everything
@@ -215,8 +247,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     @Override
     public void handleEvent(Object event) {
 
-        System.out.println("Comprehensive Inspector caught wind of " + event);
-
         if (event instanceof Gene) {
             setGene((Gene) event);
         } else if (event instanceof SimpleVariant) {
@@ -232,13 +262,25 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     };
     private EnumMap<ComprehensiveInspector.InspectorEnum, Integer> inspectorsToTabIndexMap = new EnumMap<ComprehensiveInspector.InspectorEnum, Integer>(ComprehensiveInspector.InspectorEnum.class);
 
-    public ComprehensiveInspector() {
+    public ComprehensiveInspector(
+            boolean createSimpleVariantInspector,
+            boolean createDetailedVariantInspector,
+            boolean createSocialVariantInspector,
+            boolean createGeneSubInspector,
+            boolean createOntologySubInspector,
+            boolean createGeneManiaInspector) {
 
         setTabPlacement(JTabbedPane.TOP);
         setBorder(ViewUtil.getBigBorder());
         setBackground(ViewUtil.getTertiaryMenuColor());
 
-        createSubInspectors();
+        createSubInspectors(
+                createSimpleVariantInspector,
+                createDetailedVariantInspector,
+                createSocialVariantInspector,
+                createGeneSubInspector,
+                createOntologySubInspector,
+                createGeneManiaInspector);
     }
 
     public void switchToGeneInspector() {
