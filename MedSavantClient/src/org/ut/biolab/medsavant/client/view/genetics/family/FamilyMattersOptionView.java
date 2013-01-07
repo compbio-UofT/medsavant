@@ -306,7 +306,7 @@ class FamilyMattersOptionView {
 
             freqTypeChoice = new JComboBox();
             freqTypeChoice.addItem("all");
-            freqTypeChoice.addItem("no");
+            freqTypeChoice.addItem("none");
             freqTypeChoice.addItem("at most");
             freqTypeChoice.addItem("at least");
 
@@ -384,7 +384,7 @@ class FamilyMattersOptionView {
                 }
             });
 
-            view.add(new JLabel("of individuals in the"));
+            view.add(new JLabel("of the individuals in the"));
 
             cb = new JComboBox();
             cb.setName(COHORT_COMBO);

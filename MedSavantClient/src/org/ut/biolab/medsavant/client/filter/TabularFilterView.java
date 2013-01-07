@@ -214,17 +214,16 @@ public abstract class TabularFilterView<T> extends FilterView {
     }
 
     private void setAllSelected(boolean b) {
-        int[] selected;
 
         if (b) {
-            selected = new int[filterableList.getModel().getSize()];
-            for (int i = 0; i < selected.length; i++) {
-                selected[i] = i;
+            for (int i = 0; i < filterableList.getModel().getSize(); i++) {
+                filterableList.addCheckBoxListSelectedIndex(i);
             }
         } else {
-            selected = new int[0];
+            for (int i = 0; i < filterableList.getModel().getSize(); i++) {
+                filterableList.removeCheckBoxListSelectedIndex(i);
+            }
         }
-        filterableList.setCheckBoxListSelectedIndices(selected);
     }
 
     /**

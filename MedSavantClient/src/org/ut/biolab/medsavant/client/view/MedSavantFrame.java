@@ -214,7 +214,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 
-
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
 //            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
             Application macOSXApplication = Application.getApplication();
@@ -230,7 +229,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             macOSXApplication.setPreferencesHandler(new PreferencesHandler() {
                 @Override
                 public void handlePreferences(PreferencesEvent pe) {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                    DialogUtils.displayMessage("Preferences available for Administrators only");
                 }
             });
             macOSXApplication.setQuitHandler(new QuitHandler() {
