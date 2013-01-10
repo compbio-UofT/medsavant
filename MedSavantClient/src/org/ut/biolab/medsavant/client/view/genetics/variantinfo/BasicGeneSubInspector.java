@@ -97,7 +97,7 @@ public class BasicGeneSubInspector extends SubInspector implements Listener<Gene
             genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    LocationController.getInstance().setLocation(selectedGene.getChrom(), new Range((int) (selectedGene.getCodingStart() - 20), (int) (selectedGene.getCodingEnd() + 21)));
+                    LocationController.getInstance().setLocation(selectedGene.getChrom(), new Range((int) (selectedGene.getCodingStart() - 50), (int) (selectedGene.getCodingEnd() + 51)));
                     ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
                 }
             });

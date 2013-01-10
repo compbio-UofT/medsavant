@@ -97,7 +97,7 @@ public class BrowserPage extends SubSectionView {
             @Override
             public void handleEvent(GenomeChangedEvent event) {
                 if (!variantTrackLoaded) {
-                    addTrackFromURLString("http://compbio.cs.toronto.edu/savant/data/genes/hg19/human.hg19.refseq.bed.savant", DataFormat.GENERIC_INTERVAL);
+                    addTrackFromURLString("http://genomesavant.com/savant/data/hg19/hg19.refGene.gz", DataFormat.GENERIC_INTERVAL);
                     //addTrackFromURLString("http://compbio.cs.toronto.edu/savant/data/SNPs/hg19/human.snp130.hg19.bed.savant");
 
                     System.out.println("Loading variant track");

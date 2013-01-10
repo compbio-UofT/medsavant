@@ -79,9 +79,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
         verifyJIDE();
         setLAF();
 
-
-
-
         //required for FORGE plugin
         //NativeInterface.open();
 
