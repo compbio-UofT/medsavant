@@ -26,15 +26,17 @@
 
 package org.broad.tabix;
 
-import java.io.*;
-import java.nio.*;
-import java.util.HashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Set;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
 import net.sf.samtools.util.SeekableStream;
-
 
 public class TabixReader {
 	private BlockCompressedInputStream mFp;
