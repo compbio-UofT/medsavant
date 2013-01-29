@@ -27,9 +27,11 @@ import java.util.*;
 import javax.swing.*;
 
 import com.jidesoft.chart.Chart;
+import com.jidesoft.chart.ChartColor;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
 import com.jidesoft.chart.PointShape;
+import com.jidesoft.chart.annotation.AutoPositionedLabel;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
@@ -38,11 +40,13 @@ import com.jidesoft.chart.model.DefaultChartModel;
 import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
+import com.jidesoft.chart.render.BarRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import javax.swing.border.EmptyBorder;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
@@ -71,6 +75,7 @@ import org.ut.biolab.medsavant.client.view.util.WaitPanel;
  * @author mfiume
  */
 public class SummaryChart extends JLayeredPane implements BasicPatientColumns, BasicVariantColumns {
+
     private static final Log LOG = LogFactory.getLog(SummaryChart.class);
 
     public boolean doesCompareToOriginal() {
@@ -105,7 +110,6 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
     //private Stack<ZoomFrame> zoomStack = new Stack<ZoomFrame>();
     //private String scatterAliasX;
     //private String scatterAliasY;
-
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
         setLayout(new GridBagLayout());
@@ -134,14 +138,14 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
     }
 
     /*public void setIsLogScaleY(boolean isLogscale) {
-    this.isLogScaleY = isLogscale;
-    updateDataAndDrawChart();
-    }
+     this.isLogScaleY = isLogscale;
+     updateDataAndDrawChart();
+     }
 
-    public void setIsLogScaleX(boolean isLogscale) {
-    this.isLogScaleX = isLogscale;
-    updateDataAndDrawChart();
-    }*/
+     public void setIsLogScaleX(boolean isLogscale) {
+     this.isLogScaleX = isLogscale;
+     updateDataAndDrawChart();
+     }*/
     public void setIsSorted(boolean isSorted) {
         this.isSorted = isSorted;
         updateDataAndDrawChart();
@@ -178,10 +182,9 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
     }
 
     /*public void setScatterChart(String aliasX, String aliasY) {
-        this.scatterAliasX = aliasX;
-        this.scatterAliasY = aliasY;
-    }*/
-
+     this.scatterAliasX = aliasX;
+     this.scatterAliasY = aliasY;
+     }*/
     public void setScatterChartMapGenerator(ChartMapGenerator cmg) {
         mapGeneratorScatter = cmg;
     }
@@ -221,8 +224,14 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         mapWorker.execute();
     }
 
-    private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
+    private ChartStyle barStyle(Paint fill) {
+        ChartStyle style = new ChartStyle();
+        style.setBarsVisible(true);
+        style.setBarPaint(fill);
+        return style;
+    }
 
+    private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
 
         ChartFrequencyMap filteredChartMap = chartMaps[0];
         ChartFrequencyMap unfilteredChartMap = null;
@@ -235,8 +244,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             unfilteredChartModel = new DefaultChartModel();
         }
 
-        final Chart chart = new Chart(new Dimension(200, 200));
-
+        final Chart chart = new Chart();
 
         JPanel panel = new JPanel();
         Legend legend = new Legend(chart, 0);
@@ -256,14 +264,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         chart.setAnimateOnShow(false);
 
-        //chart.setBarsGrouped(true);
-        /*chart.getSelectionsForModel(filteredChartModel).setSelectionMode(
-                (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER))
-                ? ListSelectionModel.SINGLE_SELECTION
-                : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);*/
-
         chart.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
@@ -325,7 +326,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             }
             h = new Highlight(category.getName());
             highlights.add(h);
-            chart.setHighlightStyle(h, new ChartStyle(color));
+            chart.setHighlightStyle(h, barStyle(color));
         }
 
         final CategoryAxis xaxis = new CategoryAxis(range, "Category");
@@ -336,9 +337,9 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             chart.setYAxis(new Axis(new NumericRange(0, max * 1.1), "Frequency"));
         }
 
-        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories,highlights);
+        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories, highlights);
         if (this.showComparedToOriginal) {
-            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories,null);
+            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories, null);
         }
 
         chart.getXAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
@@ -353,48 +354,48 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         // This adds zooming cababilities to bar charts, not great though
         /*else {
-            RubberBandZoomer rubberBand = new RubberBandZoomer(chart);
-            chart.addDrawable(rubberBand);
-            chart.addMouseListener(rubberBand);
-            chart.addMouseMotionListener(rubberBand);
+         RubberBandZoomer rubberBand = new RubberBandZoomer(chart);
+         chart.addDrawable(rubberBand);
+         chart.addMouseListener(rubberBand);
+         chart.addMouseMotionListener(rubberBand);
 
-            rubberBand.addZoomListener(new ZoomListener() {
-                public void zoomChanged(ChartSelectionEvent event) {
-                    if (event instanceof RectangleSelectionEvent) {
-                        Range<?> currentXRange = chart.getXAxis().getOutputRange();
-                        Range<?> currentYRange = chart.getYAxis().getOutputRange();
-                        ZoomFrame frame = new ZoomFrame(currentXRange, currentYRange);
-                        zoomStack.push(frame);
-                        Rectangle selection = (Rectangle) event.getLocation();
-                        Point topLeft = selection.getLocation();
-                        topLeft.x = (int) Math.floor(frame.getXRange().minimum());
-                        Point bottomRight = new Point(topLeft.x + selection.width, topLeft.y + selection.height);
-                        bottomRight.x = (int) Math.ceil(frame.getXRange().maximum());
-                        assert bottomRight.x >= topLeft.x;
-                        Point2D rp1 = chart.calculateUserPoint(topLeft);
-                        Point2D rp2 = chart.calculateUserPoint(bottomRight);
-                        if (rp1 != null && rp2 != null) {
-                            assert rp2.getX() >= rp1.getX();
-                            Range<?> xRange = new NumericRange(rp1.getX(), rp2.getX());
-                            assert rp1.getY() >= rp2.getY();
-                            Range<?> yRange = new NumericRange(rp2.getY(), rp1.getY());
-                            //chart.getXAxis().setRange(xRange);
-                            chart.getYAxis().setRange(yRange);
-                        }
-                    } else if (event instanceof PointSelectionEvent) {
-                        if (zoomStack.size() > 0) {
-                            ZoomFrame frame = zoomStack.pop();
-                            Range<?> xRange = frame.getXRange();
-                            Range<?> yRange = frame.getYRange();
-                            //chart.getXAxis().setRange(xRange);
-                            chart.getYAxis().setRange(yRange);
-                        }
-                    }
-                }
-            });
-        }
-        *
-        */
+         rubberBand.addZoomListener(new ZoomListener() {
+         public void zoomChanged(ChartSelectionEvent event) {
+         if (event instanceof RectangleSelectionEvent) {
+         Range<?> currentXRange = chart.getXAxis().getOutputRange();
+         Range<?> currentYRange = chart.getYAxis().getOutputRange();
+         ZoomFrame frame = new ZoomFrame(currentXRange, currentYRange);
+         zoomStack.push(frame);
+         Rectangle selection = (Rectangle) event.getLocation();
+         Point topLeft = selection.getLocation();
+         topLeft.x = (int) Math.floor(frame.getXRange().minimum());
+         Point bottomRight = new Point(topLeft.x + selection.width, topLeft.y + selection.height);
+         bottomRight.x = (int) Math.ceil(frame.getXRange().maximum());
+         assert bottomRight.x >= topLeft.x;
+         Point2D rp1 = chart.calculateUserPoint(topLeft);
+         Point2D rp2 = chart.calculateUserPoint(bottomRight);
+         if (rp1 != null && rp2 != null) {
+         assert rp2.getX() >= rp1.getX();
+         Range<?> xRange = new NumericRange(rp1.getX(), rp2.getX());
+         assert rp1.getY() >= rp2.getY();
+         Range<?> yRange = new NumericRange(rp2.getY(), rp1.getY());
+         //chart.getXAxis().setRange(xRange);
+         chart.getYAxis().setRange(yRange);
+         }
+         } else if (event instanceof PointSelectionEvent) {
+         if (zoomStack.size() > 0) {
+         ZoomFrame frame = zoomStack.pop();
+         Range<?> xRange = frame.getXRange();
+         Range<?> yRange = frame.getYRange();
+         //chart.getXAxis().setRange(xRange);
+         chart.getYAxis().setRange(yRange);
+         }
+         }
+         }
+         });
+         }
+         *
+         */
 
         for (int i = 1; i < this.getComponentCount(); i++) {
             this.remove(i);
@@ -460,7 +461,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         for (int i = 0; i < entries.getNumY(); i++) {
             models[i] = new DefaultChartModel();
         }
-        
+
         for (int i = 0; i < entries.getNumX(); i++) {
             //ScatterChartEntry[] x = entries[i];
             for (int j = 0; j < entries.getNumY(); j++) {
@@ -493,7 +494,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         //add legend in scrollpane
         JScrollPane scroll = new JScrollPane(legend);
-        scroll.setPreferredSize(new Dimension(150,100));
+        scroll.setPreferredSize(new Dimension(150, 100));
         c.gridx = 1;
         c.weightx = 0;
         add(scroll, c, JLayeredPane.DEFAULT_LAYER);
@@ -506,16 +507,16 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         String[] firstX = entries.getXValueAt(0).split("[^(\\d|\\.|E)]");
         String[] firstY = entries.getYValueAt(0).split("[^(\\d|\\.|E)]");
-        String[] lastX = entries.getXValueAt(entries.getNumX()-1).split("[^(\\d|\\.|E)]");
-        String[] lastY = entries.getYValueAt(entries.getNumY()-1).split("[^(\\d|\\.|E)]");
+        String[] lastX = entries.getXValueAt(entries.getNumX() - 1).split("[^(\\d|\\.|E)]");
+        String[] lastY = entries.getYValueAt(entries.getNumY() - 1).split("[^(\\d|\\.|E)]");
 
         float startX = Float.parseFloat(firstX[0]);
-        float endX = Float.parseFloat(lastX[lastX.length-1]);
-        final float binSizeX = Float.parseFloat(firstX[firstX.length-1]) - startX;
+        float endX = Float.parseFloat(lastX[lastX.length - 1]);
+        final float binSizeX = Float.parseFloat(firstX[firstX.length - 1]) - startX;
 
         float startY = Float.parseFloat(firstY[0]);
-        float endY = Float.parseFloat(lastY[lastY.length-1]);
-        final float binSizeY = Float.parseFloat(firstY[firstY.length-1]) - startY;
+        float endY = Float.parseFloat(lastY[lastY.length - 1]);
+        final float binSizeY = Float.parseFloat(firstY[firstY.length - 1]) - startY;
 
         JSurfacePanel panel = new JSurfacePanel();
         panel.setTitleText("");
@@ -527,7 +528,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         model.setYMin(startY);
         model.setYMax(endY);
         model.setZMin(0);
-        model.setZMax(entries.getMaxFrequency()+1);
+        model.setZMax(entries.getMaxFrequency() + 1);
         model.setDisplayXY(true);
         model.setDisplayZ(true);
 
@@ -536,8 +537,8 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             public float f1(float x, float y) {
 
                 try {
-                    int binX = (int)(x / binSizeX);
-                    int binY = (int)(y / binSizeY);
+                    int binX = (int) (x / binSizeX);
+                    int binY = (int) (y / binSizeY);
                     ScatterChartEntry entry = entries.getValueAt(binX, binY);
                     if (entry == null) {
                         return 0;
@@ -626,7 +627,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             }
         }
 
-        private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws SQLException, RemoteException{
+        private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws SQLException, RemoteException {
             Map<Object, List<String>> map = MedSavantClient.PatientManager.getDNAIDsForValues(
                     LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
@@ -679,7 +680,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
                 columnY = DNA_ID.getColumnName();
             }
 
-            ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
+            ScatterChartMap scatterMap = MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
                     LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
@@ -767,7 +768,6 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         //Filter by selections
         JMenuItem filter1Item = new JMenuItem("Filter by Selection" + (mapGenerator.isNumeric() ? "" : "(s)"));
         filter1Item.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
 
@@ -788,68 +788,68 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
                     TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
                     TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
-/*                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                    /*                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
-                        Range r = Range.rangeFromString(values.get(0));
+                     Range r = Range.rangeFromString(values.get(0));
 
-                        if (mapGenerator.getTable() == WhichTable.VARIANT) {
-                            RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
-                            FilterUtils.createAndApplyGenericFixedFilter(
-                                    "Charts - Filter by Selection",
-                                    mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                                    ComboCondition.and(condition));
-                        } else {
-                            List<String> individuals = MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                                    LoginController.getInstance().getSessionID(),
-                                    ProjectController.getInstance().getCurrentProjectID(),
-                                    mapGenerator.getFilterId(),
-                                    r);
-                            Condition[] conditions = new Condition[individuals.size()];
-                            for (int i = 0; i < individuals.size(); i++) {
-                                conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
-                            }
-                            FilterUtils.createAndApplyGenericFixedFilter(
-                                    "Charts - Filter by Selection",
-                                    mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                                    ComboCondition.or(conditions));
-                        }
+                     if (mapGenerator.getTable() == WhichTable.VARIANT) {
+                     RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
+                     FilterUtils.createAndApplyGenericFixedFilter(
+                     "Charts - Filter by Selection",
+                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
+                     ComboCondition.and(condition));
+                     } else {
+                     List<String> individuals = MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
+                     LoginController.getInstance().getSessionID(),
+                     ProjectController.getInstance().getCurrentProjectID(),
+                     mapGenerator.getFilterId(),
+                     r);
+                     Condition[] conditions = new Condition[individuals.size()];
+                     for (int i = 0; i < individuals.size(); i++) {
+                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
+                     }
+                     FilterUtils.createAndApplyGenericFixedFilter(
+                     "Charts - Filter by Selection",
+                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
+                     ComboCondition.or(conditions));
+                     }
 
-                    } else {
+                     } else {
 
-                        if (mapGenerator.getTable() == WhichTable.VARIANT) {
-                            Condition[] conditions = new Condition[values.size()];
-                            for (int i = 0; i < conditions.length; i++) {
-                                conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
-                            }
-                            FilterUtils.createAndApplyGenericFixedFilter(
-                                    "Charts - Filter by Selection",
-                                    mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                                    ComboCondition.or(conditions));
-                        } else {
-                            //special case for gender
-                            if (mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
-                                List<String> values1 = new ArrayList<String>();
-                                for (String s : values) {
-                                    values1.add(Integer.toString(ClientMiscUtils.stringToGender(s)));
-                                }
-                                values = values1;
-                            }
+                     if (mapGenerator.getTable() == WhichTable.VARIANT) {
+                     Condition[] conditions = new Condition[values.size()];
+                     for (int i = 0; i < conditions.length; i++) {
+                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
+                     }
+                     FilterUtils.createAndApplyGenericFixedFilter(
+                     "Charts - Filter by Selection",
+                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
+                     ComboCondition.or(conditions));
+                     } else {
+                     //special case for gender
+                     if (mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                     List<String> values1 = new ArrayList<String>();
+                     for (String s : values) {
+                     values1.add(Integer.toString(ClientMiscUtils.stringToGender(s)));
+                     }
+                     values = values1;
+                     }
 
-                            List<String> individuals = MedSavantClient.PatientManager.getDNAIDsForStringList(
-                                    LoginController.getInstance().getSessionID(),
-                                    patientTable,
-                                    values,
-                                    mapGenerator.getFilterId());
-                            Condition[] conditions = new Condition[individuals.size()];
-                            for (int i = 0; i < individuals.size(); i++) {
-                                conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
-                            }
-                            FilterUtils.createAndApplyGenericFixedFilter(
-                                    "Charts - Filter by Selection",
-                                    mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                                    ComboCondition.or(conditions));
-                        }
-                    }*/
+                     List<String> individuals = MedSavantClient.PatientManager.getDNAIDsForStringList(
+                     LoginController.getInstance().getSessionID(),
+                     patientTable,
+                     values,
+                     mapGenerator.getFilterId());
+                     Condition[] conditions = new Condition[individuals.size()];
+                     for (int i = 0; i < individuals.size(); i++) {
+                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
+                     }
+                     FilterUtils.createAndApplyGenericFixedFilter(
+                     "Charts - Filter by Selection",
+                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
+                     ComboCondition.or(conditions));
+                     }
+                     }*/
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error filtering by selection: %s", ex);
                 }

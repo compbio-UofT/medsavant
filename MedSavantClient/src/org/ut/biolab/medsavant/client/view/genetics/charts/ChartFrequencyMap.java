@@ -118,7 +118,6 @@ public class ChartFrequencyMap {
     }
 
     List<ChartCategory> getCategories() {
-
         List<ChartCategory> map = new ArrayList<ChartCategory>();
         for (FrequencyEntry fe : getEntries()) {
             ChartCategory cat = new ChartCategory<String>(fe.getKey());
