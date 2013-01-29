@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.client.aggregate;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Box;
@@ -75,12 +76,14 @@ public class AggregatesStatsPanel extends JPanel {
         toolBarPanel.add(Box.createHorizontalGlue());
 
         generatorCombo = new JComboBox();
+        generatorCombo.setPreferredSize(new Dimension(300,23));
+
         generatorCombo.addItem(new AggregatePanelGenerator() {
             @Override
-            public String toString() { return "Cohort"; }
+            public String toString() { return "Region List"; }
 
             @Override
-            public AggregatePanel generatePanel() { return new CohortAggregatePanel(pageName); }
+            public AggregatePanel generatePanel() { return new RegionListAggregatePanel(pageName); }
         });
         generatorCombo.addItem(new AggregatePanelGenerator() {
             @Override
@@ -96,12 +99,13 @@ public class AggregatesStatsPanel extends JPanel {
             @Override
             public AggregatePanel generatePanel() { return new OntologyAggregatePanel(pageName); }
         });
+
         generatorCombo.addItem(new AggregatePanelGenerator() {
             @Override
-            public String toString() { return "Region List"; }
+            public String toString() { return "Cohort"; }
 
             @Override
-            public AggregatePanel generatePanel() { return new RegionListAggregatePanel(pageName); }
+            public AggregatePanel generatePanel() { return new CohortAggregatePanel(pageName); }
         });
         generatorCombo.setSelectedIndex(0);
 
@@ -113,6 +117,7 @@ public class AggregatesStatsPanel extends JPanel {
         });
 
         bar.add(generatorCombo);
+
         add(toolBarPanel, BorderLayout.NORTH);
     }
 

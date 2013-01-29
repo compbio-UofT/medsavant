@@ -16,11 +16,8 @@
 
 package org.ut.biolab.medsavant.client.cohort;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -36,6 +33,7 @@ import javax.swing.JScrollPane;
 import com.jidesoft.converter.ConverterContext;
 import com.jidesoft.converter.PercentConverter;
 import com.jidesoft.grid.*;
+import java.awt.BorderLayout;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.aggregate.AggregatePanel;
@@ -45,8 +43,6 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.ExportTable;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.StripySortableTreeTableModel;
 import org.ut.biolab.medsavant.client.view.util.WaitPanel;
@@ -93,7 +89,7 @@ public class CohortAggregatePanel extends AggregatePanel {
         removeAll();
         setLayout(new BorderLayout());
 
-        exportButton = new JButton("Export Page");
+        /*exportButton = new JButton("Export Page");
         exportButton.setEnabled(false);
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -105,11 +101,12 @@ public class CohortAggregatePanel extends AggregatePanel {
                 }
             }
         });
+        */
 
         progressPanel = new JPanel();
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
         progressPanel.add(Box.createHorizontalGlue());
-        progressPanel.add(exportButton);
+        //progressPanel.add(exportButton);
         progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
 
         showWaitCard();

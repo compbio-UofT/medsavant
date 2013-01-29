@@ -121,7 +121,9 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
             @Override
             protected void showSuccess(List<RegionSet> result) {
-                updateRegionSetCombo(result);
+                if (!result.isEmpty()) {
+                    updateRegionSetCombo(result);
+                }
             }
         }.execute();
     }
