@@ -60,7 +60,7 @@ public class AggregatesStatsPanel extends JPanel {
         p.recalculate();
 
         add(p);
-        validate();
+        updateUI();
     }
 
     private void initToolBar() {

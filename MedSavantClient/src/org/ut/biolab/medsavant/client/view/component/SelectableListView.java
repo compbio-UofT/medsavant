@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.component;
 
 import java.awt.Dimension;
@@ -31,15 +30,18 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.api.Listener;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
- * Base class shared by StringListFilterView, RegionSetFilterView, and OntologyFilterView, all of which consist of a table containing
- * checkable items.
+ * Base class shared by StringListFilterView, RegionSetFilterView, and
+ * OntologyFilterView, all of which consist of a table containing checkable
+ * items.
  *
  * @author tarkvara
  */
@@ -47,15 +49,25 @@ public class SelectableListView<T> extends JPanel {
 
     private static final Log LOG = LogFactory.getLog(SelectableListView.class);
     private static final int FIELD_WIDTH = 260;
-
-    protected List<T> availableValues;
+    private List<Listener<SelectionEvent>> listeners;
+    private List<T> availableValues;
     protected List<T> appliedValues;
-
     private QuickListFilterField field;
     protected FilterableCheckBoxList filterableList;
     private JButton selectAll;
 
     protected SelectableListView() {
+        listeners = new ArrayList<Listener<SelectionEvent>>();
+    }
+
+    public void setAvailableValues(List<T> v) {
+        this.availableValues = v;
+        setAppliedValues(v);
+    }
+
+    public void setAppliedValues(List<T> v) {
+        this.appliedValues = v;
+        fireSelectionsChangedEvent();
     }
 
     protected final void initContentPanel() {
@@ -64,7 +76,7 @@ public class SelectableListView<T> extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
 
         if (availableValues == null) {
-            JTextArea label = new JTextArea("There are too many unique values to generate this list. You will not be able to filter on this column. ");
+            JTextArea label = new JTextArea("There are too many values to display.");
             label.setOpaque(false);
             label.setLineWrap(true);
             label.setWrapStyleWord(true);
@@ -88,7 +100,6 @@ public class SelectableListView<T> extends JPanel {
         field.setPreferredSize(new Dimension(FIELD_WIDTH, 22));
 
         filterableList = new FilterableCheckBoxList(field.getDisplayListModel()) {
-
             @Override
             public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
                 return -1;
@@ -105,7 +116,6 @@ public class SelectableListView<T> extends JPanel {
         }
 
         SearchableUtils.installSearchable(filterableList);
-
 
         setAllSelected(true);
 
@@ -149,18 +159,56 @@ public class SelectableListView<T> extends JPanel {
         gbc.gridwidth = 1;
         gbc.weightx = 0.0;
         gbc.weighty = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-        add(selectAll, gbc);
-        add(selectNone, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        JPanel bottom = new JPanel();
+        ViewUtil.applyHorizontalBoxLayout(bottom);
+
+        bottom.add(selectAll);
+        bottom.add(selectNone);
+        bottom.add(Box.createHorizontalGlue());
+
+        JButton applyButton = new JButton("Apply");
+        applyButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                saveSelections();
+            }
+
+        });
+        bottom.add(applyButton);
+        add(bottom,gbc);
+    }
+
+    private void saveSelections() {
+        int[] selectedIndices = filterableList.getCheckBoxListSelectedIndices();
+        List<T> selections = new ArrayList<T>();
+        for (int i : selectedIndices) {
+            selections.add(availableValues.get(i));
+        }
+        appliedValues = selections;
+        fireSelectionsChangedEvent();
+    }
+
+    public List<T> getSelections() {
+        return appliedValues;
+    }
+
+    public boolean areAllSelected() {
+        return appliedValues.size() == availableValues.size();
+    }
+
+    public boolean areNoneSelected() {
+        return appliedValues.isEmpty();
     }
 
     public final void setFilterValues(Collection<String> list) {
         int[] selectedIndices = new int[list.size()];
         int i = 0;
-        for (String s: list) {
+        for (String s : list) {
             int j = 0;
-            for (T t: availableValues) {
+            for (T t : availableValues) {
                 if (t.toString().equals(s)) {
                     break;
                 }
@@ -172,14 +220,16 @@ public class SelectableListView<T> extends JPanel {
     }
 
     /**
-     * Shared code which derived classes can call to set things up properly in their <code>applyFilter</code> calls.
+     * Shared code which derived classes can call to set things up properly in
+     * their
+     * <code>applyFilter</code> calls.
      */
     protected void preapplyFilter() {
         appliedValues = new ArrayList<T>();
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i: indices) {
-            appliedValues.add((T)filterableList.getModel().getElementAt(i));
+        for (int i : indices) {
+            appliedValues.add((T) filterableList.getModel().getElementAt(i));
         }
     }
 
@@ -197,13 +247,48 @@ public class SelectableListView<T> extends JPanel {
     }
 
     /**
-     * Update our list model when the available values list has changed.  It should be possible to get this working without resetting
-     * the whole model, but I couldn't get it to update correctly, hence the brute force approach.
+     * Update our list model when the available values list has changed. It
+     * should be possible to get this working without resetting the whole model,
+     * but I couldn't get it to update correctly, hence the brute force
+     * approach.
      */
     protected void updateModel() {
         field.setListModel(new SelectableListView.SimpleListModel());
         filterableList.setModel(field.getDisplayListModel());
         LOG.info("Model updated, " + field.getDisplayListModel().getSize() + " of " + field.getListModel().getSize() + "(" + availableValues.size() + ") rows visible.");
+    }
+
+    public void addListener(Listener<SelectionEvent> l) {
+        listeners.add(l);
+    }
+
+    private void fireSelectionsChangedEvent() {
+        SelectionEvent e = new SelectionEvent(SelectionEvent.Type.CHANGED, this.getSelections());
+        for (Listener l : listeners) {
+            l.handleEvent(e);
+        }
+    }
+
+    public static class SelectionEvent  {
+
+        public enum Type {
+            CHANGED
+        };
+        private final Type type;
+        private final List selections;
+
+        public SelectionEvent(Type type, List selections) {
+            this.type = type;
+            this.selections = selections;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public List getSelections() {
+            return selections;
+        }
     }
 
     public class SimpleListModel extends AbstractListModel {

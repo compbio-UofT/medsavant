@@ -21,34 +21,48 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
-import org.ut.biolab.medsavant.client.view.component.GenericStringChooser.ValueRetriever;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.util.ServerRequest;
 import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
 import savant.controller.FrameController;
 import savant.controller.GenomeController;
 import savant.controller.TrackController;
+import savant.exception.SavantTrackCreationCancelledException;
 import savant.settings.PersistentSettings;
 import savant.util.ColourKey;
 import savant.view.swing.Savant;
+import savant.view.tracks.Track;
+import savant.view.tracks.TrackFactory;
 import savant.view.variation.VariationController;
 
 /**
@@ -57,6 +71,7 @@ import savant.view.variation.VariationController;
  */
 public class BrowserPage extends SubSectionView {
 
+    private static final Log LOG = LogFactory.getLog(BrowserPage.class);
     private JPanel view;
     private JPanel browserPanel;
     private GenomeContainer genomeContainer;
@@ -64,13 +79,14 @@ public class BrowserPage extends SubSectionView {
     private PeekingPanel variationPanel;
     private Component[] settingComponents;
     private boolean variantTrackLoaded = false;
-    private MedSavantDataSource s;
     private static BrowserPage instance;
+    private MedSavantDataSource msds;
 
     // Do not use unless you're sure it BrowserPage has been initialized
     public static BrowserPage getInstance() {
         return instance;
     }
+    private GenericStringChooser gsc;
 
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
@@ -93,23 +109,35 @@ public class BrowserPage extends SubSectionView {
             }
         });
 
-        GenomeController.getInstance().addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
+        GenomeController.getInstance()
+                .addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
             @Override
             public void handleEvent(GenomeChangedEvent event) {
                 if (!variantTrackLoaded) {
-                    addTrackFromURLString("http://genomesavant.com/savant/data/hg19/hg19.refGene.gz", DataFormat.GENERIC_INTERVAL);
-                    //addTrackFromURLString("http://compbio.cs.toronto.edu/savant/data/SNPs/hg19/human.snp130.hg19.bed.savant");
 
-                    System.out.println("Loading variant track");
+                    // load a gene track if it exists
+                    try {
+                        System.out.println("Loading gene track");
+                        String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                        String urlOfTrack = getTrackURL(referenceName, "gene");
+                        addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
+                    } catch (Exception ex) {
+                        LOG.info("Error loading gene track");
+                        ex.printStackTrace();
+                    }
 
-                    /*s = new MedSavantDataSource();
-                     try {
-                     FrameController.getInstance().createFrame(new Track[]{TrackFactory.createTrack(s)});
-                     } catch (SavantTrackCreationCancelledException ex) {
-                     ex.printStackTrace();
-                     }
-                     variantTrackLoaded = true;
-                     */
+                    // load the MedSavant variant track
+                    try {
+                        System.out.println("Loading MedSavant variant track");
+                        msds = new MedSavantDataSource();
+                        System.out.println("Subscribing selection change listener");
+                        gsc.addListener(msds);
+                        FrameController.getInstance().createFrame(new Track[]{TrackFactory.createTrack(msds)});
+
+                    } catch (SavantTrackCreationCancelledException ex) {
+                        LOG.info("Error loading MedSavant variant track");
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -122,25 +150,27 @@ public class BrowserPage extends SubSectionView {
             settingComponents[0] = PeekingPanel.getCheckBoxForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getCheckBoxForPanel(variationPanel, "Variation");
 
-            JButton button = new JButton("DNA ID Chooser");
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
+            try {
+                List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                        LoginController.getSessionID(),
+                        ProjectController.getInstance().getCurrentVariantTableName(),
+                        BasicVariantColumns.DNA_ID.getColumnName(),
+                        true);
+                gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
 
-                    ValueRetriever vr = new ValueRetriever() {
+                JButton button = new JButton("Restrict DNA IDs");
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        gsc.setVisible(true);
+                    }
+                });
 
-                        @Override
-                        public List<String> retrieveStringValues() {
-                            return null;
-                        }
-                    };
+                settingComponents[2] = button;
 
-                    GenericStringChooser gsc = new GenericStringChooser(vr, "Choose DNA IDs");
-                    gsc.setVisible(true);
-                }
-            });
-
-            settingComponents[2] = button;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
 
         }
         return settingComponents;
@@ -164,7 +194,7 @@ public class BrowserPage extends SubSectionView {
                 browserPanel = new JPanel();
                 browserPanel.setLayout(new BorderLayout());
 
-                Savant savantInstance = Savant.getInstance(true, false);
+                Savant savantInstance = Savant.getInstance(false, false);
 
                 PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
                 PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
@@ -175,14 +205,17 @@ public class BrowserPage extends SubSectionView {
                 savantInstance.setVariantsVisibile(false);
 
                 GenomeController.getInstance().setGenome(null);
-                addTrackFromURLString("http://genomesavant.com/savant/data/hg19/hg19.fa.savant", DataFormat.SEQUENCE);
+
+                String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                String urlOfTrack = getTrackURL(referenceName, "sequence");
+                addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
 
                 browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
 
                 view.add(browserPanel, BorderLayout.CENTER);
 
                 variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, VariationController.getInstance().getModule(), false, 325);
-                variationPanel.setToggleBarVisible(false);
+                variationPanel.setToggleBarVisible(true);
 
                 view.add(variationPanel, BorderLayout.EAST);
             } else {
@@ -206,6 +239,15 @@ public class BrowserPage extends SubSectionView {
         }
     }
 
+    private static String getTrackURL(String referenceName, String trackName) throws Exception {
+        Map<String, String> requestMap = new HashMap<String, String>();
+        requestMap.put("reference", referenceName);
+        requestMap.put("trackname", trackName);
+        JSONObject o = ServerRequest.requestFromServer(ServerRequest.TRACK_PATH, requestMap);
+        String urlOfTrack = (String) o.get("url");
+        return urlOfTrack;
+    }
+
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
@@ -213,8 +255,10 @@ public class BrowserPage extends SubSectionView {
         MedSavantDataSource.setActive(true);
 
         // Refresh variants track
-        if (s != null && variantTrackLoaded) {
-            s.refresh();
+        if (msds != null) {
+            if (variantTrackLoaded) {
+                msds.refresh();
+            }
         }
     }
 

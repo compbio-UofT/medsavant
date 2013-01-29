@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.component.SelectableListView.SelectionEvent;
 import savant.api.adapter.BookmarkAdapter;
 import savant.api.adapter.DataSourceAdapter;
 import savant.api.adapter.RangeAdapter;
@@ -50,7 +51,7 @@ import savant.util.MiscUtils;
  *
  * @author Andrew
  */
-public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, VariantDataSourceAdapter {
+public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, VariantDataSourceAdapter, Listener<SelectionEvent> {
 
     static void setActive(boolean b) {
         active = b;
@@ -60,6 +61,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
     private Set<String> chromosomes = new HashSet<String>();
     private String[] participants = new String[0];
     private static final int LIMIT = 100000;
+    private List<String> restrictToTheseDNAIDs;
 
     public MedSavantDataSource() {
         try {
@@ -147,6 +149,22 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
                 Condition[][] filterConditions = FilterController.getInstance().getAllFilterConditions();
                 TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
+
+                // add filter by DNA ids condition
+                if (this.restrictToTheseDNAIDs != null) {
+                    Condition[] restrictToDNAIDsCondition = new Condition[restrictToTheseDNAIDs.size()];
+                    int i = 0;
+                    for (String dnaID : this.restrictToTheseDNAIDs) {
+                        restrictToDNAIDsCondition[i++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), dnaID);
+                    }
+                    Condition[][] newFilterConditions = new Condition[filterConditions.length+1][];
+                    for (i = 0; i < filterConditions.length; i++) {
+                        newFilterConditions[i] = filterConditions[i];
+                    }
+                    newFilterConditions[filterConditions.length] = restrictToDNAIDsCondition;
+                    filterConditions = newFilterConditions;
+                }
+
                 Condition rangeCondition = ComboCondition.and(
                         new Condition[]{
                             BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), chrom),
@@ -260,5 +278,17 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
     private Track getTrack() {
         return TrackController.getInstance().getTrack(getName());
+    }
+
+    @Override
+    public void handleEvent(SelectionEvent event) {
+        List<String> dnaIDs = event.getSelections();
+        setRestrictToDNAIDs(dnaIDs);
+    }
+
+    private void setRestrictToDNAIDs(List<String> dnaIDs) {
+        System.out.println("Restricting genome browser to " + dnaIDs + " dna ids");
+        this.restrictToTheseDNAIDs = dnaIDs;
+        refresh();
     }
 }
