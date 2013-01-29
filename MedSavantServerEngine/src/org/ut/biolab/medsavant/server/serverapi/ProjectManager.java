@@ -204,12 +204,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             }
             String updateString;
             if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
-                updateString = "";
-            } else {
+
                 updateString = variantSchema.getCreateQuery() + " ENGINE=INFINIDB;";
+            } else {
+                updateString = variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
             }
             System.out.println(updateString);
-            conn.executeUpdate(variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
+            conn.executeUpdate(updateString);
         } finally {
             conn.close();
         }

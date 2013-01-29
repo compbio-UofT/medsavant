@@ -59,6 +59,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -140,6 +141,11 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      */
     public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc) throws SQLException {
 
+        LOG.debug("Adding annotation format for " + colName);
+
+        // remove non-alphanumeric characters from the proposed column name
+        colName = colName.replaceAll("[^A-Za-z0-9]", "");
+
         InsertQuery query = MedSavantDatabase.AnnotationFormatTableSchema.insert(ANNOTATION_ID, annotID,
                                                                                  AnnotationFormatColumns.POSITION, pos,
                                                                                  AnnotationFormatColumns.COLUMN_NAME, colName,
@@ -147,24 +153,30 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                                                                                  AnnotationFormatColumns.FILTERABLE, filterable,
                                                                                  AnnotationFormatColumns.ALIAS, alias,
                                                                                  AnnotationFormatColumns.DESCRIPTION, desc);
-        ConnectionController.connectPooled(sessID).createStatement().executeUpdate(query.toString());
+
+        Connection c = ConnectionController.connectPooled(sessID);
+        c.createStatement().executeUpdate(query.toString());
+        c.close();
     }
 
     public static int addAnnotation(String sessID, String prog, String vers, int refID, String path, boolean hasRef, boolean hasAlt, int type, boolean endInclusive) throws SQLException {
 
-        LOG.info("Adding annotation...");
+        LOG.debug("Adding annotation...");
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
         InsertQuery query = MedSavantDatabase.AnnotationTableSchema.insert(PROGRAM, prog, VERSION, vers, REFERENCE_ID, refID,
                                                                            PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type,
                                                                            IS_END_INCLUSIVE, endInclusive);
 
-        PreparedStatement stmt = ConnectionController.connectPooled(sessID).prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+        PooledConnection c = ConnectionController.connectPooled(sessID);
+        PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
         stmt.execute();
         ResultSet res = stmt.getGeneratedKeys();
         res.next();
 
         int annotid = res.getInt(1);
+
+        c.close();
 
         return annotid;
     }
@@ -438,7 +450,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return The expected location of the Tabix file
      */
     private static File getTabixFile(File dir) {
-        return new File(dir + "/annotation.gz");
+        //return new File(dir + "/annotation.gz");
+        return getFileWithExtentionInDir(dir,"gz");
     }
 
     /**
@@ -448,7 +461,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return The expected location of the Tabix index file
      */
     private static File getTabixIndexFile(File dir) {
-        return new File(dir + "/annotation.tbi");
+        //return new File(dir + "/annotation.tbi");
+        return getFileWithExtentionInDir(dir,"tbi");
     }
 
     /**
@@ -458,8 +472,23 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return The expected location of the format file
      */
     private static File getFormatFile(File dir) {
-        return new File(dir + "/annotation.xml");
+        return getFileWithExtentionInDir(dir,"xml");
     }
+
+    private static File getFileWithExtentionInDir(File dir, final String ext) {
+        return dir.listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.endsWith("." + ext)) {
+                    return true;
+                }
+                return false;
+            }
+
+        })[0];
+    }
+
 
     /**
      * Checks that the annotation is installed
@@ -548,8 +577,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         LOG.info("FORMAT: " + format);
 
-        LOG.info("TODO: register this annotation in the table");
-
         int id = addAnnotation(
                 sessionID,
                 format.getProgram(),
@@ -571,6 +598,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         }
         conn.commit();
         conn.setAutoCommit(true);
+        conn.close();
 
         LOG.info("Installed to " + dir.getAbsolutePath());
     }

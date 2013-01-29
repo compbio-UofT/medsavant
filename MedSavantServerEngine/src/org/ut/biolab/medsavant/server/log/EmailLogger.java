@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.server.log;
 
 import java.io.BufferedWriter;
@@ -29,16 +28,16 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.ut.biolab.medsavant.server.mail.Mail;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
-
 /**
  * Log4J appender which writes to the server log.
  *
  * @author mfiume, tarkvara
  */
-public class ServerLogger extends AppenderSkeleton {
-    private static final Log LOG = LogFactory.getLog(ServerLogger.class);
+public class EmailLogger extends AppenderSkeleton {
+
+    private static final Log LOG = LogFactory.getLog(EmailLogger.class);
     private static final String LOG_PATH = new File(DirectorySettings.getTmpDirectory(), "server.log").getAbsolutePath();
-    private static String eMailAddress;
+    private static String emailAddress;
     private BufferedWriter writer;
 
     @Override
@@ -68,16 +67,15 @@ public class ServerLogger extends AppenderSkeleton {
     }
 
     public static void setMailRecipient(String address) {
-        eMailAddress = address;
+        emailAddress = address;
     }
 
     public static void logByEmail(String subject, String message) {
-        message += "\n\nMedSavant Server Utility";
-        if (eMailAddress != null) {
-            Mail.sendEmail(eMailAddress, subject, message);
-            LOG.info("(Also emailed to " + eMailAddress + "): \"" + message.replace("\n", "") + "\"");
+        message += "\n\nSent by the MedSavant Server Utility";
+        if (emailAddress != null) {
+            Mail.sendEmail(emailAddress, System.currentTimeMillis() + " - " + subject, message);
         } else {
-            LOG.warn("(No email recipient configured): \"" + message.replace("\n", "") + "\"");
+            LOG.warn("Cannot send email, no email recipient configured");
         }
     }
 }

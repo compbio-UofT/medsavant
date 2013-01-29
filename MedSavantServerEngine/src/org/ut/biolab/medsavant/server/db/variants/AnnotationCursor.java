@@ -131,7 +131,7 @@ public class AnnotationCursor {
                 }
 
                 // get the next annotation and parse it
-                String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split("\t");
+                String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER,-1);
                 SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
 
                 // save this annotation
@@ -149,11 +149,6 @@ public class AnnotationCursor {
                     if (annotationRecord.matchesVariant(r)) {
 
                         String prefix = "";
-
-                        // add a delimiter for >1st match
-                        //if (numberMatchingThisVariant != 0) {
-                        //    prefix = MULTI_ANNOTATION_DELIM + " ";
-                        //}
 
                         // the number of redundant and non-redundant columns
                         int numColumnsToCopy = getNumNonDefaultFields();

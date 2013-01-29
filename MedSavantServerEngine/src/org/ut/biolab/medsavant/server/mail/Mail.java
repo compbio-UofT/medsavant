@@ -10,10 +10,14 @@ import javax.mail.internet.*;
 import java.util.*;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.log.EmailLogger;
 
 public class Mail {
 
-    static String src = CryptoUtils.decrypt("bqgO3l4Mri63fD852DLpZ8ZMClOw+jFu");
+    private static final Log LOG = LogFactory.getLog(Mail.class);
+    static String src = CryptoUtils.decrypt("XdJquAMal3XcGsUkmGS9vY/d8CEke2yLD124VsRe4O4=");
     static String srcName = "MedSavant Server Utility";
     static String pw = CryptoUtils.decrypt("OxTfiD1tzb7BvRHGfn+MoA==");
     static String host = "smtp.gmail.com";
@@ -25,7 +29,7 @@ public class Mail {
 
     public static void main(String[] args) {
         String from = "MedSavant Server Utility";
-        Mail.sendEmail(from, "Test Subject", "Test Body", null);
+        Mail.sendEmail("marcfiume@gmail.com", "Test Subject", "Test Body", null);
     }
 
     public synchronized static boolean sendEmail(String to, String subject, String text) {
@@ -34,6 +38,9 @@ public class Mail {
 
     public synchronized static boolean sendEmail(String to, String subject, String text, File attachment) {
         try {
+
+            LOG.info("Sending email to " + to  + " with subject " + subject);
+
             // create some properties and get the default Session
             Properties props = new Properties();
             props.put("mail.smtp.user", src);
@@ -68,7 +75,7 @@ public class Mail {
                 mbp2.setFileName(fds.getName());
                 mp.addBodyPart(mbp2);
             }
-            
+
             // add the Multipart to the message
             msg.setContent(mp);
             // set the Date: header
@@ -83,6 +90,7 @@ public class Mail {
 
         } catch (Exception ex) {
             ex.printStackTrace();
+            LOG.error(ex);
             return false;
         }
 

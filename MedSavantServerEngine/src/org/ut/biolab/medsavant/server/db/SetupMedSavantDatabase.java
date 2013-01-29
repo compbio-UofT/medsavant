@@ -42,7 +42,6 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  */
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
 
-    //public static final boolean ENGINE_INFINIDB = false;
     private static SetupMedSavantDatabase instance;
 
     public static synchronized SetupMedSavantDatabase getInstance() throws RemoteException {
@@ -275,7 +274,6 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
             String createVariantStatement;
             if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
-
                 createVariantStatement = "CREATE TABLE  default_variant "
                         + "( upload_id  INTEGER, "
                         + "file_id  INTEGER, "

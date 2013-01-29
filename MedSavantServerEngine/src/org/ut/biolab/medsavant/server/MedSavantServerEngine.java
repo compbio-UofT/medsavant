@@ -34,16 +34,15 @@ import java.rmi.registry.Registry;
 import java.sql.SQLException;
 
 import gnu.getopt.Getopt;
-import java.util.Scanner;
-
-import org.ut.biolab.medsavant.server.db.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+
+import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
+import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -51,21 +50,17 @@ import org.ut.biolab.medsavant.shared.util.MiscUtils;
  */
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
 
+    public static boolean USE_INFINIDB_ENGINE = false;
+
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-    public static boolean USE_INFINIDB_ENGINE = false;
 
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName) throws RemoteException, SQLException {
 
-        // try to get the server's address, first user specified, second by lookup
         try {
-            try {
-                thisAddress = System.getProperty("java.rmi.server.hostname");
-            } catch (Exception e) {
-                // get the address of this host.
-                thisAddress = (InetAddress.getLocalHost()).toString();
-            }
+            // get the address of this host.
+            thisAddress = (InetAddress.getLocalHost()).toString();
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
@@ -99,16 +94,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             System.out.print("PASSWORD FOR " + rootUserName + ": ");
             System.out.flush();
 
-            boolean retrieveFromConsole = System.console() != null;
-
-            char[] pass;
-            if (retrieveFromConsole) {
-                pass = System.console().readPassword();
-            } else {
-                Scanner sc = new Scanner(System.in);
-                String passStr = sc.nextLine();
-                pass = passStr.toCharArray();
-            }
+            char[] pass = System.console().readPassword();
 
             System.out.println();
 
@@ -126,6 +112,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
             System.out.println("\nServer initialized, waiting for incoming connections...");
 
+            EmailLogger.logByEmail("Server booted", "The MedSavant Server Engine successfully booted.");
         } catch (RemoteException e) {
             throw e;
         }
@@ -134,30 +121,25 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     static public void main(String args[]) {
         try {
 
-            Getopt g = new Getopt("MedSavantServerEngine", args, "l:h:p:u:d");
+            Getopt g = new Getopt("MedSavantServerEngine", args, "l:h:p:u:e:");
             //
             int c;
 
             String user = "root";
             String host = "localhost";
             int port = 5029;
-            USE_INFINIDB_ENGINE = false;
 
             // print usage
             if (args.length > 0 && args[0].equals("--help")) {
-                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER] [-d for InfiniDB]");
+                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER] [-e ADMIN_EMAIL]");
                 return;
             }
-
 
             while ((c = g.getopt()) != -1) {
                 switch (c) {
                     case 'h':
                         System.out.println("Host " + g.getOptarg());
                         host = g.getOptarg();
-                        break;
-                    case 'd':
-                        USE_INFINIDB_ENGINE = true;
                         break;
                     case 'p':
                         port = Integer.parseInt(g.getOptarg());
@@ -170,13 +152,15 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                     case 'u':
                         user = g.getOptarg();
                         break;
+                    case 'e':
+                        EmailLogger.setMailRecipient(g.getOptarg());
+                        break;
                     case '?':
                         break; // getopt() already printed an error
                     default:
                         System.out.print("getopt() returned " + c + "\n");
                 }
             }
-
 
 
             new MedSavantServerEngine(host, port, user);

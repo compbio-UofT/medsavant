@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +40,8 @@ public class VariantManagerUtils {
     private static final Log LOG = LogFactory.getLog(VariantManagerUtils.class);
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
+    public static final String FIELD_DELIMITER = "\t";
+    public static final String ESCAPE_CHAR = "\\";
 
     public static void appendToFile(String baseFilename, String appendingFilename) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(baseFilename, true));
@@ -61,10 +64,12 @@ public class VariantManagerUtils {
             query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
         }
 
-        query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
-                + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
+        query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
+                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(FIELD_DELIMITER) + "' ENCLOSED BY '\"' "
+                + "ESCAPED BY '"+StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR)+"' "
                 //+ " LINES TERMINATED BY '\\r\\n'"
-                + " FROM " + tableName;
+                + "FROM " + tableName;
+
 
         if (step > 1) {
             if (conditions != null && conditions.length()> 1) {
@@ -77,6 +82,8 @@ public class VariantManagerUtils {
         if (conditions != null && conditions.length()> 1) {
             query += " WHERE " + conditions;
         }
+
+        LOG.info(query);
 
         ConnectionController.executeQuery(sid, query);
     }
@@ -105,7 +112,7 @@ public class VariantManagerUtils {
         BufferedWriter out;
 
         while ((line = br.readLine()) != null) {
-            String[] parsedLine = line.split(",");
+            String[] parsedLine = line.split(FIELD_DELIMITER + "");
 
             String fileId = parsedLine[i];
 
@@ -146,7 +153,7 @@ public class VariantManagerUtils {
     }
 
     public static void sortFileByPosition(String inFile, String outfile) throws IOException, InterruptedException {
-        String sortCommand = "sort -t , -k 5,5 -k 6,6n -k 7 " + ((new File(inFile)).getAbsolutePath());
+        String sortCommand = "sort -k 5,5 -k 6,6n -k 7 " + ((new File(inFile)).getAbsolutePath());
 
         LOG.info("Sorting file: " + (new File(inFile).getAbsolutePath()) + " to " + outfile);
 
@@ -195,9 +202,9 @@ public class VariantManagerUtils {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] split = line.split(",");
+            String[] split = line.split(FIELD_DELIMITER + "");
             String info = split[customInfoIndex].substring(1, split[customInfoIndex].length()-1); //remove quotes
-            writer.write(line + "," + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "\n");
+            writer.write(line + FIELD_DELIMITER + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "\n");
         }
         reader.close();
         writer.close();

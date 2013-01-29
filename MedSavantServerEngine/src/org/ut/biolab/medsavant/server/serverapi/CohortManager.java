@@ -168,12 +168,6 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
         List<String> result = new ArrayList<String>();
         while(rs.next()) {
-            /*String[] dnaIds = rs.getString(1).split(",");
-            for (String id : dnaIds) {
-                if (!result.contains(id)) {
-                    result.add(id);
-                }
-            }*/
             result.add(rs.getString(1));
         }
         return result;

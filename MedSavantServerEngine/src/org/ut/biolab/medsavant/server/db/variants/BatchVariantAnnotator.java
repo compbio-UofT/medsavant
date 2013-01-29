@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -68,6 +69,7 @@ public class BatchVariantAnnotator {
     public void performBatchAnnotationInParallel() throws IOException, SQLException {
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
+        EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
 
         // no annotations to perform, copy input to output
         if (annotations.length == 0) {
@@ -96,8 +98,11 @@ public class BatchVariantAnnotator {
         }
 
         // open the input and output files
-        CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile));
-        CSVWriter recordWriter = new CSVWriter(new FileWriter(outputTDFFile), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "\r\n");
+        CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
+        CSVWriter recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
+
+        LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
+        LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
 
         // read the input, line by line
         String[] inputLine;
@@ -152,6 +157,8 @@ public class BatchVariantAnnotator {
 
         // report success
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+        EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+
     }
 
     /**
@@ -202,7 +209,7 @@ public class BatchVariantAnnotator {
     private static int getNumFieldsInTDF(File file) throws FileNotFoundException, IOException {
 
         // open the file
-        CSVReader reader = new CSVReader(new FileReader(file));
+        CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
         // read the first line
         String[] next = reader.readNext();

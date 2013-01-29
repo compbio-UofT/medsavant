@@ -39,6 +39,7 @@ import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,6 +58,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
@@ -79,9 +81,12 @@ import org.ut.biolab.medsavant.server.vcf.VCFParser;
 public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter, BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
+
+    // thresholds for querying and drawing
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 1000000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
+
     // Stages within the upload process.
     private static final double LOG_FRACTION = 0.05;
     private static final double DUMP_FRACTION = 0.1;
@@ -197,7 +202,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //generate directory
         LOG.info("Generating base directory");
-        File basedir = DirectorySettings.generateDateStampDirectory(new File("."));
+        File basedir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         LOG.info("Base directory: " + basedir.getCanonicalPath());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + basedir);
         p.waitFor();
@@ -215,7 +220,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             makeProgress(sessID, "Dumping existing variants...", fract);
 
             String existingTableName = projMgr.getVariantTableName(sessID, projID, refID, false);
-            File variantDumpFile = new File(basedir, "temp_" + existingTableName);
+            File variantDumpFile = new File(basedir, existingTableName);
             String variantDump = variantDumpFile.getAbsolutePath();
             LOG.info("Dumping variants to file");
             VariantManagerUtils.variantsToFile(sessID, existingTableName, variantDumpFile, null, false, 0);
@@ -257,7 +262,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             fract += ANNOTATING_FRACTION;
 
             //split
-            File splitDir = new File(basedir, "splitDir");
+            File splitDir = new File(basedir, "split-by-id");
             splitDir.mkdir();
             LOG.info("Splitting annotation file into multiple files by file ID");
             makeProgress(sessID, "Splitting files...", fract);
@@ -326,6 +331,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateId, Status.ERROR);
+            EmailLogger.logByEmail("Error updating table", "Here is the message: " + e.getMessage());
             throw e;
         }
     }
@@ -401,7 +407,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //generate directory
         LOG.info("Generating base directory");
-        File baseDir = DirectorySettings.generateDateStampDirectory(new File("."));
+        File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         LOG.info("Base directory: " + baseDir.getAbsolutePath());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
         p.waitFor();
@@ -419,7 +425,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //dump existing table
             String existingTableName = projMgr.getVariantTableName(sessID, projID, refID, false);
             IOUtils.checkForWorldExecute(baseDir);
-            File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID);
+            File existingVariantsFile = new File(baseDir, "proj" + projID + "_ref" + refID + "_update" + updateID);
 
             LOG.info("Dumping variants to file");
             makeProgress(sessID, "Dumping variants to file...", fract);
@@ -472,7 +478,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //create sub table dump
             LOG.info("Dumping variants to file for sub table");
             makeProgress(sessID, "Generating subset...", fract);
-            File subDump = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID + "_sub");
+            File subDump = new File(baseDir, "proj" + projID + "_ref" + refID + "_update" + updateID + "_sub");
             VariantManagerUtils.variantsToFile(sessID, tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(getNumFilteredVariantsHelper(sessID, tableName, new Condition[][]{})));
             fract += SUBSET_FRACTION;
 
@@ -533,7 +539,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //generate directory
         LOG.info("Generating base directory");
-        File baseDir = DirectorySettings.generateDateStampDirectory(new File("."));
+        File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         LOG.info("Base directory: " + baseDir.getCanonicalPath());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
         p.waitFor();
@@ -547,7 +553,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //dump existing except for files
             ProjectManager projMgr = ProjectManager.getInstance();
             String existingTableName = projMgr.getVariantTableName(sessID, projID, refID, false);
-            File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateId);
+            File existingVariantsFile = new File(baseDir, "proj" + projID + "_ref" + refID + "_update" + updateId);
             LOG.info("Dumping variants to file");
             String conditions = "";
             for (int i = 0; i < files.size(); i++) {
@@ -629,8 +635,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         addConditionsToQuery(query, conditions);
         if (orderedByPosition) { query.addOrderings(table.getDBColumn(POSITION)); }
         String intoString =
-                "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
-                + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
+                "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
+                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
+                + "ENCLOSED BY '\"' "
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
                 //+ " LINES TERMINATED BY '\\r\\n' ";
                 ;
         String queryString = query.toString().replace("FROM", intoString + "FROM");
@@ -643,7 +651,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         if (zipOutputFile) {
             LOG.info("Zipping export...");
-            File zipFile = IOUtils.zipFile(file);
+            File zipFile = new File(file.getAbsoluteFile() + ".zip");
+            IOUtils.zipFile(file,zipFile);
             file.delete();
             file = zipFile;
             LOG.info("Done zipping");
@@ -688,6 +697,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 queryString += " LIMIT " + limit;
             }
         }
+
+        LOG.debug(queryString);
+
         ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -1103,13 +1115,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         boolean stateOpen = false;
 
+        String parentDirectory = file.getParentFile().getAbsolutePath();
+
         String line;
         while ((line = br.readLine()) != null) {
             lineNumber++;
 
             // start a new output file
             if (lineNumber % chunkSize == 1) {
-                currentOutputPath = DirectorySettings.getTmpDirectory() + "/" + extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
+                currentOutputPath = parentDirectory + "/" + extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
+                LOG.info("Opening new partial file " + currentOutputPath);
                 bw = new BufferedWriter(new FileWriter(currentOutputPath));
                 stateOpen = true;
             }
@@ -1120,16 +1135,19 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             // close and upload this output file
             if (lineNumber % chunkSize == 0) {
                 bw.close();
+
+                LOG.info("Closing and uploading partial file " + currentOutputPath);
+
                 String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                         + "INTO TABLE " + tableName + " "
-                        + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                        //+ "LINES TERMINATED BY '\\r\\n'";
+                        + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '\"' "
+                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) +"' "
+                        //+ " LINES TERMINATED BY '\\r\\n'";
                         + ";";
 
-                //System.out.println(query);
-                LOG.info(query);
+                //LOG.info(query);
                 Statement s = c.createStatement();
-                s.setQueryTimeout(10 * 60 * 60); // 10 hours
+                s.setQueryTimeout(30 * 60); // 30 minutes
                 s.execute(query);
 
                 new File(currentOutputPath).delete();
@@ -1142,11 +1160,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             bw.close();
             String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                     + "INTO TABLE " + tableName + " "
-                    + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                    //+ "LINES TERMINATED BY '\\r\\n'"
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '\"' "
+                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
+                    //+ " LINES TERMINATED BY '\\r\\n'"
                     + ";";
 
-            //System.out.println(query);
+            LOG.info("Closing and uploading last partial file " + currentOutputPath);
+
+            //LOG.info(query);
             Statement s = c.createStatement();
             s.setQueryTimeout(60 * 60); // 1 hour
             s.execute(query);
@@ -1878,7 +1899,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     //split
                     LOG.info("Splitting annotation file into multiple files by file ID");
                     //makeProgress(sessID, "Splitting files...", fract);
-                    File splitDir = new File(baseDir, "splitDir");
+                    File splitDir = new File(baseDir, "split-by-id");
                     splitDir.mkdir();
                     VariantManagerUtils.splitFileOnColumn(splitDir, currentFilename, 1);
                     //fract += SPLITTING_FRACTION / vcfFiles.length;
@@ -1900,8 +1921,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 uploadFileToVariantTable(sessID, new File(currentFilename), tableName);
                 //fract += LOAD_TABLE_FRACTION;
 
-            } catch (Exception ex) {
-                LOG.error(ex);
+            } catch (Exception e) {
+                EmailLogger.logByEmail("Error running parser", "Here is the message: " + e.getMessage());
+                LOG.error(e);
             }
 
             //cleanup
