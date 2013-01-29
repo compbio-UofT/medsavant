@@ -294,55 +294,6 @@ public class VariantRecord implements Serializable {
         }
     }
 
-    /*private Zygosity calculateZygosity(){
-        Object[] field = parseInfo(customInfo, new String[]{"GT"}, new Class[]{String.class});
-        if(field[0] == null) return null;
-        String value = (String)field[0];
-        String[] split = value.split("/|\\\\|\\|"); // splits on / or \ or |
-        if(split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) return null;
-
-        try {
-            int a = Integer.parseInt(split[0]);
-            int b = Integer.parseInt(split[1]);
-            if(a == 0 && b == 0){
-                return Zygosity.HomoRef;
-            } else if (a == b){
-                return Zygosity.HomoAlt;
-            } else if (a == 0 || b == 0){
-                return Zygosity.Hetero;
-            } else {
-                return Zygosity.HeteroTriallelic;
-            }
-        } catch (NumberFormatException e){
-            return null;
-        }
-    }*/
-
-    /*private void parseInfoOld(String infoString, String[] infoKeys, Class[] infoClasses){
-
-        customFields = new Object[infoKeys.length];
-        customInfo = infoString;
-
-        infoString = infoString.trim();
-        String[] list = infoString.split(";");
-
-        for(String element : list){
-            String name = element;
-            String value = "";
-            int equals = element.indexOf("=");
-            if(equals != -1){
-                name = element.substring(0, equals);
-                value = element.substring(equals+1);
-            }
-
-            for(int i = 0; i < infoKeys.length; i++){
-                if(name.equals(infoKeys[i])){
-                    customFields[i] = parse(infoClasses[i], value);
-                }
-            }
-        }
-    }*/
-
     public static Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses){
         Object[] values = new Object[infoKeys.length];
 
@@ -697,7 +648,7 @@ public class VariantRecord implements Serializable {
         return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + position + "id=" + dbSNPID + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';
     }
 
-    private static String delim = ",";
+    private static String delim = "\t";
 
     public String toTabString(int uploadId, int fileId, int variantId) {
         String s =

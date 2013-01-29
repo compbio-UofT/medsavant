@@ -23,6 +23,7 @@ package org.ut.biolab.medsavant.shared.db;
  */
 public enum ColumnType {
     VARCHAR,
+    BLOB,
     BOOLEAN,
     INTEGER,
     FLOAT,
@@ -35,6 +36,8 @@ public enum ColumnType {
         switch (this) {
             case INTEGER:
                 return "int";
+            case BLOB:
+                return "blob";
             case FLOAT:
                 return "float";
             case BOOLEAN:
@@ -62,10 +65,10 @@ public enum ColumnType {
             return ColumnType.INTEGER;
         } else if (typeNameSQL.contains("varchar")) {
             return ColumnType.VARCHAR;
+        } else if (typeNameSQL.contains("blob")) {
+            return ColumnType.BLOB;
         } else if (typeNameSQL.contains("tinyint")) {
             return ColumnType.INTEGER;
-        } else if (typeNameSQL.contains("blob")) {
-            return ColumnType.VARCHAR;
         } else if (typeNameSQL.contains("datetime")) {
             return ColumnType.DATE;
         } else if(typeNameSQL.contains("decimal")) {

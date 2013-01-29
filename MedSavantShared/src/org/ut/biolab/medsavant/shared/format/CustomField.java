@@ -103,7 +103,7 @@ public class CustomField extends ColumnDef implements Serializable {
     public String getTypeString() {
         switch (type) {
             case VARCHAR:
-                return "varchar(" + length + ")";
+                 return "varchar(" + length + ")";
             case BOOLEAN:
                 return "int(1)";
             case INTEGER:

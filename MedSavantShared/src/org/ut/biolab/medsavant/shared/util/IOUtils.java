@@ -205,7 +205,7 @@ public class IOUtils {
         return magic == GZIPInputStream.GZIP_MAGIC;
     }
 
-     /**
+    /**
      * Checks if a file is zipped.
      *
      * @param f
@@ -289,29 +289,45 @@ public class IOUtils {
         return files;
     }
 
-    public static File zipFile(File file) throws FileNotFoundException, IOException {
+    public static File zipDirectory(File dir, File outFile) throws IOException {
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFile));
+        zipRecursively(".", dir, out);
+        out.close();
+        return outFile;
+    }
 
-        FileInputStream in = new FileInputStream(file);
-        // out put file
+    private static void zipRecursively(String path, File dir, ZipOutputStream out) throws IOException {
+        for (File f : dir.listFiles()) {
+            writeFileToZipStream(path,f, out);
+            if (f.isDirectory()) {
+                zipRecursively(path + "/" + f.getName() + "/",f,out);
+            }
+        }
+    }
 
-        File outputFile = new File(file.getAbsolutePath() + ".zip");
+    private static void writeFileToZipStream(String path, File f, ZipOutputStream out) throws IOException {
+        // name the file inside the zip  file
+
+        if (f.isFile()) {
+            out.putNextEntry(new ZipEntry(path + "/" + f.getName()));
+
+            FileInputStream in = new FileInputStream(f);
+            byte[] b = new byte[1024];
+            int count;
+            while ((count = in.read(b)) > 0) {
+                out.write(b, 0, count);
+            }
+            in.close();
+        } else if (f.isDirectory()) {
+            out.putNextEntry(new ZipEntry(f.getName() + "/"));
+        }
+    }
+
+    public static File zipFile(File file, File outputFile) throws FileNotFoundException, IOException {
 
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outputFile));
-
-        // name the file inside the zip  file
-        out.putNextEntry(new ZipEntry(file.getName()));
-
-        byte[] b = new byte[1024];
-
-        int count;
-
-        while ((count = in.read(b)) > 0) {
-            System.out.println();
-
-            out.write(b, 0, count);
-        }
+        writeFileToZipStream(".", file, out);
         out.close();
-        in.close();
 
         return outputFile;
     }

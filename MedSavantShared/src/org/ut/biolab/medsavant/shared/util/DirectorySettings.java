@@ -54,7 +54,9 @@ public class DirectorySettings {
     }
 
     public static File getTmpDirectory() {
-        return new File(System.getProperty("java.io.tmpdir"));
+        File f = new File(System.getProperty("java.io.tmpdir"),"medsavant_tmp");
+        f.mkdir();
+        return f;
     }
 
     public static File getCacheDirectory() {
@@ -62,13 +64,13 @@ public class DirectorySettings {
     }
 
     /**
-     * Create a directory whose name is a date-stamp.
+     * Create a directory whose name includes a date-stamp.
      *
      * @param parent the parent directory, typically <code>new File(".")</code>
      */
     public static File generateDateStampDirectory(File parent) throws IOException {
         Calendar today = new GregorianCalendar();
-        String dateStamp = today.get(Calendar.YEAR) + "-" + (today.get(Calendar.MONTH) + 1) + "-" + today.get(Calendar.DAY_OF_MONTH) + "-" + today.get(Calendar.HOUR_OF_DAY) + "-" + today.get(Calendar.MINUTE);
+        String dateStamp = today.get(Calendar.YEAR) + "_" + (today.get(Calendar.MONTH) + 1) + "_" + today.get(Calendar.DAY_OF_MONTH) + "_" + today.get(Calendar.HOUR_OF_DAY) + "_" + today.get(Calendar.MINUTE) + "_" + today.get(Calendar.SECOND) + "_" + today.get(Calendar.MILLISECOND);
         File dir = new File(parent.getCanonicalFile(), dateStamp);
         dir.mkdirs();
         return dir;

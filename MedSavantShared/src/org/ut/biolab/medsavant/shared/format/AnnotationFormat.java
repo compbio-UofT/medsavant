@@ -58,7 +58,6 @@ public class AnnotationFormat implements Serializable {
         this.fields = fields;
         this.type = type;
         this.isEndInclusive = isEndInclusive;
-
     }
 
     public int getNumNonDefaultFields(){
@@ -72,8 +71,6 @@ public class AnnotationFormat implements Serializable {
     public boolean hasAlt(){
         return hasAlt;
     }
-
-
 
     public CustomField[] getCustomFields(){
         return fields;
