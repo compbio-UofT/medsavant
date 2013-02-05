@@ -173,8 +173,11 @@ public class SimpleVariantSubInspector extends SubInspector {
                                                            int index,
                                                            boolean isSelected,
                                                            boolean cellHasFocus) {
-                    Gene g = (Gene)value;
-                    value = g.getName() + "  " + MiscUtils.numToStringWithOrder(g.getEnd()-g.getStart()) + "bp";
+
+                    if (value != null) {
+                        Gene g = (Gene)value;
+                        value = g.getName() + "  " + MiscUtils.numToStringWithOrder(g.getEnd()-g.getStart()) + "bp";
+                    }
                     return super.getListCellRendererComponent(list, value,
                             index, isSelected, cellHasFocus);
                 }

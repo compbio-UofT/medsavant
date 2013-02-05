@@ -83,14 +83,6 @@ public class TagFilterView extends FilterView {
 
         cp.setLayout(gbl);
 
-        /*
-         * JPanel content1 = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(content1);
-        JPanel content2 = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(content2);
-        *
-        */
-
         variantTags = new ArrayList<VariantTag>();
         appliedTags = new ArrayList<VariantTag>();
 
@@ -251,6 +243,8 @@ public class TagFilterView extends FilterView {
         }
 
         add(cp, BorderLayout.NORTH);
+
+        this.showViewCard();
     }
 
     public final void applyFilter(List<VariantTag> tags) {

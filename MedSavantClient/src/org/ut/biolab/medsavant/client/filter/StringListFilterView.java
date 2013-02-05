@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.filter;
 
 import java.rmi.RemoteException;
@@ -22,6 +21,8 @@ import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InCondition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
@@ -33,10 +34,9 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
-import org.ut.biolab.medsavant.client.view.dialog.CancellableProgressDialog;
-
 
 /**
  *
@@ -73,6 +73,8 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         // don't cache patient fields; they may change
         final boolean useCache = t == WhichTable.VARIANT;
 
+        boolean needsWorker = false;
+
         if (bool) {
             availableValues = Arrays.asList("True", "False");
         } else if (colName.equals(AC.getColumnName())) {
@@ -88,22 +90,33 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         } else if (colName.equals(GENDER.getColumnName())) {
             availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
         } else {
-            new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>",true) {
+
+            needsWorker = true;
+
+            new MedSavantWorker<Void>("FilterView") {
                 @Override
-                public void run() throws InterruptedException, SQLException, RemoteException {
-                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch ,useCache);
-                    if (columnName.equals(CHROM.getColumnName())) {
-                        Collections.sort(availableValues, new ChromosomeComparator());
-                    }
+                protected void showProgress(double fract) {
                 }
 
                 @Override
-                public ProgressStatus checkProgress() throws RemoteException {
-                    return MedSavantClient.DBUtils.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
+                protected void showSuccess(Void result) {
+                    initContentPanel();
                 }
-            }.showDialog();
+
+                @Override
+                protected Void doInBackground() throws Exception {
+                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache);
+                    if (columnName.equals(CHROM.getColumnName())) {
+                        Collections.sort(availableValues, new ChromosomeComparator());
+                    }
+                    return null;
+                }
+            }.execute();
         }
-        initContentPanel();
+
+        if (!needsWorker) {
+            initContentPanel();
+        }
     }
 
     public static FilterState wrapState(WhichTable t, String colName, String alias, Collection<String> applied) {
@@ -126,7 +139,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i : indices) {
-            if (columnName.equals(GENDER.getColumnName())){
+            if (columnName.equals(GENDER.getColumnName())) {
                 appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(availableValues.get(i))));
             } else {
                 appliedValues.add(availableValues.get(i));
@@ -142,6 +155,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
     }
 
     private class StringListFilter extends Filter {
+
         @Override
         public String getName() {
             return alias;
@@ -158,18 +172,18 @@ public class StringListFilterView extends TabularFilterView<String> implements B
             if (appliedValues.size() > 0) {
                 if (whichTable == WhichTable.VARIANT) {
                     if (appliedValues.size() == 1) {
-                        return new Condition[] {
-                            BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues.get(0))
-                        };
+                        return new Condition[]{
+                                    BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues.get(0))
+                                };
                     } else {
-                        return new Condition[] {
-                            new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
-                        };
+                        return new Condition[]{
+                                    new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
+                                };
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
                     return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getInstance().getSessionID(),
-                                             ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
-                                             allowInexactMatch));
+                            ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
+                            allowInexactMatch));
                 }
             }
 

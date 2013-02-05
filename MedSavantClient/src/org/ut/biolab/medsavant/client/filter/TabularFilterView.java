@@ -76,6 +76,7 @@ public abstract class TabularFilterView<T> extends FilterView {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.insets = new Insets(3, 3, 3, 3);
             add(label, gbc);
+            this.showViewCard();
             return;
         }
 
@@ -178,6 +179,8 @@ public abstract class TabularFilterView<T> extends FilterView {
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.EAST;
         add(applyButton, gbc);
+
+        this.showViewCard();
     }
 
     public final void setFilterValues(Collection<String> list) {

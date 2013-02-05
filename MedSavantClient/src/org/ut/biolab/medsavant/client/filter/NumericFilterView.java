@@ -26,6 +26,8 @@ import javax.swing.event.ChangeListener;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
@@ -36,8 +38,8 @@ import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.DecimalRangeSlider;
-import org.ut.biolab.medsavant.client.view.dialog.CancellableProgressDialog;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -87,8 +89,6 @@ public class NumericFilterView extends FilterView {
     public NumericFilterView(WhichTable t, String col, int queryID, String alias, boolean isDecimal) throws SQLException, RemoteException {
         super(alias, queryID);
 
-        System.out.println("Creating filter for " + col);
-
         this.whichTable = t;
         this.columnName = col;
         this.alias = alias;
@@ -99,23 +99,24 @@ public class NumericFilterView extends FilterView {
         } else if (col.equals("sb")) {
             initHelper(new Range(-100, 100));
         } else {
-            new CancellableProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>",true) {
+
+            new MedSavantWorker<Void>("FilterView") {
 
                 @Override
-                public void run() {
-                    try {
-                        initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
-                    } catch (Throwable ex) {
-                        ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", whichTable, columnName), ex);
-                    }
+                protected void showProgress(double fract) {
                 }
 
                 @Override
-                public ProgressStatus checkProgress() throws RemoteException {
-                    return MedSavantClient.DBUtils.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
+                protected void showSuccess(Void result) {
                 }
 
-            }.setVisible(true);
+                @Override
+                protected Void doInBackground() throws Exception {
+                    initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
+                    return null;
+                }
+
+            }.execute();
         }
     }
 
@@ -125,7 +126,6 @@ public class NumericFilterView extends FilterView {
             extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());
         }
 
-        setBorder(ViewUtil.getMediumBorder());
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         overallMin = (int)Math.floor(extremeValues.getMin());
@@ -274,6 +274,8 @@ public class NumericFilterView extends FilterView {
         bottomContainer.add(applyButton);
 
         add(bottomContainer);
+
+        this.showViewCard();
     }
 
     public void applyFilter(int low, int high) {

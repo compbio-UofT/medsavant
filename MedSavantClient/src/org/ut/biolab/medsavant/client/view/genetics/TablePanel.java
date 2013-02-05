@@ -542,7 +542,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         String genotype = (String)row[INDEX_OF_GT];
 
                         r.setType(VariantRecord.VariantType.valueOf(type));
-                        r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+                        try {
+                            r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+                        } catch (Exception ex) {}
                         r.setGenotype(genotype);
 
                         for (Listener<VariantRecord> l: listeners) {
