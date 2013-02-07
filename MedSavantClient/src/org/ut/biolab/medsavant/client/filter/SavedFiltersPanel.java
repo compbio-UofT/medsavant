@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
  */
 class SavedFiltersPanel extends MasterView {
     SavedFiltersPanel() {
-        super("Filters", new SimpleDetailedListModel("Favorite Filters") {
+        super("Filters", new SimpleDetailedListModel("Saved Searches") {
                     @Override
                     public String[] getData() throws Exception {
                         return getFilterList().toArray(new String[0]);

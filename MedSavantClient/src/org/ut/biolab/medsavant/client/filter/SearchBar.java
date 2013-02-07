@@ -127,10 +127,10 @@ public class SearchBar extends JPanel {
         historyLabel.setToolTipText("Show search history");
 
         JLabel loadLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR));
-        loadLabel.setToolTipText("Load favorite filters");
+        loadLabel.setToolTipText("Load search conditions");
 
         JLabel saveLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR));
-        saveLabel.setToolTipText("Save current filters to favorites");
+        saveLabel.setToolTipText("Save search");
 
         historyPanel = new FilterHistoryPanel();
         //historyPanel.setVisible(false);
@@ -150,6 +150,7 @@ public class SearchBar extends JPanel {
         dHistory.add(historyPanel);
         dHistory.pack();
         dHistory.setLocationRelativeTo(MedSavantFrame.getInstance());
+        dHistory.setResizable(false);
 
         historyLabel.addMouseListener(new MouseListener() {
             @Override
@@ -175,9 +176,8 @@ public class SearchBar extends JPanel {
         });
 
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
-        dSave.setTitle("Favorite Filters");
-
-        dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
+        dSave.setTitle("Load Search Conditions");
+        dSave.setResizable(false);
 
         loadLabel.addMouseListener(new MouseListener() {
 
@@ -193,6 +193,7 @@ public class SearchBar extends JPanel {
                 savedFiltersPanel.setPreferredSize(dialogDimensions);
                 dSave.add(savedFiltersPanel);
                 dSave.pack();
+                dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
                 dSave.setVisible(true);
             }
 
@@ -248,7 +249,7 @@ public class SearchBar extends JPanel {
                 if (FilterController.getInstance().hasFiltersApplied()) {
                     String name = "Untitled";
                     do {
-                        name = DialogUtils.displayInputMessage("Name for Current Filter Set", "Choose a name for saving the current filter set:", name);
+                        name = DialogUtils.displayInputMessage("Save Search", "Provide a name for this set of search conditions:", name);
                         if (name == null) {
                             return;     // User cancelled input dialog.
                         }
@@ -263,7 +264,7 @@ public class SearchBar extends JPanel {
                         ClientMiscUtils.reportError("Unable to save filter set: %s", ex);
                     }
                 } else {
-                    DialogUtils.displayError("Can't save filters","No filters are applied.");
+                    DialogUtils.displayError("Can't save search","No filters are applied.");
                 }
             }
 

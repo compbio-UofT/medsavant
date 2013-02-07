@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class QueryPanel extends CollapsiblePanes {
 
     static final Color INACTIVE_KEY_COLOR = Color.GRAY;
-    static final Color ACTIVE_KEY_COLOR = Color.red;
+    static final Color ACTIVE_KEY_COLOR = new Color(72, 181, 249); // Color.red;
 
     private int queryID;
 
@@ -156,7 +156,7 @@ public class QueryPanel extends CollapsiblePanes {
 
 
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Unable to load filters: %s", ex);
+            ClientMiscUtils.reportError("Unable to load search conditions: %s", ex);
         }
 
         return panes;
@@ -221,7 +221,7 @@ public class QueryPanel extends CollapsiblePanes {
                     case ADDED:
                     case MODIFIED:
                         keyValuePanel.setKeyColour(changedFilter.getName(), ACTIVE_KEY_COLOR);
-                        collapsiblePane.setTitle(String.format("<html><font color=\"red\">%s</font></html>", baseTitle));   // Assumes that ACTIVE_KEY_COLOR is in fact red.
+                        collapsiblePane.setTitle(String.format("<html><font color=\"#48B5F9\">%s</font></html>", baseTitle));   // Assumes that ACTIVE_KEY_COLOR is in fact red.
                         xButton.setVisible(true);
                         break;
                     case REMOVED:
