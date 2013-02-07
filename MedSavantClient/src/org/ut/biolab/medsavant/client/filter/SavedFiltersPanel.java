@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
  */
 class SavedFiltersPanel extends MasterView {
     SavedFiltersPanel() {
-        super("Filters", new SimpleDetailedListModel("Saved Filters") {
+        super("Filters", new SimpleDetailedListModel("Favorite Filters") {
                     @Override
                     public String[] getData() throws Exception {
                         return getFilterList().toArray(new String[0]);
@@ -75,7 +75,7 @@ class SavedFiltersPanel extends MasterView {
 class SavedFiltersEditor extends DetailedListEditor {
     @Override
     public boolean doesImplementAdding() {
-        return true;
+        return false;
     }
 
     @Override
@@ -88,7 +88,7 @@ class SavedFiltersEditor extends DetailedListEditor {
         return true;
     }
 
-    @Override
+    /*@Override
     public void addItems() {
         if (FilterController.getInstance().hasFiltersApplied()) {
             String name = "Untitled";
@@ -110,7 +110,7 @@ class SavedFiltersEditor extends DetailedListEditor {
         } else {
             Toolkit.getDefaultToolkit().beep();
         }
-    }
+    }*/
 
     @Override
     public void deleteItems(List<Object[]> items) {
@@ -150,6 +150,7 @@ class SavedFiltersEditor extends DetailedListEditor {
         }
     }
 
+    /*
     private boolean validateName(String name) {
         File[] existingFilterSets = DirectorySettings.getFiltersDirectory().listFiles();
         for (File f: existingFilterSets) {
@@ -178,4 +179,5 @@ class SavedFiltersEditor extends DetailedListEditor {
         out.write("</filters>\n");
         out.close();
     }
+    */
 }

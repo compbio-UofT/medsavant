@@ -81,7 +81,11 @@ public class IconFactory {
         COPY,
         MORE,
         CHART_SMALL,
-        CONFIGURE
+        CONFIGURE,
+        HISTORY_ON_TOOLBAR,
+        SAVE_ON_TOOLBAR,
+        ACTION_ON_TOOLBAR,
+        LOAD_ON_TOOLBAR
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
@@ -141,6 +145,14 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_add.png");
             case REMOVE_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_remove.png");
+            case HISTORY_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_history.png");
+            case SAVE_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_save.png");
+            case LOAD_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_load.png");
+            case ACTION_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_action.png");
             case ADD:
                 return getIcon(iconroot + "add_f.png");
             case EDIT:

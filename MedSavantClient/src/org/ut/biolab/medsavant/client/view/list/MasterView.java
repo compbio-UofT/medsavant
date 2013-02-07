@@ -91,24 +91,7 @@ public class MasterView extends JPanel {
         gbc.gridy = 0;
         gbc.insets = new Insets(3, 3, 3, 3);
 
-        // Only for SavedFiltersPanel
-        if (detailedEditor.doesImplementLoading()) {
-            JButton loadButton = ViewUtil.getTexturedButton("Load", null);
-            ViewUtil.makeSmall(loadButton);
-            loadButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    detailedEditor.loadItems(selectionGrabber.getSelectedItems());
-                }
-            });
 
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            buttonPanel.add(loadButton, gbc);
-            gbc.gridx = GridBagConstraints.RELATIVE;
-            gbc.gridy++;
-            gbc.gridwidth = 1;
-            gbc.weightx = 0.0;
-        }
 
         if (detailedEditor.doesImplementAdding()) {
 
@@ -185,6 +168,22 @@ public class MasterView extends JPanel {
                     }
                 }
             });
+            buttonPanel.add(butt, gbc);
+        }
+
+        // Only for SavedFiltersPanel
+        if (detailedEditor.doesImplementLoading()) {
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR));
+            butt.setToolTipText("Load selected");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.loadItems(selectionGrabber.getSelectedItems());
+                }
+            });
+
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.anchor = GridBagConstraints.EAST;
             buttonPanel.add(butt, gbc);
         }
 

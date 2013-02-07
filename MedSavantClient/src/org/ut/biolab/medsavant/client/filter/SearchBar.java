@@ -18,16 +18,25 @@ package org.ut.biolab.medsavant.client.filter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
- * Panel which contains a collection of <code>QueryPanel</code>s, each of which contains a range of <code>Filter</code>s.
+ * Panel which contains a collection of
+ * <code>QueryPanel</code>s, each of which contains a range of
+ * <code>Filter</code>s.
  *
  * @author Andrew
  */
@@ -38,9 +47,9 @@ public class SearchBar extends JPanel {
     private int nextQueryID = 1;
     private JPanel queryPanelContainer;
     private FilterHistoryPanel historyPanel;
-    private JToggleButton historyButton;
-    private SavedFiltersPanel savedFiltersPanel;
-    private JToggleButton savedFiltersButton;
+    //private JToggleButton historyButton;
+    //private SavedFiltersPanel savedFiltersPanel;
+    //private JToggleButton savedFiltersButton;
 
     /**
      * Creates search bar to contains our query panels.
@@ -52,8 +61,8 @@ public class SearchBar extends JPanel {
     }
 
     /**
-     * Add a new query panel to the search area.  Currently, the UI provides no way to add additional query panels, so there can only
-     * be one.
+     * Add a new query panel to the search area. Currently, the UI provides no
+     * way to add additional query panels, so there can only be one.
      */
     public final QueryPanel createNewQueryPanel() {
 
@@ -95,7 +104,7 @@ public class SearchBar extends JPanel {
         for (int i = 0; i < states.size(); i++) {
             QueryPanel qp = createNewQueryPanel();
             List<FilterState> filters = states.get(i);
-            for (FilterState state: filters) {
+            for (FilterState state : filters) {
                 qp.loadFilterView(state);
             }
         }
@@ -104,9 +113,9 @@ public class SearchBar extends JPanel {
 
     private void initComponents() {
         setOpaque(false);
-        setLayout(new GridBagLayout());
+        setLayout(new BorderLayout());
 
-        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20,20,20));
+        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
@@ -114,68 +123,178 @@ public class SearchBar extends JPanel {
         JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(queryPanelContainer);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        historyButton = ViewUtil.getSoftToggleButton("Search History");
-        historyButton.setSelected(false);
-        ViewUtil.makeSmall(historyButton);
+        JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
+        historyLabel.setToolTipText("Show search history");
 
-        historyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                boolean vis = historyButton.isSelected();
-                historyPanel.setVisible(vis);
-                if (vis) {
-                    savedFiltersButton.setSelected(false);
-                    savedFiltersPanel.setVisible(false);
-                }
-            }
-        });
+        JLabel loadLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR));
+        loadLabel.setToolTipText("Load favorite filters");
 
-        savedFiltersButton = ViewUtil.getSoftToggleButton("Saved Filter Sets");
-        savedFiltersButton.setSelected(false);
-        ViewUtil.makeSmall(savedFiltersButton);
-
-        savedFiltersButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                boolean vis = savedFiltersButton.isSelected();
-                savedFiltersPanel.setVisible(vis);
-                if (vis) {
-                    historyButton.setSelected(false);
-                    historyPanel.setVisible(false);
-                }
-            }
-        });
+        JLabel saveLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR));
+        saveLabel.setToolTipText("Save current filters to favorites");
 
         historyPanel = new FilterHistoryPanel();
-        historyPanel.setVisible(false);
+        //historyPanel.setVisible(false);
 
-        savedFiltersPanel = new SavedFiltersPanel();
-        savedFiltersPanel.setVisible(false);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        add(effectivenessPanel, gbc);
+        //savedFiltersPanel.setVisible(false);
 
-        gbc.weighty = 1.0;
-        gbc.gridy++;
-        add(scroll, gbc);
+        final Dimension dialogDimensions = new Dimension(400, 400);
 
-        gbc.weighty = 0.0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        add(historyButton, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        add(savedFiltersButton, gbc);
+        historyPanel.setMinimumSize(dialogDimensions);
+        historyPanel.setPreferredSize(dialogDimensions);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        add(historyPanel, gbc);
-        add(savedFiltersPanel, gbc);
+
+
+        final JDialog dHistory = new JDialog(MedSavantFrame.getInstance(), true);
+        dHistory.setTitle("Search History");
+        dHistory.add(historyPanel);
+        dHistory.pack();
+        dHistory.setLocationRelativeTo(MedSavantFrame.getInstance());
+
+        historyLabel.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                dHistory.setVisible(true);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+        });
+
+        final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
+        dSave.setTitle("Favorite Filters");
+
+        dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
+
+        loadLabel.addMouseListener(new MouseListener() {
+
+            SavedFiltersPanel savedFiltersPanel;
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (savedFiltersPanel != null) {
+                    dSave.remove(savedFiltersPanel);
+                }
+                savedFiltersPanel = new SavedFiltersPanel();
+                savedFiltersPanel.setMinimumSize(dialogDimensions);
+                savedFiltersPanel.setPreferredSize(dialogDimensions);
+                dSave.add(savedFiltersPanel);
+                dSave.pack();
+                dSave.setVisible(true);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+        });
+
+        saveLabel.addMouseListener(new MouseListener() {
+            private boolean validateName(String name) {
+                File[] existingFilterSets = DirectorySettings.getFiltersDirectory().listFiles();
+                for (File f : existingFilterSets) {
+                    if (f.getName().equals(name)) {
+                        return DialogUtils.askYesNo("Replace Filter Set", "<html>A filter set named <i>%s</i> already exists.<br>Do you want to overwrite it?</html>", name) == DialogUtils.YES;
+                    }
+                }
+                return true;
+            }
+
+            private void saveFilterSet(String name) throws Exception {
+
+                File file = new File(DirectorySettings.getFiltersDirectory(), name);
+
+                BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
+                out.write("<filters>\n");
+                for (QueryPanel sub : GeneticsFilterPage.getSearchBar().queryPanels) {
+                    out.write("\t<set>\n");
+                    for (FilterHolder item : sub.getFilterHolders()) {
+                        if (item.hasFilterView()) {
+                            out.write(item.getFilterView().saveState().generateXML() + "\n");
+                        }
+                    }
+                    out.write("\t</set>\n");
+                }
+                out.write("</filters>\n");
+                out.close();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (FilterController.getInstance().hasFiltersApplied()) {
+                    String name = "Untitled";
+                    do {
+                        name = DialogUtils.displayInputMessage("Name for Current Filter Set", "Choose a name for saving the current filter set:", name);
+                        if (name == null) {
+                            return;     // User cancelled input dialog.
+                        }
+                        // If there's no extension, add ".xml".
+                        if (name.indexOf('.') < 0) {
+                            name += ".xml";
+                        }
+                    } while (!validateName(name));
+                    try {
+                        saveFilterSet(name);
+                    } catch (Exception ex) {
+                        ClientMiscUtils.reportError("Unable to save filter set: %s", ex);
+                    }
+                } else {
+                    DialogUtils.displayError("Can't save filters","No filters are applied.");
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+        });
+
+        JPanel bottomBar = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(bottomBar);
+        bottomBar.add(historyLabel);
+        bottomBar.add(Box.createRigidArea(new Dimension(5, 5)));
+        bottomBar.add(saveLabel);
+        bottomBar.add(Box.createRigidArea(new Dimension(5, 5)));
+        bottomBar.add(loadLabel);
+
+        add(effectivenessPanel, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
+        add(ViewUtil.centerHorizontally(bottomBar), BorderLayout.SOUTH);
     }
 
     /**
@@ -183,8 +302,8 @@ public class SearchBar extends JPanel {
      */
     public void loadFilters(FilterState... states) {
         try {
-            for (QueryPanel qp: queryPanels) {
-                for (FilterState state: states) {
+            for (QueryPanel qp : queryPanels) {
+                for (FilterState state : states) {
                     qp.loadFilterView(state);
                 }
             }

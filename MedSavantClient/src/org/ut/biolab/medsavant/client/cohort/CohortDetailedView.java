@@ -124,8 +124,8 @@ class CohortDetailedView extends DetailedView {
             data[i][0] = patients.get(i);
         }
 
-        JPanel p = new JPanel();
-        p.setBackground(Color.WHITE);
+        JPanel p = ViewUtil.getClearPanel();
+        //p.setBackground(Color.WHITE);
         p.setBorder(ViewUtil.getBigBorder());
         ViewUtil.applyVerticalBoxLayout(p);
 
