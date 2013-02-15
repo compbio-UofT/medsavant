@@ -76,19 +76,19 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         boolean needsWorker = false;
 
         if (bool) {
-            availableValues = Arrays.asList("True", "False");
+            setAvailableValues(Arrays.asList("True", "False"));
         } else if (colName.equals(AC.getColumnName())) {
-            availableValues = Arrays.asList("1", "2");
+            setAvailableValues(Arrays.asList("1", "2"));
         } else if (colName.equals(AF.getColumnName())) {
-            availableValues = Arrays.asList("0.50", "1.00");
+            setAvailableValues(Arrays.asList("0.50", "1.00"));
         } else if (colName.equals(REF.getColumnName()) || colName.equals(ALT.getColumnName())) {
-            availableValues = Arrays.asList("A", "C", "G", "T");
+            setAvailableValues(Arrays.asList("A", "C", "G", "T"));
         } else if (colName.equals(VARIANT_TYPE.getColumnName())) {
-            availableValues = Arrays.asList(VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString());
+            setAvailableValues(Arrays.asList(VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString()));
         } else if (colName.equals(ZYGOSITY.getColumnName())) {
-            availableValues = Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString());
+            setAvailableValues(Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString()));
         } else if (colName.equals(GENDER.getColumnName())) {
-            availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
+            setAvailableValues(Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN));
         } else {
 
             needsWorker = true;
@@ -105,9 +105,9 @@ public class StringListFilterView extends TabularFilterView<String> implements B
 
                 @Override
                 protected Void doInBackground() throws Exception {
-                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache);
+                    setAvailableValues(MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache));
                     if (columnName.equals(CHROM.getColumnName())) {
-                        Collections.sort(availableValues, new ChromosomeComparator());
+                        Collections.sort(getAvailableValues(), new ChromosomeComparator());
                     }
                     return null;
                 }
@@ -140,13 +140,13 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i : indices) {
             if (columnName.equals(GENDER.getColumnName())) {
-                appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(availableValues.get(i))));
+                appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(getAvailableValues().get(i))));
             } else {
-                appliedValues.add(availableValues.get(i));
+                appliedValues.add(getAvailableValues().get(i));
             }
         }
 
-        if (appliedValues.size() == availableValues.size()) {
+        if (appliedValues.size() == getAvailableValues().size()) {
             FilterController.getInstance().removeFilter(columnName, queryID);
             return;
         }

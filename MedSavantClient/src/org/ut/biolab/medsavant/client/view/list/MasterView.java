@@ -99,7 +99,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Add");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     detailedEditor.addItems();
                     // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
                     if (LoginController.getInstance().isLoggedIn()) {
@@ -116,7 +116,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Import");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     detailedEditor.importItems();
                     refreshList();
                 }
@@ -130,7 +130,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Export");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     detailedEditor.exportItems();
                     refreshList();
                 }
@@ -143,7 +143,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Remove selected");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     detailedEditor.deleteItems(selectionGrabber.getSelectedItems());
                     // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
                     if (LoginController.getInstance().isLoggedIn()) {
@@ -159,7 +159,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Edit selected");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     if (selectionGrabber.getSelectedItems().size() > 0) {
                         detailedEditor.editItem(selectionGrabber.getSelectedItems().get(0));
                         refreshList();
@@ -177,7 +177,7 @@ public class MasterView extends JPanel {
             butt.setToolTipText("Load selected");
             butt.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     detailedEditor.loadItems(selectionGrabber.getSelectedItems());
                 }
             });
@@ -287,7 +287,7 @@ public class MasterView extends JPanel {
 
             stp.getTable().addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mousePressed(MouseEvent e) {
                     if (SwingUtilities.isRightMouseButton(e)) {
                         JPopupMenu popup = detailedView.createPopup();
                         if (popup != null) {

@@ -21,6 +21,8 @@ import java.awt.LayoutManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -45,6 +47,8 @@ public abstract class FilterView extends JPanel {
     protected final JPanel viewCard;
     protected final JPanel waitCard;
     private boolean initialized = false;
+    private boolean filterValuesReady;
+    public final Object filterValuesReadySemaphore = new Object();
 
     public FilterView(String title, int queryID) {
 
@@ -54,7 +58,7 @@ public abstract class FilterView extends JPanel {
         waitCard.setLayout(new BorderLayout());
         JProgressBar idpb = new JProgressBar();
         idpb.setIndeterminate(true);
-        waitCard.add(idpb,BorderLayout.CENTER);
+        waitCard.add(idpb, BorderLayout.CENTER);
 
         super.setLayout(new BorderLayout());
         super.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));//ViewUtil.getSmallBorder());
@@ -106,6 +110,7 @@ public abstract class FilterView extends JPanel {
     }
 
     public synchronized final void showViewCard() {
+        this.setFilterValuesReady(true);
         super.removeAll();
         super.setLayout(new BorderLayout());
         super.add(viewCard, BorderLayout.CENTER);
@@ -163,6 +168,29 @@ public abstract class FilterView extends JPanel {
             viewCard.setBorder(b);
         } else {
             super.setBorder(b);
+        }
+    }
+
+    public void setFilterValuesReady(boolean b) {
+        filterValuesReady = true;
+        synchronized (filterValuesReadySemaphore) {
+            filterValuesReadySemaphore.notify();
+        }
+    }
+
+    public boolean areFilterValuesReady() {
+        return filterValuesReady;
+    }
+
+    public void waitForFilterValuesToBeReady() {
+        if (!areFilterValuesReady()) {
+            synchronized (filterValuesReadySemaphore) {
+                try {
+                    filterValuesReadySemaphore.wait();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
     }
 }

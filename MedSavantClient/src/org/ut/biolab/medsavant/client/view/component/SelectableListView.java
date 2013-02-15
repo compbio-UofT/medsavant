@@ -35,6 +35,7 @@ import javax.swing.event.ListDataListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -204,6 +205,7 @@ public class SelectableListView<T> extends JPanel {
     }
 
     public final void setFilterValues(Collection<String> list) {
+
         int[] selectedIndices = new int[list.size()];
         int i = 0;
         for (String s : list) {
@@ -216,7 +218,9 @@ public class SelectableListView<T> extends JPanel {
             }
             selectedIndices[i++] = j;   // If element is not in availableValues, j will be > availableValues.size()
         }
-        filterableList.setCheckBoxListSelectedIndices(selectedIndices);
+
+        ClientMiscUtils.selectOnlyTheseIndicies(filterableList,selectedIndices);
+
     }
 
     /**

@@ -70,7 +70,7 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
             @Override
             protected Void doInBackground() throws Exception {
                 OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);
-                availableValues = Arrays.asList(terms);
+                setAvailableValues(Arrays.asList(terms));
                 return null;
             }
         }.execute();

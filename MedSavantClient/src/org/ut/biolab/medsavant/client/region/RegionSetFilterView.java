@@ -57,7 +57,7 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
             for (String str: regStrs) {
                 adHocRegions.add(GenomicRegion.fromString(str));
             }
-            availableValues.add(controller.createAdHocRegionSet(AD_HOC_REGION_SET_NAME, adHocRegions));
+            getAvailableValues().add(controller.createAdHocRegionSet(AD_HOC_REGION_SET_NAME, adHocRegions));
             updateModel();
             if (names == null) {
                 names = new ArrayList<String>(1);
@@ -72,8 +72,9 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
 
     public RegionSetFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
-        availableValues = new ArrayList<RegionSet>();
-        availableValues.addAll(controller.getRegionSets());
+        List vals = new ArrayList<RegionSet>();
+        vals.addAll(controller.getRegionSets());
+        setAvailableValues(vals);
         initContentPanel();
 
         // Make sure the filter's check-boxes get updated whenever region sets are added or removed.

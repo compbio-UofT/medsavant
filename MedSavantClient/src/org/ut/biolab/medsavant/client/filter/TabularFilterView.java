@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.filter;
 
 import java.awt.Dimension;
@@ -31,15 +30,19 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
- * Base class shared by StringListFilterView, RegionSetFilterView, and OntologyFilterView, all of which consist of a table containing
- * checkable items.
+ * Base class shared by StringListFilterView, RegionSetFilterView, and
+ * OntologyFilterView, all of which consist of a table containing checkable
+ * items.
  *
  * @author tarkvara
  */
@@ -47,17 +50,29 @@ public abstract class TabularFilterView<T> extends FilterView {
 
     private static final Log LOG = LogFactory.getLog(TabularFilterView.class);
     private static final int FIELD_WIDTH = 260;
-
-    protected List<T> availableValues;
+    final Object contentInitializedSemaphore = new Object();
+    private List<T> availableValues;
     protected List<T> appliedValues;
-
     private QuickListFilterField field;
     protected FilterableCheckBoxList filterableList;
     protected JButton applyButton;
     private JButton selectAll;
+    private boolean contentInitialized;
 
     protected TabularFilterView(String name, int queryID) {
         super(name, queryID);
+    }
+
+    public List<T> getAvailableValues() {
+        return availableValues;
+    }
+
+    public boolean areAvailableValuesSet() {
+        return getAvailableValues() == null;
+    }
+
+    public void setAvailableValues(List<T> vals) {
+        this.availableValues = vals;
     }
 
     protected final void initContentPanel() {
@@ -94,7 +109,6 @@ public abstract class TabularFilterView<T> extends FilterView {
         field.setPreferredSize(new Dimension(FIELD_WIDTH, 22));
 
         filterableList = new FilterableCheckBoxList(field.getDisplayListModel()) {
-
             @Override
             public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
                 return -1;
@@ -181,14 +195,20 @@ public abstract class TabularFilterView<T> extends FilterView {
         add(applyButton, gbc);
 
         this.showViewCard();
+
     }
 
     public final void setFilterValues(Collection<String> list) {
+
+        this.waitForFilterValuesToBeReady();
+
         int[] selectedIndices = new int[list.size()];
         int i = 0;
-        for (String s: list) {
+        for (String s : list) {
             int j = 0;
-            for (T t: availableValues) {
+
+            for (T t : availableValues) {
+                System.out.println("\t" + t + " looking for " + s);
                 if (t.toString().equals(s)) {
                     break;
                 }
@@ -196,14 +216,18 @@ public abstract class TabularFilterView<T> extends FilterView {
             }
             selectedIndices[i++] = j;   // If element is not in availableValues, j will be > availableValues.size()
         }
-        filterableList.setCheckBoxListSelectedIndices(selectedIndices);
+
+        ClientMiscUtils.selectOnlyTheseIndicies(filterableList, selectedIndices);
+
         applyFilter();
     }
 
     protected abstract void applyFilter();
 
     /**
-     * Shared code which derived classes can call to set things up properly in their <code>applyFilter</code> calls.
+     * Shared code which derived classes can call to set things up properly in
+     * their
+     * <code>applyFilter</code> calls.
      */
     protected void preapplyFilter() {
         applyButton.setEnabled(false);
@@ -211,7 +235,7 @@ public abstract class TabularFilterView<T> extends FilterView {
         appliedValues = new ArrayList<T>();
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i: indices) {
+        for (int i : indices) {
             appliedValues.add(availableValues.get(i));
         }
     }
@@ -230,8 +254,10 @@ public abstract class TabularFilterView<T> extends FilterView {
     }
 
     /**
-     * Update our list model when the available values list has changed.  It should be possible to get this working without resetting
-     * the whole model, but I couldn't get it to update correctly, hence the brute force approach.
+     * Update our list model when the available values list has changed. It
+     * should be possible to get this working without resetting the whole model,
+     * but I couldn't get it to update correctly, hence the brute force
+     * approach.
      */
     protected void updateModel() {
         field.setListModel(new SimpleListModel());
@@ -249,7 +275,7 @@ public abstract class TabularFilterView<T> extends FilterView {
         @Override
         public Object getElementAt(int i) {
             T val = availableValues.get(i);
-            if (val instanceof String && ((String)val).length() == 0) {
+            if (val instanceof String && ((String) val).length() == 0) {
                 return "(null)";
             }
             return val;

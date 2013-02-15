@@ -58,8 +58,9 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
      */
     public CohortFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
-        availableValues = new ArrayList<Cohort>();
-        availableValues.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
+        List vals = new ArrayList<Cohort>();
+        vals.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
+        setAvailableValues(vals);
         initContentPanel();
     }
 

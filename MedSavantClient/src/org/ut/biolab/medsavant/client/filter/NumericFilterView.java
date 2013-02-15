@@ -76,6 +76,8 @@ public class NumericFilterView extends FilterView {
         }
     };
     private JButton selectAll;
+    private JLabel toLabel;
+    private JLabel fromLabel;
 
     public NumericFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
         this(WhichTable.valueOf(state.getOneValue(FilterState.TABLE_ELEMENT)), state.getFilterID(), queryID, state.getName(), Boolean.valueOf(state.getOneValue("isDecimal")));
@@ -94,10 +96,12 @@ public class NumericFilterView extends FilterView {
         this.alias = alias;
         this.isDecimal = isDecimal;
 
+        initUI();
+
         if (col.equals("position")) {
-            initHelper(new Range(1, 250000000));
+            setExtremeValues(new Range(1, 250000000));
         } else if (col.equals("sb")) {
-            initHelper(new Range(-100, 100));
+            setExtremeValues(new Range(-100, 100));
         } else {
 
             new MedSavantWorker<Void>("FilterView") {
@@ -112,7 +116,7 @@ public class NumericFilterView extends FilterView {
 
                 @Override
                 protected Void doInBackground() throws Exception {
-                    initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
+                    setExtremeValues(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
                     return null;
                 }
 
@@ -120,13 +124,10 @@ public class NumericFilterView extends FilterView {
         }
     }
 
-    private void initHelper(Range extremeValues) {
-
+    private void setExtremeValues(Range extremeValues) {
         if (columnName.equals("dp")) {
             extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());
         }
-
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         overallMin = (int)Math.floor(extremeValues.getMin());
         overallMax = (int)Math.ceil(extremeValues.getMax());
@@ -137,25 +138,41 @@ public class NumericFilterView extends FilterView {
         } else if (isDecimal && overallMax - overallMin <= 10) {
             precision = 1;
         }
-        //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
-        slider = new DecimalRangeSlider(precision);
+
+        slider.setPrecision(precision);
 
         slider.setMinimum(overallMin);
         slider.setMaximum(overallMax);
 
-        slider.setMajorTickSpacing(5);
-        slider.setMinorTickSpacing(1);
-
         slider.setLow(overallMin);
         slider.setHigh(overallMax);
 
-        fromBox = new JTextField(ViewUtil.numToString(overallMin));
-        toBox = new JTextField(ViewUtil.numToString(overallMax));
+        slider.updateUI();
+
+        fromBox.setText(ViewUtil.numToString(overallMin));
+        toBox.setText(ViewUtil.numToString(overallMax));
+
+        fromLabel.setText(ViewUtil.numToString(overallMin));
+        toLabel.setText(ViewUtil.numToString(overallMax));
+    }
+
+    private void initUI() {
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
+        slider = new DecimalRangeSlider();
+
+        slider.setMajorTickSpacing(5);
+        slider.setMinorTickSpacing(1);
+
+        fromBox = new JTextField();
+        toBox = new JTextField();
         fromBox.setMaximumSize(new Dimension(10000,24));
         toBox.setMaximumSize(new Dimension(10000,24));
 
-        JLabel fromLabel = new JLabel(ViewUtil.numToString(overallMin));
-        JLabel toLabel = new JLabel(ViewUtil.numToString(overallMax));
+        fromLabel = new JLabel();
+        toLabel = new JLabel();
 
         JPanel fromToContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(fromToContainer);
@@ -287,11 +304,15 @@ public class NumericFilterView extends FilterView {
      * Assumes values already checked for consistency.
      */
     public final void applyFilter(double low, double high) {
+        applyFilterSilently(low,high);
+        applyButton.doClick();
+    }
+
+    public final void applyFilterSilently(double low, double high) {
         fromBox.setText(Double.toString(low));
         toBox.setText(Double.toString(high));
         slider.setLow(low);
         slider.setHigh(high);
-        applyButton.doClick();
     }
 
     private static double getNumber(String s) {

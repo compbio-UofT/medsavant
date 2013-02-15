@@ -65,7 +65,7 @@ public class GenemaniaInfoRetriever {
         }
     }
     private List<String> genes;
-    private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"\\" + "gmdata";
+    private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"/" + "gmdata";
     private final int DEFAULT_GENE_LIMIT = 50;
     private final CombiningMethod DEFAULT_COMBINING_METHOD = CombiningMethod.AVERAGE;
     private final String[] DEFAULT_NETWORKS = {"Genetic interactions", "Shared protein domains", "Other", "Pathway", "Physical interactions", "Co-localization", "Predicted", "Co-expression"};
@@ -89,7 +89,7 @@ public class GenemaniaInfoRetriever {
 	}
 
     public GenemaniaInfoRetriever() throws Exception {
-        if (new File(DirectorySettings.getCacheDirectory().getAbsolutePath() + "\\done.txt").exists()) {
+        if (new File(DirectorySettings.getCacheDirectory().getAbsolutePath() + "/done.txt").exists()) {
             initialize();
         } else {
             throw new Exception("Data not found.");

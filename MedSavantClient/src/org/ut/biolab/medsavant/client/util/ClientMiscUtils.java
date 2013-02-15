@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.client.util;
 
+import com.jidesoft.list.FilterableCheckBoxList;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -214,5 +215,14 @@ public class ClientMiscUtils extends MiscUtils {
         BigDecimal bd = new BigDecimal(unrounded);
         BigDecimal rounded = bd.setScale(precision, BigDecimal.ROUND_HALF_UP);
         return rounded.doubleValue();
+    }
+
+    public static void selectOnlyTheseIndicies(FilterableCheckBoxList filterableList, int[] selectedIndices) {
+        for (int k = 0; k < filterableList.getModel().getSize(); k++) {
+            filterableList.removeCheckBoxListSelectedIndex(k);
+        }
+        for (int j : selectedIndices) {
+            filterableList.addCheckBoxListSelectedIndex(j);
+        }
     }
 }

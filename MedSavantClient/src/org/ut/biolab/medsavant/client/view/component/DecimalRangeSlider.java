@@ -28,6 +28,10 @@ public class DecimalRangeSlider extends RangeSlider {
     private int multiplier;
 
     public DecimalRangeSlider(int precision) {
+        setPrecision(precision);
+    }
+
+    public final void setPrecision(int precision) {
         if (precision <= 0) {
             multiplier = 1;
         } else {
