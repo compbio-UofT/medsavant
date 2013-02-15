@@ -32,25 +32,7 @@ public class VariantRecord implements Serializable {
             }
         }
     };
-    public static enum Zygosity {
-        HomoRef
-                /*{ public String toString() {
-                    return "Homo. Reference";
-                }
-             }*/
-        , HomoAlt
-                /*{ public String toString() {
-                    return "Homo. Alternate";
-                }
-        }*/, Hetero
-                /*{ public String toString() {
-                    return "Heterozygous";
-                }
-        }*/, HeteroTriallelic
-                /*{ public String toString() {
-                    return "Het. Triallelic";
-                }
-        }*/;
+    public static enum Zygosity {HomoRef, HomoAlt, Hetero, HeteroTriallelic;
 
         public static Zygosity getZygosity(int zygosity) {
             switch (zygosity) {
