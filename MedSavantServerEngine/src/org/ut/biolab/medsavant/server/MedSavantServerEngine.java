@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.server;
 
 import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
-import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
 import org.ut.biolab.medsavant.server.serverapi.LogManager;
 import org.ut.biolab.medsavant.server.serverapi.NotificationManager;
 import org.ut.biolab.medsavant.server.serverapi.GeneSetManager;
@@ -34,6 +33,10 @@ import java.rmi.registry.Registry;
 import java.sql.SQLException;
 
 import gnu.getopt.Getopt;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
@@ -42,7 +45,9 @@ import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
+import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 /**
  *
@@ -51,12 +56,11 @@ import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
 
     public static boolean USE_INFINIDB_ENGINE = false;
-
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
 
-    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName) throws RemoteException, SQLException {
+    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException {
 
         try {
             // get the address of this host.
@@ -67,13 +71,16 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
         listenOnPort = MedSavantServerUnicastRemoteObject.getListenPort();
 
-        System.out.println("== MedSavant Server Engine ==\n");
+        if (!performPreemptiveSystemCheck()) {
+            System.out.println("System check FAILED, see errors above");
+            System.exit(1);
+        }
 
-        System.out.println("> Server Information:");
+        System.out.println("Server Information:");
         System.out.println(
-                "SERVER ADDRESS: " + thisAddress + "\n"
-                + "LISTENING ON PORT: " + listenOnPort + "\n"
-                + "EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
+                "  SERVER ADDRESS: " + thisAddress + "\n"
+                + "  LISTENING ON PORT: " + listenOnPort + "\n"
+                + "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
             // create the registry and bind the name and object.
             registry = LocateRegistry.createRegistry(listenOnPort);
@@ -84,26 +91,28 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             ConnectionController.setPort(databasePort);
 
             System.out.println();
-            System.out.println("> Database Information:");
+            System.out.println("Database Information:");
 
             System.out.println(
-                    "DATABASE ADDRESS: " + databaseHost + "\n"
-                    + "DATABASE PORT: " + databasePort);
+                    "  DATABASE ADDRESS: " + databaseHost + "\n"
+                    + "  DATABASE PORT: " + databasePort);
 
-            System.out.println("DATABASE USER: " + rootUserName);
-            System.out.print("PASSWORD FOR " + rootUserName + ": ");
-            System.out.flush();
+            System.out.println("  DATABASE USER: " + rootUserName);
+            if (password == null) {
+                System.out.print("  PASSWORD FOR " + rootUserName + ": ");
+                System.out.flush();
 
-            char[] pass = System.console().readPassword();
+                char[] pass = System.console().readPassword();
+                password = new String(pass);
+            }
 
             System.out.println();
 
             System.out.print("Connecting to database ... ");
             try {
-                ConnectionController.connectOnce(databaseHost, databasePort, "", rootUserName, new String(pass));
+                ConnectionController.connectOnce(databaseHost, databasePort, "", rootUserName, password);
             } catch (SQLException ex) {
                 System.out.println("FAILED");
-
                 throw ex;
             }
             System.out.println("OK");
@@ -119,24 +128,78 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     }
 
     static public void main(String args[]) {
+
+        System.out.println("== MedSavant Server Engine ==\n");
+
         try {
 
-            Getopt g = new Getopt("MedSavantServerEngine", args, "l:h:p:u:e:");
+            /**
+             * Override with commands from the command line
+             */
+            Getopt g = new Getopt("MedSavantServerEngine", args, "c:l:h:p:u:e:");
             //
             int c;
 
             String user = "root";
+            String password = null;
             String host = "localhost";
             int port = 5029;
 
             // print usage
             if (args.length > 0 && args[0].equals("--help")) {
-                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER] [-e ADMIN_EMAIL]");
+                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar { [-c CONFIG_FILE] } or { [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER] [-e ADMIN_EMAIL] }");
+                System.out.println("\n\tCONFIG_FILE should be a file containing any number of these keys:\n"
+                        + "\t\tdb-user - the database user\n"
+                        + "\t\tdb-password - the database password\n"
+                        + "\t\tdb-host - the database host\n"
+                        + "\t\tdb-port - the database port\n"
+                        + "\t\tlisten-on-port - the port on which clients will connect\n"
+                        + "\t\temail - the email address to send important notifications\n"
+                        + "\t\ttmp-dir - the directory to use for temporary files\n"
+                        + "\t\tms-dir - the directory to use to store permanent files\n");
                 return;
             }
 
             while ((c = g.getopt()) != -1) {
                 switch (c) {
+                    case 'c':
+                        String configFileName = g.getOptarg();
+                        System.out.println("Loading configuration from " + (new File(configFileName)).getAbsolutePath() + " ...");
+
+                        Properties prop = new Properties();
+                        try {
+                            prop.load(new FileInputStream(configFileName));
+                            if (prop.containsKey("db-user")) {
+                                user = prop.getProperty("db-user");
+                            }
+                            if (prop.containsKey("db-password")) {
+                                password = prop.getProperty("db-password");
+                            }
+                            if (prop.containsKey("db-host")) {
+                                host = prop.getProperty("db-host");
+                            }
+                            if (prop.containsKey("db-port")) {
+                                port = Integer.parseInt(prop.getProperty("db-port"));
+                            }
+                            if (prop.containsKey("listen-on-port")) {
+                                int listenOnPort = Integer.parseInt(prop.getProperty("listen-on-port"));
+                                MedSavantServerUnicastRemoteObject.setListenPort(listenOnPort);
+                                MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
+                            }
+                            if (prop.containsKey("email")) {
+                                EmailLogger.setMailRecipient(prop.getProperty("email"));
+                            }
+                            if (prop.containsKey("tmp-dir")) {
+                                DirectorySettings.setTmpDirectory(prop.getProperty("tmp-dir"));
+                            }
+                            if (prop.containsKey("ms-dir")) {
+                                DirectorySettings.setMedSavantDirectory(prop.getProperty("ms-dir"));
+                            }
+
+                        } catch (Exception e) {
+                            System.out.println("ERROR: Could not load properties file " + configFileName);
+                        }
+                        break;
                     case 'h':
                         System.out.println("Host " + g.getOptarg());
                         host = g.getOptarg();
@@ -162,8 +225,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 }
             }
 
-
-            new MedSavantServerEngine(host, port, user);
+            new MedSavantServerEngine(host, port, user, password);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -197,5 +259,65 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         registry.rebind(NOTIFICATION_MANAGER, NotificationManager.getInstance());
 
         System.out.println("OK");
+    }
+
+    private static boolean performPreemptiveSystemCheck() {
+
+        File tmpDir = DirectorySettings.getTmpDirectory();
+        File cacheDir = DirectorySettings.getCacheDirectory();
+        File medsavantDir = DirectorySettings.getMedSavantDirectory();
+
+        System.out.println("Directory information:");
+        System.out.println("  TMP DIRECTORY: " + tmpDir.getAbsolutePath() + " has permissions " + permissions(tmpDir));
+        System.out.println("  MEDSAVANT DIRECTORY: " + medsavantDir.getAbsolutePath() + " has permissions " + permissions(medsavantDir));
+        System.out.println("  CACHE DIRECTORY: " + cacheDir.getAbsolutePath() + " has permissions " + permissions(cacheDir));
+        System.out.println();
+
+        boolean passed = true;
+
+        if (!completelyPermissive(tmpDir)) {
+            System.out.println("ERROR: " + tmpDir.getAbsolutePath() + " does not have appropriate permissions (require rwx)");
+            passed = false;
+        }
+
+        if (!completelyPermissive(medsavantDir)) {
+            System.out.println("ERROR: " + medsavantDir.getAbsolutePath() + " does not have appropriate permissions (require rwx)");
+            passed = false;
+        }
+        if (!completelyPermissive(cacheDir)) {
+            System.out.println("ERROR: " + cacheDir.getAbsolutePath() + " does not have appropriate permissions (require rwx)");
+            passed = false;
+        }
+        try {
+            File cacheNow = DirectorySettings.generateDateStampDirectory(cacheDir);
+            if (!completelyPermissive(cacheNow)) {
+                System.out.println("ERROR: Directories created inside " + cacheDir + " do not have appropriate permissions (require rwx)");
+                passed = false;
+            }
+        } catch (IOException ex) {
+            System.out.println("ERROR: Couldn't create directory inside " + cacheDir.getAbsolutePath());
+            passed = false;
+        }
+
+        try {
+            File tmpNow = DirectorySettings.generateDateStampDirectory(tmpDir);
+            if (!completelyPermissive(tmpNow)) {
+                System.out.println("ERROR: Directories created inside " + tmpDir + " do not have appropriate permissions (require rwx)");
+                passed = false;
+            }
+        } catch (IOException ex) {
+            System.out.println("ERROR: Couldn't create directory inside " + tmpDir.getAbsolutePath());
+            passed = false;
+        }
+
+        return passed;
+    }
+
+    private static boolean completelyPermissive(File d) {
+        return d.canRead() && d.canWrite() && d.canExecute();
+    }
+
+    private static String permissions(File d) {
+        return (d.canRead() ? "r" : "-") + (d.canWrite() ? "w" : "-") + (d.canExecute() ? "x" : "-");
     }
 }
