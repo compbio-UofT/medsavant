@@ -36,6 +36,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * I/O-related utility methods. Functions for manipulating Savant files are in
@@ -44,6 +46,9 @@ import java.util.zip.ZipOutputStream;
  * @author mfiume, tarkvara
  */
 public class IOUtils {
+
+    private static final Log LOG = LogFactory.getLog(IOUtils.class);
+
 
     public static void copyFile(File srcFile, File destFile) throws IOException {
         if (srcFile.equals(destFile)) {
@@ -119,14 +124,15 @@ public class IOUtils {
      * @param base
      * @return
      */
-    public static void checkForWorldExecute(File base) throws IOException {
-        File f = base.isDirectory() ? base : base.getParentFile();
-        while (hasWorldExecute(f)) {
-            f = f.getParentFile();
+    public static void checkForWorldExecute(File f) throws IOException {
+        //File f = base.isDirectory() ? base : base.getParentFile();
+        if (hasWorldExecute(f)) {
+            /*f = f.getParentFile();
             if (f == null) {
                 // Reached /
                 return;
-            }
+            }*/
+            return;
         }
         throw new IOException(f + " did not have execute permissions.");
     }
@@ -148,6 +154,7 @@ public class IOUtils {
                 result = line.substring(1, spacePos);
             }
         }
+        //LOG.info("Permission of " + f.getAbsolutePath() + " is " + result);
         return result;
     }
 
