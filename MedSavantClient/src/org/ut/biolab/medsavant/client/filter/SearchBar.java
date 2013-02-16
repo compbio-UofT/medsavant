@@ -132,6 +132,10 @@ public class SearchBar extends JPanel {
         JLabel saveLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR));
         saveLabel.setToolTipText("Save search");
 
+        JLabel actionLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR));
+        actionLabel.setToolTipText("Actions");
+
+
         historyPanel = new FilterHistoryPanel();
         //historyPanel.setVisible(false);
 
@@ -287,11 +291,13 @@ public class SearchBar extends JPanel {
 
         JPanel bottomBar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomBar);
-        bottomBar.add(historyLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(5, 5)));
         bottomBar.add(saveLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(5, 5)));
+        bottomBar.add(Box.createRigidArea(new Dimension(3, 1)));
         bottomBar.add(loadLabel);
+        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
+        bottomBar.add(historyLabel);
+        //bottomBar.add(Box.createRigidArea(new Dimension(10,1)));
+        //bottomBar.add(actionLabel);
 
         add(effectivenessPanel, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);

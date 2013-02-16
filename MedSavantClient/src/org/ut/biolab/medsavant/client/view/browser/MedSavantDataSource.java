@@ -136,8 +136,10 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
     @Override
     public List<VariantRecord> getRecords(String ref, RangeAdapter range, Resolution resolution, RecordFilterAdapter<VariantRecord> filter) throws IOException, InterruptedException {
-        if (active) {
 
+        System.out.println("Getting variants track for " + range.toString());
+
+        //if (active) {
             try {
 
                 String savantChrom = MiscUtils.homogenizeSequence(ref);
@@ -218,9 +220,9 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 ex.printStackTrace();
                 throw new IOException(ex.getMessage());
             }
-        } else {
-            return new ArrayList<VariantRecord>();
-        }
+        //} else {
+        //    return new ArrayList<VariantRecord>();
+        //}
     }
 
     @Override

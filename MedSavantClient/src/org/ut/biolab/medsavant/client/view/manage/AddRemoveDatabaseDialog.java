@@ -233,6 +233,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                         DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", databaseField.getText()));
                     } catch (Throwable ex) {
                         setVisible(false);
+                        ex.printStackTrace();
                         ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                     }
                 }

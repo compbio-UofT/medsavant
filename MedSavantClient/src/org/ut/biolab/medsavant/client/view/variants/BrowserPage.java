@@ -82,7 +82,7 @@ public class BrowserPage extends SubSectionView {
     private static BrowserPage instance;
     private MedSavantDataSource msds;
 
-    // Do not use unless you're sure it BrowserPage has been initialized
+    // Do not use unless you're sure BrowserPage has been initialized
     public static BrowserPage getInstance() {
         return instance;
     }

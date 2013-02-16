@@ -172,7 +172,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("Show/Hide Fields");
+        chooseColumnButton = new JButton("More Fields");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {

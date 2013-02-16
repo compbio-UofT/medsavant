@@ -133,7 +133,7 @@ public class ListViewTablePanel extends JPanel {
             fieldPanel.add(filterField, gbc);
         }
         if (columnNames.length > 1) {
-            JButton chooseColumnButton = new JButton("<html><center><font size=\"-2\">Show/Hide<br>Fields</font></center></html>");
+            JButton chooseColumnButton = new JButton("Fields");
             chooseColumnButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseReleased(MouseEvent e) {
