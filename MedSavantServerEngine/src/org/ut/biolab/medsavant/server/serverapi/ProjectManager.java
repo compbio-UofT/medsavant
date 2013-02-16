@@ -209,7 +209,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             } else {
                 updateString = variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
             }
-            System.out.println(updateString);
+            //System.out.println(updateString);
             conn.executeUpdate(updateString);
         } finally {
             conn.close();

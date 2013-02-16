@@ -408,8 +408,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //generate directory
         LOG.info("Generating base directory");
         File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
+
         LOG.info("Base directory: " + baseDir.getAbsolutePath());
-        Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
+        Process p = Runtime.getRuntime().exec("chmod -R a+wx " + baseDir);
         p.waitFor();
 
         //add log
@@ -424,6 +425,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //dump existing table
             String existingTableName = projMgr.getVariantTableName(sessID, projID, refID, false);
+            LOG.info("Checking that " + baseDir + " is executable");
             IOUtils.checkForWorldExecute(baseDir);
             File existingVariantsFile = new File(baseDir, "proj" + projID + "_ref" + refID + "_update" + updateID);
 

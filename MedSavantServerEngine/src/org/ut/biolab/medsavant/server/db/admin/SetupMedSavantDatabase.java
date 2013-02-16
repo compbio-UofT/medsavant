@@ -312,7 +312,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                         + "`custom_info` varchar(10000) COLLATE latin1_bin DEFAULT NULL"
                         + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
             }
-            System.out.println(createVariantStatement);
+            //System.out.println(createVariantStatement);
             conn.executeUpdate(createVariantStatement);
 
             conn.executeUpdate(MedSavantDatabase.GeneSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
