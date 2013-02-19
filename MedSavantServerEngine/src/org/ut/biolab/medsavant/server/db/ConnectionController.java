@@ -24,10 +24,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.ut.biolab.medsavant.shared.db.shard.result.ShardedResultSetFactory;
 
 /**
  *
@@ -39,7 +41,6 @@ public class ConnectionController {
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
-
     private static String dbHost;
     private static int dbPort = -1;
 
@@ -96,6 +97,88 @@ public class ConnectionController {
         } finally {
             conn.close();
         }
+    }
+
+    private static class QueryExecutionRunnable implements Runnable {
+
+        private final String query;
+        private final String sessID;
+        private ResultSet resultSet;
+        private SQLException ex;
+
+        public QueryExecutionRunnable(String s, String q) {
+            this.sessID = s;
+            this.query = q;
+        }
+
+        @Override
+        public void run() {
+            try {
+                resultSet = executeQuery(sessID, query);
+            } catch (SQLException ex) {
+                this.ex = ex;
+                LOG.error(ex);
+            }
+        }
+
+        public boolean didCompleteSuccessfully() { return ex == null; }
+        public SQLException getException() { return ex; }
+        public ResultSet getResultSet() { return resultSet; }
+    }
+
+    public static ResultSet executeQuerySharded(String sessID, String query) throws SQLException {
+
+        boolean isCount = query.contains("COUNT(*)");
+        boolean isSelect = !isCount;
+
+        List<String> shardedQueries = shardQuery(sessID, query);
+        int numShards = shardedQueries.size();
+        List<ResultSet> resultSets = new ArrayList<ResultSet>(numShards);
+        List<QueryExecutionRunnable> runnables = new ArrayList<QueryExecutionRunnable>(numShards);
+        List<Thread> threads = new ArrayList<Thread>();
+        for (String q : shardedQueries) {
+            QueryExecutionRunnable r = new QueryExecutionRunnable(sessID,q);
+            runnables.add(r);
+            Thread t = new Thread(r);
+            threads.add(t);
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+
+        for (QueryExecutionRunnable r : runnables) {
+            if (r.didCompleteSuccessfully()) {
+                resultSets.add(r.getResultSet());
+            } else {
+                throw r.getException();
+            }
+        }
+
+        if (isCount) {
+            return ShardedResultSetFactory.ShardedCountQueryResultSet(resultSets, 1); // TODO: actually determine column
+
+        // assuming it must be a select query at this point
+        } else {
+            return ShardedResultSetFactory.ShardedSelectQueryResultSet(resultSets);
+        }
+    }
+
+    /**
+     * Take a query and shard it (in a scale-up fashion, i.e. all shards exist in the
+     * same database) so that the initial query is divided and comprehensive
+     * @param sessID The session requesting the query
+     * @param query The query to shard
+     * @return A list of queries to run, which altogether are comprehensive of query
+     */
+    private static List<String> shardQuery(String sessID, String query) {
+        // TODO: complete
+        throw new UnsupportedOperationException("Sharding up queries not implemented yet");
     }
 
     public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException {
@@ -175,15 +258,15 @@ public class ConnectionController {
     }
 
     public static Collection<String> getSessionIDs() {
-        synchronized(sessionPoolMap) {
+        synchronized (sessionPoolMap) {
             return sessionPoolMap.keySet();
         }
     }
 
     public static Collection<String> getDBNames() {
         List<String> result = new ArrayList<String>();
-        for (ConnectionPool pool : sessionPoolMap.values()){
-            if (!result.contains(pool.getDBName())){
+        for (ConnectionPool pool : sessionPoolMap.values()) {
+            if (!result.contains(pool.getDBName())) {
                 result.add(pool.getDBName());
             }
         }

@@ -258,6 +258,7 @@ public class VCFParser {
         }
 
         try {
+            if (split[0].equals(".") || split[1].equals(".")) { return Zygosity.Missing; }
             int a = Integer.parseInt(split[0]);
             int b = Integer.parseInt(split[1]);
             if (a == 0 && b == 0) {
