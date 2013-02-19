@@ -86,7 +86,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         } else if (colName.equals(VARIANT_TYPE.getColumnName())) {
             setAvailableValues(Arrays.asList(VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString()));
         } else if (colName.equals(ZYGOSITY.getColumnName())) {
-            setAvailableValues(Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString()));
+            setAvailableValues(Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString(), Zygosity.Missing.toString()));
         } else if (colName.equals(GENDER.getColumnName())) {
             setAvailableValues(Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN));
         } else {

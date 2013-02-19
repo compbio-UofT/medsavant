@@ -69,8 +69,11 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
                     defaultVariantType = participantVariant[i];
                     foundNonZero = true;
                 }
+            // If a genotype is unknown, the record will have the format ./. and
+            // a number format exception will be thrown when creating x. In this case
+            // we don't know what type of variant this is.
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 participantAlt[i] = 0;
                 participantVariant[i] = VariantType.OTHER;
             }
