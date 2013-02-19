@@ -82,7 +82,7 @@ public class ExportVCFWizard extends WizardDialog {
             {
                 addComponent(new JLabel("<html>This wizard will allow you to export all filtered variants to a VCF file.</html>"));
                 if (ResultController.getInstance().getFilteredVariantCount() > NUM_WARNING) {
-                    addComponent(new JLabel(String.format("<html><font color=\"red\">WARNING:</font><br>There are currently more than %,d records to be exported.<br>This may take a long time and produce a very large file!</html>", NUM_WARNING)));
+                    addComponent(new JLabel(String.format("<html><font color=\"red\">WARNING:</font><br>There are currently more than %,d records to be exported.<br><br>This may take a long time and produce a very large file!</html>", NUM_WARNING)));
                 }
             }
             @Override

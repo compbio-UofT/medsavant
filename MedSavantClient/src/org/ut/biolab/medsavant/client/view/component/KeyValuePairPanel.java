@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.component;
 
 import java.awt.*;
@@ -30,7 +29,6 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
  *
  * @author mfiume
@@ -39,7 +37,6 @@ public class KeyValuePairPanel extends JPanel {
 
     public static final String NULL_VALUE = "<NONE>";
     public static final Font KEY_FONT = new Font("Arial", Font.BOLD, 10);
-
     private Map<String, JLabel> keyKeyComponentMap;
     private Map<String, JPanel> keyValueComponentMap;
     private Map<String, JPanel> keyDetailComponentMap;
@@ -136,11 +133,10 @@ public class KeyValuePairPanel extends JPanel {
         return l;
     }
 
-
     public JComponent getComponent(String key) {
         JPanel valuePanel = keyValueComponentMap.get(key);
         if (valuePanel.getComponentCount() > 0) {
-            return (JComponent)valuePanel.getComponent(0);
+            return (JComponent) valuePanel.getComponent(0);
         }
         return null;
     }
@@ -150,7 +146,7 @@ public class KeyValuePairPanel extends JPanel {
         JComponent c = getComponent(key);
         if (c instanceof JLabel) {
             // the text of the label may be truncated, use the tooltip instead
-            return ((JLabel)c).getToolTipText();
+            return ((JLabel) c).getToolTipText();
         } else {
             System.err.println("WARNING: accessing string value of non-string label");
             return c.toString();
@@ -162,7 +158,6 @@ public class KeyValuePairPanel extends JPanel {
         final JToggleButton b = ViewUtil.getSoftToggleButton("MORE");
         ViewUtil.makeMini(b);
         b.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 toggleMoreVisibility();
@@ -215,10 +210,10 @@ public class KeyValuePairPanel extends JPanel {
 
     private void setMoreVisibility(boolean b) {
         showingMore = b;
-        for (String key: keysInMoreSection) {
+        for (String key : keysInMoreSection) {
             keyKeyComponentMap.get(key).setVisible(b && keysVisible);
             keyValueComponentMap.get(key).setVisible(b);
-            for (JComponent c: keyExtraComponentsMap.get(key)) {
+            for (JComponent c : keyExtraComponentsMap.get(key)) {
                 c.setVisible(b);
             }
             // close opened sub components in more if closing more
@@ -262,7 +257,6 @@ public class KeyValuePairPanel extends JPanel {
 
             keyLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             keyLabel.addMouseListener(new MouseAdapter() {
-
                 @Override
                 public void mouseClicked(MouseEvent me) {
                     toggleMoreVisibility();
@@ -327,16 +321,19 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     /**
-     * Set the value for this key to be a <code>JLabel</code> displaying said value.  No attempt will be made to split a long
-     * tooltip containing comma-delimited values.
+     * Set the value for this key to be a
+     * <code>JLabel</code> displaying said value. No attempt will be made to
+     * split a long tooltip containing comma-delimited values.
      */
     public void setValue(String key, String value) {
         setValue(key, value, false);
     }
 
     /**
-     * Set the value for this key to be a <code>JLabel</code> displaying said value.  If <code>splitCommas</code> is true, the
-     * value's tooltip will display comma-delimited values on separate rows.
+     * Set the value for this key to be a
+     * <code>JLabel</code> displaying said value. If
+     * <code>splitCommas</code> is true, the value's tooltip will display
+     * comma-delimited values on separate rows.
      */
     public void setValue(String key, String value, boolean splitCommas) {
 
@@ -354,7 +351,7 @@ public class KeyValuePairPanel extends JPanel {
         setValue(key, c);
     }
 
-    public void setToolTipForValue(String key, String toolTipText){
+    public void setToolTipForValue(String key, String toolTipText) {
         if (keysVisible) {
             keyKeyComponentMap.get(key).setToolTipText(toolTipText);
         } else {
@@ -384,7 +381,7 @@ public class KeyValuePairPanel extends JPanel {
 
     public void toggleDetailVisibility(String key) {
         JPanel p = keyDetailComponentMap.get(key);
-        toggleDetailVisibility(key,!p.isVisible());
+        toggleDetailVisibility(key, !p.isVisible());
     }
 
     public void toggleDetailVisibility(String key, boolean visible) {
@@ -405,16 +402,16 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     //@pre: param key is key of the bottom-most row in kvp
-    public void removeBottomRow(String key){
+    public void removeBottomRow(String key) {
         if (keysVisible) {
             kvpPanel.remove(keyKeyComponentMap.remove(key));
         }
         kvpPanel.remove(keyValueComponentMap.remove(key));
-        for (JPanel j: keyExtraComponentsMap.remove(key)){
+        for (JPanel j : keyExtraComponentsMap.remove(key)) {
             kvpPanel.remove(j);
         }
         kvpPanel.remove(keyDetailComponentMap.remove(key));
-        for (GridBagConstraints c: columnConstraints){
+        for (GridBagConstraints c : columnConstraints) {
             c.gridy--;
         }
         keyDetailConstraints.gridy--;
@@ -429,7 +426,7 @@ public class KeyValuePairPanel extends JPanel {
     public JComponent getAdditionalColumn(String key, int index) {
         JPanel p = keyExtraComponentsMap.get(key)[index];
         if (p.getComponentCount() > 0) {
-            return (JComponent)p.getComponent(0);
+            return (JComponent) p.getComponent(0);
         }
         return null;
     }
@@ -452,24 +449,41 @@ public class KeyValuePairPanel extends JPanel {
 
     public void ellipsifyValues(int width) {
         int maxKeyWidth = 0;
-        for (JComponent keyComp: keyKeyComponentMap.values()) {
+        int[] maxAdditionalColumnsWidth = new int[additionalColumns];
+
+        for (JComponent keyComp : keyKeyComponentMap.values()) {
             maxKeyWidth = Math.max(maxKeyWidth, keyComp.getPreferredSize().width);
         }
+
+        for (String k : keyValueComponentMap.keySet()) {
+            for (int i = 0; i < additionalColumns; i++) {
+                JComponent extraComp = getAdditionalColumn(k, i);
+                if (extraComp != null) {
+                    maxAdditionalColumnsWidth[i] = Math.max(maxAdditionalColumnsWidth[i],extraComp.getPreferredSize().width);
+                }
+            }
+        }
+
         width -= maxKeyWidth;
-        for (String k: keyValueComponentMap.keySet()) {
+        for (int i : maxAdditionalColumnsWidth) {
+            width -= i;
+        }
+
+
+        for (String k : keyValueComponentMap.keySet()) {
             JComponent comp = getComponent(k);
             if (comp != null) {
                 int avail = width;
-                for (int i = 0; i < additionalColumns; i++) {
+                /*for (int i = 0; i < additionalColumns; i++) {
                     JComponent extraComp = getAdditionalColumn(k, i);
                     if (extraComp != null) {
                         avail -= extraComp.getPreferredSize().width;
                     }
-                }
+                }*/
 
                 if (comp instanceof JLabel) {
                     while (avail < comp.getPreferredSize().width) {
-                        String text = ((JLabel)comp).getText();
+                        String text = ((JLabel) comp).getText();
                         if (text.endsWith("…")) {
                             if (text.length() > 2) {
                                 // Already truncated.
@@ -483,10 +497,17 @@ public class KeyValuePairPanel extends JPanel {
                             if (spacePos > 0) {
                                 text = text.substring(0, spacePos);
                             } else {
-                                text = text.substring(0, text.length() - 1);
+                                FontMetrics fm = comp.getFontMetrics(comp.getFont());
+
+                                while (fm.stringWidth(text + "…") > avail) {
+                                    text = text.substring(0, text.length() - 2);
+                                }
+                                //text = text + "…";
+
+                                //text = text.substring(0, text.length() - 1);
                             }
                         }
-                        ((JLabel)comp).setText(text + "…");
+                        ((JLabel) comp).setText(text + "…");
                     }
                 } else {
                     // Can't truncate, but we can force the preferred size.

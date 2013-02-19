@@ -244,6 +244,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
         }
 
         generateGeneIntersections(r);
+
     }
 
     private void generateGeneIntersections(VariantRecord r) {

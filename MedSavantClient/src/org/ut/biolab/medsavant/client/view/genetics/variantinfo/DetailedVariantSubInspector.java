@@ -84,8 +84,6 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
         return "Detailed Variant Information";
     }
 
-
-
     public boolean showHeader() {
         return false;
     }

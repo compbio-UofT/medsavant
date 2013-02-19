@@ -123,6 +123,8 @@ public class GeneSubInspector extends SubInspector implements Listener<Gene> {
             System.out.println(e.getMessage());
             panel.getComponent(KEY_NAME).setToolTipText("");
         }
+
+        panel.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
     }
 
 }
