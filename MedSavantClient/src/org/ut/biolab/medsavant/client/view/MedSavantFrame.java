@@ -214,6 +214,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 
+            
+            //apple.awt.brushMetalLook"
+
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
 //            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
             Application macOSXApplication = Application.getApplication();

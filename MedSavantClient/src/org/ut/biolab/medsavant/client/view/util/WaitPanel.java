@@ -30,6 +30,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 
 /**
@@ -52,6 +54,9 @@ public class WaitPanel extends JPanel {
         setBorder(ViewUtil.getHugeBorder());
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         prog = new JProgressBar();
+        if (ClientMiscUtils.MAC) {
+            prog.putClientProperty("JProgressBar.style", "circular");
+        }
         prog.setIndeterminate(true);
         prog.setMaximumSize(new Dimension(200,25));
 
@@ -60,7 +65,8 @@ public class WaitPanel extends JPanel {
         add(Box.createVerticalGlue());
         add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, Color.BLACK)));
         add(ViewUtil.getCenterAlignedComponent(statusLabel));
-        add(prog);
+        add(Box.createVerticalStrut(5));
+        add(ViewUtil.getCenterAlignedComponent(prog));
         add(Box.createVerticalGlue());
 
         // intercept events so that the underlayers can't access them

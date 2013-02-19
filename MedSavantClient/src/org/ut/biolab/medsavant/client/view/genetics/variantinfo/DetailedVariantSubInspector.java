@@ -269,7 +269,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
             });
 
             JLabel l = new JLabel("This will eventually show a chart");
-            p.setDetailComponent(KEY_QUAL, l);
+            //p.setDetailComponent(KEY_QUAL, l);
 
             final JToggleButton button = ViewUtil.getTexturedToggleButton("SHOW");
             ViewUtil.makeSmall(button);
@@ -288,7 +288,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
 
             p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID,p));
             p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP,p));
-            p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
+            //p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
 
             col++;
             p.setAdditionalColumn(KEY_DBSNP, col, getNCBIButton(KEY_DBSNP));
