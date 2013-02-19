@@ -32,7 +32,7 @@ public class VariantRecord implements Serializable {
             }
         }
     };
-    public static enum Zygosity {HomoRef, HomoAlt, Hetero, HeteroTriallelic;
+    public static enum Zygosity {HomoRef, HomoAlt, Hetero, HeteroTriallelic, Missing;
 
         public static Zygosity getZygosity(int zygosity) {
             switch (zygosity) {
@@ -44,6 +44,8 @@ public class VariantRecord implements Serializable {
                     return Hetero;
                 case 3:
                     return HeteroTriallelic;
+                case 4:
+                    return Missing;
                 default:
                     return HomoRef;
             }
