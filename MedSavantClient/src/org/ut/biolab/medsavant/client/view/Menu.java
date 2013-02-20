@@ -215,7 +215,6 @@ public class Menu extends JPanel {
     }
 
     public void setContentTo(SubSectionView v, boolean update) {
-        System.out.println("Setting content to " + v.getPageName());
         if (currentView != v) {
             currentView = v;
             contentContainer.removeAll();
@@ -277,7 +276,7 @@ public class Menu extends JPanel {
 
         loginMenu.add(loginStatusLabel);
         loginMenu.add(ViewUtil.getLargeSeparator());
-        JButton logoutButton = ViewUtil.getTexturedButton("Logout", null);
+        JButton logoutButton = ViewUtil.getTexturedButton("Log Out", null);
         logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {

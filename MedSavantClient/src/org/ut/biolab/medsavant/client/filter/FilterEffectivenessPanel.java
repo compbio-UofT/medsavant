@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

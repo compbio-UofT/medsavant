@@ -67,7 +67,7 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

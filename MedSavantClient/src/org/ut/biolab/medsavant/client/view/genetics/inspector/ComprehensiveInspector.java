@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariantSub
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSubInspector;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel.TableS
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.view.util.PathField;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

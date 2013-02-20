@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

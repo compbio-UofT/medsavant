@@ -24,15 +24,17 @@ import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
- * DetailedView variant which displays the contents of a table.
- * Currently used by Reference and Standard Genes pages.
+ * DetailedView variant which displays the contents of a table. Currently used
+ * by Reference and Standard Genes pages.
  *
  * @author tarkvara
  */
@@ -40,26 +42,27 @@ public abstract class DetailedTableView<T> extends DetailedView {
 
     private final String[] columnNames;
     private final String multipleTitle;
-
     private final JPanel details;
     private final CollapsiblePane infoPanel;
-
     protected List<T> selected = new ArrayList<T>();
     private MedSavantWorker worker;
+    private final BlockingPanel blockPanel;
 
     public DetailedTableView(String page, String title, String multTitle, String[] colNames) {
         super(page);
         multipleTitle = multTitle;
         columnNames = colNames;
 
-        JPanel viewContainer = (JPanel)ViewUtil.clear(getContentPanel());
+        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
+
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
 
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-        viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
+        contentPanel.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
         CollapsiblePanes p = new CollapsiblePanes();
         p.setOpaque(false);
@@ -79,37 +82,60 @@ public abstract class DetailedTableView<T> extends DetailedView {
         infoPanel.setLayout(new BorderLayout());
         infoPanel.add(details, BorderLayout.CENTER);
 
+        blockPanel = new BlockingPanel("No item selected", contentPanel);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);
     }
 
     @Override
     public void setSelectedItem(Object[] item) {
-        selected.clear();
-        selected.add((T)item[0]);
-        infoPanel.setTitle(item[0].toString());
+        if (item.length == 0) {
+            blockPanel.block();
+        } else {
+            selected.clear();
+            selected.add((T) item[0]);
+            infoPanel.setTitle(item[0].toString());
 
-        details.removeAll();
-        details.updateUI();
+            details.removeAll();
+            details.updateUI();
 
-        if (worker != null) {
-            worker.cancel(true);
+            if (worker != null) {
+                worker.cancel(true);
+            }
+            worker = createWorker();
+            worker.execute();
+
+            // unblock when the worker is done
+            worker.addPropertyChangeListener(new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent pce) {
+                    if (worker.isDone()) {
+                        blockPanel.unblock();
+                    }
+                }
+
+            });
         }
-        worker = createWorker();
-        worker.execute();
     }
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
-        selected.clear();
-        for (Object[] item: items) {
-            selected.add((T)item[0]);
-        }
         if (items.isEmpty()) {
-            infoPanel.setTitle("");
+            blockPanel.block();
         } else {
-            infoPanel.setTitle(String.format(multipleTitle, items.size()));
+            selected.clear();
+            for (Object[] item : items) {
+                selected.add((T) item[0]);
+            }
+            if (items.isEmpty()) {
+                infoPanel.setTitle("");
+            } else {
+                infoPanel.setTitle(String.format(multipleTitle, items.size()));
+            }
+            details.removeAll();
+            details.updateUI();
+            blockPanel.unblock();
         }
-        details.removeAll();
-        details.updateUI();
     }
 
     @Override
@@ -128,15 +154,15 @@ public abstract class DetailedTableView<T> extends DetailedView {
 
         JTable table = new StripyTable(data, columnNames);
         table.setBorder(null);
-        table.setGridColor(new Color(235,235,235));
+        table.setGridColor(new Color(235, 235, 235));
         table.setRowHeight(21);
 
         p.add(ViewUtil.alignLeft(new JLabel(ViewUtil.numToString(table.getRowCount()) + " entries")));
-        p.add(Box.createRigidArea(new Dimension(10,10)));
+        p.add(Box.createRigidArea(new Dimension(10, 10)));
         p.add((table.getTableHeader()));
         p.add(ViewUtil.getClearBorderedScrollPane(table));
 
-        details.add(p,BorderLayout.CENTER);
+        details.add(p, BorderLayout.CENTER);
 
         details.updateUI();
     }

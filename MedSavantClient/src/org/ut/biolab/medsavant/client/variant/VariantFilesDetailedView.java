@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.variant;
 
 import java.awt.BorderLayout;
@@ -35,9 +34,9 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-
 
 /**
  *
@@ -50,6 +49,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
     private SimpleVariantFile[] files;
     private DetailsWorker detailsWorker;
     private CollapsiblePane infoPanel;
+    private final BlockingPanel blockPanel;
 
     public VariantFilesDetailedView(String page) {
         super(page);
@@ -57,10 +57,13 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
 
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-        viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
+        contentPanel.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
         CollapsiblePanes panes = new CollapsiblePanes();
         panes.setOpaque(false);
@@ -76,26 +79,34 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
         content = new JPanel();
         content.setLayout(new BorderLayout());
         infoPanel.setLayout(new BorderLayout());
-        infoPanel.add(content,BorderLayout.CENTER);
+        infoPanel.add(content, BorderLayout.CENTER);
 
         details = ViewUtil.getClearPanel();
 
         content.add(details);
+
+        blockPanel = new BlockingPanel("No file selected", contentPanel);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);
     }
 
     @Override
     public void setSelectedItem(Object[] item) {
-        files = new SimpleVariantFile[]{(SimpleVariantFile) item[0]};
-        infoPanel.setTitle(files[0].getName());
 
-        details.removeAll();
-        details.updateUI();
+        if (item.length == 0) {
+            blockPanel.block();
+        } else {
+            files = new SimpleVariantFile[]{(SimpleVariantFile) item[0]};
+            infoPanel.setTitle(files[0].getName());
 
-        if (detailsWorker != null) {
-            detailsWorker.cancel(true);
+            details.removeAll();
+            details.updateUI();
+
+            if (detailsWorker != null) {
+                detailsWorker.cancel(true);
+            }
+            detailsWorker = new DetailsWorker(files[0]);
+            detailsWorker.execute();
         }
-        detailsWorker = new DetailsWorker(files[0]);
-        detailsWorker.execute();
     }
 
     public synchronized void setFileInfoList(List<String[]> info) {
@@ -139,23 +150,28 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             result.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
             result.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
             setFileInfoList(result);
+            blockPanel.unblock();
         }
     }
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
-        files = new SimpleVariantFile[items.size()];
-        for (int i = 0; i < items.size(); i++) {
-            files[i] = (SimpleVariantFile) (items.get(i)[0]);
-        }
-
         if (items.isEmpty()) {
-            infoPanel.setTitle("");
+            blockPanel.block();
         } else {
-            infoPanel.setTitle("Multiple uploads (" + items.size() + ")");
+            files = new SimpleVariantFile[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                files[i] = (SimpleVariantFile) (items.get(i)[0]);
+            }
+
+            if (items.isEmpty()) {
+                infoPanel.setTitle("");
+            } else {
+                infoPanel.setTitle("Multiple uploads (" + items.size() + ")");
+            }
+            details.removeAll();
+            details.updateUI();
         }
-        details.removeAll();
-        details.updateUI();
     }
 
     @Override
@@ -169,7 +185,6 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             //Filter by vcf file
             JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
             filter1Item.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent e) {
 
@@ -183,9 +198,9 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
                     }
 
                     /* TODO:
-                    FilterUtils.createAndApplyGenericFixedFilter("Variant Files - Filter by File(s)", files.length + " Files(s)",
-                            ComboCondition.or(conditions));
-                            */
+                     FilterUtils.createAndApplyGenericFixedFilter("Variant Files - Filter by File(s)", files.length + " Files(s)",
+                     ComboCondition.or(conditions));
+                     */
                 }
             });
             popupMenu.add(filter1Item);

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.MasterView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

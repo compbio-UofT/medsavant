@@ -5,6 +5,8 @@
 
 package org.ut.biolab.medsavant.client.view.dialog;
 
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+
 /**
  *
  * @author AndrewBrook
@@ -23,7 +25,7 @@ public class ComboForm extends javax.swing.JDialog {
         for(Object o : options){
             comboBox.addItem(o);
         }
-        this.setVisible(true);
+        this.setLocationRelativeTo(MedSavantFrame.getInstance());
     }
 
     public Object getSelectedValue(){

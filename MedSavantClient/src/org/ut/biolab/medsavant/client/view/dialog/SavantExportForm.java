@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 
 /**

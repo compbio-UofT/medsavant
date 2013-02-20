@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

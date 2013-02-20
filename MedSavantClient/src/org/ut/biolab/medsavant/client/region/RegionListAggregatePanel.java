@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import savant.controller.LocationController;
 import savant.util.Range;

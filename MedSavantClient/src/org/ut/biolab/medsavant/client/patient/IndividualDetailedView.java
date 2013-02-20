@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.patient;
 
 import java.awt.*;
@@ -55,6 +54,7 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
@@ -73,7 +73,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private final JPanel menu;
     private int[] patientIDs;
     boolean pedigreeShown = false;
-
     private final JPanel pedigreeDetails;
     private PedigreeWorker pedigreeWorker;
     private Node overNode = null;
@@ -82,20 +81,23 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private String familyID;
     private Graph graph;
     private final CollapsiblePane collapsiblePane;
+    private final BlockingPanel blockPanel;
 
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
 
         fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
 
-        JPanel viewContainer = (JPanel) ViewUtil.clear(getContentPanel());
+        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
 
+        JPanel content = new JPanel();
+        content.setLayout(new BorderLayout());
+
         JPanel infoContainer = ViewUtil.getClearPanel();
-        //infoContainer.setLayout(new BorderLayout());
         ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-        viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
+        content.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
         CollapsiblePanes panes = new CollapsiblePanes();
         panes.setOpaque(false);
@@ -111,7 +113,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         infoContent = new JPanel();
         infoContent.setLayout(new BorderLayout());
         collapsiblePane.setLayout(new BorderLayout());
-        collapsiblePane.add(infoContent,BorderLayout.CENTER);
+        collapsiblePane.add(infoContent, BorderLayout.CENTER);
 
         infoDetails = ViewUtil.getClearPanel();
         pedigreeDetails = new JPanel();
@@ -124,6 +126,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         menu.add(addIndividualsButton());
 
         addBottomComponent(menu);
+
+        blockPanel = new BlockingPanel("No individual selected", content);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);
     }
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
@@ -132,39 +137,39 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         pedigreeDetails.setLayout(new BorderLayout());
 
         //Step 1
-	graph = new Graph();
-	CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
-	loader.setSettings(HOSPITAL_ID, MOM, DAD);
-	loader.load(graph);
+        graph = new Graph();
+        CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
+        loader.setSettings(HOSPITAL_ID, MOM, DAD);
+        loader.load(graph);
 
         //numIndivids = graph.getSize();
 
-	//Step 2
-	Sugiyama s = new Sugiyama(graph);
-	s.run();
+        //Step 2
+        Sugiyama s = new Sugiyama(graph);
+        s.run();
 
-	//Step 3
-	GraphView2D view = new GraphView2D(s.getLayoutedGraph());
+        //Step 3
+        GraphView2D view = new GraphView2D(s.getLayoutedGraph());
 
         view.setZoomEnabled(false);
         view.setMovingEnabled(false);
 
-        view.getComponent().setMinimumSize(new Dimension(400,400));
-        view.getComponent().setPreferredSize(new Dimension(400,400));
+        view.getComponent().setMinimumSize(new Dimension(400, 400));
+        view.getComponent().setPreferredSize(new Dimension(400, 400));
 
         //view.highlight(nodes);
         //view.setSelectionEnabled(true);
 
 
         view.addRule(new ShapeRule(GENDER, "1", new SymbolSexMale()));
-	view.addRule(new ShapeRule(GENDER, "2", new SymbolSexFemale()));
+        view.addRule(new ShapeRule(GENDER, "2", new SymbolSexFemale()));
         view.addRule(new ShapeRule(GENDER, "0", new SymbolSexUndesignated()));
-	view.addRule(new ShapeRule(GENDER, "null", new SymbolSexUndesignated()));
+        view.addRule(new ShapeRule(GENDER, "null", new SymbolSexUndesignated()));
 
         view.addRule(new PedigreeBasicRule(patientIDs));
 
         selectedNodes = new ArrayList<Integer>();
-        for(Integer i : patientIDs) {
+        for (Integer i : patientIDs) {
             selectedNodes.add(i);
         }
 
@@ -188,10 +193,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (overNode != null) {
-                    Integer patID = Integer.parseInt((String)overNode.getUserData(PATIENT_ID));
+                    Integer patID = Integer.parseInt((String) overNode.getUserData(PATIENT_ID));
                     if (SwingUtilities.isRightMouseButton(e)) {
                         int[] patientIds = new int[selectedNodes.size()];
-                        for(int i = 0; i < selectedNodes.size(); i++) {
+                        for (int i = 0; i < selectedNodes.size(); i++) {
                             patientIds[i] = selectedNodes.get(i);
                         }
                         JPopupMenu popup = org.ut.biolab.medsavant.client.patient.PatientUtils.createPopup(patientIds);
@@ -201,8 +206,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                             selectedNodes.add(patID);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                         } else {
-                            for(int i : patientIDs) {
-                                if (i == patID) return;
+                            for (int i : patientIDs) {
+                                if (i == patID) {
+                                    return;
+                                }
                             }
                             selectedNodes.remove(patID);
                             overNodeView.setBorderColor(Color.black);
@@ -224,16 +231,16 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         });
 
-        pedigreeDetails.add(view.getComponent(),BorderLayout.NORTH);
+        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
 
         pedigreeDetails.updateUI();
     }
 
     private void selectIndividualInList(int patID) {
         Object[][] list = parent.getList();
-        for(int i = 0; i < list.length; i++) {
+        for (int i = 0; i < list.length; i++) {
             Object[] o = list[i];
-            if (o != null && o.length>=1 && (Integer)o[0] == patID) {
+            if (o != null && o.length >= 1 && (Integer) o[0] == patID) {
                 parent.selectInterval(i, i);
                 return;
             }
@@ -253,9 +260,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 if (values[i][0].equals(BasicPatientColumns.GENDER.getAlias())) {
                     String s;
                     if (result[i] instanceof Integer) {
-                        s = ClientMiscUtils.genderToString((Integer)result[i]);
+                        s = ClientMiscUtils.genderToString((Integer) result[i]);
                     } else if (result[i] instanceof Long) {
-                        s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long)result[i]));
+                        s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long) result[i]));
                     } else {
                         s = ClientMiscUtils.GENDER_UNKNOWN;
                     }
@@ -279,9 +286,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         infoDetails.removeAll();
         ViewUtil.setBoxYLayout(infoDetails);
 
-        final KeyValuePairPanel kvp = new KeyValuePairPanel(1,true);
+        final KeyValuePairPanel kvp = new KeyValuePairPanel(1, true);
 
-        for (int i = 0 ; i < values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             kvp.addKey(values[i][0]);
             kvp.setValue(values[i][0], values[i][1], true);
         }
@@ -292,7 +299,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         b.setSelected(pedigreeShown);
 
         b.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 kvp.toggleDetailVisibility(pedigreeKey);
@@ -304,7 +310,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 }
                 pedigreeDetails.updateUI();
             }
-
         });
 
         kvp.setValue(pedigreeKey, b);
@@ -314,35 +319,35 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         }
 
         /*
-        final String cohortKey = "Cohort";
-        kvp.addKey(cohortKey);
-        final JButton cohortAddButton = new JButton("Assign individual to cohort");
-        ViewUtil.makeSmall(cohortAddButton);
-        cohortAddButton.addActionListener(new ActionListener() {
+         final String cohortKey = "Cohort";
+         kvp.addKey(cohortKey);
+         final JButton cohortAddButton = new JButton("Assign individual to cohort");
+         ViewUtil.makeSmall(cohortAddButton);
+         cohortAddButton.addActionListener(new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                if (patientIds != null && patientIds.length > 0) {
-                    try {
-                        List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
-                        ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
-                        Cohort selected = (Cohort) form.getSelectedValue();
-                        if (selected == null) {
-                            return;
-                        }
-                        MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIds, selected.getId());
-                    } catch (Exception x) {
-                        LOG.error("Error fetching cohorts.", x);
-                    }
-                    parent.refresh();
-                }
-            }
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         if (patientIds != null && patientIds.length > 0) {
+         try {
+         List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+         ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
+         Cohort selected = (Cohort) form.getSelectedValue();
+         if (selected == null) {
+         return;
+         }
+         MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIds, selected.getId());
+         } catch (Exception x) {
+         LOG.error("Error fetching cohorts.", x);
+         }
+         parent.refresh();
+         }
+         }
 
-        });
+         });
 
-        kvp.setAdditionalColumn(cohortKey, 0, cohortAddButton);
-        *
-        */
+         kvp.setAdditionalColumn(cohortKey, 0, cohortAddButton);
+         *
+         */
 
         infoDetails.add(kvp);
 
@@ -351,9 +356,13 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     @Override
     public void setSelectedItem(Object[] item) {
-        int patientId = (Integer) item[0];
-        String hospitalId = (String) item[2];
-        setSelectedItem(patientId, hospitalId);
+        if (item.length == 0) {
+            blockPanel.block();
+        } else {
+            int patientId = (Integer) item[0];
+            String hospitalId = (String) item[2];
+            setSelectedItem(patientId, hospitalId);
+        }
     }
 
     public void setSelectedItem(int patientId, String hospitalId) {
@@ -378,27 +387,30 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         }
         detailsWorker = new DetailsWorker(patientId);
         detailsWorker.execute();
-
         //if (menu != null) menu.setVisible(true);
     }
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
-        patientIDs = new int[items.size()];
-        for(int i = 0; i < items.size(); i++) {
-            patientIDs[i] = (Integer) items.get(i)[0];
-        }
-        if (items.isEmpty()) {
-            collapsiblePane.setTitle("");
-        } else {
-            collapsiblePane.setTitle("Multiple individuals (" + items.size() + ")");
-        }
-        infoDetails.removeAll();
-        infoDetails.updateUI();
-        pedigreeDetails.removeAll();
-        pedigreeDetails.updateUI();
-    }
 
+        if (items.isEmpty()) {
+            blockPanel.block();
+        } else {
+            patientIDs = new int[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                patientIDs[i] = (Integer) items.get(i)[0];
+            }
+            if (items.isEmpty()) {
+                collapsiblePane.setTitle("");
+            } else {
+                collapsiblePane.setTitle("Multiple individuals (" + items.size() + ")");
+            }
+            infoDetails.removeAll();
+            infoDetails.updateUI();
+            pedigreeDetails.removeAll();
+            pedigreeDetails.updateUI();
+        }
+    }
 
     @Override
     public JPopupMenu createPopup() {
@@ -419,7 +431,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     try {
                         Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts, "Select Cohort", "Select which cohort to add to:");
-                        Cohort selected = (Cohort)form.getSelectedValue();
+                        form.setVisible(true);
+                        Cohort selected = (Cohort) form.getSelectedValue();
                         if (selected == null) {
                             return;
                         }
@@ -432,9 +445,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         });
         return button;
+
+
     }
 
     private class DetailsWorker extends MedSavantWorker<Object[]> {
+
         private final int patientID;
 
         private DetailsWorker(int patID) {
@@ -454,11 +470,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         @Override
         protected void showSuccess(Object[] result) {
             setPatientInformation(result);
+            blockPanel.unblock();
         }
     }
 
-
     private class PedigreeWorker extends MedSavantWorker<File> {
+
         private final int patientID;
 
         public PedigreeWorker(int patID) {
@@ -474,19 +491,19 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
             familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
-            File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + patientID + ".csv");
+            File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");
 
-                CSVWriter w = new CSVWriter(new FileWriter(outfile),',',CSVWriter.NO_QUOTE_CHARACTER);
-                w.writeNext(new String[] { HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED });
-                for (Object[] row : results) {
-                    String[] srow = new String[row.length];
-                    for (int i = 0; i < row.length; i++) {
-                        String entry = row[i] == null ? "" : row[i].toString();
-                        srow[i] = entry;
-                    }
-                    w.writeNext(srow);
+            CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);
+            w.writeNext(new String[]{HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED});
+            for (Object[] row : results) {
+                String[] srow = new String[row.length];
+                for (int i = 0; i < row.length; i++) {
+                    String entry = row[i] == null ? "" : row[i].toString();
+                    srow[i] = entry;
                 }
-                w.close();
+                w.writeNext(srow);
+            }
+            w.close();
             return outfile;
         }
 
@@ -500,7 +517,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             result.delete();
         }
     }
+
     public static class HospitalSymbol extends Symbol2D {
+
         private final String hid;
 
         public HospitalSymbol(String hid) {
@@ -509,11 +528,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         public void drawSymbol(Graphics2D g2, Float position, float size, Color color, Color color1, NodeView nv) {
-            g2.setFont(new Font("Arial",Font.PLAIN,1));
+            g2.setFont(new Font("Arial", Font.PLAIN, 1));
             FontMetrics fm = g2.getFontMetrics();
             int height = fm.getMaxAscent();
-            float startX = (float) position.getX()-size/2;// (float) (position.getX()-(double)width/2);
-            float startY = (float) (position.getY()+(double) size/2 +height);
+            float startX = (float) position.getX() - size / 2;// (float) (position.getX()-(double)width/2);
+            float startY = (float) (position.getY() + (double) size / 2 + height);
 
             g2.drawString(hid, startX, startY);
         }
@@ -522,6 +541,5 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         public int getPriority() {
             return 0;
         }
-
     }
 }

@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *
@@ -260,6 +260,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                         "ToolBar.font",
                         "ToolTip.font",
                         "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 12));
+
+            System.setProperty("awt.useSystemAAFontSettings","on");
+            System.setProperty("swing.aatext", "true");
 
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
 //            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);

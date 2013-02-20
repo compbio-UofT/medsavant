@@ -34,7 +34,7 @@ import javax.swing.border.Border;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WaitPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *

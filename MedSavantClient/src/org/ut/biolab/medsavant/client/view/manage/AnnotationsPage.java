@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.client.ontology.OntologyWizard;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
@@ -67,7 +68,6 @@ public class AnnotationsPage extends SubSectionView {
         if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<Annotation>("Program") {
-
                         @Override
                         public Annotation[] getData() throws Exception {
                             return ExternalAnnotationController.getInstance().getExternalAnnotations();
@@ -91,6 +91,7 @@ public class AnnotationsPage extends SubSectionView {
         private final JPanel details;
         private final JPanel content;
         private CollapsiblePane infoPanel;
+        private final BlockingPanel blockPanel;
 
         public ExternalAnnotationDetailedView() {
             super(pageName);
@@ -98,10 +99,13 @@ public class AnnotationsPage extends SubSectionView {
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
+            JPanel contentPanel = new JPanel();
+            contentPanel.setLayout(new BorderLayout());
+
             JPanel infoContainer = ViewUtil.getClearPanel();
             ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-            viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
+            contentPanel.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
             CollapsiblePanes panes = new CollapsiblePanes();
             panes.setOpaque(false);
@@ -122,38 +126,51 @@ public class AnnotationsPage extends SubSectionView {
             details = ViewUtil.getClearPanel();
 
             content.add(details);
+
+            blockPanel = new BlockingPanel("No annotation selected", contentPanel);
+            viewContainer.add(blockPanel, BorderLayout.CENTER);
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
 
-            Annotation annotation = (Annotation) item[0];
+            if (item.length == 0) {
+                blockPanel.block();
+            } else {
 
-            String title = annotation.toString();
-            infoPanel.setTitle(title);
+                Annotation annotation = (Annotation) item[0];
 
-            details.removeAll();
-            details.updateUI();
+                String title = annotation.toString();
+                infoPanel.setTitle(title);
 
-            List<String[]> infoList = new ArrayList<String[]>();
+                details.removeAll();
+                details.updateUI();
 
-            infoList.add(new String[]{"Program", annotation.getProgram()});
-            infoList.add(new String[]{"Version", annotation.getVersion()});
-            infoList.add(new String[]{"Reference Genome", annotation.getReferenceName()});
-            infoList.add(new String[]{"Type", annotation.getAnnotationType().toString()});
+                List<String[]> infoList = new ArrayList<String[]>();
 
-            setDetailsList(infoList);
+                infoList.add(new String[]{"Program", annotation.getProgram()});
+                infoList.add(new String[]{"Version", annotation.getVersion()});
+                infoList.add(new String[]{"Reference Genome", annotation.getReferenceName()});
+                infoList.add(new String[]{"Type", annotation.getAnnotationType().toString()});
+
+                setDetailsList(infoList);
+            }
         }
 
         @Override
         public void setMultipleSelections(List<Object[]> selectedRows) {
             if (selectedRows.isEmpty()) {
-                infoPanel.setTitle("");
+                blockPanel.block();
             } else {
-                infoPanel.setTitle("Multiple annotations (" + selectedRows.size() + ")");
+
+                if (selectedRows.isEmpty()) {
+                    infoPanel.setTitle("");
+                } else {
+                    infoPanel.setTitle("Multiple annotations (" + selectedRows.size() + ")");
+                }
+                details.removeAll();
+                details.updateUI();
             }
-            details.removeAll();
-            details.updateUI();
         }
 
         @Override
@@ -177,6 +194,7 @@ public class AnnotationsPage extends SubSectionView {
 
             details.updateUI();
 
+            blockPanel.unblock();
         }
     }
 

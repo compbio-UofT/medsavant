@@ -37,12 +37,14 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
 /**
  *
@@ -51,12 +53,12 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 class CohortDetailedView extends DetailedView {
 
     private static final Log LOG = LogFactory.getLog(CohortDetailedView.class);
-
     private Cohort[] cohorts;
     private CohortDetailsWorker worker;
     private final JPanel details;
     private JTable list;
     private final CollapsiblePane membersPane;
+    private final BlockingPanel blockPanel;
 
     CohortDetailedView(String page) {
         super(page);
@@ -64,10 +66,13 @@ class CohortDetailedView extends DetailedView {
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
 
+        JPanel content = new JPanel();
+        content.setLayout(new BorderLayout());
+
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-        viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
+        content.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
         CollapsiblePanes panes = new CollapsiblePanes();
         panes.setOpaque(false);
@@ -78,13 +83,15 @@ class CohortDetailedView extends DetailedView {
         membersPane.setCollapsible(false);
         panes.add(membersPane);
 
-
         details = new JPanel();
         details.setLayout(new BorderLayout());
         membersPane.setLayout(new BorderLayout());
         membersPane.add(details, BorderLayout.CENTER);
 
         panes.addExpansion();
+
+        blockPanel = new BlockingPanel("No cohort selected", content);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);
     }
 
     private class CohortDetailsWorker extends MedSavantWorker<List<SimplePatient>> {
@@ -112,6 +119,7 @@ class CohortDetailedView extends DetailedView {
         @Override
         protected void showSuccess(List<SimplePatient> result) {
             setPatientList(result);
+            blockPanel.unblock();
         }
     }
 
@@ -145,36 +153,47 @@ class CohortDetailedView extends DetailedView {
         details.add(p, BorderLayout.CENTER);
 
         details.updateUI();
+
     }
 
     @Override
     public void setSelectedItem(Object[] item) {
-        cohorts = new Cohort[] { (Cohort)item[0] };
-        membersPane.setTitle(cohorts[0].getName());
 
-        details.removeAll();
-        details.updateUI();
+        if (item.length == 0) {
+            blockPanel.block();
+        } else {
 
-        if (worker != null) {
-            worker.cancel(true);
+            cohorts = new Cohort[]{(Cohort) item[0]};
+            membersPane.setTitle(cohorts[0].getName());
+
+            details.removeAll();
+            details.updateUI();
+
+            if (worker != null) {
+                worker.cancel(true);
+            }
+            worker = new CohortDetailsWorker(cohorts[0]);
+            worker.execute();
         }
-        worker = new CohortDetailsWorker(cohorts[0]);
-        worker.execute();
     }
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
-        cohorts = new Cohort[items.size()];
-        for (int i = 0; i < items.size(); i++) {
-            cohorts[i] = (Cohort)items.get(i)[0];
-        }
         if (items.isEmpty()) {
-            membersPane.setTitle("");
+            blockPanel.block();
         } else {
-            membersPane.setTitle("Multiple cohorts (" + items.size() + ")");
+            cohorts = new Cohort[items.size()];
+            for (int i = 0; i < items.size(); i++) {
+                cohorts[i] = (Cohort) items.get(i)[0];
+            }
+            if (items.isEmpty()) {
+                membersPane.setTitle("");
+            } else {
+                membersPane.setTitle("Multiple cohorts (" + items.size() + ")");
+            }
+            details.removeAll();
+            details.updateUI();
         }
-        details.removeAll();
-        details.updateUI();
     }
 
     private JLabel removeIndividualsButton() {
@@ -185,7 +204,6 @@ class CohortDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.setOpaque(false);
         button.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 int[] rows = list.getSelectedRows();
