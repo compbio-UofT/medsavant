@@ -145,12 +145,33 @@ public class Menu extends JPanel {
 
     public void addSection(SectionView section) {
 
-        JPanel sectionPanel = ViewUtil.getClearPanel();
+        final JPanel sectionPanel = ViewUtil.getClearPanel();
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
         sectionPanel.setVisible(false);
 
-        HoverButton sectionButton = new SectionButton(section, sectionPanel);
-        sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
+        //HoverButton sectionButton = new SectionButton(section, sectionPanel);
+        //sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
+
+        final JToggleButton sectionButton = ViewUtil.getIconButton(section.getIcon());
+        sectionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        sectionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                sectionButtons.setSelected(sectionButton.getModel(), true);
+                if (previousSectionPanel != null) {
+                    previousSectionPanel.setVisible(false);
+                }
+                // Act as if we clicked the first sub-section button.
+                ((SubSectionButton) sectionPanel.getComponent(0)).subSectionClicked();
+                sectionPanel.setVisible(true);
+
+                previousSectionPanel = sectionPanel;
+                primaryMenu.invalidate();
+            }
+        });
+        /*if (sectionButton instanceof HoverButton) {
+         ((HoverButton)sectionButton).setSelectedColor(ViewUtil.getSecondaryMenuColor());
+         }*/
 
         ButtonGroup subSectionsGroup = new ButtonGroup();
 
@@ -173,7 +194,8 @@ public class Menu extends JPanel {
             sectionPanel.add(box);
         }
 
-        sectionMenu.add(sectionButton);
+        sectionMenu.add(ViewUtil.subTextComponent(sectionButton, section.getName()));
+        sectionMenu.add(Box.createHorizontalStrut(20));
 
         subSectionMenu.add(sectionPanel);
     }
@@ -255,14 +277,12 @@ public class Menu extends JPanel {
 
         loginMenu.add(loginStatusLabel);
         loginMenu.add(ViewUtil.getLargeSeparator());
-        JButton logoutButton = ViewUtil.getTexturedButton("Logout",null);
+        JButton logoutButton = ViewUtil.getTexturedButton("Logout", null);
         logoutButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 LoginController.getInstance().logout();
             }
-
         });
         loginMenu.add(logoutButton);
         loginMenu.add(ViewUtil.getSmallSeparator());

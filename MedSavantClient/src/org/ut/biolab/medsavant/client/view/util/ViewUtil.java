@@ -26,9 +26,15 @@ import javax.swing.border.MatteBorder;
 import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.client.view.component.AlphaImageIcon;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 /**
  *
@@ -150,8 +156,8 @@ public class ViewUtil {
                 //Color top = Color.darkGray;
                 //Color bottom = Color.black;
 
-                Color top = new Color(227,227,227);
-                Color bottom = new Color(179,179,179);
+                Color top = new Color(227, 227, 227);
+                Color bottom = new Color(179, 179, 179);
 
                 GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
@@ -253,13 +259,12 @@ public class ViewUtil {
 
     public static Color getTertiaryMenuColor() {
         //return new Color(80, 80, 80);
-        return new Color(220,220,220);
+        return new Color(220, 220, 220);
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(41,46,53);
+        return new Color(41, 46, 53);
     }
-
 
     public static Color getLightColor() {
         return new Color(200, 200, 200);
@@ -552,6 +557,53 @@ public class ViewUtil {
         return button;
     }
 
+    public static JToggleButton getIconButton(ImageIcon icon) {
+
+        final ImageIcon selectedIcon = icon;
+        final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+
+        final JToggleButton button = new JToggleButton(icon);
+        button.setFocusable(false);
+        button.setContentAreaFilled(false);
+        button.setBorder(null);
+        ViewUtil.makeSmall(button);
+
+        final Runnable setSelected = new Runnable() {
+            @Override
+            public void run() {
+                button.setIcon(selectedIcon);
+                button.setFocusable(false);
+                button.setContentAreaFilled(false);
+                button.setBorder(null);
+            }
+        };
+
+        final Runnable setUnselected = new Runnable() {
+            @Override
+            public void run() {
+                button.setIcon(unselectedIcon);
+                button.setFocusable(false);
+                button.setContentAreaFilled(false);
+                button.setBorder(null);
+            }
+        };
+
+        button.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent ce) {
+                if (button.getModel().isSelected()) {
+                    setSelected.run();
+                } else {
+                    setUnselected.run();
+                }
+            }
+        });
+
+        setUnselected.run();
+
+        return button;
+    }
+
     public static JToggleButton getTexturedToggleButton(ImageIcon icon) {
         JToggleButton button = new JToggleButton(icon);
         ViewUtil.makeSmall(button);
@@ -569,6 +621,7 @@ public class ViewUtil {
     public static JButton getTexturedButton(String s, ImageIcon icon) {
         JButton button = new JButton(s, icon);
         ViewUtil.makeSmall(button);
+        button.setFocusable(false);
         button.setVerticalTextPosition(SwingConstants.CENTER);
         button.setHorizontalTextPosition(SwingConstants.LEFT);
         button.putClientProperty("JButton.buttonType", "textured");
@@ -579,7 +632,21 @@ public class ViewUtil {
         return new Color(242, 245, 249);
     }
 
+    public static JComponent subTextComponent(JComponent c, String subtext) {
+        int width = c.getPreferredSize().width;
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
+        p.add(ViewUtil.centerHorizontally(c));
+        JLabel s = new JLabel(subtext);
+        s.setForeground(Color.darkGray);
+        ViewUtil.makeSmall(s);
+        p.add(ViewUtil.centerHorizontally(ViewUtil.clear(s)));
 
+        FontMetrics fm = s.getFontMetrics(s.getFont());
+
+        p.setMaximumSize(new Dimension(Math.max(width, fm.stringWidth(subtext)), 23 + c.getPreferredSize().height));
+        return p;
+    }
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
@@ -801,7 +868,6 @@ public class ViewUtil {
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
-
     private final static String NON_THIN = "[^iIl1\\.,']";
 
     private static int textWidth(String str) {

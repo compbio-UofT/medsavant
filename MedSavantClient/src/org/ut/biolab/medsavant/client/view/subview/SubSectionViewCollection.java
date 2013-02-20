@@ -26,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 
 /**
@@ -64,14 +66,9 @@ public class SubSectionViewCollection extends SubSectionView {
         return arr;
     }
 
-
     public void addSubSectionView(SubSectionView v) {
 
         this.subsectionMap.put(v.getPageName(), v);
-
-
-        // init the view
-        //v.getView(true);
 
         final String title = v.getPageName();
         JRadioButton button = new JRadioButton(v.getPageName()) {
@@ -138,7 +135,6 @@ public class SubSectionViewCollection extends SubSectionView {
 
             }
         };
-
         buttonGroup.add(button);
         menuComponents.add(button);
 

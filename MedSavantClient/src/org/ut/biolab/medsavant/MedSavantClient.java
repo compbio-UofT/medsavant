@@ -43,6 +43,7 @@ import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
+import java.awt.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

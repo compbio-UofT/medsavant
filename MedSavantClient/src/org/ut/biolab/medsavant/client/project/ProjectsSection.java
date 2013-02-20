@@ -13,12 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.project;
 
+import javax.swing.ImageIcon;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
-
 
 /**
  * Section which displays information about the current project.
@@ -26,19 +26,25 @@ import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
  * @author tarkvara
  */
 public class ProjectsSection extends SectionView {
+
     private SubSectionView[] subSections;
 
     public ProjectsSection() {
-        super(ProjectController.getInstance().getCurrentProjectName());
+        super("Project");//ProjectController.getInstance().getCurrentProjectName());
     }
 
     @Override
     public SubSectionView[] getSubSections() {
         if (subSections == null) {
-            subSections = new SubSectionView[] {
+            subSections = new SubSectionView[]{
                 new ProjectSummaryPage(this)
             };
         }
         return subSections;
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_OTHER);
     }
 }

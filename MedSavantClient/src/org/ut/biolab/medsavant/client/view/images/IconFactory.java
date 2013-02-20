@@ -50,6 +50,9 @@ public class IconFactory {
         SECTION_OTHER,
         SECTION_VARIANTS,
         SECTION_PATIENTS,
+        SECTION_TABLE,
+        SECTION_SEARCH,
+        SECTION_DATA,
         TRASH,
         DELETE,
         ADD_ON_TOOLBAR,
@@ -116,13 +119,19 @@ public class IconFactory {
             case FILTER:
                 return getIcon(iconroot + "filter.png");
             case SECTION_ADMIN:
-                return getIcon(iconroot + "section_admin.png");
+                return getIcon(iconroot + "menu-tune.png");
             case SECTION_OTHER:
-                return getIcon(iconroot + "section_other3.png");
+                return getIcon(iconroot + "menu-project.png");
             case SECTION_PATIENTS:
                 return getIcon(iconroot + "section_patients.png");
             case SECTION_VARIANTS:
                 return getIcon(iconroot + "section_variants2.png");
+            case SECTION_TABLE:
+                return getIcon(iconroot + "menu-search.png");
+             case SECTION_DATA:
+                return getIcon(iconroot + "menu-database.png");
+            case SECTION_SEARCH:
+                return getIcon(iconroot + "menu-binoculars.png");
             case TRASH:
                 return getIcon(iconroot + "trash.png");
             case DELETE:

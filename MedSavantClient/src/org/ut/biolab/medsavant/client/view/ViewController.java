@@ -18,8 +18,10 @@ package org.ut.biolab.medsavant.client.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
 
 import org.ut.biolab.medsavant.client.view.Menu.SectionButton;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
@@ -109,7 +111,7 @@ public class ViewController {
 
     void selectFirstItem() {
         // Fake a click on the first section button.
-        ((SectionButton)menu.sectionButtons.getElements().nextElement()).sectionButtonClicked();
+        ((JToggleButton)menu.sectionButtons.getElements().nextElement()).doClick();
     }
 
     public PeekingPanel getPersistencePanel() {

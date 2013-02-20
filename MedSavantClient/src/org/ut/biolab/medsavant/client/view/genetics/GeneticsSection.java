@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -41,13 +42,13 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.variant.ExportVCFWizard;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.manage.PluginPage;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionViewCollection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
-
 
 /**
  *
@@ -76,27 +77,27 @@ public class GeneticsSection extends SectionView {
             variantCollectionPlugins.addSubSectionView(new PluginPage(this, knownPlugins.get(i)));
         }
 
-        return new SubSectionView[] {
-            new GeneticsTablePage(this),
-            new BrowserPage(this),
-            new GeneticsChartPage(this),
-            new AggregatePage(this),
-            new FamilyMattersPage(this)
+        return new SubSectionView[]{
+                    new GeneticsTablePage(this),
+                    new BrowserPage(this),
+                    new GeneticsChartPage(this),
+                    new AggregatePage(this),
+                    new FamilyMattersPage(this)
                 //,variantCollectionPlugins
-        };
+                };
     }
 
     @Override
     public JPanel[] getPersistentPanels() {
         if (persistencePanels == null) {
-            persistencePanels = new JPanel[] {
+            persistencePanels = new JPanel[]{
                 new GeneticsFilterPage(this).getView()
             };
         }
         return persistencePanels;
     }
 
-    private JButton createExportVCFButton(){
+    private JButton createExportVCFButton() {
         JButton exportButton = new JButton("Export Variants");
         exportButton.setOpaque(false);
         exportButton.addActionListener(new ActionListener() {
@@ -115,9 +116,13 @@ public class GeneticsSection extends SectionView {
     @Override
     public final Component[] getSectionMenuComponents() {
         isInitialized = true;
-        return new Component[] {
-            createExportVCFButton()
-        };
+        return new Component[]{
+                    createExportVCFButton()
+                };
     }
 
+    @Override
+    public ImageIcon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
+    }
 }

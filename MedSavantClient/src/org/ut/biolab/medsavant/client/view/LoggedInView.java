@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.BorderLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.client.cohort.CohortsPage;
@@ -27,6 +28,7 @@ import org.ut.biolab.medsavant.client.project.ProjectsSection;
 import org.ut.biolab.medsavant.client.region.RegionPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.manage.ManageSection;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
@@ -72,6 +74,11 @@ public class LoggedInView extends JPanel {
                 new RegionPage(this),
                 new VariantFilesPage(this)
             };
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_DATA);
         }
     }
 }

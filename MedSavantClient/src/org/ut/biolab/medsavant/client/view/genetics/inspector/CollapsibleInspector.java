@@ -69,7 +69,7 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
     }
 
     public void setMessage(String msg) {
-        JPanel messagePanel = new JPanel();
+        JPanel messagePanel = ViewUtil.getClearPanel();//new JPanel();
         messagePanel.setBorder(ViewUtil.getHugeBorder());
         ViewUtil.applyVerticalBoxLayout(messagePanel);
         JLabel h2 = new JLabel(msg);

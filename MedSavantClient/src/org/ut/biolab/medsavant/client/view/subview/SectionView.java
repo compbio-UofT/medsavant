@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.client.view.subview;
 
 import java.awt.Component;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 
@@ -45,4 +46,6 @@ public abstract class SectionView {
     public Component[] getSectionMenuComponents() {
         return null;
     }
+
+    public abstract ImageIcon getIcon();
 }

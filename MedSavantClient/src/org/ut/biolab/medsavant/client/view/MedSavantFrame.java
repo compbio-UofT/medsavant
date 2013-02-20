@@ -33,6 +33,7 @@ import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import java.awt.Color;
+import java.awt.Font;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -41,6 +42,7 @@ import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.WaitPanel;
 
@@ -145,17 +147,29 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
 
-        ClientMiscUtils.invokeLaterIfNecessary(new Runnable() {
+        new MedSavantWorker<Void>("MedSavantFrame") {
+
             @Override
-            public void run() {
+            protected void showProgress(double fract) {
+            }
+
+            @Override
+            protected void showSuccess(Void result) {
+            }
+
+            @Override
+            protected Void doInBackground() throws Exception {
                 sessionView = new LoggedInView();
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
                 ViewController.getInstance().getMenu().updateLoginStatus();
                 //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
+                return null;
             }
-        });
+
+        }.execute();
+
     }
 
     public final void switchToLoginView() {
@@ -214,8 +228,38 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 
-            
-            //apple.awt.brushMetalLook"
+            batchApplyProperty(new String[]{
+                        "Button.font",
+                        "ToggleButton.font",
+                        "RadioButton.font",
+                        "CheckBox.font",
+                        "ColorChooser.font",
+                        "ComboBox.font",
+                        "Label.font",
+                        "List.font",
+                        "MenuBar.font",
+                        "MenuItem.font",
+                        "RadioButtonMenuItem.font",
+                        "CheckBoxMenuItem.font",
+                        "Menu.font",
+                        "PopupMenu.font",
+                        "OptionPane.font",
+                        "Panel.font",
+                        "ProgressBar.font",
+                        "ScrollPane.font",
+                        "Viewport.font",
+                        "TabbedPane.font",
+                        "Table.font",
+                        "TableHeader.font",
+                        "TextField.font",
+                        "PasswordField.font",
+                        "TextArea.font",
+                        "TextPane.font",
+                        "EditorPane.font",
+                        "TitledBorder.font",
+                        "ToolBar.font",
+                        "ToolTip.font",
+                        "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 12));
 
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
 //            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
@@ -244,6 +288,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             });
         } catch (Throwable x) {
             System.err.println("Warning: MedSavant requires Java for Mac OS X 10.6 Update 3 (or later).\nPlease check Software Update for the latest version.");
+        }
+    }
+
+    private void batchApplyProperty(String[] propn, Object o) {
+        for (String s : propn) {
+            UIManager.put(s, o);
         }
     }
 }

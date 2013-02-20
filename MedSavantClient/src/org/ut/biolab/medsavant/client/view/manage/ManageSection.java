@@ -16,11 +16,13 @@
 
 package org.ut.biolab.medsavant.client.view.manage;
 
+import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.geneset.GeneSetPage;
 import org.ut.biolab.medsavant.client.ontology.OntologyPage;
 import org.ut.biolab.medsavant.client.project.ProjectManagementPage;
 import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
 import org.ut.biolab.medsavant.client.user.UserManagementPage;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 
@@ -31,7 +33,7 @@ import org.ut.biolab.medsavant.client.view.subview.SectionView;
 public class ManageSection extends SectionView {
 
     public ManageSection() {
-        super("Administration");
+        super("Admin");
     }
 
     @Override
@@ -45,4 +47,9 @@ public class ManageSection extends SectionView {
             new GeneSetPage(this),
             new ServerLogPage(this) };
     }
+
+    @Override
+        public ImageIcon getIcon() {
+            return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_ADMIN);
+        }
 }

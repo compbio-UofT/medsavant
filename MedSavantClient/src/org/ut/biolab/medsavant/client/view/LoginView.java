@@ -32,8 +32,10 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.manage.AddRemoveDatabaseDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -66,6 +68,11 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
 
         initComponents();
 
+        if (ClientMiscUtils.MAC) {
+            this.progressSigningIn.putClientProperty("JProgressBar.style", "circular");
+        }
+        this.progressSigningIn.setVisible(false);
+
         titlePanel.setBackground(ViewUtil.getMenuColor());
         loginButton.setOpaque(false);
 
@@ -80,7 +87,6 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
 
         versionLabel.setText("MedSavant " + MedSavantProgramInformation.getVersion() + " " + MedSavantProgramInformation.getReleaseType());
 
-        statusLabel.setText(" ");
         titlePanel.add(Box.createVerticalGlue(),0);
 
         spiralPanel.setLayout(new BorderLayout());
@@ -111,20 +117,20 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         passwordField = new javax.swing.JPasswordField();
         spiralPanel = new javax.swing.JPanel();
         versionLabel = new javax.swing.JLabel();
-        javax.swing.JLabel userLabel = new javax.swing.JLabel();
-        javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
-        javax.swing.JToggleButton button_settings = new javax.swing.JToggleButton();
+        userLabel = new javax.swing.JLabel();
+        passwordLabel = new javax.swing.JLabel();
+        button_settings = new javax.swing.JToggleButton();
         detailsPanel = new javax.swing.JPanel();
-        javax.swing.JLabel hostLabel = new javax.swing.JLabel();
+        hostLabel = new javax.swing.JLabel();
         hostField = new javax.swing.JTextField();
-        javax.swing.JLabel portLabel = new javax.swing.JLabel();
+        portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
-        javax.swing.JButton dbCreateButton = new javax.swing.JButton();
+        dbCreateButton = new javax.swing.JButton();
         databaseField = new javax.swing.JTextField();
-        javax.swing.JLabel databaseLabel = new javax.swing.JLabel();
-        javax.swing.JButton dbRemoveButton = new javax.swing.JButton();
+        databaseLabel = new javax.swing.JLabel();
+        dbRemoveButton = new javax.swing.JButton();
         loginButton = new javax.swing.JButton();
-        statusLabel = new javax.swing.JLabel();
+        progressSigningIn = new javax.swing.JProgressBar();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -157,22 +163,22 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         spiralPanel.setLayout(spiralPanelLayout);
         spiralPanelLayout.setHorizontalGroup(
             spiralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 388, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         spiralPanelLayout.setVerticalGroup(
             spiralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        versionLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        versionLabel.setFont(versionLabel.getFont());
         versionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         versionLabel.setText("version information");
 
-        userLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        userLabel.setFont(new java.awt.Font("Helvetica", 0, 12)); // NOI18N
         userLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         userLabel.setText("USERNAME");
 
-        passwordLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        passwordLabel.setFont(new java.awt.Font("Helvetica", 0, 12)); // NOI18N
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         passwordLabel.setText("PASSWORD");
 
@@ -240,19 +246,19 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         detailsPanel.setLayout(detailsPanelLayout);
         detailsPanelLayout.setHorizontalGroup(
             detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(databaseLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+            .addComponent(databaseLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(portField, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(portLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                    .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(hostField)
+                    .addComponent(portField)
+                    .addComponent(portLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailsPanelLayout.createSequentialGroup()
                         .addComponent(dbRemoveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(dbCreateButton))
-                    .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                    .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -276,7 +282,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         );
 
         loginButton.setBackground(new java.awt.Color(0, 0, 0));
-        loginButton.setText("Login");
+        loginButton.setText("Log In");
         loginButton.putClientProperty("JButton.buttonType", "textured");
         loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -284,38 +290,43 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        statusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        statusLabel.setText("  ");
+        progressSigningIn.setIndeterminate(true);
 
         javax.swing.GroupLayout titlePanelLayout = new javax.swing.GroupLayout(titlePanel);
         titlePanel.setLayout(titlePanelLayout);
         titlePanelLayout.setHorizontalGroup(
             titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(versionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .addComponent(spiralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, titlePanelLayout.createSequentialGroup()
-                .addGap(100, 100, 100)
-                .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+            .addComponent(versionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(spiralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
             .addComponent(detailsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(titlePanelLayout.createSequentialGroup()
-                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(userLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(userField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-                    .addComponent(button_settings, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(titlePanelLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(passwordLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)))
+                            .addComponent(userLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, titlePanelLayout.createSequentialGroup()
+                                .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 70, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(titlePanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(button_settings)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, titlePanelLayout.createSequentialGroup()
-                        .addGap(120, 120, 120)
-                        .addComponent(loginButton))))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(passwordLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, titlePanelLayout.createSequentialGroup()
+                                .addComponent(progressSigningIn, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(loginButton)
+                                .addContainerGap())))))
         );
         titlePanelLayout.setVerticalGroup(
             titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(titlePanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, titlePanelLayout.createSequentialGroup()
                 .addComponent(spiralPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(versionLabel)
@@ -327,13 +338,12 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(loginButton)
-                    .addComponent(button_settings))
-                .addGap(3, 3, 3)
-                .addComponent(statusLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(button_settings)
+                    .addComponent(loginButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(progressSigningIn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(detailsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -347,41 +357,13 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         add(titlePanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            loginUsingEnteredUsernameAndPassword();
-        }
-    }//GEN-LAST:event_passwordFieldKeyPressed
-
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         this.loginUsingEnteredUsernameAndPassword();
     }//GEN-LAST:event_loginButtonActionPerformed
 
-    private void userFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userFieldKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            loginUsingEnteredUsernameAndPassword();
-        }
-}//GEN-LAST:event_userFieldKeyPressed
-
-    private void button_settingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_settingsActionPerformed
-        detailsPanel.setVisible(!detailsPanel.isVisible());
-    }//GEN-LAST:event_button_settingsActionPerformed
-
-    private void hostFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_hostFieldKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            loginUsingEnteredUsernameAndPassword();
-        }
-    }//GEN-LAST:event_hostFieldKeyPressed
-
-    private void portFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_portFieldKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            loginUsingEnteredUsernameAndPassword();
-        }
-    }//GEN-LAST:event_portFieldKeyPressed
+    private void dbRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbRemoveButtonActionPerformed
+        new AddRemoveDatabaseDialog(hostField.getText(), portField.getText(), databaseField.getText(), userField.getText(), passwordField.getPassword(), true).setVisible(true);
+    }//GEN-LAST:event_dbRemoveButtonActionPerformed
 
     private void databaseFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_databaseFieldKeyPressed
         int key = evt.getKeyCode();
@@ -398,21 +380,57 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         databaseField.setText(dlg.getDatabase());
     }//GEN-LAST:event_dbCreateButtonActionPerformed
 
-    private void dbRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbRemoveButtonActionPerformed
-        new AddRemoveDatabaseDialog(hostField.getText(), portField.getText(), databaseField.getText(), userField.getText(), passwordField.getPassword(), true).setVisible(true);
-    }//GEN-LAST:event_dbRemoveButtonActionPerformed
+    private void portFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_portFieldKeyPressed
+        int key = evt.getKeyCode();
+        if (key == KeyEvent.VK_ENTER) {
+            loginUsingEnteredUsernameAndPassword();
+        }
+    }//GEN-LAST:event_portFieldKeyPressed
+
+    private void hostFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_hostFieldKeyPressed
+        int key = evt.getKeyCode();
+        if (key == KeyEvent.VK_ENTER) {
+            loginUsingEnteredUsernameAndPassword();
+        }
+    }//GEN-LAST:event_hostFieldKeyPressed
+
+    private void button_settingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_settingsActionPerformed
+        detailsPanel.setVisible(!detailsPanel.isVisible());
+    }//GEN-LAST:event_button_settingsActionPerformed
+
+    private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
+        int key = evt.getKeyCode();
+        if (key == KeyEvent.VK_ENTER) {
+            loginUsingEnteredUsernameAndPassword();
+        }
+    }//GEN-LAST:event_passwordFieldKeyPressed
+
+    private void userFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userFieldKeyPressed
+        int key = evt.getKeyCode();
+        if (key == KeyEvent.VK_ENTER) {
+            loginUsingEnteredUsernameAndPassword();
+        }
+    }//GEN-LAST:event_userFieldKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton button_settings;
     private javax.swing.JTextField databaseField;
+    private javax.swing.JLabel databaseLabel;
+    private javax.swing.JButton dbCreateButton;
+    private javax.swing.JButton dbRemoveButton;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JTextField hostField;
+    private javax.swing.JLabel hostLabel;
     private javax.swing.JButton loginButton;
     private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField portField;
+    private javax.swing.JLabel portLabel;
+    private javax.swing.JProgressBar progressSigningIn;
     private javax.swing.JPanel spiralPanel;
-    private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel titlePanel;
     private javax.swing.JTextField userField;
+    private javax.swing.JLabel userLabel;
     private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -430,41 +448,61 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         settings.setServerAddress(hostField.getText());
         settings.setServerPort(portField.getText());
 
-        statusLabel.setText("signing in...");
-        statusLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        statusLabel.setForeground(Color.black);
+        this.loginButton.setText("Logging in...");
+        //statusLabel.setText("Logging In...");
+        this.progressSigningIn.setVisible(true);
+
         loginButton.setEnabled(false);
 
-        SwingUtilities.invokeLater(new Runnable() {
+
+        new MedSavantWorker<Void>("LoginView") {
+
+            @Override
+            protected void showProgress(double fract) {
+            }
+
+            @Override
+            protected void showSuccess(Void result) {
+            }
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                LoginController.getInstance().login(userField.getText(), passwordField.getText(), databaseField.getText(), hostField.getText(), portField.getText());
+                return null;
+            }
+
+        }.execute();
+
+        /*SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                LoginController.getInstance().login(userField.getText(), passwordField.getText(), databaseField.getText(), hostField.getText(), portField.getText());
+
             }
-        });
-        //new Thread(new RunLogin(this,this.field_username.getText(),this.field_password.getText())).start();
+        });*/
     }
 
     private void notifyOfUnsuccessfulLogin(Exception ex) {
 
         userField.requestFocus();
         loginButton.setEnabled(true);
-        statusLabel.setForeground(Color.RED);
+        this.progressSigningIn.setVisible(false);
+        this.loginButton.setText("Log In");
 
         // Exception may be null if we got here as a result of a failed version check.
-        if (ex == null) {
-            statusLabel.setText("not logged in");
-            statusLabel.setToolTipText(null);
-        } else {
-            statusLabel.setText("login error");
+        if (ex != null) {
+            //statusLabel.setText("login error");
             LOG.error("Problem contacting server.", ex);
             if (ex instanceof SQLException) {
                 if (ex.getMessage().contains("Access denied")) {
-                    statusLabel.setText("access denied");
+                    DialogUtils.displayError("Login Error","<html>Incorrect username and password combination entered.<br><br>Please try again.</html>");
+                    //statusLabel.setText("access denied");
                 } else {
-                    statusLabel.setText("problem contacting server");
+                    DialogUtils.displayError("Login Error","<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
+                    //statusLabel.setText("problem contacting server");
                 }
+            } else if (ex instanceof java.rmi.UnknownHostException) {
+                DialogUtils.displayError("Login Error","<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
             }
-            statusLabel.setToolTipText(ClientMiscUtils.getMessage(ex));
         }
     }
 
@@ -472,7 +510,6 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     public void handleEvent(LoginEvent event) {
         switch (event.getType()) {
             case LOGGED_IN:
-                statusLabel.setText("");
                 break;
             case LOGGED_OUT:
                 break;

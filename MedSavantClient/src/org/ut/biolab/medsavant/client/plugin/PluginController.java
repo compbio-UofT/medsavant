@@ -197,6 +197,7 @@ public class PluginController extends Controller {
                     URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
                     System.out.println("Downloding GeneMania data from " + pathToGMData.toString());
                     try {
+                        if (true) { throw new IOException("Temporarily preventing gm data from downloading, it's costing me a fortune"); }
                         File data = RemoteFileCache.getCacheFile(pathToGMData);
                         System.out.println("data is" + data.getAbsolutePath());
                         ZipFile zipData = new ZipFile(data.getAbsolutePath());
@@ -204,15 +205,15 @@ public class PluginController extends Controller {
                         while (entries.hasMoreElements()) {
                             ZipEntry entry = (ZipEntry) entries.nextElement();
                             if (entry.isDirectory()) {
-                                (new File(directoryPath +"\\"+entry.getName())).mkdirs();
+                                (new File(directoryPath +"/"+entry.getName())).mkdirs();
                                 continue;
                             }
                             //System.err.println("Extracting file: " + entry.getName());
                             copyInputStream(zipData.getInputStream(entry),
-                                    new BufferedOutputStream(new FileOutputStream(directoryPath + "\\"+entry.getName())));
+                                    new BufferedOutputStream(new FileOutputStream(directoryPath + "/"+entry.getName())));
                         }
                         zipData.close();
-                        FileWriter fstream = new FileWriter(directoryPath+ "\\done.txt");
+                        FileWriter fstream = new FileWriter(directoryPath+ "/done.txt");
                         BufferedWriter out = new BufferedWriter(fstream);
                         out.write("This file indicates that the GeneMANIA data has finished downloading.");
                         out.close();

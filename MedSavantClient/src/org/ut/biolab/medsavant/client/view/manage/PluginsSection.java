@@ -13,17 +13,17 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.manage;
 
 import java.util.List;
+import javax.swing.ImageIcon;
 
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
-
 
 /**
  * Section class for organising plugins.
@@ -47,5 +47,10 @@ public class PluginsSection extends SectionView {
             pages[i] = new PluginPage(this, knownPlugins.get(i));
         }
         return pages;
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_OTHER);
     }
 }
