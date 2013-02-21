@@ -173,7 +173,10 @@ public class ProjectSummaryPage extends SubSectionView {
 
                 String s = "";
                 for (String ref: refs) {
-                    s += ref + ",";
+                    s += ref + ", ";
+                }
+                if (s.charAt(s.length()-1) == ' ') {
+                    s = s.substring(0,s.length()-1);
                 }
                 if (s.charAt(s.length()-1) == ',') {
                     s = s.substring(0,s.length()-1);

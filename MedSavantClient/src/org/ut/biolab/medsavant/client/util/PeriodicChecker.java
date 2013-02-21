@@ -15,28 +15,15 @@ import org.ut.biolab.medsavant.client.login.LoginEvent;
  *
  * @author tarkvara
  */
-public abstract class PeriodicChecker implements ActionListener, Listener<LoginEvent> {
+public abstract class PeriodicChecker implements ActionListener {
+
     private final int interval;
     private Timer timer;
 
     public PeriodicChecker(int interval) {
         this.interval = interval;
-    }
-
-    @Override
-    public void handleEvent(LoginEvent evt) {
-        if (evt.getType() == LoginEvent.Type.LOGGED_IN) {
-            if (timer != null) {
-                timer.stop();
-            }
-            timer = new Timer(interval, this);
-            timer.setInitialDelay(0);
-            timer.start();
-        } else {
-            if (timer != null) {
-                timer.stop();
-                timer = null;
-            }
-        }
+        timer = new Timer(interval, this);
+        timer.setInitialDelay(0);
+        timer.start();
     }
 }

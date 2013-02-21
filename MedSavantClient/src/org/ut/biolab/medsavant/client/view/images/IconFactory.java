@@ -53,6 +53,7 @@ public class IconFactory {
         SECTION_TABLE,
         SECTION_SEARCH,
         SECTION_DATA,
+        MENU_NOTIFY,
         TRASH,
         DELETE,
         ADD_ON_TOOLBAR,
@@ -88,7 +89,9 @@ public class IconFactory {
         HISTORY_ON_TOOLBAR,
         SAVE_ON_TOOLBAR,
         ACTION_ON_TOOLBAR,
-        LOAD_ON_TOOLBAR
+        LOAD_ON_TOOLBAR,
+        MENU_USER,
+        MENU_SERVER
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
@@ -104,6 +107,8 @@ public class IconFactory {
                 return getIcon(iconroot + "inspector2.png");
             case CLEAR:
                 return getIcon(iconroot + "clear.png");
+            case MENU_NOTIFY:
+                return getIcon(iconroot + "menu-notify.png");
             case CONFIGURE:
                 return getIcon(iconroot + "configure.png");
             case CHART_SMALL:
@@ -126,6 +131,8 @@ public class IconFactory {
                 return getIcon(iconroot + "section_patients.png");
             case SECTION_VARIANTS:
                 return getIcon(iconroot + "section_variants2.png");
+            case MENU_USER:
+                return getIcon(iconroot + "menu-user.png");
             case SECTION_TABLE:
                 return getIcon(iconroot + "menu-search.png");
              case SECTION_DATA:
@@ -192,6 +199,8 @@ public class IconFactory {
                 return getIcon(iconroot + "tab_l.png");
             case TAB_RIGHT:
                 return getIcon(iconroot + "tab_r.png");
+                case MENU_SERVER:
+                return getIcon(iconroot + "menu-server.png");
             default:
                 return null;
         }

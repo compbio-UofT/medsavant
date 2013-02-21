@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 /**
  *
@@ -74,6 +75,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
     private MedSavantFrame() {
         super("MedSavant");
+
+        setIconImage(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER).getImage());
 
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(500, 500));
@@ -116,8 +119,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         setJMenuBar(menu);
 
-        bottomBar = new BottomBar();
-        add(bottomBar, BorderLayout.SOUTH);
+        //bottomBar = new BottomBar();
+        //add(bottomBar, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {

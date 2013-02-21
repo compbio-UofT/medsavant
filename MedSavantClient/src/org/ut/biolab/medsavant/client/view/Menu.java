@@ -59,7 +59,8 @@ public class Menu extends JPanel {
     private JPanel previousSectionPanel;
     Map<SubSectionView, SubSectionButton> map;
     private final JPanel sectionMenu;
-    private JLabel loginStatusLabel;
+    //private JLabel loginStatusLabel;
+    private JButton userButton;
 
     public Menu(JPanel panel) {
 
@@ -85,7 +86,19 @@ public class Menu extends JPanel {
         ViewUtil.applyHorizontalBoxLayout(sectionMenu);
         primaryMenu.add(sectionMenu);
         primaryMenu.add(Box.createHorizontalGlue());
+
+
+        UpdatesPanel updatesPanel = new UpdatesPanel();
+        primaryMenu.add(updatesPanel);
+        primaryMenu.add(ViewUtil.getLargeSeparator());
+
+
+        //primaryMenu.add(ViewUtil.getLargeSeparator());
+        NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
+        primaryMenu.add(n);
+        primaryMenu.add(ViewUtil.getLargeSeparator());
         primaryMenu.add(getLoginMenuItem());
+
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
         secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
@@ -152,7 +165,7 @@ public class Menu extends JPanel {
         //HoverButton sectionButton = new SectionButton(section, sectionPanel);
         //sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
 
-        final JToggleButton sectionButton = ViewUtil.getIconButton(section.getIcon());
+        final JToggleButton sectionButton = ViewUtil.getTogglableIconButton(section.getIcon());
         sectionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         sectionButton.addActionListener(new ActionListener() {
             @Override
@@ -195,7 +208,7 @@ public class Menu extends JPanel {
         }
 
         sectionMenu.add(ViewUtil.subTextComponent(sectionButton, section.getName()));
-        sectionMenu.add(Box.createHorizontalStrut(20));
+        sectionMenu.add(ViewUtil.getLargeSeparator());
 
         subSectionMenu.add(sectionPanel);
     }
@@ -269,33 +282,53 @@ public class Menu extends JPanel {
 
     private JPanel getLoginMenuItem() {
 
-        loginStatusLabel = new JLabel("");
+        //loginStatusLabel = new JLabel("");
 
         final JPanel loginMenu = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(loginMenu);
 
-        loginMenu.add(loginStatusLabel);
-        loginMenu.add(ViewUtil.getLargeSeparator());
-        JButton logoutButton = ViewUtil.getTexturedButton("Log Out", null);
-        logoutButton.addActionListener(new ActionListener() {
+        userButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER));
+        loginMenu.add(ViewUtil.subTextComponent(userButton, LoginController.getInstance().getUserName()));
+
+        final JPopupMenu m = new JPopupMenu();
+
+        /*JMenuItem chpass = new JMenuItem("Change Password");
+        chpass.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 LoginController.getInstance().logout();
             }
         });
-        loginMenu.add(logoutButton);
-        loginMenu.add(ViewUtil.getSmallSeparator());
+        m.add(chpass);*/
+
+
+        JMenuItem logout = new JMenuItem("Log Out");
+        logout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                LoginController.getInstance().logout();
+            }
+        });
+        m.add(logout);
+
+        userButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+                m.show(userButton, 0, userButton.getHeight());
+            }
+        });
+
+        //loginMenu.add(ViewUtil.getSmallSeparator());
 
         return loginMenu;
     }
 
     public void updateLoginStatus() {
         if (LoginController.getInstance().isLoggedIn()) {
-            loginStatusLabel.setText(LoginController.getInstance().getUserName());
-            loginStatusLabel.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
+            userButton.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
         } else {
-            loginStatusLabel.setText("Not signed in");
-            loginStatusLabel.setToolTipText(null);
+            userButton.setToolTipText(null);
         }
     }
 

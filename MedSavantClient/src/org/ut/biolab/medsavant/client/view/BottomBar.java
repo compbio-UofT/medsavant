@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -39,7 +40,7 @@ public class BottomBar extends JPanel {
     public BottomBar() {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(),ViewUtil.getSmallBorder()));
-        setPreferredSize(new Dimension(25,25));
+        //setPreferredSize(new Dimension(25,25));
 
         //loginStatusLabel = new JLabel();
 
@@ -61,6 +62,13 @@ public class BottomBar extends JPanel {
         add(ViewUtil.getLargeSeparator());
         add(analyticsJobsPanel);
         add(Box.createHorizontalGlue());
+
+        /*JPanel report = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(report);
+        report.add(new JLabel("Found a bug?"));
+        report.add(new JButton("Report it"));
+        add(report);
+        */
 
         //updateLoginStatus();
     }

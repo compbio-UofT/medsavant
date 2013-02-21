@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.AlphaImageIcon;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -40,7 +41,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-public class ViewUtil {
+public final class ViewUtil {
 
     public static JPanel getClearPanel() {
         return (JPanel) clear(new JPanel());
@@ -557,7 +558,20 @@ public class ViewUtil {
         return button;
     }
 
-    public static JToggleButton getIconButton(ImageIcon icon) {
+    public static JButton getIconButton(ImageIcon icon) {
+
+        final ImageIcon selectedIcon = icon;
+
+        final JButton button = new JButton(icon);
+        button.setFocusable(false);
+        button.setContentAreaFilled(false);
+        button.setBorder(null);
+        ViewUtil.makeSmall(button);
+
+        return button;
+    }
+
+    public static JToggleButton getTogglableIconButton(ImageIcon icon) {
 
         final ImageIcon selectedIcon = icon;
         final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
@@ -643,9 +657,15 @@ public class ViewUtil {
         p.add(ViewUtil.centerHorizontally(ViewUtil.clear(s)));
 
         FontMetrics fm = s.getFontMetrics(s.getFont());
-
         p.setMaximumSize(new Dimension(Math.max(width, fm.stringWidth(subtext)), 23 + c.getPreferredSize().height));
         return p;
+    }
+
+    public static void fixSize(JComponent c, Dimension d) {
+        c.setMaximumSize(d);
+        c.setPreferredSize(d);
+        c.setMaximumSize(d);
+        c.revalidate();
     }
 
     /*public static void applyMenuStyleInset(JPanel p) {
