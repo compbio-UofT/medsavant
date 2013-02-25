@@ -31,10 +31,14 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 
 
 /**
@@ -103,11 +107,27 @@ public abstract class TabularFilterView<T> extends FilterView {
             public boolean isCheckBoxEnabled(int index) {
                 return true;
             }
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                int index = locationToIndex(e.getPoint());
+                if (-1 < index && getCellBounds(index, index).contains(e.getPoint())) {
+                    return ((OntologyTerm) getModel().getElementAt(index)).toString();
+                }
+                return null;
+            }
+
+            @Override
+            public Point getToolTipLocation(MouseEvent e) {
+                int index = locationToIndex(e.getPoint());
+                if (-1 < index && getCellBounds(index, index).contains(e.getPoint())) {
+                    return new Point(14, getCellBounds(index, index).y);
+                }
+                return null;
+            }
         };
         filterableList.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        if (model.getSize() > 0) {
-            filterableList.setPrototypeCellValue(model.getElementAt(0));    // Makes it much faster to determine the view's preferred size.
-        }
+        filterableList.setFixedCellWidth(FIELD_WIDTH);
+        filterableList.setFont(filterableList.getFont().deriveFont(Font.PLAIN));
 
         SearchableUtils.installSearchable(filterableList);
 
