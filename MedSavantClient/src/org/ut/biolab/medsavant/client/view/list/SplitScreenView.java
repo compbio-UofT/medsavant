@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import com.jidesoft.grid.TableModelWrapperUtils;
 
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 
 /**
@@ -45,6 +46,7 @@ public class SplitScreenView extends JPanel {
 
         PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, masterView, true, 330);
         pp.setToggleBarVisible(false);
+        pp.setBorder(ViewUtil.getRightLineBorder());
         add(pp, BorderLayout.WEST);
         add(detailedView, BorderLayout.CENTER);
         detailedView.setSplitScreenParent(this);

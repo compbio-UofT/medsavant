@@ -242,6 +242,10 @@ public final class ViewUtil {
         return BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray);
     }
 
+    public static Border getRightLineBorder() {
+        return BorderFactory.createMatteBorder(0, 0, 0, 1, Color.lightGray);
+    }
+
     /*
      public static Border getBottomLineBorder() {
      return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
@@ -510,11 +514,6 @@ public final class ViewUtil {
     }
     static int secPad = 2;
 
-    public static Border getRightLineBorder() {
-        return BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(50, 50, 50)),
-                BorderFactory.createEmptyBorder(secPad, secPad, secPad, secPad));
-    }
 
     public static JButton getSoftButton(String string) {
         JButton b = new JButton(string);
@@ -536,8 +535,7 @@ public final class ViewUtil {
         JToggleButton button = new JToggleButton(title);
 
         if (MiscUtils.MAC) {
-            button.putClientProperty("JButton.buttonType", "segmentedGradient");
-            button.putClientProperty("JButton.segmentPosition", "middle");
+            button.putClientProperty("JButton.buttonType", "textured");
         }
 
         return button;
@@ -924,4 +922,27 @@ public final class ViewUtil {
 
         return text.substring(0, end) + "...";
     }
+
+    public static void positionButtonAlone(JComponent c) {
+        positionButton(c,"only");
+    }
+
+    public static void positionButtonFirst(JComponent c) {
+        positionButton(c,"first");
+    }
+
+    public static void positionButtonMiddle(JComponent c) {
+        positionButton(c,"middle");
+    }
+
+    public static void positionButtonLast(JComponent c) {
+        positionButton(c,"last");
+    }
+
+    private static void positionButton(JComponent c, String position) {
+        if (MiscUtils.MAC && (c instanceof JButton || c instanceof JToggleButton) ) {
+            c.putClientProperty("JButton.segmentPosition", position);
+        }
+    }
+
 }

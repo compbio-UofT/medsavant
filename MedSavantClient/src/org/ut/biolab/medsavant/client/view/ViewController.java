@@ -72,6 +72,8 @@ public class ViewController {
         menu = new Menu(contentContainer);
         p.add(menu, BorderLayout.NORTH);
         p.add(menu.getSecondaryMenu(), BorderLayout.WEST);
+        h1.add(menu.getTertiaryMenu(), BorderLayout.NORTH);
+
     }
 
     public static ViewController getInstance() {
@@ -111,7 +113,7 @@ public class ViewController {
 
     void selectFirstItem() {
         // Fake a click on the first section button.
-        ((JToggleButton)menu.sectionButtons.getElements().nextElement()).doClick();
+        ((JToggleButton)menu.primaryMenuButtons.getElements().nextElement()).doClick();
     }
 
     public PeekingPanel getPersistencePanel() {
@@ -144,7 +146,10 @@ public class ViewController {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
-            this.setBorder(ViewUtil.getBigBorder());
+            this.setBorder(
+                    BorderFactory.createCompoundBorder(
+                        ViewUtil.getRightLineBorder(),
+                        ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 

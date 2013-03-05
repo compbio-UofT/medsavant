@@ -229,6 +229,7 @@ public class MasterView extends JPanel {
                     Object[][] result = detailedModel.getList(LIMIT);
                     return result;
                 } catch (Throwable t) {
+                    t.printStackTrace();
                     return null;
                 }
             }

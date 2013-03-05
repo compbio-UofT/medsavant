@@ -52,7 +52,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class FamilyMattersOptionView {
+public class FamilyMattersOptionView {
 
     private List<IncludeExcludeStep> steps;
 

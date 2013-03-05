@@ -591,7 +591,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private class TableDataRetriever extends DataRetriever<Object[]> {
         @Override
         public List<Object[]> retrieve(int start, int limit) {
-            LOG.info("Retrieving data for TablePanel");
             try {
                 List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
                 //checkStarring(result);
@@ -617,7 +616,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         @Override
         public void retrievalComplete() {
-            LOG.info("Done retrieving data for TablePanel");
             showShowCard();
             updateRequired = false;
         }

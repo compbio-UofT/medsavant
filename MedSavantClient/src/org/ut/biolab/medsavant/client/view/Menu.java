@@ -15,6 +15,8 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import com.explodingpixels.macwidgets.MacUtils;
+import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +43,7 @@ import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -53,28 +56,36 @@ public class Menu extends JPanel {
     List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
     private final JPanel primaryMenu;
     private final JPanel secondaryMenu;
-    ButtonGroup sectionButtons;
-    private final JPanel sectionDetailedMenu;
-    private final JPanel subSectionMenu;
+    private final JPanel tertiaryMenu;
+    ButtonGroup primaryMenuButtons;
+    private final JPanel primaryMenuSectionButtonContainer;
+    private final JPanel tertiaryMenuPanelVisibilityContainer;
+    private final JPanel tertiaryMenuPanelAccessoryContainer;
     private JPanel previousSectionPanel;
-    Map<SubSectionView, SubSectionButton> map;
-    private final JPanel sectionMenu;
-    //private JLabel loginStatusLabel;
+    private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
 
     public Menu(JPanel panel) {
 
         resetMap();
 
-        sectionButtons = new ButtonGroup();
+        setLayout(new BorderLayout());
+
+        primaryMenuButtons = new ButtonGroup();
 
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
-        secondaryMenu = new JPanel();//ViewUtil.getPrimaryBannerPanel();
+
+        secondaryMenu = new JPanel();
         secondaryMenu.setBackground(ViewUtil.getSecondaryMenuColor());
-        //secondaryMenu.setOpaque(false);
+
+        tertiaryMenu = new JPanel();
+        tertiaryMenu.setBackground(Color.darkGray);
+       // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
+        ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
+        //tertiaryMenu.setMinimumSize(new Dimension(9999, 30));
+        ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
 
         int padding = 5;
-
 
         primaryMenu.setLayout(new BoxLayout(primaryMenu, BoxLayout.X_AXIS));
         primaryMenu.setBorder(
@@ -82,31 +93,27 @@ public class Menu extends JPanel {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(150, 150, 150)),
                 BorderFactory.createEmptyBorder(padding, padding, padding, padding)));
 
-        sectionMenu = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(sectionMenu);
-        primaryMenu.add(sectionMenu);
-        primaryMenu.add(Box.createHorizontalGlue());
-
+        primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
 
         UpdatesPanel updatesPanel = new UpdatesPanel();
+        NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
+
+        primaryMenu.add(primaryMenuSectionButtonContainer);
+        primaryMenu.add(Box.createHorizontalGlue());
+
         primaryMenu.add(updatesPanel);
         primaryMenu.add(ViewUtil.getLargeSeparator());
 
-
-        //primaryMenu.add(ViewUtil.getLargeSeparator());
-        NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
         primaryMenu.add(n);
         primaryMenu.add(ViewUtil.getLargeSeparator());
         primaryMenu.add(getLoginMenuItem());
-
+        add(primaryMenu, BorderLayout.NORTH);
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
-        secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
+        //secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
 
         secondaryMenu.setPreferredSize(new Dimension(150, 100));
-
-        setLayout(new BorderLayout());
-        add(primaryMenu, BorderLayout.NORTH);
 
         contentContainer = panel;
 
@@ -142,18 +149,21 @@ public class Menu extends JPanel {
             }
         });
 
-        subSectionMenu = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(subSectionMenu);
+        tertiaryMenuPanelVisibilityContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(tertiaryMenuPanelVisibilityContainer);
 
-        sectionDetailedMenu = new JPanel();
-        sectionDetailedMenu.setOpaque(false);
-        ViewUtil.applyVerticalBoxLayout(sectionDetailedMenu);
+        tertiaryMenuPanelAccessoryContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(tertiaryMenuPanelAccessoryContainer);
 
         clearMenu();
     }
 
     public JPanel getSecondaryMenu() {
         return secondaryMenu;
+    }
+
+    public JPanel getTertiaryMenu() {
+        return tertiaryMenu;
     }
 
     public void addSection(SectionView section) {
@@ -170,7 +180,7 @@ public class Menu extends JPanel {
         sectionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                sectionButtons.setSelected(sectionButton.getModel(), true);
+                primaryMenuButtons.setSelected(sectionButton.getModel(), true);
                 if (previousSectionPanel != null) {
                     previousSectionPanel.setVisible(false);
                 }
@@ -182,9 +192,6 @@ public class Menu extends JPanel {
                 primaryMenu.invalidate();
             }
         });
-        /*if (sectionButton instanceof HoverButton) {
-         ((HoverButton)sectionButton).setSelectedColor(ViewUtil.getSecondaryMenuColor());
-         }*/
 
         ButtonGroup subSectionsGroup = new ButtonGroup();
 
@@ -198,19 +205,15 @@ public class Menu extends JPanel {
             map.put(v, subSectionButton);
         }
 
-        sectionButtons.add(sectionButton);
+        primaryMenuButtons.add(sectionButton);
 
         sectionPanel.add(Box.createVerticalStrut(50));
 
-        if (section.getPersistentPanels() != null && section.getPersistentPanels().length > 0) {
-            JCheckBox box = PeekingPanel.getCheckBoxForPanel(ViewController.getInstance().getPersistencePanel(), section.getPersistentPanels()[0].getName());
-            sectionPanel.add(box);
-        }
+        secondaryMenu.add(sectionPanel);
 
-        sectionMenu.add(ViewUtil.subTextComponent(sectionButton, section.getName()));
-        sectionMenu.add(ViewUtil.getLargeSeparator());
+        primaryMenuSectionButtonContainer.add(ViewUtil.subTextComponent(sectionButton, section.getName()));
+        primaryMenuSectionButtonContainer.add(ViewUtil.getLargeSeparator());
 
-        subSectionMenu.add(sectionPanel);
     }
 
     public void updateSections() {
@@ -234,17 +237,31 @@ public class Menu extends JPanel {
             contentContainer.add(v.getView(), BorderLayout.CENTER);
             contentContainer.updateUI();
 
-            sectionDetailedMenu.removeAll();
+            tertiaryMenuPanelVisibilityContainer.removeAll();
+            tertiaryMenuPanelAccessoryContainer.removeAll();
+
+            if (v.getParent().getPersistentPanels() != null && v.getParent().getPersistentPanels().length > 0) {
+                JComponent box = PeekingPanel.getToggleButtonForPanel(ViewController.getInstance().getPersistencePanel(), v.getParent().getPersistentPanels()[0].getName());
+                tertiaryMenuPanelVisibilityContainer.add(box);
+            }
 
             if (v.getSubSectionMenuComponents() != null) {
                 for (Component c : v.getSubSectionMenuComponents()) {
-                    sectionDetailedMenu.add(c);
+                    if (c instanceof JToggleButton) {
+                        tertiaryMenuPanelVisibilityContainer.add(c);
+                    } else {
+                        tertiaryMenuPanelAccessoryContainer.add(c);
+                    }
                 }
             }
 
             if (v.getParent().getSectionMenuComponents() != null) {
                 for (Component c : v.getParent().getSectionMenuComponents()) {
-                    sectionDetailedMenu.add(c);
+                    if (c instanceof JToggleButton) {
+                        tertiaryMenuPanelVisibilityContainer.add(c);
+                    } else {
+                        tertiaryMenuPanelAccessoryContainer.add(c);
+                    }
                 }
             }
 
@@ -261,19 +278,20 @@ public class Menu extends JPanel {
 
     public final void clearMenu() {
 
-        while (sectionButtons.getButtonCount() > 0) {
-            sectionButtons.remove(sectionButtons.getElements().nextElement());
+        while (primaryMenuButtons.getButtonCount() > 0) {
+            primaryMenuButtons.remove(primaryMenuButtons.getElements().nextElement());
         }
 
-        sectionMenu.removeAll();
+        primaryMenuSectionButtonContainer.removeAll();
         secondaryMenu.removeAll();
 
-        subSectionMenu.removeAll();
-        secondaryMenu.add(subSectionMenu);
+        tertiaryMenu.removeAll();
+        tertiaryMenuPanelVisibilityContainer.removeAll();
+        tertiaryMenuPanelAccessoryContainer.removeAll();
 
-        sectionDetailedMenu.removeAll();
-        secondaryMenu.add(sectionDetailedMenu);
-
+        tertiaryMenu.add(tertiaryMenuPanelVisibilityContainer);
+        tertiaryMenu.add(Box.createHorizontalGlue());
+        tertiaryMenu.add(tertiaryMenuPanelAccessoryContainer);
     }
 
     private void resetMap() {
@@ -293,13 +311,13 @@ public class Menu extends JPanel {
         final JPopupMenu m = new JPopupMenu();
 
         /*JMenuItem chpass = new JMenuItem("Change Password");
-        chpass.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                LoginController.getInstance().logout();
-            }
-        });
-        m.add(chpass);*/
+         chpass.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         LoginController.getInstance().logout();
+         }
+         });
+         m.add(chpass);*/
 
 
         JMenuItem logout = new JMenuItem("Log Out");
@@ -349,7 +367,7 @@ public class Menu extends JPanel {
         }
 
         void sectionButtonClicked() {
-            sectionButtons.setSelected(getModel(), true);
+            primaryMenuButtons.setSelected(getModel(), true);
             if (previousSectionPanel != null) {
                 previousSectionPanel.setVisible(false);
             }

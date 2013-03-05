@@ -75,7 +75,7 @@ public class GeneticsTablePage extends SubSectionView {
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
             settingComponents = new Component[1];
-            settingComponents[0] = PeekingPanel.getCheckBoxForPanel(detailView, "Inspector");
+            settingComponents[0] = PeekingPanel.getToggleButtonForPanel(detailView, "Inspector");
         }
         return settingComponents;
     }

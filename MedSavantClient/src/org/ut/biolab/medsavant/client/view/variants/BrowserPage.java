@@ -147,8 +147,8 @@ public class BrowserPage extends SubSectionView {
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
             settingComponents = new Component[3];
-            settingComponents[0] = PeekingPanel.getCheckBoxForPanel(genomeView, "Genome");
-            settingComponents[1] = PeekingPanel.getCheckBoxForPanel(variationPanel, "Variation");
+            settingComponents[0] = PeekingPanel.getToggleButtonForPanel(genomeView, "Genome");
+            settingComponents[1] = PeekingPanel.getToggleButtonForPanel(variationPanel, "Variation");
 
             try {
                 List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
@@ -200,6 +200,7 @@ public class BrowserPage extends SubSectionView {
                 PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
                 PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
 
+                savantInstance.setStartPageVisible(false);
                 savantInstance.setTrackBackground(new Color(210, 210, 210));
                 savantInstance.setBookmarksVisibile(false);
                 savantInstance.setVariantsVisibile(false);
@@ -207,17 +208,25 @@ public class BrowserPage extends SubSectionView {
                 GenomeController.getInstance().setGenome(null);
 
                 String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                String urlOfTrack = getTrackURL(referenceName, "sequence");
-                addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                final String urlOfTrack = getTrackURL(referenceName, "sequence");
 
                 browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
 
                 view.add(browserPanel, BorderLayout.CENTER);
 
                 variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, VariationController.getInstance().getModule(), false, 325);
-                variationPanel.setToggleBarVisible(true);
+                variationPanel.setToggleBarVisible(false);
 
                 view.add(variationPanel, BorderLayout.EAST);
+
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                    }
+                });
+                t.start();
+
             } else {
                 genomeContainer.updateIfRequired();
             }

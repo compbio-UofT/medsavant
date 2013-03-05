@@ -27,6 +27,7 @@ import javax.swing.*;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.variant.ExportVCFWizard;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -114,7 +115,7 @@ public class SearchBar extends JPanel {
     private void initComponents() {
         setOpaque(false);
         setLayout(new BorderLayout());
-
+        
         FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
 
         queryPanelContainer = ViewUtil.getClearPanel();
@@ -132,7 +133,7 @@ public class SearchBar extends JPanel {
         JLabel saveLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR));
         saveLabel.setToolTipText("Save search");
 
-        JLabel actionLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR));
+        final JLabel actionLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR));
         actionLabel.setToolTipText("Actions");
 
 
@@ -289,6 +290,49 @@ public class SearchBar extends JPanel {
             }
         });
 
+        final JPopupMenu actionPopup = new JPopupMenu();
+        JMenuItem exportAction = new JMenuItem("Export VCF");
+        exportAction.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    new ExportVCFWizard().setVisible(true);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Unable to launch Variant Export wizard: %s", ex);
+                }
+            }
+
+        });
+        actionPopup.add(exportAction);
+
+
+        actionLabel.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                System.out.println("Showing actions");
+                actionPopup.show(actionLabel,0,-(actionLabel.getHeight()));
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+
+        });
+
         JPanel bottomBar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomBar);
         bottomBar.add(saveLabel);
@@ -296,8 +340,8 @@ public class SearchBar extends JPanel {
         bottomBar.add(loadLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
         bottomBar.add(historyLabel);
-        //bottomBar.add(Box.createRigidArea(new Dimension(10,1)));
-        //bottomBar.add(actionLabel);
+        bottomBar.add(Box.createRigidArea(new Dimension(10,1)));
+        bottomBar.add(actionLabel);
 
         add(effectivenessPanel, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);

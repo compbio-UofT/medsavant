@@ -81,8 +81,7 @@ public class GeneticsSection extends SectionView {
                     new GeneticsTablePage(this),
                     new BrowserPage(this),
                     new GeneticsChartPage(this),
-                    new AggregatePage(this),
-                    new FamilyMattersPage(this)
+                    new AnalyticsPage(this)
                 //,variantCollectionPlugins
                 };
     }
@@ -116,8 +115,8 @@ public class GeneticsSection extends SectionView {
     @Override
     public final Component[] getSectionMenuComponents() {
         isInitialized = true;
-        return new Component[]{
-                    createExportVCFButton()
+        return new Component[] {
+                    //createExportVCFButton()
                 };
     }
 

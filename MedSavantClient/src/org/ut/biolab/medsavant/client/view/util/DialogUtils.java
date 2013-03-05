@@ -33,8 +33,10 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
+import or.ut.biolab.medsavant.client.util.error.report.BugReportDialog;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 
 
@@ -126,17 +128,8 @@ public class DialogUtils {
                 reportButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e2) {
-                        String issue = "Hey MedSavant Developers,\n\n";
-                        issue += "I am encountering an error in MedSavant. I have provided additional diagnostic information below.\n\n";
-
-                        issue += "=== DESCRIBE THE ISSUE BELOW ===\n\n\n";
-
-
-                        issue += "=== ERROR DETAILS ===\n";
-                        issue += ClientMiscUtils.getStackTrace(t);
-
                         dialog.dispose();
-                        (new BugReportDialog(issue, null)).setVisible(true);
+                        (new BugReportDialog(MedSavantFrame.getInstance(),t)).setVisible(true);
                     }
                 });
 

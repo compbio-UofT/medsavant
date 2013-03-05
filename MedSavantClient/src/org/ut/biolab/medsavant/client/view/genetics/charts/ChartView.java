@@ -262,7 +262,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
 
     private void initBottomBar() {
         bottomToolbar = ViewUtil.getSecondaryBannerPanel();
-        bottomToolbar.setBorder(ViewUtil.getTinyLineBorder());
+        bottomToolbar.setBorder(ViewUtil.getTopLineBorder());
         bottomToolbar.setLayout(new BoxLayout(bottomToolbar, BoxLayout.X_AXIS));
 
         bottomToolbar.add(Box.createHorizontalGlue());

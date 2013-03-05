@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 
 /**
@@ -39,6 +40,7 @@ public class PeekingPanel extends JPanel {
     private final JLabel title;
     public final String titleString;
     private final JPanel titlePanel;
+    private final DockedSide dockedSide;
 
     public PeekingPanel(String label, String borderLayoutPosition, JComponent panel, boolean isExpanded) {
         this(label, borderLayoutPosition, panel, isExpanded, 350);
@@ -47,6 +49,16 @@ public class PeekingPanel extends JPanel {
     public PeekingPanel(String label, String borderLayoutPosition, JComponent panel, boolean isExpanded, int size) {
 
         final boolean isVertical = borderLayoutPosition.equals(BorderLayout.EAST) || borderLayoutPosition.equals(BorderLayout.WEST);
+
+        if (borderLayoutPosition.equals(BorderLayout.NORTH)) {
+            dockedSide = DockedSide.NORTH;
+        } else if (borderLayoutPosition.equals(BorderLayout.SOUTH)) {
+            dockedSide = DockedSide.SOUTH;
+        } else if (borderLayoutPosition.equals(BorderLayout.EAST)) {
+            dockedSide = DockedSide.EAST;
+        } else {
+            dockedSide = DockedSide.WEST;
+        }
 
         this.setLayout(new BorderLayout());
         this.panel = panel;
@@ -122,24 +134,63 @@ public class PeekingPanel extends JPanel {
         this.titlePanel.setVisible(b);
     }
 
-    public static JCheckBox getCheckBoxForPanel(final PeekingPanel persistencePanel) {
-        return getCheckBoxForPanel(persistencePanel,persistencePanel.titleString);
+    public static JToggleButton getToggleButtonForPanel(final PeekingPanel persistencePanel) {
+        return getToggleButtonForPanel(persistencePanel,persistencePanel.titleString);
     }
 
-    public static JCheckBox getCheckBoxForPanel(final PeekingPanel persistencePanel,String name) {
-        final JCheckBox box = new JCheckBox("Show " + name);
-        box.setFont(new Font("Arial", Font.BOLD, 12));
-        box.setForeground(Color.white);
-        box.setOpaque(false);
-        box.setSelected(true);
+    public static JToggleButton getToggleButtonForPanel(final PeekingPanel persistencePanel,String name) {
 
-        box.addActionListener(new ActionListener() {
+        final RevealToggleButton b = new RevealToggleButton(name, persistencePanel.getDockedSide());
+
+        b.setFocusable(false);
+        b.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent ae) {
-                persistencePanel.setExpanded(box.isSelected());
+                persistencePanel.setExpanded(b.isSelected());
             }
+
         });
-        box.setSelected(persistencePanel.isExpanded);
-        return box;
+
+        b.setSelected(persistencePanel.isExpanded);
+
+        return b;
+    }
+
+    public DockedSide getDockedSide() {
+        return dockedSide;
+    }
+
+    public enum DockedSide { EAST, WEST, NORTH, SOUTH };
+
+    public static class RevealToggleButton extends JToggleButton {
+        private final DockedSide side;
+
+         public RevealToggleButton(String title, DockedSide side) {
+             super(title);
+
+             //this.setFont(new Font(this.getFont().getFamily(),10,Font.PLAIN));
+             //this.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+             this.side = side;
+
+             this.putClientProperty( "JButton.buttonType", "segmented" );
+
+             switch (side) {
+                 case EAST:
+                     ViewUtil.positionButtonFirst(this);
+                     break;
+                 case WEST:
+                     ViewUtil.positionButtonLast(this);
+                     break;
+                 case NORTH:
+                 case SOUTH:
+                     ViewUtil.positionButtonMiddle(this);
+                     break;
+             }
+         }
+
+        public DockedSide getSide() {
+            return side;
+        }
     }
 }
