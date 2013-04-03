@@ -49,12 +49,12 @@ public interface VariantManagerAdapter extends Remote {
      */
     ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException;
 
-    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
-    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
+    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;
     public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public void publishVariants(String sessID, int projID) throws Exception;
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
-    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception;
+    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields,String email) throws Exception;
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files) throws Exception;
     public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipped) throws SQLException, RemoteException, IOException, InterruptedException;
 
