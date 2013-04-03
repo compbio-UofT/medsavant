@@ -91,12 +91,15 @@ public class IconFactory {
         ACTION_ON_TOOLBAR,
         LOAD_ON_TOOLBAR,
         MENU_USER,
-        MENU_SERVER
+        MENU_SERVER,
+        CLOSE
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case CLOSE:
+                return getIcon(iconroot + "close.png");
             case ADDKVP:
                 return getIcon(iconroot + "icon_add.png");
             case BROWSER:

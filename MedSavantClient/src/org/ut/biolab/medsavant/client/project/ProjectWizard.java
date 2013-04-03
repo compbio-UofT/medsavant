@@ -744,7 +744,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 }
 
                 //make modifications
-                updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields);
+                updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields,null);
 
             }
         }

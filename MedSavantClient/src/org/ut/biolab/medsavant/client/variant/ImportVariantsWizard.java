@@ -70,6 +70,8 @@ public class ImportVariantsWizard extends WizardDialog {
     private JPanel filesOnMyComputerPanel;
     private JPanel filesOnMedSavantServerPanel;
     private JTextField serverPathField;
+    private JTextField emailField;
+    private JCheckBox autoPublish;
 
     public ImportVariantsWizard() {
 
@@ -84,6 +86,7 @@ public class ImportVariantsWizard extends WizardDialog {
         model.append(getVCFSourcePage());
         model.append(getChooseFilesPage());
         model.append(getAddTagsPage());
+        model.append(getNotificationsPage());
         model.append(getQueuePage());
         //model.append(getSetLivePage());
         model.append(getCompletePage());
@@ -370,6 +373,34 @@ public class ImportVariantsWizard extends WizardDialog {
         ta.append(tag2.toString() + "\n");
     }
 
+    private AbstractWizardPage getNotificationsPage() {
+
+        final CompletionWizardPage page = new CompletionWizardPage("Notifications") {
+
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+
+        page.addText("Variant import may take some time. Enter your email address to be notified when the process completes.");
+
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        JLabel l = new JLabel("Email: ");
+        emailField = new JTextField();
+        p.add(l);
+        p.add(emailField);
+        page.add(p);
+
+        autoPublish = new JCheckBox("Automatically publish data upon import completion");
+        page.add(autoPublish);
+        page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");
+
+        return page;
+    }
+
     private AbstractWizardPage getCompletePage() {
 
         final CompletionWizardPage page = new CompletionWizardPage("Complete") {
@@ -395,10 +426,10 @@ public class ImportVariantsWizard extends WizardDialog {
             private final JLabel progressLabel = new JLabel("You are now ready to import variants.");
             private final JProgressBar progressBar = new JProgressBar();
             private final JButton workButton = new JButton("Import");
-            private final JButton publishButton = new JButton("Publish Variants");
-            private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after import");
-            private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
-            private final JProgressBar publishProgressBar = new JProgressBar();
+            //private final JButton publishButton = new JButton("Publish Variants");
+            //private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after import");
+            //private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
+            //private final JProgressBar publishProgressBar = new JProgressBar();
             private boolean inUploading = false;
 
             {
@@ -406,7 +437,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 addComponent(progressBar);
 
 
-                autoPublishVariants.setOpaque(false);
+                //autoPublishVariants.setOpaque(false);
 
                 workButton.addActionListener(new ActionListener() {
 
@@ -415,13 +446,17 @@ public class ImportVariantsWizard extends WizardDialog {
 
                         LOG.info("Starting import worker");
 
-                        new UpdateWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+                        new VariantWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton) {
                             private int fileIndex = 0;
 
                             @Override
                             protected Void doInBackground() throws Exception {
                                 progressBar.setValue(0);
                                 startProgressTimer();
+
+                                String email = emailField.getText();
+                                if (email.isEmpty()) { email = null; }
+
                                 if (uploadRequired) {
                                     inUploading = true;
                                     LOG.info("Creating input streams");
@@ -433,12 +468,12 @@ public class ImportVariantsWizard extends WizardDialog {
                                         fileIndex++;
                                     }
                                     inUploading = false;
-                                    updateID = manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef,email,autoPublish.isSelected());
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     progressLabel.setText("Importing variants stored on server...");
-                                    updateID = manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef,email,autoPublish.isSelected());
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -479,28 +514,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 });
 
                 addComponent(ViewUtil.alignRight(workButton));
-
-                addComponent(autoPublishVariants);
-
-                JPanel p = ViewUtil.getClearPanel();
-                ViewUtil.applyHorizontalBoxLayout(p);
-
-                JLabel l = new JLabel("WARNING:");
-                l.setForeground(Color.red);
-                l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-
-                p.add(l);
-                p.add(Box.createHorizontalStrut(5));
-                p.add(new JLabel("All users will be logged out upon publishing."));
-                addComponent(p);
-
-                addComponent(publishProgressLabel);
-                addComponent(publishProgressBar);
-                addComponent(ViewUtil.alignRight(publishButton));
-
-                publishButton.setVisible(false);
-                publishProgressLabel.setVisible(false);
-                publishProgressBar.setVisible(false);
             }
 
             @Override

@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.client.filter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
@@ -33,6 +35,13 @@ import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionGenerator;
+import org.ut.biolab.mfiume.query.QueryView;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.value.DefaultStringConditionValueGenerator;
+import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
+import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
  * Panel which contains a collection of
@@ -115,14 +124,11 @@ public class SearchBar extends JPanel {
     private void initComponents() {
         setOpaque(false);
         setLayout(new BorderLayout());
-        
+
         FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
-
-        JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(queryPanelContainer);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
         historyLabel.setToolTipText("Show search history");
@@ -147,8 +153,6 @@ public class SearchBar extends JPanel {
 
         historyPanel.setMinimumSize(dialogDimensions);
         historyPanel.setPreferredSize(dialogDimensions);
-
-
 
         final JDialog dHistory = new JDialog(MedSavantFrame.getInstance(), true);
         dHistory.setTitle("Search History");
@@ -185,7 +189,6 @@ public class SearchBar extends JPanel {
         dSave.setResizable(false);
 
         loadLabel.addMouseListener(new MouseListener() {
-
             SavedFiltersPanel savedFiltersPanel;
 
             @Override
@@ -269,7 +272,7 @@ public class SearchBar extends JPanel {
                         ClientMiscUtils.reportError("Unable to save filter set: %s", ex);
                     }
                 } else {
-                    DialogUtils.displayError("Can't save search","No filters are applied.");
+                    DialogUtils.displayError("Can't save search", "No filters are applied.");
                 }
             }
 
@@ -293,7 +296,6 @@ public class SearchBar extends JPanel {
         final JPopupMenu actionPopup = new JPopupMenu();
         JMenuItem exportAction = new JMenuItem("Export VCF");
         exportAction.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
@@ -302,17 +304,15 @@ public class SearchBar extends JPanel {
                     ClientMiscUtils.reportError("Unable to launch Variant Export wizard: %s", ex);
                 }
             }
-
         });
         actionPopup.add(exportAction);
 
 
         actionLabel.addMouseListener(new MouseListener() {
-
             @Override
             public void mouseClicked(MouseEvent me) {
                 System.out.println("Showing actions");
-                actionPopup.show(actionLabel,0,-(actionLabel.getHeight()));
+                actionPopup.show(actionLabel, 0, -(actionLabel.getHeight()));
             }
 
             @Override
@@ -330,7 +330,6 @@ public class SearchBar extends JPanel {
             @Override
             public void mouseExited(MouseEvent me) {
             }
-
         });
 
         JPanel bottomBar = ViewUtil.getClearPanel();
@@ -340,11 +339,16 @@ public class SearchBar extends JPanel {
         bottomBar.add(loadLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
         bottomBar.add(historyLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(10,1)));
+        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
         bottomBar.add(actionLabel);
 
+        JPanel instead = getSearchComponent();
+
+        //JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(instead);
+        //scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
         add(effectivenessPanel, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
+        add(instead, BorderLayout.CENTER);
         add(ViewUtil.centerHorizontally(bottomBar), BorderLayout.SOUTH);
     }
 
@@ -361,5 +365,17 @@ public class SearchBar extends JPanel {
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to apply requested filters: %s", ex);
         }
+    }
+
+    private JPanel getSearchComponent() {
+
+        final SearchConditionGroupItem entireQueryModel = new SearchConditionGroupItem(null);
+        final QueryView entireQueryView = new QueryView(entireQueryModel,new MedSavantConditionGenerator());
+
+        JPanel p = new JPanel();
+        p.setOpaque(false);
+        p.setLayout(new BorderLayout());
+        p.add(entireQueryView,BorderLayout.CENTER);
+        return p;
     }
 }

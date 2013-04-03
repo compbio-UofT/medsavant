@@ -131,7 +131,7 @@ public class QueryPanel extends CollapsiblePanes {
                 if (!name.toLowerCase().contains("conditions")) {
                     name = name + " Conditions";
                 }
-                panes.add(addFilterCategory(name, catHolders, false), BorderLayout.CENTER);
+                panes.add(addFilterCategory(ViewUtil.ellipsize(name,40), catHolders, false), BorderLayout.CENTER);
             }
 
             // Ontology filters

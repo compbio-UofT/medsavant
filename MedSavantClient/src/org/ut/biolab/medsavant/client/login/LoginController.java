@@ -178,6 +178,7 @@ public class LoginController extends Controller<LoginEvent> {
             return;
         } catch (Exception ex) {
             LOG.error("Error comparing versions.", ex);
+            ex.printStackTrace();
             DialogUtils.displayError("Error Comparing Versions", "<html>We could not determine compatibility between MedSavant and your database.<br>Please ensure that your versions are compatible before continuing.</html>");
         }
         try {

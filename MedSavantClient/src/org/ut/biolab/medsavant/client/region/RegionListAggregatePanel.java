@@ -312,9 +312,10 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         @Override
         public List<Object[]> retrieve(int start, int limit) throws Exception {
-            int max = Math.min(currentRegions.size(), limit);
+            int max = currentRegions.size();
             for (int i = 0; i < max; i++) {
                 GenomicRegion reg = currentRegions.get(i);
+                //System.out.println("Retrieving " + i + " of " + max + " but there are " + currentRegions.size());
                 int recordsInRegion = MedSavantClient.VariantManager.getVariantCountInRange(
                         LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
