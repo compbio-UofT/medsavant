@@ -192,7 +192,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * method is used only by ProjectWizard.modifyProject().
      */
     @Override
-    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception {
+    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, String email) throws Exception {
+
+        String projectName = ProjectManager.getInstance().getProjectName(sessID, projID);
+        EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - STARTED", "Updating of " + projectName + " project started at " + (new Date()).toString() + ". You will be notified again upon completion.",email);
 
         LOG.info("Beginning new variant update");
         double fract = 0.0;
@@ -327,11 +330,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             LOG.info("Done");
 
+            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - COMPLETED", "Updating of " + projectName + " project finished at " + (new Date()).toString() + ".",email);
+
+
             return updateId;
 
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateId, Status.ERROR);
-            EmailLogger.logByEmail("Error updating table", "Here is the message: " + e.getMessage());
+            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - FAILED", "There was a problem updating project " + projectName + ". Here is the message: " + MiscUtils.getMessage(e),email);
             throw e;
         }
     }
@@ -340,7 +346,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Import variant files which have been transferred from a client.
      */
     @Override
-    public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws InterruptedException, IOException, SQLException {
+    public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email,boolean autoPublish) throws InterruptedException, IOException, SQLException {
 
         LOG.info("Importing variants by transferring from client");
 
@@ -356,7 +362,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             i++;
         }
 
-        return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef);
+        return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef,email,autoPublish);
     }
 
     /**
@@ -364,7 +370,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * of an entire directory.
      */
     @Override
-    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception {
 
         LOG.info("Importing variants already stored on server in dir " + dirContainingVCFs.getAbsolutePath());
 
@@ -386,7 +392,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return -1;
         }
 
-        return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef);
+        return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef,email,autoPublish);
     }
 
     /**
@@ -397,7 +403,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    public int uploadVariants(String sessID, File[] vcfFiles, String[] sourceNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws IOException, InterruptedException, SQLException {
+    public int uploadVariants(String sessID, File[] vcfFiles, String[] sourceNames, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws IOException, InterruptedException, SQLException {
+
+        String projectName = ProjectManager.getInstance().getProjectName(sessID, projID);
+        EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - STARTED", "Importing " + vcfFiles.length + " file(s) started at " + (new Date()).toString() + ". You will be notified again upon completion.", email);
 
         LOG.info("Beginning variant import");
         double fract = 0.0;
@@ -469,7 +478,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 t.start();
             }
 
-
             // wait for all the threads to finish
             LOG.info("Waiting for all threads to finish...");
             for (Thread t : threads) {
@@ -522,15 +530,29 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Assigning update ID of " + updateID);
             makeProgress(sessID, "Variants uploaded.", 1.0);
 
+            if (autoPublish) {
+                publishVariants(sessID,projID);
+            }
+
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - COMPLETED", "Importing " + vcfFiles.length + " file(s) finished at " + (new Date()).toString() + ".");
+
             return updateID;
 
         } catch (IOException ex) {
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw ex;
         } catch (SQLException ex) {
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw ex;
+        } catch (Exception ex) {
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
+            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
+            throw new IOException(ex);
         }
+
+
     }
 
     @Override

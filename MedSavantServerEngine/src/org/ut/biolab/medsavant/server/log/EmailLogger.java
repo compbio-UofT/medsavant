@@ -71,11 +71,19 @@ public class EmailLogger extends AppenderSkeleton {
     }
 
     public static void logByEmail(String subject, String message) {
+        logByEmail(subject,message,null);
+    }
+
+    public static void logByEmail(String subject, String message, String cc) {
         message += "\n\nSent by the MedSavant Server Utility";
+        long time = System.currentTimeMillis();
         if (emailAddress != null) {
-            Mail.sendEmail(emailAddress, System.currentTimeMillis() + " - " + subject, message);
+            Mail.sendEmail(emailAddress, time + " - " + subject, message);
         } else {
             LOG.warn("Cannot send email, no email recipient configured");
+        }
+        if (cc != null) {
+            Mail.sendEmail(cc, time + " - " + subject, message);
         }
     }
 }

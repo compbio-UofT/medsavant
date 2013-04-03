@@ -69,7 +69,7 @@ public class BatchVariantAnnotator {
     public void performBatchAnnotationInParallel() throws IOException, SQLException {
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
-        EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
+        //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
 
         // no annotations to perform, copy input to output
         if (annotations.length == 0) {
@@ -157,7 +157,7 @@ public class BatchVariantAnnotator {
 
         // report success
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
-        EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+        //EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
 
     }
 
