@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.client.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class FilterController extends Controller<FilterEvent> {
 
     private int filterSetID = 0;
     private Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();
+    private Condition newConditions = BinaryCondition.equalTo(1,1);
 
     private FilterController() {
         ProjectController.getInstance().addListener(new Listener<ProjectEvent>() {
@@ -191,22 +193,30 @@ public class FilterController extends Controller<FilterEvent> {
     }
 
     public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
+        return new Condition[] { this.newConditions };
+    }
+
+    /*public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
         List<Filter> filters = prioritizeFilters(getFilters(queryID));
         Condition[] conditions = new Condition[filters.size()];
         for (int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
         }
         return conditions;
-    }
+    }*/
 
     public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
+        return new Condition[][] { new Condition[] { this.newConditions }};
+    }
+
+    /*public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
         for (int i = 0; i < keys.length; i++) {
             conditions[i] = getFilterConditions((Integer)keys[i]);
         }
         return conditions;
-    }
+    }*/
 
     private List<Filter> prioritizeFilters(List<Filter> filters) {
 
@@ -237,5 +247,27 @@ public class FilterController extends Controller<FilterEvent> {
             }
         }
         return false;
+    }
+
+
+    public void setConditions(Condition conds) {
+        this.newConditions = conds;
+        fireEvent(new FilterEvent(FilterEvent.Type.MODIFIED, new Filter() {
+
+            @Override
+            public String getName() {
+                return "fake";
+            }
+
+            @Override
+            public String getID() {
+                return "faker";
+            }
+
+            @Override
+            public Condition[] getConditions() throws InterruptedException, SQLException, RemoteException {
+                return new Condition[] {};
+            }
+ }));
     }
 }

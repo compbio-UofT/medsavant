@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.img.ImagePanel;
 
@@ -52,6 +53,7 @@ public class PillView extends JPanel {
     private JLabel textLabel;
 
     public PillView() {
+
 
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.setBorder(BorderFactory.createEmptyBorder(vpad, hpad, vpad, hpad));
@@ -106,7 +108,6 @@ public class PillView extends JPanel {
 
     public void setActivated(boolean b) {
         this.isActivated = b;
-
     }
 
     public void showPopup() {
@@ -141,7 +142,6 @@ public class PillView extends JPanel {
     public void setSelected(boolean b) {
         this.isSelected = b;
 
-        System.out.println("Setting selected to " + b);
         if (textLabel != null) {
             if (b) {
                 textLabel.setForeground(Color.white);
@@ -156,8 +156,6 @@ public class PillView extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        System.out.println("Redrawing");
-
         Color[] currentColorSheme = this.isActivated ? COLOR_SCHEME_ACTIVE : COLOR_SCHEME_INACTIVE;
 
         int bend = this.getHeight();
@@ -165,7 +163,6 @@ public class PillView extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        System.out.println("Upod redrawing, selected is " + isSelected + " text is " + this.textLabel.getForeground());
         if (isSelected) {
 
             Color bottom = currentColorSheme[2];
@@ -203,7 +200,7 @@ public class PillView extends JPanel {
     public void setText(String text) {
         this.middlePanel.removeAll();
         textLabel = new JLabel(text);
-        //textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.BOLD, 13));
+        textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
         this.middlePanel.add(textLabel);
         updateUI();
@@ -239,11 +236,6 @@ public class PillView extends JPanel {
         } else {
             setRightPanel(null);
         }
-    }
-
-    public abstract class PopupGenerator {
-
-        public abstract JPopupMenu generatePopup();
     }
 
     public void setPopupGenerator(PopupGenerator pg) {

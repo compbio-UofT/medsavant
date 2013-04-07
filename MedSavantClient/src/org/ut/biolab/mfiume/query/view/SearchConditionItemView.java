@@ -31,6 +31,7 @@ import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
 import org.ut.biolab.mfiume.query.img.ImagePanel;
 
 /**
@@ -45,6 +46,26 @@ public class SearchConditionItemView extends PillView {
     public SearchConditionItemView(SearchConditionItem i, final SearchConditionEditorView editor) {
         this.item = i;
         this.editor = editor;
+
+        i.addListener(new SearchConditionListener() {
+
+            @Override
+            public void searchConditionsOrderChanged(SearchConditionItem m) {
+            }
+
+            @Override
+            public void searchConditionItemRemoved(SearchConditionItem m) {
+            }
+
+            @Override
+            public void searchConditionItemAdded(SearchConditionItem m) {
+            }
+
+            @Override
+            public void searchConditionEdited(SearchConditionItem m) {
+                refresh();
+            }
+        });
 
         this.setPopupGenerator(new PopupGenerator() {
             @Override
@@ -84,11 +105,9 @@ public class SearchConditionItemView extends PillView {
                     public void run() {
                         try {
                             editor.loadViewFromExistingSearchConditionParameters();
-                            System.out.println("Showing editor");
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
-                                    System.out.println("Really showing editor");
                                     conditionsEditor.removeAll();
                                     conditionsEditor.add(editor);
                                     m.pack();
@@ -115,7 +134,7 @@ public class SearchConditionItemView extends PillView {
 
                 if (!item.getParent().isFirstItem(item)) {
                     if (item.getRelation() == QueryRelation.OR) {
-                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to AND") {
+                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to \"and\"") {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 item.setRelation(QueryRelation.AND);
@@ -123,7 +142,7 @@ public class SearchConditionItemView extends PillView {
                         });
                         m.add(toggle);
                     } else {
-                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to OR") {
+                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to \"or\"") {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 item.setRelation(QueryRelation.OR);
@@ -150,7 +169,10 @@ public class SearchConditionItemView extends PillView {
 
     public final void refresh() {
         this.setActivated(item.getSearchConditionEncoding() != null);
-        this.setText((!item.getParent().isFirstItem(item) ? item.getRelation() + " " : "")
-                + item.getName() + (item.getDescription() != null ? " " + item.getDescription() : ""));
+        this.setText(
+                "<html>"
+                + (!item.getParent().isFirstItem(item) ? item.getRelation() + " " : "")
+                + "<b>" + item.getName() + "</b>"
+                + (item.getDescription() != null ? " is " + item.getDescription() + "" : " is <i>unset</i>") + "</html>");
     }
 }

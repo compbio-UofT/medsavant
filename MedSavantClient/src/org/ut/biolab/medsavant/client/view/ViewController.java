@@ -64,6 +64,7 @@ public class ViewController {
         peekingPanel.setToggleBarVisible(false);
         h1.add(peekingPanel, BorderLayout.WEST);
 
+
         // add it all to the view
         p.add(h1, BorderLayout.CENTER);
 
@@ -72,7 +73,14 @@ public class ViewController {
         menu = new Menu(contentContainer);
         p.add(menu, BorderLayout.NORTH);
         p.add(menu.getSecondaryMenu(), BorderLayout.WEST);
-        h1.add(menu.getTertiaryMenu(), BorderLayout.NORTH);
+
+        JPanel h2 = ViewUtil.getClearPanel();
+        h2.setLayout(new BorderLayout());
+        h2.add(menu.getTertiaryMenu(), BorderLayout.NORTH);
+        //h2.add(peekingPanel, BorderLayout.CENTER);
+
+
+        h1.add(h2, BorderLayout.NORTH);
 
     }
 
@@ -113,7 +121,7 @@ public class ViewController {
 
     void selectFirstItem() {
         // Fake a click on the first section button.
-        ((JToggleButton)menu.primaryMenuButtons.getElements().nextElement()).doClick();
+        ((JToggleButton) menu.primaryMenuButtons.getElements().nextElement()).doClick();
     }
 
     public PeekingPanel getPersistencePanel() {
@@ -140,7 +148,9 @@ public class ViewController {
         return peekingPanel.isExpanded();
     }
 
-    public Menu getMenu() { return menu; }
+    public Menu getMenu() {
+        return menu;
+    }
 
     private static class SidePanel extends JPanel {
 
@@ -148,8 +158,8 @@ public class ViewController {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
             this.setBorder(
                     BorderFactory.createCompoundBorder(
-                        ViewUtil.getRightLineBorder(),
-                        ViewUtil.getBigBorder()));
+                    ViewUtil.getRightLineBorder(),
+                    ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 

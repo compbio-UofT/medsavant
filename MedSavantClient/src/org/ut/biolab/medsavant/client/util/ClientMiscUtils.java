@@ -222,6 +222,7 @@ public class ClientMiscUtils extends MiscUtils {
             filterableList.removeCheckBoxListSelectedIndex(k);
         }
         for (int j : selectedIndices) {
+            if (j == -1) { continue; }
             filterableList.addCheckBoxListSelectedIndex(j);
         }
     }

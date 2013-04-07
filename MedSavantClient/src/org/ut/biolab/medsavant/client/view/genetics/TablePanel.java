@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.client.controller.ResultController;
 import org.ut.biolab.medsavant.client.filter.FilterEffectivenessPanel;
 import org.ut.biolab.medsavant.client.filter.FilterState;
 import org.ut.biolab.medsavant.client.filter.NumericFilterView;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.filter.StringListFilterView;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -68,6 +69,13 @@ import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
+import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
+import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 
 /**
  *
@@ -236,18 +244,80 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         TableModel model = searchableTablePanel.getTable().getModel();
         int r = TableModelWrapperUtils.getActualRowAt(model, searchableTablePanel.getTable().getSelectedRow());
 
-        String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
-        int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
-        String alt = (String) model.getValueAt(r, INDEX_OF_ALT);
+        final String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
+        final int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
+        final String alt = (String) model.getValueAt(r, INDEX_OF_ALT);
 
         //Filter by position
         JMenuItem posItem = new JMenuItem("Filter by Position");
-        posItem.addActionListener(new PopupActionListener(chrom, pos, null));
+
+        posItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                QueryViewController vc = SearchBar.getInstance().getQueryViewController();
+                SearchConditionGroupItem parent = vc.getQueryRootGroup();
+
+                SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
+
+                SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
+                String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
+                chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
+                chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
+                SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
+
+                SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
+                String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
+                positionItem.setSearchConditionEncoding(positionConditionEncoded);
+                positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
+                SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
+
+                vc.addItemToGroup(chromosomeItem, chromosomeView, g);
+                vc.addItemToGroup(positionItem, positionView, g);
+
+                vc.addGroupToGroup(g, parent);
+            }
+        });
+
+        //posItem.addActionListener(new PopupActionListener(chrom, pos, null));
         menu.add(posItem);
 
         //Filter by position and alt
         JMenuItem posAndAltItem = new JMenuItem("Filter by Position and Alt");
-        posAndAltItem.addActionListener(new PopupActionListener(chrom, pos, alt));
+        posAndAltItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+                QueryViewController vc = SearchBar.getInstance().getQueryViewController();
+                SearchConditionGroupItem parent = vc.getQueryRootGroup();
+
+                SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
+
+                SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
+                String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
+                chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
+                chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
+                SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
+
+                SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
+                String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
+                positionItem.setSearchConditionEncoding(positionConditionEncoded);
+                positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
+                SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
+
+                SearchConditionItem altItem = new SearchConditionItem(BasicVariantColumns.ALT.getAlias(), g);
+                String altConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{alt}));
+                altItem.setSearchConditionEncoding(altConditionEncoded);
+                altItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(altConditionEncoded)));
+                SearchConditionItemView altView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(altItem);
+
+                vc.addItemToGroup(chromosomeItem, chromosomeView, g);
+                vc.addItemToGroup(positionItem, positionView, g);
+                vc.addItemToGroup(altItem, altView, g);
+
+                vc.addGroupToGroup(g, parent);
+
+            }
+        });
         menu.add(posAndAltItem);
 
         return menu;
@@ -406,8 +476,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             List<Class> fieldClasses = new ArrayList<Class>();
             List<Integer> hiddenColumns = new ArrayList<Integer>();
 
-            for (AnnotationFormat af: result) {
-                for (CustomField field: af.getCustomFields()) {
+            for (AnnotationFormat af : result) {
+                for (CustomField field : af.getCustomFields()) {
                     fieldNames.add(field.getAlias());
                     switch (field.getColumnType()) {
                         case INTEGER:
@@ -425,8 +495,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     }
 
                     // hide all but some VCF fields
-                    if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT) &&
-                            field.getColumnName().equals(CHROM.getColumnName())
+                    if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)
+                            && field.getColumnName().equals(CHROM.getColumnName())
                             || field.getColumnName().equals(POSITION.getColumnName())
                             || field.getColumnName().equals(DNA_ID.getColumnName())
                             || field.getColumnName().equals(ZYGOSITY.getColumnName())
@@ -434,8 +504,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                             || field.getColumnName().equals(ALT.getColumnName())
                             || field.getColumnName().equals(QUAL.getColumnName())
                             || field.getColumnName().equals(DBSNP_ID.getColumnName())
-                            | field.getColumnName().equals(VARIANT_TYPE.getColumnName())
-                            ) {
+                            | field.getColumnName().equals(VARIANT_TYPE.getColumnName())) {
                         // do nothing
                     } else {
                         hiddenColumns.add(fieldNames.size() - 1);
@@ -464,8 +533,10 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 }
 
                 /**
-                 * Hack to make sure that WaitPanel is drawn when appropriate.  This shouldn't be necessary; the fact that the
-                 * WaitPanel is in the layer in front of the spreadsheet should be enough to prevent it from being over-painted.
+                 * Hack to make sure that WaitPanel is drawn when appropriate.
+                 * This shouldn't be necessary; the fact that the WaitPanel is
+                 * in the layer in front of the spreadsheet should be enough to
+                 * prevent it from being over-painted.
                  */
                 @Override
                 public void paintComponent(Graphics g) {
@@ -490,9 +561,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     if (selRows.length > 0) {
                         int rowToFetch = selRows[0];
 
-                        int uploadID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
-                        int fileID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
-                        int variantID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
+                        int uploadID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
+                        int fileID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
+                        int variantID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
 
                         DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
                         DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
@@ -521,33 +592,34 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         Object[] row = rows.get(0);
 
                         VariantRecord r = new VariantRecord(
-                                (Integer)row[INDEX_OF_UPLOAD_ID],
-                                (Integer)row[INDEX_OF_FILE_ID],
-                                (Integer)row[INDEX_OF_VARIANT_ID],
-                                (Integer)ReferenceController.getInstance().getCurrentReferenceID(),
-                                (Integer)0, // pipeline ID
-                                (String)row[INDEX_OF_DNA_ID],
-                                (String)row[INDEX_OF_CHROM],
-                                (Integer)row[INDEX_OF_POSITION],
-                                (String)row[INDEX_OF_DBSNP_ID],
-                                (String)row[INDEX_OF_REF],
-                                (String)row[INDEX_OF_ALT],
-                                (Float)row[INDEX_OF_QUAL],
-                                (String)row[INDEX_OF_FILTER],
-                                (String)row[INDEX_OF_CUSTOM_INFO],
+                                (Integer) row[INDEX_OF_UPLOAD_ID],
+                                (Integer) row[INDEX_OF_FILE_ID],
+                                (Integer) row[INDEX_OF_VARIANT_ID],
+                                (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
+                                (Integer) 0, // pipeline ID
+                                (String) row[INDEX_OF_DNA_ID],
+                                (String) row[INDEX_OF_CHROM],
+                                (Integer) row[INDEX_OF_POSITION],
+                                (String) row[INDEX_OF_DBSNP_ID],
+                                (String) row[INDEX_OF_REF],
+                                (String) row[INDEX_OF_ALT],
+                                (Float) row[INDEX_OF_QUAL],
+                                (String) row[INDEX_OF_FILTER],
+                                (String) row[INDEX_OF_CUSTOM_INFO],
                                 new Object[]{});
 
                         String type = (String) row[INDEX_OF_VARIANT_TYPE];
-                        String zygosity = (String)row[INDEX_OF_ZYGOSITY];
-                        String genotype = (String)row[INDEX_OF_GT];
+                        String zygosity = (String) row[INDEX_OF_ZYGOSITY];
+                        String genotype = (String) row[INDEX_OF_GT];
 
                         r.setType(VariantRecord.VariantType.valueOf(type));
                         try {
                             r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
-                        } catch (Exception ex) {}
+                        } catch (Exception ex) {
+                        }
                         r.setGenotype(genotype);
 
-                        for (Listener<VariantRecord> l: listeners) {
+                        for (Listener<VariantRecord> l : listeners) {
                             l.handleEvent(r);
                         }
                     }
@@ -589,6 +661,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     private class TableDataRetriever extends DataRetriever<Object[]> {
+
         @Override
         public List<Object[]> retrieve(int start, int limit) {
             try {

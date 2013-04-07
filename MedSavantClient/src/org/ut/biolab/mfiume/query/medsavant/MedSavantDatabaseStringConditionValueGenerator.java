@@ -20,7 +20,7 @@ import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
  *
  * @author mfiume
  */
-class MedSavantDatabaseStringConditionValueGenerator extends StringConditionValueGenerator implements BasicPatientColumns, BasicVariantColumns  {
+public class MedSavantDatabaseStringConditionValueGenerator extends StringConditionValueGenerator implements BasicPatientColumns, BasicVariantColumns  {
 
     private final CustomField field;
     private final WhichTable whichTable;

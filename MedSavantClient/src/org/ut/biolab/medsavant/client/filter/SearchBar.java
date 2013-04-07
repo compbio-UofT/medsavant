@@ -35,13 +35,9 @@ import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionGenerator;
-import org.ut.biolab.mfiume.query.QueryView;
+import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
+import org.ut.biolab.mfiume.query.QueryViewController;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.value.DefaultStringConditionValueGenerator;
-import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
-import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
  * Panel which contains a collection of
@@ -52,6 +48,8 @@ import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
  */
 public class SearchBar extends JPanel {
 
+    private static SearchBar instance;
+
     private FilterController controller;
     List<QueryPanel> queryPanels = new ArrayList<QueryPanel>();
     private int nextQueryID = 1;
@@ -60,14 +58,22 @@ public class SearchBar extends JPanel {
     //private JToggleButton historyButton;
     //private SavedFiltersPanel savedFiltersPanel;
     //private JToggleButton savedFiltersButton;
+    private QueryViewController queryViewController;
 
     /**
      * Creates search bar to contains our query panels.
      */
-    public SearchBar() {
+    private SearchBar() {
         controller = FilterController.getInstance();
         initComponents();
         createNewQueryPanel();
+    }
+
+    public static SearchBar getInstance() {
+        if (instance == null) {
+            instance = new SearchBar();
+        }
+        return instance;
     }
 
     /**
@@ -346,7 +352,7 @@ public class SearchBar extends JPanel {
 
         //JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(instead);
         //scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
+        this.setFocusable(true);
         add(effectivenessPanel, BorderLayout.NORTH);
         add(instead, BorderLayout.CENTER);
         add(ViewUtil.centerHorizontally(bottomBar), BorderLayout.SOUTH);
@@ -370,12 +376,17 @@ public class SearchBar extends JPanel {
     private JPanel getSearchComponent() {
 
         final SearchConditionGroupItem entireQueryModel = new SearchConditionGroupItem(null);
-        final QueryView entireQueryView = new QueryView(entireQueryModel,new MedSavantConditionGenerator());
+        queryViewController = new QueryViewController(entireQueryModel,MedSavantConditionViewGenerator.getInstance());
 
         JPanel p = new JPanel();
+        p.setFocusable(true);
         p.setOpaque(false);
         p.setLayout(new BorderLayout());
-        p.add(entireQueryView,BorderLayout.CENTER);
+        p.add(queryViewController,BorderLayout.CENTER);
         return p;
+    }
+
+    public QueryViewController getQueryViewController() {
+        return queryViewController;
     }
 }

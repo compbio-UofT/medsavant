@@ -12,12 +12,13 @@ import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
  */
 public class SearchConditionItem implements Serializable {
 
+    public enum ConditionState {
 
-    public enum ConditionState { UNSET, SET };
-
+        UNSET, SET
+    };
     private String description;
     private String encodedConditions;
-    private List<SearchConditionListener> listeners;
+    private List<SearchConditionListener> orderlisteners;
     private final String name;
     private QueryRelation relation;
     private SearchConditionGroupItem parent;
@@ -32,7 +33,8 @@ public class SearchConditionItem implements Serializable {
         this.parent = parent;
         this.relation = r;
 
-        listeners = new ArrayList<SearchConditionListener>();
+        orderlisteners = new ArrayList<SearchConditionListener>();
+
     }
 
     public String getName() {
@@ -53,42 +55,49 @@ public class SearchConditionItem implements Serializable {
 
     public void setDescription(String s) {
         this.description = s;
-        fireSearchConditionChangedEvent();
+        fireSearchConditionsEditedEvent(this);
     }
 
     public String getDescription() {
         return this.description;
     }
 
-    void addListener(SearchConditionListener l) {
-        listeners.add(l);
+
+    public void addListener(SearchConditionListener l) {
+        orderlisteners.add(l);
     }
 
-    protected void fireSearchConditionChangedEvent() {
-        for (SearchConditionListener l : listeners) {
-            l.searchConditionsChanged(this);
+    protected void fireSearchConditionOrderChangedEvent() {
+        for (SearchConditionListener l : orderlisteners) {
+            l.searchConditionsOrderChanged(this);
+        }
+    }
+
+    protected void fireSearchConditionsEditedEvent(SearchConditionItem m) {
+        for (SearchConditionListener l : orderlisteners) {
+            l.searchConditionEdited(m);
         }
     }
 
     protected void fireSearchConditionItemAddedEvent(SearchConditionItem item) {
-        for (SearchConditionListener l : listeners) {
+        for (SearchConditionListener l : orderlisteners) {
             l.searchConditionItemAdded(item);
         }
     }
 
     protected void fireSearchConditionItemRemovedEvent(SearchConditionItem item) {
-        for (SearchConditionListener l : listeners) {
+        for (SearchConditionListener l : orderlisteners) {
             l.searchConditionItemRemoved(item);
         }
     }
 
     public void setRelation(QueryRelation r) {
         this.relation = r;
-        fireSearchConditionChangedEvent();
+        fireSearchConditionsEditedEvent(this);
     }
 
     void removeListener(SearchConditionListener l) {
-        listeners.remove(l);
+        orderlisteners.remove(l);
     }
 
     void setParent(SearchConditionGroupItem p) {
@@ -96,27 +105,31 @@ public class SearchConditionItem implements Serializable {
     }
 
     public interface SearchConditionListener {
-        public void searchConditionsChanged(SearchConditionItem m);
+
+        public void searchConditionsOrderChanged(SearchConditionItem m);
+
         public void searchConditionItemRemoved(SearchConditionItem m);
+
         public void searchConditionItemAdded(SearchConditionItem m);
+
+        public void searchConditionEdited(SearchConditionItem m);
     }
 
     /*public void setDescription(String s) {
-        System.out.println(s);
-        this.description = s;
-    }
+     System.out.println(s);
+     this.description = s;
+     }
 
-    public String getConditionDescription() {
-        return description;
-    }
-    */
-
+     public String getConditionDescription() {
+     return description;
+     }
+     */
     public void setSearchConditionEncoding(String s) {
         this.encodedConditions = s;
     }
 
     public String getSearchConditionEncoding() {
-        System.out.println("Encoded conditions for " + this.getName() + " is " + encodedConditions);
+        //System.out.println("Encoded conditions for " + this.getName() + " is " + encodedConditions);
         return encodedConditions;
     }
 
@@ -127,6 +140,4 @@ public class SearchConditionItem implements Serializable {
             return ConditionState.SET;
         }
     }
-
-
 }

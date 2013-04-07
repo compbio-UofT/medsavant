@@ -19,7 +19,17 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
 
     public enum QueryRelation {
 
-        AND, OR
+        AND {
+            @Override
+            public String toString() {
+                return "and";
+            };
+        }, OR {
+            @Override
+            public String toString() {
+                return "or";
+            };
+        }
     };
 
     public SearchConditionGroupItem(SearchConditionGroupItem parent) {
@@ -104,7 +114,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
 
             // notify listeners of change
         } else {
-            fireSearchConditionChangedEvent();
+            fireSearchConditionOrderChangedEvent();
             fireSearchConditionItemRemovedEvent(i);
         }
     }
@@ -113,7 +123,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         i.addListener(this);
         i.setParent(this);
         items.add(atIndex, i);
-        fireSearchConditionChangedEvent();
+        fireSearchConditionOrderChangedEvent();
         fireSearchConditionItemAddedEvent(i);
     }
 
@@ -135,7 +145,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         i.setParent(null);
         g.addItem(i);
         g.moveItemToIndex(i, newIndex);
-        fireSearchConditionChangedEvent();
+        fireSearchConditionOrderChangedEvent();
     }
 
     public void moveItemToGroup(SearchConditionItem i, SearchConditionGroupItem g) {
@@ -143,14 +153,14 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         items.remove(i);
         i.setParent(null);
         g.addItem(i);
-        fireSearchConditionChangedEvent();
+        fireSearchConditionOrderChangedEvent();
     }
 
     public void moveItemToIndex(SearchConditionItem i, int newIndex) {
         int currentIndex = items.indexOf(i);
         items.remove(i);
         items.add(newIndex, i);
-        fireSearchConditionChangedEvent();
+        fireSearchConditionOrderChangedEvent();
     }
 
     public void clearItems() {
@@ -158,7 +168,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
             i.removeListener(this);
         }
         this.items.removeAll(items);
-        fireSearchConditionChangedEvent();
+        fireSearchConditionOrderChangedEvent();
     }
 
     public List<SearchConditionItem> getItems() {
@@ -166,8 +176,8 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     }
 
     @Override
-    public void searchConditionsChanged(SearchConditionItem m) {
-        this.fireSearchConditionChangedEvent();
+    public void searchConditionsOrderChanged(SearchConditionItem m) {
+        this.fireSearchConditionOrderChangedEvent();
     }
 
     @Override
@@ -178,5 +188,10 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     @Override
     public void searchConditionItemAdded(SearchConditionItem m) {
         this.fireSearchConditionItemAddedEvent(m);
+    }
+
+        @Override
+    public void searchConditionEdited(SearchConditionItem m) {
+        this.fireSearchConditionsEditedEvent(m);
     }
 }

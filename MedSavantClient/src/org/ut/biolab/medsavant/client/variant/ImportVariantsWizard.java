@@ -392,10 +392,10 @@ public class ImportVariantsWizard extends WizardDialog {
         emailField = new JTextField();
         p.add(l);
         p.add(emailField);
-        page.add(p);
+        page.addComponent(p);
 
         autoPublish = new JCheckBox("Automatically publish data upon import completion");
-        page.add(autoPublish);
+        page.addComponent(autoPublish);
         page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");
 
         return page;
@@ -413,7 +413,7 @@ public class ImportVariantsWizard extends WizardDialog {
             }
         };
 
-        page.addText("You have finished importing variants.");
+        page.addText("You have completed the import submission process.");
 
         return page;
     }
@@ -436,6 +436,11 @@ public class ImportVariantsWizard extends WizardDialog {
                 addComponent(progressLabel);
                 addComponent(progressBar);
 
+                final JComponent j = new JLabel("<html>You may continue. The import process will continue in the background<br>and you will be notified upon completion.</html>");
+                addComponent(j);
+                j.setVisible(false);
+
+                final DefaultWizardPage page = this;
 
                 //autoPublishVariants.setOpaque(false);
 
@@ -445,6 +450,9 @@ public class ImportVariantsWizard extends WizardDialog {
                     public void actionPerformed(ActionEvent ae) {
 
                         LOG.info("Starting import worker");
+
+                        j.setVisible(true);
+                        page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
 
                         new VariantWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton) {
                             private int fileIndex = 0;
@@ -519,8 +527,8 @@ public class ImportVariantsWizard extends WizardDialog {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
-                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+                //fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
         };
 

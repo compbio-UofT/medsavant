@@ -92,12 +92,15 @@ public class IconFactory {
         LOAD_ON_TOOLBAR,
         MENU_USER,
         MENU_SERVER,
-        CLOSE
+        CLOSE,
+        SEARCH_PH
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case SEARCH_PH:
+                return getIcon(iconroot + "search_placeholder.png");
             case CLOSE:
                 return getIcon(iconroot + "close.png");
             case ADDKVP:

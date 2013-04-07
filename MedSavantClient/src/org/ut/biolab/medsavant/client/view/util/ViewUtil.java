@@ -238,6 +238,11 @@ public final class ViewUtil {
         return BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray);
     }
 
+
+    public static Border getThickLeftLineBorder() {
+        return BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 4, 0, 0, Color.lightGray),BorderFactory.createEmptyBorder(0, 2, 0, 0));
+    }
+
     public static Border getTopLineBorder() {
         return BorderFactory.createMatteBorder(1, 0, 0, 0, Color.lightGray);
     }
@@ -251,7 +256,7 @@ public final class ViewUtil {
      return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
      }*/
     public static Border getBottomLineBorder() {
-        return BorderFactory.createMatteBorder(0, 0, 1, 0, Color.red);
+        return BorderFactory.createMatteBorder(0, 0, 1, 0, Color.lightGray);
     }
 
     public static Border getSideLineBorder() {
@@ -514,11 +519,11 @@ public final class ViewUtil {
     }
     static int secPad = 2;
 
-
     public static JButton getSoftButton(String string) {
         JButton b = new JButton(string);
         b.putClientProperty("JButton.buttonType", "segmentedRoundRect");
         b.putClientProperty("JButton.segmentPosition", "only");
+        b.setFocusable(false);
         return b;
     }
 
@@ -666,6 +671,7 @@ public final class ViewUtil {
         c.revalidate();
     }
 
+
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
      p.setBackground(new Color(100,100,100));
@@ -711,6 +717,10 @@ public final class ViewUtil {
         list.setForeground(ViewUtil.detailForeground);
         list.setFont(ViewUtil.detailFontPlain);
         return list;
+    }
+
+    public static String numToString(float num) {
+        return NumberFormat.getInstance().format(num);
     }
 
     public static String numToString(double num) {
@@ -924,25 +934,24 @@ public final class ViewUtil {
     }
 
     public static void positionButtonAlone(JComponent c) {
-        positionButton(c,"only");
+        positionButton(c, "only");
     }
 
     public static void positionButtonFirst(JComponent c) {
-        positionButton(c,"first");
+        positionButton(c, "first");
     }
 
     public static void positionButtonMiddle(JComponent c) {
-        positionButton(c,"middle");
+        positionButton(c, "middle");
     }
 
     public static void positionButtonLast(JComponent c) {
-        positionButton(c,"last");
+        positionButton(c, "last");
     }
 
     private static void positionButton(JComponent c, String position) {
-        if (MiscUtils.MAC && (c instanceof JButton || c instanceof JToggleButton) ) {
+        if (MiscUtils.MAC && (c instanceof JButton || c instanceof JToggleButton)) {
             c.putClientProperty("JButton.segmentPosition", position);
         }
     }
-
 }

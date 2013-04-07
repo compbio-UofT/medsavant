@@ -22,6 +22,7 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
     public abstract void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException;
     public void loadViewFromExistingSearchConditionParameters() throws ConditionRestorationException {
         String encoding = item.getSearchConditionEncoding();
+        System.out.println("Loading " + item.getName() + " from " + encoding);
         loadViewFromSearchConditionParameters(encoding);
     }
 

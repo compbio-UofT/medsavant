@@ -43,7 +43,7 @@ public class GeneticsFilterPage extends SubSectionView {
     public GeneticsFilterPage(SectionView parent) {
         super(parent, "Search Bar");
 
-        panel = new SearchBar();
+        panel = SearchBar.getInstance();
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
