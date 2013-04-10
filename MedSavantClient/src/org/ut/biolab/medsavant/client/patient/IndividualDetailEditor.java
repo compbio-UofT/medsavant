@@ -74,7 +74,12 @@ class IndividualDetailEditor extends DetailedListEditor {
 
     @Override
     public void addItems() {
-        try {                      
+        try {               
+            /*
+            AddPatientsForm jd = new AddPatientsForm();
+            jd.setModal(true);
+            jd.setVisible(true);
+            */
             PatientFormController pfc = new PatientFormController();
             FormEditorDialog fed = new FormEditorDialog(pfc);
             fed.setTitle("Add Patient");

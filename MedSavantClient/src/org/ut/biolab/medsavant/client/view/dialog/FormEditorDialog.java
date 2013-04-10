@@ -100,6 +100,7 @@ public class FormEditorDialog extends javax.swing.JDialog {
      */
     public FormEditorDialog(FormController controller, int numCols){
         super(MedSavantFrame.getInstance());
+        this.setModalityType(ModalityType.APPLICATION_MODAL);
         this.fields = controller.getFields();
         this.fieldValues = new String[fields.length];       
         this.controller = controller;
