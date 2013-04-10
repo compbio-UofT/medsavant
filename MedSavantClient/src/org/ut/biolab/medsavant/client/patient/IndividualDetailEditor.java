@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.view.dialog.CancellableProgressDialog;
+import org.ut.biolab.medsavant.client.view.dialog.FormEditorDialog;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -73,8 +74,12 @@ class IndividualDetailEditor extends DetailedListEditor {
 
     @Override
     public void addItems() {
-        try {
-            new AddPatientsForm().setVisible(true);
+        try {                      
+            PatientFormController pfc = new PatientFormController();
+            FormEditorDialog fed = new FormEditorDialog(pfc);
+            fed.setTitle("Add Patient");
+            fed.setVisible(true);     
+            
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to present Add Individual form: %s", ex);
         }
