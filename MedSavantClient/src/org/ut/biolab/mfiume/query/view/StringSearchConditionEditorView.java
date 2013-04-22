@@ -14,8 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -42,6 +45,11 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     private QuickListFilterField field;
     private final int FIELD_WIDTH = 200;
     private FilterableCheckBoxList filterableList;
+    private List<String> values;
+    private boolean cacheOn = true;
+    private JButton selectNone;
+    private JButton selectAll;
+    private JScrollPane jsp;
 
     public StringSearchConditionEditorView(SearchConditionItem i, final StringConditionValueGenerator vg) {
         super(i);
@@ -51,20 +59,18 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     private void loadLooseStringMatchViewFromSearchConditionParameters(String encoding) {
         this.removeAll();
         final JTextField f = new JTextField();
-        PromptSupport.setPrompt("Enter " + item.getName(),f);
+        PromptSupport.setPrompt("Enter " + item.getName(), f);
         PromptSupport.setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT, f);
-        f.setPreferredSize(new Dimension(200,f.getPreferredSize().height));
+        f.setPreferredSize(new Dimension(200, f.getPreferredSize().height));
         if (encoding != null) {
             f.setText(encoding);
         }
         f.addCaretListener(new CaretListener() {
-
             @Override
             public void caretUpdate(CaretEvent ce) {
                 saveSearchConditionParameters(f.getText());
                 item.setDescription(f.getText());
             }
-
         });
         this.add(f);
     }
@@ -92,6 +98,22 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         }
     }
 
+    private void hideListFields() {
+        field.setVisible(false);
+        selectAll.setVisible(false);
+        selectNone.setVisible(false);
+        jsp.setVisible(false);
+        this.invalidate();
+    }
+
+    private void showListFields() {
+        field.setVisible(true);
+        selectAll.setVisible(true);
+        selectNone.setVisible(true);
+        jsp.setVisible(true);
+        this.invalidate();
+    }
+
     @Override
     public void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException {
 
@@ -102,20 +124,73 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
         System.out.println("Loading view from existing condition parameters " + item.getName());
 
-        List<String> selectedValues;
-        if (encoding == null) {
-            selectedValues = null;
-        } else {
-            selectedValues = StringConditionEncoder.unencodeConditions(encoding);
+        if (!cacheOn || values == null) {
+            values = valueGenerator.getStringValues();
         }
 
-        final List<String> values = valueGenerator.getStringValues();
+
         this.removeAll();
 
         if (values == null || values.isEmpty()) {
             this.add(new JLabel("This field is not populated"));
             return;
         }
+
+        final JRadioButton isNull = new JRadioButton("null");
+        final JRadioButton isNotNull = new JRadioButton("not null");
+        final JRadioButton is = new JRadioButton("is");
+        ButtonGroup group = new ButtonGroup();
+
+        is.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                showListFields();
+                setDescriptionBasedOnSelections();
+            }
+        });
+
+        isNull.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if (isNull.isSelected()) {
+                    saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
+                            Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NULL})));
+                    item.setDescription("null");
+                    //hideListFields();
+                }
+            }
+        });
+
+        isNotNull.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if (isNotNull.isSelected()) {
+                    saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
+                            Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NOTNULL})));
+                    item.setDescription("not null");
+                    //hideListFields();
+                }
+            }
+        });
+
+        List<String> selectedValues;
+        if (encoding == null) {
+            selectedValues = null;
+            is.setSelected(true);
+        } else {
+            selectedValues = StringConditionEncoder.unencodeConditions(encoding);
+        }
+
+        group.add(isNull);
+        group.add(isNotNull);
+        group.add(is);
+
+        JPanel controlButtons = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(controlButtons);
+        controlButtons.add(isNull);
+        controlButtons.add(isNotNull);
+        controlButtons.add(is);
+
 
         AbstractListModel model = new SimpleListModel(values);
 
@@ -171,13 +246,14 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                     }
                     saveSearchConditionParameters();
                     setDescriptionBasedOnSelections();
+                    is.setSelected(true);
                 }
             }
         });
 
         final StringSearchConditionEditorView instance = this;
 
-        JScrollPane jsp = new JScrollPane(filterableList) {
+        jsp = new JScrollPane(filterableList) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension result = super.getPreferredSize();
@@ -193,6 +269,8 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(3, 15, 3, 15);
+
+        add(controlButtons, gbc);
         add(field, gbc);
 
         gbc.weighty = 1.0;
@@ -200,21 +278,24 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         gbc.insets = new Insets(3, 3, 3, 3);
         add(jsp, gbc);
 
-        JButton selectAll = ViewUtil.getSoftButton("Select All");
+        selectAll = ViewUtil.getSoftButton("Select All");
         selectAll.setFocusable(false);
         selectAll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                is.setSelected(true);
                 setAllSelected(true);
+
             }
         });
 
-        JButton selectNone = ViewUtil.getSoftButton("Select None");
+        selectNone = ViewUtil.getSoftButton("Select None");
         selectNone.setFocusable(false);
 
         selectNone.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                is.setSelected(true);
                 setAllSelected(false);
             }
         });
@@ -237,7 +318,17 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         add(selectAll, gbc);
         add(selectNone, gbc);
 
-        setDescriptionBasedOnSelections();
+        if (StringConditionEncoder.encodesNull(encoding)) {
+            isNull.setSelected(true);
+            //hideListFields();
+        } else if (StringConditionEncoder.encodesNotNull(encoding)) {
+            isNotNull.setSelected(true);
+            //hideListFields();
+        } else {
+            is.setSelected(true);
+            setDescriptionBasedOnSelections();
+            //showListFields();
+        }
     }
 
     private void saveSearchConditionParameters() {
@@ -245,7 +336,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     }
 
     private List<String> getAvailableOptions() {
-         List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<String>();
         int n = filterableList.getCheckBoxListSelectionModel().getModel().getSize();
         for (int i = 0; i < n; i++) {
             values.add(filterableList.getCheckBoxListSelectionModel().getModel().getElementAt(i).toString());
@@ -267,7 +358,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         List<String> values = getAvailableOptions();
         List<String> chosenValues = getSelectedOptions();
 
-        String d = StringConditionEncoder.getDescription(chosenValues,values);
+        String d = StringConditionEncoder.getDescription(chosenValues, values);
         item.setDescription(d);
     }
 

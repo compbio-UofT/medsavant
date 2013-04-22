@@ -16,6 +16,8 @@ public class StringConditionEncoder {
     private static String DELIM = ",";
     //private static final String ENCODING_ALL = "<anything>";
     //private static final String ENCODING_NONE = "<nothing>";
+    public static String ENCODING_NULL = "<NULL>";
+    public static String ENCODING_NOTNULL = "<NOTNULL>";
 
     public static List<String> unencodeConditions(String s) {
         if (s.isEmpty()) { /* || s.equals(ENCODING_NONE)) {*/
@@ -74,5 +76,13 @@ public class StringConditionEncoder {
             s = "any of " + chosenValues.size();
         }
         return s;
+    }
+
+    public static boolean encodesNull(String encoding) {
+        return encoding.equals(ENCODING_NULL);
+    }
+
+    public static boolean encodesNotNull(String encoding) {
+        return encoding.equals(ENCODING_NOTNULL);
     }
 }

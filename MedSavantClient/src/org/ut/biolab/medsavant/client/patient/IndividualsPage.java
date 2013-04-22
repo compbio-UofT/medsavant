@@ -47,6 +47,7 @@ public class IndividualsPage extends SubSectionView {
                 ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);
             }
         }
+        view.refresh();
         return view;
     }
 

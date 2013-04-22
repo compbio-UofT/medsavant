@@ -254,27 +254,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         posItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                QueryViewController vc = SearchBar.getInstance().getQueryViewController();
-                SearchConditionGroupItem parent = vc.getQueryRootGroup();
 
-                SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
+                QueryUtils.addQueryOnChromPosition(chrom,pos);
 
-                SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
-                String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
-                chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
-                chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
-                SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
-
-                SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
-                String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
-                positionItem.setSearchConditionEncoding(positionConditionEncoded);
-                positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
-                SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
-
-                vc.addItemToGroup(chromosomeItem, chromosomeView, g);
-                vc.addItemToGroup(positionItem, positionView, g);
-
-                vc.addGroupToGroup(g, parent);
             }
         });
 
@@ -286,36 +268,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         posAndAltItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                QueryViewController vc = SearchBar.getInstance().getQueryViewController();
-                SearchConditionGroupItem parent = vc.getQueryRootGroup();
-
-                SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
-
-                SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
-                String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
-                chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
-                chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
-                SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
-
-                SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
-                String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
-                positionItem.setSearchConditionEncoding(positionConditionEncoded);
-                positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
-                SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
-
-                SearchConditionItem altItem = new SearchConditionItem(BasicVariantColumns.ALT.getAlias(), g);
-                String altConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{alt}));
-                altItem.setSearchConditionEncoding(altConditionEncoded);
-                altItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(altConditionEncoded)));
-                SearchConditionItemView altView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(altItem);
-
-                vc.addItemToGroup(chromosomeItem, chromosomeView, g);
-                vc.addItemToGroup(positionItem, positionView, g);
-                vc.addItemToGroup(altItem, altView, g);
-
-                vc.addGroupToGroup(g, parent);
-
+                QueryUtils.addQueryOnChromPositionAlt(chrom,pos,alt);
             }
         });
         menu.add(posAndAltItem);

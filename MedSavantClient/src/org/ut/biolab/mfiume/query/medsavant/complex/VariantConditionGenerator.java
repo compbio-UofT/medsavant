@@ -3,6 +3,7 @@ package org.ut.biolab.mfiume.query.medsavant.complex;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -175,6 +176,14 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
     private Condition generateStringConditionForVariantDatabaseField(String encoding) {
 
+        DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
+
+        if (StringConditionEncoder.encodesNull(encoding)) {
+            return UnaryCondition.isNull(col);
+        } else if (StringConditionEncoder.encodesNotNull(encoding)) {
+            return UnaryCondition.isNotNull(col);
+        }
+
         /*if (StringConditionEncoder.encodesAll(encoding)) {
          return BinaryCondition.equalTo(1, 1);
          } else if (StringConditionEncoder.encodesNone(encoding)) {
@@ -185,7 +194,7 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         if (selected.isEmpty()) {
             return BinaryCondition.equalTo(1, 0); // always false
         }
-        DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
+
         Condition[] conditions = new Condition[selected.size()];
         int i = 0;
         for (String select : selected) {

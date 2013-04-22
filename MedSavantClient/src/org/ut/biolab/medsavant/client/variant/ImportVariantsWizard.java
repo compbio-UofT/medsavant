@@ -453,6 +453,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
                         j.setVisible(true);
                         page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                        page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+
 
                         new VariantWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton) {
                             private int fileIndex = 0;
@@ -528,7 +530,7 @@ public class ImportVariantsWizard extends WizardDialog {
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                //fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
         };
 

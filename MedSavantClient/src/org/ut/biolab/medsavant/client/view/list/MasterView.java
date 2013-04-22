@@ -197,6 +197,7 @@ public class MasterView extends JPanel {
 
     private void showShowCard() {
         ((CardLayout) getLayout()).show(this, CARD_SHOW);
+        this.updateUI();
     }
 
     private void showErrorCard(String message) {
