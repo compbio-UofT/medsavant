@@ -1,0 +1,9 @@
+nbproject
+build
+dist
+target
+.classpath
+.project
+.settings
+bin
+.DS_Store
