@@ -41,6 +41,7 @@ public class VariantManagerUtils {
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
     public static final String FIELD_DELIMITER = "\t";
+    public static final String ENCLOSED_BY = "\"";
     public static final String ESCAPE_CHAR = "\\";
 
     public static void appendToFile(String baseFilename, String appendingFilename) throws IOException {

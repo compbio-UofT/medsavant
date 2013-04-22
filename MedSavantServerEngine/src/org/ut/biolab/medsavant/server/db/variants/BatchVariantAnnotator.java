@@ -211,6 +211,8 @@ public class BatchVariantAnnotator {
         // open the file
         CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
+        LOG.info("Analyzing annotation file " + file.getAbsolutePath());
+
         // read the first line
         String[] next = reader.readNext();
         if (next == null) {

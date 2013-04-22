@@ -40,6 +40,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -81,12 +83,10 @@ import org.ut.biolab.medsavant.server.vcf.VCFParser;
 public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter, BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
-
     // thresholds for querying and drawing
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 1000000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
-
     // Stages within the upload process.
     private static final double LOG_FRACTION = 0.05;
     private static final double DUMP_FRACTION = 0.1;
@@ -99,6 +99,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final double SUBSET_FRACTION = 0.05;
     private static final double LOAD_TABLE_FRACTION = 0.15;             // Happens twice
     private static VariantManager instance;
+    private static final String varchar = DbColumn.getTypeName(java.sql.Types.VARCHAR);
+
+    private static boolean isVarchar(String typeNameSQL) {
+        return typeNameSQL.equals(varchar);
+    }
 
     private VariantManager() throws RemoteException {
     }
@@ -195,7 +200,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, String email) throws Exception {
 
         String projectName = ProjectManager.getInstance().getProjectName(sessID, projID);
-        EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - STARTED", "Updating of " + projectName + " project started at " + (new Date()).toString() + ". You will be notified again upon completion.",email);
+        EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - STARTED", "Updating of " + projectName + " project started at " + (new Date()).toString() + ". You will be notified again upon completion.", email);
 
         LOG.info("Beginning new variant update");
         double fract = 0.0;
@@ -309,6 +314,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
             fract += LOAD_TABLE_FRACTION;
 
+            if (cleanUp) {
+                boolean deleted = new File(outputFilenameMerged).delete();
+                LOG.info("Deleting " + outputFilenameMerged + " - " + (deleted ? "successful" : "failed"));
+                deleted = subFile.delete();
+                LOG.info("Deleting " + outputFilenameMerged + " - " + (deleted ? "successful" : "failed"));
+            }
+
             //add entries to tablemap
             projMgr.addTableToMap(sessID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
 
@@ -330,14 +342,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             LOG.info("Done");
 
-            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - COMPLETED", "Updating of " + projectName + " project finished at " + (new Date()).toString() + ".",email);
+            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - COMPLETED", "Updating of " + projectName + " project finished at " + (new Date()).toString() + ".", email);
 
 
             return updateId;
 
         } catch (Exception e) {
+            LOG.error(e);
+            e.printStackTrace();
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateId, Status.ERROR);
-            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - FAILED", "There was a problem updating project " + projectName + ". Here is the message: " + MiscUtils.getMessage(e),email);
+            EmailLogger.logByEmail("Updating " + projectName + " MedSavant Project - FAILED", "There was a problem updating project " + projectName + ". Here is the message: " + MiscUtils.getMessage(e), email);
             throw e;
         }
     }
@@ -346,7 +360,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Import variant files which have been transferred from a client.
      */
     @Override
-    public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email,boolean autoPublish) throws InterruptedException, IOException, SQLException {
+    public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws InterruptedException, IOException, SQLException {
 
         LOG.info("Importing variants by transferring from client");
 
@@ -362,7 +376,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             i++;
         }
 
-        return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef,email,autoPublish);
+        return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish);
     }
 
     /**
@@ -392,7 +406,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return -1;
         }
 
-        return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef,email,autoPublish);
+        return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish);
     }
 
     /**
@@ -405,10 +419,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     public int uploadVariants(String sessID, File[] vcfFiles, String[] sourceNames, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws IOException, InterruptedException, SQLException {
 
+        LOG.info("Acquiring session lock");
+        boolean needsToUnlock = ConnectionController.registerBackgroundUsageOfSession(sessID);
+
         String projectName = ProjectManager.getInstance().getProjectName(sessID, projID);
         EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - STARTED", "Importing " + vcfFiles.length + " file(s) started at " + (new Date()).toString() + ". You will be notified again upon completion.", email);
 
         LOG.info("Beginning variant import");
+
         double fract = 0.0;
         makeProgress(sessID, "Preparing...", fract);
 
@@ -471,7 +489,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             int fileID = 0;
             for (File vcfFile : vcfFiles) {
                 File outFile = new File(baseDir, "tmp_" + stamp + "_" + fileID + ".tdf");
-                ParserThread t = new ParserThread(sessID, vcfFile, outFile, updateID, fileID, includeHomoRef,annotations,customFields,tableName);
+                ParserThread t = new ParserThread(sessID, vcfFile, outFile, updateID, fileID, includeHomoRef, annotations, customFields, tableName);
                 threads[fileID] = t;
                 fileID++;
                 LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
@@ -531,7 +549,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             makeProgress(sessID, "Variants uploaded.", 1.0);
 
             if (autoPublish) {
-                publishVariants(sessID,projID);
+                publishVariants(sessID, projID);
             }
 
             EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - COMPLETED", "Importing " + vcfFiles.length + " file(s) finished at " + (new Date()).toString() + ".");
@@ -539,20 +557,26 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return updateID;
 
         } catch (IOException ex) {
-            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
+            ex.printStackTrace();
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + ExceptionUtils.getStackTrace(ex));
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw ex;
         } catch (SQLException ex) {
-            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
+            ex.printStackTrace();
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + ExceptionUtils.getStackTrace(ex));
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw ex;
         } catch (Exception ex) {
-            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + MiscUtils.getMessage(ex));
+            ex.printStackTrace();
+            EmailLogger.logByEmail("Importing variants to " + projectName + " MedSavant Project - FAILED", "There was a problem importing variants into " + projectName + ". Here is the message: " + ExceptionUtils.getStackTrace(ex));
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw new IOException(ex);
+        } finally {
+            LOG.info("Releasing session lock");
+            if (needsToUnlock) {
+                ConnectionController.unregisterBackgroundUsageOfSession(sessID);
+            }
         }
-
-
     }
 
     @Override
@@ -609,6 +633,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Importing to: " + tableNameSub);
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
 
+
+            if (cleanUp) {
+                boolean deleted = existingVariantsFile.delete();
+                LOG.info("Deleting " + existingVariantsFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+                deleted = subFile.delete();
+                LOG.info("Deleting " + subFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+            }
+
             //get annotation ids
             AnnotationManager annotMgr = AnnotationManager.getInstance();
             int[] annotIDs = annotMgr.getAnnotationIDs(sessID, projID, refID);
@@ -646,7 +678,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir.getCanonicalPath());
         p.waitFor();
 
-        String filename = ProjectManager.getInstance().getProjectName(sessID, projID).replace(" ","") + "-varexport-" + System.currentTimeMillis() + ".tdf";
+        String filename = ProjectManager.getInstance().getProjectName(sessID, projID).replace(" ", "") + "-varexport-" + System.currentTimeMillis() + ".tdf";
         File file = new File(baseDir, filename);
 
         LOG.info("Exporting variants to " + file.getAbsolutePath());
@@ -657,13 +689,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        if (orderedByPosition) { query.addOrderings(table.getDBColumn(POSITION)); }
+        if (orderedByPosition) {
+            query.addOrderings(table.getDBColumn(POSITION));
+        }
         String intoString =
                 "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
                 + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                + "ENCLOSED BY '\"' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
-                //+ " LINES TERMINATED BY '\\r\\n' ";
+                + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'" //+ " LINES TERMINATED BY '\\r\\n' ";
                 ;
         String queryString = query.toString().replace("FROM", intoString + "FROM");
 
@@ -671,13 +704,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ConnectionController.executeQuery(sessID, queryString);
 
         LOG.info("Done exporting variants to " + file.getAbsolutePath());
-        LOG.info("Export took " + ((System.currentTimeMillis() - start)/1000) + " seconds");
+        LOG.info("Export took " + ((System.currentTimeMillis() - start) / 1000) + " seconds");
 
         if (zipOutputFile) {
             LOG.info("Zipping export...");
             File zipFile = new File(file.getAbsoluteFile() + ".zip");
-            IOUtils.zipFile(file,zipFile);
-            file.delete();
+            IOUtils.zipFile(file, zipFile);
+            boolean deleted = file.delete();
+            LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
             file = zipFile;
             LOG.info("Done zipping");
         }
@@ -1122,14 +1156,72 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return (m.find()) ? m.group(1) : "";
     }
 
+    private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException {
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, tableName);
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        File outputFile = new File(inputFile.getCanonicalPath() + "_clean");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+        String line;
+        int expectedColumnCount = table.getColumns().size();
+        long row = 0;
+        int[] expectedColumnLengths = new int[table.getColumns().size()];
+        for (int i = 0; i < expectedColumnCount; ++i) {
+            if (isVarchar(table.getColumns().get(i).getTypeNameSQL())) {
+                expectedColumnLengths[i] = table.getColumns().get(i).getTypeLength();
+            } else {
+                expectedColumnLengths[i] = Integer.MAX_VALUE;
+            }
+        }
+
+        int announceEvery = 10000;
+
+        LOG.info("Cleaning " + inputFile.getAbsolutePath());
+
+        while ((line = br.readLine()) != null) {
+            ++row;
+
+            if (row % announceEvery == 0) {
+                LOG.info("Cleaned " + row + " lines of " + inputFile.getAbsolutePath());
+            }
+
+            //int numFields =  StringUtils.countMatches(line,VariantManagerUtils.FIELD_DELIMITER) + 1;
+            String[] values = line.split(VariantManagerUtils.FIELD_DELIMITER, -1);
+            if (values.length != expectedColumnCount) {
+                LOG.warn("Unexpected number of columns: expected [" + expectedColumnCount + "] found [" + values.length + "] at line [" + values.length + "] in file [" + inputFile.getAbsolutePath() + "]");
+                continue;
+            }
+
+            for (int i = 0; i < expectedColumnCount; ++i) {
+
+                // truncate fields that are too long
+                int lengthOfField = values[i].length() - 2;
+                if (lengthOfField >= expectedColumnLengths[i]) {
+                    LOG.warn("Value too long: [" + values[i] + "]; trimmed to [" + expectedColumnLengths[i] + "] characters");
+                    String unenclosed = values[i].replace(VariantManagerUtils.ENCLOSED_BY, "");
+                    values[i] = VariantManagerUtils.ENCLOSED_BY + unenclosed.substring(0, expectedColumnLengths[i]) + VariantManagerUtils.ENCLOSED_BY;
+                }
+            }
+
+            bw.append(StringUtils.join(values, VariantManagerUtils.FIELD_DELIMITER));
+            bw.append("\n");
+        }
+
+        LOG.info("Done cleaning " + inputFile.getAbsolutePath() + " output to " + outputFile.getAbsolutePath());
+
+        bw.close();
+        br.close();
+        return outputFile;
+    }
+
     public static void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException {
+        file = cleanVariantFile(file, tableName, sid);
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
 
         // TODO: for some reason the connection is closed going into this function
         Connection c = ConnectionController.connectPooled(sid);
 
         c.setAutoCommit(false);
-
-        BufferedReader br = new BufferedReader(new FileReader(file));
 
         int chunkSize = 100000; // number of lines per chunk (100K lines = ~50MB for a standard VCF file)
         int lineNumber = 0;
@@ -1164,8 +1256,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
                 String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                         + "INTO TABLE " + tableName + " "
-                        + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '\"' "
-                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) +"' "
+                        + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
                         //+ " LINES TERMINATED BY '\\r\\n'";
                         + ";";
 
@@ -1174,7 +1266,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 s.setQueryTimeout(30 * 60); // 30 minutes
                 s.execute(query);
 
-                new File(currentOutputPath).delete();
+                if (cleanUp) {
+                    boolean deleted = new File(currentOutputPath).delete();
+                    LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                }
                 stateOpen = false;
             }
         }
@@ -1184,7 +1279,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             bw.close();
             String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                     + "INTO TABLE " + tableName + " "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '\"' "
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
                     + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
                     //+ " LINES TERMINATED BY '\\r\\n'"
                     + ";";
@@ -1196,7 +1291,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             s.setQueryTimeout(60 * 60); // 1 hour
             s.execute(query);
 
-            new File(currentOutputPath).delete();
+            if (cleanUp) {
+                boolean deleted = new File(currentOutputPath).delete();
+                LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+            }
         }
 
         LOG.info("Imported " + lineNumber + " lines of variants in total");
@@ -1205,6 +1303,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         c.setAutoCommit(true);
 
         c.close();
+
+        if (cleanUp) {
+            boolean deleted = file.delete();
+            LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+        }
     }
 
     @Override
@@ -1828,6 +1931,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
         return annotations;
     }
+    private static boolean cleanUp = true;
 
     private static class ParserThread extends Thread {
 
@@ -1843,7 +1947,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         private final String tableName;
         private final String baseDir;
 
-        private ParserThread(String sessID, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef, Annotation[] annotations, CustomField[] customFields,String tableName) throws FileNotFoundException, IOException {
+        private ParserThread(String sessID, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef, Annotation[] annotations, CustomField[] customFields, String tableName) throws FileNotFoundException, IOException {
             this.vcfFile = vcfFile;
             this.outFile = outFile;
             this.fileID = fileID;
@@ -1860,6 +1964,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             } else {
                 reader = new BufferedReader(new FileReader(vcfFile));
             }
+        }
+
+        @Override
+        public String toString() {
+            return "ParserThread{" + "includeHomoRef=" + includeHomoRef + ", updateID=" + updateID + ", vcfFile=" + vcfFile + ", reader=" + reader + ", outFile=" + outFile + ", fileID=" + fileID + ", customFields=" + customFields + ", annotations=" + annotations + ", sessID=" + sessID + ", tableName=" + tableName + ", baseDir=" + baseDir + '}';
         }
 
         @Override
@@ -1915,7 +2024,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
                     LOG.info("Completed annotation, taking " + duration + " minutes");
 
-
                     VariantManagerUtils.logFileSize(annotatedFilename);
                     currentFilename = annotatedFilename;
                     //fract += ANNOTATING_FRACTION / vcfFiles.length;
@@ -1940,24 +2048,25 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 }
 
                 //upload to staging table
-                LOG.info("Loading data into table: " + tableName);
+                LOG.info("Loading data into table: " + tableName + " from " + currentFilename);
                 //makeProgress(sessID, "Loading data into table...", fract);
                 uploadFileToVariantTable(sessID, new File(currentFilename), tableName);
                 //fract += LOAD_TABLE_FRACTION;
 
             } catch (Exception e) {
-                EmailLogger.logByEmail("Error running parser", "Here is the message: " + e.getMessage());
+                EmailLogger.logByEmail("Error running parser on " + vcfFile.getAbsolutePath(), "Here is the object: " + toString() + ". Here is the message: " + ExceptionUtils.getStackTrace(e));
                 LOG.error(e);
             }
 
             //cleanup
             System.gc();
-            for (String filename : filesUsed) {
-                boolean deleted = (new File(filename)).delete();
-                LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
+            if (cleanUp) {
+                for (String filename : filesUsed) {
+                    boolean deleted = (new File(filename)).delete();
+                    LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
+                }
             }
 
         }
-
     }
 }

@@ -21,15 +21,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.shared.db.shard.result.ShardedResultSetFactory;
+
 
 /**
  *
@@ -40,7 +41,9 @@ public class ConnectionController {
     private static final Log LOG = LogFactory.getLog(ConnectionController.class);
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
-    private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
+    private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
+    private static final Map<String, ReentrantReadWriteLock> sessionUsageLocks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
+
     private static String dbHost;
     private static int dbPort = -1;
 
@@ -97,88 +100,6 @@ public class ConnectionController {
         } finally {
             conn.close();
         }
-    }
-
-    private static class QueryExecutionRunnable implements Runnable {
-
-        private final String query;
-        private final String sessID;
-        private ResultSet resultSet;
-        private SQLException ex;
-
-        public QueryExecutionRunnable(String s, String q) {
-            this.sessID = s;
-            this.query = q;
-        }
-
-        @Override
-        public void run() {
-            try {
-                resultSet = executeQuery(sessID, query);
-            } catch (SQLException ex) {
-                this.ex = ex;
-                LOG.error(ex);
-            }
-        }
-
-        public boolean didCompleteSuccessfully() { return ex == null; }
-        public SQLException getException() { return ex; }
-        public ResultSet getResultSet() { return resultSet; }
-    }
-
-    public static ResultSet executeQuerySharded(String sessID, String query) throws SQLException {
-
-        boolean isCount = query.contains("COUNT(*)");
-        boolean isSelect = !isCount;
-
-        List<String> shardedQueries = shardQuery(sessID, query);
-        int numShards = shardedQueries.size();
-        List<ResultSet> resultSets = new ArrayList<ResultSet>(numShards);
-        List<QueryExecutionRunnable> runnables = new ArrayList<QueryExecutionRunnable>(numShards);
-        List<Thread> threads = new ArrayList<Thread>();
-        for (String q : shardedQueries) {
-            QueryExecutionRunnable r = new QueryExecutionRunnable(sessID,q);
-            runnables.add(r);
-            Thread t = new Thread(r);
-            threads.add(t);
-            t.start();
-        }
-
-        for (Thread t : threads) {
-            try {
-                t.join();
-            } catch (InterruptedException ex) {
-                throw new SQLException(ex.getMessage());
-            }
-        }
-
-        for (QueryExecutionRunnable r : runnables) {
-            if (r.didCompleteSuccessfully()) {
-                resultSets.add(r.getResultSet());
-            } else {
-                throw r.getException();
-            }
-        }
-
-        if (isCount) {
-            return ShardedResultSetFactory.ShardedCountQueryResultSet(resultSets, 1); // TODO: actually determine column
-
-        // assuming it must be a select query at this point
-        } else {
-            return ShardedResultSetFactory.ShardedSelectQueryResultSet(resultSets);
-        }
-    }
-
-    /**
-     * Take a query and shard it (in a scale-up fashion, i.e. all shards exist in the
-     * same database) so that the initial query is divided and comprehensive
-     * @param sessID The session requesting the query
-     * @param query The query to shard
-     * @return A list of queries to run, which altogether are comprehensive of query
-     */
-    private static List<String> shardQuery(String sessID, String query) {
-        // TODO: complete
-        throw new UnsupportedOperationException("Sharding up queries not implemented yet");
     }
 
     public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException {
@@ -250,26 +171,86 @@ public class ConnectionController {
         }
     }
 
-    public static void removeSession(String sessID) throws SQLException {
-        synchronized (sessionPoolMap) {
-            ConnectionPool pool = sessionPoolMap.remove(sessID);
-            pool.close();
-        }
+    /**
+     * Mark that a background job is starting in the context of a session. This instructs the controller not to
+     * release the database connection pool associated with that session until the background job finishes. Multiple
+     * background jobs can be registered for the same session, and the controller will wait fo ALL of them to finish
+     * before closing the connection pool. If this method returns {@code true}, then the job MUST call
+     * {@link #unregisterBackgroundUsageOfSession(String)} once it no longer needs the connection.
+     *
+     * @param sessionId the session being used
+     * @return {@code true} if the registration was successful and the job must call
+     *     {@link #unregisterBackgroundUsageOfSession(String)} when it finishes
+     */
+    public static synchronized boolean registerBackgroundUsageOfSession(String sessionId) {
+    	ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
+    	if (lock == null) {
+    		lock = new ReentrantReadWriteLock();
+    		sessionUsageLocks.put(sessionId, lock);
+    	}
+    	return lock.readLock().tryLock();
+    }
+
+    /**
+     * Mark that a background job running in the context of a session has finished, releasing a lock on the connection
+     * pool.
+     *
+     * @param sessionId the session being released
+     */
+    public static synchronized void unregisterBackgroundUsageOfSession(String sessionId) {
+    	ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
+    	if (lock != null) {
+    		lock.readLock().unlock();
+    	}
+    }
+
+    public static synchronized void removeSession(String sessID) throws SQLException {
+        new FutureTask<Boolean>(new CloseConnectionWhenDone(sessID)).run();
     }
 
     public static Collection<String> getSessionIDs() {
-        synchronized (sessionPoolMap) {
+        synchronized(sessionPoolMap) {
             return sessionPoolMap.keySet();
         }
     }
 
     public static Collection<String> getDBNames() {
         List<String> result = new ArrayList<String>();
-        for (ConnectionPool pool : sessionPoolMap.values()) {
-            if (!result.contains(pool.getDBName())) {
+        for (ConnectionPool pool : sessionPoolMap.values()){
+            if (!result.contains(pool.getDBName())){
                 result.add(pool.getDBName());
             }
         }
         return result;
+    }
+
+    /**
+     * Closes the connection pool for a session once no background users of the session are left (immediately if nobody
+     * is using it right now).
+     */
+    private static class CloseConnectionWhenDone implements Callable<Boolean> {
+    	/** The session to close. */
+    	private final String sessionId;
+
+    	/**
+    	 * Simple constructor.
+    	 * @param sessionId the session to close
+    	 */
+    	CloseConnectionWhenDone(String sessionId) {
+    		this.sessionId = sessionId;
+    	}
+
+		@Override
+		public Boolean call() throws Exception {
+			ReentrantReadWriteLock lock = ConnectionController.sessionUsageLocks.remove(sessionId);
+			if (lock != null) {
+				lock.writeLock().lock();
+			}
+	        synchronized (sessionPoolMap) {
+	            ConnectionPool pool = sessionPoolMap.remove(sessionId);
+	            pool.close();
+	        }
+			return Boolean.TRUE;
+		}
     }
 }

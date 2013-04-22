@@ -63,6 +63,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
 
     @Override
     public void unregisterSession(String sessID) throws RemoteException, SQLException {
+        // TODO: fix this, session connection pools are needed by orphaned jobs
         ConnectionController.removeSession(sessID);
         System.out.println("Unregistered session " + sessID);
         LOG.info("Unregistered session " + sessID);
