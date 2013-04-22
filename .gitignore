@@ -7,3 +7,4 @@ target
 .settings
 bin
 .DS_Store
+MedSavantServerEngine/medsavant.log
