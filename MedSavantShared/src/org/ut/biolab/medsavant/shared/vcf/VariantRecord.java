@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.shared.vcf;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  *
@@ -662,7 +663,7 @@ public class VariantRecord implements Serializable {
         String s = "";
         if(values.length == 0) return s;
         for(Object o : values){
-            s += "\"" + getString(o) + "\"" + delim;
+            s += "\"" + StringEscapeUtils.escapeJava(getString(o)) + "\"" + delim;
         }
         return s.substring(0, s.length()-1);
     }
