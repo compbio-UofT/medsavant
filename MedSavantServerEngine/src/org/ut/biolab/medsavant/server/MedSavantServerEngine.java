@@ -79,8 +79,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         System.out.println("Server Information:");
         System.out.println(
                 "  SERVER ADDRESS: " + thisAddress + "\n"
-                + "  LISTENING ON PORT: " + listenOnPort + "\n"
-                + "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
+                + "  LISTENING ON PORT: " + listenOnPort + "\n");
+                //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
             // create the registry and bind the name and object.
             registry = LocateRegistry.createRegistry(listenOnPort);
@@ -184,7 +184,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             if (prop.containsKey("listen-on-port")) {
                                 int listenOnPort = Integer.parseInt(prop.getProperty("listen-on-port"));
                                 MedSavantServerUnicastRemoteObject.setListenPort(listenOnPort);
-                                MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
+                                //MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
                             }
                             if (prop.containsKey("email")) {
                                 EmailLogger.setMailRecipient(prop.getProperty("email"));
@@ -210,7 +210,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                     case 'l':
                         int listenOnPort = Integer.parseInt(g.getOptarg());
                         MedSavantServerUnicastRemoteObject.setListenPort(listenOnPort);
-                        MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
+                        //MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
                         break;
                     case 'u':
                         user = g.getOptarg();
