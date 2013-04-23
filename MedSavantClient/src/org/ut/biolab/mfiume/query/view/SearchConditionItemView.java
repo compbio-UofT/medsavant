@@ -72,7 +72,7 @@ public class SearchConditionItemView extends PillView {
             public JPopupMenu generatePopup() {
                 final JPopupMenu m = new JPopupMenu();
 
-                final JPanel conditionsEditor = new JPanel();
+                final JPanel conditionsEditor = ViewUtil.getClearPanel();
                 JProgressBar waitForConditions = new JProgressBar();
                 waitForConditions.setIndeterminate(true);
                 if (ClientMiscUtils.MAC) {
@@ -80,7 +80,7 @@ public class SearchConditionItemView extends PillView {
                 }
                 conditionsEditor.add(waitForConditions);
 
-                JPanel closePanel = new JPanel();
+                JPanel closePanel = ViewUtil.getClearPanel();
                 closePanel.setLayout(new BoxLayout(closePanel,BoxLayout.X_AXIS));
                 closePanel.add(Box.createHorizontalGlue());
                 JButton closeButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLOSE));
@@ -109,6 +109,7 @@ public class SearchConditionItemView extends PillView {
                                 @Override
                                 public void run() {
                                     conditionsEditor.removeAll();
+
                                     conditionsEditor.add(editor);
                                     m.pack();
                                     m.invalidate();

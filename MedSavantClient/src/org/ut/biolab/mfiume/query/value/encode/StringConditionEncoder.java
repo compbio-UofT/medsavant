@@ -79,10 +79,12 @@ public class StringConditionEncoder {
     }
 
     public static boolean encodesNull(String encoding) {
+        if (encoding == null) { return false; }
         return encoding.equals(ENCODING_NULL);
     }
 
     public static boolean encodesNotNull(String encoding) {
+        if (encoding == null) { return false; }
         return encoding.equals(ENCODING_NOTNULL);
     }
 }

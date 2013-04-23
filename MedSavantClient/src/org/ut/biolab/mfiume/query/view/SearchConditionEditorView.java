@@ -13,6 +13,7 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
     protected final SearchConditionItem item;
 
     public SearchConditionEditorView(SearchConditionItem i) {
+        this.setOpaque(false);
         this.item = i;
     }
 

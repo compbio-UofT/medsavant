@@ -210,8 +210,7 @@ public class PillView extends JPanel {
         this.leftPanel.removeAll();
         if (c != null) {
             this.leftPanel.add(c);
-            this.leftPanel.add(Box.createRigidArea(new Dimension(2, 2)));
-
+            this.leftPanel.add(Box.createHorizontalStrut(4));
         }
         updateUI();
     }
@@ -226,15 +225,15 @@ public class PillView extends JPanel {
     }
 
     private void updateDisclosure() {
-        this.rightPanel.removeAll();
+        this.leftPanel.removeAll();
         if (this.isDisclosureVisible) {
             if (this.isSelected) {
-                setRightPanel(new ImagePanel("disclosure.png"));
+                setLeftPanel(new ImagePanel("disclosure.png"));
             } else {
-                setRightPanel(new ImagePanel("disclosure-gray.png"));
+                setLeftPanel(new ImagePanel("disclosure-gray.png"));
             }
         } else {
-            setRightPanel(null);
+            setLeftPanel(null);
         }
     }
 
