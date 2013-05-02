@@ -20,6 +20,7 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -405,5 +406,21 @@ public class PooledConnection implements Connection {
 
     public boolean tableExists(String tableName) throws SQLException {
         return executeQuery(String.format("SHOW TABLES LIKE '%s'", tableName)).next();
+    }
+
+    public void setSchema(String schema) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getSchema() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void abort(Executor executor) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

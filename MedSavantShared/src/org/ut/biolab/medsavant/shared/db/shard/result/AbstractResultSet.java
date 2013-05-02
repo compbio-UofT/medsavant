@@ -974,4 +974,12 @@ public class AbstractResultSet implements ResultSet {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
+    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); 
+    }
+
 }
