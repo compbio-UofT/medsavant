@@ -22,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,20 +74,48 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
 
     private void applySearchConditions() {
-        Condition c;
-        try {
-            c = getSQLConditionsFrom(rootGroup);
-            if (c == null) {
-                c = ConditionUtils.TRUE_CONDITION;
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Condition c;
+                    c = getSQLConditionsFrom(rootGroup);
+                    if (c == null) {
+                        c = ConditionUtils.TRUE_CONDITION;
+                    }
+                    System.out.println(c.toString());
+
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            applyButton.setEnabled(false);
+                            applyButton.setText("Searching...");
+                            applyButton.updateUI();
+                        }
+                    });
+                    FilterController.getInstance().setConditions(c);
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            applyButton.setText("Search");
+                            applyButton.setEnabled(true);
+                            applyButton.updateUI();
+
+                        }
+                    });
+                } catch (Exception ex) {
+                    LOG.error(ex);
+                    ex.printStackTrace();
+                    DialogUtils.displayException("Error", "There was an error performing your search", ex);
+                }
             }
-            System.out.println(c.toString());
-            FilterController.getInstance().setConditions(c);
-            applyButton.setEnabled(false);
-        } catch (Exception ex) {
-            LOG.error(ex);
-            ex.printStackTrace();
-            DialogUtils.displayException("Error", "There was an error performing your search", ex);
-        }
+        });
+        t.start();
+
+
     }
 
     public final void refreshView() {
