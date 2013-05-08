@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
@@ -43,6 +44,7 @@ public class ConnectionController {
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
     private static final Map<String, ReentrantReadWriteLock> sessionUsageLocks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private static String dbHost;
     private static int dbPort = -1;
@@ -205,7 +207,7 @@ public class ConnectionController {
     }
 
     public static synchronized void removeSession(String sessID) throws SQLException {
-        new FutureTask<Boolean>(new CloseConnectionWhenDone(sessID)).run();
+        executor.submit(new CloseConnectionWhenDone(sessID));
     }
 
     public static Collection<String> getSessionIDs() {
