@@ -1,9 +1,0 @@
-db.driver=com.mysql.jdbc.Driver
-db.name=dorin7
-general.autologin=false
-medsavant.version=1.0.1
-server.address=medsavant-dev.cs.toronto.edu
-server.port=36800
-user.name=root
-user.password=ePndQGgQg8Fn9NPxpKRA0Q==
-user.rememberpass=true
