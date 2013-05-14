@@ -80,6 +80,28 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
 
         return s;
     }
+    
+    
+    protected String toXML(int indent){
+        String tab = "";
+        for(int i = 0; i < indent; ++i){
+           tab += "\t";
+        }
+        
+        String xml = tab + "<Group ";
+        xml += " queryRelation=\""+escape(getRelation().toString()) + "\"";
+        xml += ">\n";
+        
+        for(SearchConditionItem sci : items){
+            xml += sci.toXML(indent+1);
+        }        
+        xml += tab+"</Group>\n";        
+        return xml;
+    }
+    
+    public String toXML(){
+        return this.toXML(0);        
+    }
 
     public void removeItem(SearchConditionItem i) {
 

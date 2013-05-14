@@ -10,19 +10,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXSearchField;
@@ -39,6 +43,9 @@ import org.ut.biolab.mfiume.query.view.PillView;
 import org.ut.biolab.mfiume.query.view.PopupGenerator;
 import org.ut.biolab.mfiume.query.view.ScrollableJPopupMenu;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -46,6 +53,7 @@ import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
  */
 public class QueryViewController extends JPanel implements SearchConditionListener {
 
+    
     private static Log LOG = LogFactory.getLog(QueryViewController.class);
     private final SearchConditionGroupItem rootGroup;
     private final HashMap<SearchConditionItem, SearchConditionItemView> itemToViewMap;
@@ -89,6 +97,118 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         }
     }
 
+    public void saveConditions(File file){          
+        String xml = rootGroup.toXML();      
+        try{
+            PrintWriter out = new PrintWriter(file);
+            out.println(xml);
+            out.close();
+        }catch(Exception ex){
+            LOG.error(ex);
+            ex.printStackTrace();
+            DialogUtils.displayException("Error", "There was an error saving your search", ex);
+        }
+                
+    }
+    
+    
+    private SearchConditionItem getItemFromXML(Element element, SearchConditionGroupItem parentGroup) throws ParseException{
+                
+        String name = StringEscapeUtils.unescapeXml(element.getAttribute("name"));
+        
+        QueryRelation qr;
+        if(element.getAttribute("queryRelation").equalsIgnoreCase("OR")){
+            qr = QueryRelation.OR;
+        }else if(element.getAttribute("queryRelation").equalsIgnoreCase("AND")){
+            qr = QueryRelation.AND;
+        }else{            
+            throw new ParseException("Malformed input file contains invalid query relation", 0);
+        }
+        
+        SearchConditionItem sci = new SearchConditionItem(name, qr, parentGroup);
+        
+        
+        String encodedConditions = StringEscapeUtils.unescapeXml(element.getAttribute("encodedConditions"));
+        if(encodedConditions != null && encodedConditions.length() > 0){            
+            sci.setSearchConditionEncoding(encodedConditions);
+        }
+        
+
+        //The description does not need to be unescaped.
+        String desc = element.getAttribute("description");
+        if(desc != null && desc.length() > 0){
+            sci.setDescription(desc);
+        }
+        generateItemViewAndAddToGroup(sci, parentGroup);
+        return sci;
+    }
+    
+    private SearchConditionGroupItem getGroupFromXML(Element rootElement, SearchConditionGroupItem parentGroup) throws ParseException{
+            if(!rootElement.getNodeName().toLowerCase().equals("group")){                
+                DialogUtils.displayError("ERROR: Malformed/Invalid Input file");                
+            }
+            
+            QueryRelation qr;
+            if(rootElement.getAttribute("queryRelation").equalsIgnoreCase("OR")){
+                qr = QueryRelation.OR;
+            }else if(rootElement.getAttribute("queryRelation").equalsIgnoreCase("AND")){
+                qr = QueryRelation.AND;
+            }else{
+                 throw new ParseException("Malformed input file contains invalid query relation", 0);
+            }
+            
+            SearchConditionGroupItem scg;
+            if(parentGroup == null){
+                scg = this.rootGroup;
+            }else{            
+                scg = new SearchConditionGroupItem(qr, null, parentGroup);               
+            }
+                                   
+            NodeList nl = rootElement.getChildNodes();
+            for(int i = 0 ; i < nl.getLength(); i++) {
+                Node n = nl.item(i);
+                if(n.getNodeType() == Node.ELEMENT_NODE){
+                    Element el = (Element)n;
+                    if(el.getNodeName().equalsIgnoreCase("group")){
+                        SearchConditionGroupItem childGroup = getGroupFromXML(el, scg);
+                        scg.addItem(childGroup);
+                    }else if(el.getNodeName().equalsIgnoreCase("item")){                    
+                        SearchConditionItem sci = getItemFromXML(el, scg);
+                        //scg.addItem(sci);                 
+                    }else{
+                        throw new ParseException("Malformed input file contains invalid XML element", 0);                      
+                    }
+                }
+            }
+            
+            return scg;
+        
+    }
+    
+    public void loadConditions(File f){
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        
+         try{
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Element rootElement = db.parse(f).getDocumentElement();
+                        
+            
+            this.rootGroup.clearItems();
+            //ensure that the controller is registered as a listener exactly 
+            //once.      Unnecessary?
+            // this.rootGroup.removeListener(this);
+            // this.rootGroup.addListener(this);
+            
+            getGroupFromXML(rootElement, null);            
+            
+            refreshView();
+         }catch(Exception ex){
+            LOG.error(ex);
+            ex.printStackTrace();
+            DialogUtils.displayException("Error", "There was an error loading your search", ex);
+         }
+   }
+    
     public final void refreshView() {
         List<JComponent> cs;
         cs = getComponentsFromQueryModel(rootGroup);
@@ -206,10 +326,14 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         itemToViewMap.remove(m);
     }
 
+    public void generateItemViewAndAddToGroup(SearchConditionItem scgi, SearchConditionGroupItem parent){
+        SearchConditionItemView view = conditionViewGenerator.generateViewForItem(scgi);
+        addItemToGroup(scgi, view, parent);
+    }
+    
     public void generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
-        SearchConditionItemView view = conditionViewGenerator.generateViewForItem(item);
-        addItemToGroup(item, view, parent);
+        generateItemViewAndAddToGroup(item, parent);                
     }
 
     public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {

@@ -49,8 +49,8 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         double[] selectedValues;
         if (encoding == null) {
             selectedValues = null;
-        } else {
-            selectedValues = NumericConditionEncoder.unencodeConditions(encoding);
+        } else {           
+            selectedValues = NumericConditionEncoder.unencodeConditions(encoding);        
         }
 
         final double[] extremeValues = generator.getExtremeNumericValues();
@@ -99,7 +99,8 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             @Override
             public void mouseReleased(MouseEvent e) {
                 fromBox.setText(ViewUtil.numToString(slider.getLow()));
-                toBox.setText(ViewUtil.numToString(slider.getHigh()));
+                toBox.setText(ViewUtil.numToString(slider.getHigh()));               
+
             }
         });
 
@@ -109,13 +110,10 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
                 int key = e.getKeyCode();
                 if (key == KeyEvent.VK_ENTER) {
                     Range selectedRage = new Range(getNumber(fromBox.getText()), getNumber(toBox.getText()));
-                    fromBox.setText(ViewUtil.numToString(selectedRage.getMin()));
-                    toBox.setText(ViewUtil.numToString(selectedRage.getMax()));
-                    slider.setLow(selectedRage.getMin());
-                    slider.setHigh(selectedRage.getMax());
-                    slider.updateUI();
-                    // TODO:encode
-                    encodeValue(slider.getLow(), slider.getHigh(), selectedRage.getMin(), selectedRage.getMax());
+                    
+                    setSelectedValues(slider, fromBox, toBox, selectedRage);
+                    
+                  
                 }
             }
 
@@ -171,6 +169,9 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
     private void encodeValue(double low, double high, double min, double max) {
 
         String s = NumericConditionEncoder.encodeConditions(low, high);
+        
+        
+              
         saveSearchConditionParameters(s);
 
         String d = NumericConditionEncoder.getDescription(low, high, min, max);

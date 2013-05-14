@@ -26,6 +26,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -47,7 +48,7 @@ import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
  * @author Andrew
  */
 public class SearchBar extends JPanel {
-
+    private static final String SAVED_SEARCH_EXTENSION = "cond";
     private static SearchBar instance;
 
     private FilterController controller;
@@ -190,6 +191,8 @@ public class SearchBar extends JPanel {
             }
         });
 
+        final JFileChooser fileChooser = new JFileChooser();
+        
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
         dSave.setTitle("Load Search Conditions");
         dSave.setResizable(false);
@@ -198,8 +201,22 @@ public class SearchBar extends JPanel {
             SavedFiltersPanel savedFiltersPanel;
 
             @Override
-            public void mouseClicked(MouseEvent me) {
-                if (savedFiltersPanel != null) {
+            public void mouseClicked(MouseEvent me) {                
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
+                fileChooser.setFileFilter(filter);
+        
+                if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                            
+                    if(file.exists()){                      
+                        getQueryViewController().loadConditions(file);                      
+                    }else{
+                        DialogUtils.displayError("File "+file.getPath()+" does not exist!");
+                    }  
+                }      
+                
+                
+               /* if (savedFiltersPanel != null) {
                     dSave.remove(savedFiltersPanel);
                 }
                 savedFiltersPanel = new SavedFiltersPanel();
@@ -208,7 +225,8 @@ public class SearchBar extends JPanel {
                 dSave.add(savedFiltersPanel);
                 dSave.pack();
                 dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
-                dSave.setVisible(true);
+                dSave.setVisible(true);*/
+                
             }
 
             @Override
@@ -259,7 +277,23 @@ public class SearchBar extends JPanel {
             }
 
             @Override
-            public void mouseClicked(MouseEvent me) {
+            public void mouseClicked(MouseEvent me) {                
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
+                fileChooser.setFileFilter(filter);
+        
+                if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    if(!file.getPath().toLowerCase().endsWith("."+SAVED_SEARCH_EXTENSION)){
+                        file = new File(file.getPath() + "."+SAVED_SEARCH_EXTENSION);
+                    }            
+                    if(file.exists()){
+                        int r = JOptionPane.showConfirmDialog(fileChooser, "The file "+file.getPath()+" already exists.  Overwrite?","Warning",JOptionPane.YES_NO_OPTION);
+                        if(r == JOptionPane.YES_OPTION){
+                            getQueryViewController().saveConditions(file);
+                        }
+                    }    
+                }                
+                /*
                 if (FilterController.getInstance().hasFiltersApplied()) {
                     String name = "Untitled";
                     do {
@@ -280,6 +314,7 @@ public class SearchBar extends JPanel {
                 } else {
                     DialogUtils.displayError("Can't save search", "No filters are applied.");
                 }
+                */
             }
 
             @Override
