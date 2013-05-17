@@ -206,7 +206,7 @@ public class ConnectionController {
     	}
     }
 
-    public static synchronized void removeSession(String sessID) throws SQLException {
+    public static void removeSession(String sessID) throws SQLException {
         executor.submit(new CloseConnectionWhenDone(sessID));
     }
 
