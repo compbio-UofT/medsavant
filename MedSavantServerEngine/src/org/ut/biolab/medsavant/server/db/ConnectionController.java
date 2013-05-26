@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.server.db;
 
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -25,7 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
@@ -43,6 +45,7 @@ public class ConnectionController {
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
     private static final Map<String, ReentrantReadWriteLock> sessionUsageLocks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private static String dbHost;
     private static int dbPort = -1;
@@ -83,8 +86,13 @@ public class ConnectionController {
         return DriverManager.getConnection(getConnectionString(host, port, db), user, pass);
     }
 
-    public static PooledConnection connectPooled(String sessID) throws SQLException {
+    public static PooledConnection connectPooled(String sessID) throws SQLException, SessionExpiredException {
         synchronized (sessionPoolMap) {
+
+            if (!sessionPoolMap.containsKey(sessID)) {
+                throw new SessionExpiredException();
+            }
+
             ConnectionPool pool = sessionPoolMap.get(sessID);
             if (pool != null) {
                 return pool.getConnection();
@@ -93,7 +101,7 @@ public class ConnectionController {
         return null;
     }
 
-    public static ResultSet executeQuery(String sessID, String query) throws SQLException {
+    public static ResultSet executeQuery(String sessID, String query) throws SQLException, SessionExpiredException {
         PooledConnection conn = connectPooled(sessID);
         try {
             return conn.executeQuery(query);
@@ -102,7 +110,7 @@ public class ConnectionController {
         }
     }
 
-    public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException {
+    public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException, SessionExpiredException {
         PooledConnection conn = connectPooled(sessID);
         try {
             return conn.executePreparedQuery(query, args);
@@ -111,7 +119,7 @@ public class ConnectionController {
         }
     }
 
-    public static void executeUpdate(String sessID, String query) throws SQLException {
+    public static void executeUpdate(String sessID, String query) throws SQLException, SessionExpiredException {
         PooledConnection conn = connectPooled(sessID);
         try {
             conn.executeUpdate(query);
@@ -120,7 +128,7 @@ public class ConnectionController {
         }
     }
 
-    public static void executePreparedUpdate(String sessID, String query, Object... args) throws SQLException {
+    public static void executePreparedUpdate(String sessID, String query, Object... args) throws SQLException, SessionExpiredException {
         PooledConnection conn = connectPooled(sessID);
         try {
             conn.executePreparedUpdate(query, args);
@@ -205,7 +213,7 @@ public class ConnectionController {
     }
 
     public static synchronized void removeSession(String sessID) throws SQLException {
-        new FutureTask<Boolean>(new CloseConnectionWhenDone(sessID)).run();
+        executor.submit(new CloseConnectionWhenDone(sessID));
     }
 
     public static Collection<String> getSessionIDs() {

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -28,7 +29,7 @@ import java.sql.SQLException;
  */
 public interface SetupAdapter extends Remote {
 
-    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException;
+    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException, SessionExpiredException;
 
-    public void removeDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException, RemoteException;
+    public void removeDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException;
 }

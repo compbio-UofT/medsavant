@@ -197,7 +197,7 @@ public class PluginController extends Controller {
                     URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
                     System.out.println("Downloding GeneMania data from " + pathToGMData.toString());
                     try {
-                        if (true) { throw new IOException("Temporarily preventing gm data from downloading, it's costing me a fortune"); }
+                        if (true) { throw new IOException("Temporarily preventing gm data from downloading. Because it's so large it should only be downloaded once and on demand"); }
                         File data = RemoteFileCache.getCacheFile(pathToGMData);
                         System.out.println("data is" + data.getAbsolutePath());
                         ZipFile zipData = new ZipFile(data.getAbsolutePath());

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  * @author mfiume
@@ -62,7 +63,7 @@ public class ExternalAnnotationController {
         return instance;
     }
 
-    public Annotation[] getExternalAnnotations() throws SQLException, RemoteException {
+    public Annotation[] getExternalAnnotations() throws SQLException, RemoteException, SessionExpiredException {
         return MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
     }
 

@@ -325,6 +325,7 @@ public class Menu extends JPanel {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 LoginController.getInstance().logout();
+
             }
         });
         m.add(logout);

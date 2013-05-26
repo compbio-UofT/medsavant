@@ -19,6 +19,8 @@ package org.ut.biolab.medsavant.client.controller;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +32,8 @@ import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -114,15 +118,18 @@ public class ResultController {
     private void updateFilteredVariantDBResults(int start, int limit, String[] orderByCols) throws InterruptedException, SQLException, RemoteException {
 
         filterSetIDForRecords = filterController.getCurrentFilterSetID();
-
-        filteredVariants = MedSavantClient.VariantManager.getVariants(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(),
-                ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),
-                start,
-                limit,
-                orderByCols);
+        try {
+            filteredVariants = MedSavantClient.VariantManager.getVariants(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    FilterController.getInstance().getAllFilterConditions(),
+                    start,
+                    limit,
+                    orderByCols);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
     }
 
 
@@ -137,11 +144,16 @@ public class ResultController {
                 referenceIDForFilteredCount = ReferenceController.getInstance().getCurrentReferenceID();
                 dbNameForFilteredCount = SettingsController.getInstance().getDBName();
                 int tempFilterId = filterController.getCurrentFilterSetID();
-                filteredVariantCount =  MedSavantClient.VariantManager.getFilteredVariantCount(
-                        LoginController.getInstance().getSessionID(),
-                        ProjectController.getInstance().getCurrentProjectID(),
-                        ReferenceController.getInstance().getCurrentReferenceID(),
-                        filterController.getAllFilterConditions());
+                try {
+                    filteredVariantCount =  MedSavantClient.VariantManager.getFilteredVariantCount(
+                            LoginController.getInstance().getSessionID(),
+                            ProjectController.getInstance().getCurrentProjectID(),
+                            ReferenceController.getInstance().getCurrentReferenceID(),
+                            filterController.getAllFilterConditions());
+                } catch (SessionExpiredException ex) {
+                    MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    return 0;
+                }
                 filterSetIDForFilteredCount = tempFilterId; //temp not really necessary as this is synched...
             }
             return filteredVariantCount;
@@ -154,10 +166,15 @@ public class ResultController {
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForTotal ||
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForTotal ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForTotal)) {
-                totalVariantCount =  MedSavantClient.VariantManager.getVariantCount(
-                        LoginController.getInstance().getSessionID(),
-                        ProjectController.getInstance().getCurrentProjectID(),
-                        ReferenceController.getInstance().getCurrentReferenceID());
+                try {
+                    totalVariantCount =  MedSavantClient.VariantManager.getVariantCount(
+                            LoginController.getInstance().getSessionID(),
+                            ProjectController.getInstance().getCurrentProjectID(),
+                            ReferenceController.getInstance().getCurrentReferenceID());
+                } catch (SessionExpiredException ex) {
+                    MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    return 0;
+                }
                 projectIDForTotal = ProjectController.getInstance().getCurrentProjectID();
                 referenceIDForTotal = ReferenceController.getInstance().getCurrentReferenceID();
                 dbNameForTotal = SettingsController.getInstance().getDBName();

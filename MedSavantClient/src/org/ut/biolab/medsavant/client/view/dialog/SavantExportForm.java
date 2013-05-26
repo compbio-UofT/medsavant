@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -42,10 +44,11 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -54,14 +57,15 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 public class SavantExportForm extends javax.swing.JDialog {
 
     private static final Log LOG = LogFactory.getLog(SavantExportForm.class);
-
     private JPanel checkBoxPane;
     private List<String> dnaIDs;
     private File outputFile;
     private List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
     private JDialog progressDialog;
 
-    /** Creates new form SavantExportForm */
+    /**
+     * Creates new form SavantExportForm
+     */
     public SavantExportForm() throws InterruptedException, SQLException, RemoteException {
 
 
@@ -80,12 +84,18 @@ public class SavantExportForm extends javax.swing.JDialog {
         exportButton.setEnabled(false);
 
         //populate individuals
-        List<String> temp = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentPatientTableName(),
-                BasicPatientColumns.DNA_IDS.getColumnName(),
-                false,
-                false);
+        List<String> temp;
+        try {
+            temp = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentPatientTableName(),
+                    BasicPatientColumns.DNA_IDS.getColumnName(),
+                    false,
+                    false);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         dnaIDs = new ArrayList<String>();
         for (String s : temp) {
             for (String s1 : s.split(",")) {
@@ -109,82 +119,87 @@ public class SavantExportForm extends javax.swing.JDialog {
     }
 
     private void export() throws InterruptedException, IOException, SQLException, RemoteException {
-        //get selected DNA IDs
-        List<String> selectedIds = new ArrayList<String>();
-        for (JCheckBox box : checkBoxes) {
-            if (box.isSelected()) {
-                selectedIds.add(box.getText());
+        try {
+            //get selected DNA IDs
+            List<String> selectedIds = new ArrayList<String>();
+            for (JCheckBox box : checkBoxes) {
+                if (box.isSelected()) {
+                    selectedIds.add(box.getText());
+                }
             }
-        }
-        if (selectedIds.isEmpty()) {
-            progressLabel.setText("No individuals selected");
+            if (selectedIds.isEmpty()) {
+                progressLabel.setText("No individuals selected");
+                progressDialog.setVisible(false);
+                this.setVisible(true);
+                return;
+            }
+
+
+            //get bookmarks
+            Map<String, List<String>> map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIDs(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    FilterController.getInstance().getAllFilterConditions(),
+                    selectedIds,
+                    -1);
+
+            //get BAM files
+            List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
+
+            //genome version
+            String genomeName = ReferenceController.getInstance().getCurrentReferenceName();
+            String genomeUrl = ReferenceController.getInstance().getCurrentReferenceUrl();
+
+            //create file
+            BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
+
+            out.write("<?xml version=\"1.0\" ?>\n"
+                    + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
+
+            if (genomeUrl != null) {
+                out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
+            } else {
+                out.write(" <genome name=\"" + genomeName + "\" >\n");
+                for (Chromosome c : ReferenceController.getInstance().getChromosomes()) {
+                    out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
+                }
+                out.write(" </genome>\n");
+            }
+
+            for (String path : bamFiles) {
+                out.write("  <track uri=\"" + path + "\"/>\n");
+            }
+
+            Object[] keys = map.keySet().toArray();
+            for (Object keyObject : keys) {
+                String key = (String) keyObject;
+                List<String> positions = map.get(key);
+                for (String p : positions) {
+                    out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
+                }
+            }
+
+            out.write("</savant>\n");
+
+
+            //out.write(s);
+            out.close();
+
             progressDialog.setVisible(false);
-            this.setVisible(true);
+            setVisible(false);
+            progressDialog.dispose();
+            dispose();
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
         }
-
-
-        //get bookmarks
-        Map<String, List<String>> map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIDs(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(),
-                ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),
-                selectedIds,
-                -1);
-
-        //get BAM files
-        List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
-
-        //genome version
-        String genomeName = ReferenceController.getInstance().getCurrentReferenceName();
-        String genomeUrl = ReferenceController.getInstance().getCurrentReferenceUrl();
-
-        //create file
-        BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
-
-        out.write("<?xml version=\"1.0\" ?>\n"
-                + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
-
-        if (genomeUrl != null) {
-            out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
-        } else {
-            out.write(" <genome name=\"" + genomeName + "\" >\n");
-            for (Chromosome c : ReferenceController.getInstance().getChromosomes()) {
-                out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
-            }
-            out.write(" </genome>\n");
-        }
-
-        for (String path : bamFiles) {
-            out.write("  <track uri=\"" + path + "\"/>\n");
-        }
-
-        Object[] keys = map.keySet().toArray();
-        for (Object keyObject : keys) {
-            String key = (String) keyObject;
-            List<String> positions = map.get(key);
-            for (String p : positions) {
-                out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
-            }
-        }
-
-        out.write("</savant>\n");
-
-
-        //out.write(s);
-        out.close();
-
-        progressDialog.setVisible(false);
-        setVisible(false);
-        progressDialog.dispose();
-        dispose();
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -287,7 +302,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         progressDialog = new JDialog();
         progressDialog.setTitle("Show in Savant");
         JPanel p = new JPanel();
-        p.setPreferredSize(new Dimension(300,100));
+        p.setPreferredSize(new Dimension(300, 100));
         p.setLayout(new BorderLayout());
         p.add(new WaitPanel("Exporting Savant Project"));
         progressDialog.getContentPane().add(p);
@@ -297,7 +312,6 @@ public class SavantExportForm extends javax.swing.JDialog {
         progressDialog.setVisible(true);
 
         new MedSavantWorker<Void>("SavantExportForm") {
-
             @Override
             protected void showProgress(double fraction) {
                 throw new UnsupportedOperationException("Not supported yet.");
@@ -321,7 +335,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Save Savant Project");
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.addChoosableFileFilter(new ExtensionsFileFilter(new String[] { "svp" }));
+        fc.addChoosableFileFilter(new ExtensionsFileFilter(new String[]{"svp"}));
         fc.setMultiSelectionEnabled(false);
 
         int result = fc.showDialog(null, null);
@@ -338,7 +352,6 @@ public class SavantExportForm extends javax.swing.JDialog {
     private void outputFileFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputFileFieldActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_outputFileFieldActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseFileButton;
     private javax.swing.JButton exportButton;
@@ -348,5 +361,4 @@ public class SavantExportForm extends javax.swing.JDialog {
     private javax.swing.JLabel progressLabel;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
-
 }

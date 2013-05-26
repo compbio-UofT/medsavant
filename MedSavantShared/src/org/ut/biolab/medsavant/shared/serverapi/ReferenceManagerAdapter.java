@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.model.Reference;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 
@@ -31,19 +32,19 @@ import org.ut.biolab.medsavant.shared.model.Reference;
  */
 public interface ReferenceManagerAdapter extends Remote {
 
-    public Reference[] getReferences(String sessID) throws SQLException, RemoteException;
+    public Reference[] getReferences(String sessID) throws SQLException, RemoteException, SessionExpiredException;
 
-    public String[] getReferenceNames(String sessID) throws SQLException, RemoteException;
+    public String[] getReferenceNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
 
-    public int getReferenceID(String sessID, String refName) throws SQLException, RemoteException;
+    public int getReferenceID(String sessID, String refName) throws SQLException, RemoteException, SessionExpiredException;
 
-    public boolean containsReference(String sessID, String name) throws SQLException, RemoteException;
+    public boolean containsReference(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
 
-    public int addReference(String sessID, String name, Chromosome[] chroms, String url) throws SQLException, RemoteException;
+    public int addReference(String sessID, String name, Chromosome[] chroms, String url) throws SQLException, RemoteException, SessionExpiredException;
 
-    public boolean removeReference(String sessID, int refid) throws SQLException, RemoteException;
+    public boolean removeReference(String sessID, int refid) throws SQLException, RemoteException, SessionExpiredException;
 
-    public String getReferenceUrl(String sessID, int refID) throws SQLException, RemoteException;
+    public String getReferenceUrl(String sessID, int refID) throws SQLException, RemoteException, SessionExpiredException;
 
-    public Chromosome[] getChromosomes(String sessID, int refID) throws SQLException, RemoteException;
+    public Chromosome[] getChromosomes(String sessID, int refID) throws SQLException, RemoteException, SessionExpiredException;
 }

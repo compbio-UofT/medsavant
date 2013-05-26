@@ -23,13 +23,16 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -46,6 +49,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
+import org.ut.biolab.medsavant.client.view.component.SelectableListView;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
@@ -87,6 +92,9 @@ public class BrowserPage extends SubSectionView {
         return instance;
     }
     private GenericStringChooser gsc;
+    private List<String> dnaIDs;
+    private final ArrayList<String> sampleIdsHavingBams;
+    private final HashMap<String, String> dnaIDToURLMap;
 
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
@@ -109,6 +117,35 @@ public class BrowserPage extends SubSectionView {
             }
         });
 
+        dnaIDs = java.util.Arrays.asList(new String[] {});
+        sampleIdsHavingBams = new ArrayList<String>();
+        dnaIDToURLMap = new HashMap<String, String>();
+
+        try {
+            dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getSessionID(),
+                    ProjectController.getInstance().getCurrentVariantTableName(),
+                    BasicVariantColumns.DNA_ID.getColumnName(),
+                    true);
+            gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
+
+
+                for (String s : dnaIDs) {
+                    String url = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
+                            LoginController.getSessionID(),
+                            ProjectController.getInstance().getCurrentProjectID(),
+                            s);
+                    if (url != null && !url.isEmpty()) {
+                        sampleIdsHavingBams.add(s);
+                        String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
+                        dnaIDToURLMap.put(s, splitUrls[0]);
+                    }
+                }
+
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
+
         GenomeController.getInstance()
                 .addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
             @Override
@@ -116,15 +153,17 @@ public class BrowserPage extends SubSectionView {
                 if (!variantTrackLoaded) {
 
                     // load a gene track if it exists
-                    try {
-                        System.out.println("Loading gene track");
-                        String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                        String urlOfTrack = getTrackURL(referenceName, "gene");
-                        addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
-                    } catch (Exception ex) {
-                        LOG.info("Error loading gene track");
-                        ex.printStackTrace();
-                    }
+                    /*
+                     try {
+                     System.out.println("Loading gene track");
+                     String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                     String urlOfTrack = getTrackURL(referenceName, "gene");
+                     addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
+                     } catch (Exception ex) {
+                     LOG.info("Error loading gene track");
+                     ex.printStackTrace();
+                     }
+                     */
 
                     // load the MedSavant variant track
                     try {
@@ -132,7 +171,10 @@ public class BrowserPage extends SubSectionView {
                         msds = new MedSavantDataSource();
                         System.out.println("Subscribing selection change listener");
                         gsc.addListener(msds);
-                        FrameController.getInstance().createFrame(new Track[]{TrackFactory.createTrack(msds)});
+                        Track t = TrackFactory.createTrack(msds);
+                        FrameController c = FrameController.getInstance();
+                        c.createFrame(new Track[]{t});
+                        variantTrackLoaded = true;
 
                     } catch (SavantTrackCreationCancelledException ex) {
                         LOG.info("Error loading MedSavant variant track");
@@ -142,34 +184,60 @@ public class BrowserPage extends SubSectionView {
             }
         });
     }
-
+    
     @Override
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
-            settingComponents = new Component[3];
+
+            while (genomeView == null && variationPanel == null) {
+                try {
+                    System.out.println("Waiting for panels...");
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(BrowserPage.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            settingComponents = new Component[4];
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getToggleButtonForPanel(variationPanel, "Variation");
 
-            try {
-                List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                        LoginController.getSessionID(),
-                        ProjectController.getInstance().getCurrentVariantTableName(),
-                        BasicVariantColumns.DNA_ID.getColumnName(),
-                        true);
-                gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
+            JButton button = new JButton("Restrict DNA IDs");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    gsc.setVisible(true);
+                }
+            });
 
-                JButton button = new JButton("Restrict DNA IDs");
-                button.addActionListener(new ActionListener() {
+            settingComponents[2] = button;
+
+            try {
+
+                final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
+
+                JButton dnaButton = new JButton("Open BAM File(s)");
+                dnaButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        gsc.setVisible(true);
+                        bamFileChooser.setVisible(true);
                     }
                 });
 
-                settingComponents[2] = button;
+                bamFileChooser.addListener(new Listener<SelectableListView.SelectionEvent>() {
+                    @Override
+                    public void handleEvent(SelectableListView.SelectionEvent event) {
+                        List selections = event.getSelections();
+                        for (Object o : selections) {
+                            String url = dnaIDToURLMap.get(o.toString());
+                            addTrackFromURLString(url, DataFormat.ALIGNMENT);
+                        }
+                    }
+                });
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                settingComponents[3] = dnaButton;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
         }
@@ -180,55 +248,94 @@ public class BrowserPage extends SubSectionView {
     public JPanel getView() {
         try {
             if (view == null) {
+
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
+                view.add(new WaitPanel("Preparing Savant Genome Browser..."));
 
                 Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
                 genomeContainer = new GenomeContainer(pageName, chroms);
-
                 genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
-                genomeView.setToggleBarVisible(false);
 
-                view.add(genomeView, BorderLayout.NORTH);
-
-                browserPanel = new JPanel();
-                browserPanel.setLayout(new BorderLayout());
-
-                Savant savantInstance = Savant.getInstance(false, false);
-
-                PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
-                PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
-                PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
-
-                savantInstance.setStartPageVisible(false);
-                savantInstance.setTrackBackground(new Color(210, 210, 210));
-                savantInstance.setBookmarksVisibile(false);
-                savantInstance.setVariantsVisibile(false);
-
-                GenomeController.getInstance().setGenome(null);
-
-                String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                final String urlOfTrack = getTrackURL(referenceName, "sequence");
-
-                browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
-
-                view.add(browserPanel, BorderLayout.CENTER);
-
-                variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, VariationController.getInstance().getModule(), false, 325);
+                final JPanel variationPlaceHolder = new JPanel();
+                variationPlaceHolder.setLayout(new BorderLayout());
+                variationPlaceHolder.add(new WaitPanel("Initializing variant views..."), BorderLayout.CENTER);
+                variationPanel = new PeekingPanel("Variations", BorderLayout.WEST, variationPlaceHolder, false, 325);
                 variationPanel.setToggleBarVisible(false);
 
-                view.add(variationPanel, BorderLayout.EAST);
-
-                Thread t = new Thread(new Runnable() {
+                Runnable prepareBrowserThread = new Runnable() {
                     @Override
                     public void run() {
-                        addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                        try {
+                            final JPanel tmpView = new JPanel();
+                            tmpView.setLayout(new BorderLayout());
+
+                            genomeView.setToggleBarVisible(false);
+
+                            tmpView.add(genomeView, BorderLayout.NORTH);
+
+                            browserPanel = new JPanel();
+                            browserPanel.setLayout(new BorderLayout());
+
+                            Savant savantInstance = Savant.getInstance(false, false);
+
+                            PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
+                            PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
+                            PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
+
+                            savantInstance.setStartPageVisible(false);
+                            savantInstance.setTrackBackground(new Color(210, 210, 210));
+                            savantInstance.setBookmarksVisibile(false);
+                            savantInstance.setVariantsVisibile(false);
+
+                            variationPlaceHolder.removeAll();
+                            variationPlaceHolder.add(VariationController.getInstance().getModule(), BorderLayout.CENTER);
+
+
+                            GenomeController.getInstance().setGenome(null);
+
+                            String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                            final String urlOfTrack = getTrackURL(referenceName, "sequence");
+
+                            browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
+
+                            tmpView.add(browserPanel, BorderLayout.CENTER);
+
+                            tmpView.add(variationPanel, BorderLayout.EAST);
+
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view.removeAll();
+                                    view.add(tmpView, BorderLayout.CENTER);
+                                    view.updateUI();
+                                }
+                            });
+
+                            Thread t = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                                }
+                            });
+                            t.start();
+
+
+                        } catch (Exception ex) {
+                            view.removeAll();
+                            WaitPanel p = new WaitPanel("Error loading genome browser");
+                            p.setComplete();
+                            view.add(p);
+                        }
                     }
-                });
-                t.start();
+                };
+
+                new Thread(prepareBrowserThread).start();
 
             } else {
-                genomeContainer.updateIfRequired();
+                if (genomeContainer != null) {
+                    genomeContainer.updateIfRequired();
+                }
             }
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error generating genome view: %s", ex);
@@ -236,7 +343,7 @@ public class BrowserPage extends SubSectionView {
         return view;
     }
 
-    public static void addTrackFromURLString(String urlString, DataFormat format) {
+    public void addTrackFromURLString(String urlString, DataFormat format) {
         try {
             if (!TrackController.getInstance().containsTrack(urlString)) {
                 URL url = new URL(urlString);
@@ -260,8 +367,9 @@ public class BrowserPage extends SubSectionView {
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
+        //MedSavantDataSource.setActive(true);
+
         genomeContainer.updateIfRequired();
-        MedSavantDataSource.setActive(true);
 
         // Refresh variants track
         if (msds != null) {
@@ -274,7 +382,7 @@ public class BrowserPage extends SubSectionView {
     @Override
     public void viewDidUnload() {
         super.viewDidUnload();
-        MedSavantDataSource.setActive(false);
+        //MedSavantDataSource.setActive(false);
     }
 
     public void updateContents() {

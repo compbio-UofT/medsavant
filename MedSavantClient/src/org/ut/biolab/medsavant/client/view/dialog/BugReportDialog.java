@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package or.ut.biolab.medsavant.client.util.error.report;
+package org.ut.biolab.medsavant.client.view.dialog;
 
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
@@ -86,7 +86,7 @@ public class BugReportDialog extends javax.swing.JDialog {
         areaProblem.setRows(5);
         jScrollPane1.setViewportView(areaProblem);
 
-        jButton1.setText("Send Report");
+        jButton1.setText("Submit");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);

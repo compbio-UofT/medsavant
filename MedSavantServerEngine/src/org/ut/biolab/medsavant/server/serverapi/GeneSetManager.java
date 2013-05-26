@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 
 
@@ -46,14 +47,14 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
 
     private static GeneSetManager instance;
 
-    public static synchronized GeneSetManager getInstance() throws RemoteException {
+    public static synchronized GeneSetManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new GeneSetManager();
         }
         return instance;
     }
 
-    private GeneSetManager() throws RemoteException {
+    private GeneSetManager() throws RemoteException, SessionExpiredException {
     }
 
 
@@ -64,7 +65,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
      * @throws SQLException
      */
     @Override
-    public GeneSet[] getGeneSets(String sessID) throws SQLException {
+    public GeneSet[] getGeneSets(String sessID) throws SQLException, SessionExpiredException {
 
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().groupBy(GENOME).select(GENOME, TYPE, "COUNT(DISTINCT name)");
         LOG.info("getGeneSets:" + query);
@@ -86,7 +87,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
      * @throws SQLException
      */
     @Override
-    public GeneSet getGeneSet(String sessID, String refName) throws SQLException {
+    public GeneSet getGeneSet(String sessID, String refName) throws SQLException, SessionExpiredException {
 
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().where(GENOME, refName).select(TYPE, "COUNT(DISTINCT name)");
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
@@ -98,7 +99,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException {
+    public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
         LOG.debug(query);
@@ -117,7 +118,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException {
+    public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END, TRANSCRIPT);
         LOG.debug(query);
@@ -133,7 +134,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException {
+    public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException, SessionExpiredException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant;
 
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
-import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
@@ -42,15 +41,15 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.sun.corba.se.impl.presentation.rmi.ExceptionHandler;
 import gnu.getopt.Getopt;
-import java.awt.Font;
-import java.awt.Toolkit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
 public class MedSavantClient implements MedSavantServerRegistry {
 
@@ -77,6 +76,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static MedSavantFrame frame;
 
     static public void main(String args[]) {
+
+        setExceptionHandler();
 
         verifyJIDE();
         setLAF();
@@ -134,9 +135,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
             return;
         }
 
+        int port = (new Integer(serverPort)).intValue();
+
         Registry registry;
+
         LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
-        registry = LocateRegistry.getRegistry(serverAddress, (new Integer(serverPort)).intValue());
+        registry = LocateRegistry.getRegistry(serverAddress, port);
+
         LOG.debug("Connected");
 
         // look up the remote object
@@ -190,5 +195,16 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     private static void verifyJIDE() {
         com.jidesoft.utils.Lm.verifyLicense("Marc Fiume", "Savant Genome Browser", "1BimsQGmP.vjmoMbfkPdyh0gs3bl3932");
+    }
+
+    private static void setExceptionHandler() {
+        Thread.setDefaultUncaughtExceptionHandler(
+                new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        System.out.println("GLOBAL EXCEPTION HANDLER: " + t.getName() + ": " + e);
+                    }
+                });
+
     }
 }

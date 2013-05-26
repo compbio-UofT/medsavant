@@ -22,8 +22,8 @@ import java.sql.SQLException;
 import org.ut.biolab.medsavant.shared.model.Notification;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.NotificationManagerAdapter;
-
 
 /**
  *
@@ -48,7 +48,7 @@ public class NotificationManager extends MedSavantServerUnicastRemoteObject impl
      * applies across all users.
      */
     @Override
-    public Notification[] getNotifications(String sessID, String user) throws SQLException, RemoteException {
+    public Notification[] getNotifications(String sessID, String user) throws SQLException, RemoteException, SessionExpiredException {
 
         ProjectDetails[] unpublished = ProjectManager.getInstance().getUnpublishedChanges(sessID);
         Notification[] result = new Notification[unpublished.length];

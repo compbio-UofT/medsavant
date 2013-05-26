@@ -18,11 +18,15 @@ package org.ut.biolab.medsavant.client.user;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -41,17 +45,32 @@ public class UserController extends Controller<UserEvent> {
     }
 
     public void addUser(String name, char[] pass, UserLevel level) throws SQLException, RemoteException {
-        MedSavantClient.UserManager.addUser(LoginController.getInstance().getSessionID(), name, pass, level);
+        try {
+            MedSavantClient.UserManager.addUser(LoginController.getInstance().getSessionID(), name, pass, level);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         fireEvent(new UserEvent(UserEvent.Type.ADDED, name));
     }
 
     public void removeUser(String name) throws SQLException, RemoteException {
-        MedSavantClient.UserManager.removeUser(LoginController.getInstance().getSessionID(), name);
+        try {
+            MedSavantClient.UserManager.removeUser(LoginController.getInstance().getSessionID(), name);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         fireEvent(new UserEvent(UserEvent.Type.REMOVED, name));
     }
 
     public String[] getUserNames() throws SQLException, RemoteException {
-        return MedSavantClient.UserManager.getUserNames(LoginController.getInstance().getSessionID());
+        try {
+            return MedSavantClient.UserManager.getUserNames(LoginController.getInstance().getSessionID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public void getUserLevel() {

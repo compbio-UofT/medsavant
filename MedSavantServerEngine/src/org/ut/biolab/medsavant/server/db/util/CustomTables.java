@@ -23,6 +23,7 @@ import java.util.Map;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 
 /**
@@ -47,12 +48,12 @@ public class CustomTables extends MedSavantServerUnicastRemoteObject implements 
     }
 
     @Override
-    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException {
+    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException, SessionExpiredException {
         return getCustomTableSchema(sid, tablename, false);
     }
 
     @Override
-    public synchronized TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException {
+    public synchronized TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException, SessionExpiredException {
 
         String dbName = ConnectionController.getDBName(sid);
         if (!dbnameToTableMap.containsKey(dbName)) {

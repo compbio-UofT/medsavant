@@ -59,6 +59,8 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
 
         init();
 
+        System.out.println("Generating conditions for " + getName() + " from " + encoding);
+
         List<String> termNames = StringConditionEncoder.unencodeConditions(encoding);
         List<OntologyTerm> appliedTerms = new ArrayList<OntologyTerm>(termNames.size());
         for (String termName : termNames) {

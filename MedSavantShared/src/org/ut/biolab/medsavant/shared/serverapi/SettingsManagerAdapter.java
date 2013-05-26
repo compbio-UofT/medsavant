@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.shared.serverapi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -28,9 +29,9 @@ import java.sql.SQLException;
  */
 public interface SettingsManagerAdapter extends Remote {
 
-    public void addSetting(String sid, String key, String value) throws SQLException, RemoteException;
-    public String getSetting(String sid, String key) throws SQLException, RemoteException;
-    public void updateSetting(String sid, String key, String value) throws SQLException, RemoteException;
-    public boolean getDBLock(String sid) throws SQLException, RemoteException;
-    public void releaseDBLock(String sid) throws SQLException, RemoteException;
+    public void addSetting(String sid, String key, String value) throws SQLException, RemoteException, SessionExpiredException;
+    public String getSetting(String sid, String key) throws SQLException, RemoteException, SessionExpiredException;
+    public void updateSetting(String sid, String key, String value) throws SQLException, RemoteException, SessionExpiredException;
+    public boolean getDBLock(String sid) throws SQLException, RemoteException, SessionExpiredException;
+    public void releaseDBLock(String sid) throws SQLException, RemoteException, SessionExpiredException;
 }

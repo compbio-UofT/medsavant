@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -36,25 +37,25 @@ public interface GeneSetManagerAdapter extends Remote {
      * @param sessID the login session ID
      * @param refName the reference name (e.g. "hg18")
      */
-    public GeneSet getGeneSet(String sessID, String refName) throws SQLException, RemoteException;
+    public GeneSet getGeneSet(String sessID, String refName) throws SQLException, RemoteException, SessionExpiredException;
 
     /**
      * Get a list of all available gene-sets for all references.
      */
-    public GeneSet[] getGeneSets(String sessID) throws SQLException, RemoteException;
+    public GeneSet[] getGeneSets(String sessID) throws SQLException, RemoteException, SessionExpiredException;
 
     /**
      * Get a list of all genes for the given set.
      */
-    public Gene[] getGenes(String sessID, GeneSet set) throws SQLException, RemoteException;
+    public Gene[] getGenes(String sessID, GeneSet set) throws SQLException, RemoteException, SessionExpiredException;
 
     /**
      * Get a list of all transcripts for the given set.
      */
-    public Gene[] getTranscripts(String sessID, GeneSet set) throws SQLException, RemoteException;
+    public Gene[] getTranscripts(String sessID, GeneSet set) throws SQLException, RemoteException, SessionExpiredException;
 
     /**
      * Get all blocks associated with the given gene.  Not currently presented to the user in any fashion.
      */
-    public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException;
+    public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException, SessionExpiredException;
 }

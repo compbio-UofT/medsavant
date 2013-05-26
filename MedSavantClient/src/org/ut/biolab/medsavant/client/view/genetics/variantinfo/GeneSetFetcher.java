@@ -19,6 +19,8 @@ package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -28,6 +30,8 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -87,7 +91,13 @@ public class GeneSetFetcher {
     }
 
     public double getNormalizedVariantCount(Gene gene) throws SQLException, RemoteException, InterruptedException{
-        double varCount = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene.getChrom(), gene.getStart(), gene.getEnd());
+        double varCount = 0.0;
+        try {
+            varCount = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene.getChrom(), gene.getStart(), gene.getEnd());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return 0.0;
+        }
         double length = gene.getEnd()-gene.getStart();
         return ClientMiscUtils.round((varCount/length)*1000.00, 4);
     }

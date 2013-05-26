@@ -50,6 +50,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     private JButton selectNone;
     private JButton selectAll;
     private JScrollPane jsp;
+    private boolean makingBatchChanges = false;
 
     public StringSearchConditionEditorView(SearchConditionItem i, final StringConditionValueGenerator vg) {
         super(i);
@@ -153,6 +154,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 if (isNull.isSelected()) {
+                    setAllSelected(false, false);
                     saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
                             Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NULL})));
                     item.setDescription("null");
@@ -165,6 +167,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 if (isNotNull.isSelected()) {
+                    setAllSelected(false, false);
                     saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
                             Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NOTNULL})));
                     item.setDescription("not null");
@@ -221,7 +224,11 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         if (selectedValues == null) {
             setAllSelected(true);
             saveSearchConditionParameters();
+
+        } else if (StringConditionEncoder.encodesNotNull(encoding) || StringConditionEncoder.encodesNull(encoding)) {
+            setAllSelected(false);
         } else {
+
             int[] selectedIndices = new int[selectedValues.size()];
             for (int i = 0; i < selectedValues.size(); i++) {
                 selectedIndices[i] = values.indexOf(selectedValues.get(i));
@@ -237,7 +244,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         filterableList.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
+                if (!e.getValueIsAdjusting() && !makingBatchChanges) {
                     // TODO save encoding
                     int[] indices = filterableList.getCheckBoxListSelectedIndices();
                     List<String> chosenValues = new ArrayList<String>();
@@ -363,7 +370,11 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     }
 
     private void setAllSelected(boolean b) {
+        setAllSelected(b, true);
+    }
 
+    private void setAllSelected(boolean b, boolean doSave) {
+        makingBatchChanges = true;
         if (b) {
             for (int i = 0; i < filterableList.getModel().getSize(); i++) {
                 filterableList.addCheckBoxListSelectedIndex(i);
@@ -372,6 +383,11 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             for (int i = 0; i < filterableList.getModel().getSize(); i++) {
                 filterableList.removeCheckBoxListSelectedIndex(i);
             }
+        }
+        makingBatchChanges = false;
+        if (doSave) {
+            saveSearchConditionParameters();
+            setDescriptionBasedOnSelections();
         }
     }
 }

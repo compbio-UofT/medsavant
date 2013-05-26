@@ -29,10 +29,12 @@ import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import savant.api.adapter.BookmarkAdapter;
 import savant.api.adapter.DataSourceAdapter;
 import savant.api.adapter.RangeAdapter;
@@ -97,27 +99,31 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
     }
 
     private void updateSource() throws SQLException, RemoteException, InterruptedException {
+        try {
+            //update chroms
+            List<String> chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentVariantTableName(),
+                    BasicVariantColumns.CHROM.getColumnName(),
+                    false , true);
+            chromosomes.clear();
+            for (String c : chroms) {
+                chromosomes.add(c);
+            }
 
-        //update chroms
-        List<String> chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentVariantTableName(),
-                BasicVariantColumns.CHROM.getColumnName(),
-                false , true);
-        chromosomes.clear();
-        for (String c : chroms) {
-            chromosomes.add(c);
-        }
-
-        //update participants
-        List<String> dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentVariantTableName(),
-                BasicVariantColumns.DNA_ID.getColumnName(),
-                false , true);
-        participants = new String[dnaIds.size()];
-        for (int i = 0; i < dnaIds.size(); i++) {
-            participants[i] = dnaIds.get(i);
+            //update participants
+            List<String> dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentVariantTableName(),
+                    BasicVariantColumns.DNA_ID.getColumnName(),
+                    false , true);
+            participants = new String[dnaIds.size()];
+            for (int i = 0; i < dnaIds.size(); i++) {
+                participants[i] = dnaIds.get(i);
+            }
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
         }
 
     }

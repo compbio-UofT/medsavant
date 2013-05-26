@@ -46,12 +46,14 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.PathField;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -88,7 +90,6 @@ public class InstallAnnotationWizard extends WizardDialog {
 
         //change next action
         setNextAction(new AbstractAction() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 String pageName = getCurrentPage().getTitle();
@@ -126,7 +127,6 @@ public class InstallAnnotationWizard extends WizardDialog {
 
     private AbstractWizardPage getAnnotationSourcePage() {
         return new DefaultWizardPage(PAGENAME_SRC) {
-
             private JRadioButton radioFromRepo = new JRadioButton("MedSavant public repository");
             private JRadioButton radioFromFile = new JRadioButton("file (for custom annotations)");
 
@@ -136,7 +136,6 @@ public class InstallAnnotationWizard extends WizardDialog {
                 //g.add(radioFromFile);
 
                 radioFromRepo.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         setSourceFromRepo(radioFromRepo.isSelected());
@@ -144,7 +143,6 @@ public class InstallAnnotationWizard extends WizardDialog {
                 });
 
                 radioFromFile.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         setSourceFromRepo(radioFromRepo.isSelected());
@@ -172,7 +170,6 @@ public class InstallAnnotationWizard extends WizardDialog {
     private AbstractWizardPage getChoosePage() {
 
         return new DefaultWizardPage(PAGENAME_CHOOSE) {
-
             {
                 chooseContainer = new JPanel();
                 chooseContainer.setLayout(new BorderLayout());
@@ -244,9 +241,8 @@ public class InstallAnnotationWizard extends WizardDialog {
             stp.addRowSelectionInterval(0, 0);
 
         } catch (Exception ex) {
-            Logger.getLogger(InstallAnnotationWizard.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error(ex);
         }
-
         return p;
     }
 
@@ -282,7 +278,6 @@ public class InstallAnnotationWizard extends WizardDialog {
 
         //setup page
         return new DefaultWizardPage(PAGENAME_INSTALL) {
-
             private JProgressBar progressBar;
             private JButton startButton;
 
@@ -295,7 +290,6 @@ public class InstallAnnotationWizard extends WizardDialog {
 
                 startButton = new JButton("Install Annotation");
                 startButton.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         startButton.setEnabled(false);
@@ -351,7 +345,6 @@ public class InstallAnnotationWizard extends WizardDialog {
 
     private AbstractWizardPage getCompletionPage() {
         return new CompletionWizardPage(PAGENAME_COMPLETE) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -362,6 +355,11 @@ public class InstallAnnotationWizard extends WizardDialog {
     }
 
     private boolean create() throws SQLException, IOException {
-        return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+        try {
+            return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return false; // will not matter
+        }
     }
 }

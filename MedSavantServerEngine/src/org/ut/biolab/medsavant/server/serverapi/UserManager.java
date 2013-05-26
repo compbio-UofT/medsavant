@@ -29,6 +29,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.UserManagerAdapter;
 
 
@@ -42,18 +43,18 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     private static UserManager instance;
 
-    public static synchronized UserManager getInstance() throws RemoteException {
+    public static synchronized UserManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new UserManager();
         }
         return instance;
     }
 
-    private UserManager() throws RemoteException {
+    private UserManager() throws RemoteException, SessionExpiredException {
     }
-
+    
     @Override
-    public String[] getUserNames(String sessID) throws SQLException {
+    public String[] getUserNames(String sessID) throws SQLException, SessionExpiredException {
 
         List<String> results = new ArrayList<String>();
         ResultSet rs = ConnectionController.executePreparedQuery(sessID, "SELECT DISTINCT user FROM mysql.user");
@@ -65,7 +66,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public boolean userExists(String sessID, String user) throws SQLException {
+    public boolean userExists(String sessID, String user) throws SQLException, SessionExpiredException {
         return ConnectionController.executePreparedQuery(sessID, "SELECT user FROM mysql.user WHERE user=?;", user).next();
     }
 
@@ -79,7 +80,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
      * @throws SQLException
      */
     @Override
-    public synchronized void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException {
+    public synchronized void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             // TODO: Transactions aren't supported for MyISAM, so this has no effect.
@@ -107,7 +108,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
      * @throws SQLException
      */
     @Override
-    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException {
+    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             String dbName = ConnectionController.getDBName(sessID);
@@ -140,7 +141,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public UserLevel getUserLevel(String sessID, String name) throws SQLException {
+    public UserLevel getUserLevel(String sessID, String name) throws SQLException, SessionExpiredException {
         if (userExists(sessID, name)) {
             // If the user can create other users, they're assumed to be admin.
             PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -166,7 +167,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public void removeUser(String sid, String name) throws SQLException {
+    public void removeUser(String sid, String name) throws SQLException, SessionExpiredException {
         ConnectionController.executePreparedUpdate(sid, "DROP USER ?@'localhost'", name);
     }
 }

@@ -32,6 +32,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import com.jidesoft.grid.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -46,9 +48,11 @@ import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -172,7 +176,13 @@ public class OntologyAggregatePanel extends AggregatePanel {
 
                     @Override
                     protected ProgressStatus checkProgress() throws RemoteException {
-                        ProgressStatus stat = MedSavantClient.OntologyManager.checkProgress(LoginController.getInstance().getSessionID(), false);
+                        ProgressStatus stat;
+                        try {
+                            stat = MedSavantClient.OntologyManager.checkProgress(LoginController.getInstance().getSessionID(), false);
+                        } catch (SessionExpiredException ex) {
+                            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                            return null;
+                        }
                         LOG.info("OntologyManager returned status " + stat);
                         return stat;
                     }
@@ -503,7 +513,13 @@ public class OntologyAggregatePanel extends AggregatePanel {
             for (int i = 0; i < terms.length; i++) {
                 terms[i] = nodeStack.get(i).term;
             }
-            Map<OntologyTerm, String[]> genes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), terms, ReferenceController.getInstance().getCurrentReferenceName());
+            Map<OntologyTerm, String[]> genes;
+            try {
+                genes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), terms, ReferenceController.getInstance().getCurrentReferenceName());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return;
+            }
             for (OntologyNode node: nodeStack) {
                 String[] nodeGenes = genes.get(node.term);
                 if (nodeGenes != null) {

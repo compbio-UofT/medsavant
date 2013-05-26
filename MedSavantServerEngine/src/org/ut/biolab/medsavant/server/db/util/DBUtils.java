@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -59,7 +60,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     private DBUtils() throws RemoteException {
     }
 
-    public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException {
+    public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sid, "SHOW COLUMNS IN " + tableName);
 
         while (rs.next()) {
@@ -96,7 +97,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         }
     }
 
-    public DbTable importTable(String sessionId, String tablename) throws SQLException {
+    public DbTable importTable(String sessionId, String tablename) throws SQLException, SessionExpiredException {
 
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
@@ -116,7 +117,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     @Override
-    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException {
+    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, SessionExpiredException {
 
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
@@ -135,11 +136,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         return ts;
     }
 
-    public static void dropTable(String sessID, String tableName) throws SQLException {
+    public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
         ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName + ";");
     }
 
-    public static boolean tableExists(String sessID, String tableName) throws SQLException {
+    public static boolean tableExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             return conn.tableExists(tableName);
@@ -149,7 +150,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     @Override
-    public int getNumRecordsInTable(String sessID, String tablename) throws SQLException {
+    public int getNumRecordsInTable(String sessID, String tablename) throws SQLException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, "SELECT COUNT(*) FROM `" + tablename + "`");
         rs.next();
         return rs.getInt(1);
@@ -200,7 +201,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         return getDistinctValuesForColumn(sessID, tableName, colName, false, cacheing);
     }
 
@@ -208,7 +209,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
@@ -270,7 +271,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     @Override
-    public Range getExtremeValuesForColumn(String sessID, String tabName, String colName) throws InterruptedException, SQLException, RemoteException {
+    public Range getExtremeValuesForColumn(String sessID, String tabName, String colName) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting extreme values for " + tabName + "." + colName);
         makeProgress(sessID, String.format("Retrieving extreme values for %s...", colName), 0.0);
         String dbName = SessionController.getInstance().getDatabaseForSession(sessID);

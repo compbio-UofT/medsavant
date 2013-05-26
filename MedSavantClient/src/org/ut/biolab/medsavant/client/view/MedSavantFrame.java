@@ -34,6 +34,8 @@ import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -45,6 +47,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 /**
@@ -105,6 +108,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         //fileMenu.add(manageDBItem);
         fileMenu.add(pluginsItem);
+
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");
             closeItem.addActionListener(new ActionListener() {
@@ -115,7 +119,21 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             });
             fileMenu.add(closeItem);
         }
+
         menu.add(fileMenu);
+
+        JMenu helpMenu = new JMenu("Help");
+
+        JMenuItem feedbackItem = new JMenuItem("Feedback");
+        feedbackItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog d = new FeedbackDialog(MedSavantFrame.getInstance(), true);
+                d.setVisible(true);
+            }
+        });
+        helpMenu.add(feedbackItem);
+        menu.add(helpMenu);
 
         setJMenuBar(menu);
 
@@ -151,7 +169,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
-
             @Override
             protected void showProgress(double fract) {
             }
@@ -170,7 +187,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 switchToView(SESSION_VIEW_CARD_NAME);
                 return null;
             }
-
         }.execute();
 
     }
@@ -200,12 +216,13 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void requestClose() {
-        LoginController controller = LoginController.getInstance();
+        final LoginController controller = LoginController.getInstance();
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Exit MedSavant?", "Are you sure you want to quit?") == DialogUtils.YES) {
-            queuedForExit = true; //sometimes logout aborts this exit, so wait for event
-            //LoginController.logout();
-            controller.addLog("Logged out");
             controller.unregister();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
             System.exit(0);
         }
     }
@@ -262,9 +279,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                         "TitledBorder.font",
                         "ToolBar.font",
                         "ToolTip.font",
-                        "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 12));
+                        "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
 
-            System.setProperty("awt.useSystemAAFontSettings","on");
+            System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
 
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));

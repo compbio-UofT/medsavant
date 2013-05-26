@@ -48,7 +48,6 @@ public class SearchConditionItemView extends PillView {
         this.editor = editor;
 
         i.addListener(new SearchConditionListener() {
-
             @Override
             public void searchConditionsOrderChanged(SearchConditionItem m) {
             }
@@ -73,26 +72,28 @@ public class SearchConditionItemView extends PillView {
                 final JPopupMenu m = new JPopupMenu();
 
                 final JPanel conditionsEditor = ViewUtil.getClearPanel();
+                ViewUtil.applyVerticalBoxLayout(conditionsEditor);
                 JProgressBar waitForConditions = new JProgressBar();
                 waitForConditions.setIndeterminate(true);
                 if (ClientMiscUtils.MAC) {
                     waitForConditions.putClientProperty("JProgressBar.style", "circular");
                 }
-                conditionsEditor.add(waitForConditions);
+                conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("Preparing condition,")));
+                conditionsEditor.add(Box.createVerticalStrut(5));
+                conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("please wait...")));
+                conditionsEditor.add(ViewUtil.centerHorizontally(waitForConditions));
 
                 JPanel closePanel = ViewUtil.getClearPanel();
-                closePanel.setLayout(new BoxLayout(closePanel,BoxLayout.X_AXIS));
+                closePanel.setLayout(new BoxLayout(closePanel, BoxLayout.X_AXIS));
                 closePanel.add(Box.createHorizontalGlue());
                 JButton closeButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLOSE));
                 closePanel.add(closeButton);
                 closePanel.add(Box.createHorizontalStrut(5));
                 closeButton.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         m.setVisible(false);
                     }
-
                 });
 
                 m.add(closePanel);

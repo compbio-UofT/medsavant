@@ -34,7 +34,9 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
@@ -181,9 +183,14 @@ public class StringListFilterView extends TabularFilterView<String> implements B
                                 };
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
-                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getInstance().getSessionID(),
-                            ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
-                            allowInexactMatch));
+                    try {
+                        return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getInstance().getSessionID(),
+                                ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
+                                allowInexactMatch));
+                    } catch (SessionExpiredException ex) {
+                        MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                        return null;
+                    }
                 }
             }
 

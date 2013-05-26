@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.project;
 
+import com.jidesoft.dialog.AbstractDialogPage;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -36,6 +37,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.ArrayUtils;
@@ -53,9 +56,11 @@ import org.ut.biolab.medsavant.shared.model.Reference;
 import org.ut.biolab.medsavant.client.reference.NewReferenceDialog;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.variant.UpdateWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -68,6 +73,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private static final String PAGENAME_PATIENTS = "Individuals";
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
+    private static final String PAGENAME_NOTIFICATIONS = "Notifications";
     private static final String PAGENAME_COMPLETE = "Complete";
     private static String PAGENAME_CREATE = "Create";
     private final boolean modify;
@@ -83,6 +89,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private List<CheckListItem> checkListItems = new ArrayList<CheckListItem>();
     private boolean variantFieldsChanged = false;
     private final ProjectManagerAdapter manager;
+    private JTextField emailField;
+    private JCheckBox autoPublish;
 
     /*
      * modify existing project
@@ -103,7 +111,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     /*
      * create new project
      */
-    public ProjectWizard() throws SQLException, RemoteException  {
+    public ProjectWizard() throws SQLException, RemoteException {
         modify = false;
         projectID = -1;
         originalProjectName = null;
@@ -122,13 +130,15 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         model.append(getPatientFieldsPage());
         model.append(getVCFFieldsPage());
         model.append(getReferencePage());
+        if (modify) {
+            model.append(getNotificationsPage());
+        }
         model.append(getCreatePage());
         model.append(getCompletionPage());
         setPageList(model);
 
         //change next action
         setNextAction(new AbstractAction() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -140,6 +150,12 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     } else if (pagename.equals(PAGENAME_VCF) && validateVariantFormatModel()) {
                         setCurrentPage(PAGENAME_REF);
                     } else if (pagename.equals(PAGENAME_REF) && validateReferences()) {
+                        if (modify) {
+                            setCurrentPage(PAGENAME_NOTIFICATIONS);
+                        } else {
+                            setCurrentPage(PAGENAME_CREATE);
+                        }
+                    } else if (pagename.equals(PAGENAME_NOTIFICATIONS)) {
                         setCurrentPage(PAGENAME_CREATE);
                     } else if (pagename.equals(PAGENAME_CREATE)) {
                         setCurrentPage(PAGENAME_COMPLETE);
@@ -159,7 +175,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NAME) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -178,7 +193,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         //setup text field
         final JTextField namefield = new JTextField();
         namefield.addKeyListener(new KeyAdapter() {
-
             @Override
             public void keyReleased(KeyEvent e) {
                 if (namefield.getText() != null && !namefield.getText().equals("")) {
@@ -201,7 +215,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_PATIENTS) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -218,7 +231,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         scrollpane.getViewport().setBackground(Color.white);
 
         final JTable table = new JTable() {
-
             @Override
             public Class<?> getColumnClass(int column) {
                 if (column == 2) {
@@ -230,7 +242,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         };
 
         patientFormatModel = new DefaultTableModel() {
-
             @Override
             public boolean isCellEditable(int row, int col) {
                 return row >= 8;
@@ -266,7 +277,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         JButton addFieldButton = new JButton("Add Field");
         addFieldButton.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 patientFormatModel.addRow(new Object[5]);
@@ -278,7 +288,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         JButton removeFieldButton = new JButton("Remove Field");
         removeFieldButton.setEnabled(false);
         removeFieldButton.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
@@ -299,7 +308,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_VCF) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -316,7 +324,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         scrollpane.getViewport().setBackground(Color.white);
 
         final JTable table = new JTable() {
-
             @Override
             public Class<?> getColumnClass(int column) {
                 if (column == 2) {
@@ -372,7 +379,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         page.addComponent(scrollpane);
 
         table.addKeyListener(new KeyListener() {
-
             @Override
             public void keyTyped(KeyEvent e) {
                 variantFieldsChanged = true;
@@ -391,7 +397,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         JButton addFieldButton = new JButton("Add Field");
         addFieldButton.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 variantFormatModel.addRow(new Object[2]);
@@ -404,7 +409,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         JButton removeFieldButton = new JButton("Remove Field");
         removeFieldButton.setEnabled(false);
         removeFieldButton.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
@@ -433,7 +437,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_REF) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
@@ -460,12 +463,11 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         JButton addRefButton = new JButton("New Reference");
         addRefButton.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 try {
                     new NewReferenceDialog().setVisible(true);
-                refreshReferencePanel(p);
+                    refreshReferencePanel(p);
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Unable to retrieve references and annotations: %s", ex);
                 }
@@ -477,39 +479,42 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private void refreshReferencePanel(JPanel p) throws SQLException, RemoteException {
-        Reference[] references = MedSavantClient.ReferenceManager.getReferences(LoginController.getInstance().getSessionID());
-        Annotation[] annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
+        try {
+            Reference[] references = MedSavantClient.ReferenceManager.getReferences(LoginController.getInstance().getSessionID());
+            Annotation[] annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
 
-        p.removeAll();
-        checkListItems.clear();
-        for (Reference r : references) {
-            CheckListItem cli = new CheckListItem(r, annotations);
-            checkListItems.add(cli);
-            p.add(cli);
-        }
-        // By default, select the last check-box.  It's either the one they just added, or hg19.
-        if (checkListItems.size() > 0) {
-            checkListItems.get(checkListItems.size() - 1).setSelected(true);
-        }
-        p.add(Box.createVerticalGlue());
+            p.removeAll();
+            checkListItems.clear();
+            for (Reference r : references) {
+                CheckListItem cli = new CheckListItem(r, annotations);
+                checkListItems.add(cli);
+                p.add(cli);
+            }
+            // By default, select the last check-box.  It's either the one they just added, or hg19.
+            if (checkListItems.size() > 0) {
+                checkListItems.get(checkListItems.size() - 1).setSelected(true);
+            }
+            p.add(Box.createVerticalGlue());
 
-        p.updateUI();
-        p.repaint();
+            p.updateUI();
+            p.repaint();
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
     }
 
     private AbstractWizardPage getCreatePage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CREATE) {
-
             @Override
             public void setupWizardButtons() {
-                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
+                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-        page.addText(
-                "You are now ready to " + (modify ? "make changes to" : "create") + " this project. ");
+        page.addText("You are now ready to " + (modify ? "make changes to" : "create") + " this project. ");
 
         final JLabel progressLabel = new JLabel("");
         final JProgressBar progressBar = new JProgressBar();
@@ -520,24 +525,28 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         final JButton workButton = new JButton((modify ? "Modify Project" : "Create Project"));
         final JButton publishButton = new JButton("Publish Variants");
 
-        final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after modify");
-
-        final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
+        //final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
         final JProgressBar publishProgressBar = new JProgressBar();
 
-        workButton.addActionListener(new ActionListener() {
+        final JComponent j = new JLabel("<html>You may continue. The import process will continue in the<br>background and you will be notified upon completion.</html>");
 
+
+        workButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
-
+                j.setVisible(true);
+                progressBar.setIndeterminate(true);
+                if (modify) {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }
+                new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton) {
                     @Override
                     protected Void doInBackground() throws Exception {
                         if (!modify) {
                             createNewProject();
                         } else {
                             LOG.info("Requesting modification from server");
-                            updateID = modifyProject(true,true,true);
+                            updateID = modifyProject(true, true, true);
                             LOG.info("Modification complete");
                         }
                         return null;
@@ -562,21 +571,17 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         //cancelButton.setVisible(false);
         // page.addComponent(ViewUtil.alignRight(cancelButton));
 
+        page.addComponent(j);
+        j.setVisible(false);
+
         if (modify) {
-            page.addComponent(autoPublishVariants);
 
-            JLabel l = new JLabel("WARNING:");
-            l.setForeground(Color.red);
-            l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-            page.addComponent(l);
-            page.addText("All users logged into the system will be logged out\nat the time of publishing.");
-
-            page.addComponent(publishProgressLabel);
+            //page.addComponent(publishProgressLabel);
             page.addComponent(publishProgressBar);
             page.addComponent(ViewUtil.alignRight(publishButton));
 
             publishButton.setVisible(false);
-            publishProgressLabel.setVisible(false);
+            //publishProgressLabel.setVisible(false);
             publishProgressBar.setVisible(false);
         }
 
@@ -585,7 +590,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
     private AbstractWizardPage getCompletionPage() {
         CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -593,6 +597,9 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
             }
         };
+
+        page.addText("You have completed the project modification process.");
+
         return page;
     }
 
@@ -743,9 +750,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     continue;
                 }
 
-                //make modifications
-                updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields,null);
+                String email = this.emailField.getText();
+                boolean autoPublishWhenComplete = this.autoPublish.isSelected();
 
+                updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }
         }
 
@@ -754,6 +762,33 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         ProjectController.getInstance().fireEvent(new ProjectEvent(ProjectEvent.Type.ADDED, projectName));
 
         return updateID;
+    }
+
+    private AbstractWizardPage getNotificationsPage() {
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NOTIFICATIONS) {
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+
+        page.addText("Project modification may take some time. Enter your email address to be notified when the process completes.");
+
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        JLabel l = new JLabel("Email: ");
+        emailField = new JTextField();
+        p.add(l);
+        p.add(emailField);
+        page.addComponent(p);
+
+        autoPublish = new JCheckBox("Automatically publish data upon import completion");
+        autoPublish.setSelected(true);
+        page.addComponent(autoPublish);
+        page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");
+
+        return page;
     }
 
     private class CheckListItem extends JPanel {
@@ -775,11 +810,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             checkBox.setMaximumSize(new Dimension(1000, 20));
             checkBox.setBackground(getBackground());
             checkBox.addItemListener(new ItemListener() {
-
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     boolean selected = checkBox.isSelected();
-                    for (JCheckBox annBox: annBoxes) {
+                    for (JCheckBox annBox : annBoxes) {
                         annBox.setEnabled(selected);
                     }
                 }
@@ -796,7 +830,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             p.add(Box.createHorizontalGlue());
             add(p);
 
-            for (final Annotation a: annotations) {
+            for (final Annotation a : annotations) {
 
                 //make sure annotation is for this reference
                 if (a.getReferenceID() != reference.getID()) {
@@ -850,7 +884,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         public int[] getAnnotationIDs() {
             int[] result = new int[selectedAnnotations.size()];
             int i = 0;
-            for (Integer ann: selectedAnnotations) {
+            for (Integer ann : selectedAnnotations) {
                 result[i++] = ann;
             }
             return result;
@@ -871,6 +905,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private class RemovalEnabler implements ListSelectionListener {
+
         private final int lockedRows;
         private final JButton button;
 
@@ -881,7 +916,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         @Override
         public void valueChanged(ListSelectionEvent lse) {
-            int n = ((ListSelectionModel)lse.getSource()).getMinSelectionIndex();
+            int n = ((ListSelectionModel) lse.getSource()).getMinSelectionIndex();
             button.setEnabled(n >= lockedRows);
         }
     };

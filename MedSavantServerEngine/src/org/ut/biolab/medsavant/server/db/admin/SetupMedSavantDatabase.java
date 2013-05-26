@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
@@ -57,7 +58,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     @Override
-    public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException {
+    public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException, SessionExpiredException {
 
         SessionController sessController = SessionController.getInstance();
         String sessID = sessController.registerNewSession(adminName, new String(rootPassword), "");
@@ -99,7 +100,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     @Override
-    public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, RemoteException {
+    public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException {
 
         String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
@@ -111,7 +112,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
     }
 
-    private void createTables(String sessID) throws SQLException, RemoteException {
+    private void createTables(String sessID) throws SQLException, RemoteException, SessionExpiredException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
@@ -359,24 +360,24 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
      * @param password a character array, supposedly for security's sake
      * @throws SQLException
      */
-    private void addRootUser(String sid, Connection c, char[] password) throws SQLException, RemoteException {
+    private void addRootUser(String sid, Connection c, char[] password) throws SQLException, RemoteException, SessionExpiredException {
         if (!UserManager.getInstance().userExists(sid, "root")) {
             UserManager.getInstance().addUser(sid, "root", password, UserLevel.ADMIN);
         }
     }
 
-    private static void addDefaultReferenceGenomes(String sessionId) throws SQLException, RemoteException {
+    private static void addDefaultReferenceGenomes(String sessionId) throws SQLException, RemoteException, SessionExpiredException {
         ReferenceManager.getInstance().addReference(sessionId, "hg17", Chromosome.getHG17Chromosomes(), null);
         ReferenceManager.getInstance().addReference(sessionId, "hg18", Chromosome.getHG18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
         ReferenceManager.getInstance().addReference(sessionId, "hg19", Chromosome.getHG19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
     }
 
-    private static void addDBSettings(String sid, String versionString) throws SQLException, RemoteException {
+    private static void addDBSettings(String sid, String versionString) throws SQLException, RemoteException, SessionExpiredException {
         SettingsManager.getInstance().addSetting(sid, Settings.KEY_CLIENT_VERSION, versionString);
         SettingsManager.getInstance().addSetting(sid, Settings.KEY_DB_LOCK, Boolean.toString(false));
     }
 
-    private static void populateGenes(String sessID) throws SQLException, RemoteException {
+    private static void populateGenes(String sessID) throws SQLException, RemoteException, SessionExpiredException {
         TabixTableLoader loader = new TabixTableLoader(MedSavantDatabase.GeneSetTableSchema.getTable());
 
         try {

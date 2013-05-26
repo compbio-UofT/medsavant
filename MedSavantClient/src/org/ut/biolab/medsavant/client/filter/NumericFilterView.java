@@ -38,9 +38,11 @@ import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.DecimalRangeSlider;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -241,11 +243,16 @@ public class NumericFilterView extends FilterView {
                                 }
                             }
                         } else {
-                            return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                                    LoginController.getInstance().getSessionID(),
-                                    ProjectController.getInstance().getCurrentProjectID(),
-                                    columnName,
-                                    appliedRange));
+                            try {
+                                return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
+                                        LoginController.getInstance().getSessionID(),
+                                        ProjectController.getInstance().getCurrentProjectID(),
+                                        columnName,
+                                        appliedRange));
+                            } catch (SessionExpiredException ex) {
+                                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                                return null;
+                            }
                         }
                     }
 

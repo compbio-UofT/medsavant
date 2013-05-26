@@ -34,6 +34,8 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,10 +47,12 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -379,7 +383,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
             @Override
             public void setupWizardButtons() {
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
@@ -395,6 +399,7 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(p);
 
         autoPublish = new JCheckBox("Automatically publish data upon import completion");
+        autoPublish.setSelected(true);
         page.addComponent(autoPublish);
         page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");
 
@@ -436,7 +441,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 addComponent(progressLabel);
                 addComponent(progressBar);
 
-                final JComponent j = new JLabel("<html>You may continue. The import process will continue in the background<br>and you will be notified upon completion.</html>");
+                final JComponent j = new JLabel("<html>You may continue. The import process will continue in the<br>background and you will be notified upon completion.</html>");
                 addComponent(j);
                 j.setVisible(false);
 
@@ -461,7 +466,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
                             @Override
                             protected Void doInBackground() throws Exception {
-                                progressBar.setValue(0);
+                                progressBar.setIndeterminate(true);
+                                //progressBar.setValue(0);
                                 startProgressTimer();
 
                                 String email = emailField.getText();
@@ -512,7 +518,12 @@ public class ImportVariantsWizard extends WizardDialog {
                                 if (inUploading) {
                                     stat = MedSavantClient.NetworkManager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
                                 } else {
-                                    stat = manager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
+                                    try {
+                                        stat = manager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
+                                    } catch (SessionExpiredException ex) {
+                                        MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                                        return null;
+                                    }
                                 }
                                 if (stat != null) {
                                     progressLabel.setText(stat.message);

@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.shared.model.Notification;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -29,6 +30,6 @@ import org.ut.biolab.medsavant.shared.model.Notification;
  */
 public interface NotificationManagerAdapter extends Remote {
 
-    public Notification[] getNotifications(String sid, String user) throws SQLException, RemoteException;
+    public Notification[] getNotifications(String sid, String user) throws SQLException, RemoteException, SessionExpiredException;
 
 }

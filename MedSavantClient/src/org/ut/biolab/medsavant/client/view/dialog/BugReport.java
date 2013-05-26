@@ -1,4 +1,4 @@
-package or.ut.biolab.medsavant.client.util.error.report;
+package org.ut.biolab.medsavant.client.view.dialog;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -23,7 +23,8 @@ import savant.util.MiscUtils;
  */
 public class BugReport {
 
-    public static String reportURL = "http://www.genomesavant.com/p/assets/include/form/both/bugreport-post.php";
+    public static String bugreportURL = "http://www.genomesavant.com/p/assets/include/form/both/bugreport-post.php";
+    public static String feedbackreportURL = "http://www.genomesavant.com/p/assets/include/form/both/feedbackreport-post.php";
 
     public static boolean reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t) throws UnsupportedEncodingException {
 
@@ -37,7 +38,7 @@ public class BugReport {
                     + "&exception=" + getStackTrace(t)
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
 
-            postRequest(new URL(reportURL),params);
+            postRequest(new URL(bugreportURL),params);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,5 +106,23 @@ public class BugReport {
     public static void main(String[] args) throws UnsupportedEncodingException {
         BugReport.reportBug("MedSavant",VersionSettings.VERSION, "Marc Fiume 4", "mfiume@cs.toronto.edu", "UofT", "My description of the problem", new Exception("msg"));
         System.out.println("Bug reported");
+    }
+
+    static boolean reportFeedback(String tool, String version, String name, String email, String feedbackStr) {
+         try {
+            String params =
+                      "tool=" + tool
+                    + "&name=" + name
+                    + "&email=" + email
+                    + "&feedback=" + feedbackStr
+                    + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
+
+            postRequest(new URL(feedbackreportURL),params);
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

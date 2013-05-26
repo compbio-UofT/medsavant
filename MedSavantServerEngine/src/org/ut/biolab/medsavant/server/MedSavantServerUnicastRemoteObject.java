@@ -36,7 +36,7 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
 
     private static final Log LOG = LogFactory.getLog(MedSavantServerUnicastRemoteObject.class);
     private static int CONNECT_PORT = 36800;
-    //private static int EXPORT_PORT = 36801;
+    private static int EXPORT_PORT = 36801;
 
     /**
      * Classes which implement checking for progress during lengthy operations can use this map.  Classes which don't do so can just
@@ -45,16 +45,16 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
     protected final Map<String, ProgressStatus> sessionProgresses = new HashMap<String, ProgressStatus>();
 
     public MedSavantServerUnicastRemoteObject() throws RemoteException {
-        super(CONNECT_PORT);
+        super(EXPORT_PORT);
     }
 
     public static int getListenPort() {
         return CONNECT_PORT;
     }
 
-    /*public static int getExportPort() {
+    public static int getExportPort() {
         return EXPORT_PORT;
-    }*/
+    }
 
     public static void setListenPort(int port) {
         CONNECT_PORT = port;

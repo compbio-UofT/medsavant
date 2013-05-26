@@ -5,6 +5,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,6 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     private final String columnName;
     private final String alias;
     private final CustomField field;
-
     private List<String> columnsToForceStringView = Arrays.asList(
             new String[]{
                 BasicVariantColumns.AC.getColumnName(),
@@ -52,17 +52,17 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         this.alias = field.getAlias();
         this.field = field;
 
-        columnNameToRemapMap = new HashMap<String,Map>();
+        columnNameToRemapMap = new HashMap<String, Map>();
 
         // create gender remap
-        TreeMap<String,String> zygosityRemap = new TreeMap<String,String>();
-        zygosityRemap.put("Homozygous Reference","HomoRef");
-        zygosityRemap.put("Homozygous Alternate","HomoAlt");
-        zygosityRemap.put("Heterozygous","Hetero");
-        zygosityRemap.put("Heterozygous (Triallelic)","HeteroTriallelic");
-        zygosityRemap.put("Missing","Missing");
+        TreeMap<String, String> zygosityRemap = new TreeMap<String, String>();
+        zygosityRemap.put("Homozygous Reference", "HomoRef");
+        zygosityRemap.put("Homozygous Alternate", "HomoAlt");
+        zygosityRemap.put("Heterozygous", "Hetero");
+        zygosityRemap.put("Heterozygous (Triallelic)", "HeteroTriallelic");
+        zygosityRemap.put("Missing", "Missing");
 
-        columnNameToRemapMap.put(BasicVariantColumns.ZYGOSITY.getColumnName(),zygosityRemap);
+        columnNameToRemapMap.put(BasicVariantColumns.ZYGOSITY.getColumnName(), zygosityRemap);
     }
 
     @Override
@@ -78,9 +78,12 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     @Override
     public Condition getConditionsFromEncoding(String encoding) throws Exception {
 
+
+
         if (columnsToForceStringView.contains(columnName)) {
             return generateStringConditionForVariantDatabaseField(encoding);
         }
+
 
         switch (field.getColumnType()) {
             case INTEGER:
@@ -97,7 +100,6 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
         return generateViewFromDatabaseField(item);
     }
-
 
     private SearchConditionItemView generateViewFromDatabaseField(SearchConditionItem item) {
 
@@ -146,7 +148,7 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
             valueGenerator = new StringConditionValueGenerator() {
                 @Override
                 public List<String> getStringValues() {
-                    return Arrays.asList(new String[]{"Homozygous", "Heterozygous", "Heterozygous (Triallelic)", "Missing"});
+                    return Arrays.asList(new String[]{"Homozygous Reference", "Homozygous Alternate", "Heterozygous", "Heterozygous (Triallelic)", "Missing"});
                 }
             };
 
@@ -164,7 +166,6 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         SearchConditionItemView view = new SearchConditionItemView(item, editor);
         return view;
     }
-
     private static final WhichTable whichTable = WhichTable.VARIANT;
 
     private SearchConditionItemView generateNumericViewFromDatabaseField(SearchConditionItem item) {
@@ -179,9 +180,9 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
 
         if (StringConditionEncoder.encodesNull(encoding)) {
-            return UnaryCondition.isNull(col);
+            return ComboCondition.or(UnaryCondition.isNull(col),BinaryCondition.equalTo(col, ""));
         } else if (StringConditionEncoder.encodesNotNull(encoding)) {
-            return UnaryCondition.isNotNull(col);
+            return ComboCondition.and(UnaryCondition.isNotNull(col),BinaryCondition.notEqualTo(col, ""));
         }
 
         /*if (StringConditionEncoder.encodesAll(encoding)) {
@@ -191,6 +192,13 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
          }*/
 
         List<String> selected = StringConditionEncoder.unencodeConditions(encoding);
+
+
+        if (columnNameToRemapMap.containsKey(columnName)) {
+            selected = remapValues(selected, columnNameToRemapMap.get(columnName));
+        }
+
+
         if (selected.isEmpty()) {
             return BinaryCondition.equalTo(1, 0); // always false
         }
@@ -234,4 +242,12 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         }
     }
 
+    private List<String> remapValues(List<String> appliedValues, Map<String, String> remap) {
+        List<String> remappedAppliedValues = new ArrayList<String>();
+        for (String s : appliedValues) {
+            System.out.println("Remapping " + s + " to " + remap.get(s));
+            remappedAppliedValues.add(remap.get(s));
+        }
+        return remappedAppliedValues;
+    }
 }

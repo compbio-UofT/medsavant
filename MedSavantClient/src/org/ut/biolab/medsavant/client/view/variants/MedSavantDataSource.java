@@ -31,8 +31,10 @@ import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView.SelectionEvent;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import savant.api.adapter.BookmarkAdapter;
 import savant.api.adapter.DataSourceAdapter;
 import savant.api.adapter.RangeAdapter;
@@ -53,11 +55,10 @@ import savant.util.MiscUtils;
  */
 public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, VariantDataSourceAdapter, Listener<SelectionEvent> {
 
-    static void setActive(boolean b) {
-        active = b;
-    }
-
-    private static boolean active = false;
+    /*static void setActive(boolean b) {
+     active = b;
+     }*/
+    //private static boolean active = true;
     private Set<String> chromosomes = new HashSet<String>();
     private String[] participants = new String[0];
     private static final int LIMIT = 100000;
@@ -71,7 +72,6 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         }
 
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
-
             @Override
             public void handleEvent(FilterEvent event) {
                 refresh();
@@ -79,7 +79,6 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         });
 
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
-
             @Override
             public void handleEvent(ReferenceEvent event) {
                 try {
@@ -95,22 +94,34 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
     private void updateSource() throws SQLException, RemoteException, InterruptedException {
 
         //update chroms
-        List<String> chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentVariantTableName(),
-                BasicVariantColumns.CHROM.getColumnName(),
-                false);
+        List<String> chroms;
+        try {
+            chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentVariantTableName(),
+                    BasicVariantColumns.CHROM.getColumnName(),
+                    false);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         chromosomes.clear();
         for (String c : chroms) {
             chromosomes.add(c);
         }
 
         //update participants
-        List<String> dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentVariantTableName(),
-                BasicVariantColumns.DNA_ID.getColumnName(),
-                false);
+        List<String> dnaIds;
+        try {
+            dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentVariantTableName(),
+                    BasicVariantColumns.DNA_ID.getColumnName(),
+                    false);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         participants = new String[dnaIds.size()];
         for (int i = 0; i < dnaIds.size(); i++) {
             participants[i] = dnaIds.get(i);
@@ -129,13 +140,28 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
     public Set<String> getReferenceNames() {
         return chromosomes;
     }
+    List<String> dnaIds;
 
     @Override
     public List<VariantRecord> getRecords(String ref, RangeAdapter range, Resolution resolution, RecordFilterAdapter<VariantRecord> filter) throws IOException, InterruptedException {
 
-        System.err.println("Getting records " + active);
+        if (dnaIds == null) {
+            try {
+                dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                        LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentVariantTableName(),
+                        BasicVariantColumns.DNA_ID.getColumnName(),
+                        false);
+            } catch (Exception ex) {
+            }
+        }
+        if (this.restrictToTheseDNAIDs == null && (dnaIds != null && dnaIds.size() > 10)) {
+            throw new IOException("too many samples, restrict DNA IDs");
+        }
 
-        if (active) {
+        //System.err.println("Getting records " + active);
+
+        if (true) { // used to check if active
 
             try {
 
@@ -157,7 +183,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                     for (String dnaID : this.restrictToTheseDNAIDs) {
                         restrictToDNAIDsCondition[i++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), dnaID);
                     }
-                    Condition[][] newFilterConditions = new Condition[filterConditions.length+1][];
+                    Condition[][] newFilterConditions = new Condition[filterConditions.length + 1][];
                     for (i = 0; i < filterConditions.length; i++) {
                         newFilterConditions[i] = filterConditions[i];
                     }

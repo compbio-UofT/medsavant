@@ -63,7 +63,7 @@ public class DbColumn extends DbObject<DbTable>
       throw new Error("<clinit> cannot access jdbc type constants", e);
     }
   }
-    
+  
   private final String _typeName;
   private final Integer _typeLength;
   private final List<DbConstraint> _constraints = new ArrayList<DbConstraint>();
@@ -79,15 +79,15 @@ public class DbColumn extends DbObject<DbTable>
   public DbTable getTable() {
     return getParent();
   }
-    
+
   public String getColumnNameSQL() {
     return getName();
   }
-    
+
   public String getTypeNameSQL() {
     return _typeName;
   }
-    
+
   public Integer getTypeLength() {
     return _typeLength;
   }
@@ -98,7 +98,7 @@ public class DbColumn extends DbObject<DbTable>
 
   /**
    * Sets the default value for this column.  A value of {@code null} will
-   * be treated as <i>no</i> default value.  
+   * be treated as <i>no</i> default value.
    */
   public DbColumn setDefaultValue(Object defaultValue) {
     _defaultValue = defaultValue;
@@ -205,7 +205,7 @@ public class DbColumn extends DbObject<DbTable>
    * @param referencedTableName the name of the referenced table
    * @return the freshly created constraint
    */
-  public DbForeignKeyConstraint references(String name, 
+  public DbForeignKeyConstraint references(String name,
                                            String referencedTableName) {
     return references(name, referencedTableName, null);
   }
@@ -220,8 +220,8 @@ public class DbColumn extends DbObject<DbTable>
    * @param referencedColName the names of the referenced column
    * @return the freshly created constraint
    */
-  public DbForeignKeyConstraint references(String name, 
-                                           String referencedTableName, 
+  public DbForeignKeyConstraint references(String name,
+                                           String referencedTableName,
                                            String referencedColName) {
     DbTable table = getTable().getParent().findTable(referencedTableName);
     DbForeignKeyConstraint fkConstraint =
@@ -241,7 +241,7 @@ public class DbColumn extends DbObject<DbTable>
     _constraints.add(checkOwnership(constraint));
     return constraint;
   }
-  
+
   /**
    * Returns the standard jdbc type name for the give type value (one of {@link java.sql.Types}).
    */

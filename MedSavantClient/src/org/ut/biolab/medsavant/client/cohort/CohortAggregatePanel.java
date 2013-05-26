@@ -89,20 +89,6 @@ public class CohortAggregatePanel extends AggregatePanel {
         removeAll();
         setLayout(new BorderLayout());
 
-        /*exportButton = new JButton("Export Page");
-        exportButton.setEnabled(false);
-        exportButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                try {
-                    ExportTable.exportTable(table);
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("A problem occurred while exporting: %s\nMake sure the output file is not in use.", ex);
-                }
-            }
-        });
-        */
-
         progressPanel = new JPanel();
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
         progressPanel.add(Box.createHorizontalGlue());

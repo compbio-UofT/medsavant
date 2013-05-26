@@ -55,4 +55,10 @@ public class CohortsPage extends SubSectionView {
         }
         return view;
     }
+
+    @Override
+    public void viewDidLoad() {
+        super.viewDidLoad();
+        view.refresh();
+    }
 }

@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
 
 
@@ -54,10 +55,10 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     private static CohortManager instance;
 
-    private CohortManager() throws RemoteException {
+    private CohortManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized CohortManager getInstance() throws RemoteException {
+    public static synchronized CohortManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new CohortManager();
         }
@@ -65,7 +66,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public List<SimplePatient> getIndividualsInCohort(String sid, int projectId, int cohortId) throws SQLException, RemoteException {
+    public List<SimplePatient> getIndividualsInCohort(String sid, int projectId, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
 
         String tablename = PatientManager.getInstance().getPatientTableName(sid,projectId);
         TableSchema cohortTable = MedSavantDatabase.CohortmembershipTableSchema;
@@ -91,7 +92,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public List<String> getDNAIDsForCohort(String sessID, int cohortId) throws SQLException, RemoteException {
+    public List<String> getDNAIDsForCohort(String sessID, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
         List<String> list = getIndividualFieldFromCohort(sessID, cohortId, DNA_IDS.getColumnName());
         List<String> result = new ArrayList<String>();
         for (String s : list) {
@@ -107,7 +108,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException {
+    public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException, SessionExpiredException {
 
         String selQuery = String.format("SELECT %s FROM %s WHERE %s = ANY (SELECT %s FROM %s JOIN %s USING (%s) WHERE %s IN ('%s'))",
                 DNA_IDS.getColumnName(),
@@ -137,7 +138,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public List<String> getIndividualFieldFromCohort(String sessID, int cohortId, String columnName) throws SQLException, RemoteException {
+    public List<String> getIndividualFieldFromCohort(String sessID, int cohortId, String columnName) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
@@ -174,7 +175,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void addPatientsToCohort(String sessID, int[] patientIDs, int cohortID) throws SQLException {
+    public void addPatientsToCohort(String sessID, int[] patientIDs, int cohortID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
 
@@ -198,7 +199,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void removePatientsFromCohort(String sessID, int[] patIDs, int cohID) throws SQLException {
+    public void removePatientsFromCohort(String sessID, int[] patIDs, int cohID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
 
@@ -218,7 +219,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public Cohort[] getCohorts(String sessID, int projID) throws SQLException {
+    public Cohort[] getCohorts(String sessID, int projID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.CohortTableSchema;
         SelectQuery query = new SelectQuery();
@@ -236,7 +237,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void addCohort(String sid, int projectId, String name) throws SQLException {
+    public void addCohort(String sid, int projectId, String name) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.CohortTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -247,7 +248,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void removeCohort(String sid, int cohortId) throws SQLException {
+    public void removeCohort(String sid, int cohortId) throws SQLException, SessionExpiredException {
 
         TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
@@ -268,14 +269,14 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void removeCohorts(String sid, Cohort[] cohorts) throws SQLException {
+    public void removeCohorts(String sid, Cohort[] cohorts) throws SQLException, SessionExpiredException {
         for (Cohort c : cohorts) {
             removeCohort(sid,c.getId());
         }
     }
 
     @Override
-    public int[] getCohortIDs(String sid, int projectId) throws SQLException {
+    public int[] getCohortIDs(String sid, int projectId) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.CohortTableSchema;
         SelectQuery query = new SelectQuery();
@@ -293,7 +294,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void removePatientReferences(String sessID, int projID, int patID) throws SQLException {
+    public void removePatientReferences(String sessID, int projID, int patID) throws SQLException, SessionExpiredException {
 
         int[] cohIDs = getCohortIDs(sessID, projID);
 
@@ -308,7 +309,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public int getNumVariantsInCohort(String sessID, int projID, int refID, int cohortID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException {
+    public int getNumVariantsInCohort(String sessID, int projID, int refID, int cohortID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException, SessionExpiredException {
         List<String> dnaIDs = getDNAIDsForCohort(sessID, cohortID);
         return VariantManager.getInstance().getVariantCountForDNAIDs(sessID, projID, refID, conditions, dnaIDs);
     }

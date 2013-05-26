@@ -30,6 +30,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -49,7 +50,7 @@ public class TabixTableLoader {
         table = t;
     }
 
-    public void loadGenes(String sessID, URI uri, String genome, String type, String... colNames) throws IOException, SQLException {
+    public void loadGenes(String sessID, URI uri, String genome, String type, String... colNames) throws IOException, SQLException, SessionExpiredException {
         InputStream input = null;
         Connection conn = null;
         String line;

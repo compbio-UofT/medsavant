@@ -29,6 +29,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
@@ -38,6 +40,7 @@ import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.view.dialog.CancellableProgressDialog;
@@ -45,6 +48,7 @@ import org.ut.biolab.medsavant.client.view.dialog.FormEditorDialog;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -74,7 +78,7 @@ class IndividualDetailEditor extends DetailedListEditor {
 
     @Override
     public void addItems() {
-        try {               
+        try {
             /*
             AddPatientsForm jd = new AddPatientsForm();
             jd.setModal(true);
@@ -83,8 +87,8 @@ class IndividualDetailEditor extends DetailedListEditor {
             PatientFormController pfc = new PatientFormController();
             FormEditorDialog fed = new FormEditorDialog(pfc);
             fed.setTitle("Add Patient");
-            fed.setVisible(true);     
-            
+            fed.setVisible(true);
+
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to present Add Individual form: %s", ex);
         }
@@ -173,7 +177,12 @@ class IndividualDetailEditor extends DetailedListEditor {
         @Override
         public void run() throws InterruptedException, SQLException, RemoteException, IOException {
             lastStatus = new ProgressStatus("Reading records...", -1.0);
-            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            CustomField[] fields = null;
+            try {
+                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            }
 
             CSVReader in = new CSVReader(new BufferedReader(new FileReader(importFile)));
 
@@ -213,8 +222,11 @@ class IndividualDetailEditor extends DetailedListEditor {
                             }
                         }
                     }
-
-                    MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
+                    try {
+                        MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
+                    } catch (SessionExpiredException ex) {
+                        MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    }
                 }
 
                 in.close();
@@ -234,8 +246,16 @@ class IndividualDetailEditor extends DetailedListEditor {
         public void run() throws SQLException, RemoteException, IOException, InterruptedException {
             lastStatus = new ProgressStatus("Writing records...", 0.0);
 
-            CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
-            List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            CustomField[] fields = null;
+            List<Object[]> patients = null;
+
+            try {
+                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                patients = MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return;
+            }
 
             CSVWriter out = new CSVWriter(new BufferedWriter(new FileWriter(exportFile, false)), ',', '"');
 

@@ -39,6 +39,8 @@ public class Mail {
     public synchronized static boolean sendEmail(String to, String subject, String text, File attachment) {
         try {
 
+            if (to.isEmpty()) { return false; }
+
             LOG.info("Sending email to " + to  + " with subject " + subject);
 
             // create some properties and get the default Session

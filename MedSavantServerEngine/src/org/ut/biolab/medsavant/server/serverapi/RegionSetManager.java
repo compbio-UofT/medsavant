@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.shared.importing.ImportDelimitedFile;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
 
@@ -57,10 +58,10 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
 
     private static RegionSetManager instance;
 
-    private RegionSetManager() throws RemoteException {
+    private RegionSetManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized RegionSetManager getInstance() throws RemoteException {
+    public static synchronized RegionSetManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new RegionSetManager();
         }
@@ -68,7 +69,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public void addRegionSet(String sessID, String regionSetName, int genomeID, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException {
+    public void addRegionSet(String sessID, String regionSetName, int genomeID, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException, SessionExpiredException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
 
@@ -116,7 +117,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public void removeRegionSet(String sessID, int regionSetID) throws SQLException {
+    public void removeRegionSet(String sessID, int regionSetID) throws SQLException, SessionExpiredException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
         try {
@@ -128,7 +129,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public List<RegionSet> getRegionSets(String sessID) throws SQLException {
+    public List<RegionSet> getRegionSets(String sessID) throws SQLException, SessionExpiredException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
@@ -147,7 +148,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set) throws SQLException {
+    public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set) throws SQLException, SessionExpiredException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
 
@@ -167,7 +168,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets) throws SQLException {
+    public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets) throws SQLException, SessionExpiredException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
@@ -192,7 +193,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public void addToRegionSet(String sessID, RegionSet set, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
+    public void addToRegionSet(String sessID, RegionSet set, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException, SessionExpiredException{
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try{
             InsertQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.insert(GENOME_ID, genomeID, REGION_SET_ID, set.getID(), CHROM, chrom, START, start, END, end, DESCRIPTION, desc);

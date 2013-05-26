@@ -340,9 +340,9 @@ public class SearchBar extends JPanel {
 
         JPanel bottomBar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomBar);
-        bottomBar.add(saveLabel);
+        /*bottomBar.add(saveLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(3, 1)));
-        bottomBar.add(loadLabel);
+        bottomBar.add(loadLabel);*/
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
         bottomBar.add(historyLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));

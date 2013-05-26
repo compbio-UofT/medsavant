@@ -21,6 +21,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -29,6 +31,8 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 
 
@@ -67,7 +71,12 @@ public class GeneSetController {
 
     public GeneSet getCurrentGeneSet() throws SQLException, RemoteException {
         if (currentSet == null) {
-            currentSet = manager.getGeneSet(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceName());
+            try {
+                currentSet = manager.getGeneSet(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceName());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+            }
         }
         return currentSet;
     }
@@ -75,7 +84,13 @@ public class GeneSetController {
     public Collection<Gene> getCurrentGenes() throws SQLException, RemoteException {
         if (genes == null) {
             genes = new HashMap<String, Gene>();
-            Gene[] rawGenes = manager.getGenes(LoginController.getInstance().getSessionID(), getCurrentGeneSet());
+            Gene[] rawGenes;
+            try {
+                rawGenes = manager.getGenes(LoginController.getInstance().getSessionID(), getCurrentGeneSet());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+            }
             for (Gene g: rawGenes) {
                 genes.put(g.getName(), g);
             }

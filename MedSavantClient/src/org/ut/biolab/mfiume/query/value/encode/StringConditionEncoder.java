@@ -13,7 +13,7 @@ public class StringConditionEncoder {
     /**
      * Serialization
      */
-    private static String DELIM = ",";
+    private static String DELIM = ";";
     //private static final String ENCODING_ALL = "<anything>";
     //private static final String ENCODING_NONE = "<nothing>";
     public static String ENCODING_NULL = "<NULL>";

@@ -24,6 +24,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLayeredPane;
@@ -38,9 +40,11 @@ import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -196,33 +200,38 @@ public class GenomeContainer extends JLayeredPane {
 
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {
-            long start = System.currentTimeMillis();
-            final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantManager.getChromosomeHeatMap(
-                    LoginController.getInstance().getSessionID(),
-                    ProjectController.getInstance().getCurrentProjectID(),
-                    ReferenceController.getInstance().getCurrentReferenceID(),
-                    FilterController.getInstance().getAllFilterConditions(),
-                    3000000);
-            long time = System.currentTimeMillis() - start;
+            try {
+                long start = System.currentTimeMillis();
+                final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantManager.getChromosomeHeatMap(
+                        LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        ReferenceController.getInstance().getCurrentReferenceID(),
+                        FilterController.getInstance().getAllFilterConditions(),
+                        3000000);
+                long time = System.currentTimeMillis() - start;
 
-            int mmax = 0;
-            for (String s : map.keySet()) {
-                for (Range r : map.get(s).keySet()) {
-                    int val = map.get(s).get(r);
-                    mmax = (val > mmax) ? val : mmax;
+                int mmax = 0;
+                for (String s : map.keySet()) {
+                    for (Range r : map.get(s).keySet()) {
+                        int val = map.get(s).get(r);
+                        mmax = (val > mmax) ? val : mmax;
+                    }
                 }
+
+                final int max = mmax;
+
+                for(ChromosomePanel p : chrViews) {
+                    Map<Range, Integer> m = map.get(p.getChrName());
+                    if(m == null) m = map.get(p.getShortChrName());
+                    p.updateFrequencyCounts(m, max);
+                }
+
+                showShowCard();
+                return true;
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
             }
-
-            final int max = mmax;
-
-            for(ChromosomePanel p : chrViews) {
-                Map<Range, Integer> m = map.get(p.getChrName());
-                if(m == null) m = map.get(p.getShortChrName());
-                p.updateFrequencyCounts(m, max);
-            }
-
-            showShowCard();
-            return true;
         }
 
         @Override

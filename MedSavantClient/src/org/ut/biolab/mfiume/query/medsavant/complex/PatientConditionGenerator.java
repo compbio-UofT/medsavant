@@ -48,22 +48,22 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         this.alias = field.getAlias();
         allowInexactMatch = columnName.equals(BasicPatientColumns.PHENOTYPES.getColumnName());
 
-        columnNameToRemapMap = new HashMap<String,Map>();
+        columnNameToRemapMap = new HashMap<String, Map>();
 
         // create gender remap
-        TreeMap<String,String> genderRemap = new TreeMap<String,String>();
-        genderRemap.put("Male","1");
-        genderRemap.put("Female","0");
-        genderRemap.put("Unspecified","2");
+        TreeMap<String, String> genderRemap = new TreeMap<String, String>();
+        genderRemap.put("Male", "1");
+        genderRemap.put("Female", "0");
+        genderRemap.put("Unspecified", "2");
 
-        columnNameToRemapMap.put(BasicPatientColumns.GENDER.getColumnName(),genderRemap);
+        columnNameToRemapMap.put(BasicPatientColumns.GENDER.getColumnName(), genderRemap);
 
         // create gender remap
-        TreeMap<String,String> affectedRemap = new TreeMap<String,String>();
-        affectedRemap.put("Yes","1");
-        affectedRemap.put("No","0");
+        TreeMap<String, String> affectedRemap = new TreeMap<String, String>();
+        affectedRemap.put("Yes", "1");
+        affectedRemap.put("No", "0");
 
-        columnNameToRemapMap.put(BasicPatientColumns.AFFECTED.getColumnName(),affectedRemap);
+        columnNameToRemapMap.put(BasicPatientColumns.AFFECTED.getColumnName(), affectedRemap);
 
         this.field = field;
     }
@@ -84,7 +84,11 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         List<String> appliedValues = StringConditionEncoder.unencodeConditions(encoding);
 
         if (columnNameToRemapMap.containsKey(columnName)) {
-            appliedValues = remapValues(appliedValues,columnNameToRemapMap.get(columnName));
+            appliedValues = remapValues(appliedValues, columnNameToRemapMap.get(columnName));
+        }
+
+        if (appliedValues.isEmpty()) {
+            return ConditionUtils.FALSE_CONDITION;
         }
 
         return ConditionUtils.getConditionsMatchingDNAIDs(
@@ -104,7 +108,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
     private SearchConditionItemView generateViewFromDatabaseField(SearchConditionItem item) {
 
         if (columnNameToRemapMap.containsKey(columnName)) {
-            return generateStringViewWithPresetValues(item,columnNameToRemapMap.get(columnName).keySet());
+            return generateStringViewWithPresetValues(item, columnNameToRemapMap.get(columnName).keySet());
         }
 
         // all patient fields get treated as strings
@@ -141,7 +145,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
             valueGenerator = new StringConditionValueGenerator() {
                 @Override
                 public List<String> getStringValues() {
-                    return Arrays.asList(new String[]{"Homozygous", "Heterozygous", "Heterozygous (Triallelic)", "Missing"});
+                    return Arrays.asList(new String[]{"Homozygous Reference", "Homozygous Alternate", "Heterozygous", "Heterozygous (Triallelic)", "Missing"});
                 }
             };
 
@@ -210,7 +214,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
     }
 
     private SearchConditionItemView generateStringViewWithPresetValues(SearchConditionItem item, final Set<String> values) {
-         StringConditionValueGenerator vg = new StringConditionValueGenerator() {
+        StringConditionValueGenerator vg = new StringConditionValueGenerator() {
             @Override
             public List<String> getStringValues() {
                 return new ArrayList<String>(values);
@@ -221,7 +225,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         return view;
     }
 
-    private List<String> remapValues(List<String> appliedValues, Map<String,String> remap) {
+    private List<String> remapValues(List<String> appliedValues, Map<String, String> remap) {
         List<String> remappedAppliedValues = new ArrayList<String>();
         for (String s : appliedValues) {
             System.out.println("Remapping " + s + " to " + remap.get(s));

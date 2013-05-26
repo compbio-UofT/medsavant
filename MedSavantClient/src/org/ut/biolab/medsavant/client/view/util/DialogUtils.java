@@ -33,7 +33,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
-import or.ut.biolab.medsavant.client.util.error.report.BugReportDialog;
+import org.ut.biolab.medsavant.client.view.dialog.BugReportDialog;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;

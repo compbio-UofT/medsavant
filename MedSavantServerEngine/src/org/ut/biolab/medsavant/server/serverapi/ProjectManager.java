@@ -28,6 +28,7 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +55,7 @@ import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.SetupMedSavantDatabase;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 
 /**
@@ -67,10 +69,10 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     private static ProjectManager instance;
 
 
-    private ProjectManager() throws RemoteException {
+    private ProjectManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized ProjectManager getInstance() throws RemoteException {
+    public static synchronized ProjectManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new ProjectManager();
         }
@@ -78,7 +80,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public String[] getProjectNames(String sid) throws SQLException {
+    public String[] getProjectNames(String sid) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -97,7 +99,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public boolean containsProject(String sid, String projectName) throws SQLException {
+    public boolean containsProject(String sid, String projectName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -111,7 +113,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int getProjectID(String sid, String projectName) throws SQLException {
+    public int getProjectID(String sid, String projectName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -129,7 +131,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void removeReferenceForProject(String sessID, int projID, int refID) throws SQLException {
+    public void removeReferenceForProject(String sessID, int projID, int refID) throws SQLException, SessionExpiredException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
@@ -159,7 +161,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public String getProjectName(String sessID, int projID) throws SQLException {
+    public String getProjectName(String sessID, int projID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -177,21 +179,27 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws RemoteException, SQLException {
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws RemoteException, SQLException, SessionExpiredException {
         return createVariantTable(sessID, projID, refID, updID, annIDs, staging, false);
     }
 
-    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException {
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException, SessionExpiredException {
 
         // Create basic fields.
         String tableName = DBSettings.getVariantTableName(projID, refID, updID);
         if (sub) {
-            tableName += "_sub";
+            tableName += "_subset";
         }
         TableSchema variantSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
         for (CustomField f: getCustomVariantFields(sessID, projID, refID, updID)) {
             variantSchema.addColumn(f);
         }
+
+        String s = "";
+        for (DbColumn c : variantSchema.getColumns()) {
+            s += c.getColumnNameSQL() + " ";
+        }
+        LOG.info("Creating variant table " + tableName + " with fields " + s);
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
@@ -218,8 +226,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException{
-
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException{
 
         TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
         InsertQuery query = new InsertQuery(variantTableMap.getTable());
@@ -259,12 +266,12 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
      * published variant table.
      */
     @Override
-    public String getVariantTableName(String sid, int projectid, int refid, boolean published) throws SQLException {
+    public String getVariantTableName(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
         return getVariantTableName(sid, projectid, refid, published, false);
     }
 
     @Override
-    public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException {
+    public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -286,7 +293,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException {
+    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -311,7 +318,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    public void addSubsetInfoToMap(String sessID, int projID, int refID, int updID, String subTableName, float multiplier) throws SQLException{
+    public void addSubsetInfoToMap(String sessID, int projID, int refID, int updID, String subTableName, float multiplier) throws SQLException, SessionExpiredException{
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -324,7 +331,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         ConnectionController.executeUpdate(sessID, query.toString());
     }
 
-    private float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException {
+    private float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException, SessionExpiredException {
         int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
         int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
         if (denominator == 0) denominator = 1;
@@ -332,7 +339,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, RemoteException {
+    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -354,7 +361,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void removeProject(String sid, String projectName) throws SQLException, RemoteException {
+    public void removeProject(String sid, String projectName) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -370,7 +377,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void removeProject(String sid, int projectid) throws SQLException, RemoteException {
+    public void removeProject(String sid, int projectid) throws SQLException, RemoteException, SessionExpiredException {
 
 
         Connection c = ConnectionController.connectPooled(sid);
@@ -435,7 +442,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void setAnnotations(String sessID, int projID, int refID, int updID, String annIDs) throws SQLException {
+    public void setAnnotations(String sessID, int projID, int refID, int updID, String annIDs) throws SQLException, SessionExpiredException {
 
         String tablename = getVariantTableName(sessID, projID, refID, true);
 
@@ -451,7 +458,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public ProjectDetails[] getProjectDetails(String sessID, int projID) throws SQLException {
+    public ProjectDetails[] getProjectDetails(String sessID, int projID) throws SQLException, SessionExpiredException {
 
         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -503,7 +510,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void renameProject(String sid, int projectId, String newName) throws SQLException {
+    public void renameProject(String sid, int projectId, String newName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -514,7 +521,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void setCustomVariantFields(String sid, int projectId, int referenceId, int updateId, CustomField[] fields) throws SQLException {
+    public void setCustomVariantFields(String sid, int projectId, int referenceId, int updateId, CustomField[] fields) throws SQLException, SessionExpiredException {
 
         Connection c = ConnectionController.connectPooled(sid);
         TableSchema table = MedSavantDatabase.VariantformatTableSchema;
@@ -541,7 +548,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     //Get the most up-to-date custom fields, as specified in variant_format table
     @Override
-    public CustomField[] getCustomVariantFields(String sid, int projectId, int referenceId, int updateId) throws SQLException {
+    public CustomField[] getCustomVariantFields(String sid, int projectId, int referenceId, int updateId) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantformatTableSchema;
         SelectQuery query = new SelectQuery();
@@ -567,7 +574,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int getNewestUpdateID(String sid, int projectId, int referenceId, boolean published) throws SQLException {
+    public int getNewestUpdateID(String sid, int projectId, int referenceId, boolean published) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -586,7 +593,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         return rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
     }
 
-    public void publishVariantTable(PooledConnection conn, int projID, int refID, int updID) throws SQLException {
+    public void publishVariantTable(PooledConnection conn, int projID, int refID, int updID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -599,7 +606,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException {
+    public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, SessionExpiredException {
 
         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -649,7 +656,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public String[] getReferenceNamesForProject(String sessID, int projID) throws SQLException {
+    public String[] getReferenceNamesForProject(String sessID, int projID) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
@@ -679,7 +686,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException {
+    public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
 
@@ -703,7 +710,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     /**
      * Remove any variant tables with updateMin <= updateId <= updateMax
      */
-    public void removeTables(String sessID, int projID, int refID, int updateMax, int updateMin) throws SQLException {
+    public void removeTables(String sessID, int projID, int refID, int updateMax, int updateMin) throws SQLException, SessionExpiredException {
 
         //find update ids
         TableSchema mapTable = MedSavantDatabase.VarianttablemapTableSchema;

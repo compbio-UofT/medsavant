@@ -249,7 +249,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                              + "as a track in the genome browser?</html>");*/
                             int response = DialogUtils.YES;
                             if (response == DialogUtils.YES) {
-                                BrowserPage.addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                                BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
                             }
                         }
                     } catch (Exception ex) {

@@ -21,6 +21,8 @@ import javax.swing.JOptionPane;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -37,8 +39,10 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -105,27 +109,42 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     public int getProjectID(String projName) throws SQLException, RemoteException {
-        return manager.getProjectID(LoginController.getInstance().getSessionID(), projName);
+        try {
+            return manager.getProjectID(LoginController.getInstance().getSessionID(), projName);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return 0;
+        }
     }
 
     public String getProjectNameFromID(int projID) throws SQLException, RemoteException {
-        return manager.getProjectName(LoginController.getInstance().getSessionID(), projID);
+        try {
+            return manager.getProjectName(LoginController.getInstance().getSessionID(), projID);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public void setProject(String projName) throws RemoteException, SQLException {
-        if (manager.containsProject(LoginController.getInstance().getSessionID(), projName)) {
+        try {
+            if (manager.containsProject(LoginController.getInstance().getSessionID(), projName)) {
 
-            if (manager.containsProject(LoginController.getInstance().getSessionID(), currentProjectName) && FilterController.getInstance().hasFiltersApplied()) {
-                if (!DialogUtils.confirmChangeReference(true)) {
-                    return;
+                if (manager.containsProject(LoginController.getInstance().getSessionID(), currentProjectName) && FilterController.getInstance().hasFiltersApplied()) {
+                    if (!DialogUtils.confirmChangeReference(true)) {
+                        return;
+                    }
                 }
-            }
 
-            currentProjectID = getProjectID(projName);
-            currentProjectName = projName;
-            setCurrentPatientTable();
-            ResultController.getInstance().refreshCounts();
-            fireEvent(new ProjectEvent(ProjectEvent.Type.CHANGED, projName));
+                currentProjectID = getProjectID(projName);
+                currentProjectName = projName;
+                setCurrentPatientTable();
+                ResultController.getInstance().refreshCounts();
+                fireEvent(new ProjectEvent(ProjectEvent.Type.CHANGED, projName));
+            }
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
         }
     }
 
@@ -141,15 +160,30 @@ public class ProjectController extends Controller<ProjectEvent> {
         if (manager == null) {
             return new String[0];
         }
-        return manager.getProjectNames(LoginController.getInstance().getSessionID());
+        try {
+            return manager.getProjectNames(LoginController.getInstance().getSessionID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public String getCurrentVariantTableName() throws SQLException, RemoteException {
-        return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
+        try {
+            return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public String getCurrentVariantSubTableName() throws SQLException, RemoteException {
-        return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true, true);
+        try {
+            return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true, true);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public DbTable getCurrentVariantTable() {
@@ -161,11 +195,21 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentVariantTable() throws SQLException, RemoteException {
-        currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
+        try {
+            currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
     }
 
     public String getCurrentPatientTableName() throws RemoteException, SQLException {
-        return MedSavantClient.PatientManager.getPatientTableName(LoginController.getInstance().getSessionID(), currentProjectID);
+        try {
+            return MedSavantClient.PatientManager.getPatientTableName(LoginController.getInstance().getSessionID(), currentProjectID);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public DbTable getCurrentPatientTable() {
@@ -178,35 +222,50 @@ public class ProjectController extends Controller<ProjectEvent> {
 
     private void setCurrentPatientTable() throws SQLException, RemoteException {
         DbColumn dbc = new DbColumn(null, "A", "B", 1);
-        currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentPatientTableName());
+        try {
+            currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentPatientTableName());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
     }
 
     public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
         if (currentAnnotationFormats == null) {
-            int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
-            AnnotationFormat[] af = new AnnotationFormat[annotIDs.length+2];
-            af[0] = AnnotationFormat.getDefaultAnnotationFormat();
-            af[1] = AnnotationFormat.getCustomFieldAnnotationFormat(
-                    manager.getCustomVariantFields(
-                        LoginController.getInstance().getSessionID(),
-                        currentProjectID,
-                        ReferenceController.getInstance().getCurrentReferenceID(),
-                        manager.getNewestUpdateID(
+            try {
+                int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
+                AnnotationFormat[] af = new AnnotationFormat[annotIDs.length+2];
+                af[0] = AnnotationFormat.getDefaultAnnotationFormat();
+                af[1] = AnnotationFormat.getCustomFieldAnnotationFormat(
+                        manager.getCustomVariantFields(
                             LoginController.getInstance().getSessionID(),
                             currentProjectID,
                             ReferenceController.getInstance().getCurrentReferenceID(),
-                            true)));
-            for (int i = 0; i < annotIDs.length; i++) {
-                af[i+2] = MedSavantClient.AnnotationManagerAdapter.getAnnotationFormat(LoginController.getInstance().getSessionID(), annotIDs[i]);
+                            manager.getNewestUpdateID(
+                                LoginController.getInstance().getSessionID(),
+                                currentProjectID,
+                                ReferenceController.getInstance().getCurrentReferenceID(),
+                                true)));
+                for (int i = 0; i < annotIDs.length; i++) {
+                    af[i+2] = MedSavantClient.AnnotationManagerAdapter.getAnnotationFormat(LoginController.getInstance().getSessionID(), annotIDs[i]);
+                }
+                currentAnnotationFormats = af;
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
             }
-            currentAnnotationFormats = af;
         }
         return currentAnnotationFormats;
     }
 
     public CustomField[] getCurrentPatientFormat() throws RemoteException, SQLException {
         if (currentPatientFormat == null) {
-            currentPatientFormat = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), currentProjectID);
+            try {
+                currentPatientFormat = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), currentProjectID);
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+            }
         }
         return currentPatientFormat;
     }
@@ -219,7 +278,13 @@ public class ProjectController extends Controller<ProjectEvent> {
      * For the current project, set the best reference.
      */
     public void setDefaultReference() throws RemoteException, SQLException {
-        String[] references = manager.getReferenceNamesForProject(LoginController.getInstance().getSessionID(), currentProjectID);
+        String[] references;
+        try {
+            references = manager.getReferenceNamesForProject(LoginController.getInstance().getSessionID(), currentProjectID);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         ReferenceController.getInstance().setReference(references[references.length - 1]);
     }
 
@@ -227,7 +292,13 @@ public class ProjectController extends Controller<ProjectEvent> {
      * Give user the option to publish unpublished changes or cancel them.
      */
     public boolean promptForUnpublished() throws SQLException, RemoteException {
-        ProjectDetails[] unpublishedTables = manager.getUnpublishedChanges(LoginController.getInstance().getSessionID());
+        ProjectDetails[] unpublishedTables;
+        try {
+            unpublishedTables = manager.getUnpublishedChanges(LoginController.getInstance().getSessionID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return false;
+        }
         int refID = ReferenceController.getInstance().getCurrentReferenceID();
         for (ProjectDetails pd: unpublishedTables) {
             if (pd.getProjectID() == currentProjectID && pd.getReferenceID() == refID) {

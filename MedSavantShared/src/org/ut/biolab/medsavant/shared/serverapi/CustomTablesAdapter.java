@@ -20,6 +20,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -28,7 +29,7 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
  */
 public interface CustomTablesAdapter extends Remote {
 
-    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException;
-    public TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException;
+    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException, SessionExpiredException;
+    public TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException, SessionExpiredException;
 
 }

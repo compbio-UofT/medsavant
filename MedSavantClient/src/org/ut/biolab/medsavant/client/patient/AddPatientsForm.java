@@ -21,6 +21,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -34,8 +36,10 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -69,7 +73,12 @@ public class AddPatientsForm extends JDialog {
         model.addColumn("Short Name");
         model.addColumn("Value");
 
-        CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+        CustomField[] fields = null;
+        try {
+            fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
         for (int i = 1; i < fields.length; i++) { //skip patient id
             model.addRow(new Object[]{ fields[i], ""} );
         }
@@ -122,8 +131,11 @@ public class AddPatientsForm extends JDialog {
         for (int i = 0; i < values.size(); i++) {
             values.set(i, values.get(i).equals("") ? null : values.get(i));
         }
-
-        MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cols, values);
+        try {
+            MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cols, values);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
         clearTable();
     }
 

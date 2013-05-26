@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.shared.serverapi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -27,7 +28,7 @@ import java.sql.SQLException;
  */
 public interface SessionManagerAdapter extends Remote {
 
-    String registerNewSession(String user, String pass, String db) throws RemoteException, SQLException;
-    void unregisterSession(String sessID) throws RemoteException, SQLException;
-    void testConnection(String sessID) throws RemoteException, SQLException;
+    String registerNewSession(String user, String pass, String db) throws RemoteException, SQLException, SessionExpiredException;
+    void unregisterSession(String sessID) throws RemoteException, SQLException, SessionExpiredException;
+    void testConnection(String sessID) throws RemoteException, SQLException, SessionExpiredException;
 }

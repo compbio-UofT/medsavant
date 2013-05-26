@@ -1,5 +1,5 @@
 db.driver=com.mysql.jdbc.Driver
-db.name=dorin7
+db.name=v8
 general.autologin=false
 medsavant.version=1.0.1
 server.address=medsavant-dev.cs.toronto.edu

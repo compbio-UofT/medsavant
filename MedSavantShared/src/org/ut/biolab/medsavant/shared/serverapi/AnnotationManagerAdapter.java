@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -30,13 +31,13 @@ import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
  */
 public interface AnnotationManagerAdapter extends Remote {
 
-    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException, RemoteException;
-    public Annotation[] getAnnotations(String sid) throws SQLException, RemoteException;
+    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException, RemoteException, SessionExpiredException;
+    public Annotation[] getAnnotations(String sid) throws SQLException, RemoteException, SessionExpiredException;
 
-    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException;
-    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException;
+    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
+    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException;
 
-    public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) throws RemoteException;
-    public void uninstallAnnotation(String sessID, Annotation an) throws RemoteException, SQLException;
+    public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) throws RemoteException, SessionExpiredException;
+    public void uninstallAnnotation(String sessID, Annotation an) throws RemoteException, SQLException, SessionExpiredException;
 
 }

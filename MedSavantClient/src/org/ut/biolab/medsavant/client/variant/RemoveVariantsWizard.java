@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.client.variant;
 
+import com.jidesoft.dialog.AbstractDialogPage;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,8 @@ public class RemoveVariantsWizard extends WizardDialog {
     private final int projectID;
     private final int referenceID;
     private final List<SimpleVariantFile> files;
+    private JTextField emailField;
+    private JCheckBox autoPublish;
 
     public RemoveVariantsWizard(List<SimpleVariantFile> files) {
         this.projectID = ProjectController.getInstance().getCurrentProjectID();
@@ -63,6 +66,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         //add pages
         PageList model = new PageList();
         model.append(getWelcomePage());
+        model.append(getNotificationsPage());
         model.append(getQueuePage());
         model.append(getCompletePage());
         setPageList(model);
@@ -105,17 +109,21 @@ public class RemoveVariantsWizard extends WizardDialog {
             private final JLabel progressLabel = new JLabel("You are now ready to remove variants.");
             private final JProgressBar progressBar = new JProgressBar();
             private final JButton workButton = new JButton("Remove Files");
-            private final JButton publishButton = new JButton("Publish Variants");
+            /*private final JButton publishButton = new JButton("Publish Variants");
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after removal");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
-            private final JProgressBar publishProgressBar = new JProgressBar();
+            private final JProgressBar publishProgressBar = new JProgressBar();*/
 
             {
                 addComponent(progressLabel);
                 addComponent(progressBar);
                 addComponent(ViewUtil.alignRight(workButton));
 
-                addComponent(autoPublishVariants);
+                final JComponent j = new JLabel("<html>You may continue. The removal process will continue in the<br>background and you will be notified upon completion.</html>");
+                addComponent(j);
+                j.setVisible(false);
+
+                /*addComponent(autoPublishVariants);
                 JLabel l = new JLabel("WARNING:");
                 l.setForeground(Color.red);
                 l.setFont(l.getFont().deriveFont(Font.BOLD));
@@ -128,15 +136,22 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                 publishButton.setVisible(false);
                 publishProgressLabel.setVisible(false);
-                publishProgressBar.setVisible(false);
+                publishProgressBar.setVisible(false);*/
+
+                final boolean ap = autoPublish.isSelected();
+                final String email = emailField.getText();
 
                 workButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        new UpdateWorker("Removing variants", RemoveVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+                        j.setVisible(true);
+                        fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+                        fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                        progressBar.setIndeterminate(true);
+                        new UpdateWorker("Removing variants", RemoveVariantsWizard.this, progressLabel, progressBar, workButton) {
                             @Override
                             protected Void doInBackground() throws Exception {
-                                updateID = MedSavantClient.VariantManager.removeVariants(LoginController.getInstance().getSessionID(), projectID, referenceID, files);
+                                updateID = MedSavantClient.VariantManager.removeVariants(LoginController.getInstance().getSessionID(), projectID, referenceID, files, ap, email);
                                 return null;
                             }
                         }.execute();
@@ -166,7 +181,34 @@ public class RemoveVariantsWizard extends WizardDialog {
             }
         };
 
-        page.addText("You have finished removing variants.");
+        page.addText("You have finished requesting variant file removal.");
+
+        return page;
+    }
+
+   private AbstractWizardPage getNotificationsPage() {
+        final DefaultWizardPage page = new DefaultWizardPage("Notifications") {
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+
+        page.addText("Project modification may take some time. Enter your email address to be notified when the process completes.");
+
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        JLabel l = new JLabel("Email: ");
+        emailField = new JTextField();
+        p.add(l);
+        p.add(emailField);
+        page.addComponent(p);
+
+        autoPublish = new JCheckBox("Automatically publish data upon import completion");
+        autoPublish.setSelected(true);
+        page.addComponent(autoPublish);
+        page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");
 
         return page;
     }

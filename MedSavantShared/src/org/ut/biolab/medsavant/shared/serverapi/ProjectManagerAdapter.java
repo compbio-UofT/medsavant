@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -34,26 +35,26 @@ import org.ut.biolab.medsavant.shared.model.ProjectDetails;
  */
 public interface ProjectManagerAdapter extends Remote {
 
-    public String[] getProjectNames(String sessID) throws SQLException, RemoteException;
-    public boolean containsProject(String sessID, String projName) throws SQLException, RemoteException;
-    public int getProjectID(String sessID, String projName) throws SQLException, RemoteException;
-    public void removeReferenceForProject(String sessID, int projID, int refID) throws SQLException, RemoteException;
-    public String getProjectName(String sessID, int projID) throws SQLException, RemoteException;
-    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws SQLException, RemoteException;
-    public String getVariantTableName(String sessID, int projID, int refID, boolean published) throws SQLException, RemoteException;
-    public String getVariantTableName(String sessID, int projID, int refID, boolean published, boolean sub) throws SQLException, RemoteException;
-    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException;
-    public void removeProject(String sessID, String projectName) throws SQLException, RemoteException;
-    public void removeProject(String sessID, int projID) throws SQLException, RemoteException;
-    public void setAnnotations(String sessID, int projID, int refID, int updID, String annIDs) throws SQLException, RemoteException;
-    public ProjectDetails[] getProjectDetails(String sessID, int projID) throws SQLException, RemoteException;
-    public void renameProject(String sessID, int projID, String newName) throws SQLException, RemoteException;
-    public void setCustomVariantFields(String sessID, int projID, int refID, int updateID, CustomField[] fields) throws SQLException, RemoteException;
-    public CustomField[] getCustomVariantFields(String sessID,  int projID, int refID, int updateId) throws SQLException, RemoteException;
-    public int getNewestUpdateID(String sessID,  int projID, int refID, boolean published) throws SQLException, RemoteException;
-    public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, RemoteException;
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException;
+    public String[] getProjectNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
+    public boolean containsProject(String sessID, String projName) throws SQLException, RemoteException, SessionExpiredException;
+    public int getProjectID(String sessID, String projName) throws SQLException, RemoteException, SessionExpiredException;
+    public void removeReferenceForProject(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
+    public String getProjectName(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws SQLException, RemoteException, SessionExpiredException;
+    public String getVariantTableName(String sessID, int projID, int refID, boolean published) throws SQLException, RemoteException, SessionExpiredException;
+    public String getVariantTableName(String sessID, int projID, int refID, boolean published, boolean sub) throws SQLException, RemoteException, SessionExpiredException;
+    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException, SessionExpiredException;
+    public void removeProject(String sessID, String projectName) throws SQLException, RemoteException, SessionExpiredException;
+    public void removeProject(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;
+    public void setAnnotations(String sessID, int projID, int refID, int updID, String annIDs) throws SQLException, RemoteException, SessionExpiredException;
+    public ProjectDetails[] getProjectDetails(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;
+    public void renameProject(String sessID, int projID, String newName) throws SQLException, RemoteException, SessionExpiredException;
+    public void setCustomVariantFields(String sessID, int projID, int refID, int updateID, CustomField[] fields) throws SQLException, RemoteException, SessionExpiredException;
+    public CustomField[] getCustomVariantFields(String sessID,  int projID, int refID, int updateId) throws SQLException, RemoteException, SessionExpiredException;
+    public int getNewestUpdateID(String sessID,  int projID, int refID, boolean published) throws SQLException, RemoteException, SessionExpiredException;
+    public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, RemoteException, SessionExpiredException;
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException;
 
-    public String[] getReferenceNamesForProject(String sessID, int projectid) throws SQLException, RemoteException;
-    public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, RemoteException;
+    public String[] getReferenceNamesForProject(String sessID, int projectid) throws SQLException, RemoteException, SessionExpiredException;
+    public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;
 }

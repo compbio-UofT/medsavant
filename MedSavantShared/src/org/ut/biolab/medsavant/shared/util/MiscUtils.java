@@ -29,6 +29,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -561,4 +563,17 @@ public class MiscUtils {
         }
         return result;
     }
+
+    /**
+     * Extravt the file name from a pull path
+     * @param fullName The full path
+     * @return the file name
+     */
+    public static String extractFileName(String fullName) {
+        Pattern p = Pattern.compile(".*?([^\\\\/]+)$");
+        Matcher m = p.matcher(fullName);
+
+        return (m.find()) ? m.group(1) : "";
+    }
+
 }

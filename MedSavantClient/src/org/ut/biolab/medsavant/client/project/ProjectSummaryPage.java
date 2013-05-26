@@ -21,6 +21,8 @@ import com.jidesoft.pane.CollapsiblePanes;
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,10 +35,12 @@ import org.ut.biolab.medsavant.client.controller.ResultController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -109,14 +113,24 @@ public class ProjectSummaryPage extends SubSectionView {
         ValueFetcher pFetcher = new ValueFetcher() {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
-                return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), projectID).size()));
+                try {
+                    return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), projectID).size()));
+                } catch (SessionExpiredException ex) {
+                    MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    return null;
+                }
             }
         };
 
         ValueFetcher cFetcher = new ValueFetcher() {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
-                return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), projectID).length));
+                try {
+                    return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), projectID).length));
+                } catch (SessionExpiredException ex) {
+                    MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    return null;
+                }
             }
         };
 

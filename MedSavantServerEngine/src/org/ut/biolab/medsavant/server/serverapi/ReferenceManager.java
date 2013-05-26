@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
 
 /**
@@ -53,18 +54,17 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
     private static ReferenceManager instance;
 
-    public static synchronized ReferenceManager getInstance() throws RemoteException {
+    public static synchronized ReferenceManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new ReferenceManager();
         }
         return instance;
     }
 
-    public ReferenceManager() throws RemoteException {super();}
-
+    public ReferenceManager() throws RemoteException, SessionExpiredException {super();}
 
     @Override
-    public Reference[] getReferences(String sessID) throws SQLException {
+    public Reference[] getReferences(String sessID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -86,7 +86,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public String[] getReferenceNames(String sessID) throws SQLException {
+    public String[] getReferenceNames(String sessID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -104,7 +104,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public int getReferenceID(String sessID, String refName) throws SQLException {
+    public int getReferenceID(String sessID, String refName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -122,7 +122,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public boolean containsReference(String sessID, String refName) throws SQLException {
+    public boolean containsReference(String sessID, String refName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -136,7 +136,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public int addReference(String sessID, String refName, Chromosome[] chroms, String url) throws SQLException {
+    public int addReference(String sessID, String refName, Chromosome[] chroms, String url) throws SQLException, SessionExpiredException {
 
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
@@ -175,7 +175,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public boolean removeReference(String sessID, int refID) throws SQLException {
+    public boolean removeReference(String sessID, int refID) throws SQLException, SessionExpiredException {
 
          TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
          TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
@@ -217,7 +217,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
 /*    @Override
-    public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException {
+    public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException, SessionExpiredException {
 
         ResultSet rs = ConnectionController.executeQuery(sid,
                 "SELECT *"
@@ -236,7 +236,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }*/
 
     @Override
-    public String getReferenceUrl(String sid,int referenceid) throws SQLException {
+    public String getReferenceUrl(String sid,int referenceid) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -250,7 +250,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public Chromosome[] getChromosomes(String sid, int referenceid) throws SQLException {
+    public Chromosome[] getChromosomes(String sid, int referenceid) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ChromosomeTableSchema;
         SelectQuery query = new SelectQuery();
@@ -271,7 +271,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         return result.toArray(new Chromosome[0]);
     }
 
-    String getReferenceName(String sid, int refID) throws SQLException {
+    String getReferenceName(String sid, int refID) throws SQLException, SessionExpiredException {
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(refTable.getTable());

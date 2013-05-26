@@ -32,6 +32,8 @@ import javax.swing.*;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -53,12 +55,14 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -85,8 +89,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
-
-        fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+        try {
+            fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -460,7 +467,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         protected Object[] doInBackground() throws RemoteException, SQLException {
-            return MedSavantClient.PatientManager.getPatientRecord(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
+            try {
+                return MedSavantClient.PatientManager.getPatientRecord(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+            }
         }
 
         @Override

@@ -26,6 +26,8 @@ import java.sql.Timestamp;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.server.SessionController;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
@@ -34,6 +36,7 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.SQLUtils;
 
@@ -52,11 +55,13 @@ public class AnnotationLogManager {
         return instance;
     }
 
-    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, String user) throws SQLException{
-        return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.STARTED, user);
+    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action) throws SQLException, RemoteException, SessionExpiredException {
+        return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.STARTED);
     }
 
-    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, Status status, String user) throws SQLException {
+    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
+
+        String user = SessionController.getInstance().getUserForSession(sid);
 
         Timestamp sqlDate = SQLUtils.getCurrentTimestamp();
 
@@ -79,7 +84,7 @@ public class AnnotationLogManager {
         return rs.getInt(1);
     }
 
-    public void removeAnnotationLogEntry(String sid,int updateId) throws SQLException {
+    public void removeAnnotationLogEntry(String sid,int updateId) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         DeleteQuery query = new DeleteQuery(table.getTable());
@@ -88,7 +93,7 @@ public class AnnotationLogManager {
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException {
+    public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -98,7 +103,7 @@ public class AnnotationLogManager {
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException {
+    public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());

@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
 
@@ -54,10 +55,10 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
 
     private static LogManager instance;
 
-    private LogManager() throws RemoteException {
+    private LogManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized LogManager getInstance() throws RemoteException {
+    public static synchronized LogManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new LogManager();
         }
@@ -65,7 +66,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public List<GeneralLog> getClientLog(String sid, int start, int limit) throws SQLException {
+    public List<GeneralLog> getClientLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -88,7 +89,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException {
+    public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -110,7 +111,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException {
+    public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
 
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
@@ -165,23 +166,23 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public int getAnnotationLogSize(String sid) throws SQLException {
+    public int getAnnotationLogSize(String sid) throws SQLException, SessionExpiredException {
         return getLogSize(sid,MedSavantDatabase.VariantpendingupdateTableSchema, null);
     }
 
     @Override
-    public int getServerLogSize(String sid) throws SQLException {
+    public int getServerLogSize(String sid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(sid,table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
     @Override
-    public int getClientLogSize(String sid) throws SQLException {
+    public int getClientLogSize(String sid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(sid,table, BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
-    private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException {
+    private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException, SessionExpiredException {
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addCustomColumns(FunctionCall.countAll());
@@ -195,12 +196,12 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public void addServerLog(String sid, LogType t, String description) {
+    public void addServerLog(String sid, LogType t, String description) throws SessionExpiredException {
         addLog(sid,SERVER_UNAME, t, description);
     }
 
     @Override
-    public void addLog(String sessID, String user, LogType type, String desc) {
+    public void addLog(String sessID, String user, LogType type, String desc) throws SessionExpiredException {
         try {
             Timestamp sqlDate = new java.sql.Timestamp((new java.util.Date()).getTime());
 
@@ -218,7 +219,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public Date getDateOfLastServerLog(String sid) throws SQLException {
+    public Date getDateOfLastServerLog(String sid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
 
         SelectQuery query = new SelectQuery();

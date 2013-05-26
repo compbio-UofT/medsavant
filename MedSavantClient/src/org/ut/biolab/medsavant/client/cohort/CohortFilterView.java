@@ -21,6 +21,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
@@ -31,6 +33,8 @@ import org.ut.biolab.medsavant.client.filter.TabularFilterView;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -59,7 +63,11 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
     public CohortFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
         List vals = new ArrayList<Cohort>();
-        vals.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
+        try {
+            vals.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
         setAvailableValues(vals);
         initContentPanel();
     }
@@ -99,7 +107,11 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
                 for (Cohort coh: appliedValues) {
                     cohNames.add(coh.getName());
                 }
-                return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohNames));
+                try {
+                    return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohNames));
+                } catch (SessionExpiredException ex) {
+                    MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                }
             }
             return FALSE_CONDITION;
         }

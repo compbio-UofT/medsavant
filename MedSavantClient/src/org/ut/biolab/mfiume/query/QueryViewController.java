@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -53,6 +55,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private final ConditionViewGenerator conditionViewGenerator;
     private boolean didChangeSinceLastApply;
     private JButton applyButton;
+    private final JLabel warningText;
 
     public QueryViewController(SearchConditionGroupItem model, ConditionViewGenerator c) {
         this.rootGroup = model;
@@ -60,6 +63,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         model.addListener(this);
         this.setOpaque(false);
         this.setFocusable(true);
+        warningText = new JLabel("search conditions have changed");
         applyButton = new JButton("Search");
         applyButton.setFocusable(false);
         setConditionsChanged(false);
@@ -84,12 +88,13 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     if (c == null) {
                         c = ConditionUtils.TRUE_CONDITION;
                     }
+
                     System.out.println(c.toString());
 
                     SwingUtilities.invokeAndWait(new Runnable() {
-
                         @Override
                         public void run() {
+                            warningText.setVisible(false);
                             applyButton.setEnabled(false);
                             applyButton.setText("Searching...");
                             applyButton.updateUI();
@@ -97,13 +102,10 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     });
                     FilterController.getInstance().setConditions(c);
                     SwingUtilities.invokeAndWait(new Runnable() {
-
                         @Override
                         public void run() {
                             applyButton.setText("Search");
-                            applyButton.setEnabled(true);
                             applyButton.updateUI();
-
                         }
                     });
                 } catch (Exception ex) {
@@ -133,7 +135,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         }
 
         add(p);
-        add(applyButton, "right");
+
+        add(warningText, "center");
+        add(applyButton, "center");
 
         this.invalidate();
         this.updateUI();
@@ -512,6 +516,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     private void setConditionsChanged(boolean b) {
         if (applyButton != null) {
+            warningText.setVisible(b);
+            applyButton.setSelected(b);
             applyButton.setEnabled(b);
         }
     }

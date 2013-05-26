@@ -84,32 +84,56 @@ public class GeneticsTablePage extends SubSectionView {
     public JPanel getView() {
         try {
             if (view == null) {
+
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
+                view.add(new WaitPanel("Preparing Spreadsheet..."));
 
-                final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(true,true,true,true,true,true); //StaticInspectorPanel.getInstance();
-
-                TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
+                Runnable prepareViewInBackground = new Runnable() {
                     @Override
-                    public void handleEvent(final VariantRecord r) {
-                        inspectorPanel.setVariantRecord(r);
+                    public void run() {
+                        try {
+                            final JPanel tmpView = new JPanel();
+                            tmpView.setLayout(new BorderLayout());
+
+                            final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(true, true, true, true, true, true); //StaticInspectorPanel.getInstance();
+
+                            TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
+                                @Override
+                                public void handleEvent(final VariantRecord r) {
+                                    inspectorPanel.setVariantRecord(r);
+                                }
+                            });
+
+                            detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
+                            detailView.setToggleBarVisible(false);
+
+                            tmpView.add(detailView, BorderLayout.EAST);
+
+                            tablePanel = new TablePanel(pageName);
+                            tmpView.add(tablePanel, BorderLayout.CENTER);
+
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view.removeAll();
+                                    view.add(tmpView, BorderLayout.CENTER);
+                                    view.updateUI();
+                                }
+                            });
+
+                        } catch (Exception ex) {
+                            view.removeAll();
+                            WaitPanel p = new WaitPanel("Error loading Spreadsheet");
+                            p.setComplete();
+                            view.add(p);
+                        }
                     }
-                });
+                };
 
-                detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
-                detailView.setToggleBarVisible(false);
+                new Thread(prepareViewInBackground).start();
 
-                view.add(detailView, BorderLayout.EAST);
-
-                tablePanel = new TablePanel(pageName);
-                view.add(tablePanel, BorderLayout.CENTER);
             }
-
-            /*else {
-             tablePanel.update();
-             genomeContainer.updateIfRequired();
-             }
-             */
 
             return view;
 

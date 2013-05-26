@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -70,7 +71,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public void testConnection(String sessID) throws RemoteException, SQLException {
+    public void testConnection(String sessID) throws RemoteException, SQLException, SessionExpiredException {
         Connection conn = null;
         try {
             conn = ConnectionController.connectPooled(sessID);

@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
 
 
@@ -42,10 +43,10 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     private static SettingsManager instance;
     private boolean lockReleased = false;
 
-    private SettingsManager() throws RemoteException {
+    private SettingsManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized SettingsManager getInstance() throws RemoteException {
+    public static synchronized SettingsManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new SettingsManager();
         }
@@ -53,7 +54,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public void addSetting(String sid, String key, String value) throws SQLException {
+    public void addSetting(String sid, String key, String value) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.SettingsTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -64,7 +65,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public String getSetting(String sid, String key) throws SQLException {
+    public String getSetting(String sid, String key) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.SettingsTableSchema;
         SelectQuery query = new SelectQuery();
@@ -83,7 +84,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public void updateSetting(String sessID, String key, String value) throws SQLException {
+    public void updateSetting(String sessID, String key, String value) throws SQLException, SessionExpiredException {
         Connection conn = ConnectionController.connectPooled(sessID);
         try {
             updateSetting(conn, key, value);
@@ -92,7 +93,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         }
     }
 
-    private void updateSetting(Connection conn, String key, String value) throws SQLException {
+    private void updateSetting(Connection conn, String key, String value) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.SettingsTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -103,7 +104,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public synchronized boolean getDBLock(String sessID) throws SQLException {
+    public synchronized boolean getDBLock(String sessID) throws SQLException, SessionExpiredException {
 
         System.out.print(sessID + " getting lock");
 
@@ -118,7 +119,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         return true;
     }
 
-    public synchronized void releaseDBLock(Connection conn) throws SQLException {
+    public synchronized void releaseDBLock(Connection conn) throws SQLException, SessionExpiredException {
         System.out.println("Server releasing lock");
         try {
             updateSetting(conn, Settings.KEY_DB_LOCK, Boolean.toString(false));
@@ -128,7 +129,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public void releaseDBLock(String sessID) throws SQLException {
+    public void releaseDBLock(String sessID) throws SQLException, SessionExpiredException {
         Connection conn = ConnectionController.connectPooled(sessID);
         if (conn != null) {
             try {

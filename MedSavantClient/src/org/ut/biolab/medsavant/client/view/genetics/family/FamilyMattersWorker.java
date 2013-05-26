@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -37,6 +39,7 @@ import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.Notification;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
@@ -45,6 +48,7 @@ import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionVi
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -152,7 +156,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 1000,
                 retriever);
 
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true,false,false,true,true,true);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true);
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -182,7 +186,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         aligned.setBorder(null);
         aligned.setPreferredSize(new Dimension(450, 999));
         aligned.setBackground(Color.white);
-        aligned.add(vip,BorderLayout.CENTER);
+        aligned.add(vip, BorderLayout.CENTER);
 
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
@@ -247,8 +251,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         int stepNumber = 0;
 
         /**
-         * Map variants to samples
-         * NB: keys in a TreeMap are sorted
+         * Map variants to samples NB: keys in a TreeMap are sorted
          */
         TreeMap<SimpleFamilyMattersVariant, Set<String>> variantToSampleMap = readVariantToSampleMap(inFile);
 
@@ -448,25 +451,32 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         Cohort c = criterion.getCohort();
         int frequencyThreshold = criterion.getFreqAmount();
 
-        List<SimplePatient> patientsInCohort = MedSavantClient.CohortManager.getIndividualsInCohort(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(),
-                c.getId());
+        List<SimplePatient> patientsInCohort;
+        try {
+            patientsInCohort = MedSavantClient.CohortManager.getIndividualsInCohort(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    c.getId());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return 0;
+        }
 
         if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL)) {
             frequencyThreshold = patientsInCohort.size();
         } else if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO)) {
             frequencyThreshold = 0;
         } else if (fc.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount.Percent)) {
-            frequencyThreshold = (int) Math.round(frequencyThreshold/100.0 * patientsInCohort.size());
+            frequencyThreshold = (int) Math.round(frequencyThreshold / 100.0 * patientsInCohort.size());
         }
 
         return frequencyThreshold;
     }
 
     /**
-     * Flags objects in map for removal if the occurrence in a given set
-     * of DNA ids is either above, below, or equal to a frequency threshold
+     * Flags objects in map for removal if the occurrence in a given set of DNA
+     * ids is either above, below, or equal to a frequency threshold
+     *
      * @param map A map of object to sample ids relating to the object
      * @param frequencyThreshold The threshold for the cutoff
      * @param t Either ALL, NO, AT_LEAST, AT_MOST
@@ -487,7 +497,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     }
                 }
             } catch (NullPointerException npe) {
-                if (map.get(o) == null) { System.out.println("No entry for object in map"); }
+                if (map.get(o) == null) {
+                    System.out.println("No entry for object in map");
+                }
                 System.err.println(o);
                 throw npe;
             }

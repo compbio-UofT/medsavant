@@ -17,6 +17,7 @@ import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
@@ -67,7 +68,7 @@ public class BatchVariantAnnotator {
      * @throws IOException
      * @throws SQLException
      */
-    public void performBatchAnnotationInParallel() throws IOException, SQLException {
+    public void performBatchAnnotationInParallel() throws IOException, SQLException, SessionExpiredException {
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
         //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");

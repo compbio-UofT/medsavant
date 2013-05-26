@@ -46,6 +46,7 @@ import org.ut.biolab.medsavant.server.db.variants.VariantManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
@@ -60,7 +61,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
 
-    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException {
+    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
 
         try {
             // get the address of this host.
@@ -104,6 +105,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
                 char[] pass = System.console().readPassword();
                 password = new String(pass);
+            } else {
+                System.out.print("  PASSWORD: " + password);
             }
 
             System.out.println();
@@ -123,6 +126,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
             EmailLogger.logByEmail("Server booted", "The MedSavant Server Engine successfully booted.");
         } catch (RemoteException e) {
+            throw e;
+        } catch (SessionExpiredException e) {
             throw e;
         }
     }
@@ -232,7 +237,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         }
     }
 
-    private void bindAdapters(Registry registry) throws RemoteException {
+    private void bindAdapters(Registry registry) throws RemoteException, SessionExpiredException {
 
         System.out.print("Initializing server registry ... ");
         System.out.flush();

@@ -21,6 +21,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,6 +35,8 @@ import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.region.RegionSetFilter;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -54,7 +58,13 @@ public class OntologyFilter extends RegionSetFilter {
     @Override
     public Condition[] getConditions() throws InterruptedException, SQLException, RemoteException {
         Set<Gene> genes = new HashSet<Gene>();
-        Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
+        Map<OntologyTerm, String[]> allTermsGenes;
+        try {
+            allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
         for (String[] termGenes: allTermsGenes.values()) {
             for (String geneName: termGenes) {
                 Gene g = GeneSetController.getInstance().getGene(geneName);

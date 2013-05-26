@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.login;
 
 import java.rmi.RemoteException;
@@ -43,9 +42,7 @@ public class LoginController extends Controller<LoginEvent> {
 
     private static final Log LOG = LogFactory.getLog(LoginController.class);
     private final static Object EVENT_LOCK = new Object();
-
     private static LoginController instance;
-
     private String userName;
     private String password;
     private UserLevel level;
@@ -69,7 +66,7 @@ public class LoginController extends Controller<LoginEvent> {
         Thread t = new Thread() {
             @Override
             public void run() {
-                synchronized(EVENT_LOCK) {
+                synchronized (EVENT_LOCK) {
                     LoginController.this.loggedIn = loggedIn;
 
                     if (loggedIn) {
@@ -196,19 +193,32 @@ public class LoginController extends Controller<LoginEvent> {
     public void logout() {
         MedSavantFrame.getInstance().setTitle("MedSavant");
         setLoggedIn(false);
+        System.exit(0);
     }
 
     public void unregister() {
-        try {
-            MedSavantClient.SessionManager.unregisterSession(sessionId);
-        } catch (Exception ex) {
-            LOG.info("Error while logging out: " + ClientMiscUtils.getMessage(ex));
-        }
+
+        // queue session for unregistration
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MedSavantClient.SessionManager.unregisterSession(sessionId);
+                } catch (RemoteException ex) {
+                    LOG.info("Error while logging out: " + ClientMiscUtils.getMessage(ex));
+                } catch (Exception ex) {
+                    LOG.info("Error while logging out: " + ClientMiscUtils.getMessage(ex));
+                }
+            }
+        };
+        new Thread(r).start();
+
+
     }
 
     /**
-     * Set the initial project.  If there are none, prompt to create one.  If there is one, select it.
-     * If there is more than one, prompt to select one.
+     * Set the initial project. If there are none, prompt to create one. If
+     * there is one, select it. If there is more than one, prompt to select one.
      */
     private boolean setProject() throws SQLException, RemoteException {
         ProjectController pc = ProjectController.getInstance();

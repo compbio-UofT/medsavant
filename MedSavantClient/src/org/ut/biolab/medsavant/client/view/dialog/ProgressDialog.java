@@ -24,9 +24,11 @@ import javax.swing.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import savant.util.MiscUtils;
 
 
 /**
@@ -49,6 +51,7 @@ public abstract class ProgressDialog extends JDialog {
     public ProgressDialog(String title, String message) {
         this(title, message, false);
         pack();
+
         setLocationRelativeTo(getParent());
     }
 
@@ -63,6 +66,10 @@ public abstract class ProgressDialog extends JDialog {
 
         bar = new JProgressBar();
         bar.setIndeterminate(true);
+
+        if (ClientMiscUtils.MAC) {
+            bar.putClientProperty("JProgressBar.style", "circular");
+        }
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;

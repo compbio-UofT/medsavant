@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.shared.serverapi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
@@ -29,11 +30,11 @@ import org.ut.biolab.medsavant.shared.model.UserLevel;
  */
 public interface UserManagerAdapter extends Remote {
 
-    public String[] getUserNames(String sessID) throws SQLException, RemoteException;
-    public boolean userExists(String sessID, String userName) throws SQLException, RemoteException;
-    public void addUser(String sessID, String name, char[] pass, UserLevel level) throws SQLException, RemoteException;
-    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, RemoteException;
-    public UserLevel getUserLevel(String sessID, String name) throws SQLException, RemoteException;
-    public void removeUser(String sessID, String name) throws SQLException, RemoteException;
+    public String[] getUserNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
+    public boolean userExists(String sessID, String userName) throws SQLException, RemoteException, SessionExpiredException;
+    public void addUser(String sessID, String name, char[] pass, UserLevel level) throws SQLException, RemoteException, SessionExpiredException;
+    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, RemoteException, SessionExpiredException;
+    public UserLevel getUserLevel(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
+    public void removeUser(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
 
 }

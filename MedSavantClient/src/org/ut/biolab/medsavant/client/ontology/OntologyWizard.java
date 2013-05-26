@@ -31,6 +31,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -42,9 +44,11 @@ import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -277,6 +281,10 @@ public class OntologyWizard extends WizardDialog {
     }
 
     private void create() throws InterruptedException, SQLException, IOException {
-        MedSavantClient.OntologyManager.addOntology(LoginController.getInstance().getSessionID(), name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
+        try {
+            MedSavantClient.OntologyManager.addOntology(LoginController.getInstance().getSessionID(), name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        }
     }
 }

@@ -41,21 +41,9 @@ public abstract class UpdateWorker extends VariantWorker {
 
     private static final Log LOG = LogFactory.getLog(UpdateWorker.class);
     protected int updateID = -1;
-    private final String publishText;
-    private final JCheckBox autoPublishCheck;
-    private final JLabel publishProgressLabel;
-    private final JProgressBar publishProgressBar;
-    private final JButton publishButton;
 
-    protected UpdateWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton workButton, JCheckBox autoPublishCheck, JLabel publishProgressLabel, JProgressBar publishProgressBar, JButton publishButton) {
+    protected UpdateWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton workButton) {
         super(activity, wizard, progressLabel, progressBar, workButton);
-
-        this.autoPublishCheck = autoPublishCheck;
-        this.publishProgressLabel = publishProgressLabel;
-        this.publishProgressBar = publishProgressBar;
-        this.publishButton = publishButton;
-        this.publishText = publishButton.getText();
-
         wizard.getCurrentPage().fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
     }
 
@@ -63,44 +51,14 @@ public abstract class UpdateWorker extends VariantWorker {
     protected void showSuccess(Void result) {
         super.showSuccess(result);
 
-        publishProgressLabel.setVisible(true);
-        autoPublishCheck.setVisible(false);
+        wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
-        if (updateID != -1) {
-
-            publishProgressBar.setVisible(true);
-
-
-            if (autoPublishCheck.isSelected()) {
-                new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
-            } else {
-                publishButton.setVisible(true);
-
-                if (publishButton.getActionListeners().length == 0) {
-                    publishButton.addActionListener(new ActionListener() {
-
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
-                            publishButton.setText("Cancel");
-                        }
-                    });
-                }
-                wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-            }
-        } else {
-            publishButton.setEnabled(false);
-            publishProgressLabel.setText("There was a problem importing variants.");
-            publishProgressLabel.setForeground(Color.red);
-            wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-        }
     }
 
     @Override
     protected void showFailure(Throwable ex) {
         super.showFailure(ex);
         if (ex instanceof InterruptedException) {
-            publishButton.setText(publishText);
         }
     }
 }

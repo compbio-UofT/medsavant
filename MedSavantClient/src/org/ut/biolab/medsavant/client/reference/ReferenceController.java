@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.client.reference;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -26,8 +28,10 @@ import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.model.Reference;
 import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
 /**
@@ -54,7 +58,12 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public Reference[] getReferences() throws SQLException, RemoteException {
-        return manager.getReferences(LoginController.getInstance().getSessionID());
+        try {
+            return manager.getReferences(LoginController.getInstance().getSessionID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public boolean setReference(String refName) throws SQLException, RemoteException{
@@ -62,25 +71,35 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public boolean setReference(String refName, boolean getConfirmation) throws SQLException, RemoteException {
-        if (manager.containsReference(LoginController.getInstance().getSessionID(), refName)) {
+        try {
+            if (manager.containsReference(LoginController.getInstance().getSessionID(), refName)) {
 
-            if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
-                if(!DialogUtils.confirmChangeReference(false)){
-                    return false;
+                if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
+                    if(!DialogUtils.confirmChangeReference(false)){
+                        return false;
+                    }
                 }
+
+                currentReferenceID = getReferenceID(refName);
+                currentReferenceName = refName;
+
+                fireEvent(new ReferenceEvent(ReferenceEvent.Type.CHANGED, refName));
             }
-
-            currentReferenceID = getReferenceID(refName);
-            currentReferenceName = refName;
-
-            fireEvent(new ReferenceEvent(ReferenceEvent.Type.CHANGED, refName));
+            referenceSet = true;
+            return true;
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return false;
         }
-        referenceSet = true;
-        return true;
     }
 
     public int getReferenceID(String refName) throws SQLException, RemoteException {
-        return manager.getReferenceID(LoginController.getInstance().getSessionID(), refName);
+        try {
+            return manager.getReferenceID(LoginController.getInstance().getSessionID(), refName);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return 0;
+        }
     }
 
     public int getCurrentReferenceID() {
@@ -88,7 +107,12 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public String[] getReferenceNames() throws SQLException, RemoteException {
-        return manager.getReferenceNames(LoginController.getInstance().getSessionID());
+        try {
+            return manager.getReferenceNames(LoginController.getInstance().getSessionID());
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public String getCurrentReferenceName(){
@@ -108,7 +132,12 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public Chromosome[] getChromosomes(int refID) throws SQLException, RemoteException {
-        return manager.getChromosomes(LoginController.getInstance().getSessionID(), refID);
+        try {
+            return manager.getChromosomes(LoginController.getInstance().getSessionID(), refID);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
     }
 
     public boolean isReferenceSet(){
@@ -116,7 +145,12 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public void addReference(String name, Chromosome[] chroms, String url) throws SQLException, RemoteException {
-        manager.addReference(LoginController.getInstance().getSessionID(), name, chroms, url);
+        try {
+            manager.addReference(LoginController.getInstance().getSessionID(), name, chroms, url);
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
         fireEvent(new ReferenceEvent(ReferenceEvent.Type.ADDED, name));
     }
 

@@ -46,6 +46,8 @@ import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.border.EmptyBorder;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
@@ -65,10 +67,12 @@ import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -628,10 +632,16 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         }
 
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws SQLException, RemoteException {
-            Map<Object, List<String>> map = MedSavantClient.PatientManager.getDNAIDsForValues(
-                    LoginController.getInstance().getSessionID(),
-                    ProjectController.getInstance().getCurrentProjectID(),
-                    generator.getFilterId());
+            Map<Object, List<String>> map;
+            try {
+                map = MedSavantClient.PatientManager.getDNAIDsForValues(
+                        LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        generator.getFilterId());
+            } catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+            }
             if (generator.getFilterId().equals(GENDER.getColumnName())) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }

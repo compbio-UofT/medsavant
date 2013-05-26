@@ -168,7 +168,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         final ComprehensiveInspector instance = this;
 
-        instance.getVariantInspector().setMessage(new WaitPanel("Fetching variant information..."));
+        instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
         instance.getVariantInspector().switchToMessage();
         new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
             @Override
@@ -193,7 +193,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     public void setGene(final Gene gene) {
         this.switchToGeneInspector();
-        this.getGeneInspector().setMessage(new WaitPanel("Fetching gene info..."));
+        this.getGeneInspector().setMessage(new WaitPanel("Getting detailed gene information..."));
         this.getGeneInspector().switchToMessage();
 
         new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
@@ -221,7 +221,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         final ComprehensiveInspector instance = this;
 
-        instance.getVariantInspector().setMessage(new WaitPanel("Fetching variant information..."));
+        instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
         instance.getVariantInspector().switchToMessage();
         new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
             @Override

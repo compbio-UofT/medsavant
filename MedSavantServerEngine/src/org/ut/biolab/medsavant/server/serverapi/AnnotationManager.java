@@ -60,6 +60,7 @@ import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -75,10 +76,10 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     private static final Log LOG = LogFactory.getLog(AnnotationManager.class);
     private static AnnotationManager instance;
 
-    private AnnotationManager() throws RemoteException {
+    private AnnotationManager() throws RemoteException, SessionExpiredException {
     }
 
-    public static synchronized AnnotationManager getInstance() throws RemoteException {
+    public static synchronized AnnotationManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new AnnotationManager();
         }
@@ -131,7 +132,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     /*
-     private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException {
+     private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException, SessionExpiredException {
      LOG.info("Installing zip...");
      File dir = unpackAnnotationZip(zip);
      LOG.info("... DONE");
@@ -139,7 +140,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
      }
      */
-    public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc) throws SQLException {
+    public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc) throws SQLException, SessionExpiredException {
 
         LOG.debug("Adding annotation format for " + colName);
 
@@ -159,7 +160,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         c.close();
     }
 
-    public static int addAnnotation(String sessID, String prog, String vers, int refID, String path, boolean hasRef, boolean hasAlt, int type, boolean endInclusive) throws SQLException {
+    public static int addAnnotation(String sessID, String prog, String vers, int refID, String path, boolean hasRef, boolean hasAlt, int type, boolean endInclusive) throws SQLException, SessionExpiredException {
 
         LOG.debug("Adding annotation...");
 
@@ -232,7 +233,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public Annotation getAnnotation(String sid, int annotation_id) throws SQLException {
+    public Annotation getAnnotation(String sid, int annotation_id) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
@@ -266,7 +267,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public Annotation[] getAnnotations(String sid) throws SQLException {
+    public Annotation[] getAnnotations(String sid) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
@@ -305,7 +306,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * Get the annotation ids associated with the latest published table.
      */
     @Override
-    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException {
+    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -338,7 +339,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException {
+    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
         SelectQuery query1 = new SelectQuery();
@@ -497,7 +498,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * annotation to check
      * @return Whether or not this annotation is currently installed
      */
-    private boolean checkIfAnnotationIsInstalled(String sessID, AnnotationDownloadInformation info) throws RemoteException, SQLException {
+    private boolean checkIfAnnotationIsInstalled(String sessID, AnnotationDownloadInformation info) throws RemoteException, SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
         SelectQuery query1 = new SelectQuery();
@@ -517,7 +518,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public void uninstallAnnotation(String sessionID, Annotation an) throws RemoteException, SQLException {
+    public void uninstallAnnotation(String sessionID, Annotation an) throws RemoteException, SQLException, SessionExpiredException {
         int annotationID = an.getID();
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
@@ -570,7 +571,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
     }
 
-    private static void registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException {
+    private static void registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException, SessionExpiredException {
         LOG.info("Parsing format...");
         AnnotationFormat format = parseFormat(getTabixFile(dir), getFormatFile(dir));
         LOG.info("... DONE");

@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -34,12 +35,14 @@ public class CohortDetailedListEditor extends DetailedListEditor {
 
     @Override
     public boolean doesImplementAdding() {
-        return LoginController.getInstance().getUserLevel() == UserLevel.ADMIN;
+        //return LoginController.getInstance().getUserLevel() == UserLevel.ADMIN;
+        return true;
     }
 
     @Override
     public boolean doesImplementDeleting() {
-        return LoginController.getInstance().getUserLevel() == UserLevel.ADMIN;
+        //return LoginController.getInstance().getUserLevel() == UserLevel.ADMIN;
+        return true;
     }
 
     @Override
@@ -70,7 +73,7 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                         int id = ((Cohort) v[0]).getId();
                         try {
                             MedSavantClient.CohortManager.removeCohort(LoginController.getInstance().getSessionID(), id);
-                        } catch (Throwable ex) {
+                        } catch (Exception ex) {
                             numCouldntRemove++;
                             ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": %s", ex);
                         }

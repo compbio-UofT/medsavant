@@ -10,6 +10,7 @@ import org.ut.biolab.medsavant.server.db.variants.annotation.BatchVariantAnnotat
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
@@ -45,7 +46,7 @@ public class AnnotationCursor {
      * @throws IOException
      * @throws SQLException
      */
-    public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException {
+    public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException {
         reader = new TabixReader(annotation.getDataPath());
 
         this.annotation = annotation;
