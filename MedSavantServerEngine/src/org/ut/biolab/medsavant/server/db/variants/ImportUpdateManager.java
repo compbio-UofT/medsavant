@@ -49,11 +49,16 @@ public class ImportUpdateManager {
             File[] allTSVFiles = ArrayUtils.addAll(importedTSVFiles, existingTableAsTSV);
 
             // annotate
-            annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, publishUponCompletion, allTSVFiles, createSubdir(workingDirectory, "annotate_upload"));
+            annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, allTSVFiles, createSubdir(workingDirectory, "annotate_upload"));
 
             // do some accounting
             addVariantFilesToDatabase(sessionID, updateID, vcfFiles);
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
+
+            releaseLock(sessionID, needsToUnlock);
+            if (publishUponCompletion) {
+                publishLatestUpdate(sessionID, projectID);
+            }
 
             LOG.info("Finished import");
 
@@ -78,7 +83,11 @@ public class ImportUpdateManager {
             int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.UPDATE_TABLE);
             File workingDirectory = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
             File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), false);
-            annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, publishUponCompletion, new File[]{existingTableAsTSV}, createSubdir(workingDirectory, "annotate_upload"));
+            annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, new File[]{existingTableAsTSV}, createSubdir(workingDirectory, "annotate_upload"));
+            releaseLock(sessionID, needsToUnlock);
+            if (publishUponCompletion) {
+                publishLatestUpdate(sessionID, projectID);
+            }
             return updateID;
 
         } catch (Exception e) {
@@ -91,17 +100,16 @@ public class ImportUpdateManager {
     /**
      * Annotate using existing annotation / custom field sets
      */
-    private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, boolean publishUponCompletion, File[] tsvFiles, File workingDir) throws Exception {
+    private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, File[] tsvFiles, File workingDir) throws Exception {
         int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
         CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
-
-        annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, publishUponCompletion, tsvFiles, workingDir);
+        annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles, workingDir);
     }
 
     /**
      * Annotation with the given annotation / custom field sets
      */
-    private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, boolean publishUponCompletion, File[] tsvFiles, File workingDir) throws Exception {
+    private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
 
         LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
 
@@ -137,10 +145,6 @@ public class ImportUpdateManager {
             registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
             dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
             setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-
-            if (publishUponCompletion) {
-                publishLatestUpdate(sessionID, projectID);
-            }
 
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
