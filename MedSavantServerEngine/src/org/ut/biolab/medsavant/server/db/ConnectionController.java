@@ -185,12 +185,12 @@ public class ConnectionController {
      *     {@link #unregisterBackgroundUsageOfSession(String)} when it finishes
      */
     public static synchronized boolean registerBackgroundUsageOfSession(String sessionId) {
-    	ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
-    	if (lock == null) {
-    		lock = new ReentrantReadWriteLock();
-    		sessionUsageLocks.put(sessionId, lock);
-    	}
-    	return lock.readLock().tryLock();
+        ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
+        if (lock == null) {
+            lock = new ReentrantReadWriteLock();
+            sessionUsageLocks.put(sessionId, lock);
+        }
+        return lock.readLock().tryLock();
     }
 
     /**
@@ -200,10 +200,10 @@ public class ConnectionController {
      * @param sessionId the session being released
      */
     public static synchronized void unregisterBackgroundUsageOfSession(String sessionId) {
-    	ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
-    	if (lock != null) {
-    		lock.readLock().unlock();
-    	}
+        ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
+        if (lock != null) {
+            lock.readLock().unlock();
+        }
     }
 
     public static void removeSession(String sessID) throws SQLException {
@@ -231,28 +231,28 @@ public class ConnectionController {
      * is using it right now).
      */
     private static class CloseConnectionWhenDone implements Callable<Boolean> {
-    	/** The session to close. */
-    	private final String sessionId;
+        /** The session to close. */
+        private final String sessionId;
 
-    	/**
-    	 * Simple constructor.
-    	 * @param sessionId the session to close
-    	 */
-    	CloseConnectionWhenDone(String sessionId) {
-    		this.sessionId = sessionId;
-    	}
+        /**
+         * Simple constructor.
+         * @param sessionId the session to close
+         */
+        CloseConnectionWhenDone(String sessionId) {
+            this.sessionId = sessionId;
+        }
 
-		@Override
-		public Boolean call() throws Exception {
-			ReentrantReadWriteLock lock = ConnectionController.sessionUsageLocks.remove(sessionId);
-			if (lock != null) {
-				lock.writeLock().lock();
-			}
-	        synchronized (sessionPoolMap) {
-	            ConnectionPool pool = sessionPoolMap.remove(sessionId);
-	            pool.close();
-	        }
-			return Boolean.TRUE;
-		}
+        @Override
+        public Boolean call() throws Exception {
+            ReentrantReadWriteLock lock = ConnectionController.sessionUsageLocks.remove(sessionId);
+            if (lock != null) {
+                lock.writeLock().lock();
+            }
+            synchronized (sessionPoolMap) {
+                ConnectionPool pool = sessionPoolMap.remove(sessionId);
+                pool.close();
+            }
+            return Boolean.TRUE;
+        }
     }
 }
