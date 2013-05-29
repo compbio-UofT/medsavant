@@ -9,4 +9,4 @@ bin
 .DS_Store
 MedSavantServerEngine/medsavant.log
 private.xml
-medsavant.prop
+.medsavant.prop
