@@ -8,3 +8,5 @@ target
 bin
 .DS_Store
 MedSavantServerEngine/medsavant.log
+private.xml
+.prop
