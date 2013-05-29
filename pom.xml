@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>edu.toronto.cs.medsavant</groupId>
+  <artifactId>medsavant-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>MedSavant - Parent POM</name>
+  <description>MedSavant is a search engine for genetic variants </description>
+  <url>http://www.genomesavant.com/p/medsavant/</url>
+  <inceptionYear>2011</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com/compbio-UofT/medsavant.git</connection>
+    <developerConnection>scm:git:git@github.com:compbio-UofT/medsavant.git</developerConnection>
+    <url>https://github.com/compbio-UofT/medsavant.git/tree/master/</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <organization>
+    <name>University of Toronto, Computational Biology Lab</name>
+    <url>http://compbio.cs.toronto.edu/</url>
+  </organization>
+
+  <distributionManagement>
+    <site>
+      <id>nexus.cs.toronto.edu</id>
+      <url>dav:http://nexus.cs.toronto.edu/nexus/content/sites/site/${project.groupId}/${project.artifactId}/${project.version}</url>
+    </site>
+    <repository>
+      <id>nexus.cs.toronto.edu</id>
+      <name>Maven2 Remote Repository for Releases</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus.cs.toronto.edu</id>
+      <name>Maven2 Development Repository for Snapshots</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>uoft-releases</id>
+      <name>UofT Releases repository</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/releases/</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>uoft-snapshots</id>
+      <name>UofT Releases repository</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/repositories/snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>uoft-externals</id>
+      <name>UofT external repositories mirror</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>uoft-externals</id>
+      <name>UofT external repositories mirror</name>
+      <url>http://nexus.cs.toronto.edu/nexus/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <properties>
+    <enforcer.skip>false</enforcer.skip>
+    <checkstyle.skip>false</checkstyle.skip>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Apache Commons -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.1</version>
+      </dependency>
+      <!-- Everybody logs -->
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <sourceDirectory>src</sourceDirectory>
+
+    <extensions>
+      <!-- Enables uploading releases to Nexus -->
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav-jackrabbit</artifactId>
+        <version>2.2</version>
+      </extension>
+    </extensions>
+
+    <plugins>
+      <!-- Show compiler warnings -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgument>-Xlint:none</compilerArgument>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Lock down plugin version for build reproducibility -->
+        <version>1.1</version>
+        <executions>
+          <!-- Check that all Maven plugins have versions defined -->
+          <execution>
+            <id>enforce-plugins</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requirePluginVersions>
+                  <message>Best Practice is to always define plugin versions!</message>
+                  <banLatest>false</banLatest>
+                  <banRelease>false</banRelease>
+                  <banSnapshots>false</banSnapshots>
+                </requirePluginVersions>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${enforcer.skip}</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <!-- Apply checkstyle rules and fail the build in case of errors. The checkstyle config
+             files are taken from the build-tools JAR module.-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.9.1</version>
+          <dependencies>
+            <dependency>
+              <groupId>edu.toronto.cs</groupId>
+              <artifactId>common-verification-resources</artifactId>
+              <version>1.0</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <consoleOutput>true</consoleOutput>
+            <!-- We use this to disable checkstyle when the clover profile is executed since there's a
+                 conflict between checkstyle and clover. Namely the clovered code doesn't pass our
+                 checkstyle rules -->
+            <skip>${checkstyle.skip}</skip>
+            <configLocation>checkstyle.xml</configLocation>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- Check license headers and fail the build if they're missing or not matching the defined format -->
+        <plugin>
+          <groupId>com.mycila.maven-license-plugin</groupId>
+          <artifactId>maven-license-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.9.0</version>
+          <configuration>
+            <skip>${license.skip}</skip>
+            <header>license.txt</header>
+            <strictCheck>true</strictCheck>
+            <headerDefinitions>
+              <!-- Our style for XML headers isn't standard so we need to define it in a custom manner.
+                   See xwiki-commons-tool-validation-resources module -->
+              <headerDefinition>license-apache-xml-definition.xml</headerDefinition>
+              <headerDefinition>license-apache-script-definition.xml</headerDefinition>
+              <headerDefinition>license-apache-batch-definition.xml</headerDefinition>
+            </headerDefinitions>
+            <!-- Our Java and XML styles aren't the default so we need to change the mapping -->
+            <mapping>
+              <java>SLASHSTAR_STYLE</java>
+              <aj>SLASHSTAR_STYLE</aj>
+            </mapping>
+            <!-- We're only interested in checking our sources and our POMs -->
+            <includes>
+              <include>src/**</include>
+              <include>pom.xml</include>
+            </includes>
+          </configuration>
+          <!-- Add a dependency since this is where the maven-license-plugin plugin will find the license.txt file -->
+          <dependencies>
+            <dependency>
+              <groupId>edu.toronto.cs</groupId>
+              <artifactId>common-verification-resources</artifactId>
+              <version>1.0</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.4</version>
+          <configuration>
+            <!-- By default the release plugin will execute the "clean" and "verify" goals but won't perform an
+                 "install". This is causing problems since several modules will fail to build during release:prepare.
+                 See http://tinyurl.com/354vwe for more details. Thus we're forcing the execution of the "install"
+                 goal. -->
+            <preparationGoals>clean install</preparationGoals>
+            <!-- Avoid site generation during the release:perform to speed up release process -->
+            <goals>deploy</goals>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <localCheckout>true</localCheckout>
+            <pushChanges>false</pushChanges>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.9</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.5.1</version>
+          <!-- Java 1.6 is required -->
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.12.3</version>
+          <!-- Rule is to put tests in *Test classes -->
+          <configuration>
+            <includes>
+              <include>**/*Test.class</include>
+            </includes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.7</version>
+          <!-- We're deploying to Nexus using the WebDAV protocol -->
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-webdav-jackrabbit</artifactId>
+              <version>2.2</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>clirr-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.5</version>
+          <executions>
+            <execution>
+              <id>clirr-check</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <comparisonVersion>${clirr.previous.version}</comparisonVersion>
+            <skip>${clirr.skip}</skip>
+            <excludes>
+              <exclude>**/internal/**</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>2.8.1</version>
+          <configuration>
+            <!-- Always exclude the internal package since it's not user-public -->
+            <excludePackageNames>*.internal.*</excludePackageNames>
+            <!-- Make sure javadoc has enough memory -->
+            <maxmemory>300m</maxmemory>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>3.2</version>
+          <!-- Site Plugin doesn’t automatically pull the Apache Wagon implementation -->
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-webdav-jackrabbit</artifactId>
+              <version>2.2</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <reportPlugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                  <!-- Since contacting the Maven Repositories can take a very long time, tell the plugin not to display
+                       the repository locations of the dependencies in the report. -->
+                  <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+                <reports>
+                  <report>summary</report>
+                  <report>index</report>
+                  <report>dependencies</report>
+                  <report>dependency-convergence</report>
+                  <report>mailing-list</report>
+                  <report>issue-tracking</report>
+                  <report>scm</report>
+                </reports>
+              </plugin>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                  <!-- Always exclude the internal package since it's not user-public -->
+                  <excludePackageNames>*.internal.*</excludePackageNames>
+                  <!-- Make sure javadoc has enough memory -->
+                  <maxmemory>300m</maxmemory>
+                </configuration>
+                <!-- Don't generate test javadoc -->
+                <reports>
+                  <report>javadoc</report>
+                </reports>
+              </plugin>
+            </reportPlugins>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <modules>
+    <module>MedSavantShared</module>
+    <module>MedSavantServerEngine</module>
+    <module>MedSavantClient</module>
+  </modules>
+</project>
