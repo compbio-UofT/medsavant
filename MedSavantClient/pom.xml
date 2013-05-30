@@ -166,4 +166,13 @@
       <url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
     </repository>
   </repositories>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>resources</directory>
+      </resource>
+    </resources>
+  </build>
+
 </project>
