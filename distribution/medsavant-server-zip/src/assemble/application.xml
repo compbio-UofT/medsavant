@@ -24,10 +24,9 @@
     <includeBaseDirectory>true</includeBaseDirectory>
 
     <dependencySets>
-
         <dependencySet>
             <excludes>
-                <exclude>medsavant-client-*.jar</exclude>
+                <exclude>medsavant-server-*.jar</exclude>
             </excludes>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>lib</outputDirectory>
@@ -36,7 +35,7 @@
 
         <dependencySet>
             <includes>
-                <include>${project.groupId}:medsavant-client</include>
+                <include>${project.groupId}:medsavant-server</include>
             </includes>
             <unpack>false</unpack>
             <useProjectArtifact>false</useProjectArtifact>
