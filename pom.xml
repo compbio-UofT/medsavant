@@ -474,5 +474,6 @@
     <module>MedSavantShared</module>
     <module>MedSavantServerEngine</module>
     <module>MedSavantClient</module>
+      <module>distribution</module>
   </modules>
 </project>

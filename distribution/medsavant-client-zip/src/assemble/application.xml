@@ -1,0 +1,28 @@
+<assembly>
+    <id>package</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <dependencySets>
+
+        <dependencySet>
+            <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+        </dependencySet>
+
+        <dependencySet>
+            <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>${project.groupId}:medsavant-client</include>
+            </includes>
+            <unpack>false</unpack>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+    </dependencySets>
+
+</assembly>
