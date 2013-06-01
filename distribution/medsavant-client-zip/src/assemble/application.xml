@@ -27,7 +27,7 @@
 
         <dependencySet>
             <excludes>
-                <exclude>${project.groupId}:medsavant-client}</exclude>
+                <exclude>${project.groupId}:medsavant-client</exclude>
             </excludes>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>lib</outputDirectory>
