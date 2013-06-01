@@ -27,18 +27,16 @@
 
         <dependencySet>
             <excludes>
-                <exclude>medsavant-client-*.jar</exclude>
+                <exclude>${project.groupId}:medsavant-client}</exclude>
             </excludes>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
         </dependencySet>
 
         <dependencySet>
             <includes>
                 <include>${project.groupId}:medsavant-client</include>
             </includes>
-            <unpack>false</unpack>
             <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
 

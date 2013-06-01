@@ -26,18 +26,16 @@
     <dependencySets>
         <dependencySet>
             <excludes>
-                <exclude>medsavant-server-*.jar</exclude>
+                <exclude>${project.groupId}:medsavant-server</exclude>
             </excludes>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
         </dependencySet>
 
         <dependencySet>
             <includes>
                 <include>${project.groupId}:medsavant-server</include>
             </includes>
-            <unpack>false</unpack>
             <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
 

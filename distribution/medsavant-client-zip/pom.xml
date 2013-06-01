@@ -25,6 +25,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
 
     <artifactId>medsavant-client-zip</artifactId>
     <name>MedSavant - Zip Client Distribution </name>
@@ -70,20 +71,6 @@
                     <descriptors>
                         <descriptor>src/assemble/application.xml</descriptor>
                     </descriptors>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathLayoutType>custom</classpathLayoutType>
-                            <customClasspathLayout>lib/$${artifact.artifactId}-$${artifact.baseVersion}.$${artifact.extension}</customClasspathLayout>
-                            <mainClass>org.ut.biolab.medsavant.MedSavantClient</mainClass>
-                        </manifest>
-                    </archive>
                 </configuration>
             </plugin>
         </plugins>
