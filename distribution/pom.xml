@@ -19,23 +19,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>medsavant-parent</artifactId>
-        <groupId>edu.toronto.cs.medsavant</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>medsavant-distribution</artifactId>
-    <packaging>pom</packaging>
-    <description>Parent POM for all the distribution modules. </description>
-    <name>MedSavant - Distributions </name>
-    <properties>
-        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
-    </properties>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>medsavant-parent</artifactId>
+    <groupId>edu.toronto.cs.medsavant</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 
-    <modules>
-        <module>medsavant-client-zip</module>
-        <module>medsavant-server-zip</module>
-    </modules>
+  <artifactId>medsavant-distribution</artifactId>
+  <packaging>pom</packaging>
+  <name>MedSavant - Distributions</name>
+  <description>Parent POM for all the distribution modules.</description>
 
+  <properties>
+    <!-- Snapshot artifacts will have the current date in the filename -->
+    <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+  </properties>
+
+  <modules>
+    <module>medsavant-server-zip</module>
+    <module>medsavant-client-zip</module>
+  </modules>
 </project>

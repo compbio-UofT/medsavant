@@ -21,6 +21,8 @@
     <formats>
         <format>zip</format>
     </formats>
+
+    <!-- Include a top level directory in the zip -->
     <includeBaseDirectory>true</includeBaseDirectory>
 
     <dependencySets>
@@ -28,17 +30,17 @@
             <excludes>
                 <exclude>${project.groupId}:medsavant-server</exclude>
             </excludes>
-            <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>lib</outputDirectory>
+            <!-- This project doesn't generate any artifact -->
+            <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
 
         <dependencySet>
             <includes>
                 <include>${project.groupId}:medsavant-server</include>
             </includes>
+            <!-- This project doesn't generate any artifact -->
             <useProjectArtifact>false</useProjectArtifact>
         </dependencySet>
-
     </dependencySets>
-
 </assembly>
