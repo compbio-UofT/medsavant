@@ -39,5 +39,6 @@
   <modules>
     <module>medsavant-server-zip</module>
     <module>medsavant-client-zip</module>
+    <module>medsavant-client-dmg</module>
   </modules>
 </project>
