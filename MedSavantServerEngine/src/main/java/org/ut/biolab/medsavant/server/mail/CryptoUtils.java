@@ -18,21 +18,20 @@ package org.ut.biolab.medsavant.server.mail;
 
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+import org.apache.commons.net.util.Base64;
 
 /**
  * Wrappers to make using javax.crypto.Cipher a little less unfriendly.
  *
  * @author tarkvara
  */
-@SuppressWarnings("NonFinalStaticVariableUsedInClassInitialization")
 public class CryptoUtils {
     private static final byte[] salt = {
         (byte)0xA9, (byte)0x9B, (byte)0xC8, (byte)0x32,
@@ -54,7 +53,7 @@ public class CryptoUtils {
         } catch (Exception x) {
         }
     }
-    
+
     /**
      * Decrypt a BASE64 encoded encrypted string.
      * 
@@ -63,13 +62,13 @@ public class CryptoUtils {
      */
     public static String decrypt(String str) {
         try {
-            return new String(DECRYPTOR.doFinal(new BASE64Decoder().decodeBuffer(str)));
+            return new String(DECRYPTOR.doFinal(Base64.decodeBase64(str.getBytes("UTF-8"))));
         } catch (Exception x) {
         }
         return null;
     }
 
-    
+
     /**
      * Encrypt the string and return a BASE64 representation suitable for framing or wrapping fish.
      *
@@ -79,7 +78,7 @@ public class CryptoUtils {
     public static String encrypt(String str) {
         try {
             // Encode bytes to base64 to get a string
-            return new BASE64Encoder().encode(ENCRYPTOR.doFinal(str.getBytes("UTF-8")));
+            return new String(Base64.encodeBase64(ENCRYPTOR.doFinal(str.getBytes("UTF-8"))), "UTF-8");
         } catch (Exception x) {
         }
         return null;
