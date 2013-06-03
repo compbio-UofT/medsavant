@@ -45,6 +45,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         if (i != null) {
             items.add(i);
             i.setParent(this);
+            i.addListener(this);
         }
 
     }
@@ -120,6 +121,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     }
 
     public void addItem(SearchConditionItem i, int atIndex) {
+        System.out.println("adding listener for " + i.getName());
         i.addListener(this);
         i.setParent(this);
         items.add(atIndex, i);
@@ -132,6 +134,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     }
 
     public void createGroupFromItem(SearchConditionItem i) {
+        System.out.println("Creating group from " + i.getName());
         i.removeListener(this);
         int indexOfItem = items.indexOf(i);
         items.remove(i);

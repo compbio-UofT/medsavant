@@ -49,6 +49,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -88,6 +89,11 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
+
+        UIManager.put("ToolTip.background", Color.black);
+        UIManager.put("ToolTip.foreground", Color.white);
+        UIManager.put("ToolTip.border", ViewUtil.getMediumBorder());
+        UIManager.put("ToolTip.font", ViewUtil.detailFontBold);
 
         add(view, BorderLayout.CENTER);
 

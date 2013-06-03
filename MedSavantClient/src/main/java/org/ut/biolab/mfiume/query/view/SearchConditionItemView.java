@@ -177,4 +177,5 @@ public class SearchConditionItemView extends PillView {
                 + "<b>" + item.getName() + "</b>"
                 + (item.getDescription() != null ? " is " + item.getDescription() + "" : " is <i>unset</i>") + "</html>");
     }
+
 }

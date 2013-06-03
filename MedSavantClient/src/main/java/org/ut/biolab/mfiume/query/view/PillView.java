@@ -113,7 +113,7 @@ public class PillView extends JPanel {
     public void showPopup() {
         if (popupGenerator != null) {
             if (this.isDisclosureVisible) {
-                JPopupMenu m = popupGenerator.generatePopup();
+                final JPopupMenu m = popupGenerator.generatePopup();
                 final PillView instance = this;
                 m.addPopupMenuListener(new PopupMenuListener() {
                     @Override
@@ -134,6 +134,29 @@ public class PillView extends JPanel {
                 });
                 m.show(this, 0, this.getHeight());
 
+                final JComponent pillInstance = this;
+                this.addComponentListener(new ComponentListener() {
+
+                    @Override
+                    public void componentResized(ComponentEvent ce) {
+                    }
+
+                    @Override
+                    public void componentMoved(ComponentEvent ce) {
+                        if (m.isVisible()) {
+                            m.show(pillInstance, 0, pillInstance.getHeight());
+                        }
+                    }
+
+                    @Override
+                    public void componentShown(ComponentEvent ce) {
+                    }
+
+                    @Override
+                    public void componentHidden(ComponentEvent ce) {
+                    }
+
+                });
 
             }
         }
@@ -226,6 +249,9 @@ public class PillView extends JPanel {
 
     private void updateDisclosure() {
         this.leftPanel.removeAll();
+        if (true) {
+            return;
+        }
         if (this.isDisclosureVisible) {
             if (this.isSelected) {
                 setLeftPanel(new ImagePanel("disclosure.png"));
@@ -240,4 +266,5 @@ public class PillView extends JPanel {
     public void setPopupGenerator(PopupGenerator pg) {
         this.popupGenerator = pg;
     }
+
 }

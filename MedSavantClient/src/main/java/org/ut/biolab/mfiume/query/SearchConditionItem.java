@@ -115,21 +115,11 @@ public class SearchConditionItem implements Serializable {
         public void searchConditionEdited(SearchConditionItem m);
     }
 
-    /*public void setDescription(String s) {
-     System.out.println(s);
-     this.description = s;
-     }
-
-     public String getConditionDescription() {
-     return description;
-     }
-     */
     public void setSearchConditionEncoding(String s) {
         this.encodedConditions = s;
     }
 
     public String getSearchConditionEncoding() {
-        //System.out.println("Encoded conditions for " + this.getName() + " is " + encodedConditions);
         return encodedConditions;
     }
 

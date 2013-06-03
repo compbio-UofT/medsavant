@@ -2,6 +2,7 @@ package org.ut.biolab.mfiume.query;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -10,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +29,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +40,7 @@ import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
 import org.ut.biolab.mfiume.query.medsavant.complex.ConditionUtils;
@@ -57,6 +63,32 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private JButton applyButton;
     private final JLabel warningText;
 
+
+    private JButton getHelpButton() {
+        final JButton helpButton = new JButton("?");
+        ViewUtil.makeSmall(helpButton);
+        helpButton.setFocusable(false);
+        if (MiscUtils.MAC) {
+            helpButton.putClientProperty( "JButton.buttonType", "help" );
+            helpButton.setText("");
+        }
+        helpButton.setToolTipText("<html>Type a search condition in the search box, e.g. \"Chromosome\".<br><br>You\'ll then be prompted to specify parameters for this condition.<br></html>");
+
+        helpButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                // programmatically show tooltip
+                ToolTipManager.sharedInstance().mouseMoved(
+                new MouseEvent(helpButton, 0, 0, 0,
+                    10, 10, // X-Y of the mouse for the tool tip
+                    0, false));
+            }
+
+        });
+        return helpButton;
+    }
+
     public QueryViewController(SearchConditionGroupItem model, ConditionViewGenerator c) {
         this.rootGroup = model;
         this.conditionViewGenerator = c;
@@ -73,8 +105,11 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 applySearchConditions();
             }
         });
+
+
         this.refreshView();
         itemToViewMap = new HashMap<SearchConditionItem, SearchConditionItemView>();
+
     }
 
     private void applySearchConditions() {
@@ -123,7 +158,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     public final void refreshView() {
         List<JComponent> cs;
         cs = getComponentsFromQueryModel(rootGroup);
-        this.setLayout(new MigLayout("wrap 1"));
+        this.setLayout(new BorderLayout());
+
 
         JPanel p = ViewUtil.getClearPanel();
         p.setBorder(ViewUtil.getBottomLineBorder());
@@ -131,13 +167,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         this.removeAll();
         for (JComponent c : cs) {
-            p.add(c, "center");
+            p.add(c, "left");
         }
+        p.add(warningText, "center");
+        p.add(applyButton, "center");
 
-        add(p);
-
-        add(warningText, "center");
-        add(applyButton, "center");
+        this.add(ViewUtil.getClearBorderlessScrollPane(p),BorderLayout.CENTER);
 
         this.invalidate();
         this.updateUI();
@@ -209,7 +244,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 components.add(pv);
                 for (JComponent c : getComponentsFromQueryModel((SearchConditionGroupItem) item)) {
-                    p.add(c, "center");
+                    p.add(c, "left");
                 }
                 components.add(p);
 
@@ -239,10 +274,11 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         itemToViewMap.remove(m);
     }
 
-    public void generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
+    public SearchConditionItemView generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(item);
         addItemToGroup(item, view, parent);
+        return view;
     }
 
     public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {
@@ -288,7 +324,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
 
             public void addItemBasedOnField() {
-                generateItemViewAndAddToGroup(field.getText(), g);
+                SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
+                view.showPopup();
+
                 m.setVisible(false);
                 field.setText("");
             }
@@ -358,6 +396,15 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 m = new ScrollableJPopupMenu(15);
                 m.setFocusable(false);
+                m.addMouseWheelListener(new MouseWheelListener() {
+
+                    @Override
+                    public void mouseWheelMoved(MouseWheelEvent e) {
+                        int amount = e.getWheelRotation();
+                        moveUpOrDown(amount);
+                    }
+
+                });
 
                 m.removeAll();
 
@@ -378,6 +425,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 // the new, non-header index to be selected
                 int newIndex;
 
+
                 // disarm previous
                 if (currentlySelectedIndex != -1) {
 
@@ -390,7 +438,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                     // always start at the first position
                 } else {
-                    newIndex = increment > 1 ? 0 : menuItems.size() - 1;
+                    newIndex = 0; //increment > 1 ? 0 : menuItems.size() - 1;
                 }
 
                 // arm the index
@@ -473,35 +521,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
         });
 
-        /*JPanel p = ViewUtil.getClearPanel();
-         p.add(placeHolder);
-         p.add(field);
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        p.add(field);
+        p.add(getHelpButton());
 
-         field.setVisible(false);
-
-         placeHolder.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         placeHolder.setVisible(false);
-         field.setVisible(true);
-         field.requestFocus();
-         }
-         });
-
-         field.addFocusListener(new FocusListener() {
-         @Override
-         public void focusGained(FocusEvent fe) {
-         }
-
-         @Override
-         public void focusLost(FocusEvent fe) {
-         placeHolder.setVisible(true);
-         field.setVisible(false);
-         }
-         });*/
-
-
-        return field;
+        return p;
     }
 
     @Override
@@ -510,7 +535,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     @Override
     public void searchConditionEdited(SearchConditionItem item) {
-        //this.invalidate();
         setConditionsChanged(true);
     }
 

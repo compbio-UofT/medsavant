@@ -114,6 +114,9 @@ public class BatchVariantAnnotator {
 
         // whatever chromosome we're at in the input file
         String currentChrom = null;
+        long previousPosition = -1;
+        String previousRef = null;
+        String previousAlt = null;
 
         while ((inputLine = readNext(recordReader)) != null) {
 
@@ -134,6 +137,35 @@ public class BatchVariantAnnotator {
             if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
                 currentChrom = nextInputRecord.chrom;
                 LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
+                previousPosition = -1;
+                previousRef = null;
+                previousAlt = null;
+            } else {
+
+                /**
+                 * Check that records for a given chromosome are sorted by position, ref, alt
+                 */
+                long currentPosition = nextInputRecord.position;
+                String currentRef = nextInputRecord.ref;
+                String currentAlt = nextInputRecord.alt;
+
+                if (currentPosition < previousPosition) {
+                    throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                }
+                if (currentPosition == previousPosition) {
+                    int refCompare = currentRef.compareTo(previousRef);
+                    if (refCompare < 0) {
+                        throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                    } else if (refCompare == 0) {
+                        int altCompare = currentAlt.compareTo(previousAlt);
+                        if (altCompare < 0) {
+                            throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                        }
+                    }
+                }
+                previousPosition = currentPosition;
+                previousRef = currentRef;
+                previousAlt = currentAlt;
             }
 
             // perform each annotation, in turn
@@ -240,7 +272,6 @@ public class BatchVariantAnnotator {
         private static final int VARIANT_INDEX_OF_POS = 5;
         private static final int VARIANT_INDEX_OF_REF = 7;
         private static final int VARIANT_INDEX_OF_ALT = 8;
-
         // basic variant fields
         public String chrom;
         public int position;
@@ -248,8 +279,9 @@ public class BatchVariantAnnotator {
         public String alt;
 
         /**
-         * Create a SimpleVariantRecord from an array, which has been
-         * tokenized from a TDF file line
+         * Create a SimpleVariantRecord from an array, which has been tokenized
+         * from a TDF file line
+         *
          * @param line The array from which to make this record
          */
         public SimpleVariantRecord(String[] line) {
@@ -258,6 +290,7 @@ public class BatchVariantAnnotator {
 
         /**
          * Set up variables based on the content of line
+         *
          * @param line The contents
          */
         private void setFromLine(String[] line) {
@@ -269,13 +302,13 @@ public class BatchVariantAnnotator {
 
         /**
          * Basic to string
+         *
          * @return String representation of this object
          */
         @Override
         public String toString() {
             return "SimpleVariantRecord{" + "chrom=" + chrom + ", position=" + position + ", ref=" + ref + ", alt=" + alt + '}';
         }
-
 
         @Override
         public boolean equals(Object obj) {
