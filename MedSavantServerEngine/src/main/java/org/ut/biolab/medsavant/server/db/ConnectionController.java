@@ -42,7 +42,7 @@ public class ConnectionController {
 
     private static final Log LOG = LogFactory.getLog(ConnectionController.class);
     private static final String DRIVER = "com.mysql.jdbc.Driver";
-    private static final String PROPS = "enableQueryTimeouts=false;autoReconnect=true";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
+    private static final String PROPS = "enableQueryTimeouts=false&autoReconnect=true";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
     private static final Map<String, ReentrantReadWriteLock> sessionUsageLocks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();

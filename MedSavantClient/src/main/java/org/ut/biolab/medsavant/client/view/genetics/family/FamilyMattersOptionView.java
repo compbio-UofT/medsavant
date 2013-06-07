@@ -669,9 +669,8 @@ public class FamilyMattersOptionView {
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
 
                         // hard code for testing only
-                        File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-12-18-14-36/Floating Harbour-varexport-1355859238961.tdf");
+                        //File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/2012-12-18-14-36/Floating Harbour-varexport-1355859238961.tdf");
 
-                        /*
                         File tdfFile;
                         if (filtersChangedSinceLastDump || (lastTDFFile == null)) {
 
@@ -696,7 +695,6 @@ public class FamilyMattersOptionView {
                             System.out.println("Reusing previous dump");
                             tdfFile = lastTDFFile;
                         }
-                        */
 
                         System.out.println("Imported from server " + tdfFile.getAbsolutePath());
 

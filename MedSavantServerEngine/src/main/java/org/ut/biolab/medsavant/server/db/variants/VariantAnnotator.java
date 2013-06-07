@@ -110,12 +110,14 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
 
         //cleanup
         System.gc();
-        if (VariantManager.REMOVE_TMP_FILES) {
+
+        /*if (VariantManager.REMOVE_TMP_FILES) {
             for (String filename : filesUsed) {
                 boolean deleted = (new File(filename)).delete();
                 LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
             }
         }
+        */
 
     }
 }

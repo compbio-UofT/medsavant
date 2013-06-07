@@ -36,6 +36,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.sf.samtools.SAMRecord;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -47,6 +49,9 @@ import org.ut.biolab.medsavant.shared.model.Range;
  * @author mfiume, tarkvara
  */
 public class MiscUtils {
+
+    private static final Log LOG = LogFactory.getLog(MiscUtils.class);
+
 
     public static final boolean MAC;
     public static final boolean WINDOWS;
@@ -566,6 +571,7 @@ public class MiscUtils {
 
     /**
      * Extravt the file name from a pull path
+     *
      * @param fullName The full path
      * @return the file name
      */
@@ -576,4 +582,14 @@ public class MiscUtils {
         return (m.find()) ? m.group(1) : "";
     }
 
+    public static void deleteDirectory(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles()) {
+                deleteDirectory(c);
+            }
+        }
+
+        boolean b = f.delete();
+        LOG.info("Deleting " + f.getAbsolutePath() + "... " + (b ? "SUCCESS" : "FAILED"));
+    }
 }
