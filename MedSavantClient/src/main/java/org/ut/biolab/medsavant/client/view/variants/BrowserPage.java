@@ -117,30 +117,36 @@ public class BrowserPage extends SubSectionView {
             }
         });
 
-        dnaIDs = java.util.Arrays.asList(new String[] {});
+        dnaIDs = java.util.Arrays.asList(new String[]{});
         sampleIdsHavingBams = new ArrayList<String>();
         dnaIDToURLMap = new HashMap<String, String>();
 
         try {
+
+
             dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
                     LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     BasicVariantColumns.DNA_ID.getColumnName(),
-                    true);
+                    false);
             gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
 
 
-                for (String s : dnaIDs) {
-                    String url = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                            LoginController.getSessionID(),
-                            ProjectController.getInstance().getCurrentProjectID(),
-                            s);
-                    if (url != null && !url.isEmpty()) {
-                        sampleIdsHavingBams.add(s);
-                        String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
-                        dnaIDToURLMap.put(s, splitUrls[0]);
-                    }
+            for (String s : dnaIDs) {
+                String url = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
+                        LoginController.getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        s);
+                System.out.println(s);
+                if (url != null && !url.isEmpty()) {
+                    System.out.println(s + " HAS BAM");
+                    sampleIdsHavingBams.add(s);
+                    String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
+                    dnaIDToURLMap.put(s, splitUrls[0]);
+                } else {
+                    System.out.println(s + " DOESNT HAVE BAM");
                 }
+            }
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -153,17 +159,17 @@ public class BrowserPage extends SubSectionView {
                 if (!variantTrackLoaded) {
 
                     // load a gene track if it exists
-                    /*
-                     try {
-                     System.out.println("Loading gene track");
-                     String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                     String urlOfTrack = getTrackURL(referenceName, "gene");
-                     addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
-                     } catch (Exception ex) {
-                     LOG.info("Error loading gene track");
-                     ex.printStackTrace();
-                     }
-                     */
+
+                    try {
+                        System.out.println("Loading gene track");
+                        String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                        String urlOfTrack = getTrackURL(referenceName, "gene");
+                        addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
+                    } catch (Exception ex) {
+                        LOG.info("Error loading gene track");
+                        ex.printStackTrace();
+                    }
+
 
                     // load the MedSavant variant track
                     try {
@@ -184,7 +190,7 @@ public class BrowserPage extends SubSectionView {
             }
         });
     }
-    
+
     @Override
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {

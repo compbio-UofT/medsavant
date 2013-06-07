@@ -20,6 +20,7 @@ import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -60,6 +61,10 @@ public class ImportUpdateManager {
                 publishLatestUpdate(sessionID, projectID);
             }
 
+            if (VariantManager.REMOVE_WORKING_DIR) {
+                MiscUtils.deleteDirectory(workingDirectory);
+            }
+
             LOG.info("Finished import");
 
             return updateID;
@@ -88,6 +93,10 @@ public class ImportUpdateManager {
             if (publishUponCompletion) {
                 publishLatestUpdate(sessionID, projectID);
             }
+            if (VariantManager.REMOVE_WORKING_DIR) {
+                MiscUtils.deleteDirectory(workingDirectory);
+            }
+
             return updateID;
 
         } catch (Exception e) {

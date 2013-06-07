@@ -101,7 +101,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final double SUBSET_FRACTION = 0.05;
     private static final double LOAD_TABLE_FRACTION = 0.15;             // Happens twice
     private static VariantManager instance;
-    public static boolean REMOVE_TMP_FILES = false;
+    //public static boolean REMOVE_TMP_FILES = false;
+    static boolean REMOVE_WORKING_DIR = true;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
     }
@@ -349,12 +350,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VariantManagerUtils.uploadTSVFileToVariantTable(sessID, subFile, tableNameSub);
 
 
-            if (REMOVE_TMP_FILES) {
+            /*if (REMOVE_TMP_FILES) {
                 boolean deleted = existingVariantsFile.delete();
                 LOG.info("Deleting " + existingVariantsFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
                 deleted = subFile.delete();
                 LOG.info("Deleting " + subFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-            }
+            }*/
 
             //get annotation ids
             AnnotationManager annotMgr = AnnotationManager.getInstance();

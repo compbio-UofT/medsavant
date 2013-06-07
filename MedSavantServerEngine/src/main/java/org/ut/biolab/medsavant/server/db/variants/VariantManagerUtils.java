@@ -198,10 +198,10 @@ public class VariantManagerUtils {
                 s.setQueryTimeout(30 * 60); // 30 minutes
                 s.execute(query);
 
-                if (VariantManager.REMOVE_TMP_FILES) {
+                /*if (VariantManager.REMOVE_TMP_FILES) {
                     boolean deleted = new File(currentOutputPath).delete();
                     LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
-                }
+                }*/
                 stateOpen = false;
             }
         }
@@ -223,10 +223,10 @@ public class VariantManagerUtils {
             s.setQueryTimeout(60 * 60); // 1 hour
             s.execute(query);
 
-            if (VariantManager.REMOVE_TMP_FILES) {
+            /*if (VariantManager.REMOVE_TMP_FILES) {
                 boolean deleted = new File(currentOutputPath).delete();
                 LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
-            }
+            }*/
         }
 
         LOG.info("Imported " + lineNumber + " lines of variants in total");
@@ -236,10 +236,10 @@ public class VariantManagerUtils {
 
         c.close();
 
-        if (VariantManager.REMOVE_TMP_FILES) {
+        /*if (VariantManager.REMOVE_TMP_FILES) {
             boolean deleted = file.delete();
             LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-        }
+        }*/
     }
 
     public static void variantTableToTSVFile(String sid, String tableName, File file, String conditions, boolean complete, int step) throws SQLException, SessionExpiredException {

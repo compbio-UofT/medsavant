@@ -74,7 +74,7 @@ public class TabixTableLoader {
             }
             query.addPreparedColumnCollection(dataCols);
             PreparedStatement prep = conn.prepareStatement(query.toString());
-            System.out.println(query.toString());
+            //System.out.println(query.toString());
 
             boolean trace = true;
             while ((line = IOUtils.readLine(input)) != null) {
@@ -86,7 +86,7 @@ public class TabixTableLoader {
                         if (colNames[i] != null) {
                             prep.setObject(++j, fields[i]);
                             if (trace) {
-                                System.out.println(j + ": " + colNames[i] + " = " + fields[i]);
+                                //System.out.println(j + ": " + colNames[i] + " = " + fields[i]);
                             }
                         }
                     }
