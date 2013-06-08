@@ -169,6 +169,7 @@ public class SearchConditionItemView extends PillView {
     }
 
     public final void refresh() {
+                
         this.setActivated(item.getSearchConditionEncoding() != null);        
         this.setText(
                 "<html>"

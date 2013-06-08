@@ -72,6 +72,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private final JPanel infoDetails;
     private final JPanel menu;
     private int[] patientIDs;
+    private String[] hospitalIDs;
     boolean pedigreeShown = false;
     private final JPanel pedigreeDetails;
     private PedigreeWorker pedigreeWorker;
@@ -196,9 +197,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     Integer patID = Integer.parseInt((String) overNode.getUserData(PATIENT_ID));
                     if (SwingUtilities.isRightMouseButton(e)) {
                         int[] patientIds = new int[selectedNodes.size()];
-                        for (int i = 0; i < selectedNodes.size(); i++) {
+                        for (int i = 0; i < selectedNodes.size(); i++) {                            
                             patientIds[i] = selectedNodes.get(i);
                         }
+                        
+                        
                         JPopupMenu popup = org.ut.biolab.medsavant.client.patient.PatientUtils.createPopup(patientIds);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()) {
@@ -248,7 +251,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     }
 
     public synchronized void setPatientInformation(Object[] result) {
-
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
@@ -369,9 +371,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         collapsiblePane.setTitle(hospitalId);
 
+        hospitalIDs = new String[1];
+        
         patientIDs = new int[1];
         patientIDs[0] = patientId;
-
+        hospitalIDs[0] = hospitalId;
+        
         infoDetails.removeAll();
         infoDetails.updateUI();
 
@@ -396,9 +401,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         if (items.isEmpty()) {
             blockPanel.block();
         } else {
+            hospitalIDs = new String[items.size()];
             patientIDs = new int[items.size()];
             for (int i = 0; i < items.size(); i++) {
                 patientIDs[i] = (Integer) items.get(i)[0];
+                hospitalIDs[i] = (String) items.get(i)[2]; //BAD!
             }
             if (items.isEmpty()) {
                 collapsiblePane.setTitle("");
@@ -414,8 +421,15 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     @Override
     public JPopupMenu createPopup() {
-        if (patientIDs != null && patientIDs.length > 0) {
-            return PatientUtils.createPopup(patientIDs);
+        //this.overNode.getId()
+        
+        
+        
+       // if (patientIDs != null && patientIDs.length > 0) {            
+           // return PatientUtils.createPopup(patientIDs);
+        //
+        if ( hospitalIDs != null && hospitalIDs.length > 0){
+            return PatientUtils.createPopup(hospitalIDs);
         }
         return null;
     }

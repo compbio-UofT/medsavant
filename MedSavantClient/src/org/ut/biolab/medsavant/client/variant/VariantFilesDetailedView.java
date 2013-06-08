@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -187,20 +188,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             filter1Item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
-                    Condition[] conditions = new Condition[files.length];
-                    DbColumn upload = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
-                    DbColumn file = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
-                    for (int i = 0; i < files.length; i++) {
-                        conditions[i] = ComboCondition.and(
-                                BinaryCondition.equalTo(upload, files[i].getUploadId()),
-                                BinaryCondition.equalTo(file, files[i].getFileId()));
-                    }
-
-                    /* TODO:
-                     FilterUtils.createAndApplyGenericFixedFilter("Variant Files - Filter by File(s)", files.length + " Files(s)",
-                     ComboCondition.or(conditions));
-                     */
+                    QueryUtils.addQueryOnVariantFiles(files);
                 }
             });
             popupMenu.add(filter1Item);

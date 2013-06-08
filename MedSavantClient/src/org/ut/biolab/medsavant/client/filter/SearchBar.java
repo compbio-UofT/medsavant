@@ -276,6 +276,11 @@ public class SearchBar extends JPanel {
                 out.close();
             }
 
+            private void saveFile(File file){
+                getQueryViewController().saveConditions(file);
+                JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Search conditions saved to "+file.getPath());
+            }
+            
             @Override
             public void mouseClicked(MouseEvent me) {                
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
@@ -289,8 +294,10 @@ public class SearchBar extends JPanel {
                     if(file.exists()){
                         int r = JOptionPane.showConfirmDialog(fileChooser, "The file "+file.getPath()+" already exists.  Overwrite?","Warning",JOptionPane.YES_NO_OPTION);
                         if(r == JOptionPane.YES_OPTION){
-                            getQueryViewController().saveConditions(file);
+                            saveFile(file);
                         }
+                    }else{
+                        saveFile(file);
                     }    
                 }                
                 /*

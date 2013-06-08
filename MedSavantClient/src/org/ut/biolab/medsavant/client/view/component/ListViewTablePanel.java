@@ -32,6 +32,8 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -53,14 +55,23 @@ public class ListViewTablePanel extends JPanel {
     private final JPanel fieldPanel;
     private float fontSize = 14.0f;
 
+    private JLabel statusMessage =new JLabel(" ");
+   
+    
+    public void setStatusMessage(String msg){
+        statusMessage.setText(msg);
+        statusMessage.repaint();
+    }
+    
+    
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
     }
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
         boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection) {
-
-
+        
+        
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
@@ -121,6 +132,7 @@ public class ListViewTablePanel extends JPanel {
         filterField = new QuickTableFilterField(model);
         filterField.setHintText("Type to search");
 
+        
         setLayout(new BorderLayout(3, 3));
         fieldPanel = ViewUtil.getClearPanel();
         fieldPanel.setLayout(new GridBagLayout());
@@ -147,15 +159,22 @@ public class ListViewTablePanel extends JPanel {
 
         setTableModel(data, columnNames, columnClasses);
 
+        JPanel tp = new JPanel();
+        tp.setLayout(new BoxLayout(tp, BoxLayout.Y_AXIS));        
+        
+        tp.add(statusMessage);
         if (allowSort) {
-            add(fieldPanel, BorderLayout.NORTH);
+            //add(fieldPanel, BorderLayout.NORTH);
+            tp.add(fieldPanel);
         }
-
+        add(tp, BorderLayout.NORTH);
+        
         JScrollPane jsp = new JScrollPane(table);
         jsp.setBorder(null);
         add(jsp, BorderLayout.CENTER);
 
-        updateData(data);
+        updateData(data);        
+
     }
 
     public SortableTable getTable() {

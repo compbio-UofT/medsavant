@@ -24,6 +24,8 @@ import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -47,6 +49,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
     protected List<T> selected = new ArrayList<T>();
     private MedSavantWorker worker;
     private final BlockingPanel blockPanel;
+    
 
     public DetailedTableView(String page, String title, String multTitle, String[] colNames) {
         super(page);
@@ -142,8 +145,12 @@ public abstract class DetailedTableView<T> extends DetailedView {
     public JPopupMenu createPopup() {
         return null;
     }
+    
+    public JPopupMenu createTablePopup(Object[][] selected){
+        return null;        
+    }
 
-    public synchronized void setData(Object[][] data) {
+    public synchronized void setData(final Object[][] data) {
 
         details.removeAll();
 
@@ -152,7 +159,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
         p.setBorder(ViewUtil.getBigBorder());
         ViewUtil.applyVerticalBoxLayout(p);
 
-        JTable table = new StripyTable(data, columnNames);
+        final JTable table = new StripyTable(data, columnNames); //changed to 'final'.
         table.setBorder(null);
         table.setGridColor(new Color(235, 235, 235));
         table.setRowHeight(21);
@@ -165,7 +172,26 @@ public abstract class DetailedTableView<T> extends DetailedView {
         details.add(p, BorderLayout.CENTER);
 
         details.updateUI();
+        
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    
+                    int[] selection = table.getSelectedRows();
+                    Object[][] selections = new Object[selection.length][table.getSize().width];
+                    for (int i = 0; i < selection.length; i++) {
+                        int j = table.convertRowIndexToModel(selection[i]);
+                        selections[i] = data[j];
+                        //selection[i] = table.convertRowIndexToModel(selection[i]);
+                        
+                    } 
+                    createTablePopup(selections).show(e.getComponent(), e.getX(), e.getY());                                          
+                }
+            }
+        });
     }
 
+    
     public abstract MedSavantWorker createWorker();
 }

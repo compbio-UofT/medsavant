@@ -1,7 +1,5 @@
 package org.ut.biolab.mfiume.query.view;
 
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,11 +8,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -53,7 +46,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             selectedValues = NumericConditionEncoder.unencodeConditions(encoding);        
         }
 
-        final double[] extremeValues = generator.getExtremeNumericValues();
+        final double[] extremeValues = generator.getExtremeNumericValues();       
         this.removeAll();
 
         if (extremeValues == null || (extremeValues[0] == 0 && extremeValues[1] == 0)) {

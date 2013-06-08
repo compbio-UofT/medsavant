@@ -24,6 +24,7 @@ public class SearchConditionItem implements Serializable {
     private QueryRelation relation;
     private SearchConditionGroupItem parent;
 
+    
     public SearchConditionItem(String name, SearchConditionGroupItem parent) {
         this(name, QueryRelation.AND, parent);
     }
@@ -61,6 +62,10 @@ public class SearchConditionItem implements Serializable {
 
     public String getDescription() {
         return this.description;
+    }
+    
+    public boolean isGroup(){
+        return false;
     }
 
 

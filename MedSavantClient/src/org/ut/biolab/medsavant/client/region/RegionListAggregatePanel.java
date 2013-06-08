@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.aggregate.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
@@ -44,10 +45,18 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
+import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
+import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 import savant.controller.LocationController;
 import savant.util.Range;
 
@@ -178,18 +187,26 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selRows.length == 1 ? "Region <i>" + model.getValueAt(selRows[0], 0) + "</i>" : "Selected Regions"));
         posItem.addActionListener(new ActionListener() {
+            
+            
             @Override
-            public void actionPerformed(ActionEvent ae) {
+            public void actionPerformed(ActionEvent ae) {                
                 ThreadController.getInstance().cancelWorkers(pageName);
-
-                List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
+                
+                List<GenomicRegion> regions = new ArrayList<>();
                 TableModel model = tablePanel.getTable().getModel();
+                                                                            
                 for (int r : selRows) {
-                    regions.add(new GenomicRegion((String) model.getValueAt(r, 0), (String) model.getValueAt(r, 1), (Integer) model.getValueAt(r, 2), (Integer) model.getValueAt(r, 3)));
+                    String geneName = (String) model.getValueAt(r, 0);
+                    String chrom = (String)model.getValueAt(r,1);
+                    Integer start = (Integer) model.getValueAt(r, 2);
+                    Integer end = (Integer) model.getValueAt(r, 3);
+                                 
+                    regions.add(new GenomicRegion(geneName, chrom, start, end));
                 }
-
-                RegionSet r = RegionController.getInstance().createAdHocRegionSet("Selected Regions", regions);
-                GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(Arrays.asList(r)));
+                
+                QueryUtils.addQueryOnRegions(regions, Arrays.asList(new RegionSet[]{(RegionSet) regionSetCombo.getSelectedItem()}));                
+                            
             }
         });
         menu.add(posItem);

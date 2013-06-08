@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.client.util.Controller;
  */
 public class RegionController extends Controller<RegionEvent> {
     private static RegionController instance;
-
+    public static final String AD_HOC_REGION_SET_NAME = "Selected Regions";
     private List<AdHocRegionSet> localRegionSets = new ArrayList<AdHocRegionSet>();
 
     public static RegionController getInstance() {
@@ -106,4 +106,5 @@ public class RegionController extends Controller<RegionEvent> {
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
         return result;
     }
+    
 }

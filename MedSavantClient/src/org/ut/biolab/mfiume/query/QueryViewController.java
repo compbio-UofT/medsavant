@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
@@ -60,7 +61,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private final ConditionViewGenerator conditionViewGenerator;
     private boolean didChangeSinceLastApply;
     private JButton applyButton;
-
+    
     public QueryViewController(SearchConditionGroupItem model, ConditionViewGenerator c) {
         this.rootGroup = model;
         this.conditionViewGenerator = c;
@@ -157,11 +158,16 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                  throw new ParseException("Malformed input file contains invalid query relation", 0);
             }
             
+            String desc = rootElement.getAttribute("description");
+            
             SearchConditionGroupItem scg;
             if(parentGroup == null){
                 scg = this.rootGroup;
             }else{            
                 scg = new SearchConditionGroupItem(qr, null, parentGroup);               
+                if(desc != null && desc.length() > 0){
+                    scg.setDescription(desc);
+                }
             }
                                    
             NodeList nl = rootElement.getChildNodes();
@@ -169,7 +175,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 Node n = nl.item(i);
                 if(n.getNodeType() == Node.ELEMENT_NODE){
                     Element el = (Element)n;
-                    if(el.getNodeName().equalsIgnoreCase("group")){
+                    if(el.getNodeName().equalsIgnoreCase("group")){                                                
                         SearchConditionGroupItem childGroup = getGroupFromXML(el, scg);
                         scg.addItem(childGroup);
                     }else if(el.getNodeName().equalsIgnoreCase("item")){                    
@@ -184,6 +190,89 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             return scg;
         
     }
+
+    
+    
+     
+     
+    public List<SearchConditionItem> getFirstLevelItemsByDesc(String itemDesc){
+        List<SearchConditionItem> results = new LinkedList<>();
+        SearchConditionItem sci = null;
+        for(SearchConditionItem i : getQueryRootGroup().getItems()){
+            if(i.getDescription() != null && i.getDescription().equals(itemDesc)){
+                results.add(i);
+            }
+        }
+        return results;
+    }
+    
+    public List<SearchConditionItem> getFirstLevelItemsByName(String itemName){
+        List<SearchConditionItem> results = new LinkedList<>();        
+        for(SearchConditionItem i : getQueryRootGroup().getItems()){
+            if(i.getName() != null && i.getName().equals(itemName)){
+                results.add(i);
+            }
+        }
+        return results;
+    }
+    
+    
+    public void replaceFirstLevelItem(String name, String encodedConditions, String description){
+        List<SearchConditionItem> sciList = getFirstLevelItemsByName(name);
+        for(SearchConditionItem sci : sciList){
+            System.out.println("removing item with name "+sci.getName()+" and description "+sci.getDescription());
+            getQueryRootGroup().removeItem(sci);
+        }
+        
+                        
+        SearchConditionItem sci = new SearchConditionItem(name, QueryRelation.AND, getQueryRootGroup());
+        generateItemViewAndAddToGroup(sci, getQueryRootGroup());            
+      
+        sci.setSearchConditionEncoding(encodedConditions);
+        sci.setDescription(description);
+    }
+    
+   
+   
+    /**
+     * Replaces the items in the first level group (i.e. a group immediately under
+     * the root node) with the description "groupDesc" with those in the list 'sciList'.
+     * 
+     * If the group does not exist, a new one is created under the root query 
+     * group.  
+     * 
+     * No views are created or updated by this function.
+     *     
+     * @return The SearchConditionGroupItem matching the description, or the one that was created.
+     */
+    public SearchConditionGroupItem replaceFirstLevelGroup(String groupDesc, List<SearchConditionItem> sciList, QueryRelation qr, boolean listIsItems){
+                    
+        List<SearchConditionItem> scgList = getFirstLevelItemsByDesc(groupDesc);
+        for(SearchConditionItem sci : scgList){
+            getQueryRootGroup().removeItem(sci);
+        }
+        
+        
+        SearchConditionGroupItem scg = new SearchConditionGroupItem(qr, null, getQueryRootGroup());                               
+        scg.setDescription(groupDesc);
+        getQueryRootGroup().addItem(scg);   
+      
+               
+        if(sciList != null){
+            for(SearchConditionItem sci : sciList){                 
+                sci.setParent(scg);        
+                if(listIsItems){
+                    generateItemViewAndAddToGroup(sci, scg);                                                  
+                }else{
+                    scg.addItem(sci);
+                }
+            }   
+        }
+            
+        return scg;
+    }
+    
+
     
     public void loadConditions(File f){
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -211,6 +300,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     
     public final void refreshView() {
         List<JComponent> cs;
+        
         cs = getComponentsFromQueryModel(rootGroup);
         this.setLayout(new MigLayout("wrap 1"));
 
@@ -230,6 +320,15 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         this.updateUI();
     }
 
+    private String getGroupTitle(SearchConditionGroupItem scg){
+        if(scg.getDescription() != null && scg.getDescription().length() > 0){
+            return (scg.getParent().isFirstItem(scg) ? "" : scg.getRelation().toString())+ " "+scg.getDescription();
+        }else{
+            return (scg.getParent().isFirstItem(scg) ? "" : scg.getRelation().toString()) + " " + scg.getItems().size() + " grouped condition(s)";
+        }
+    }
+    
+ 
     private List<JComponent> getComponentsFromQueryModel(SearchConditionGroupItem g) {
         List<JComponent> components = new ArrayList<JComponent>();
         for (final SearchConditionItem item : g.getItems()) {
@@ -258,7 +357,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                             public void actionPerformed(ActionEvent ae) {
 
                                 p.setVisible(!p.isVisible());
-                                pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
+                                //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
+                                pv.setText(getGroupTitle(g));
 
                             }
                         });
@@ -270,7 +370,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                                     @Override
                                     public void actionPerformed(ActionEvent ae) {
                                         item.setRelation(QueryRelation.OR);
-                                        pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
+                                        pv.setText(getGroupTitle(g));
+                                        //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
                                     }
                                 });
                                 m.add(b);
@@ -280,18 +381,36 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                                     @Override
                                     public void actionPerformed(ActionEvent ae) {
                                         item.setRelation(QueryRelation.AND);
-                                        pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
+                                        //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
+                                        pv.setText(getGroupTitle(g));
                                     }
                                 });
                                 m.add(b);
                             }
                         }
 
+                        JMenuItem delgroup = new JMenuItem("Delete");
+                        delgroup.addActionListener(new ActionListener(){
+                            @Override
+                            public void actionPerformed(ActionEvent ae){
+                                g.getParent().removeItem(g); 
+                                refreshView();
+                            }
+                        });
+                        m.add(delgroup);
+                        
                         return m;
                     }
                 });
                 SearchConditionGroupItem g2 = (SearchConditionGroupItem) item;
-                pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g2.getItems().size() + " grouped condition(s)");
+                
+                pv.setText(getGroupTitle(g2));
+                /*
+                if(g2.getDescription() != null && g2.getDescription().length() > 0){
+                    pv.setText(g2.getDescription());
+                }else{
+                    pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g2.getItems().size() + " grouped condition(s)");
+                }*/
                 p.setVisible(false);
 
                 components.add(pv);
@@ -300,7 +419,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 }
                 components.add(p);
 
-            } else {
+            } else {      
+                
                 itemToViewMap.get(item).refresh();
                 components.add(itemToViewMap.get(item));
             }
@@ -318,6 +438,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
 
     public void registerViewWithItem(SearchConditionItemView editor, SearchConditionItem item) {
+        
         itemToViewMap.put(item, editor);
     }
 
@@ -326,10 +447,23 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         itemToViewMap.remove(m);
     }
 
-    public void generateItemViewAndAddToGroup(SearchConditionItem scgi, SearchConditionGroupItem parent){
+   
+    
+    public void generateItemViewAndAddToGroup(SearchConditionItem sci, SearchConditionGroupItem parent){       
+        SearchConditionItemView view = conditionViewGenerator.generateViewForItem(sci);
+        addItemToGroup(sci, view, parent);      
+    }
+    
+    /*
+      public void generateItemViewAndAddToGroup(SearchConditionItem scgi, SearchConditionGroupItem parent){
+        
+        
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(scgi);
         addItemToGroup(scgi, view, parent);
+        
+        
     }
+    */
     
     public void generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
@@ -564,32 +698,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
         });
 
-        /*JPanel p = ViewUtil.getClearPanel();
-         p.add(placeHolder);
-         p.add(field);
-
-         field.setVisible(false);
-
-         placeHolder.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         placeHolder.setVisible(false);
-         field.setVisible(true);
-         field.requestFocus();
-         }
-         });
-
-         field.addFocusListener(new FocusListener() {
-         @Override
-         public void focusGained(FocusEvent fe) {
-         }
-
-         @Override
-         public void focusLost(FocusEvent fe) {
-         placeHolder.setVisible(true);
-         field.setVisible(false);
-         }
-         });*/
+        
 
 
         return field;
