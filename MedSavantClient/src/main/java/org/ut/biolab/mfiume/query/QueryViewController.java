@@ -2,7 +2,10 @@ package org.ut.biolab.mfiume.query;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 
+=======
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -12,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -21,6 +25,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
+=======
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,18 +39,26 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 
+=======
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
+=======
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
 import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -79,6 +96,33 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private final ConditionViewGenerator conditionViewGenerator;
     private boolean didChangeSinceLastApply;
     private JButton applyButton;
+    private final JLabel warningText;
+
+
+    private JButton getHelpButton() {
+        final JButton helpButton = new JButton("?");
+        ViewUtil.makeSmall(helpButton);
+        helpButton.setFocusable(false);
+        if (MiscUtils.MAC) {
+            helpButton.putClientProperty( "JButton.buttonType", "help" );
+            helpButton.setText("");
+        }
+        helpButton.setToolTipText("<html>Type a search condition in the search box, e.g. \"Chromosome\".<br><br>You\'ll then be prompted to specify parameters for this condition.<br></html>");
+
+        helpButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                // programmatically show tooltip
+                ToolTipManager.sharedInstance().mouseMoved(
+                new MouseEvent(helpButton, 0, 0, 0,
+                    10, 10, // X-Y of the mouse for the tool tip
+                    0, false));
+            }
+
+        });
+        return helpButton;
+    }
 
     private final JLabel warningText;
 
@@ -172,6 +216,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         t.start();
 
 
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
     }
 
     public void saveConditions(File file){          
@@ -265,6 +310,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             
             return scg;
         
+=======
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
     }
 
     
@@ -524,6 +571,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     public void searchConditionItemRemoved(SearchConditionItem m) {
         itemToViewMap.remove(m);
     }
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
   
     
     public void generateItemViewAndAddToGroup(SearchConditionItem sci, SearchConditionGroupItem parent){       
@@ -537,6 +585,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
         generateItemViewAndAddToGroup(item, parent);                
 */
+=======
+
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/QueryViewController.java
     public SearchConditionItemView generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(item);

@@ -155,7 +155,11 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     }
 
     public void addItem(SearchConditionItem i, int atIndex) {
+<<<<<<< HEAD:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/SearchConditionGroupItem.java
        
+=======
+        System.out.println("adding listener for " + i.getName());
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b:MedSavantClient/src/main/java/org/ut/biolab/mfiume/query/SearchConditionGroupItem.java
         i.addListener(this);
         i.setParent(this);
         items.add(atIndex, i);

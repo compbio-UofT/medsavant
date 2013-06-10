@@ -41,7 +41,14 @@ atlassian-ide-plugin.xml
 
 # Mac files
 .DS_Store
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+MedSavantServerEngine/medsavant.log
+private.xml
+=======
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b
 
 # Other
 *.log.*
@@ -52,8 +59,13 @@ atlassian-ide-plugin.xml
 
 # MedSavant custom
 MedSavantServerEngine/medsavant.log
+<<<<<<< HEAD
 .medsavant.prop
 
 MedSavantClient/nbproject/genfiles.properties
 MedSavantServerEngine/nbproject/genfiles.properties
 MedSavantShared/nbproject/genfiles.properties
+=======
+>>>>>>> 9546cd13e0f29c5090a9888d7f46c0b36632b29f
+.medsavant.prop
+>>>>>>> 65f4269deebb15f0027b105cb8865d96a94a104b
