@@ -26,9 +26,8 @@ public class NumericConditionEncoder {
         return values;
     }
 
-    public static String encodeConditions(double low, double high) {
-        DecimalFormat df = new DecimalFormat("#");
-        return df.format(low) + DELIM + df.format(high);
+    public static String encodeConditions(double low, double high) {        
+        return Double.toString(low)+DELIM+Double.toString(high);        
     }
 
     public static String getDescription(double[] ds) {

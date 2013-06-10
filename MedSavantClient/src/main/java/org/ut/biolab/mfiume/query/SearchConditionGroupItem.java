@@ -16,7 +16,8 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     private final List<SearchConditionItem> items;
     private static int groupNo;
     private final int thisGroupNo;
-
+    
+    
     public enum QueryRelation {
 
         AND {
@@ -47,9 +48,13 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
             i.setParent(this);
             i.addListener(this);
         }
-
+       
     }
 
+    public boolean isGroup(){
+        return true;
+    }
+    
     @Override
     public String getName() {
         return "Group " + thisGroupNo;
@@ -81,15 +86,44 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
 
         return s;
     }
+    
+    
+    protected String toXML(int indent){
+        String tab = "";
+        for(int i = 0; i < indent; ++i){
+           tab += "\t";
+        }
+        
+        String xml = tab + "<Group ";
+        xml += " queryRelation=\""+escape(getRelation().toString()) + "\"";
+        if(getDescription() != null){
+            xml += " description=\""+escape(getDescription())+"\"";
+        }
+        xml += ">\n";
+        
+        for(SearchConditionItem sci : items){
+            xml += sci.toXML(indent+1);
+        }        
+        xml += tab+"</Group>\n";        
+        return xml;
+    }
+    
+    public String toXML(){
+        return this.toXML(0);        
+    }
 
-    public void removeItem(SearchConditionItem i) {
-
-        System.out.println("Trying to remove " + i.getName() + " left = " + items.size());
+    
+    public void removeItem(SearchConditionItem i) {        
         i.removeListener(this);
         items.remove(i);
         i.setParent(null);
 
         // the only child is a group
+        // Commented out, June 8,2013
+        // The group functionality is being used to search Genomic Regions (sets
+        // of (chromosome, position) tuples), and it's easier if these always 
+        // stay grouped.
+        /*
         if (items.size() == 1 && items.get(0) instanceof SearchConditionGroupItem) {
 
             SearchConditionGroupItem child = (SearchConditionGroupItem) items.get(0);
@@ -108,7 +142,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
             child.setParent(null);
 
         }
-
+*/
         // remove the group entirely, parent notifies of update
         if (items.isEmpty() && this.getParent() != null) {
             this.getParent().removeItem(this);
@@ -121,7 +155,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
     }
 
     public void addItem(SearchConditionItem i, int atIndex) {
-        System.out.println("adding listener for " + i.getName());
+       
         i.addListener(this);
         i.setParent(this);
         items.add(atIndex, i);

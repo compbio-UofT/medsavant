@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.client.cohort;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,10 +27,12 @@ import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
@@ -39,12 +40,15 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
-import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 
 /**
  *
@@ -244,8 +248,28 @@ class CohortDetailedView extends DetailedView {
             JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", cohorts.length == 1 ? "Cohort <i>" + cohorts[0] + "</i>" : "Selected Cohorts"));
             filter1Item.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    GeneticsFilterPage.getSearchBar().loadFilters(CohortFilterView.wrapState(Arrays.asList(cohorts)));
+                public void actionPerformed(ActionEvent e) {                   
+                    QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
+                    SearchConditionGroupItem p = qvc.getQueryRootGroup();  
+                    
+                    List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(cohorts.length);
+                    
+                    for(Cohort cohort : cohorts){                        
+                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.OR, p);    
+                        cohortItem.setDescription(cohort.toString());
+                        cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));                        
+                        sciList.add(cohortItem);
+                    }
+                    
+                    if(cohorts.length < 2){                        
+                        SearchConditionItem sci = sciList.get(0);                                                                                            
+                        qvc.generateItemViewAndAddToGroup(sci, p); 
+                        
+                    }else{                        
+                        qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
+                    }
+
+                    qvc.refreshView();
                 }
             });
             popupMenu.add(filter1Item);

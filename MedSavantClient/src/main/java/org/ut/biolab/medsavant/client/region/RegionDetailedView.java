@@ -17,17 +17,21 @@ package org.ut.biolab.medsavant.client.region;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
+import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 
 
 /**
@@ -41,6 +45,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
     public RegionDetailedView(String page) {
         super(page, "", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
         controller = RegionController.getInstance();
+        
     }
 
     @Override
@@ -68,20 +73,78 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
         };
     }
 
+    public JPopupMenu createTablePopup(final Object[][] selected){
+        JPopupMenu menu = new JPopupMenu();        
+        JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selected.length == 1 ? "Region <i>" + selected[0][0] + "</i>" : "Selected Regions"));
+
+        final List<RegionSet> selectedRegions = this.selected;
+        posItem.addActionListener(new ActionListener() {                        
+            @Override
+            public void actionPerformed(ActionEvent ae) {       
+                
+                
+                List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
+                for(Object[] cols : selected){
+                    String geneName = (String)cols[0];
+                    String chrom = (String)cols[1];
+                    Integer start = (Integer)cols[2];
+                    Integer end = (Integer)cols[3];
+                    regions.add(new GenomicRegion(geneName, chrom, start, end));                    
+                }
+                
+                
+                /* OLD
+                 *  List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
+                TableModel model = tablePanel.getTable().getModel();
+                
+                List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(selRows.length);
+                                                            
+                for (int r : selRows) {
+                    String geneName = (String) model.getValueAt(r, 0);
+                    String chrom = (String)model.getValueAt(r,1);
+                    Integer start = (Integer) model.getValueAt(r, 2);
+                    Integer end = (Integer) model.getValueAt(r, 3);
+                                 
+                    regions.add(new GenomicRegion(geneName, chrom, start, end));
+                }
+                 */
+                
+               QueryUtils.addQueryOnRegions(regions, selectedRegions);
+            }
+        });
+        
+        menu.add(posItem);
+        return menu;
+    }
+    
     @Override
     public JPopupMenu createPopup() {
+        
         JPopupMenu popupMenu = new JPopupMenu();
-
+        
         if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
 
-            //Filter by patient
+          //Filter by patient
+            
             JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", selected.size() == 1 ? "Region List <i>" + selected.get(0) + "</i>" : "Selected Region Lists"));
             filter1Item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(selected));
+                    //GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(selected));
+                     QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
+                         
+                     List<String> regionSetNames = new ArrayList<String>(selected.size());
+                     for(RegionSet rs : selected){
+                         regionSetNames.add(rs.getName());
+                     }
+                     
+                    String encodedConditions = StringConditionEncoder.encodeConditions(regionSetNames);
+                    String description = StringConditionEncoder.getDescription(regionSetNames);
+                                 
+                    qvc.replaceFirstLevelItem("Region Set", encodedConditions, description);                                                                               
+              
                 }
             });
             popupMenu.add(filter1Item);
