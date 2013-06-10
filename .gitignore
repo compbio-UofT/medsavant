@@ -53,3 +53,7 @@ atlassian-ide-plugin.xml
 # MedSavant custom
 MedSavantServerEngine/medsavant.log
 .medsavant.prop
+
+MedSavantClient/nbproject/genfiles.properties
+MedSavantServerEngine/nbproject/genfiles.properties
+MedSavantShared/nbproject/genfiles.properties
