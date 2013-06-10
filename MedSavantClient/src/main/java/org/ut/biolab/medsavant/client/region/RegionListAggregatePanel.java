@@ -34,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.aggregate.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
-import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
@@ -49,14 +48,6 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
-import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 import savant.controller.LocationController;
 import savant.util.Range;
 
@@ -193,7 +184,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
             public void actionPerformed(ActionEvent ae) {                
                 ThreadController.getInstance().cancelWorkers(pageName);
                 
-                List<GenomicRegion> regions = new ArrayList<>();
+                List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = tablePanel.getTable().getModel();
                                                                             
                 for (int r : selRows) {
@@ -206,7 +197,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
                 }
                 
                 QueryUtils.addQueryOnRegions(regions, Arrays.asList(new RegionSet[]{(RegionSet) regionSetCombo.getSelectedItem()}));                
-                            
+                  
             }
         });
         menu.add(posItem);

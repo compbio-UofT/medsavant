@@ -82,7 +82,8 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
             @Override
             public void actionPerformed(ActionEvent ae) {       
                 
-                List<GenomicRegion> regions = new ArrayList<>();
+                
+                List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 for(Object[] cols : selected){
                     String geneName = (String)cols[0];
                     String chrom = (String)cols[1];
@@ -92,7 +93,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                 }
                 
                 
-                /*
+                /* OLD
                  *  List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = tablePanel.getTable().getModel();
                 
@@ -108,7 +109,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                 }
                  */
                 
-                QueryUtils.addQueryOnRegions(regions, selectedRegions);
+               QueryUtils.addQueryOnRegions(regions, selectedRegions);
             }
         });
         
@@ -126,6 +127,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
         } else {
 
           //Filter by patient
+            
             JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", selected.size() == 1 ? "Region List <i>" + selected.get(0) + "</i>" : "Selected Region Lists"));
             filter1Item.addActionListener(new ActionListener() {
                 @Override
@@ -133,7 +135,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                     //GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(selected));
                      QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
                          
-                     List<String> regionSetNames = new ArrayList<>(selected.size());
+                     List<String> regionSetNames = new ArrayList<String>(selected.size());
                      for(RegionSet rs : selected){
                          regionSetNames.add(rs.getName());
                      }
@@ -142,6 +144,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                     String description = StringConditionEncoder.getDescription(regionSetNames);
                                  
                     qvc.replaceFirstLevelItem("Region Set", encodedConditions, description);                                                                               
+              
                 }
             });
             popupMenu.add(filter1Item);

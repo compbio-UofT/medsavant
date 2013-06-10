@@ -119,6 +119,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, gbc, JLayeredPane.MODAL_LAYER);
+        
+                
     }
 
     private void showWaitCard() {
@@ -249,10 +251,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         posItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                QueryUtils.addQueryOnChromPosition(chrom,pos);
-
+            public void actionPerformed(ActionEvent ae) {                
+                //QueryUtils.addQueryOnChromPosition(chrom,pos);
+                
+                List<GenomicRegion> gr = new ArrayList<GenomicRegion>(1);
+                gr.add(new GenomicRegion(null, chrom, pos, pos));
+                
+                QueryUtils.addQueryOnRegions(gr, null);                
             }
         });
 
@@ -262,8 +267,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         JMenuItem posAndAltItem = new JMenuItem("Filter by Position and Alt");
         posAndAltItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                QueryUtils.addQueryOnChromPositionAlt(chrom,pos,alt);
+            public void actionPerformed(ActionEvent ae) {                
+                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, pos, pos), alt);                                
             }
         });
         menu.add(posAndAltItem);
@@ -325,7 +330,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);
                
-                QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
+                //QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
                 List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = searchableTablePanel.getTable().getModel();
                 int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, searchableTablePanel.getTable().getSelectedRows(), false);
@@ -339,6 +344,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                                        
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
                     
+                    /*
                     SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
                     posGroup.setDescription("Chromosome "+chrom+", Pos. "+pos);
                     
@@ -354,10 +360,12 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     qvc.generateItemViewAndAddToGroup(chromItem, posGroup);
                     qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);                    
                     
-                    sciList.add(posGroup);                    
+                    sciList.add(posGroup);                    */
                 }
-                qvc.replaceFirstLevelGroup("Selected Position(s)", sciList, QueryRelation.OR, false);
-                qvc.refreshView();   
+                //qvc.replaceFirstLevelGroup("Selected Position(s)", sciList, QueryRelation.OR, false);
+                //qvc.refreshView();
+                QueryUtils.addQueryOnRegions(regions, null);
+                
 
             }
         });

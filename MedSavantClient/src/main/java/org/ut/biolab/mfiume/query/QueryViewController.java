@@ -272,7 +272,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
      
      
     public List<SearchConditionItem> getFirstLevelItemsByDesc(String itemDesc){
-        List<SearchConditionItem> results = new LinkedList<>();
+        List<SearchConditionItem> results = new LinkedList<SearchConditionItem>();
         SearchConditionItem sci = null;
         for(SearchConditionItem i : getQueryRootGroup().getItems()){
             if(i.getDescription() != null && i.getDescription().equals(itemDesc)){
@@ -283,7 +283,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
     
     public List<SearchConditionItem> getFirstLevelItemsByName(String itemName){
-        List<SearchConditionItem> results = new LinkedList<>();        
+        List<SearchConditionItem> results = new LinkedList<SearchConditionItem>();        
         for(SearchConditionItem i : getQueryRootGroup().getItems()){
             if(i.getName() != null && i.getName().equals(itemName)){
                 results.add(i);
