@@ -113,7 +113,7 @@ public class PluginController extends Controller {
                 }
             }
             if (updated.size() > 0) {
-                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.VERSION, ClientMiscUtils.join(updated, ", ")));
+                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.getVersionString(), ClientMiscUtils.join(updated, ", ")));
                 for (String s: updated) {
                     pluginErrors.remove(s);
                 }

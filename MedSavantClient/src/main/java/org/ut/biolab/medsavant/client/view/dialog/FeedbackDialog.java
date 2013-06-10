@@ -166,7 +166,7 @@ public class FeedbackDialog extends javax.swing.JDialog {
 
     private void submitFeedback() {
         if (validateForm()) {
-            if (BugReport.reportFeedback("MedSavant",VersionSettings.VERSION, this.fieldName.getText(), this.fieldEmail.getText(), this.fieldFeedback.getText())) {
+            if (BugReport.reportFeedback("MedSavant",VersionSettings.getVersionString(), this.fieldName.getText(), this.fieldEmail.getText(), this.fieldFeedback.getText())) {
                 this.setVisible(false);
                 DialogUtils.displayMessage("Thank you for your feedback");
             } else {

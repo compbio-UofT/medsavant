@@ -19,32 +19,30 @@ import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import javax.xml.parsers.ParserConfigurationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.db.Settings;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.shared.db.Settings;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
-import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-
-
 /**
- *
+ * 
  * @author mfiume
  */
 public class VersionSettings {
@@ -57,18 +55,34 @@ public class VersionSettings {
     public static final URL PLUGIN_URL = ClientNetworkUtils.getKnownGoodURL(URL, "serve/plugin/plugin.xml");
     public static final URL LOG_USAGE_STATS_URL = ClientNetworkUtils.getKnownGoodURL(URL, "scripts/logUsageStats.cgi");
 
-    public static final String VERSION = "1.0.1";
-    public static String BUILD = "beta";
+    // version to user if the version could not be found
+    private static final String UNDEFINED_VERSION = "";
+    private static final String BETA_VERSION = "b";
 
     /**
      * Is this version a beta release?
      */
     public static boolean isBeta() {
-        return BUILD.equals("beta");
+        // determine if the version is beta based on version substring - is this
+        // needed?
+        return getVersionString().toLowerCase().contains(BETA_VERSION.toLowerCase());
     }
 
     public static String getVersionString() {
-        return VERSION + " " + BUILD;
+        String version = UNDEFINED_VERSION;
+
+        Package aPackage = VersionSettings.class.getPackage();
+        if (aPackage != null) {
+            version = aPackage.getImplementationVersion();
+            if (version == null) {
+                version = aPackage.getSpecificationVersion();
+            }
+        }
+        if (version == null) {
+            version = UNDEFINED_VERSION;
+        }
+
+        return version;
     }
 
     public static String getDatabaseVersion() throws SQLException, RemoteException {
@@ -80,7 +94,7 @@ public class VersionSettings {
         }
     }
 
-    public static boolean isCompatible(String programVersion, String dbVersion, boolean isServer) throws ParserConfigurationException, IOException, SAXException{
+    public static boolean isCompatible(String programVersion, String dbVersion, boolean isServer) throws ParserConfigurationException, IOException, SAXException {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
