@@ -21,7 +21,7 @@
 
   <groupId>edu.toronto.cs.medsavant</groupId>
   <artifactId>medsavant-parent</artifactId>
-  <version>1.0.1b</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>MedSavant - Parent POM</name>

@@ -57,7 +57,7 @@ public class VersionSettings {
 
     // version to user if the version could not be found
     private static final String UNDEFINED_VERSION = "";
-    private static final String BETA_VERSION = "b";
+    private static final String BETA_VERSION = "SNAPSHOT";
 
     /**
      * Is this version a beta release?
