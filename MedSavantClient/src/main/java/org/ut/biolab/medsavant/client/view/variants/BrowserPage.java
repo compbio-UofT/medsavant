@@ -139,12 +139,9 @@ public class BrowserPage extends SubSectionView {
                         s);
                 System.out.println(s);
                 if (url != null && !url.isEmpty()) {
-                    System.out.println(s + " HAS BAM");
                     sampleIdsHavingBams.add(s);
                     String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
                     dnaIDToURLMap.put(s, splitUrls[0]);
-                } else {
-                    System.out.println(s + " DOESNT HAVE BAM");
                 }
             }
 

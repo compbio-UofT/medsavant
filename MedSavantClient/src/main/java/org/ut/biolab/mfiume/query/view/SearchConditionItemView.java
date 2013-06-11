@@ -111,7 +111,10 @@ public class SearchConditionItemView extends PillView {
                                 public void run() {
                                     conditionsEditor.removeAll();
 
-                                    conditionsEditor.add(editor);
+                                    JPanel p = ViewUtil.getClearPanel();
+                                    p.setBorder(ViewUtil.getMediumBorder());
+                                    p.add(editor);
+                                    conditionsEditor.add(p);
                                     m.pack();
                                     m.invalidate();
                                     m.updateUI();
@@ -170,8 +173,8 @@ public class SearchConditionItemView extends PillView {
     }
 
     public final void refresh() {
-                
-        this.setActivated(item.getSearchConditionEncoding() != null);        
+
+        this.setActivated(item.getSearchConditionEncoding() != null);
         this.setText(
                 "<html>"
                 + (!item.getParent().isFirstItem(item) ? item.getRelation() + " " : "")
