@@ -40,7 +40,7 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
     private HashMap<String, RegionSet> termNameToTermObjectMap;
 
     @Override
-    public String getName() {
+    public String getName() {        
         return "Region Set";
     }
 

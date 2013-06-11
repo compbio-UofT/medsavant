@@ -54,12 +54,9 @@ import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
-import org.ut.biolab.medsavant.client.region.RegionController;
-import org.ut.biolab.medsavant.client.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
@@ -71,11 +68,10 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.mfiume.query.QueryViewController;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
 import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
-import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 
 /**
  *
@@ -123,6 +119,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, gbc, JLayeredPane.MODAL_LAYER);
+        
+                
     }
 
     private void showWaitCard() {
@@ -253,22 +251,24 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         posItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                QueryUtils.addQueryOnChromPosition(chrom,pos);
-
+            public void actionPerformed(ActionEvent ae) {                
+                //QueryUtils.addQueryOnChromPosition(chrom,pos);
+                
+                List<GenomicRegion> gr = new ArrayList<GenomicRegion>(1);
+                gr.add(new GenomicRegion(null, chrom, pos, pos));
+                
+                QueryUtils.addQueryOnRegions(gr, null);                
             }
         });
 
-        //posItem.addActionListener(new PopupActionListener(chrom, pos, null));
         menu.add(posItem);
 
         //Filter by position and alt
         JMenuItem posAndAltItem = new JMenuItem("Filter by Position and Alt");
         posAndAltItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                QueryUtils.addQueryOnChromPositionAlt(chrom,pos,alt);
+            public void actionPerformed(ActionEvent ae) {                
+                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, pos, pos), alt);                                
             }
         });
         menu.add(posAndAltItem);
@@ -329,18 +329,44 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);
-
+               
+                //QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
                 List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = searchableTablePanel.getTable().getModel();
                 int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, searchableTablePanel.getTable().getSelectedRows(), false);
-                for (int r : selRows) {
+                List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(selRows.length);
+
+                for (int r : selRows) {            
+                    
+                    
                     String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
                     int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
+                                       
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
+                    
+                    /*
+                    SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
+                    posGroup.setDescription("Chromosome "+chrom+", Pos. "+pos);
+                    
+                    SearchConditionItem chromItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
+                    chromItem.setDescription(chrom);
+                    chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom})));
+                                      
+                    SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
+                    startPosItem.setDescription(Integer.toString(pos));
+                    startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(pos, pos));                                                            
+                    
+                    
+                    qvc.generateItemViewAndAddToGroup(chromItem, posGroup);
+                    qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);                    
+                    
+                    sciList.add(posGroup);                    */
                 }
+                //qvc.replaceFirstLevelGroup("Selected Position(s)", sciList, QueryRelation.OR, false);
+                //qvc.refreshView();
+                QueryUtils.addQueryOnRegions(regions, null);
+                
 
-                RegionSet r = RegionController.getInstance().createAdHocRegionSet("Selected Variant Positions", regions);
-                GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(Arrays.asList(r)));
             }
         });
         menu.add(posItem);

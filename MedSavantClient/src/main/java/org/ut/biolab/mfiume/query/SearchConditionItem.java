@@ -6,6 +6,7 @@ import java.util.List;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 /**
  *
  * @author mfiume
@@ -23,6 +24,7 @@ public class SearchConditionItem implements Serializable {
     private QueryRelation relation;
     private SearchConditionGroupItem parent;
 
+    
     public SearchConditionItem(String name, SearchConditionGroupItem parent) {
         this(name, QueryRelation.AND, parent);
     }
@@ -60,6 +62,10 @@ public class SearchConditionItem implements Serializable {
 
     public String getDescription() {
         return this.description;
+    }
+    
+    public boolean isGroup(){
+        return false;
     }
 
 
@@ -129,5 +135,34 @@ public class SearchConditionItem implements Serializable {
         } else {
             return ConditionState.SET;
         }
+    }
+    
+    
+    protected String escape(String s){
+        if(s  == null){
+            return "";
+        }else{
+            return StringEscapeUtils.escapeXml(s);
+        }
+    }
+    
+    protected String toXML(int indent){
+        String tab = "";
+        for(int i = 0; i < indent; ++i){
+           tab += "\t";
+        }       
+        String xml = tab +"<Item";
+        xml += " description=\""+escape(description) + "\"";
+        xml += " encodedConditions=\""+escape(encodedConditions) + "\"";
+        xml += " name=\""+escape(name) + "\"";
+        xml += " queryRelation=\""+escape(relation.toString()) + "\"";
+        xml += ">\n";
+        xml += tab+"</Item>\n";        
+        return xml; 
+    }
+    
+    
+    public String toXML(){
+        return toXML(0);        
     }
 }
