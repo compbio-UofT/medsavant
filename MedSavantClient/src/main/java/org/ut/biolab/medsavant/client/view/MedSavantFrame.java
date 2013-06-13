@@ -249,7 +249,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
-        view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+        //view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
                 
         UIManager.put("ToolTip.background", Color.black);
         UIManager.put("ToolTip.foreground", Color.white);
