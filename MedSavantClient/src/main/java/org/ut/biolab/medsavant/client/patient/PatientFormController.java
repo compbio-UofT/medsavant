@@ -96,7 +96,8 @@ public class PatientFormController extends FormController{
                     BasicPatientColumns.AFFECTED.getColumnLength(),
                     "Affected must be set to either Yes or No"));
 
-        setRequiredFields(BasicPatientColumns.REQUIRED_PATIENT_FIELDS);
+        setRequiredField(BasicPatientColumns.HOSPITAL_ID);
+        //setRequiredFields(BasicPatientColumns.REQUIRED_PATIENT_FIELDS);
 
     }
 

@@ -21,12 +21,10 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.*;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.MouseInfo;
+import java.awt.Point;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -34,8 +32,10 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -184,13 +184,15 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
         } else {
 
             //Filter by vcf file
-            JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
+            final JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
             filter1Item.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
-                    QueryUtils.addQueryOnVariantFiles(files);
+                public void actionPerformed(ActionEvent e) {                    
+                    QueryUtils.addQueryOnVariantFiles(files);                                                                                           
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
                 }
             });
+            
             popupMenu.add(filter1Item);
         }
 

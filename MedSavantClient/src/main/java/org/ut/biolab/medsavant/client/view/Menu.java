@@ -166,6 +166,8 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
+   
+    
     public void addSection(SectionView section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
@@ -176,6 +178,7 @@ public class Menu extends JPanel {
         //sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
 
         final JToggleButton sectionButton = ViewUtil.getTogglableIconButton(section.getIcon());
+        sectionButton.setName(section.getName());
         sectionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         sectionButton.addActionListener(new ActionListener() {
             @Override

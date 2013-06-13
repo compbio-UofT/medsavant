@@ -298,6 +298,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         for(SearchConditionItem sci : sciList){
             System.out.println("removing item with name "+sci.getName()+" and description "+sci.getDescription());
             getQueryRootGroup().removeItem(sci);
+            if(sci instanceof SearchConditionGroupItem){
+                expandedItemsMap.remove((SearchConditionGroupItem)sci);
+            }
         }
         
                         
@@ -326,6 +329,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         List<SearchConditionItem> scgList = getFirstLevelItemsByDesc(groupDesc);
         for(SearchConditionItem sci : scgList){
             getQueryRootGroup().removeItem(sci);
+            expandedItemsMap.remove(getQueryRootGroup());
         }
         
         
@@ -406,6 +410,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         }
     }
     
+    private Map<SearchConditionGroupItem, Boolean> expandedItemsMap = new HashMap<SearchConditionGroupItem, Boolean>();
  
     private List<JComponent> getComponentsFromQueryModel(SearchConditionGroupItem g) {
         List<JComponent> components = new ArrayList<JComponent>();
@@ -433,7 +438,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         visibility.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
-
+                                expandedItemsMap.put((SearchConditionGroupItem)item, !p.isVisible());
                                 p.setVisible(!p.isVisible());
                                 //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
                                 pv.setText(getGroupTitle(g));
@@ -473,6 +478,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                             public void actionPerformed(ActionEvent ae){
                                 g.getParent().removeItem(g); 
                                 refreshView();
+                                expandedItemsMap.remove((SearchConditionGroupItem)item);
                             }
                         });
                         m.add(delgroup);
@@ -489,7 +495,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 }else{
                     pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g2.getItems().size() + " grouped condition(s)");
                 }*/
-                p.setVisible(false);
+                Boolean exp = expandedItemsMap.get((SearchConditionGroupItem)item);
+                p.setVisible((exp==null) ? false : exp);
 
                 components.add(pv);
                 for (JComponent c : getComponentsFromQueryModel((SearchConditionGroupItem) item)) {

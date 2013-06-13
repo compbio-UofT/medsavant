@@ -203,6 +203,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                     @Override
                     public void uncaughtException(Thread t, Throwable e) {
                         System.out.println("GLOBAL EXCEPTION HANDLER: " + t.getName() + ": " + e);
+                        e.printStackTrace();
                     }
                 });
 
