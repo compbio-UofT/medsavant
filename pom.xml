@@ -353,13 +353,13 @@
           <!-- Lock down plugin version for build reproducibility -->
           <version>2.4</version>
           <configuration>
-        	<archive>                 
+            <archive>
               <manifest>
-              	<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-               	<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
               </manifest>
-        	</archive>
-    	  </configuration>
+            </archive>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
