@@ -5,19 +5,28 @@
 package org.ut.biolab.medsavant.shared.serverapi;
 
 /**
- *
+ * 
  * @author mfiume
  */
 public class MedSavantProgramInformation {
 
-    private static final String version = "1.0.1";
-    private static final String releaseType = "Beta"; // either "Beta" or "Release"
+    // version to user if the version could not be found
+    private static final String UNDEFINED_VERSION = "";
 
     public static String getVersion() {
-        return version;
-    }
+        String version = UNDEFINED_VERSION;
 
-    public static String getReleaseType() {
-        return releaseType;
+        Package aPackage = MedSavantProgramInformation.class.getPackage();
+        if (aPackage != null) {
+            version = aPackage.getImplementationVersion();
+            if (version == null) {
+                version = aPackage.getSpecificationVersion();
+            }
+        }
+        if (version == null) {
+            version = UNDEFINED_VERSION;
+        }
+
+        return version;
     }
 }

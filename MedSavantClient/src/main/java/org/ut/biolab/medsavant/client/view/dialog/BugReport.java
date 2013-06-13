@@ -104,7 +104,7 @@ public class BugReport {
     }
 
     public static void main(String[] args) throws UnsupportedEncodingException {
-        BugReport.reportBug("MedSavant",VersionSettings.VERSION, "Marc Fiume 4", "mfiume@cs.toronto.edu", "UofT", "My description of the problem", new Exception("msg"));
+        BugReport.reportBug("MedSavant",VersionSettings.getVersionString(), "Marc Fiume 4", "mfiume@cs.toronto.edu", "UofT", "My description of the problem", new Exception("msg"));
         System.out.println("Bug reported");
     }
 
