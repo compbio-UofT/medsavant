@@ -459,8 +459,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantProgramInformation.getVersion() + " "
-                            + MedSavantProgramInformation.getReleaseType()
+                            + MedSavantProgramInformation.getVersion()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });
