@@ -104,9 +104,10 @@ public class FormEditorDialog extends javax.swing.JDialog {
         this.fields = controller.getFields();
         this.fieldValues = new String[fields.length];       
         this.controller = controller;
-        this.numCols = numCols;
+        this.numCols = numCols;        
         initForm();        
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);         
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);  
+        this.setLocationRelativeTo(MedSavantFrame.getInstance());
     }
               
     /**

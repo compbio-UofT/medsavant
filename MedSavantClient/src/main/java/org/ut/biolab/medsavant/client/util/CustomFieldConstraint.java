@@ -58,7 +58,11 @@ public class CustomFieldConstraint {
      */
     public void setRequired(boolean required){
         this.required = required;
-    }                    
+    }  
+    
+    public boolean isEmpty(String val){
+        return (val == null || val.trim().isEmpty());        
+    }
        
     /**
      * Validates the given input by checking if it is missing or if it contains
@@ -70,7 +74,8 @@ public class CustomFieldConstraint {
      */
     public boolean isValid(String val){     
         
-        if((val == null || val.trim().isEmpty())){            
+        
+        if(isEmpty(val)){
             return !required;            
         }
         

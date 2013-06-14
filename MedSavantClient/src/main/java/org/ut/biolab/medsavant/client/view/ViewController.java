@@ -132,7 +132,7 @@ public class ViewController {
         menu.clearMenu();
     }
 
-    public void addSection(SectionView section) {
+    public void addSection(SectionView section) {       
         menu.addSection(section);
     }
 

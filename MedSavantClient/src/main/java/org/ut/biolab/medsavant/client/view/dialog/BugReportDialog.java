@@ -19,7 +19,7 @@ public class BugReportDialog extends javax.swing.JDialog {
 
     private Exception exception;
     private String toolName = "MedSavant";
-    private String toolVersion = VersionSettings.VERSION;
+    private String toolVersion = VersionSettings.getVersionString();
 
     public BugReportDialog(java.awt.Frame parent) {
         this(parent, null, null);

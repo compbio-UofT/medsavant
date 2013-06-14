@@ -100,12 +100,14 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, BasicPa
 
             if (whichTable == WhichTable.VARIANT) {
 
-                chartMap.addAll(MedSavantClient.VariantManager.getFilteredFrequencyValuesForCategoricalColumn(
+                Map<String, Integer> m = MedSavantClient.VariantManager.getFilteredFrequencyValuesForCategoricalColumn(
                         LoginController.getInstance().getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         filterConditions,
-                        field.getColumnName()));
+                        field.getColumnName());
+                                              
+                chartMap.addAll(m);
 
             } else if (whichTable == WhichTable.PATIENT) {
 
@@ -144,7 +146,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, BasicPa
                     }
 
                     //add entry
-                    if (numVariants > 0) {
+                    if (numVariants > 0) {                       
                         chartMap.addEntry(key.toString(), numVariants);
                     }
                 }

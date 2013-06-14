@@ -223,6 +223,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         waitPanel.setVisible(true);
         setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
 
+
         //begin creating chart
         mapWorker = isScatter ? new ScatterChartMapWorker() : new ChartMapWorker();
         mapWorker.execute();
@@ -323,7 +324,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         int catNum = 0;
         int totalCats = filteredChartMap.getEntries().size();
 
-        for (ChartCategory category : chartCategories) {
+        for (ChartCategory category : chartCategories) {            
             range.add(category);
             if (multiColor) {
                 color = ViewUtil.getColor(catNum++, totalCats);

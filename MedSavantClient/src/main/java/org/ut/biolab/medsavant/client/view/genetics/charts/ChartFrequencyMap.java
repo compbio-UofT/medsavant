@@ -41,7 +41,9 @@ public class ChartFrequencyMap {
     }
 
     public void addEntry(String key, long value) {
-        this.entries.add(new FrequencyEntry(key, value));
+        if(!key.isEmpty()){
+            this.entries.add(new FrequencyEntry(key, value));
+        }
     }
 
     public List<FrequencyEntry> getEntries() {
@@ -49,7 +51,7 @@ public class ChartFrequencyMap {
     }
 
     public void addAll(Map<String, Integer> map) {
-        for (String s : map.keySet()) {
+        for (String s : map.keySet()) {           
             addEntry(s, map.get(s));
         }
     }

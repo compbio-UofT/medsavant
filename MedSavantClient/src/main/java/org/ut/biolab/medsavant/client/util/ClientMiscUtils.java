@@ -130,9 +130,12 @@ public class ClientMiscUtils extends MiscUtils {
         Map<Object, List<String>> result = new HashMap<Object, List<String>>();
         for (Object key : original.keySet()) {
             String s;
-            if (key instanceof Long || key instanceof Integer) {
-                s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long) key));
-            } else {
+            if (key instanceof Long) {                
+                s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long)key));
+            } else if(key instanceof Integer){
+               Long x = new Long(((Integer)(key)).longValue());
+               s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt(x));
+            }else {
                 s = ClientMiscUtils.GENDER_UNKNOWN;
             }
             if (result.get(s) == null) {

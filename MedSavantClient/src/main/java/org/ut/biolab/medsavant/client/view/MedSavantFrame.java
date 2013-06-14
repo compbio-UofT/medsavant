@@ -22,8 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.*;
-
 import com.apple.eawt.AboutHandler;
 import com.apple.eawt.AppEvent.AboutEvent;
 import com.apple.eawt.AppEvent.PreferencesEvent;
@@ -33,9 +31,26 @@ import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.util.Enumeration;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -61,22 +76,165 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
     private static MedSavantFrame instance;
-    private JPanel view;
+    private AnimatablePanel view;
     private CardLayout viewCardLayout;
     private JPanel sessionView;
     private LoginView loginView;
     private BottomBar bottomBar;
     private String currentCard;
+    private boolean animationRunning = false;
     private boolean queuedForExit = false;
+    
+    private class AnimatablePanel extends JPanel implements Runnable{
+        private Image img;
+        private int srcX, srcY;
+        private int dstX, dstY;
+        private int currX, currY;
+        private int transitTime = 400;         
+        private int DELAY = 50;
+        
+        private double stepX;
+        private double stepY;
+        
+        //Permit 5000 ms max runtime.
+        private int maxRunTime = 5000;
+        private Thread animationThread;
+             
+        private boolean threadStopped = false;
+     
+        public void setMaxRunTime(int m){
+            this.maxRunTime = m;
+        }
+        public void setFPS(double fps){
+            this.DELAY = (int)(Math.ceil(1000 / fps));
+        }
+        
+        
+        @Override
+        public void paint(Graphics g){
+            super.paint(g);             
+            if(animationRunning){                
+                Graphics2D g2d = (Graphics2D)g;
+                g2d.drawImage(img, currX, currY, this);                  
+                Toolkit.getDefaultToolkit().sync();
+                g2d.dispose();
+            }
+        }
+        
+        public void animate(Image i, Point src, Point dst, int transitTime){            
+            this.img = i;
 
-    public static MedSavantFrame getInstance() {
+            this.srcX = src.x;
+            this.srcY = src.y;
+            this.dstX = dst.x;
+            this.dstY = dst.y;
+
+            this.transitTime = transitTime;
+            animationThread = new Thread(this);
+            animationThread.start();
+        }
+        
+        public void animate(Image i, Point src, Point dst){
+            animate(i, src, dst, transitTime);
+        }
+        
+        private double getCurrX(long t){
+            return srcX + t*((dstX-srcX)/(double)transitTime);
+        }
+        
+        private double getCurrY(long t){
+            return srcY + t*((dstY - srcY)/(double)transitTime);
+        }
+        
+        public boolean cycle(long t){            
+            this.currX = (int)Math.round(getCurrX(t));
+            this.currY = (int)Math.round(getCurrY(t));
+          //  System.out.println("\tsx="+srcX+", sy="+srcY+" dx="+dstX+", dy="+dstY+", cx="+currX+", cy="+currY);
+            
+            if(t >= transitTime){
+                currX = dstX;               
+                currY = dstY;
+            }
+                                    
+            return ((currX==dstX) && (currY==dstY));
+        }
+        
+        public void run(){
+            animationRunning = true;
+            long beforeTime, timeDiff, sleep, startTime;
+            startTime = beforeTime = System.currentTimeMillis();
+            while (true) {                                
+                long t = System.currentTimeMillis();
+                if(cycle(t-startTime) || ((t-startTime) > maxRunTime)){
+                    animationRunning = false;
+                    repaint();
+                    return;
+                }
+                timeDiff = t - beforeTime;
+                repaint();
+                sleep = DELAY - timeDiff;
+
+                if (sleep < 0){
+                    sleep = 2;
+                }
+                
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                   // System.out.println("interrupted");
+                }
+
+                beforeTime = System.currentTimeMillis();
+            }
+        }                        
+    };
+    
+    
+    private static Point getPositionRelativeTo(Component root, Component comp){
+        if (comp.equals(root)) { return new Point(0,0); }
+        Point pos = comp.getLocation();
+        Point parentOff = getPositionRelativeTo(root, comp.getParent());
+        return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
+    }
+        
+    /**
+     * Creates a search animation from the current mouse position.  i.e. creates an image
+     * that moves from the current mouse position to the 'Variants' button on the toolbar.
+     * 
+     * Do not call until the previous animation thread is finished.  This 
+     * shouldn't happen as long as the animation time is short. (< 500ms ).  
+     */
+    public void searchAnimationFromMousePos(){
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+        Point src = view.getMousePosition();
+        if(src == null){
+            return;
+        }
+        
+        Point dst = null;
+        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
+        
+        while(e.hasMoreElements()){
+            AbstractButton b = e.nextElement();
+            if(b.getName().equalsIgnoreCase("Variants")){
+                dst = getPositionRelativeTo(view, b);
+            }
+        }
+                        
+        if(dst != null){
+            view.animate(img.getImage(), src, dst);            
+        }
+    }
+    
+    
+     public static MedSavantFrame getInstance() {
         if (instance == null) {
             instance = new MedSavantFrame();
             LoginController.getInstance().addListener(instance);
         }
         return instance;
     }
-
+     
     private MedSavantFrame() {
         super("MedSavant");
 
@@ -85,11 +243,14 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(500, 500));
 
-        view = new JPanel();
+        view = new AnimatablePanel();        
+        view.setDoubleBuffered(true);
+        //view = new JPanel();
         view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
-
+        //view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
+                
         UIManager.put("ToolTip.background", Color.black);
         UIManager.put("ToolTip.foreground", Color.white);
         UIManager.put("ToolTip.border", ViewUtil.getMediumBorder());
@@ -188,6 +349,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 sessionView = new LoggedInView();
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
+                
                 ViewController.getInstance().getMenu().updateLoginStatus();
                 //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
@@ -297,8 +459,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantProgramInformation.getVersion() + " "
-                            + MedSavantProgramInformation.getReleaseType()
+                            + MedSavantProgramInformation.getVersion()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });

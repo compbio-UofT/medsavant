@@ -85,7 +85,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             passwordField.setText(settings.getPassword());
         }
 
-        versionLabel.setText("MedSavant " + MedSavantProgramInformation.getVersion() + " " + MedSavantProgramInformation.getReleaseType());
+        versionLabel.setText("MedSavant " + MedSavantProgramInformation.getVersion());
 
         titlePanel.add(Box.createVerticalGlue(),0);
 

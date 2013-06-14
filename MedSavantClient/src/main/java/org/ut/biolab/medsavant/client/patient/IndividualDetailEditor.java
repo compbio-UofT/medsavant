@@ -87,7 +87,7 @@ class IndividualDetailEditor extends DetailedListEditor {
             PatientFormController pfc = new PatientFormController();
             FormEditorDialog fed = new FormEditorDialog(pfc);
             fed.setTitle("Add Patient");
-            fed.setVisible(true);
+            fed.setVisible(true);           
 
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to present Add Individual form: %s", ex);
@@ -120,8 +120,9 @@ class IndividualDetailEditor extends DetailedListEditor {
                                 LoginController.getInstance().getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
-                        setVisible(false);
+                        
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
+                        setVisible(false);
                     } catch (Exception ex) {
                         setVisible(false);
                         ClientMiscUtils.reportError("Error removing individual(s): %s", ex);

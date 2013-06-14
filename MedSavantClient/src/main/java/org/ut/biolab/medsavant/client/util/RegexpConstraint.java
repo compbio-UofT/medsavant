@@ -72,7 +72,7 @@ public class RegexpConstraint extends CustomFieldConstraint{
      * @return true if valid, false otherwise.
      */
     @Override
-    public boolean isValid(String val){                
-        return super.isValid(val) && re.matcher(val).matches();        
+    public boolean isValid(String val){                        
+        return super.isValid(val) && (isEmpty(val) || re.matcher(val).matches());
     }
 }
