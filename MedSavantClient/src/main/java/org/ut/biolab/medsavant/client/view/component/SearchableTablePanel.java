@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.component;
 
 import java.awt.BorderLayout;
@@ -29,6 +28,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 
 import com.jidesoft.grid.*;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -51,7 +51,6 @@ public class SearchableTablePanel extends JPanel {
     private static final int ROWSPERPAGE_1 = 100;
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
-
     private String pageName;
     private QuickTableFilterField filterField;
     private GenericTableModel model;
@@ -82,19 +81,23 @@ public class SearchableTablePanel extends JPanel {
     private GetDataWorker worker;
     private JButton exportButton;
     private List<Integer> selectedRows;
+    private Set<Integer> toggledRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
     private static Color DARK_COLOUR = ViewUtil.getAlternateRowColor();
     private final JPanel bottomPanel;
     private final JButton chooseColumnButton;
 
-    public enum TableSelectionType {DISABLED, CELL, ROW}
+    public enum TableSelectionType {
+
+        DISABLED, CELL, ROW
+    }
 
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
 
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
-        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
+            boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
 
         this.pageName = pageName;
         this.rowsPerPageX = defaultRows;
@@ -103,14 +106,15 @@ public class SearchableTablePanel extends JPanel {
         this.retriever = retriever;
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
-
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
                 synchronized (SearchableTablePanel.this) {
-                    JComponent comp = (JComponent)super.prepareRenderer(renderer, row, col);
+                    JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
 
                     // Even index, selected or not selected
-                    if (isCellSelected(row, col)) {
+                    if (isRowToggled(this.getActualRowAt(row))) {
+                        comp.setBackground(new Color(86, 176, 6));
+                    } else if (isCellSelected(row, col)) {
                         comp.setBackground(new Color(75, 149, 229));
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
                         comp.setBackground(SELECTED_COLOUR);
@@ -235,9 +239,10 @@ public class SearchableTablePanel extends JPanel {
             }
         });
 
-        pageText = new JTextField(); ViewUtil.makeSmall(pageText);
+        pageText = new JTextField();
+        ViewUtil.makeSmall(pageText);
         pageText.setColumns(5);
-        pageText.setMaximumSize(new Dimension(50,20));
+        pageText.setMaximumSize(new Dimension(50, 20));
         pageText.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -256,8 +261,10 @@ public class SearchableTablePanel extends JPanel {
         ViewUtil.makeSmall(amountLabel);
         bottomPanel.add(amountLabel);
 
-        pageLabel1 = new JLabel("Page "); ViewUtil.makeSmall(pageLabel1);
-        pageLabel2 = new JLabel(); ViewUtil.makeSmall(pageLabel2);
+        pageLabel1 = new JLabel("Page ");
+        ViewUtil.makeSmall(pageLabel1);
+        pageLabel2 = new JLabel();
+        ViewUtil.makeSmall(pageLabel2);
 
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(gotoFirst);
@@ -296,7 +303,8 @@ public class SearchableTablePanel extends JPanel {
         }
         finalList = rowsList.toArray(finalList);
 
-        rowsPerPageDropdown = new JComboBox(finalList); ViewUtil.makeSmall(rowsPerPageDropdown);
+        rowsPerPageDropdown = new JComboBox(finalList);
+        ViewUtil.makeSmall(rowsPerPageDropdown);
         rowsPerPageDropdown.setPrototypeDisplayValue(ROWSPERPAGE_3);
         if (hasDefaultRowsPerPage) {
             rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(rowsPerPageX));
@@ -330,7 +338,7 @@ public class SearchableTablePanel extends JPanel {
             add(bottomPanel, BorderLayout.SOUTH);
         }
 
-        add(tablePanel,BorderLayout.CENTER);
+        add(tablePanel, BorderLayout.CENTER);
 
         initEmpty();
     }
@@ -374,7 +382,7 @@ public class SearchableTablePanel extends JPanel {
                 setTotalRowCount(retriever.getTotalNum());
                 pageNum = 1;
             }
-            return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
+            return retriever.retrieve((pageNum - 1) * getRowsPerPage(), getRowsPerPage());
         }
 
         @Override
@@ -435,7 +443,8 @@ public class SearchableTablePanel extends JPanel {
     }
 
     /**
-     * Brute-force replacement of current table data with the given data, blowing away the current table selection.
+     * Brute-force replacement of current table data with the given data,
+     * blowing away the current table selection.
      *
      * @param pageData the new data
      */
@@ -446,7 +455,7 @@ public class SearchableTablePanel extends JPanel {
             // We can't call setDataVector directly because that blows away any custom table renderers we've set.
             java.util.Vector v = model.getDataVector();
             v.removeAllElements();
-            for (Object[] r: pageData) {
+            for (Object[] r : pageData) {
                 v.add(new java.util.Vector(Arrays.asList(r)));
             }
         }
@@ -582,7 +591,19 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public int getActualRowAcrossAllPages(int row) {
-        return row+((this.getPageNumber()-1)*rowsPerPageX);
+        return row + ((this.getPageNumber() - 1) * rowsPerPageX);
+    }
+
+    public void setToggledRows(Set<Integer> rows) {
+        this.toggledRows = rows;
+        this.getTable().updateUI();
+    }
+
+    public boolean isRowToggled(int row) {
+        if (toggledRows == null) {
+            return false;
+        }
+        return toggledRows.contains(row);
     }
 
     public void setSelectedRows(List<Integer> rows) {
@@ -590,7 +611,9 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public boolean isRowSelected(int row) {
-        if (selectedRows == null) return false;
+        if (selectedRows == null) {
+            return false;
+        }
         return selectedRows.contains(row);
     }
 
@@ -610,5 +633,4 @@ public class SearchableTablePanel extends JPanel {
     public String getToolTip(int actualRow) {
         return null;
     }
-
 }

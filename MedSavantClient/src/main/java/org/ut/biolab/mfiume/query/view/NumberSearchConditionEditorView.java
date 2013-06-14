@@ -42,11 +42,11 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         double[] selectedValues;
         if (encoding == null) {
             selectedValues = null;
-        } else {           
-            selectedValues = NumericConditionEncoder.unencodeConditions(encoding);        
+        } else {
+            selectedValues = NumericConditionEncoder.unencodeConditions(encoding);
         }
 
-        final double[] extremeValues = generator.getExtremeNumericValues();       
+        final double[] extremeValues = generator.getExtremeNumericValues();
         this.removeAll();
 
         if (extremeValues == null || (extremeValues[0] == 0 && extremeValues[1] == 0)) {
@@ -71,6 +71,9 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         final JLabel fromLabel = new JLabel();
         final JLabel toLabel = new JLabel();
 
+        ViewUtil.makeMini(fromLabel);
+        ViewUtil.makeMini(toLabel);
+
         JPanel fromToContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(fromToContainer);
         fromToContainer.add(fromBox);
@@ -92,7 +95,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             @Override
             public void mouseReleased(MouseEvent e) {
                 fromBox.setText(ViewUtil.numToString(slider.getLow()));
-                toBox.setText(ViewUtil.numToString(slider.getHigh()));               
+                toBox.setText(ViewUtil.numToString(slider.getHigh()));
 
             }
         });
@@ -103,10 +106,10 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
                 int key = e.getKeyCode();
                 if (key == KeyEvent.VK_ENTER) {
                     Range selectedRage = new Range(getNumber(fromBox.getText()), getNumber(toBox.getText()));
-                    
+
                     setSelectedValues(slider, fromBox, toBox, selectedRage);
-                    
-                  
+
+
                 }
             }
 
@@ -162,9 +165,9 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
     private void encodeValue(double low, double high, double min, double max) {
 
         String s = NumericConditionEncoder.encodeConditions(low, high);
-        
-        
-              
+
+
+
         saveSearchConditionParameters(s);
 
         String d = NumericConditionEncoder.getDescription(low, high, min, max);

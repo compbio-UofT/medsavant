@@ -137,7 +137,6 @@ public class BrowserPage extends SubSectionView {
                         LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         s);
-                System.out.println(s);
                 if (url != null && !url.isEmpty()) {
                     sampleIdsHavingBams.add(s);
                     String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
