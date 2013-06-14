@@ -92,24 +92,32 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         private int currX, currY;
         private int transitTime = 350;         
         private int DELAY = 30;
-        
-        private double stepX;
-        private double stepY;
-        
+                
         //Permit 5000 ms max runtime.
         private int maxRunTime = 5000;
         private Thread animationThread;
-             
-        private boolean threadStopped = false;
+                     
      
         public void setMaxRunTime(int m){
             this.maxRunTime = m;
         }
+
         public void setFPS(double fps){
             this.DELAY = (int)(Math.ceil(1000 / fps));
         }
-        
-        
+
+        public void cancel(){
+            if(animationThread != null && animationThread.isAlive()){
+                try{
+                    animationThread.join();
+                }catch(Exception e){
+                    System.err.println(e);
+                }
+                animationRunning = false;
+                repaint();
+            }
+        }
+       
         @Override
         public void paint(Graphics g){
             super.paint(g);             
@@ -128,7 +136,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             this.srcY = src.y;
             this.dstX = dst.x;
             this.dstY = dst.y;
-
+            this.currX = src.x;
+            this.currY = src.y;
+            
             this.transitTime = transitTime;
             animationThread = new Thread(this);
             animationThread.start();
@@ -159,6 +169,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return ((currX==dstX) && (currY==dstY));
         }
         
+        @Override
         public void run(){
             animationRunning = true;
             long beforeTime, timeDiff, sleep, startTime;
@@ -222,6 +233,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
                         
         if(dst != null){
+            view.cancel();
             view.animate(img.getImage(), src, dst);            
         }
     }
