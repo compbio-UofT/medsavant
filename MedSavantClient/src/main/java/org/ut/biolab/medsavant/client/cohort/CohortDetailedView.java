@@ -38,8 +38,10 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -127,11 +129,34 @@ class CohortDetailedView extends DetailedView {
         }
     }
 
+    public JPopupMenu createHospitalPopup(final String[] hospitalIds) {
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        //Filter by patient
+
+        JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", hospitalIds.length == 1 ? "Hospital ID <i>" + hospitalIds[0] + "</i>" : "Selected Hospital IDs"));
+        filter1Item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String cohort = null;
+                if(cohorts.length == 1){
+                    cohort = cohorts[0].getName();
+                }                
+                QueryUtils.addQueryOnHospitals(hospitalIds, cohort);                
+                MedSavantFrame.getInstance().searchAnimationFromMousePos();
+            }
+        });
+        popupMenu.add(filter1Item);
+
+        return popupMenu;
+    }
+
     public synchronized void setPatientList(List<SimplePatient> patients) {
 
         details.removeAll();
 
-        Object[][] data = new Object[patients.size()][1];
+        final Object[][] data = new Object[patients.size()][1];
+
         for (int i = 0; i < patients.size(); i++) {
             data[i][0] = patients.get(i);
         }
@@ -145,6 +170,26 @@ class CohortDetailedView extends DetailedView {
         list.setBorder(null);
         list.setShowGrid(false);
         list.setRowHeight(21);
+
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+
+                    int[] selection = list.getSelectedRows();
+
+                    String[] hosIds = new String[selection.length];
+
+                    for (int i = 0; i < selection.length; i++) {
+                        int j = list.convertRowIndexToModel(selection[i]);
+                        hosIds[i] = ((SimplePatient) data[j][0]).getHospitalId();
+                    }
+
+                    createHospitalPopup(hosIds).show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+
 
         p.add(ViewUtil.alignLeft(new JLabel(ViewUtil.numToString(list.getRowCount()) + " members")));
         p.add(Box.createRigidArea(new Dimension(10, 10)));
@@ -248,28 +293,29 @@ class CohortDetailedView extends DetailedView {
             JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", cohorts.length == 1 ? "Cohort <i>" + cohorts[0] + "</i>" : "Selected Cohorts"));
             filter1Item.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {                   
+                public void actionPerformed(ActionEvent e) {
                     QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
-                    SearchConditionGroupItem p = qvc.getQueryRootGroup();  
-                    
+                    SearchConditionGroupItem p = qvc.getQueryRootGroup();
+
                     List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(cohorts.length);
-                    
-                    for(Cohort cohort : cohorts){                        
-                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.OR, p);    
+
+                    for (Cohort cohort : cohorts) {
+                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.OR, p);
                         cohortItem.setDescription(cohort.toString());
-                        cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));                        
+                        cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));
                         sciList.add(cohortItem);
                     }
-                    
-                    if(cohorts.length < 2){                        
-                        SearchConditionItem sci = sciList.get(0);                                                                                            
-                        qvc.generateItemViewAndAddToGroup(sci, p); 
-                        
-                    }else{                        
+
+                    if (cohorts.length < 2) {
+                        SearchConditionItem sci = sciList.get(0);
+                        qvc.generateItemViewAndAddToGroup(sci, p);
+
+                    } else {
                         qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
                     }
-
                     qvc.refreshView();
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+
                 }
             });
             popupMenu.add(filter1Item);

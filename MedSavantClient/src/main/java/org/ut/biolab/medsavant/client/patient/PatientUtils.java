@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.client.filter.StringListFilterView;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.mfiume.query.QueryViewController;
@@ -72,7 +73,7 @@ public class PatientUtils implements BasicPatientColumns {
                  String description = StringConditionEncoder.getDescription(Arrays.asList(hospitalIDs));
                                  
                  qvc.replaceFirstLevelItem(BasicPatientColumns.HOSPITAL_ID.getAlias(), encodedConditions, description);
-                     
+                 MedSavantFrame.getInstance().searchAnimationFromMousePos();    
             }
         });
         popupMenu.add(filter1Item);

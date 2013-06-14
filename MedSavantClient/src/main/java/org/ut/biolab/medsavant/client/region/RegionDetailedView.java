@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
 import org.ut.biolab.mfiume.query.QueryViewController;
@@ -110,6 +111,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                  */
                 
                QueryUtils.addQueryOnRegions(regions, selectedRegions);
+               MedSavantFrame.getInstance().searchAnimationFromMousePos();
             }
         });
         
@@ -144,7 +146,8 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                     String description = StringConditionEncoder.getDescription(regionSetNames);
                                  
                     qvc.replaceFirstLevelItem("Region Set", encodedConditions, description);                                                                               
-              
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+
                 }
             });
             popupMenu.add(filter1Item);

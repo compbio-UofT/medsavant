@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.ontology;
 
+import javax.swing.JPopupMenu;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
@@ -28,7 +29,7 @@ public class OntologyDetailedView extends DetailedTableView<Ontology> {
 
     public OntologyDetailedView(String page) {
         super(page, "", "Multiple ontologies (%d)", new String[] { "Name", "Type", "OBO URL", "Mapping URL" });
-    }
+    }       
 
     @Override
     public MedSavantWorker createWorker() {

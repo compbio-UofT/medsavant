@@ -140,14 +140,14 @@ public abstract class DetailedTableView<T> extends DetailedView {
             blockPanel.unblock();
         }
     }
-
+      
     @Override
-    public JPopupMenu createPopup() {
+    public JPopupMenu createPopup(){
         return null;
     }
     
     public JPopupMenu createTablePopup(Object[][] selected){
-        return null;        
+        return null;
     }
 
     public synchronized void setData(final Object[][] data) {
@@ -186,7 +186,10 @@ public abstract class DetailedTableView<T> extends DetailedView {
                         //selection[i] = table.convertRowIndexToModel(selection[i]);
                         
                     } 
-                    createTablePopup(selections).show(e.getComponent(), e.getX(), e.getY());                                          
+                    JPopupMenu m = createTablePopup(selections);
+                    if(m != null){
+                        m.show(e.getComponent(), e.getX(), e.getY());
+                    }                                          
                 }
             }
         });

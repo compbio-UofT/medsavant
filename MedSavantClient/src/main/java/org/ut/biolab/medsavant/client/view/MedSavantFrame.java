@@ -90,8 +90,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         private int srcX, srcY;
         private int dstX, dstY;
         private int currX, currY;
-        private int transitTime = 400;         
-        private int DELAY = 50;
+        private int transitTime = 350;         
+        private int DELAY = 30;
         
         private double stepX;
         private double stepY;
@@ -178,7 +178,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                     sleep = 2;
                 }
                 
-                try {
+                try {                    
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {
                    // System.out.println("interrupted");

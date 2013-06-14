@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  * @author mfiume
  */
 public class GeneticsTablePage extends SubSectionView {
-
+    private Thread viewPreparationThread;
     private JPanel view;
     private TablePanel tablePanel;
     private Component[] settingComponents;
@@ -75,6 +75,12 @@ public class GeneticsTablePage extends SubSectionView {
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
             settingComponents = new Component[1];
+            try{
+                viewPreparationThread.join();
+            }catch(Exception e){
+                System.err.println(e);
+            }
+            
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(detailView, "Inspector");
         }
         return settingComponents;
@@ -131,7 +137,9 @@ public class GeneticsTablePage extends SubSectionView {
                     }
                 };
 
-                new Thread(prepareViewInBackground).start();
+               viewPreparationThread =  new Thread(prepareViewInBackground);
+               viewPreparationThread.start();
+                
 
             }
 

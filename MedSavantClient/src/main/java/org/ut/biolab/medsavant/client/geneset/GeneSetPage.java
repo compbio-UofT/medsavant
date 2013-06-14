@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.client.geneset;
 
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -71,7 +72,7 @@ public class GeneSetPage extends SubSectionView {
         public GenesDetailedView() {
             super(pageName, "", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
         }
-
+         
         @Override
         public MedSavantWorker createWorker() {
             return new GeneFetcher(selected.get(0), pageName) {
