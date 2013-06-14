@@ -82,6 +82,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 table.getDBColumn(IDBIOMOM),
                 table.getDBColumn(IDBIODAD),
                 table.getDBColumn(GENDER),
+                table.getDBColumn(AFFECTED),
                 table.getDBColumn(DNA_IDS),
                 table.getDBColumn(PHENOTYPES));
 
@@ -98,8 +99,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 rs.getString(4),
                 rs.getString(5),
                 rs.getInt(6),
-                rs.getString(7),
-                rs.getString(8)
+                rs.getInt(7),
+                rs.getString(8),
+                rs.getString(9)
             });
         }
         return result;

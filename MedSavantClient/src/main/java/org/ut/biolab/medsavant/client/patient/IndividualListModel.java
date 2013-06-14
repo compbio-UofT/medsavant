@@ -40,10 +40,11 @@ public class IndividualListModel implements DetailedListModel, BasicPatientColum
                                                                 IDBIOMOM.getAlias(),
                                                                 IDBIODAD.getAlias(),
                                                                 GENDER.getAlias(),
+                                                                AFFECTED.getAlias(),
                                                                 DNA_IDS.getAlias(),
                                                                 PHENOTYPES.getAlias() };
-    private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, String.class, String.class };
-    private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6, 7 };
+    private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, String.class, String.class };
+    private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6, 7, 8 };
     static final int NAME_INDEX = 2;        // Hospital ID is the closest we have to a name.
     static final int KEY_INDEX = 0;         // Patient ID as unique key.
 

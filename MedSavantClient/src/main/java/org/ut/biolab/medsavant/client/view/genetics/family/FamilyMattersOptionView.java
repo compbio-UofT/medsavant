@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.client.view.genetics.family;
 
+import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.Notification;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -16,7 +17,11 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -25,8 +30,12 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -55,7 +64,6 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class FamilyMattersOptionView {
 
     private List<IncludeExcludeStep> steps;
-
     private File lastTDFFile;
     private boolean filtersChangedSinceLastDump;
 
@@ -199,12 +207,10 @@ public class FamilyMattersOptionView {
         setupView();
 
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
-
             @Override
             public void handleEvent(FilterEvent event) {
                 filtersChangedSinceLastDump = true;
             }
-
         });
     }
 
@@ -213,6 +219,11 @@ public class FamilyMattersOptionView {
     }
 
     protected static class IncludeExcludeCriteria {
+
+        private static Map<String, Set<String>> groupNameToIndividualsMap = new HashMap<String, Set<String>>();
+        private JButton chooseIndividualsButton;
+        private String individualsGroupName;
+        private final static String ORIGINAL_CHOOSE_TEXT = "choose individuals";
 
         @Override
         public String toString() {
@@ -384,16 +395,250 @@ public class FamilyMattersOptionView {
                 }
             });
 
-            view.add(new JLabel("of the individuals in the"));
+            view.add(new JLabel("of"));
 
-            cb = new JComboBox();
-            cb.setName(COHORT_COMBO);
-            updateCohorts(cb);
-            view.add(cb);
+            /*cb = new JComboBox();
+             cb.setName(COHORT_COMBO);
+             updateCohorts(cb);
+             view.add(cb);
 
-            view.add(new JLabel("cohort"));
+             view.add(new JLabel("cohort"));*/
 
 
+            individualsGroupName = "";
+
+            chooseIndividualsButton = new JButton(ORIGINAL_CHOOSE_TEXT);
+            chooseIndividualsButton.setFocusable(false);
+            final IndividualSelector customSelector = new IndividualSelector();
+
+            chooseIndividualsButton.addActionListener(new ActionListener() {
+                private Set<String> selectedIndividuals;
+
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+
+                    JPopupMenu m = new JPopupMenu();
+
+                    System.out.println("\n...");
+
+                    // edit existing selections
+                    boolean editAdded = false;
+                    if (customSelector.hasMadeSelection()) {
+                        JMenu edit = new JMenu(selectedIndividuals.size() + " individual(s)");
+
+                        int counter = 0;
+
+                        // name existing selections
+                        if (customSelector.getSelectedIndividuals().size() > 0 && (individualsGroupName == null || individualsGroupName.isEmpty())) {
+
+                            JMenuItem name = new JMenuItem("Name this group");
+                            name.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent ae) {
+                                    renameGroup();
+                                }
+                            });
+                            edit.add(name);
+                            edit.add(new JSeparator());
+                            System.out.println("+ ADDING NAME");
+                            counter++;
+                        } else {
+                            System.out.println("NO NAME");
+                        }
+
+                        for (String o : selectedIndividuals) {
+                            JMenuItem j = new JMenuItem(o);
+                            j.setEnabled(false);
+                            edit.add(j);
+                            if (counter++ == 10) {
+                                JMenuItem k = new JMenuItem("...");
+                                k.setEnabled(false);
+                                edit.add(k);
+                            }
+                        }
+
+                        edit.add(new JSeparator());
+                        JMenuItem doEdit = new JMenuItem("Edit selections");
+                        doEdit.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                showIndividualSelector();
+                            }
+                        });
+                        edit.add(doEdit);
+
+                        JMenuItem resetSelf = new JMenuItem("Reset selections");
+                        resetSelf.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+
+                                if (!individualsGroupName.isEmpty()) {
+                                    int result = DialogUtils.askYesNo("Reset selections", "<html>Resetting will remove this item from the group.<br>Choose 'Edit' to make changes to the whole group.<br><br>Do you want to continue?</html>");
+                                    if (result != DialogUtils.YES) {
+                                        return;
+                                    }
+                                }
+
+                                chooseIndividualsButton.setText(ORIGINAL_CHOOSE_TEXT);
+                                individualsGroupName = "";
+                                selectedIndividuals = new HashSet<String>();
+                                customSelector.resetSelections();
+                            }
+                        });
+                        edit.add(resetSelf);
+
+                        ActionListener removeFromGroup = new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                throw new UnsupportedOperationException("Not supported yet.");
+                            }
+                        };
+
+                        JMenuItem saveToCohorts = new JMenuItem("Save to cohorts");
+                        saveToCohorts.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                DialogUtils.displayMessage("TODO");
+                            }
+                        });
+                        edit.add(saveToCohorts);
+
+                        m.add(edit);
+                        editAdded = true;
+                        System.out.println("+ ADDING EDIT");
+                    } else {
+                        System.out.println("NO EDIT");
+                    }
+
+                    // set group
+                    if (groupNameToIndividualsMap.keySet().size() > 0) {
+
+                        String s = "Set group to";
+
+                        JMenu group = new JMenu(s);
+                        int counter = 0;
+                        for (final String key : groupNameToIndividualsMap.keySet()) {
+                            if (key.equals(individualsGroupName)) {
+                                continue;
+                            }
+                            counter++;
+                            JMenuItem i = new JMenuItem(key);
+                            i.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent ae) {
+                                    applyGroupName(key);
+                                }
+                            });
+                            group.add(i);
+                        }
+                        if (counter > 0) {
+                            m.add(group);
+                            System.out.println("+ ADDING SET GROUP");
+                        } else {
+                            System.out.println("NO SET GROUP 2");
+                        }
+                    } else {
+                        System.out.println("NO SET GROUP");
+                    }
+
+
+                    if (m.getSubElements().length > 0) {
+
+                        if (!editAdded) {
+                            JMenuItem select = new JMenuItem("Make selections");
+                            select.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent ae) {
+                                    showIndividualSelector();
+                                }
+                            });
+                            m.add(select, 0);
+                            System.out.println("+ ADDING SELECTIONS");
+
+                        } else {
+                            System.out.println("NO SELECTIONS");
+                        }
+
+                        System.out.println("SOMETHING!");
+
+                        m.show(chooseIndividualsButton, 0, 0);
+                    } else {
+                        System.out.println("NOTHING!");
+                        showIndividualSelector();
+                    }
+
+                }
+
+                private void renameGroup() {
+                    renameGroup("");
+                }
+
+                private void renameGroup(String def) {
+                    String name = DialogUtils.displayInputMessage("", "Name for this group", def);
+                    if (name == null) {
+                        return;
+                    }
+                    if (groupNameToIndividualsMap.containsKey(name)) {
+                        int result = DialogUtils.askYesNo("Confirm rename", "A group with this name already exists. Overwrite?");
+                        if (result != DialogUtils.YES) {
+                            renameGroup(name);
+                            return;
+                        }
+                    }
+                    setNameForGroup(name, selectedIndividuals);
+                }
+
+                private void setNameForGroup(String groupName, Set<String> individuals) {
+                    changeButtonToName(groupName);
+                    groupNameToIndividualsMap.put(groupName, selectedIndividuals);
+                }
+
+                private void applyGroupName(String groupName) {
+                    if (groupNameToIndividualsMap.containsKey(groupName)) {
+                        changeButtonToName(groupName);
+                        selectedIndividuals = groupNameToIndividualsMap.get(groupName);
+                        customSelector.setSelectedIndividuals(selectedIndividuals);
+                    } else {
+                        DialogUtils.displayMessage("No such group as " + groupName);
+                    }
+                }
+
+                private void showIndividualSelector() {
+
+                    if (individualsGroupName != null && groupNameToIndividualsMap.containsKey(individualsGroupName)) {
+                        customSelector.setSelectedIndividuals(groupNameToIndividualsMap.get(individualsGroupName));
+                    }
+
+                    customSelector.setVisible(true);
+
+                    selectedIndividuals = customSelector.getSelectedIndividuals();
+
+                    if (individualsGroupName != null && groupNameToIndividualsMap.containsKey(individualsGroupName)) {
+                        groupNameToIndividualsMap.put(individualsGroupName, selectedIndividuals);
+                    }
+
+                    if (selectedIndividuals != null) {
+                        if (selectedIndividuals.size() > 0) {
+                            if (individualsGroupName.isEmpty()) {
+                                chooseIndividualsButton.setText(selectedIndividuals.size() + " individuals ▾");
+                            }
+                            String s = "<html>";
+                            for (String o : selectedIndividuals) {
+                                s += o + "<br>";
+                            }
+                            s += "</html>";
+                            chooseIndividualsButton.setToolTipText(s);
+                        }
+                    }
+                }
+
+                private void changeButtonToName(String groupName) {
+                    individualsGroupName = groupName;
+                    chooseIndividualsButton.setText(individualsGroupName + " ▾");
+                }
+            });
+
+            view.add(chooseIndividualsButton);
         }
 
         private void updateCohortComboBoxes() {
@@ -687,7 +932,9 @@ public class FamilyMattersOptionView {
                             System.out.println("Finished export");
 
                             // remove the old tdf file, it's out of date
-                            if (lastTDFFile != null) { lastTDFFile.delete(); }
+                            if (lastTDFFile != null) {
+                                lastTDFFile.delete();
+                            }
 
                             // replace with the new one
                             lastTDFFile = tdfFile;
@@ -767,5 +1014,4 @@ public class FamilyMattersOptionView {
         view.add(ViewUtil.centerHorizontally(runButton));
 
     }
-
 }

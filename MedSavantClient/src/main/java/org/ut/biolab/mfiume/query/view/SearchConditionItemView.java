@@ -87,6 +87,7 @@ public class SearchConditionItemView extends PillView {
                 closePanel.setLayout(new BoxLayout(closePanel, BoxLayout.X_AXIS));
                 closePanel.add(Box.createHorizontalGlue());
                 JButton closeButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLOSE));
+                closeButton.setToolTipText("Close condition editor");
                 closePanel.add(closeButton);
                 closePanel.add(Box.createHorizontalStrut(5));
                 closeButton.addActionListener(new ActionListener() {

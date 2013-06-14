@@ -28,6 +28,8 @@ import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
@@ -669,6 +671,44 @@ public final class ViewUtil {
         c.setPreferredSize(d);
         c.setMaximumSize(d);
         c.revalidate();
+    }
+
+    public static JComponent getComponentOfSameSize(final JComponent c) {
+        final JPanel p = new JPanel();
+        p.setBackground(Color.red);
+        p.setPreferredSize(c.getPreferredSize());
+
+        c.addComponentListener(new ComponentListener() {
+
+            private void resize() {
+                p.setPreferredSize(c.getSize());
+                p.setMaximumSize(c.getSize());
+                p.setMinimumSize(c.getSize());
+            }
+
+            @Override
+            public void componentResized(ComponentEvent ce) {
+                resize();
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent ce) {
+                resize();
+            }
+
+            @Override
+            public void componentShown(ComponentEvent ce) {
+                resize();
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent ce) {
+                resize();
+            }
+
+        });
+
+        return p;
     }
 
 
