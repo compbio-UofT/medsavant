@@ -1,9 +1,0 @@
-db.driver=com.mysql.jdbc.Driver
-db.name=forge_fhs
-general.autologin=false
-medsavant.version=1.0.1
-server.address=medsavant.cs.toronto.edu
-server.port=36800
-user.name=root
-user.password=
-user.rememberpass=false
