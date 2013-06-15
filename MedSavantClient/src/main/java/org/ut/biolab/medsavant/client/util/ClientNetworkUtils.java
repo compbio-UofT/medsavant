@@ -16,34 +16,36 @@
 
 package org.ut.biolab.medsavant.client.util;
 
-import org.ut.biolab.medsavant.shared.util.NetworkUtils;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.SQLException;
-import java.util.zip.ZipOutputStream;
-import org.ut.biolab.medsavant.MedSavantClient;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 /**
- *
  * @author Andrew
  */
 public class ClientNetworkUtils extends NetworkUtils {
-
     /**
-     * Download a file in the background.  Notification events will be sent to the
-     * supplied listener.
-     *
+     * Download a file in the background. Notification events will be sent to the supplied listener.
+     * 
      * @param u the HTTP URL to be downloaded
      * @param destDir destination directory for the file
-     * @param fileName the destination file within <code>destDir</code>; use <code>null</code> to infer the name from the URL
+     * @param fileName the destination file within <code>destDir</code>; use <code>null</code> to infer the name from
+     *        the URL
      * @param monitor will receive DownloadEvents
      */
-    public static void downloadFile(final URL u, final File destDir, final String fileName, final DownloadMonitor monitor) {
+    public static void downloadFile(final URL u, final File destDir, final String fileName,
+        final DownloadMonitor monitor) {
         new Thread("NetworkUtils.downloadFile") {
             double totalBytes;
 
@@ -51,9 +53,11 @@ public class ClientNetworkUtils extends NetworkUtils {
             public void run() {
                 try {
                     HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
-                    totalBytes = httpConn.getContentLength();
+                    this.totalBytes = httpConn.getContentLength();
 
-                    File destFile = new File(destDir, fileName != null ? fileName : org.ut.biolab.medsavant.client.util.ClientMiscUtils.getFilenameFromPath(u.getPath()));
+                    File destFile =
+                        new File(destDir, fileName != null ? fileName
+                            : org.ut.biolab.medsavant.client.util.ClientMiscUtils.getFilenameFromPath(u.getPath()));
                     OutputStream out = new FileOutputStream(destFile);
                     InputStream in = openStream(u);
                     fireDownloadEvent(monitor, new DownloadEvent(DownloadEvent.Type.STARTED));
@@ -62,9 +66,9 @@ public class ClientNetworkUtils extends NetworkUtils {
                     int bytesRead;
                     while ((bytesRead = in.read(buf)) != -1 && !monitor.isCancelled()) {
                         out.write(buf, 0, bytesRead);
-                        if (totalBytes > 0.0) {
+                        if (this.totalBytes > 0.0) {
                             bytesSoFar += bytesRead;
-                            monitor.handleEvent(new DownloadEvent(bytesSoFar / totalBytes));
+                            monitor.handleEvent(new DownloadEvent(bytesSoFar / this.totalBytes));
                         }
                     }
                     fireDownloadEvent(monitor, new DownloadEvent(destFile));
@@ -84,14 +88,14 @@ public class ClientNetworkUtils extends NetworkUtils {
         });
     }
 
-
     public static int copyFileToServer(File file) throws IOException, InterruptedException {
         NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
         int streamID = -1;
         InputStream stream = null;
 
         try {
-            streamID = netMgr.openWriterOnServer(LoginController.getInstance().getSessionID(), file.getName(), file.length());
+            streamID =
+                netMgr.openWriterOnServer(LoginController.getInstance().getSessionID(), file.getName(), file.length());
             stream = new FileInputStream(file);
 
             int numBytes;
@@ -116,9 +120,9 @@ public class ClientNetworkUtils extends NetworkUtils {
     }
 
     /**
-     * Copy a file from the server.  The provided <code>streamID</code> will have been assigned during an earlier server call, so
-     * this method is not responsible for opening the stream.
-     *
+     * Copy a file from the server. The provided <code>streamID</code> will have been assigned during an earlier server
+     * call, so this method is not responsible for opening the stream.
+     * 
      * @param streamID assigned by server
      * @param destFile path to file where we're dumping server output
      */

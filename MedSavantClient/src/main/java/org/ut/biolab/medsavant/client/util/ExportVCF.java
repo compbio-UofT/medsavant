@@ -15,59 +15,77 @@
  */
 package org.ut.biolab.medsavant.client.util;
 
-import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.controller.ResultController;
-import org.ut.biolab.medsavant.shared.db.ColumnType;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.client.filter.FilterController;
-import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
-import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+
 /**
- *
  * @author Andrew
  */
 public class ExportVCF implements BasicVariantColumns {
-
     private static final Log LOG = LogFactory.getLog(ExportVCF.class);
 
-
-    //important locations in intermediate file created pre-merge
+    // important locations in intermediate file created pre-merge
     private static int INTERMEDIATE_INDEX_DNA_ID = 0;
-    private static int INTERMEDIATE_INDEX_GENOTYPE = 1;
-    private static int INTERMEDIATE_INDEX_CHROM = 2;
-    private static int INTERMEDIATE_INDEX_POSITION = 3;
-    private static int INTERMEDIATE_INDEX_DBSNP = 4;
-    private static int INTERMEDIATE_INDEX_REF = 5;
-    private static int INTERMEDIATE_INDEX_ALT = 6;
-    private static int INTERMEDIATE_INDEX_QUAL = 7;
-    private static int INTERMEDIATE_INDEX_FILTER = 8;
-    private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
 
+    private static int INTERMEDIATE_INDEX_GENOTYPE = 1;
+
+    private static int INTERMEDIATE_INDEX_CHROM = 2;
+
+    private static int INTERMEDIATE_INDEX_POSITION = 3;
+
+    private static int INTERMEDIATE_INDEX_DBSNP = 4;
+
+    private static int INTERMEDIATE_INDEX_REF = 5;
+
+    private static int INTERMEDIATE_INDEX_ALT = 6;
+
+    private static int INTERMEDIATE_INDEX_QUAL = 7;
+
+    private static int INTERMEDIATE_INDEX_FILTER = 8;
+
+    private static int INTERMEDIATE_INDEX_CUSTOM = 9; // and on
 
     public static File exportTDF(File destFile, MedSavantWorker worker) throws Exception {
-
         System.out.println("Requesting table export from server...");
-        int fileID = MedSavantClient.VariantManager.exportVariants(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(),
-                ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),false,true);
+        int fileID =
+            MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
+                    .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), false, true);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }
@@ -92,15 +110,11 @@ public class ExportVCF implements BasicVariantColumns {
         return resultingFile;
     }
 
-
-
     public static void exportVCF(File destFile, MedSavantWorker worker) throws Exception {
-
-        int fileID = MedSavantClient.VariantManager.exportVariants(
-                LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(),
-                ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getAllFilterConditions(),true,false);
+        int fileID =
+            MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
+                    .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), true, false);
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }
@@ -110,14 +124,13 @@ public class ExportVCF implements BasicVariantColumns {
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
         LOG.info("Done copying file to " + destFile);
 
-
-        //maintain lists of chrs, dnaids, ...
+        // maintain lists of chrs, dnaids, ...
         Map<String, BufferedWriter> out = new HashMap<String, BufferedWriter>();
         Map<String, File> files = new HashMap<String, File>();
         List<String> chrs = new ArrayList<String>();
         Set<String> dnaIds = new HashSet<String>();
 
-        //info fields
+        // info fields
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
         String[] customColumnNames = new String[table.getNumFields() - INDEX_OF_CUSTOM_INFO - 1];
         List<DbColumn> allColumns = table.getColumns();
@@ -132,36 +145,39 @@ public class ExportVCF implements BasicVariantColumns {
         double numSteps = ReferenceController.getInstance().getChromosomes().length * 6;
         String line;
         while ((line = in.readLine()) != null) {
-
-            //parse row
+            // parse row
             String[] record = line.split(",");
             String row = "";
 
-            //dna id
+            // dna id
             String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);
             row += dnaId + "\t";
             dnaIds.add(dnaId);
 
-            //genotype
+            // genotype
             row += cleanField(record[BasicVariantColumns.INDEX_OF_GT]) + "\t";
 
-            //default fields
+            // default fields
             row +=
-                    cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t" +
-                    cleanField(record[BasicVariantColumns.INDEX_OF_POSITION]) + "\t" +
-                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_DBSNP_ID])) + "\t" +
-                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_REF])) + "\t" +
-                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_ALT])) + "\t" +
-                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_QUAL])) + "\t" +
-                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_FILTER])) + "\t";
+                cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t"
+                    + cleanField(record[BasicVariantColumns.INDEX_OF_POSITION]) + "\t"
+                    + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_DBSNP_ID])) + "\t"
+                    + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_REF])) + "\t"
+                    + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_ALT])) + "\t"
+                    + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_QUAL])) + "\t"
+                    + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_FILTER])) + "\t";
 
-            //extra fields
+            // extra fields
             for (int j = infoMin; j < infoMax; j++) {
-                if (j < record.length) row += cleanField(record[j]);
-                if (j != infoMax-1) row += "\t";
+                if (j < record.length) {
+                    row += cleanField(record[j]);
+                }
+                if (j != infoMax - 1) {
+                    row += "\t";
+                }
             }
 
-            //get writer for chrom, or create
+            // get writer for chrom, or create
             BufferedWriter writer = out.get(cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]));
             if (writer == null) {
                 String chrom = cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]);
@@ -173,19 +189,19 @@ public class ExportVCF implements BasicVariantColumns {
                 worker.showProgress(files.size() / numSteps + 0.5);
             }
 
-            //write record
+            // write record
             writer.write(row + "\n");
             if (worker.isCancelled()) {
                 throw new InterruptedException();
             }
         }
 
-        //close writers
+        // close writers
         for (String key : out.keySet()) {
             out.get(key).close();
         }
 
-        //concatenate separate chrom files in proper order
+        // concatenate separate chrom files in proper order
         Collections.sort(chrs, new ChromosomeComparator());
         File temp1 = new File(DirectorySettings.getTmpDirectory() + File.separator + destFile.getName() + "_complete");
         for (int i = 0; i < files.size(); i++) {
@@ -196,7 +212,7 @@ public class ExportVCF implements BasicVariantColumns {
             worker.showProgress((i + files.size()) / numSteps + 0.5);
         }
 
-        //merge vcf to remove duplicates
+        // merge vcf to remove duplicates
         mergeVCF(temp1, destFile, dnaIds, customColumnNames);
         worker.showProgress(1.0);
     }
@@ -206,8 +222,8 @@ public class ExportVCF implements BasicVariantColumns {
     }
 
     private static String cleanField(String s) {
-        if (s.startsWith("\"") && s.length()>=2) {
-            return s.substring(1, s.length()-1); //remove quotations
+        if (s.startsWith("\"") && s.length() >= 2) {
+            return s.substring(1, s.length() - 1); // remove quotations
         }
         return s;
     }
@@ -232,19 +248,20 @@ public class ExportVCF implements BasicVariantColumns {
     /*
      * Assumes rows in inFile are INTERMEDIATE format
      */
-    private static void mergeVCF(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames) throws Exception {
+    private static void mergeVCF(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames)
+        throws Exception {
 
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile, false));
 
-        //create maps for dna ids
+        // create maps for dna ids
         Object[] dnaIds = dnaIdsSet.toArray();
         Map<String, Integer> idToPosition = new HashMap<String, Integer>();
         for (Integer i = 0; i < dnaIds.length; i++) {
-            idToPosition.put((String)dnaIds[i], i);
+            idToPosition.put((String) dnaIds[i], i);
         }
 
-        //check for flags
+        // check for flags
         Boolean[] flagColumns = new Boolean[customColumnNames.length];
         clearArray(flagColumns, false);
         int pos = 0;
@@ -258,18 +275,18 @@ public class ExportVCF implements BasicVariantColumns {
             }
         }
 
-        //write header
+        // write header
         out.write(createHeader(dnaIds));
 
-        //position of last visited row
+        // position of last visited row
         String lastChr = "";
         String lastPos = "";
 
-        //which dna ids are found with this variant
+        // which dna ids are found with this variant
         Boolean[] dnaMatches = new Boolean[dnaIds.length];
 
-        //which columns match among dna ids at this position
-        Boolean[] columnMatches = new Boolean[2 + customColumnNames.length]; //qual, filter, customcolumns...
+        // which columns match among dna ids at this position
+        Boolean[] columnMatches = new Boolean[2 + customColumnNames.length]; // qual, filter, customcolumns...
 
         String line;
         String[][] records = new String[dnaIds.length][];
@@ -279,15 +296,15 @@ public class ExportVCF implements BasicVariantColumns {
         clearArray(availableIds, false);
 
         while (true) {
-
-            //parse current record
+            // parse current record
             line = in.readLine();
             if (line != null) {
                 record = line.split("\t");
             }
 
-            //write records for previous position
-            if (line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION]) || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])) {
+            // write records for previous position
+            if (line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION])
+                || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])) {
 
                 for (int i = 0; i < dnaIds.length; i++) {
 
@@ -295,42 +312,55 @@ public class ExportVCF implements BasicVariantColumns {
                     clearArray(columnMatches, true);
 
                     String[] row1 = records[i];
-                    if (!availableIds[i] || row1 == null) continue; //no variant for this dna id
+                    if (!availableIds[i] || row1 == null) {
+                        continue; // no variant for this dna id
+                    }
 
                     dnaMatches[i] = true;
 
-                    //look for other matching lines
-                    for (int j = i+1; j < dnaIds.length; j++) {
+                    // look for other matching lines
+                    for (int j = i + 1; j < dnaIds.length; j++) {
                         String[] row2 = records[j];
                         if (availableIds[j] && row2 != null && compareRows(row1, row2)) {
                             dnaMatches[j] = true;
                             determineMatches(columnMatches, row1, row2);
-                            availableIds[j] = false; //skip next time
+                            availableIds[j] = false; // skip next time
                         }
                     }
 
-                    //write line
+                    // write line
                     String output = "";
                     for (int col = INTERMEDIATE_INDEX_CHROM; col < INTERMEDIATE_INDEX_QUAL; col++) {
                         output += row1[col] + "\t";
                     }
                     for (int col = INTERMEDIATE_INDEX_QUAL; col < INTERMEDIATE_INDEX_CUSTOM; col++) {
-                        if (columnMatches[col-INTERMEDIATE_INDEX_QUAL]) output += row1[col];
-                        else output += ".";
+                        if (columnMatches[col - INTERMEDIATE_INDEX_QUAL]) {
+                            output += row1[col];
+                        } else {
+                            output += ".";
+                        }
                         output += "\t";
                     }
                     for (int col = INTERMEDIATE_INDEX_CUSTOM; col < row1.length; col++) {
-                        if (columnMatches[col-INTERMEDIATE_INDEX_QUAL] && !row1[col].equals("")) {
-                            if (flagColumns[col-INTERMEDIATE_INDEX_CUSTOM] && row1[col].equals("1")) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + ";";
-                            else if (!flagColumns[col-INTERMEDIATE_INDEX_CUSTOM]) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + "=" + row1[col] + ";";
+                        if (columnMatches[col - INTERMEDIATE_INDEX_QUAL] && !row1[col].equals("")) {
+                            if (flagColumns[col - INTERMEDIATE_INDEX_CUSTOM] && row1[col].equals("1")) {
+                                output += customColumnNames[col - INTERMEDIATE_INDEX_CUSTOM] + ";";
+                            } else if (!flagColumns[col - INTERMEDIATE_INDEX_CUSTOM]) {
+                                output += customColumnNames[col - INTERMEDIATE_INDEX_CUSTOM] + "=" + row1[col] + ";";
+                            }
                         }
                     }
                     output += "\t";
-                    output += "GT\t"; //format column
+                    output += "GT\t"; // format column
                     for (int id = 0; id < dnaIds.length; id++) {
-                        if (dnaMatches[id]) output += records[id][INTERMEDIATE_INDEX_GENOTYPE];
-                        else output += ".";
-                        if (id != dnaIds.length-1) output += "\t";
+                        if (dnaMatches[id]) {
+                            output += records[id][INTERMEDIATE_INDEX_GENOTYPE];
+                        } else {
+                            output += ".";
+                        }
+                        if (id != dnaIds.length - 1) {
+                            output += "\t";
+                        }
                     }
                     out.write(output + "\n");
 
@@ -343,7 +373,7 @@ public class ExportVCF implements BasicVariantColumns {
                 break;
             }
 
-            //parse current record
+            // parse current record
             String dnaId = record[INTERMEDIATE_INDEX_DNA_ID];
             records[idToPosition.get(dnaId)] = record;
             availableIds[idToPosition.get(dnaId)] = true;
@@ -354,14 +384,13 @@ public class ExportVCF implements BasicVariantColumns {
 
         in.close();
         out.close();
-
     }
 
-
-
     private static boolean compareRows(String[] row1, String[] row2) {
-        if (row1.length != row2.length) return false;
-        for (int i = INTERMEDIATE_INDEX_DBSNP; i < INTERMEDIATE_INDEX_QUAL; i++) { //compare ref, alt, dbsnp_id
+        if (row1.length != row2.length) {
+            return false;
+        }
+        for (int i = INTERMEDIATE_INDEX_DBSNP; i < INTERMEDIATE_INDEX_QUAL; i++) { // compare ref, alt, dbsnp_id
             if (!row1[i].equals(row2[i])) {
                 return false;
             }
@@ -384,7 +413,7 @@ public class ExportVCF implements BasicVariantColumns {
     private static void determineMatches(Boolean[] matches, String[] row1, String[] row2) {
         for (int i = INTERMEDIATE_INDEX_DBSNP; i < row1.length; i++) {
             if (!row1[i].equals(row2[i])) {
-                matches[i-INTERMEDIATE_INDEX_QUAL] = false;
+                matches[i - INTERMEDIATE_INDEX_QUAL] = false;
             }
         }
     }
@@ -392,27 +421,27 @@ public class ExportVCF implements BasicVariantColumns {
     private static String createHeader(Object[] dnaIds) throws Exception {
         String header = "";
 
-        //file format
+        // file format
         header += "##fileformat=VCFv4.0\n";
 
-        //date
+        // date
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         header += "##fileDate=" + sdf.format(cal.getTime()) + "\n";
 
-        //source
-        //TODO
+        // source
+        // TODO
 
-        //reference
+        // reference
         header += "##reference=" + ReferenceController.getInstance().getCurrentReferenceName() + "\n";
 
-        //info
+        // info
         AnnotationFormat[] annotationFormats = ProjectController.getInstance().getCurrentAnnotationFormats();
         for (int i = 1; i < annotationFormats.length; i++) {
             AnnotationFormat af = annotationFormats[i];
             for (CustomField field : af.getCustomFields()) {
                 header += "##INFO=<ID=" + field.getColumnName().toUpperCase() + ",";
-                switch(field.getColumnType()) {
+                switch (field.getColumnType()) {
                     case INTEGER:
                         header += "Number=1,Type=Integer";
                         break;
@@ -429,14 +458,16 @@ public class ExportVCF implements BasicVariantColumns {
             }
         }
 
-        //format
+        // format
         header += "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n";
 
-        //column headers
+        // column headers
         header += "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t";
         for (int i = 0; i < dnaIds.length; i++) {
-            header += (String)dnaIds[i];
-            if (i != dnaIds.length-1) header += "\t";
+            header += (String) dnaIds[i];
+            if (i != dnaIds.length - 1) {
+                header += "\t";
+            }
         }
         header += "\n";
 

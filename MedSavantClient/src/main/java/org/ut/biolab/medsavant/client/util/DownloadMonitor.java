@@ -17,11 +17,10 @@ package org.ut.biolab.medsavant.client.util;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 
-
 /**
- * Basically just a Listener class, but also allows for the possibility that the
- * listener wants to cancel the download process.
- *
+ * Basically just a Listener class, but also allows for the possibility that the listener wants to cancel the download
+ * process.
+ * 
  * @author tarkvara
  */
 public interface DownloadMonitor extends Listener<DownloadEvent> {

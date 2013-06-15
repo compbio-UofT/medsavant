@@ -9,20 +9,20 @@ import java.io.File;
 
 /**
  * Event which is sent by asynchronous downloads.
- *
+ * 
  * @author tarkvara
  */
 public class DownloadEvent {
     public enum Type {
-        STARTED,
-        COMPLETED,
-        FAILED,
-        PROGRESS
+        STARTED, COMPLETED, FAILED, PROGRESS
     }
 
     final Type type;
+
     final double progress;
+
     final File file;
+
     final Exception error;
 
     private DownloadEvent(Type type, double progress, File file, Exception error) {
@@ -41,7 +41,7 @@ public class DownloadEvent {
 
     /**
      * A download event represent progress towards our goal.
-     *
+     * 
      * @param progress a value from 0.0 to 1.0 indicating the amount of progress completed
      */
     DownloadEvent(double progress) {
@@ -50,7 +50,7 @@ public class DownloadEvent {
 
     /**
      * A download event representing successful completion of the download.
-     *
+     * 
      * @param file the destination file
      */
     DownloadEvent(File file) {
@@ -59,7 +59,7 @@ public class DownloadEvent {
 
     /**
      * A download event indicating that the download has failed.
-     *
+     * 
      * @param file the destination file
      */
     DownloadEvent(Exception error) {
@@ -67,18 +67,18 @@ public class DownloadEvent {
     }
 
     public Type getType() {
-        return type;
+        return this.type;
     }
 
     public double getProgress() {
-        return progress;
+        return this.progress;
     }
 
     public File getFile() {
-        return file;
+        return this.file;
     }
 
     public Exception getError() {
-        return error;
+        return this.error;
     }
 }

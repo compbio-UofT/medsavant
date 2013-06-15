@@ -21,15 +21,13 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 
-
 /**
- * Swing worker which fetches genes for a given gene set.  Used by both GenesDetailedView and RegionWizard.  Note that this
- * implementation fetches genes, not transcripts.
- *
+ * Swing worker which fetches genes for a given gene set. Used by both GenesDetailedView and RegionWizard. Note that
+ * this implementation fetches genes, not transcripts.
+ * 
  * @author tarkvara
  */
 public abstract class GeneFetcher extends MedSavantWorker<Gene[]> {
-
     private final GeneSet selectedSet;
 
     public GeneFetcher(GeneSet selectedSet, String page) {
@@ -39,22 +37,24 @@ public abstract class GeneFetcher extends MedSavantWorker<Gene[]> {
 
     @Override
     protected Gene[] doInBackground() throws Exception {
-        return MedSavantClient.GeneSetManager.getGenes(LoginController.getInstance().getSessionID(), selectedSet);
+        return MedSavantClient.GeneSetManager.getGenes(LoginController.getInstance().getSessionID(), this.selectedSet);
     }
 
     @Override
     protected void showSuccess(Gene[] result) {
-        //List<Object[]> list = new ArrayList<Object[]>();
+        // List<Object[]> list = new ArrayList<Object[]>();
         Object[][] data = new Object[result.length][];
         for (int i = 0; i < result.length; i++) {
             Gene g = result[i];
-            data[i] = new Object[] { g.getName(), g.getChrom(), g.getStart(), g.getEnd(), g.getCodingStart(), g.getCodingEnd() };
+            data[i] =
+                new Object[] {g.getName(), g.getChrom(), g.getStart(), g.getEnd(), g.getCodingStart(), g.getCodingEnd()};
         }
         setData(data);
     }
 
     /**
-     * Do something with the data we've just retrieved.  Typically populating a list.
+     * Do something with the data we've just retrieved. Typically populating a list.
+     * 
      * @param data data collected from genes
      */
     public abstract void setData(Object[][] data);

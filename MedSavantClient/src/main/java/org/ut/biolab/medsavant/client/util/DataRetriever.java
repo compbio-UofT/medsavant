@@ -19,13 +19,13 @@ package org.ut.biolab.medsavant.client.util;
 import java.util.List;
 
 /**
- *
  * @author mfiume, Andrew
  */
 public abstract class DataRetriever<T> {
-
     public abstract List<T> retrieve(int start, int limit) throws Exception;
+
     public abstract int getTotalNum();
+
     public abstract void retrievalComplete();
 
     /**
@@ -35,7 +35,7 @@ public abstract class DataRetriever<T> {
         return new DataRetriever() {
             @Override
             public List retrieve(int start, int limit) {
-               return data.subList(start, Math.min(start+limit, data.size()));
+                return data.subList(start, Math.min(start + limit, data.size()));
             }
 
             @Override
@@ -44,9 +44,8 @@ public abstract class DataRetriever<T> {
             }
 
             @Override
-            public void retrievalComplete(){
+            public void retrievalComplete() {
             };
         };
     }
-
 }

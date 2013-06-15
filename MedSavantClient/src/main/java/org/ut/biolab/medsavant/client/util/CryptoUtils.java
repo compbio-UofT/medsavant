@@ -29,16 +29,15 @@ import org.apache.commons.codec.binary.Base64;
 
 /**
  * Wrappers to make using javax.crypto.Cipher a little less unfriendly.
- *
+ * 
  * @author tarkvara
  */
 public class CryptoUtils {
-    private static final byte[] salt = {
-        (byte)0xA9, (byte)0x9B, (byte)0xC8, (byte)0x32,
-        (byte)0x56, (byte)0x35, (byte)0xE3, (byte)0x03
-    };
+    private static final byte[] salt = {(byte) 0xA9, (byte) 0x9B, (byte) 0xC8, (byte) 0x32, (byte) 0x56, (byte) 0x35,
+        (byte) 0xE3, (byte) 0x03};
 
     private static Cipher ENCRYPTOR;
+
     private static Cipher DECRYPTOR;
 
     static {
@@ -56,7 +55,7 @@ public class CryptoUtils {
 
     /**
      * Decrypt a BASE64 encoded encrypted string.
-     *
+     * 
      * @param str BASE64 representation of encrypted string
      * @return plain-text
      */
@@ -68,10 +67,9 @@ public class CryptoUtils {
         return null;
     }
 
-
     /**
      * Encrypt the string and return a BASE64 representation suitable for framing or wrapping fish.
-     *
+     * 
      * @param str the plaintext string to be encrypted
      * @return BASE64 encoding of encrypted string
      */

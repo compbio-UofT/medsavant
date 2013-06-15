@@ -24,16 +24,14 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
- *
  * @author Andrew
  */
 public class ThreadController {
-
     private static final Log LOG = LogFactory.getLog(ThreadController.class);
 
     private static ThreadController instance;
+
     private Map<String, List<MedSavantWorker>> workers = new HashMap<String, List<MedSavantWorker>>();
 
     public static ThreadController getInstance() {
@@ -44,29 +42,30 @@ public class ThreadController {
     }
 
     public synchronized void addWorker(String page, MedSavantWorker worker) {
-        List<MedSavantWorker> list = workers.get(page);
+        List<MedSavantWorker> list = this.workers.get(page);
         if (list == null) {
-            workers.put(page, list = new ArrayList<MedSavantWorker>());
+            this.workers.put(page, list = new ArrayList<MedSavantWorker>());
         }
         list.add(worker);
-        //LOG.info(page + " now has " + list.size() + " workers.");
+        // LOG.info(page + " now has " + list.size() + " workers.");
     }
 
     public synchronized void removeWorker(String page, MedSavantWorker worker) {
-        List<MedSavantWorker> list = workers.get(page);
+        List<MedSavantWorker> list = this.workers.get(page);
         if (list != null) {
             list.remove(worker);
-            //LOG.info(page + " now has " + list.size() + " workers.");
+            // LOG.info(page + " now has " + list.size() + " workers.");
         }
     }
 
     public synchronized void cancelWorkers(String page) {
-        List<MedSavantWorker> list = workers.get(page);
+        List<MedSavantWorker> list = this.workers.get(page);
         if (list != null) {
-            // We null out the map entry because MedSavantWorker.done() calls removeWorker(), which will try to concurrently modify
+            // We null out the map entry because MedSavantWorker.done() calls removeWorker(), which will try to
+            // concurrently modify
             // the list we're iterating over.
-            workers.put(page, null);
-            for (MedSavantWorker worker: list) {
+            this.workers.put(page, null);
+            for (MedSavantWorker worker : list) {
                 worker.cancel(true);
             }
         }

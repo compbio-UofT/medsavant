@@ -19,30 +19,27 @@ package org.ut.biolab.medsavant.client.util;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.ExecutionException;
+
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.ThreadController;
-
 
 /**
  * SwingWorker wrapper which provides hooks do the right thing in response to errors, cancellation, etc.
- *
+ * 
  * @author tarkvara
  */
 public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     private static final Log LOG = LogFactory.getLog(MedSavantWorker.class);
 
     private String pageName;
+
     private Timer progressTimer;
 
     /**
-     *
      * @param pageName which view created this worker
      */
     public MedSavantWorker(String pageName) {
@@ -52,8 +49,8 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
 
     @Override
     public void done() {
-        if (progressTimer != null) {
-            progressTimer.stop();
+        if (this.progressTimer != null) {
+            this.progressTimer.stop();
         }
         showProgress(1.0);
         try {
@@ -74,26 +71,27 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             showFailure(x.getCause());
         } finally {
             // Succeed or fail, we want to remove the worker from our page.
-            ThreadController.getInstance().removeWorker(pageName, this);
+            ThreadController.getInstance().removeWorker(this.pageName, this);
         }
     }
 
-
     /**
-     * Show progress during a lengthy operation.  As a special case, pass 1.0 to remove the progress display.
-     * @param fract the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate indeterminate progress-bar).
+     * Show progress during a lengthy operation. As a special case, pass 1.0 to remove the progress display.
+     * 
+     * @param fract the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate
+     *        indeterminate progress-bar).
      */
     protected abstract void showProgress(double fract);
 
     /**
      * Called when the worker has successfully completed its task.
+     * 
      * @param result the value returned by <code>doInBackground()</code>.
      */
     protected abstract void showSuccess(T result);
 
     /**
-     * Called when the task has thrown an exception.  Default behaviour is to log the exception
-     * and put up a dialog box.
+     * Called when the task has thrown an exception. Default behaviour is to log the exception and put up a dialog box.
      */
     protected void showFailure(Throwable t) {
         if (!(t instanceof InterruptedException)) {
@@ -109,10 +107,11 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     }
 
     /**
-     * Workers which want intermittent progress checks should start a timer which will call checkProgress and showProgress intermittently.
+     * Workers which want intermittent progress checks should start a timer which will call checkProgress and
+     * showProgress intermittently.
      */
     protected void startProgressTimer() {
-        progressTimer = new Timer(1000, new ActionListener() {
+        this.progressTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
@@ -125,6 +124,6 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
                 }
             }
         });
-        progressTimer.start();
+        this.progressTimer.start();
     }
 }

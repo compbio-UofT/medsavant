@@ -4,25 +4,40 @@
  */
 package org.ut.biolab.medsavant.client.util;
 
-import org.ut.biolab.medsavant.client.util.CryptoUtils;
 import java.io.File;
-import javax.mail.*;
-import javax.mail.internet.*;
-import java.util.*;
+import java.util.Date;
+import java.util.Properties;
+
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 public class Mail {
-
     static String src = CryptoUtils.decrypt("bqgO3l4Mri63fD852DLpZ8ZMClOw+jFu");
+
     static String srcName = "MedSavant Server Utility";
+
     static String target = CryptoUtils.decrypt("DTgwgEq+czLyMpN/RJkuabYSDQwJCH6lqincenCkeLc=");
+
     static String pw = CryptoUtils.decrypt("OxTfiD1tzb7BvRHGfn+MoA==");
+
     static String host = "smtp.gmail.com";
+
     static String port = "465";
+
     static String starttls = "true";
+
     static String auth = "true";
+
     static String socketFactoryClass = "javax.net.ssl.SSLSocketFactory";
+
     static String fallback = "false";
 
     public static void main(String[] args) {
@@ -31,11 +46,11 @@ public class Mail {
     }
 
     public synchronized static boolean sendEmailToDevelopers(String subject, String text, File attachment) {
-        return sendEmail(target,subject,text,attachment);
+        return sendEmail(target, subject, text, attachment);
     }
 
     public synchronized static boolean sendEmail(String to, String subject, String text) {
-        return sendEmail(to,subject,text,null);
+        return sendEmail(to, subject, text, null);
     }
 
     public synchronized static boolean sendEmail(String to, String subject, String text, File attachment) {
@@ -53,7 +68,7 @@ public class Mail {
             Session session = Session.getInstance(props, null);
             // create a message
             MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(src,srcName));
+            msg.setFrom(new InternetAddress(src, srcName));
             InternetAddress[] address = InternetAddress.parse(to);
             msg.setRecipients(Message.RecipientType.TO, address);
             msg.setSubject(subject);
@@ -91,6 +106,5 @@ public class Mail {
             ex.printStackTrace();
             return false;
         }
-
     }
 }

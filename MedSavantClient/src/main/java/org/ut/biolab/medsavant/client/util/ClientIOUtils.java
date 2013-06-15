@@ -16,18 +16,15 @@
 
 package org.ut.biolab.medsavant.client.util;
 
-import org.ut.biolab.medsavant.shared.util.IOUtils;
 import java.io.File;
 
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
- *
  * @author Andrew
  */
 public class ClientIOUtils extends IOUtils {
-
     public static void removeTmpFiles() {
         for (File f : DirectorySettings.getTmpDirectory().listFiles()) {
             f.delete();
