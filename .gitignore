@@ -28,6 +28,7 @@ nbproject
 build
 out
 dist
+nbactions.xml
 
 # IDEA
 *.iml
