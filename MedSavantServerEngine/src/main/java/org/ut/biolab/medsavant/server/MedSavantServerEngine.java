@@ -38,6 +38,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.VersionSettings;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
@@ -79,7 +80,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
         System.out.println("Server Information:");
         System.out.println(
-                "  SERVER ADDRESS: " + thisAddress + "\n"
+                "  SERVER VERSION: " + VersionSettings.getVersionString() + "\n"
+                + "  SERVER ADDRESS: " + thisAddress + "\n"
                 + "  LISTENING ON PORT: " + listenOnPort + "\n");
                 //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {

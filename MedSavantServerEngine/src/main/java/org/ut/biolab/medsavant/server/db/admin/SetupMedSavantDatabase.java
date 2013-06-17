@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.server.db.VersionSettings;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -300,7 +301,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                         + "`file_id` int(11),"
                         + "`variant_id` int(11),"
                         + "`dna_id` varchar(100) COLLATE latin1_bin NOT NULL,"
-                        + "`chrom` varchar(5) COLLATE latin1_bin NOT NULL DEFAULT '',"
+                        + "`chrom` varchar(30) COLLATE latin1_bin NOT NULL DEFAULT '',"
                         + "`position` int(11),"
                         + "`dbsnp_id` varchar(45) COLLATE latin1_bin DEFAULT NULL,"
                         + "`ref` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
@@ -388,5 +389,11 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
             throw new RemoteException("Error populating gene tables.", iox);
         } catch (URISyntaxException ignored) {
         }
+    }
+
+
+    @Override
+    public String getServerVersion() throws RemoteException, SessionExpiredException {
+        return VersionSettings.getVersionString();
     }
 }

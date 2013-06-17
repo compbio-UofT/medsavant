@@ -441,9 +441,9 @@ public class MiscUtils {
         return nValue.getNodeValue();
     }
 
-    public static List<String> getTagValues(Element e, String tag) {
+    public static Set<String> getTagValues(Element e, String tag) {
         NodeList nlList = e.getElementsByTagName(tag);
-        List<String> result = new ArrayList<String>();
+        Set<String> result = new HashSet<String>();
         for (int i = 0; i < nlList.getLength(); i++) {
             Node nValue = (Node) nlList.item(i).getChildNodes().item(0);
             result.add(nValue.getNodeValue());
