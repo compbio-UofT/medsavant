@@ -269,6 +269,31 @@
             </execution>
           </executions>
         </plugin>
+        <!-- Run the exec plugin on the final jar, not on individual classes,
+             since we require the MANIFEST file to be present (that is where the version is defined) -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.2.1</version>
+          <executions>
+            <execution>
+              <id>default-cli</id>
+              <phase>install</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+              <configuration>
+                <executable>java</executable>
+                <arguments>
+                  <argument>-jar</argument>
+                  <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                  <classpath></classpath>
+                </arguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -372,12 +397,6 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
           <version>2.5.1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <!-- Lock down plugin version for build reproducibility -->
-          <version>1.2.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
