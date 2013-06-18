@@ -1,33 +1,31 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Label;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.img.ImagePanel;
 
 /**
@@ -36,7 +34,7 @@ import org.ut.biolab.mfiume.query.img.ImagePanel;
  */
 public class PillView extends JPanel {
 
-    public final static Color[] COLOR_SCHEME_INACTIVE = new Color[]{new Color(241, 215, 215), new Color(233, 139, 139), new Color(233, 49,49), new Color(239,97,97)};
+    public final static Color[] COLOR_SCHEME_INACTIVE = new Color[]{new Color(241, 215, 215), new Color(233, 139, 139), new Color(233, 49, 49), new Color(239, 97, 97)};
     public final static Color[] COLOR_SCHEME_ACTIVE = new Color[]{new Color(222, 231, 241), new Color(166, 190, 236), new Color(49, 121, 233), new Color(97, 155, 239)}; // 0 is background, 1 is border
     int backoff = 1;
     int vpad = 2;
@@ -46,15 +44,13 @@ public class PillView extends JPanel {
     private final JPanel middlePanel;
     private final JPanel rightPanel;
     private PopupGenerator popupGenerator;
-    private boolean closeable;
     private boolean isActivated;
     private boolean isSelected;
-    private Color[] activeColorScheme;
     private JLabel textLabel;
+    private boolean expandable = false;
+    private JButton expandButton;
 
     public PillView() {
-
-
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         this.setBorder(BorderFactory.createEmptyBorder(vpad, hpad, vpad, hpad));
         this.setOpaque(false);
@@ -83,7 +79,13 @@ public class PillView extends JPanel {
         this.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent me) {
-                showPopup();
+                if (me.getButton() == me.BUTTON1) {       
+                    //do nothing?
+                } else if (me.getButton() == me.BUTTON2) {                    
+                    showPopup();
+                }else if(me.getButton() == me.BUTTON3){
+                    showPopup();
+                }
             }
 
             @Override
@@ -106,13 +108,27 @@ public class PillView extends JPanel {
         setSelected(false);
     }
 
+    public PillView(boolean expandable) {
+        this();
+        ImageIcon ic = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COLLAPSE);
+        expandButton = ViewUtil.getIconButton(ic);
+        
+        expandButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {                                    
+                toggleExpandButton(!expandState);
+                updateUI();
+            }
+        });                            
+    }
+
     public void setActivated(boolean b) {
         this.isActivated = b;
     }
 
     public void showPopup() {
+        
         if (popupGenerator != null) {
-            if (this.isDisclosureVisible) {
+            if (this.isDisclosureVisible) {                
                 final JPopupMenu m = popupGenerator.generatePopup();
                 final PillView instance = this;
                 m.addPopupMenuListener(new PopupMenuListener() {
@@ -136,7 +152,6 @@ public class PillView extends JPanel {
 
                 final JComponent pillInstance = this;
                 this.addComponentListener(new ComponentListener() {
-
                     @Override
                     public void componentResized(ComponentEvent ce) {
                     }
@@ -155,7 +170,6 @@ public class PillView extends JPanel {
                     @Override
                     public void componentHidden(ComponentEvent ce) {
                     }
-
                 });
 
             }
@@ -220,11 +234,56 @@ public class PillView extends JPanel {
         updateDisclosure();
     }
 
+    private boolean expandState = false;
+    
+    private void toggleExpandButton(boolean expand) {
+        if(expandButton != null){
+           // System.out.println("\ttoggleExpand: "+expandState+" => "+expand);
+            expandState = expand;        
+            ImageIcon ic = IconFactory.getInstance().getIcon(expand ? IconFactory.StandardIcon.COLLAPSE : IconFactory.StandardIcon.EXPAND);       
+            expandButton.setIcon(ic);
+        }
+    }
+    
+    
+    public void setExpandListener(ActionListener l){       
+        if(expandButton != null){
+            expandButton.addActionListener(l);
+        }
+    }
+
+    public void toggleExpandButton(){
+        toggleExpandButton(!expandState);
+        /*System.out.println("toggle expand doClick()");
+        if(expandButton != null){
+            expandButton.doClick();
+        }*/
+    }
+    
+    public void expand() {        
+       // System.out.println("expand()");
+        toggleExpandButton(true);
+        updateUI();        
+    }
+
+    public void collapse() {
+        //System.out.println("collapse()");
+        toggleExpandButton(false);
+        updateUI();
+    }
+
+   
+    
     public void setText(String text) {
         this.middlePanel.removeAll();
-        textLabel = new JLabel(text);
+        if(expandButton != null){
+            this.middlePanel.add(expandButton);
+        }
+               
+        textLabel = new JLabel(text);        
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
+
         this.middlePanel.add(textLabel);
         updateUI();
     }
@@ -266,5 +325,4 @@ public class PillView extends JPanel {
     public void setPopupGenerator(PopupGenerator pg) {
         this.popupGenerator = pg;
     }
-
 }

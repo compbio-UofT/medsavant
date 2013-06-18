@@ -1,19 +1,10 @@
 package org.ut.biolab.mfiume.query.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.RoundRectangle2D;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -27,12 +18,9 @@ import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
-import org.ut.biolab.mfiume.query.img.ImagePanel;
 
 /**
  *
@@ -173,8 +161,8 @@ public class SearchConditionItemView extends PillView {
         refresh();
     }
 
-    public final void refresh() {
-
+    public final void refresh() {        
+        
         this.setActivated(item.getSearchConditionEncoding() != null);
         this.setText(
                 "<html>"

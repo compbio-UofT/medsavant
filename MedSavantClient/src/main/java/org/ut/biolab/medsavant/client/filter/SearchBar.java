@@ -18,8 +18,6 @@ package org.ut.biolab.medsavant.client.filter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
@@ -137,6 +135,9 @@ public class SearchBar extends JPanel {
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
+        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DELETE));
+        newLabel.setToolTipText("Clear current search");
+        
         JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
         historyLabel.setToolTipText("Show search history");
 
@@ -196,7 +197,32 @@ public class SearchBar extends JPanel {
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
         dSave.setTitle("Load Search Conditions");
         dSave.setResizable(false);
+        
+        newLabel.addMouseListener(new MouseListener(){
+            @Override 
+            public void mouseClicked(MouseEvent me) {    
+                if(DialogUtils.askYesNo("Clear current search", "Clear current search?") == JOptionPane.YES_OPTION){
+                    getQueryViewController().clearSearch();
+                }                
+            }   
+            
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
 
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+        });
+        
         loadLabel.addMouseListener(new MouseListener() {
             SavedFiltersPanel savedFiltersPanel;
 
@@ -382,9 +408,11 @@ public class SearchBar extends JPanel {
 
         JPanel bottomBar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomBar);
-        /*bottomBar.add(saveLabel);
+        bottomBar.add(newLabel);
+        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
+        bottomBar.add(saveLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(3, 1)));
-        bottomBar.add(loadLabel);*/
+        bottomBar.add(loadLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
         bottomBar.add(historyLabel);
         bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));

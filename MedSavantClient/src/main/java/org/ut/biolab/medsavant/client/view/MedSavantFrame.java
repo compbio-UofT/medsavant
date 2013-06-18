@@ -105,14 +105,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         public void setFPS(double fps){
             this.DELAY = (int)(Math.ceil(1000 / fps));
         }
-
+      
         public void cancel(){
-            if(animationThread != null && animationThread.isAlive()){
-                try{
-                    animationThread.join();
-                }catch(Exception e){
-                    System.err.println(e);
-                }
+            if(animationThread != null && animationThread.isAlive()){               
                 animationRunning = false;
                 repaint();
             }
@@ -174,7 +169,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             animationRunning = true;
             long beforeTime, timeDiff, sleep, startTime;
             startTime = beforeTime = System.currentTimeMillis();
-            while (true) {                                
+            while (animationRunning) {                                
                 long t = System.currentTimeMillis();
                 if(cycle(t-startTime) || ((t-startTime) > maxRunTime)){
                     animationRunning = false;
