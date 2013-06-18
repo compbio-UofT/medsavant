@@ -176,14 +176,6 @@
             </manifest>
           </archive>
         </configuration>
-        <executions>
-          <execution>
-            <id>create-jar</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -191,6 +183,7 @@
         <executions>
           <execution>
             <id>copy-dependencies</id>
+            <phase>package</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
