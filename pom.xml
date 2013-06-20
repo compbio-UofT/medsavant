@@ -286,6 +286,7 @@
               <configuration>
                 <executable>java</executable>
                 <arguments>
+                  <argument>-Xmx4G</argument>
                   <argument>-jar</argument>
                   <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                   <classpath></classpath>
