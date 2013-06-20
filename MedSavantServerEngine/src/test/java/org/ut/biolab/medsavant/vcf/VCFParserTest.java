@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.vcf;
 
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.AbstractSolrService;
@@ -28,9 +29,10 @@ public class VCFParserTest {
     }
 
     @Test
+    @Ignore
     public void testIndexDataToSolr() {
 
-        File input = new File("input.vcf");
+        File input = new File("input2.vcf");
 
         long sizeBefore = solrVariantService.search("*:*").getNumFound();
 
@@ -44,6 +46,7 @@ public class VCFParserTest {
     }
 
     @Test
+    @Ignore
     public void testIndexDataToSolrUsingMedSavantParser() throws IOException {
 
         File input = new File("input.vcf");

@@ -21,14 +21,15 @@ package org.ut.biolab.medsavant.server.solr.map;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
-public class SetMap<K, V> extends AbstractCollectionMap<K, V>
+public class ListMap<K, V> extends AbstractCollectionMap<K, V>
 {
 
     @Override
     protected Collection<V> getEmptyCollection()
     {
-        return new LinkedHashSet<V>();
+        return new LinkedList<V>();
     }
 
 }

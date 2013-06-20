@@ -20,7 +20,7 @@
 package org.ut.biolab.medsavant.server.solr.service;
 
 
-import org.ut.biolab.medsavant.server.solr.map.SetMap;
+import org.ut.biolab.medsavant.server.solr.map.ListMap;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -30,7 +30,7 @@ import java.util.UUID;
  * Used to store term values for a document.
  * @version $Id$
  */
-public class VariantData extends SetMap<String, String>
+public class VariantData extends ListMap<String, String>
 {
 
     /** Solr ID fields. */
@@ -59,6 +59,17 @@ public class VariantData extends SetMap<String, String>
 
     /** INFO fields. */
     public static final String INFO = "info";
+
+    /** DNA ID field */
+    public static final String DNA_ID = "dna_id";
+
+    /** DNA ID field */
+    public static final String GENOTYPE = "gt";
+
+    /** DNA ID field */
+    public static final String ZYGOSITY = "zygosity";
+
+
 
     /** Reserved info fields. */
     public static final String[] INFO_RESERVED  = {"AA", "AC", "AF", "AN", "BQ", "CIGAR",

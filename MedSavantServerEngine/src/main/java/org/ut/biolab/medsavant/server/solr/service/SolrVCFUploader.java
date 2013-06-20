@@ -87,13 +87,13 @@ public class SolrVCFUploader
             String line;
 
             while ((line = in.readLine()) != null) {
-                VariantData variantData = processLine(line);
-                if (variantData != null && variantData.size() > 0) {
-                    variantData.addUUID();
-                    variants.add(variantData);
-                    variantsIndexed++;
-                }
+                List<VariantData> variantDataList = processLine(line);
 
+                if (variantDataList != null && variantDataList.size() > 0) {
+
+                    variants.addAll(variantDataList);
+                    variantsIndexed+= variantDataList.size();
+                }
 
             }
 
@@ -121,7 +121,7 @@ public class SolrVCFUploader
      * @param line input line
      * @return a VariantData structure containing all values
      */
-    private VariantData processLine(String line) {
+    /*private VariantData processLine(String line) {
 
         VariantData variantData = null;
 
@@ -135,6 +135,22 @@ public class SolrVCFUploader
         }
 
         return variantData;
+    }*/
+
+    private List<VariantData> processLine(String line) {
+
+        List<VariantData> variantDataList = null;
+
+        if (!shouldIgnoreLine(line)) {
+
+            if (isHeaderLine(line)) {
+                columns = extractColumns(line);
+            } else {
+                variantDataList = extractValues(line);
+            }
+        }
+
+        return variantDataList;
     }
 
     /**
@@ -153,7 +169,7 @@ public class SolrVCFUploader
             String columnToken = scanner.next();
             VCFColumn column = getColumn(columnToken);
 
-            if (column != null) {
+            if (column != null && !columns.contains(column)) {
                 columns.add(column);
             }
         }
@@ -177,6 +193,12 @@ public class SolrVCFUploader
             }
         }
 
+        if (matchedColumn == null) {
+             /* Must be a patient dna id */
+            matchedColumn = VCFColumn.PATIENT;
+            matchedColumn.addPatientID(token);
+        }
+
         return matchedColumn;
     }
 
@@ -185,21 +207,90 @@ public class SolrVCFUploader
      * @param line  The current line in the document.
      * @return      A VariantData object containing the column value information extracted.
      */
-    private VariantData extractValues(String line) {
+    private List<VariantData> extractValues(String line ) {
 
-        VariantData variantData = new VariantData();
+        List<VariantData> variantDataList = createVariantDataList();
 
         Scanner scanner = new Scanner(line);
 
         int index = 0;
 
-        while (scanner.hasNext() && index < columns.size()) {
-            String token = scanner.next();
+        while (scanner.hasNext() ) {
+
+            String token = null;
+
+            if (index == columns.size() - 1) {
+                scanner.useDelimiter("\\z");
+                token = getGenotypesToken(scanner);
+
+            } else {
+                token = scanner.next();
+            }
+
             VCFColumn column = columns.get(index);
-            variantData = column.process(token, variantData);
-            index++;
+            variantDataList = column.process(token, variantDataList);
+            if (index < columns.size() - 1) {
+                index++;
+            }
         }
-        return variantData;
+        return variantDataList;
+    }
+
+
+    private List<VariantData> extractValuesSequentially(String line) {
+
+        List<VariantData> variantDataList = createVariantDataList();
+
+        Scanner scanner = new Scanner(line);
+
+        int index = 0;
+
+        while (scanner.hasNext() ) {
+
+            String token = null;
+
+            if (index == columns.size() - 1) {
+                scanner.useDelimiter("\\z");
+                token = getGenotypesToken(scanner);
+
+            } else {
+                token = scanner.next();
+            }
+
+            VCFColumn column = columns.get(index);
+            variantDataList = column.process(token, variantDataList);
+            if (index < columns.size() - 1) {
+                index++;
+            }
+        }
+        return variantDataList;
+    }
+
+
+    private List<VariantData> createVariantDataList() {
+
+        //ToDo refact against null pointer
+        int variantsForCurrentRow = VCFColumn.PATIENT.getPatientIds().size();
+
+        List<VariantData> variantDataList = new ArrayList<VariantData>(variantsForCurrentRow);
+        for (int i = 0; i < variantsForCurrentRow; i++) {
+            VariantData variantData = new VariantData();
+            variantData.addUUID();
+            variantDataList.add(variantData);
+        }
+
+        return variantDataList;
+    }
+
+    private String getGenotypesToken(Scanner scanner) {
+
+        StringBuilder sb = new StringBuilder();
+
+        while (scanner.hasNext()) {
+            sb.append(scanner.next());
+        }
+
+        return sb.toString();
     }
 
     /**
