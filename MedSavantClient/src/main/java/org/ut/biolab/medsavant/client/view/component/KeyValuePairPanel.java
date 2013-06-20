@@ -500,6 +500,7 @@ public class KeyValuePairPanel extends JPanel {
                                 FontMetrics fm = comp.getFontMetrics(comp.getFont());
 
                                 while (fm.stringWidth(text + "…") > avail) {
+                                    //causes StringIndexOutOfBoundsException if text is empty.  
                                     text = text.substring(0, text.length() - 2);
                                 }
                                 //text = text + "…";

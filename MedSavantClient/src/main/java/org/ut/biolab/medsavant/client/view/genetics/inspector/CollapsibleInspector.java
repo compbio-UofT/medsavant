@@ -115,6 +115,8 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         }
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
+        
+        System.out.println("Adding subinspector...");
         p.add(ipan.getInfoPanel(), BorderLayout.CENTER);
         panesContainer.add(p);
         panesContainer.addExpansion();
