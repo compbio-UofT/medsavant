@@ -565,8 +565,6 @@ public final class ViewUtil {
 
     public static JButton getIconButton(ImageIcon icon) {
 
-        final ImageIcon selectedIcon = icon;
-
         final JButton button = new JButton(icon);
         button.setFocusable(false);
         button.setContentAreaFilled(false);

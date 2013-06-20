@@ -14,7 +14,7 @@
                 <goal>exec:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -jar ${project.build.directory}/${project.build.finalName}.jar</exec.args>
+                <exec.args>-Xmx4G -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -jar ${project.build.directory}/${project.build.finalName}.jar</exec.args>
                 <jpda.listen>true</jpda.listen>
             </properties>
         </action>

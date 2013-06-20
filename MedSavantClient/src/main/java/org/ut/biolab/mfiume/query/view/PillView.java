@@ -48,7 +48,7 @@ public class PillView extends JPanel {
     private boolean isSelected;
     private JLabel textLabel;
     private boolean expandable = false;
-    private JButton expandButton;
+    private JLabel expandButton;
 
     public PillView() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -79,11 +79,11 @@ public class PillView extends JPanel {
         this.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent me) {
-                if (me.getButton() == me.BUTTON1) {       
+                if (me.getButton() == me.BUTTON1) {
                     //do nothing?
-                } else if (me.getButton() == me.BUTTON2) {                    
+                } else if (me.getButton() == me.BUTTON2) {
                     showPopup();
-                }else if(me.getButton() == me.BUTTON3){
+                } else if (me.getButton() == me.BUTTON3) {
                     showPopup();
                 }
             }
@@ -111,14 +111,40 @@ public class PillView extends JPanel {
     public PillView(boolean expandable) {
         this();
         ImageIcon ic = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COLLAPSE);
-        expandButton = ViewUtil.getIconButton(ic);
-        
-        expandButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {                                    
+        expandButton = ViewUtil.createIconButton(ic);
+        expandButton.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
                 toggleExpandButton(!expandState);
                 updateUI();
             }
-        });                            
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+
+
+        /*expandButton = ViewUtil.getIconButton(ic);
+
+         expandButton.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent ae) {
+         toggleExpandButton(!expandState);
+         updateUI();
+         }
+         });*/
     }
 
     public void setActivated(boolean b) {
@@ -126,9 +152,9 @@ public class PillView extends JPanel {
     }
 
     public void showPopup() {
-        
+
         if (popupGenerator != null) {
-            if (this.isDisclosureVisible) {                
+            if (this.isDisclosureVisible) {
                 final JPopupMenu m = popupGenerator.generatePopup();
                 final PillView instance = this;
                 m.addPopupMenuListener(new PopupMenuListener() {
@@ -233,37 +259,56 @@ public class PillView extends JPanel {
         this.isDisclosureVisible = b;
         updateDisclosure();
     }
-
     private boolean expandState = false;
-    
+
     private void toggleExpandButton(boolean expand) {
-        if(expandButton != null){
-           // System.out.println("\ttoggleExpand: "+expandState+" => "+expand);
-            expandState = expand;        
-            ImageIcon ic = IconFactory.getInstance().getIcon(expand ? IconFactory.StandardIcon.COLLAPSE : IconFactory.StandardIcon.EXPAND);       
+        if (expandButton != null) {
+            // System.out.println("\ttoggleExpand: "+expandState+" => "+expand);
+            expandState = expand;
+            ImageIcon ic = IconFactory.getInstance().getIcon(expand ? IconFactory.StandardIcon.COLLAPSE : IconFactory.StandardIcon.EXPAND);
             expandButton.setIcon(ic);
         }
     }
-    
-    
-    public void setExpandListener(ActionListener l){       
-        if(expandButton != null){
-            expandButton.addActionListener(l);
+
+    public void setExpandListener(final ActionListener l) {
+        if (expandButton != null) {
+            expandButton.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    l.actionPerformed(null);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+            });
         }
     }
 
-    public void toggleExpandButton(){
+    public void toggleExpandButton() {
         toggleExpandButton(!expandState);
         /*System.out.println("toggle expand doClick()");
-        if(expandButton != null){
-            expandButton.doClick();
-        }*/
+         if(expandButton != null){
+         expandButton.doClick();
+         }*/
     }
-    
-    public void expand() {        
-       // System.out.println("expand()");
+
+    public void expand() {
+        // System.out.println("expand()");
         toggleExpandButton(true);
-        updateUI();        
+        updateUI();
     }
 
     public void collapse() {
@@ -272,15 +317,13 @@ public class PillView extends JPanel {
         updateUI();
     }
 
-   
-    
     public void setText(String text) {
         this.middlePanel.removeAll();
-        if(expandButton != null){
+        if (expandButton != null) {
             this.middlePanel.add(expandButton);
         }
-               
-        textLabel = new JLabel(text);        
+
+        textLabel = new JLabel(text);
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
 
