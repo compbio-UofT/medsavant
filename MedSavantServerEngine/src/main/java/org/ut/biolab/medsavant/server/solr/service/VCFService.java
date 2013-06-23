@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.server.solr.service;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -41,6 +42,16 @@ public class VCFService extends AbstractSolrService
      * Collection name.
      */
     private static final String NAME = "variant";
+
+    /**
+     * Buffer some variants before actually sending them to Solr
+     */
+    private List<VariantData> variantDataBuffer = new ArrayList<VariantData>();
+
+    /**
+     * The max number of variants to buffer before sending them Solrs
+     */
+    private static final int VARIANT_BUFFER_SIZE = 1500;
 
     @Override
     protected String getName()
@@ -83,6 +94,64 @@ public class VCFService extends AbstractSolrService
         return 1;
     }
 
+
+    public int index(VariantData variantData) {
+
+        variantData.addUUID();
+
+        try {
+            SolrInputDocument doc = getDocument(variantData);
+
+            this.server.add(doc);
+            return 0;
+        } catch (SolrServerException ex) {
+            LOG.warn("Failed to index document: {}", ex);
+        } catch (IOException ex) {
+            LOG.warn("Failed to communicate with the Solr server while indexing variant: {}", ex);
+        }
+
+        return 1;
+    }
+
+    public void scheduleToIndex(VariantData variantData) {
+        VariantData variantDataClone = ObjectUtils.clone(variantData);
+
+        variantDataBuffer.add(variantDataClone);
+
+        if (variantDataBuffer.size() > VARIANT_BUFFER_SIZE) {
+            indexCurrentBuffer();
+        }
+
+
+    }
+
+    private SolrInputDocument getDocument(VariantData variantData) {
+        SolrInputDocument doc = new SolrInputDocument();
+
+        for (Map.Entry<String, Collection<String>> property : variantData.entrySet()) {
+            String name = property.getKey();
+
+            for (String value : property.getValue()) {
+                doc.addField(name, value);
+            }
+        }
+
+        return doc;
+    }
+
+    private List<SolrInputDocument> getDocuments(List<VariantData> variantDataList) {
+
+        SolrInputDocument document = null;
+
+        List<SolrInputDocument> solrInputDocumentList = new ArrayList<SolrInputDocument>(variantDataList.size());
+
+        for (VariantData variantData : variantDataList) {
+            document = getDocument(variantData);
+            solrInputDocumentList.add(document);
+        }
+
+        return solrInputDocumentList;
+    }
 
     public void index(VariantRecord variantRecord) {
 
@@ -135,6 +204,24 @@ public class VCFService extends AbstractSolrService
         }
     }
 
+
+    public void indexCurrentBuffer() {
+
+        List<SolrInputDocument> solrInputDocumentList = getDocuments(variantDataBuffer);
+
+        try {
+            this.server.add(solrInputDocumentList);
+        } catch (SolrServerException e) {
+            LOG.error("Failed to send documents buffered to Solr", e);
+        } catch (IOException e) {
+            LOG.error("Failed to send documents buffered to Solr", e);
+        } finally {
+            //not sure if the buffer should be cleared in case of error
+            variantDataBuffer.clear();
+        }
+
+
+    }
     public void commitChanges() {
 
         try {

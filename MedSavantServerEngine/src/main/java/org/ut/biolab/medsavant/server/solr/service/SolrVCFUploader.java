@@ -75,8 +75,6 @@ public class SolrVCFUploader
 
         BufferedReader in = null;
 
-        List<VariantData> variants = new ArrayList<VariantData>();
-
         int variantsIndexed = 0;
 
         long before = System.currentTimeMillis();
@@ -87,17 +85,8 @@ public class SolrVCFUploader
             String line;
 
             while ((line = in.readLine()) != null) {
-                List<VariantData> variantDataList = processLine(line);
-
-                if (variantDataList != null && variantDataList.size() > 0) {
-
-                    variants.addAll(variantDataList);
-                    variantsIndexed+= variantDataList.size();
-                }
-
+                variantsIndexed+= processLine(line);
             }
-
-            vcfSolrService.index(variants);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -106,6 +95,8 @@ public class SolrVCFUploader
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        vcfSolrService.commitChanges();
 
         long after = System.currentTimeMillis();
 
@@ -119,38 +110,22 @@ public class SolrVCFUploader
     /**
      * Parse a line and save field values.
      * @param line input line
-     * @return a VariantData structure containing all values
+     * @return The number of variants found on the line.
      */
-    /*private VariantData processLine(String line) {
+    private int processLine(String line) {
 
-        VariantData variantData = null;
-
-        if (!shouldIgnoreLine(line)) {
-
-            if (isHeaderLine(line)) {
-                columns = extractColumns(line);
-            } else {
-                variantData = extractValues(line);
-            }
-        }
-
-        return variantData;
-    }*/
-
-    private List<VariantData> processLine(String line) {
-
-        List<VariantData> variantDataList = null;
+        int variantsIndexed = 0;
 
         if (!shouldIgnoreLine(line)) {
 
             if (isHeaderLine(line)) {
                 columns = extractColumns(line);
             } else {
-                variantDataList = extractValues(line);
+                variantsIndexed = extractValues(line);
             }
         }
 
-        return variantDataList;
+        return variantsIndexed;
     }
 
     /**
@@ -205,92 +180,53 @@ public class SolrVCFUploader
     /**
      * Extract the values for the current vcf row. The columns parsed beforehand are used to determine the order.
      * @param line  The current line in the document.
-     * @return      A VariantData object containing the column value information extracted.
+     * @return      The number of variants parsed and indexed from the line.
      */
-    private List<VariantData> extractValues(String line ) {
-
-        List<VariantData> variantDataList = createVariantDataList();
+    private int extractValues(String line) {
 
         Scanner scanner = new Scanner(line);
 
         int index = 0;
 
-        while (scanner.hasNext() ) {
+        VariantData variantData = new VariantData();
 
-            String token = null;
+        /*
+            Gather all columns
+         */
+        while (scanner.hasNext() && index < columns.size() - 1) {
 
-            if (index == columns.size() - 1) {
-                scanner.useDelimiter("\\z");
-                token = getGenotypesToken(scanner);
-
-            } else {
-                token = scanner.next();
-            }
+            String token = scanner.next();;
 
             VCFColumn column = columns.get(index);
-            variantDataList = column.process(token, variantDataList);
-            if (index < columns.size() - 1) {
-                index++;
-            }
-        }
-        return variantDataList;
-    }
-
-
-    private List<VariantData> extractValuesSequentially(String line) {
-
-        List<VariantData> variantDataList = createVariantDataList();
-
-        Scanner scanner = new Scanner(line);
-
-        int index = 0;
-
-        while (scanner.hasNext() ) {
-
-            String token = null;
-
-            if (index == columns.size() - 1) {
-                scanner.useDelimiter("\\z");
-                token = getGenotypesToken(scanner);
-
-            } else {
-                token = scanner.next();
-            }
-
-            VCFColumn column = columns.get(index);
-            variantDataList = column.process(token, variantDataList);
-            if (index < columns.size() - 1) {
-                index++;
-            }
-        }
-        return variantDataList;
-    }
-
-
-    private List<VariantData> createVariantDataList() {
-
-        //ToDo refact against null pointer
-        int variantsForCurrentRow = VCFColumn.PATIENT.getPatientIds().size();
-
-        List<VariantData> variantDataList = new ArrayList<VariantData>(variantsForCurrentRow);
-        for (int i = 0; i < variantsForCurrentRow; i++) {
-            VariantData variantData = new VariantData();
-            variantData.addUUID();
-            variantDataList.add(variantData);
+            variantData = column.process(token, variantData);
+            index++;
         }
 
-        return variantDataList;
-    }
+        VCFColumn column = columns.get(index);
 
-    private String getGenotypesToken(Scanner scanner) {
+        column.startNewLine();
 
-        StringBuilder sb = new StringBuilder();
-
+        int variantsParsed = 0;
         while (scanner.hasNext()) {
-            sb.append(scanner.next());
+
+            String token = scanner.next();
+            variantData = column.process(token, variantData);
+
+            if (variantData != null) {
+                variantData.addUUID();
+                column.incrementVariantsParsed();
+
+                vcfSolrService.scheduleToIndex(variantData);
+
+                variantData.clearDnaSampleData();
+
+                variantsParsed++;
+            }
         }
 
-        return sb.toString();
+        vcfSolrService.indexCurrentBuffer();
+
+        return variantsParsed;
     }
 
     /**

@@ -132,4 +132,14 @@ public class VariantData extends ListMap<String, String>
     public void setId(String id) {
         this.id = id;
     }
+
+    public void clearDnaSampleData() {
+
+        //FIXME maybe do it in one list traversal only
+        remove("uuid");
+        remove("dna_id");
+        remove("gt");
+        remove("zygosity");
+    }
+
 }

@@ -32,8 +32,6 @@ import java.util.*;
  */
 public enum VCFColumn {
 
-
-
     /** CHROM column.  */
     CHROM,
     /** POS column.  */
@@ -47,79 +45,64 @@ public enum VCFColumn {
     /** ID column.  */
     ID {
         @Override
-        public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+        public VariantData process(String fieldValue, VariantData variantData) {
             String name = name().toLowerCase(Locale.ROOT);
 
-            for (VariantData variantData: variantDataList) {
-                processMultiValueField(fieldValue, name, MULTI_VALUE_SEPARATOR, variantData);
-            }
-
-            return variantDataList;
+            processMultiValueField(fieldValue, name, MULTI_VALUE_SEPARATOR, variantData);
+            return variantData;
         }
     },
     /** ALT column.  */
     ALT {
         @Override
-        public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+        public VariantData process(String fieldValue, VariantData variantData) {
             String name = name().toLowerCase(Locale.ROOT);
 
-            for (VariantData variantData : variantDataList) {
-                processMultiValueField(fieldValue, name, ALT_VALUE_SEPARATOR, variantData);
-            }
+            processMultiValueField(fieldValue, name, ALT_VALUE_SEPARATOR, variantData);
 
-            return variantDataList;
+            return variantData;
         }
     },
     /** INFO column.  */
     INFO {
         @Override
-        public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+        public VariantData process(String fieldValue, VariantData variantData) {
             String name = name().toLowerCase(Locale.ROOT);
 
-            for (VariantData variantData : variantDataList) {
-                //FIXME might not be necessary
-                processSingleValueField(fieldValue, "custom_info",variantData);
+            processSingleValueField(fieldValue, "custom_info",variantData);
 
-                processInfoValueFields(fieldValue, name, MULTI_VALUE_SEPARATOR, variantData);
-            }
+            processInfoValueFields(fieldValue, name, MULTI_VALUE_SEPARATOR, variantData);
 
-            return variantDataList;
+            return variantData;
         }
     },
     FORMAT {
-        public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+        public VariantData process(String fieldValue, VariantData variantData) {
 
             //ignore field value for now
-            return variantDataList;
+            return variantData;
         }
     },
     PATIENT {
         @Override
-        public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+        public VariantData process(String fieldValue, VariantData variantData) {
             String[] dnaIds = getPatientIds().toArray(new String[] {});
-            String[] fieldValues = fieldValue.trim().split("\t");
 
-            List<VariantData> tempVariantDataList = new ArrayList<VariantData>();
-            //ToDo refactor
-            if (fieldValues != null && dnaIds != null && variantDataList.size() > 0) {
+            if (fieldValue != null && dnaIds != null ) {
+                int currentVariantIndex = getVariantsParsed();
 
-                for (int i = 0; i < fieldValues.length; i++) {
-                    String field = fieldValues[i];
-                    String dnaId = dnaIds[i];
-                    VariantData variantData = processPatientDataFields(field, dnaId, PATIENT_ID_FIELD_SEPARATOR, variantDataList.get(i));
-                    if (variantData != null) {
-                        tempVariantDataList.add(variantData);
-                    }
+                String dnaId = getPatientIds().get(currentVariantIndex);
 
-                }
+                variantData = processPatientDataFields(fieldValue, dnaId, PATIENT_ID_FIELD_SEPARATOR, variantData);
             }
 
-            return tempVariantDataList;
+            return variantData;
         }
-    }
+    };
 
-       ;
     public static long homoRefCount = 0;
+
+    private int variantsParsed;
 
     /** Separator for ALT valued fields. */
     private static final String ALT_VALUE_SEPARATOR = ",";
@@ -156,17 +139,15 @@ public enum VCFColumn {
      * fields that need to be parsed in a different manner.
      *
      * @param fieldValue        The column field value.
-     * @param variantDataList       The Variant Data object with the column value added.
+     * @param variantData       The Variant Data object with the column value added.
      * @return The Variant Data updated with the column value.
      */
-    public List<VariantData> process(String fieldValue, List<VariantData> variantDataList) {
+    public VariantData process(String fieldValue, VariantData variantData) {
         String name = name().toLowerCase(Locale.ROOT);
 
-        for (VariantData variantData : variantDataList) {
-            processSingleValueField(fieldValue, name, variantData);
-        }
+        processSingleValueField(fieldValue, name, variantData);
 
-        return variantDataList;
+        return variantData;
     }
 
     /**
@@ -245,8 +226,6 @@ public enum VCFColumn {
                                                         VariantData variantData) {
         String[] terms = value.split(separator);
 
-
-
         if (terms != null && terms.length > 0) {
             String genotype = terms[0];
 
@@ -264,7 +243,6 @@ public enum VCFColumn {
         } else {
             variantData = null;
         }
-
 
         return variantData;
     }
@@ -317,4 +295,19 @@ public enum VCFColumn {
         }
     }
 
+    public void startNewLine() {
+        variantsParsed = 0;
+    }
+
+    public int incrementVariantsParsed() {
+        return ++variantsParsed;
+    }
+
+    public int getVariantsParsed() {
+        return variantsParsed;
+    }
+
+    public void setVariantsParsed(int variantsParsed) {
+        this.variantsParsed = variantsParsed;
+    }
 }
