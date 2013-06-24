@@ -21,16 +21,14 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.apache.commons.logging.Log;
@@ -48,10 +46,12 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -96,6 +96,9 @@ public class BrowserPage extends SubSectionView {
     private final ArrayList<String> sampleIdsHavingBams;
     private final HashMap<String, String> dnaIDToURLMap;
 
+   
+    
+    
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
 
@@ -200,7 +203,7 @@ public class BrowserPage extends SubSectionView {
                 }
             }
 
-            settingComponents = new Component[4];
+            settingComponents = new Component[5];
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getToggleButtonForPanel(variationPanel, "Variation");
 
@@ -242,6 +245,15 @@ public class BrowserPage extends SubSectionView {
                 e.printStackTrace();
             }
 
+            ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR); 
+            JButton undockButton = new JButton("Undock", img);
+            undockButton.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent ae){
+                   ViewController.getInstance().undock();
+               } 
+            });
+            settingComponents[4] = undockButton;
         }
         return settingComponents;
     }

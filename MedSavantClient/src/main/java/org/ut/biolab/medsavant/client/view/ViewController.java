@@ -16,14 +16,17 @@
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 
-import org.ut.biolab.medsavant.client.view.Menu.SectionButton;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -43,6 +46,38 @@ public class ViewController {
     private SubSectionView currentSubsection;
     private static ViewController instance;
 
+    private JPanel undockablePanel;
+    private Container outerContainer;
+        
+    
+    public void dock(){
+        outerContainer.add(undockablePanel);
+        outerContainer.validate();             
+    }
+    
+    public void undock(){
+        final JFrame undockedFrame = new JFrame("Savant Browser");
+        undockedFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        undockedFrame.addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing(WindowEvent we) {
+                dock();  
+                undockedFrame.dispose();               
+            }                      
+        });
+                
+        
+        Container p = undockablePanel.getParent();
+        p.remove(undockablePanel);        
+        undockedFrame.add(undockablePanel);
+        undockedFrame.pack();
+        undockedFrame.setLocationRelativeTo(null);
+        undockedFrame.setVisible(true);
+        //p.validate();      
+        p.repaint();
+        outerContainer = p;        
+    }
+    
     private ViewController(JPanel p) {
         // create the banner
         //banner = new Banner();
@@ -81,9 +116,12 @@ public class ViewController {
 
 
         h1.add(h2, BorderLayout.NORTH);
+        h1.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
+        undockablePanel = h1;
     }
 
+    
     public static ViewController getInstance() {
         return instance;
     }

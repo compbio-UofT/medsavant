@@ -117,7 +117,14 @@ public class GenemaniaInfoRetriever {
      
     public static void extractGM(String pathToGMData) {
         String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-        try {            
+        try {   
+            
+            //DEBUG CODE
+            try{
+                Thread.currentThread().sleep(5000);
+            }catch(Exception e){
+                
+            }
             File data = new File(pathToGMData);            
             ZipFile zipData = new ZipFile(data.getAbsolutePath());
             Enumeration entries = zipData.entries();
@@ -448,7 +455,7 @@ public class GenemaniaInfoRetriever {
         try {
             request.setProgressReporter(NullProgressReporter.instance());
             RelatedGenesEngineResponseDto result;
-            System.out.println("\tmania.findRelated");
+            System.out.println("\tmania.findRelated");            
             result = mania.findRelated(request);
             System.out.println("\tcombining method");
             request.setCombiningMethod(result.getCombiningMethodApplied());
@@ -461,6 +468,8 @@ public class GenemaniaInfoRetriever {
         } catch (ApplicationException e) {
             Logger logger = Logger.getLogger(getClass());
             logger.error("Unexpected error", e); //$NON-NLS-1$
+            System.out.println("Got unexpected error, returning null "+e);
+            e.printStackTrace();
             return null;
         }
     }
