@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.AbstractSolrService;
 import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
-import org.ut.biolab.medsavant.server.solr.service.VCFService;
+import org.ut.biolab.medsavant.server.solr.service.VariantService;
 import org.ut.biolab.medsavant.server.vcf.VCFParser;
 
 import java.io.File;
@@ -24,7 +24,7 @@ public class VCFParserTest {
     public void initializeTestData() throws InitializationException {
         solrVCFUploader = new SolrVCFUploader();
 
-        solrVariantService = new VCFService();
+        solrVariantService = new VariantService();
         solrVariantService.initialize();
     }
 
