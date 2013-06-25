@@ -65,6 +65,10 @@ public class Menu extends JPanel {
     private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
 
+    public JButton getSubSectionButton(SubSectionView ssv){
+        return map.get(ssv);
+    }
+    
     public Menu(JPanel panel) {
 
         resetMap();
@@ -72,7 +76,7 @@ public class Menu extends JPanel {
         setLayout(new BorderLayout());
 
         primaryMenuButtons = new ButtonGroup();
-
+        
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
 
         secondaryMenu = new JPanel();
@@ -115,7 +119,7 @@ public class Menu extends JPanel {
 
         secondaryMenu.setPreferredSize(new Dimension(150, 100));
 
-        contentContainer = panel;
+        contentContainer = panel;        
 
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override

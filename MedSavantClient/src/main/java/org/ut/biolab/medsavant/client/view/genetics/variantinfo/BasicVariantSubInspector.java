@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
@@ -131,8 +132,10 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                             int response = DialogUtils.YES;
                             if (response == DialogUtils.YES) {
                                 BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                                MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                             }
                         }
+                        
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Unable to load BAM file: %s", ex);
                     }

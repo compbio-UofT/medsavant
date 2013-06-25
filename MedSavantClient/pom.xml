@@ -54,6 +54,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
+    <!-- Not used directly by MedSavant, but GeneMania requires a recent version -->
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.6</version>
+    </dependency>
     <dependency>
       <groupId>commons-net</groupId>
       <artifactId>commons-net</artifactId>
@@ -224,5 +230,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

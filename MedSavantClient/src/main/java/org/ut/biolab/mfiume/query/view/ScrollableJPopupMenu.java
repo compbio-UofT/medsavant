@@ -18,15 +18,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -98,8 +94,11 @@ public class ScrollableJPopupMenu extends JPopupMenu {
         nextItem = new ArrowMenuItem(downIcon);
         nextItem.putClientProperty(PROPERTY_TIMER, nextTimer);
         nextItem.addMouseListener(adapter);
+        
         refresh();
+        
     }
+    
 
     /**
      * This method should be used to add items to this popup menu, not the
@@ -146,14 +145,20 @@ public class ScrollableJPopupMenu extends JPopupMenu {
      *
      * @param e The event.
      */
-    protected void processMouseWheelEvent(MouseWheelEvent e) {
+    protected void processMouseWheelEvent(MouseWheelEvent e) {        
         if (getComponent(0) == previousItem) { // i.e., scroll arrows are visible
             int amt = e.getUnitsToScroll() > 0 ? 1 : -1;
-            firstItemIndex += amt;
+            firstItemIndex += amt;                        
+        
             refresh();
         }
-        super.processMouseWheelEvent(e);
-    }
+        super.processMouseWheelEvent(e); 
+        
+        //A hack to prevent the popup menu from closing everytime the mouse 
+        //wheel scrolls.  
+        if(this.isVisible())
+            e.consume();        
+   }
 
     public void scrollToItem(int index) {
         //int index = children.indexOf(i);

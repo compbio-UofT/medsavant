@@ -164,9 +164,9 @@ public class LoginController extends Controller<LoginEvent> {
 
         //check db version
         try {
-            String databaseVersion = VersionSettings.getDatabaseVersion();
+            String databaseVersion = VersionSettings.getDatabaseVersion(); // TODO: implement database version check
             if (!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)) {
-                DialogUtils.displayMessage("Version Out of Date", "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>");
+                DialogUtils.displayMessage("Version Mismatch", "<html>Your client version (" + VersionSettings.getVersionString() + ") is not compatible database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>");
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
                 return;
             }

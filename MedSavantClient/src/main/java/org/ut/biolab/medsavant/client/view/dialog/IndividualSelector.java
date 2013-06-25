@@ -139,11 +139,19 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         final JButton addIndividuals = ViewUtil.getSoftButton("Add Selected");
         bottomPanel.add(addIndividuals);
 
+        final JButton removeIndividuals = ViewUtil.getSoftButton("Remove Selected");
+        bottomPanel.add(removeIndividuals);
+
+        final JButton removeAllIndividuals = ViewUtil.getSoftButton("Remove All");
+        bottomPanel.add(removeAllIndividuals);
+
         JPanel buttons = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(buttons);
 
         buttons.add(addAllIndividuals);
         buttons.add(addIndividuals);
+        buttons.add(removeIndividuals);
+        buttons.add(removeAllIndividuals);
 
         JPanel windowControlPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(windowControlPanel);
@@ -181,6 +189,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
 
         addIndividuals.setEnabled(false);
+        removeIndividuals.setEnabled(false);
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -192,11 +201,14 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                     boolean someSelection = rows.length > 0;
 
                     addIndividuals.setEnabled(someSelection);
+                    removeIndividuals.setEnabled(someSelection);
 
                     if (someSelection) {
                         addIndividuals.setText("Add Selected (" + rows.length + ")");
+                        removeIndividuals.setText("Remove Selected (" + rows.length + ")");
                     } else {
                         addIndividuals.setText("Add Selected");
+                        removeIndividuals.setText("Remove Selected");
                     }
                 }
             }
@@ -205,7 +217,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         stp.getTable().getModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent tme) {
-                addAllIndividuals.setText("Add All (" + stp.getTable().getModel().getRowCount() + ")");
+                //addAllIndividuals.setText("Add All (" + stp.getTable().getModel().getRowCount() + ")");
+                //removeAllIndividuals.setText("Remove All (" + stp.getTable().getModel().getRowCount() + ")");
             }
         });
 
@@ -223,8 +236,25 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
             }
         };
 
+        ActionListener removeAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                removeSelections(false);
+            }
+        };
+
+        ActionListener removeAllAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                removeSelections(true);
+            }
+        };
+
         addIndividuals.addActionListener(addAction);
         addAllIndividuals.addActionListener(addAllAction);
+        removeIndividuals.addActionListener(removeAction);
+        removeAllIndividuals.addActionListener(removeAllAction);
+
 
         this.pack();
         this.setLocationRelativeTo(MedSavantFrame.getInstance());
@@ -257,6 +287,38 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         selectedRows.removeAll(selectedRows);
 
         stp.setToggledRows(null);
+        refreshSelectionIndicator();
+    }
+
+    private void removeSelections(boolean all) {
+        List<Object[]> toUnselect = new ArrayList<Object[]>();
+        int[] rows;
+
+        if (all) {
+            int rowCount = stp.getTable().getModel().getRowCount();
+            rows = new int[rowCount];
+            for (int i = 0; i < rowCount; i++) {
+                rows[i] = i;
+            }
+        } else {
+            rows = stp.getTable().getSelectedRows();
+        }
+
+        for (int r : rows) {
+            int realRow = stp.getActualRowAt(r);
+            Object[] o = retriever.getIndividuals().get(realRow);
+            toUnselect.add(o);
+        }
+
+        for (int i : rows) {
+            selectedRows.remove(stp.getActualRowAt(i));
+        }
+
+
+        for (Object[] s : toUnselect) {
+            selectedIndividuals.remove(s[2].toString());
+        }
+
         refreshSelectionIndicator();
     }
 
@@ -301,7 +363,6 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         selectedRows.removeAll(selectedRows);
         selectedIndividuals = s;
         hasMadeSelections = true;
-        System.out.println("Forecefully setting selections");
 
         for (String arbitraryHostpitalID : s) {
             int rowNumber = 0;
@@ -309,7 +370,6 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
             for (Object[] inOrderRow : individuals) {
                 if (inOrderRow[2].equals(arbitraryHostpitalID)) {
                     selectedRows.add(rowNumber);
-                    System.out.println("\t match at row" + rowNumber);
                 }
                 rowNumber++;
             }

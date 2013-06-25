@@ -143,7 +143,8 @@ class CohortDetailedView extends DetailedView {
                     cohort = cohorts[0].getName();
                 }                
                 QueryUtils.addQueryOnHospitals(hospitalIds, cohort);                
-                MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                
+                MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Cohort and Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");
             }
         });
         popupMenu.add(filter1Item);
@@ -299,22 +300,32 @@ class CohortDetailedView extends DetailedView {
 
                     List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(cohorts.length);
 
+                       
+                    List<String> cohortStrings = new ArrayList(cohorts.length);
                     for (Cohort cohort : cohorts) {
-                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.OR, p);
+                        cohortStrings.add(cohort.getName());
+                        /*
+                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.AND, p);
                         cohortItem.setDescription(cohort.toString());
                         cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));
                         sciList.add(cohortItem);
+                        * */
                     }
-
+                                        
+                    String description = StringConditionEncoder.getDescription(cohortStrings);
+                    String encodedConditions = StringConditionEncoder.encodeConditions(cohortStrings);
+                    
+                    qvc.replaceFirstLevelItem("Cohort", encodedConditions, description);
+/*
                     if (cohorts.length < 2) {
+                        
                         SearchConditionItem sci = sciList.get(0);
                         qvc.generateItemViewAndAddToGroup(sci, p);
-
                     } else {
                         qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
-                    }
+                    }*/
                     qvc.refreshView();
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Cohorts have been added to query.  Click 'Variants' to review and execute search.");
 
                 }
             });

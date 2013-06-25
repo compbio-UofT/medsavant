@@ -111,7 +111,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                  */
                 
                QueryUtils.addQueryOnRegions(regions, selectedRegions);
-               MedSavantFrame.getInstance().searchAnimationFromMousePos();
+               MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected genomic regions have been added to query.  Click 'Variants' to review and execute search.");
             }
         });
         
@@ -146,7 +146,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                     String description = StringConditionEncoder.getDescription(regionSetNames);
                                  
                     qvc.replaceFirstLevelItem("Region Set", encodedConditions, description);                                                                               
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected region sets have been added to query.  Click 'Variants' to review and execute search.");
 
                 }
             });

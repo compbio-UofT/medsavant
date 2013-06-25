@@ -395,7 +395,7 @@ public class FamilyMattersOptionView {
                 }
             });
 
-            view.add(new JLabel("of"));
+            view.add(new JLabel("of individuals in"));
 
             /*cb = new JComboBox();
              cb.setName(COHORT_COMBO);
@@ -419,8 +419,6 @@ public class FamilyMattersOptionView {
 
                     JPopupMenu m = new JPopupMenu();
 
-                    System.out.println("\n...");
-
                     // edit existing selections
                     boolean editAdded = false;
                     if (customSelector.hasMadeSelection()) {
@@ -440,10 +438,8 @@ public class FamilyMattersOptionView {
                             });
                             edit.add(name);
                             edit.add(new JSeparator());
-                            System.out.println("+ ADDING NAME");
                             counter++;
                         } else {
-                            System.out.println("NO NAME");
                         }
 
                         for (String o : selectedIndividuals) {
@@ -505,9 +501,7 @@ public class FamilyMattersOptionView {
 
                         m.add(edit);
                         editAdded = true;
-                        System.out.println("+ ADDING EDIT");
                     } else {
-                        System.out.println("NO EDIT");
                     }
 
                     // set group
@@ -533,12 +527,9 @@ public class FamilyMattersOptionView {
                         }
                         if (counter > 0) {
                             m.add(group);
-                            System.out.println("+ ADDING SET GROUP");
                         } else {
-                            System.out.println("NO SET GROUP 2");
                         }
                     } else {
-                        System.out.println("NO SET GROUP");
                     }
 
 
@@ -553,17 +544,12 @@ public class FamilyMattersOptionView {
                                 }
                             });
                             m.add(select, 0);
-                            System.out.println("+ ADDING SELECTIONS");
 
                         } else {
-                            System.out.println("NO SELECTIONS");
                         }
-
-                        System.out.println("SOMETHING!");
 
                         m.show(chooseIndividualsButton, 0, 0);
                     } else {
-                        System.out.println("NOTHING!");
                         showIndividualSelector();
                     }
 

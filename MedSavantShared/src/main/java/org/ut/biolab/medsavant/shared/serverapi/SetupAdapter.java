@@ -32,4 +32,6 @@ public interface SetupAdapter extends Remote {
     public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException, SessionExpiredException;
 
     public void removeDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException;
+
+    public String getServerVersion() throws RemoteException, SessionExpiredException;
 }

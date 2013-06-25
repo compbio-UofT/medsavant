@@ -269,6 +269,32 @@
             </execution>
           </executions>
         </plugin>
+        <!-- Run the exec plugin on the final jar, not on individual classes,
+             since we require the MANIFEST file to be present (that is where the version is defined) -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.2.1</version>
+          <executions>
+            <execution>
+              <id>default-cli</id>
+              <phase>install</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+              <configuration>
+                <executable>java</executable>
+                <arguments>
+                  <argument>-Xmx4G</argument>
+                  <argument>-jar</argument>
+                  <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                  <classpath></classpath>
+                </arguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -494,6 +520,32 @@
                 </reports>
               </plugin>
             </reportPlugins>
+          </configuration>
+        </plugin>
+        <!-- Ignore/Execute plugin execution -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <!-- copy-dependency plugin -->
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[1.0.0,)</versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
           </configuration>
         </plugin>
       </plugins>

@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
@@ -249,7 +250,8 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                              + "as a track in the genome browser?</html>");*/
                             int response = DialogUtils.YES;
                             if (response == DialogUtils.YES) {
-                                BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                                //BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                                 MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                             }
                         }
                     } catch (Exception ex) {

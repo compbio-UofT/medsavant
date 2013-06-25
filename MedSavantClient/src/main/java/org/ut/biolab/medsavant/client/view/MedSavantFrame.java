@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -33,14 +34,9 @@ import com.apple.eawt.QuitResponse;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.util.Enumeration;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -60,10 +56,14 @@ import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
+import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation;
+import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Position;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -75,6 +75,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
+    private static final long SEARCH_ANIMATION_RUNTIME = 350;
     private static MedSavantFrame instance;
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
@@ -84,8 +85,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private String currentCard;
     private boolean animationRunning = false;
     private boolean queuedForExit = false;
-    
-    private class AnimatablePanel extends JPanel implements Runnable{
+   
+   /* 
+     private class AnmatablePanel extends JPanel implements Runnable{
         private Image img;
         private int srcX, srcY;
         private int dstX, dstY;
@@ -105,14 +107,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         public void setFPS(double fps){
             this.DELAY = (int)(Math.ceil(1000 / fps));
         }
-
+      
         public void cancel(){
-            if(animationThread != null && animationThread.isAlive()){
-                try{
-                    animationThread.join();
-                }catch(Exception e){
-                    System.err.println(e);
-                }
+            if(animationThread != null && animationThread.isAlive()){               
                 animationRunning = false;
                 repaint();
             }
@@ -174,7 +171,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             animationRunning = true;
             long beforeTime, timeDiff, sleep, startTime;
             startTime = beforeTime = System.currentTimeMillis();
-            while (true) {                                
+            while (animationRunning) {                                
                 long t = System.currentTimeMillis();
                 if(cycle(t-startTime) || ((t-startTime) > maxRunTime)){
                     animationRunning = false;
@@ -199,7 +196,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         }                        
     };
-    
+    */
     
     private static Point getPositionRelativeTo(Component root, Component comp){
         if (comp.equals(root)) { return new Point(0,0); }
@@ -207,7 +204,47 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         Point parentOff = getPositionRelativeTo(root, comp.getParent());
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
+       
+    
+    public void browserAnimationFromMousePos(final String notificationMsg){
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+        Point src = view.getMousePosition();
+        if(src == null){
+            return;
+        }
         
+        Point dst = null;
+        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
+        
+        Menu menu = ViewController.getInstance().getMenu();
+        for(SubSectionView sv : menu.subSectionViews){
+            if(sv.getPageName().equalsIgnoreCase("Browser")){              
+               dst = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
+
+            }
+        }              
+                        
+        if(dst != null){
+            //view.cancel();            
+            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+                public void done(){
+                    if(notificationMsg != null){
+                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+                        notificationMessage(notificationMsg);
+                    }
+                }
+            });
+            
+            
+            
+            //view.animate(img.getImage(), src, dst);            
+        }
+    }
+    
+    public void notificationMessage(String notificationMsg){
+        view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+    }
+    
     /**
      * Creates a search animation from the current mouse position.  i.e. creates an image
      * that moves from the current mouse position to the 'Variants' button on the toolbar.
@@ -215,7 +252,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
      * Do not call until the previous animation thread is finished.  This 
      * shouldn't happen as long as the animation time is short. (< 500ms ).  
      */
-    public void searchAnimationFromMousePos(){
+    public void searchAnimationFromMousePos(final String notificationMsg){
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
         Point src = view.getMousePosition();
         if(src == null){
@@ -233,11 +270,23 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
                         
         if(dst != null){
-            view.cancel();
-            view.animate(img.getImage(), src, dst);            
+            //view.cancel();
+            
+            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+                public void done(){
+                    if(notificationMsg != null){
+                        notificationMessage(notificationMsg);
+                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+                    }
+                }
+            });
+                                    
         }
     }
     
+    public void searchAnimationFromMousePos(){
+        searchAnimationFromMousePos(null);
+    }
     
      public static MedSavantFrame getInstance() {
         if (instance == null) {

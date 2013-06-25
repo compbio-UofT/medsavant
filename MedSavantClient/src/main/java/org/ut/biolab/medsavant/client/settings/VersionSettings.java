@@ -21,8 +21,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,7 +44,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * 
+ *
  * @author mfiume
  */
 public class VersionSettings {
@@ -54,7 +56,6 @@ public class VersionSettings {
     public static final URL VERSION_URL = ClientNetworkUtils.getKnownGoodURL(URL, "serve/version/version.xml");
     public static final URL PLUGIN_URL = ClientNetworkUtils.getKnownGoodURL(URL, "serve/plugin/plugin.xml");
     public static final URL LOG_USAGE_STATS_URL = ClientNetworkUtils.getKnownGoodURL(URL, "scripts/logUsageStats.cgi");
-
     // version to user if the version could not be found
     private static final String UNDEFINED_VERSION = "";
     private static final String BETA_VERSION = "SNAPSHOT";
@@ -85,6 +86,15 @@ public class VersionSettings {
         return version;
     }
 
+    public static String getServerVersion() throws RemoteException {
+        try {
+            return MedSavantClient.SetupManager.getServerVersion();
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return null;
+        }
+    }
+
     public static String getDatabaseVersion() throws SQLException, RemoteException {
         try {
             return MedSavantClient.SettingsManager.getSetting(LoginController.getInstance().getSessionID(), Settings.KEY_CLIENT_VERSION);
@@ -102,7 +112,9 @@ public class VersionSettings {
 
         doc.getDocumentElement().normalize();
 
-        Map<String, List<String>> versionMap = new HashMap<String, List<String>>();
+        System.out.println(programVersion + " vs. " + dbVersion);
+
+        Map<String, Set<String>> versionMap = new HashMap<String, Set<String>>();
         String nodeName = (isServer ? "server" : "client");
         NodeList nodes = doc.getElementsByTagName(nodeName);
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -111,14 +123,11 @@ public class VersionSettings {
                 Element e = (Element) n;
                 String versionNum = e.getAttribute("name");
                 if (versionNum != null && !versionNum.equals("")) {
-                    versionMap.put(versionNum, new ArrayList<String>());
-                    versionMap.get(versionNum).add(versionNum);
-                    versionMap.get(versionNum).addAll(ClientMiscUtils.getTagValues(e, "compatible"));
+                    versionMap.put(versionNum, ClientMiscUtils.getTagValues(e, "compatible"));
                 }
             }
         }
 
         return versionMap.containsKey(programVersion) && versionMap.get(programVersion).contains(dbVersion);
     }
-
 }

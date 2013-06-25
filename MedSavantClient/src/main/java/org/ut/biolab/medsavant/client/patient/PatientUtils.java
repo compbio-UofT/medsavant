@@ -73,7 +73,7 @@ public class PatientUtils implements BasicPatientColumns {
                  String description = StringConditionEncoder.getDescription(Arrays.asList(hospitalIDs));
                                  
                  qvc.replaceFirstLevelItem(BasicPatientColumns.HOSPITAL_ID.getAlias(), encodedConditions, description);
-                 MedSavantFrame.getInstance().searchAnimationFromMousePos();    
+                 MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");    
             }
         });
         popupMenu.add(filter1Item);
