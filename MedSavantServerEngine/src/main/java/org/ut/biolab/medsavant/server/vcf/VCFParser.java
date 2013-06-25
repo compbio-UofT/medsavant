@@ -23,9 +23,11 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.ut.biolab.medsavant.server.solr.service.VariantService;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
+import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 
 /**
  *
@@ -141,10 +143,78 @@ public class VCFParser {
         return numLinesWritten;
     }
 
-    public static void parseVariants(File vcffile, File outfile, int updateId, int fileId) throws FileNotFoundException, IOException {
+    public static int parseVariantsAndUploadToSolr(File vcffile) throws IOException {
+        VCFHeader header = null;
+
+        String nextLineString;
+        int numRecords = 0;
+
         BufferedReader r = openFile(vcffile);
-        parseVariantsFromReader(r, outfile, updateId, fileId);
-        r.close();
+
+        int variantId = 0;
+        int numLinesWritten = 0;
+
+        boolean includeHomoRef = true;
+
+        VariantService vcfService = new VariantService();
+        try {
+            vcfService.initialize();
+        } catch (InitializationException e) {
+            LOG.error("Error initializing solr service");
+            return -1;
+        }
+
+        while (true) {
+
+            if ((nextLineString = r.readLine()) == null) {
+                System.out.println("reader returned null after " + numLinesWritten + " lines.");
+                break;
+            }
+
+            if (numRecords % 100000 == 0 && numRecords != 0) {
+                LOG.info("Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...");
+            }
+
+            String[] nextLine = nextLineString.split("\t");
+
+            if (nextLine[0].startsWith(COMMENT_CHARS)) {
+                // a comment line
+                //do nothing
+            } else if (nextLine[0].startsWith(HEADER_CHARS)) {
+                // header line
+                header = parseHeader(nextLine);
+            } else {
+
+                if (header == null) {
+                    throw new IOException("Cannot parse headless VCF file");
+                }
+
+                // a data line
+                List<VariantRecord> records = null;
+                try {
+                    records = parseRecord(nextLine, header);
+                } catch (Exception ex) {
+                    LOG.error("Erroneous line: " + nextLineString);
+                    throw new IOException(ex);
+                }
+
+                //add records to tdf
+                for (VariantRecord v : records) {
+                    if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
+                        vcfService.index(v);
+                        numLinesWritten++;
+                        variantId++;
+                    }
+                }
+                numRecords++;
+            }
+        }
+
+        vcfService.commitChanges();
+
+        System.out.println("Read " + numRecords + " lines");
+
+        return numLinesWritten;
     }
 
     static BufferedReader openFile(File vcf) throws FileNotFoundException, IOException {
@@ -205,7 +275,7 @@ public class VCFParser {
                 VariantRecord r2 = new VariantRecord(r);
                 r2.setDnaID(id);
 
-                //add gt and zygosity;
+                //add gt and zygosities;
                 if (indexGT != -1) {
 
                     //LOG.info("GT index = " + indexGT + " chunk index= " + (numMandatoryFields + i + 1));
