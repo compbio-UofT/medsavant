@@ -31,17 +31,12 @@ public abstract class AbstractSolrService {
      */
     protected static final String ID_FIELD_NAME = "id";
 
-    /**
-     * Object used to mark in the cache that a document doesn't exist, since null means that the cache doesn't contain
-     * the requested entry.
-     */
-    private static final SolrDocument EMPTY_MARKER = new SolrDocument();
-
     /** The Solr server instance used. */
     protected SolrServer server;
 
 
     public void initialize() throws InitializationException {
+
         try {
             this.server = new HttpSolrServer("http://localhost:8983/solr/" + this.getName() + "/");
 
@@ -181,7 +176,6 @@ public abstract class AbstractSolrService {
      * @see #search(Map)
      */
     public SolrDocument get(final Map<String, String> fieldValues)     {
-        String cacheKey = dumpMap(fieldValues);
         SolrDocument result = null;
 
         SolrDocumentList all = search(fieldValues, 1, 0);
@@ -307,21 +301,5 @@ public abstract class AbstractSolrService {
             result.put(CommonParams.SORT, sort);
         }
         return result;
-    }
-
-    /**
-     * Serialize a Map into a String.
-     *
-     * @param map the map to serialize
-     * @return a String serialization of the map
-     */
-    private String dumpMap(Map<String, ? > map) {
-        StringBuilder out = new StringBuilder();
-        out.append('{');
-        for (Map.Entry<String, ? > entry : map.entrySet()) {
-            out.append(entry.getKey() + ':' + entry.getValue() + '\n');
-        }
-        out.append('}');
-        return out.toString();
     }
 }

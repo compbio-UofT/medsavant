@@ -37,7 +37,7 @@ public class VariantData extends ListMap<String, String>
     public static final String UUID_FIELD = "uuid";
 
     /** CHROM fields. */
-    public static final String CHROM = "chrom";
+    public static final String CHROM = "chroms";
 
     /** POS fields. */
     public static final String POS = "pos";
@@ -46,10 +46,10 @@ public class VariantData extends ListMap<String, String>
     public static final String ID = "id";
 
     /** REF fields. */
-    public static final String REF = "ref";
+    public static final String REF = "refs";
 
     /** ALT fields. */
-    public static final String ALT = "alt";
+    public static final String ALT = "alts";
 
     /** QUAL fields. */
     public static final String QUAL = "qual";
@@ -67,7 +67,7 @@ public class VariantData extends ListMap<String, String>
     public static final String GENOTYPE = "gt";
 
     /** DNA ID field */
-    public static final String ZYGOSITY = "zygosity";
+    public static final String ZYGOSITY = "zygosities";
 
 
 

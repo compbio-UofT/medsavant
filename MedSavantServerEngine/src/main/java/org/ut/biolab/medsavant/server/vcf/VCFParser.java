@@ -23,11 +23,11 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.ut.biolab.medsavant.server.solr.service.VariantService;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.server.solr.service.VCFService;
 
 /**
  *
@@ -143,13 +143,6 @@ public class VCFParser {
         return numLinesWritten;
     }
 
-    public static void parseVariants(File vcffile, File outfile, int updateId, int fileId) throws FileNotFoundException, IOException {
-        BufferedReader r = openFile(vcffile);
-        parseVariantsFromReader(r, outfile, updateId, fileId);
-        r.close();
-    }
-
-
     public static int parseVariantsAndUploadToSolr(File vcffile) throws IOException {
         VCFHeader header = null;
 
@@ -163,7 +156,7 @@ public class VCFParser {
 
         boolean includeHomoRef = true;
 
-        VCFService vcfService = new VCFService();
+        VariantService vcfService = new VariantService();
         try {
             vcfService.initialize();
         } catch (InitializationException e) {
@@ -282,7 +275,7 @@ public class VCFParser {
                 VariantRecord r2 = new VariantRecord(r);
                 r2.setDnaID(id);
 
-                //add gt and zygosity;
+                //add gt and zygosities;
                 if (indexGT != -1) {
 
                     //LOG.info("GT index = " + indexGT + " chunk index= " + (numMandatoryFields + i + 1));

@@ -47,7 +47,7 @@ public class SolrVCFUploader
     private static final String HEADER_PREFIX = "#";
 
     /** Interface to Solr. */
-    private VCFService vcfSolrService;
+    private VariantService vcfSolrService;
 
     /**
      * The list with the parsed columns.
@@ -57,7 +57,7 @@ public class SolrVCFUploader
         Initialize service
      */
     {
-        vcfSolrService = new VCFService();
+        vcfSolrService = new VariantService();
         try {
             vcfSolrService.initialize();
         } catch (InitializationException e) {

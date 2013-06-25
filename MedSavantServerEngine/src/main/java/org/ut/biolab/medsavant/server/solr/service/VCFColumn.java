@@ -232,7 +232,6 @@ public enum VCFColumn {
 
             VariantRecord.Zygosity zygosity = VCFParser.calculateZygosity(genotype);
 
-            //if (zygosity != null && zygosity != VariantRecord.Zygosity.HomoRef) {
             if (zygosity != null) {
                 processSingleValueField(key, VariantData.DNA_ID, variantData);
                 processSingleValueField(genotype, VariantData.GENOTYPE, variantData);

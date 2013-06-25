@@ -33,10 +33,10 @@ import java.util.*;
  * Provides access to the Solr server, with the purpose of indexing genome variants from .vcf files.
  * @version $Id$
  */
-public class VCFService extends AbstractSolrService
+public class VariantService extends AbstractSolrService
 {
 
-    private static final Log LOG = LogFactory.getLog(VCFService.class);
+    private static final Log LOG = LogFactory.getLog(VariantService.class);
 
     /**
      * Collection name.
