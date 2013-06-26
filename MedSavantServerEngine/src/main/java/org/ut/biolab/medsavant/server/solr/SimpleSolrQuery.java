@@ -27,8 +27,6 @@ import java.util.*;
 
 /**
  *  Convenient class for constructing a Solr query.
- *
- * @author Bogdan Vancea
  */
 public class SimpleSolrQuery {
 
@@ -124,22 +122,6 @@ public class SimpleSolrQuery {
     public void addFilterQueryTerm(String term, String value) {
         if (value != null) {
             filterQueryTerms.put(term, value);
-        }
-    }
-
-    @Deprecated
-    public String getFullSolrQuery() {
-
-        String normalQuery = getNormalQuery();
-
-        String filterQuery = getFilterQuery();
-
-        if ("".equals(normalQuery) ) {
-            return filterQuery;
-        } else if ("".equals(filterQuery)) {
-            return normalQuery;
-        } else {
-            return normalQuery + "&" + filterQuery;
         }
     }
 

@@ -28,8 +28,6 @@ import java.util.*;
 /**
  * Provides access to the Solr server, with the purpose of indexing genome variants from .vcf files.
  * @version $Id$
- *
- * @author Bogdan Vancea
  */
 public class VariantService extends AbstractSolrService
 {

@@ -17,8 +17,6 @@ package org.ut.biolab.medsavant.server.solr.util;
 
 /**
  * Enum for the Lucene query logical operators.
- *
- * @author Bogdan Vancea
  */
 public enum SolrQueryOperator {
 

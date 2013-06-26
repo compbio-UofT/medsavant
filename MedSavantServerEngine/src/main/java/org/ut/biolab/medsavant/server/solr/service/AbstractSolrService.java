@@ -28,8 +28,6 @@ import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 
 /**
  * //FIXME this class is more like a DAO than a service, refactor
- *
- * @author Bogdan Vancea
  */
 public abstract class AbstractSolrService {
 

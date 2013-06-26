@@ -30,8 +30,6 @@ import java.util.Scanner;
 
 /**
  * @version $Id$
- *
- * @author Bogdan Vancea
  */
 public class SolrVCFUploader
 {

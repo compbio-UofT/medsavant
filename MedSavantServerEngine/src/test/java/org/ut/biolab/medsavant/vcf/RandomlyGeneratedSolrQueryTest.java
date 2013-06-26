@@ -15,58 +15,25 @@
  */
 package org.ut.biolab.medsavant.vcf;
 
-import junit.framework.Assert;
 import org.apache.solr.common.SolrDocumentList;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
-import org.ut.biolab.medsavant.server.solr.SimpleVariantClient;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.VariantData;
 import org.ut.biolab.medsavant.server.solr.service.VariantService;
 
 import java.util.Random;
 
-public class SimpleVariantClientTest {
-
-    private SimpleVariantClient simpleVariantClient;
+public class RandomlyGeneratedSolrQueryTest {
 
     private VariantService variantService;
 
     @Before
     public void initialize() throws InitializationException {
-        simpleVariantClient = new SimpleVariantClient();
-
         variantService = new VariantService();
         variantService.initialize();
-    }
-
-    @Test
-    public void testSimpleQuery() {
-
-        SimpleSolrQuery solrQuery = new SimpleSolrQuery();
-
-        solrQuery.addQueryTerm("id", "rs*");
-        solrQuery.addFilterQueryTerm("dna_id", "NA*");
-
-        String responseString = simpleVariantClient.executeQuery(solrQuery);
-
-        //FIXME maybe replace this with something more conclusive?
-        Assert.assertNotNull(responseString);
-    }
-
-    @Test
-    public void testSimpleQueryForTime() {
-
-        SimpleSolrQuery solrQuery = new SimpleSolrQuery();
-
-        solrQuery.addQueryTerm("id", "rs*");
-        solrQuery.addFilterQueryTerm("dna_id", "NA*");
-
-        long duration = simpleVariantClient.executeQueryForTime(solrQuery);
-
-        //FIXME maybe replace this with something more conclusive?
-        Assert.assertTrue( duration > 0);
     }
 
     @Test
@@ -87,11 +54,13 @@ public class SimpleVariantClientTest {
     }
 
     @Test
-    public void testComplexQuery() {
+    public void testSimpleQuery() {
 
         SimpleSolrQuery solrQuery = generateSimpleQuery();
 
-        variantService.search(solrQuery);
+        SolrDocumentList solrDocumentList = variantService.search(solrQuery);
+
+        Assert.assertNotNull(solrDocumentList);
     }
 
     public long generateAndExecuteSimpleQuery() {
@@ -137,10 +106,5 @@ public class SimpleVariantClientTest {
 
         return vector[index];
     }
-
-
-
-
-
 
 }

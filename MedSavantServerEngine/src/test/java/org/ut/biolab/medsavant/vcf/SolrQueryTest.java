@@ -15,7 +15,7 @@
  */
 package org.ut.biolab.medsavant.vcf;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
@@ -38,7 +38,7 @@ public class SolrQueryTest {
         solrQuery.addQueryTerm("id", "rs*");
         solrQuery.addQueryTerm("dna_id", "NA*");
 
-        String fullSolrQuery = solrQuery.getNormalQuery();
+        String fullSolrQuery = solrQuery.toString().toString();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
 
@@ -52,7 +52,7 @@ public class SolrQueryTest {
         solrQuery.addFilterQueryTerm("id", "rs*");
         solrQuery.addFilterQueryTerm("dna_id", "NA*");
 
-        String fullSolrQuery = solrQuery.getFilterQuery();
+        String fullSolrQuery = solrQuery.toSolrParams().toString();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
 

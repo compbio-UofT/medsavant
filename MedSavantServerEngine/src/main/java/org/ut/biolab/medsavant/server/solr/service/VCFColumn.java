@@ -24,8 +24,6 @@ import java.util.*;
 /**
  * Encapsulte the processing logic for VCF column values.
  *
- * @author Bogdan Vancea
- *
  * @version $Id $
  */
 public enum VCFColumn {

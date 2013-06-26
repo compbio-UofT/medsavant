@@ -25,8 +25,6 @@ import java.util.UUID;
 /**
  * Used to store term values for a document.
  * @version $Id$
- *
- * @author Bogdan Vancea
  */
 public class VariantData extends ListMap<String, String>
 {

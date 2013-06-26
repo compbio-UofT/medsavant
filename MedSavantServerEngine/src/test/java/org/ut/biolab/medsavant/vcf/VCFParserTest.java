@@ -15,9 +15,8 @@
  */
 package org.ut.biolab.medsavant.vcf;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
@@ -72,7 +71,7 @@ public class VCFParserTest {
 
         long sizeBefore = solrVariantService.search(simpleSolrQuery).getNumFound();
 
-        long variantIndexer = VCFParser.parseVariantsAndUploadToSolr(input);
+        VCFParser.parseVariantsAndUploadToSolr(input);
 
         long variantsIndexed = solrVCFUploader.processAndIndex(input);
 

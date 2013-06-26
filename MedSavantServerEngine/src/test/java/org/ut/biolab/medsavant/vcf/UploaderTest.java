@@ -15,6 +15,9 @@
  */
 package org.ut.biolab.medsavant.vcf;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
 
 import java.io.File;
@@ -22,26 +25,26 @@ import java.io.File;
 /**
  * Test parsing of vcf file and indexing to Solr.
  *
- * @author Bogdan Vancea
  */
 public class UploaderTest {
 
-    public static void main(String[] args) {
+    SolrVCFUploader solrVCFUploader;
 
-        String vcfFile;
+    @Before
+    public void initialize() {
+        solrVCFUploader = new SolrVCFUploader();
+    }
 
-        if (args.length > 0) {
-            vcfFile = args[0];
-        } else {
-            vcfFile =  "input4.vcf";
-        }
+    @Test
+    public void testUploadVariants() {
+
+        String vcfFile = "input4.vcf";
 
         File input = new File(vcfFile);
-
-        SolrVCFUploader solrVCFUploader = new SolrVCFUploader();
 
         long variantsIndexed = solrVCFUploader.processAndIndex(input);
 
         System.out.println("Indexed " + variantsIndexed + " variants");
+        Assert.assertTrue(variantsIndexed > 0);
     }
 }
