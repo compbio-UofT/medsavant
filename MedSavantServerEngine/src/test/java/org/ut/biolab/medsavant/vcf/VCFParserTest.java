@@ -1,10 +1,25 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.vcf;
-
 
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.AbstractSolrService;
 import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
@@ -29,39 +44,40 @@ public class VCFParserTest {
     }
 
     @Test
-    @Ignore
     public void testIndexDataToSolr() {
 
         File input = new File("input2.vcf");
 
-        long sizeBefore = solrVariantService.search("*:*").getNumFound();
+        SimpleSolrQuery simpleSolrQuery = new SimpleSolrQuery();
+        simpleSolrQuery.addQueryTerm("*", "*");
+
+        long sizeBefore = solrVariantService.search(simpleSolrQuery).getNumFound();
 
         SolrVCFUploader solrVCFUploader = new SolrVCFUploader();
 
         long variantsIndexed = solrVCFUploader.processAndIndex(input);
 
-        long sizeAfter = solrVariantService.search("*:*").getNumFound();
+        long sizeAfter = solrVariantService.search(simpleSolrQuery).getNumFound();
 
         Assert.assertEquals(sizeAfter, sizeBefore + variantsIndexed);
     }
 
     @Test
-    @Ignore
     public void testIndexDataToSolrUsingMedSavantParser() throws IOException {
 
         File input = new File("input.vcf");
 
-        long sizeBefore = solrVariantService.search("*:*").getNumFound();
+        SimpleSolrQuery simpleSolrQuery = new SimpleSolrQuery();
+        simpleSolrQuery.addQueryTerm("*", "*");
+
+        long sizeBefore = solrVariantService.search(simpleSolrQuery).getNumFound();
 
         long variantIndexer = VCFParser.parseVariantsAndUploadToSolr(input);
 
         long variantsIndexed = solrVCFUploader.processAndIndex(input);
 
-        long sizeAfter = solrVariantService.search("*:*").getNumFound();
+        long sizeAfter = solrVariantService.search(simpleSolrQuery).getNumFound();
 
         Assert.assertEquals(sizeAfter, sizeBefore + variantsIndexed);
     }
-
-
-
 }

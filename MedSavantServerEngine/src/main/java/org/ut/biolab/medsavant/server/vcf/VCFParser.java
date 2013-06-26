@@ -275,7 +275,7 @@ public class VCFParser {
                 VariantRecord r2 = new VariantRecord(r);
                 r2.setDnaID(id);
 
-                //add gt and zygosities;
+                //add gt and zygosity;
                 if (indexGT != -1) {
 
                     //LOG.info("GT index = " + indexGT + " chunk index= " + (numMandatoryFields + i + 1));

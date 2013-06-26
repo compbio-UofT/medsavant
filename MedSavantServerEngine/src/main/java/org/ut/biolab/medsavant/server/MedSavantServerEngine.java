@@ -147,7 +147,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             int c;
 
             String user = "root";
-            String password = "";
+            String password = null;
             String host = "localhost";
             int port = 5029;
 

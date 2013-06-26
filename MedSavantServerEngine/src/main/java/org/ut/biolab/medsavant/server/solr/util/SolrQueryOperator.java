@@ -13,13 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.exception;
+package org.ut.biolab.medsavant.server.solr.util;
 
+/**
+ * Enum for the Lucene query logical operators.
+ *
+ * @author Bogdan Vancea
+ */
+public enum SolrQueryOperator {
 
-public class InitializationException extends Exception {
+    AND,OR;
 
-    public InitializationException(String message) {
-        super(message);
+    public String nameWithSpace() {
+        return " " + name() + " ";
     }
 
 }

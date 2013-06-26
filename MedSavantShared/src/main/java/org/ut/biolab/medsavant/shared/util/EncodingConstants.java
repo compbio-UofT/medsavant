@@ -13,13 +13,16 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.exception;
+package org.ut.biolab.medsavant.shared.util;
 
+/**
+ * Hold any encoding related constants here.
+ */
+public class EncodingConstants {
+    /**
+     * Default UTF-8 encoding.
+     */
+    public static final String UTF_8 = "UTF-8";
 
-public class InitializationException extends Exception {
-
-    public InitializationException(String message) {
-        super(message);
-    }
-
+    private EncodingConstants() {};
 }
