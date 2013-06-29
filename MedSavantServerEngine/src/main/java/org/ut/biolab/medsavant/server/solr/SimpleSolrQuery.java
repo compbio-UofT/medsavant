@@ -50,6 +50,20 @@ public class SimpleSolrQuery {
      */
     private SolrQueryOperator operatorFilterQueryTerms =  SolrQueryOperator.AND;
 
+    /**
+     *  The position of the first document returned
+     */
+    private int start = -1;
+
+    /**
+     *  The number of documents returned
+     */
+    private int rows = -1;
+
+    /**
+     * Solr for the query
+     */
+    private String sort;
 
     private static final Log LOG = LogFactory.getLog(SimpleSolrQuery.class);
 
@@ -85,6 +99,24 @@ public class SimpleSolrQuery {
         }
 
         return sb.toString();
+    }
+
+
+    /**
+     * Construct and return an instance of MapSolrParams corresponding to the "q" and "fq" terms stored.
+     * @return      an instance of MapSolrParams
+     */
+    public SolrParams toSolrParams() {
+
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(CommonParams.Q, getNormalQuery());
+        params.put(CommonParams.FQ, getFilterQuery());
+
+        tryAddPagination(params);
+        tryAddSort(params);
+
+        MapSolrParams mapSolrParams = new MapSolrParams(params);
+        return mapSolrParams;
     }
 
     /**
@@ -139,6 +171,30 @@ public class SimpleSolrQuery {
         filterQueryTerms.clear();
     }
 
+    public int getStart() {
+        return start;
+    }
+
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
+
     public Map<String, String> getQueryTerms() {
         return queryTerms;
     }
@@ -159,18 +215,24 @@ public class SimpleSolrQuery {
         this.operatorQueryTerms = operatorQueryTerms;
     }
 
-    /**
-     * Construct and return an instance of MapSolrParams corresponding to the "q" and "fq" terms stored.
-     * @return      an instance of MapSolrParams
-     */
-    public SolrParams toSolrParams() {
 
-        Map<String, String> params = new HashMap<String, String>();
-        params.put(CommonParams.Q, getNormalQuery());
-        params.put(CommonParams.FQ, getFilterQuery());
+    private Map<String, String> tryAddPagination(Map<String, String> params) {
+        if (start > -1 && rows > 0) {
+            params.put(CommonParams.START, String.valueOf(start));
+            params.put(CommonParams.ROWS, String.valueOf(rows));
+        }
 
-        MapSolrParams mapSolrParams = new MapSolrParams(params);
-        return mapSolrParams;
+        return params;
     }
+
+    private Map<String, String> tryAddSort(Map<String, String> params) {
+
+        if (sort != null) {
+            params.put(CommonParams.SORT, sort);
+        }
+
+        return params;
+    }
+
 
 }

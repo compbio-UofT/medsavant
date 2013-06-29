@@ -19,16 +19,27 @@ import org.apache.solr.common.SolrDocumentList;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.VariantData;
 import org.ut.biolab.medsavant.server.solr.service.VariantService;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 
+@RunWith(value = Parameterized.class)
 public class RandomlyGeneratedSolrQueryTest {
 
     private VariantService variantService;
+
+    private int qTermsNumber;
+
+    public RandomlyGeneratedSolrQueryTest(int qTermsNumber) {
+        this.qTermsNumber = qTermsNumber;
+    }
 
     @Before
     public void initialize() throws InitializationException {
@@ -36,11 +47,16 @@ public class RandomlyGeneratedSolrQueryTest {
         variantService.initialize();
     }
 
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        Object[][] data = new Object[][] { { 0 }, { 1 }, { 2 }, { 3 }, { 4 }, { 5 }, { 6 } };
+        return Arrays.asList(data);
+    }
+
     @Test
     public void testMoreComplexQueries() {
 
         int iterations = 100;
-
         long sum = 0;
 
         for (int i = 0; i <iterations; i++) {
@@ -53,58 +69,21 @@ public class RandomlyGeneratedSolrQueryTest {
         Assert.assertTrue(sum > 0);
     }
 
-    @Test
-    public void testSimpleQuery() {
-
-        SimpleSolrQuery solrQuery = generateSimpleQuery();
-
-        SolrDocumentList solrDocumentList = variantService.search(solrQuery);
-
-        Assert.assertNotNull(solrDocumentList);
-    }
-
     public long generateAndExecuteSimpleQuery() {
 
-        SimpleSolrQuery simpleSolrQuery = generateSimpleQuery();
+        SimpleQueryGenerator simpleQueryGenerator = new SimpleQueryGenerator();
 
         long start = System.currentTimeMillis();
         long duration;
 
-        SolrDocumentList solrDocumentList = variantService.search(simpleSolrQuery);
+        SolrDocumentList solrDocumentList = variantService.search(simpleQueryGenerator.generate(qTermsNumber));
 
         long end = System.currentTimeMillis();
         duration = end - start;
 
-        System.out.println("Duration: " + duration + " " + solrDocumentList.getNumFound());
+        //System.out.println("Duration: " + duration + " " + solrDocumentList.getNumFound());
 
         return duration;
-    }
-
-    public SimpleSolrQuery generateSimpleQuery() {
-        String id = getRandomParameter(VariantTestConstants.ids);
-        String dna_id = getRandomParameter(VariantTestConstants.dna_ids);
-        String alt = getRandomParameter(VariantTestConstants.alts);
-        String chrom = getRandomParameter(VariantTestConstants.chroms);
-        String ref = getRandomParameter(VariantTestConstants.refs);
-        String zygosity = getRandomParameter(VariantTestConstants.zygosities);
-
-        SimpleSolrQuery simpleSolrQuery = new SimpleSolrQuery();
-        simpleSolrQuery.addQueryTerm(VariantData.ID, id);
-        simpleSolrQuery.addQueryTerm(VariantData.DNA_ID, dna_id);
-        simpleSolrQuery.addQueryTerm(VariantData.ALT, alt);
-        simpleSolrQuery.addQueryTerm(VariantData.CHROM, chrom);
-        simpleSolrQuery.addQueryTerm(VariantData.REF, ref);
-        simpleSolrQuery.addFilterQueryTerm(VariantData.ZYGOSITY, zygosity);
-
-        return simpleSolrQuery;
-    }
-
-    private String getRandomParameter(String[] vector) {
-        Random random = new Random();
-
-        int index = random.nextInt(vector.length);
-
-        return vector[index];
     }
 
 }
