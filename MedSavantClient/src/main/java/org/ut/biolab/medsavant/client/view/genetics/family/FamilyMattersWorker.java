@@ -156,7 +156,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 1000,
                 retriever);
 
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, false);
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override

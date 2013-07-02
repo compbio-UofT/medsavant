@@ -58,6 +58,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
+
         final DecimalRangeSlider slider = new DecimalRangeSlider();
 
         slider.setMajorTickSpacing(5);

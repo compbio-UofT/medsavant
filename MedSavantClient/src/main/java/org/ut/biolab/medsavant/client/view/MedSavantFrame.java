@@ -81,122 +81,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private CardLayout viewCardLayout;
     private JPanel sessionView;
     private LoginView loginView;
-    private BottomBar bottomBar;
     private String currentCard;
-    private boolean animationRunning = false;
     private boolean queuedForExit = false;
-   
-   /* 
-     private class AnmatablePanel extends JPanel implements Runnable{
-        private Image img;
-        private int srcX, srcY;
-        private int dstX, dstY;
-        private int currX, currY;
-        private int transitTime = 350;         
-        private int DELAY = 30;
-                
-        //Permit 5000 ms max runtime.
-        private int maxRunTime = 5000;
-        private Thread animationThread;
-                     
-     
-        public void setMaxRunTime(int m){
-            this.maxRunTime = m;
-        }
-
-        public void setFPS(double fps){
-            this.DELAY = (int)(Math.ceil(1000 / fps));
-        }
       
-        public void cancel(){
-            if(animationThread != null && animationThread.isAlive()){               
-                animationRunning = false;
-                repaint();
-            }
-        }
-       
-        @Override
-        public void paint(Graphics g){
-            super.paint(g);             
-            if(animationRunning){                
-                Graphics2D g2d = (Graphics2D)g;
-                g2d.drawImage(img, currX, currY, this);                  
-                Toolkit.getDefaultToolkit().sync();
-                g2d.dispose();
-            }
-        }
-        
-        public void animate(Image i, Point src, Point dst, int transitTime){            
-            this.img = i;
-
-            this.srcX = src.x;
-            this.srcY = src.y;
-            this.dstX = dst.x;
-            this.dstY = dst.y;
-            this.currX = src.x;
-            this.currY = src.y;
-            
-            this.transitTime = transitTime;
-            animationThread = new Thread(this);
-            animationThread.start();
-        }
-        
-        public void animate(Image i, Point src, Point dst){
-            animate(i, src, dst, transitTime);
-        }
-        
-        private double getCurrX(long t){
-            return srcX + t*((dstX-srcX)/(double)transitTime);
-        }
-        
-        private double getCurrY(long t){
-            return srcY + t*((dstY - srcY)/(double)transitTime);
-        }
-        
-        public boolean cycle(long t){            
-            this.currX = (int)Math.round(getCurrX(t));
-            this.currY = (int)Math.round(getCurrY(t));
-          //  System.out.println("\tsx="+srcX+", sy="+srcY+" dx="+dstX+", dy="+dstY+", cx="+currX+", cy="+currY);
-            
-            if(t >= transitTime){
-                currX = dstX;               
-                currY = dstY;
-            }
-                                    
-            return ((currX==dstX) && (currY==dstY));
-        }
-        
-        @Override
-        public void run(){
-            animationRunning = true;
-            long beforeTime, timeDiff, sleep, startTime;
-            startTime = beforeTime = System.currentTimeMillis();
-            while (animationRunning) {                                
-                long t = System.currentTimeMillis();
-                if(cycle(t-startTime) || ((t-startTime) > maxRunTime)){
-                    animationRunning = false;
-                    repaint();
-                    return;
-                }
-                timeDiff = t - beforeTime;
-                repaint();
-                sleep = DELAY - timeDiff;
-
-                if (sleep < 0){
-                    sleep = 2;
-                }
-                
-                try {                    
-                    Thread.sleep(sleep);
-                } catch (InterruptedException e) {
-                   // System.out.println("interrupted");
-                }
-
-                beforeTime = System.currentTimeMillis();
-            }
-        }                        
-    };
-    */
     
     private static Point getPositionRelativeTo(Component root, Component comp){
         if (comp.equals(root)) { return new Point(0,0); }
@@ -206,24 +93,56 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
        
     
+    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg){
+        if(src != null && dst != null){
+             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+                public void done(){
+                    if(notificationMsg != null){                        
+                        notificationMessage(notificationMsg);
+                    }
+                }
+            });
+        } 
+    }
+    
+    
+    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg){
+        Point src = getPositionRelativeTo(view, srcComponent);
+        Point dst = getPositionRelativeTo(view, dstComponent);        
+        translationAnimation(src, dst, img, notificationMsg);        
+    }
+    
+    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg){
+        translationAnimation(view, dstComponent, img, notificationMsg);
+    }
+     
     public void browserAnimationFromMousePos(final String notificationMsg){
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
-        Point src = view.getMousePosition();
+        
+        /*Point src = view.getMousePosition();
         if(src == null){
             return;
         }
         
         Point dst = null;
         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        
+        */
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+        Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
         for(SubSectionView sv : menu.subSectionViews){
             if(sv.getPageName().equalsIgnoreCase("Browser")){              
-               dst = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
-
+               //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
+               dstComponent = menu.getSubSectionButton(sv);
+               break;
             }
         }              
-                        
+        
+        animationFromMousePos(dstComponent, img, notificationMsg);
+        if(dstComponent != null){
+            animationFromMousePos(dstComponent, img, notificationMsg);
+        }
+        
+        /*
         if(dst != null){
             //view.cancel();            
             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
@@ -239,6 +158,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             
             //view.animate(img.getImage(), src, dst);            
         }
+        */
     }
     
     public void notificationMessage(String notificationMsg){
@@ -254,21 +174,24 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
      */
     public void searchAnimationFromMousePos(final String notificationMsg){
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
-        Point src = view.getMousePosition();
+        /*Point src = view.getMousePosition();
         if(src == null){
             return;
         }
         
         Point dst = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        
+        */
+        Component dstComponent = null;
+        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();        
         while(e.hasMoreElements()){
             AbstractButton b = e.nextElement();
             if(b.getName().equalsIgnoreCase("Variants")){
-                dst = getPositionRelativeTo(view, b);
+                //dst = getPositionRelativeTo(view, b);
+                dstComponent = b;
             }
         }
-                        
+        animationFromMousePos(dstComponent, img, notificationMsg);
+        /*                
         if(dst != null){
             //view.cancel();
             
@@ -282,6 +205,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             });
                                     
         }
+        */
     }
     
     public void searchAnimationFromMousePos(){

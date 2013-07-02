@@ -97,7 +97,7 @@ public class SearchConditionItemView extends PillView {
                             editor.loadViewFromExistingSearchConditionParameters();
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
-                                public void run() {
+                                public void run() {                           
                                     conditionsEditor.removeAll();
 
                                     JPanel p = ViewUtil.getClearPanel();

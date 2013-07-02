@@ -783,7 +783,7 @@ public class FamilyMattersOptionView {
 
                 new MedSavantWorker<Object>(FamilyMattersOptionView.class.getCanonicalName()) {
                     MedSavantWorker currentWorker;
-
+                    private int notificationID;
                     @Override
                     protected void showProgress(double fract) {
                     }
@@ -812,10 +812,15 @@ public class FamilyMattersOptionView {
                                 if (currentWorker != null) {
                                     currentWorker.cancel(true);
                                 }
+                            }         
+                            
+                            @Override
+                            public void closeJob(){
+                                NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                             }
                         };
 
-                        int notificationID = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
+                        notificationID = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
                         //AnalyticsJobsPanel.getInstance().addJob(j);
 
                         j.setStatus(Notification.JobStatus.RUNNING);

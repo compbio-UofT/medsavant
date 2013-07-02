@@ -40,6 +40,7 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+
         ADDKVP,
         BROWSER,
         BAMFILE,
@@ -93,7 +94,9 @@ public class IconFactory {
         MENU_USER,
         MENU_SERVER,
         CLOSE,
-        SEARCH_PH
+        SEARCH_PH,
+        DOCK,
+        UNDOCK
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
@@ -141,7 +144,7 @@ public class IconFactory {
                 return getIcon(iconroot + "menu-user.png");
             case SECTION_TABLE:
                 return getIcon(iconroot + "menu-search.png");
-             case SECTION_DATA:
+            case SECTION_DATA:
                 return getIcon(iconroot + "menu-database.png");
             case SECTION_SEARCH:
                 return getIcon(iconroot + "menu-binoculars.png");
@@ -205,8 +208,12 @@ public class IconFactory {
                 return getIcon(iconroot + "tab_l.png");
             case TAB_RIGHT:
                 return getIcon(iconroot + "tab_r.png");
-                case MENU_SERVER:
+            case MENU_SERVER:
                 return getIcon(iconroot + "menu-server.png");
+            case UNDOCK:
+                return getIcon(iconroot + "export.png");
+            case DOCK:
+                return getIcon(iconroot + "import.png");
             default:
                 return null;
         }

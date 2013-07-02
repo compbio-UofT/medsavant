@@ -59,6 +59,8 @@ public class SearchBar extends JPanel {
     //private JToggleButton savedFiltersButton;
     private QueryViewController queryViewController;
 
+    private final FileNameExtensionFilter filenameFilter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
+
     /**
      * Creates search bar to contains our query panels.
      */
@@ -225,12 +227,9 @@ public class SearchBar extends JPanel {
         
         loadLabel.addMouseListener(new MouseListener() {
             SavedFiltersPanel savedFiltersPanel;
-
             @Override
-            public void mouseClicked(MouseEvent me) {                
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
-                fileChooser.setFileFilter(filter);
-        
+            public void mouseClicked(MouseEvent me) {                                
+                fileChooser.setFileFilter(filenameFilter);        
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                             
@@ -273,6 +272,7 @@ public class SearchBar extends JPanel {
         });
 
         saveLabel.addMouseListener(new MouseListener() {
+            /*
             private boolean validateName(String name) {
                 File[] existingFilterSets = DirectorySettings.getFiltersDirectory().listFiles();
                 for (File f : existingFilterSets) {
@@ -300,7 +300,7 @@ public class SearchBar extends JPanel {
                 }
                 out.write("</filters>\n");
                 out.close();
-            }
+            }*/
 
             private void saveFile(File file){
                 getQueryViewController().saveConditions(file);
@@ -308,9 +308,8 @@ public class SearchBar extends JPanel {
             }
             
             @Override
-            public void mouseClicked(MouseEvent me) {                
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Saved Searches", SAVED_SEARCH_EXTENSION);
-                fileChooser.setFileFilter(filter);
+            public void mouseClicked(MouseEvent me) {                                
+                fileChooser.setFileFilter(filenameFilter);
         
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();

@@ -17,26 +17,21 @@ package org.ut.biolab.medsavant.client.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import javax.swing.JPanel;
 import javax.swing.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
-import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -47,6 +42,8 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  * @author mfiume
  */
 public class GeneticsTablePage extends SubSectionView {
+
+    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
     private Thread viewPreparationThread;
     private JPanel view;
     private TablePanel tablePanel;
@@ -75,13 +72,13 @@ public class GeneticsTablePage extends SubSectionView {
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
             settingComponents = new Component[1];
-            try{
+            try {
                 viewPreparationThread.join();
-            }catch(Exception e){
+            } catch (Exception e) {
                 System.err.println(e);
             }
-            
-            if(detailView == null){
+
+            if (detailView == null) {
                 System.err.println("detailView is null!");
             }
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(detailView, "Inspector");
@@ -102,11 +99,11 @@ public class GeneticsTablePage extends SubSectionView {
                     @Override
                     public void run() {
                         try {
-                            System.out.println("Running thread prepareViewINBackground!");
+                            LOG.debug("Running thread prepareViewINBackground!");
                             final JPanel tmpView = new JPanel();
                             tmpView.setLayout(new BorderLayout());
 
-                            final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(true, true, true, true, true, true); //StaticInspectorPanel.getInstance();
+                            final ComprehensiveInspector inspectorPanel = new ComprehensiveInspector(true, true, true, true, true, true, true); //StaticInspectorPanel.getInstance();
 
                             TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
                                 @Override
@@ -114,7 +111,7 @@ public class GeneticsTablePage extends SubSectionView {
                                     inspectorPanel.setVariantRecord(r);
                                 }
                             });
-                            System.out.println("Constructing detailView");
+                            LOG.debug("Constructing detailView");
                             detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
                             detailView.setToggleBarVisible(false);
 
@@ -141,9 +138,9 @@ public class GeneticsTablePage extends SubSectionView {
                     }
                 };
 
-               viewPreparationThread =  new Thread(prepareViewInBackground);               
-               viewPreparationThread.start();
-                
+                viewPreparationThread = new Thread(prepareViewInBackground);
+                viewPreparationThread.start();
+
 
             }
 

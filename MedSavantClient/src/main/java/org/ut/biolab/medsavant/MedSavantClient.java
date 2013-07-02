@@ -41,8 +41,12 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import com.sun.corba.se.impl.presentation.rmi.ExceptionHandler;
 import gnu.getopt.Getopt;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.plaf.InsetsUIResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -175,11 +179,49 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setLAF() {
         try {
 
+            //UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
+            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
+            //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.            
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
+            
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                LOG.debug("Installed LAF: " + info.getName() + " class: " + info.getClassName());
+            }
+            LOG.debug("System LAF is: " + UIManager.getSystemLookAndFeelClassName());
+            LOG.debug("Cross platform LAF is: " + UIManager.getCrossPlatformLookAndFeelClassName());
+            
+            LookAndFeelFactory.addUIDefaultsInitializer(new LookAndFeelFactory.UIDefaultsInitializer() {
+                public void initialize(UIDefaults defaults) {
+                    Map<String, Object> defaultValues = new HashMap<String, Object>();
+                    defaultValues.put("Slider.trackWidth", new Integer(7));
+                    defaultValues.put("Slider.majorTickLength", new Integer(6));
+                    defaultValues.put("Slider.highlight", new ColorUIResource(255, 255, 255));
+                    defaultValues.put("Slider.horizontalThumbIcon", javax.swing.plaf.metal.MetalIconFactory.getHorizontalSliderThumbIcon());
+                    defaultValues.put("Slider.verticalThumbIcon", javax.swing.plaf.metal.MetalIconFactory.getVerticalSliderThumbIcon());
+                    defaultValues.put("Slider.focusInsets", new InsetsUIResource(0, 0, 0, 0));
+                    
+                    for (Map.Entry<String, Object> e : defaultValues.entrySet()) {
+                        if (defaults.get(e.getKey()) == null) {
+                            LOG.debug("Missing key " + e.getKey() + ", using default value " + e.getValue());
+                           defaults.put(e.getKey(), e.getValue());
+                        } else {
+                            LOG.debug("Found key " + e.getKey() + " with value " + defaults.get(e.getKey()));
+                        }
+                    }
+                }                
+            });
+                    
             if (MiscUtils.WINDOWS) {
                 LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
+            }else{
+                LookAndFeelFactory.installJideExtension();
             }
+            
+            LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+
+            
+            
+
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
             //tooltips
@@ -200,12 +242,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(
                 new Thread.UncaughtExceptionHandler() {
-                    @Override
-                    public void uncaughtException(Thread t, Throwable e) {
-                        LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
-                        e.printStackTrace();
-                    }
-                });
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
+                e.printStackTrace();
+            }
+        });
 
     }
 }
