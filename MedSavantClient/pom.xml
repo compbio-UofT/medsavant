@@ -73,7 +73,7 @@
     <dependency>
       <groupId>com.jidesoft</groupId>
       <artifactId>jide-oss</artifactId>
-      <version>3.5.1</version>
+      <version>${jide.version}</version>
     </dependency>
     <dependency>
       <groupId>cytoscape</groupId>
@@ -93,22 +93,32 @@
     <dependency>
       <groupId>jide</groupId>
       <artifactId>jide-components</artifactId>
-      <version>3.5.0</version>
+      <version>${jide.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jide</groupId>
+      <artifactId>jide-action</artifactId>
+      <version>${jide.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jide</groupId>
+      <artifactId>jide-dock</artifactId>
+      <version>${jide.version}</version>
     </dependency>
     <dependency>
       <groupId>jide</groupId>
       <artifactId>jide-grids</artifactId>
-      <version>3.5.0</version>
+      <version>${jide.version}</version>
     </dependency>
     <dependency>
       <groupId>jide</groupId>
       <artifactId>jide-dialogs</artifactId>
-      <version>3.5.0</version>
+      <version>${jide.version}</version>
     </dependency>
     <dependency>
       <groupId>jide</groupId>
       <artifactId>jide-charts</artifactId>
-      <version>2.9.5</version>
+      <version>${jide.version}</version>
     </dependency>
     <dependency>
       <groupId>com.apple</groupId>
