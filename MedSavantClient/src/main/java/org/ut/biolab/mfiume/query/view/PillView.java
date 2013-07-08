@@ -275,9 +275,15 @@ public class PillView extends JPanel {
             this.middlePanel.add(expandButton);
         }
 
+        //String shortenedText = ViewUtil.ellipsize(text, 50);
+
         textLabel = new JLabel(text);
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
+
+        /*if (!shortenedText.equals(text)) {
+            textLabel.setToolTipText(text);
+        }*/
 
         this.middlePanel.add(textLabel);
 

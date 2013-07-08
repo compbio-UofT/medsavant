@@ -137,9 +137,9 @@ public class SearchBar extends JPanel {
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
-        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DELETE));
+        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
         newLabel.setToolTipText("Clear current search");
-        
+
         JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
         historyLabel.setToolTipText("Show search history");
 
@@ -195,19 +195,19 @@ public class SearchBar extends JPanel {
         });
 
         final JFileChooser fileChooser = new JFileChooser();
-        
+
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
         dSave.setTitle("Load Search Conditions");
         dSave.setResizable(false);
-        
+
         newLabel.addMouseListener(new MouseListener(){
-            @Override 
-            public void mouseClicked(MouseEvent me) {    
+            @Override
+            public void mouseClicked(MouseEvent me) {
                 if(DialogUtils.askYesNo("Clear current search", "Clear current search?") == JOptionPane.YES_OPTION){
                     getQueryViewController().clearSearch();
-                }                
-            }   
-            
+                }
+            }
+
             @Override
             public void mousePressed(MouseEvent me) {
             }
@@ -224,23 +224,24 @@ public class SearchBar extends JPanel {
             public void mouseExited(MouseEvent me) {
             }
         });
-        
+
         loadLabel.addMouseListener(new MouseListener() {
             SavedFiltersPanel savedFiltersPanel;
             @Override
             public void mouseClicked(MouseEvent me) {                                
                 fileChooser.setFileFilter(filenameFilter);        
+        
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
-                            
-                    if(file.exists()){                      
-                        getQueryViewController().loadConditions(file);                      
+
+                    if(file.exists()){
+                        getQueryViewController().loadConditions(file);
                     }else{
                         DialogUtils.displayError("File "+file.getPath()+" does not exist!");
-                    }  
-                }      
-                
-                
+                    }
+                }
+
+
                /* if (savedFiltersPanel != null) {
                     dSave.remove(savedFiltersPanel);
                 }
@@ -251,7 +252,7 @@ public class SearchBar extends JPanel {
                 dSave.pack();
                 dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
                 dSave.setVisible(true);*/
-                
+
             }
 
             @Override
@@ -306,16 +307,16 @@ public class SearchBar extends JPanel {
                 getQueryViewController().saveConditions(file);
                 JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Search conditions saved to "+file.getPath());
             }
-            
+
             @Override
             public void mouseClicked(MouseEvent me) {                                
                 fileChooser.setFileFilter(filenameFilter);
-        
+
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                     if(!file.getPath().toLowerCase().endsWith("."+SAVED_SEARCH_EXTENSION)){
                         file = new File(file.getPath() + "."+SAVED_SEARCH_EXTENSION);
-                    }            
+                    }
                     if(file.exists()){
                         int r = JOptionPane.showConfirmDialog(fileChooser, "The file "+file.getPath()+" already exists.  Overwrite?","Warning",JOptionPane.YES_NO_OPTION);
                         if(r == JOptionPane.YES_OPTION){
@@ -323,8 +324,8 @@ public class SearchBar extends JPanel {
                         }
                     }else{
                         saveFile(file);
-                    }    
-                }                
+                    }
+                }
                 /*
                 if (FilterController.getInstance().hasFiltersApplied()) {
                     String name = "Untitled";

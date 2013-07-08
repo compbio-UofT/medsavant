@@ -47,9 +47,9 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
                 BasicVariantColumns.FILE_ID.getColumnName()});
     private final HashMap<String, Map> columnNameToRemapMap;
 
-    public VariantConditionGenerator(CustomField field) {
+    public VariantConditionGenerator(String alias, CustomField field) {
         this.columnName = field.getColumnName();
-        this.alias = field.getAlias();
+        this.alias = alias; // field.getAlias();
         this.field = field;
 
         columnNameToRemapMap = new HashMap<String, Map>();
@@ -64,6 +64,7 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
         columnNameToRemapMap.put(BasicVariantColumns.ZYGOSITY.getColumnName(), zygosityRemap);
     }
+
 
     @Override
     public String getName() {
