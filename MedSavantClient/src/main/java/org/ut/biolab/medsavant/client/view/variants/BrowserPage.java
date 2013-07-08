@@ -55,6 +55,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
 import savant.api.data.DataFormat;
@@ -96,9 +97,9 @@ public class BrowserPage extends SubSectionView {
     private final ArrayList<String> sampleIdsHavingBams;
     private final HashMap<String, String> dnaIDToURLMap;
 
-   
-    
-    
+
+
+
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
 
@@ -245,13 +246,17 @@ public class BrowserPage extends SubSectionView {
                 e.printStackTrace();
             }
 
-            ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR); 
-            JButton undockButton = new JButton("Undock", img);
+            ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT);
+            JButton undockButton = ViewUtil.getIconButton(img);
+            undockButton.setText("Undock");
+            //undockButton.setToolTipText("Undock");
+
+            //JButton undockButton = new JButton("Undock", img);
             undockButton.addActionListener(new ActionListener(){
                 @Override
                 public void actionPerformed(ActionEvent ae){
                    ViewController.getInstance().undock();
-               } 
+               }
             });
             settingComponents[4] = undockButton;
         }

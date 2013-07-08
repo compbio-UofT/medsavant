@@ -72,7 +72,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
     private JPanel graph;
     private Listener<Object> geneListener;
     private Thread dlThread;
-    
+
     private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     //private static String GM_URL = "http://zoidb.org/android/junk.zip";
     public GeneManiaInfoSubPanel() {
@@ -94,56 +94,56 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
 
         try{
             String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-            
-            FileDownloadPanel dlPanel = new FileDownloadPanel("Downloading GeneMANIA", new DownloadTask(GM_URL, dstPath){
+
+            FileDownloadPanel dlPanel = new FileDownloadPanel("Downloading GeneMANIA data", new DownloadTask(GM_URL, dstPath){
                 @Override
-                public void done(){                     
+                public void done(){
                     panel.removeAll();
-                    
+
                     JPanel innerPanel = new JPanel();
                     innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-                    
+
                     innerPanel.add(new JLabel("Extracting GeneMANIA files..."));
-                    
+
                     JProgressBar jb = new JProgressBar();
                     jb.setIndeterminate(true);
-                    innerPanel.add(jb);  
+                    innerPanel.add(jb);
                     panel.add(innerPanel);
-                    
+
                     new SwingWorker(){
                         public Void doInBackground(){
-                            GenemaniaInfoRetriever.extractGM(getDestPath());        
+                            GenemaniaInfoRetriever.extractGM(getDestPath());
                             return null;
                         }
-                        
+
                         protected void done(){
                             panel.removeAll();
                             try{
-                                dataPresent = true;                                
+                                dataPresent = true;
                                 genemania = new GenemaniaInfoRetriever();
-                                genemaniaSettings = new GeneManiaSettingsDialog(genemania);                                
+                                genemaniaSettings = new GeneManiaSettingsDialog(genemania);
                                 buildPanel();
                                 MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
                                 updateRelatedGenesPanel(gene);
-                                panel.updateUI();                                
+                                panel.updateUI();
                             }catch(IOException e){
                                 System.err.println(e);
                             }
                             //System.out.println("Exiting so you can debug");
                             //System.exit(1);
                         }
-                    }.execute();                                                           
+                    }.execute();
                 }
-            });               
+            });
             panel.add(dlPanel);
-            dlPanel.download();            
+            dlPanel.download();
             panel.revalidate();
         }catch(IOException e){
             DialogUtils.displayMessage("Error downloading GeneMANIA files "+e);
             dataPresent = false;
-        }        
+        }
     }
-    
+
     private void buildPanel(){
         System.out.println("Inside getInfoPanel");
         kvp = new KeyValuePairPanel(2);
@@ -184,7 +184,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
         panel.add(settingsPanel);
         panel.add(graph);
     }
-    
+
     @Override
     public JPanel getInfoPanel() {
         label = new JLabel("Selected gene: ");
@@ -196,7 +196,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
                 genemaniaSettings = new GeneManiaSettingsDialog(genemania);
             } else {
                 System.out.println("didn't find gene mania data, setting up button");
-                JButton dlGm = new JButton("Download GeneMANIA");
+                JButton dlGm = ViewUtil.getSoftButton("Download GeneMANIA data");
                 dlGm.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
                         dlGM();
@@ -215,7 +215,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
 
         buildPanel();
         return panel;
-        
+
         /*
         System.out.println("Inside getInfoPanel");
         kvp = new KeyValuePairPanel(2);
@@ -260,12 +260,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements Listener<Gene
 
     @Override
     public void handleEvent(Gene g) {
-      
+
         if (g == null || !dataPresent) {
             if(g != null){
                 gene = g;
             }
-            label.setText("None");            
+            label.setText("None");
         } else {
             System.out.println("Received gene " + g.getName());
             label.setText(g.getName());

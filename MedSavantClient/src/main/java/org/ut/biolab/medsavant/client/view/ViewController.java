@@ -48,36 +48,36 @@ public class ViewController {
 
     private JPanel undockablePanel;
     private Container outerContainer;
-        
-    
+
+
     public void dock(){
         outerContainer.add(undockablePanel);
-        outerContainer.validate();             
+        outerContainer.validate();
     }
-    
+
     public void undock(){
         final JFrame undockedFrame = new JFrame("Savant Browser");
         undockedFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         undockedFrame.addWindowListener(new WindowAdapter(){
             @Override
             public void windowClosing(WindowEvent we) {
-                dock();  
-                undockedFrame.dispose();               
-            }                      
+                dock();
+                undockedFrame.dispose();
+            }
         });
-                
-        
+
+
         Container p = undockablePanel.getParent();
-        p.remove(undockablePanel);        
+        p.remove(undockablePanel);
         undockedFrame.add(undockablePanel);
         undockedFrame.pack();
         undockedFrame.setLocationRelativeTo(null);
         undockedFrame.setVisible(true);
-        //p.validate();      
+        //p.validate();
         p.repaint();
-        outerContainer = p;        
+        outerContainer = p;
     }
-    
+
     private ViewController(JPanel p) {
         // create the banner
         //banner = new Banner();
@@ -116,12 +116,12 @@ public class ViewController {
 
 
         h1.add(h2, BorderLayout.NORTH);
-        h1.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+        //h1.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
         undockablePanel = h1;
     }
 
-    
+
     public static ViewController getInstance() {
         return instance;
     }
@@ -170,7 +170,7 @@ public class ViewController {
         menu.clearMenu();
     }
 
-    public void addSection(SectionView section) {       
+    public void addSection(SectionView section) {
         menu.addSection(section);
     }
 

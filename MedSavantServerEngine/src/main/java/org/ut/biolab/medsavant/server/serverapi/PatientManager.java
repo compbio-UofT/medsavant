@@ -600,6 +600,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumns(table.getDBColumn(PATIENT_ID));
         query.addColumns(table.getDBColumn(GENDER));
         query.addColumns(table.getDBColumn(AFFECTED));
+        query.addColumns(table.getDBColumn(DNA_IDS));
 
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
 
@@ -608,13 +609,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()) {
-            Object[] r = new Object[6];
+            Object[] r = new Object[7];
             r[0] = rs.getString(1);
             r[1] = rs.getString(2);
             r[2] = rs.getString(3);
             r[3] = rs.getInt(4);
             r[4] = rs.getInt(5);
             r[5] = rs.getInt(6);
+            r[6] = rs.getString(7);
             result.add(r);
         }
 

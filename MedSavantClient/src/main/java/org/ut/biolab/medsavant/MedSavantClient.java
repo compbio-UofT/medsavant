@@ -43,6 +43,7 @@ import javax.swing.plaf.ColorUIResource;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.sun.corba.se.impl.presentation.rmi.ExceptionHandler;
 import gnu.getopt.Getopt;
+import javax.swing.UIDefaults;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
