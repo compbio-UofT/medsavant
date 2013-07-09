@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr;
+package org.ut.biolab.medsavant.shared.query;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +21,6 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.MapSolrParams;
 import org.apache.solr.common.params.SolrParams;
-import org.ut.biolab.medsavant.server.solr.util.SolrQueryOperator;
 
 import java.util.*;
 
@@ -111,6 +110,21 @@ public class SimpleSolrQuery {
         Map<String, String> params = new HashMap<String, String>();
         params.put(CommonParams.Q, getNormalQuery());
         params.put(CommonParams.FQ, getFilterQuery());
+
+        tryAddPagination(params);
+        tryAddSort(params);
+
+        MapSolrParams mapSolrParams = new MapSolrParams(params);
+        return mapSolrParams;
+    }
+
+    /**
+     * Construct and return an instance of MapSolrParams corresponding to the "q" terms stored.
+     * @return      an instance of MapSolrParams
+     */
+    public SolrParams toSolrParamsSimple() {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(CommonParams.Q, getNormalQuery());
 
         tryAddPagination(params);
         tryAddSort(params);

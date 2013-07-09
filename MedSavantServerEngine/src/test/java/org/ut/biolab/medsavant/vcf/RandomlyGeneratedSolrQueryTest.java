@@ -21,14 +21,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.server.solr.service.VariantData;
 import org.ut.biolab.medsavant.server.solr.service.VariantService;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
 
 @RunWith(value = Parameterized.class)
 public class RandomlyGeneratedSolrQueryTest {
@@ -80,8 +77,6 @@ public class RandomlyGeneratedSolrQueryTest {
 
         long end = System.currentTimeMillis();
         duration = end - start;
-
-        //System.out.println("Duration: " + duration + " " + solrDocumentList.getNumFound());
 
         return duration;
     }

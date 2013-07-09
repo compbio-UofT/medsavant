@@ -21,9 +21,8 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.params.MapSolrParams;
 import org.apache.solr.common.params.SolrParams;
-import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
+import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 
 /**

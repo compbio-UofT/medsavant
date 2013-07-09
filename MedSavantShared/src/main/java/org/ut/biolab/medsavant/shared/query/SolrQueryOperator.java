@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.util;
+package org.ut.biolab.medsavant.shared.query;
 
 /**
  * Enum for the Lucene query logical operators.

@@ -18,7 +18,7 @@ package org.ut.biolab.medsavant.vcf;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ut.biolab.medsavant.server.solr.SimpleSolrQuery;
+import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.server.solr.service.AbstractSolrService;
 import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
