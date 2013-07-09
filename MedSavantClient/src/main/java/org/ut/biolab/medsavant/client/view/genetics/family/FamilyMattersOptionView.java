@@ -971,8 +971,8 @@ public class FamilyMattersOptionView {
                                 if (currentWorker != null) {
                                     currentWorker.cancel(true);
                                 }
-                            }         
-                            
+                            }
+
                             @Override
                             public void closeJob(){
                                 NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
@@ -1065,10 +1065,9 @@ public class FamilyMattersOptionView {
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
 
                         // hard code for testing only
-                        File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/msavant/2013_7_8_10_28_14_317/./FORGE162-varexport-1373292779750.tdf");
+                        //File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/msavant/2013_7_8_10_28_14_317/./FORGE162-varexport-1373292779750.tdf");
 
-                        /*
-                        //File tdfFile;
+                        File tdfFile;
                         if (filtersChangedSinceLastDump || (lastTDFFile == null)) {
 
                             if (lastTDFFile == null) {
@@ -1093,8 +1092,7 @@ public class FamilyMattersOptionView {
                         } else {
                             System.out.println("Reusing previous dump");
                             tdfFile = lastTDFFile;
-                        }*/
-
+                        }
 
                         System.out.println("Imported from server " + tdfFile.getAbsolutePath());
 
