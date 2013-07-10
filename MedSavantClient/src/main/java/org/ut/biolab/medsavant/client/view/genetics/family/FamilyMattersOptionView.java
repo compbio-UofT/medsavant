@@ -604,6 +604,7 @@ public class FamilyMattersOptionView {
                                 JMenuItem k = new JMenuItem("...");
                                 k.setEnabled(false);
                                 edit.add(k);
+                                break;
                             }
                         }
 
