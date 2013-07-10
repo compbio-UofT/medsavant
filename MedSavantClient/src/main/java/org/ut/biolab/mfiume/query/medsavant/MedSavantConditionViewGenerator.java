@@ -98,8 +98,12 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
                 for (CustomField field : af.getCustomFields()) {
                     if (field.isFilterable() && isFilterable(field.getColumnType())) {
                         //catHolders.add(new FieldFilterHolder(field, WhichTable.VARIANT, queryID));
-                        String name = field.getAlias();
-                        ComprehensiveConditionGenerator variantFieldCondition = new VariantConditionGenerator(field);
+
+                        String program = af.getProgram();
+                        program = (program.equals("VCF Conditions") || program.equals("Standard Variant Conditions")) ? "" : " - " + program;
+
+                        String name = field.getAlias() + program;
+                        ComprehensiveConditionGenerator variantFieldCondition = new VariantConditionGenerator(name,field);
                         conditionGenerators.put(name, variantFieldCondition);
                     }
                 }

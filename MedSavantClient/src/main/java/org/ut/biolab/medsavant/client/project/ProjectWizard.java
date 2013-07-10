@@ -539,6 +539,9 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 if (modify) {
                     page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                 }
+                
+                
+                
                 new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton) {
                     @Override
                     protected Void doInBackground() throws Exception {
@@ -783,7 +786,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         p.add(emailField);
         page.addComponent(p);
 
-        autoPublish = new JCheckBox("Automatically publish data upon import completion");
+        autoPublish = new JCheckBox("Publish data upon import completion");
         autoPublish.setSelected(true);
         page.addComponent(autoPublish);
         page.addText("If you choose not to automatically publish, you will be prompted to publish manually upon completion. Variant publication logs all users out.");

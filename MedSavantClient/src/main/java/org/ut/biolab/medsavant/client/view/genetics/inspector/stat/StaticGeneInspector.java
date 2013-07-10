@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.genetics.inspector.stat;
 
 import java.awt.Color;
@@ -23,17 +22,17 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 
 import org.ut.biolab.medsavant.shared.model.Gene;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.CollapsibleInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.BasicGeneSubInspector;
-import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaInfoSubPanel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OntologySubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-
 
 /**
  *
@@ -42,10 +41,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class StaticGeneInspector extends CollapsibleInspector {
 
     private static StaticGeneInspector instance;
-
     private static List<Listener<Gene>> listeners = new ArrayList<Listener<Gene>>();
-
     boolean isShown = true;
+    private static final Log LOG = LogFactory.getLog(StaticGeneInspector.class);
 
     public static StaticGeneInspector getInstance() {
         if (instance == null) {
@@ -67,8 +65,8 @@ public class StaticGeneInspector extends CollapsibleInspector {
 
         String m = "<html><div style=\"text-align: center;\">Choose one from the dropdown box in the Variant Inspector and then click the Inspect button</div></html>";
         JLabel h2 = new JLabel(m);
-        h2.setPreferredSize(new Dimension(190,300));
-        h2.setMinimumSize(new Dimension(190,300));
+        h2.setPreferredSize(new Dimension(190, 300));
+        h2.setMinimumSize(new Dimension(190, 300));
         h2.setBackground(Color.red);
 
         messagePanel.add(ViewUtil.centerHorizontally(h1));
@@ -80,7 +78,7 @@ public class StaticGeneInspector extends CollapsibleInspector {
 
         addSubInspector(new BasicGeneSubInspector());
         addSubInspector(new OntologySubInspector());
-        addSubInspector(new GeneManiaInfoSubPanel());
+        addSubInspector(new GeneManiaSubInspector());
 
     }
 
@@ -95,7 +93,7 @@ public class StaticGeneInspector extends CollapsibleInspector {
         } else {
             this.switchToPanes();
         }
-        System.out.println("Setting gene to " + g.getName());
+        LOG.debug("Setting gene to " + g.getName());
         selectedGene = g;
         geneSelectionChanged(g);
     }
@@ -116,6 +114,6 @@ public class StaticGeneInspector extends CollapsibleInspector {
     @Override
     protected final void addSubInspector(SubInspector panel) {
         super.addSubInspector(panel);
-        listeners.add((Listener<Gene>)panel);
+        listeners.add((Listener<Gene>) panel);
     }
 }

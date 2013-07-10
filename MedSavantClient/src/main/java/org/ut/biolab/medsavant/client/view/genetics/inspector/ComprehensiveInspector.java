@@ -15,18 +15,16 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.inspector;
 
-import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticGeneInspector;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticVariantInspector;
 import java.util.EnumMap;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.DetailedVariantSubInspector;
-import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaInfoSubPanel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OntologySubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
@@ -35,6 +33,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSub
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsSubInspector;
 
 /**
  *
@@ -57,8 +56,9 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private CollapsibleInspector variantCollapsibleInspector;
     private CollapsibleInspector geneCollapsibleInspector;
     private OntologySubInspector ontologySubInspector;
-    private GeneManiaInfoSubPanel geneManiaInspector;
+    private GeneManiaSubInspector geneManiaInspector;
     private SocialVariantSubInspector socialSubInspector;
+    private OtherIndividualsSubInspector otherIndividualsSubInspector;
 
     public DetailedVariantSubInspector getDetailedVariantSubInspector() {
         return detailedVariantSubInspector;
@@ -74,7 +74,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             boolean createSocialVariantInspector,
             boolean createGeneSubInspector,
             boolean createOntologySubInspector,
-            boolean createGeneManiaInspector) {
+            boolean createGeneManiaInspector,
+            boolean createOtherIndividualsInspector) {
 
 
         // Assemble the variant inspector
@@ -105,6 +106,17 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             simpleVariantInspector = new SimpleVariantSubInspector();
             variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
             simpleVariantInspector.setGeneListener(this);
+
+            this.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent ce) {
+                    int selectedIndex = getSelectedIndex();
+                    if (getTitleAt(selectedIndex).equals("Gene")) {
+                        setGene(simpleVariantInspector.getSelectedGene());
+                    }
+
+                }
+            });
         }
 
         if (createDetailedVariantInspector) {
@@ -117,6 +129,10 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             variantCollapsibleInspector.addSubInspector(socialSubInspector);
         }
 
+        if (createOtherIndividualsInspector) {
+            otherIndividualsSubInspector = new OtherIndividualsSubInspector();
+            variantCollapsibleInspector.addSubInspector(otherIndividualsSubInspector);
+        }
         // Gene
         if (createGeneSubInspector) {
             geneSubInspector = new GeneSubInspector();
@@ -129,15 +145,15 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         }
 
         if (createGeneManiaInspector) {
-            geneManiaInspector = new GeneManiaInfoSubPanel();
+            geneManiaInspector = new GeneManiaSubInspector();
             geneCollapsibleInspector.addSubInspector(geneManiaInspector);
             geneManiaInspector.setGeneListener(this);
         }
 
-
         // Assemble everything
         addTabPanel(ComprehensiveInspector.InspectorEnum.VARIANT, variantCollapsibleInspector);
         addTabPanel(ComprehensiveInspector.InspectorEnum.GENE, geneCollapsibleInspector);
+
     }
 
     public CollapsibleInspector getVariantInspector() {
@@ -148,20 +164,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         return geneCollapsibleInspector;
     }
 
-
-    /*
-     public GeneSubInspector getGeneSubInspector() {
-     return geneSubInspector;
-     }
-
-     public DetailedVariantSubInspector getDetailedVariantSubInspector() {
-     return detailedVariantSubInspector;
-     }
-
-     public SimpleVariantSubInspector getSimpleVariantInspector() {
-     return simpleVariantInspector;
-     }
-     */
     public void setVariantRecord(final VariantRecord r) {
         this.switchToVariantInspector();
         final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getPosition(), r.getRef(), r.getAlt(), r.getType().toString());
@@ -268,7 +270,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             boolean createSocialVariantInspector,
             boolean createGeneSubInspector,
             boolean createOntologySubInspector,
-            boolean createGeneManiaInspector) {
+            boolean createGeneManiaInspector,
+            boolean createOtherIndividualsInspector) {
 
         setTabPlacement(JTabbedPane.TOP);
         setBorder(ViewUtil.getBigBorder());
@@ -280,7 +283,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 createSocialVariantInspector,
                 createGeneSubInspector,
                 createOntologySubInspector,
-                createGeneManiaInspector);
+                createGeneManiaInspector,
+                createOtherIndividualsInspector);
     }
 
     public void switchToGeneInspector() {

@@ -13,85 +13,14 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.mfiume.query.QueryViewController;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
 import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
-import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 
 /**
  *
  * @author mfiume
  */
 public class QueryUtils {
-
-    /**
-     *
-     * @param chrom
-     * @param pos
-     * @param alt
-     * @deprecated use addQueryOnRegions instead.
-     */
-    public static void addQueryOnChromPositionAlt(String chrom, int pos, String alt) {
-        QueryViewController vc = SearchBar.getInstance().getQueryViewController();
-        SearchConditionGroupItem parent = vc.getQueryRootGroup();
-
-        SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
-        g.setDescription("Chromosome " + chrom + " Pos. " + pos + " Alt. " + alt);
-        SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
-        String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
-        chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
-        chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
-        SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
-
-        SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
-        String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
-        positionItem.setSearchConditionEncoding(positionConditionEncoded);
-        positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
-        SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
-
-        SearchConditionItem altItem = new SearchConditionItem(BasicVariantColumns.ALT.getAlias(), g);
-        String altConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{alt}));
-        altItem.setSearchConditionEncoding(altConditionEncoded);
-        altItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(altConditionEncoded)));
-        SearchConditionItemView altView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(altItem);
-
-        vc.addItemToGroup(chromosomeItem, chromosomeView, g);
-        vc.addItemToGroup(positionItem, positionView, g);
-        vc.addItemToGroup(altItem, altView, g);
-
-        vc.addGroupToGroup(g, parent);
-    }
-
-    /**
-     *
-     * @param chrom
-     * @param pos
-     * @deprecated Use addQueryOnRegions instead
-     */
-    public static void addQueryOnChromPosition(String chrom, int pos) {
-        QueryViewController vc = SearchBar.getInstance().getQueryViewController();
-        SearchConditionGroupItem parent = vc.getQueryRootGroup();
-
-        SearchConditionGroupItem g = new SearchConditionGroupItem(parent);
-
-        g.setDescription("Chromosome " + chrom + " Pos. " + pos);
-        SearchConditionItem chromosomeItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), g);
-        String chromosomeConditionEncoded = StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom}));
-        chromosomeItem.setSearchConditionEncoding(chromosomeConditionEncoded);
-        chromosomeItem.setDescription(StringConditionEncoder.getDescription(StringConditionEncoder.unencodeConditions(chromosomeConditionEncoded)));
-        SearchConditionItemView chromosomeView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(chromosomeItem);
-
-        SearchConditionItem positionItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), g);
-        String positionConditionEncoded = NumericConditionEncoder.encodeConditions(pos, pos);
-        positionItem.setSearchConditionEncoding(positionConditionEncoded);
-        positionItem.setDescription(NumericConditionEncoder.getDescription(NumericConditionEncoder.unencodeConditions(positionConditionEncoded)));
-        SearchConditionItemView positionView = MedSavantConditionViewGenerator.getInstance().generateViewForItem(positionItem);
-
-        vc.addItemToGroup(chromosomeItem, chromosomeView, g);
-        vc.addItemToGroup(positionItem, positionView, g);
-
-        vc.addGroupToGroup(g, parent);
-    }
 
     private static SearchConditionGroupItem getRegionGroup(GenomicRegion gr, String alt) {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
@@ -251,5 +180,4 @@ public class QueryUtils {
     public static void addQueryOnHospitals(String[] hospitalIds) {
         addQueryOnHospitals(hospitalIds, null);
     }
-      
 }

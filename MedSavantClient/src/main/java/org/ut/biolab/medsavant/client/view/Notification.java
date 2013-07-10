@@ -1,20 +1,24 @@
 package org.ut.biolab.medsavant.client.view;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-public abstract class Notification {
+public abstract class Notification implements PropertyChangeListener{
 
-    public static enum JobStatus { NOT_STARTED, RUNNING, CANCELLED, FINISHED };
+    public static enum JobStatus {
 
+        NOT_STARTED, RUNNING, CANCELLED, FINISHED
+    };
     double progress = 0;
     String statusMessage = "";
     String title;
@@ -26,7 +30,9 @@ public abstract class Notification {
     private final JProgressBar progressBar;
     private final JButton cancelButton;
     private final JButton resultsButton;
+    private final JButton closeButton;
     private JobStatus status;
+    private boolean showResultsOnFinish = true;
 
     public Notification(String title) {
         view = ViewUtil.getClearPanel();
@@ -48,9 +54,9 @@ public abstract class Notification {
 
         resultsButton = ViewUtil.getSoftButton("View Results");
         cancelButton = ViewUtil.getSoftButton("Cancel");
-
+        closeButton = ViewUtil.getSoftButton("Close");
         resultsButton.setVisible(false);
-
+        closeButton.setVisible(false);
         resultsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -61,16 +67,25 @@ public abstract class Notification {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                cancelJob();
+                setStatus(JobStatus.CANCELLED);
             }
         });
+        
+        
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                closeJob();
+            }
+        });
+        
 
-        JPanel bottomBar = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(bottomBar);
+        JPanel buttonBar = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(buttonBar);
 
-        bottomBar.add(resultsButton);
-        bottomBar.add(cancelButton);
-
+        buttonBar.add(resultsButton);
+        buttonBar.add(cancelButton);
+        buttonBar.add(closeButton);
         JPanel statusPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(statusPanel);
         statusPanel.add(statusLabel);
@@ -81,7 +96,7 @@ public abstract class Notification {
         view.add(ViewUtil.alignLeft(titleLabel));
         //view.add(ViewUtil.alignLeft());
         view.add(statusPanel);
-        view.add(ViewUtil.alignRight(bottomBar));
+        view.add(ViewUtil.alignRight(buttonBar));
     }
 
     public final JPanel getView() {
@@ -91,11 +106,16 @@ public abstract class Notification {
     public double getProgress() {
         return progress;
     }
+    
+    public void showResultsOnFinish(boolean srof) {
+        this.showResultsOnFinish = srof;
+    }
 
     public void setProgress(double progress) {
-        //this.progressBar.setIndeterminate(false);
-        //this.progress = progress;
-        //this.progressBar.setValue((int)(progress*100));
+        //was commented
+        this.progressBar.setIndeterminate(false);
+        this.progress = progress;
+        this.progressBar.setValue((int) (progress * 100));
     }
 
     public String getStatusMessage() {
@@ -130,33 +150,63 @@ public abstract class Notification {
     }
 
     public void setIndeterminate(boolean indeterminate) {
-        //this.indeterminate = indeterminate;
-        //this.progressBar.setIndeterminate(indeterminate);
+        //was commented
+        this.indeterminate = indeterminate;
+        this.progressBar.setIndeterminate(indeterminate);
     }
 
     public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(JobStatus status) {
-        this.status = status;
-        switch (status) {
-            case NOT_STARTED:
-                break;
-            case RUNNING:
-                break;
-            case FINISHED:
-                resultsButton.setVisible(true);
-                cancelButton.setVisible(false);
-                progressBar.setIndeterminate(false);
-                progressBar.setValue(progressBar.getMaximum());
-                break;
+    public void setStatus(JobStatus st) {
+        this.status = st;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                switch (status) {
+                    case CANCELLED:
+                        setStatusMessage("Cancelled");
+                        cancelButton.setVisible(false);
+                        closeButton.setVisible(true);
+                        cancelJob();
+                        break;
+                    case NOT_STARTED:
+                        break;
+                    case RUNNING:
+                        break;
+                    case FINISHED:
+                        if (showResultsOnFinish) {
+                            resultsButton.setVisible(true);
+                        }
+                        cancelButton.setVisible(false);
+                        closeButton.setVisible(true);
+                        progressBar.setIndeterminate(false);
+                        progressBar.setValue(progressBar.getMaximum());
+                        break;
+                }
+            }
+        });
+    }
+    
+    public void monitorWorker(SwingWorker worker){
+        worker.addPropertyChangeListener(this);
+        worker.execute();
+    }
+    
+    //handle progress bar update.
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!progressBar.isIndeterminate() && "progress" == evt.getPropertyName()) {           
+            int progress = (Integer) evt.getNewValue();            
+            progressBar.setValue(progress);            
         }
     }
+    
+    //Called when results button pushed
+    protected abstract void showResults();
 
-    public abstract void showResults();
+    //Called when cancel button pushed.
+    protected abstract void cancelJob();
 
-    public abstract void cancelJob();
-
-
+    //Called when close button pushed.
+    protected abstract void closeJob();    
 }

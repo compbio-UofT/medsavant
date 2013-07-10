@@ -1,14 +1,18 @@
 package org.ut.biolab.medsavant.client.view;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -18,12 +22,15 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class NotificationsPanel extends JPanel {
 
+    private static final Log LOG = LogFactory.getLog(NotificationsPanel.class);
     private final String name;
     private int notificationCount;
     private final JPopupMenu notifications;
     private final JPopupMenu noNotifications;
     private final HashSet<Integer> completedNotifications = new HashSet<Integer>();
     private final JButton button;
+    static int notificationID = 0;
+    static Map<Integer, JPanel> notificationIDToPanelMap = new HashMap<Integer, JPanel>();
 
     public NotificationsPanel(String name) {
         this.name = name;
@@ -42,24 +49,31 @@ public class NotificationsPanel extends JPanel {
 
         ViewUtil.applyVerticalBoxLayout(notifications);
 
-        final NotificationsPanel instance = this;
-
-        final JPanel thisInstance = this;
-
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                JPopupMenu m;
-                if (notificationCount == 0 && completedNotifications.isEmpty()) {
-                    m = noNotifications;
-                } else {
-                    m = notifications;
-                }
-                m.show(instance, 0, thisInstance.getPreferredSize().height);
+                showPopup();
             }
         });
 
         setNotificationNumber(0);
+    }
+
+    private void showPopup() {
+        if (this.isVisible()) {
+            JPopupMenu m;
+            if (notificationCount == 0 && completedNotifications.isEmpty()) {
+                m = noNotifications;
+            } else {
+                m = notifications;
+            }
+            LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());
+            m.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            m.show(this, 0, getPreferredSize().height);
+        } else {
+            notifications.setVisible(false);
+            noNotifications.setVisible(false);
+        }
     }
 
     public final void setNotificationNumber(int notificationNumber) {
@@ -69,24 +83,8 @@ public class NotificationsPanel extends JPanel {
         this.removeAll();
         this.add(ViewUtil.subTextComponent(button, s));
         setVisible(notificationCount != 0);
+        showPopup();
     }
-
-    /*private void resize() {
-        FontMetrics fm = countLabel.getFontMetrics(countLabel.getFont());
-        int width = fm.stringWidth(countLabel.getText());
-
-        System.err.println("resize to " + width);
-
-        Dimension thisDimension = new Dimension(width, this.getPreferredSize().height);
-        ViewUtil.fixSize(this,thisDimension);
-
-        Dimension labelDimension = new Dimension(width, countLabel.getPreferredSize().height);
-        ViewUtil.fixSize(countLabel, labelDimension);
-    }
-    */
-
-    static int notificationID = 0;
-    static Map<Integer, JPanel> notificationIDToPanelMap = new HashMap<Integer, JPanel>();
 
     public int addNotification(JPanel notification) {
         notificationID++;
@@ -120,5 +118,6 @@ public class NotificationsPanel extends JPanel {
             setNotificationNumber(--this.notificationCount);
             completedNotifications.add(notificationID);
         }
+
     }
 }

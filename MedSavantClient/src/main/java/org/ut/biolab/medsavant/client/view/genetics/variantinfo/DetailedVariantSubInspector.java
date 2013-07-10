@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -24,18 +23,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -46,18 +40,14 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticGeneInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
-
 
 /**
  *
@@ -70,12 +60,11 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
     private static final String KEY_DBSNP = "dbSNP ID";
     private static final String KEY_ZYGOSITY = "Zygosity";
     private static final String KEY_INFO = "Info";
-    private static final String URL_CHARSET = "UTF-8";
-
-    private Collection<Gene> genes;
+    private static final String URL_CHARSET = "UTF-8";    
     private KeyValuePairPanel p;
     private JComboBox geneBox;
     private VariantRecord selectedVariant;
+    private static final Log LOG = LogFactory.getLog(DetailedVariantSubInspector.class);
 
     public DetailedVariantSubInspector() {
     }
@@ -100,7 +89,6 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
 
         return s;
     }
-
 
     private Component getFilterButton(final String key) {
 
@@ -178,40 +166,40 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
             Object[] row = rows.get(0);
 
             VariantRecord r = new VariantRecord(
-                                (Integer)row[INDEX_OF_UPLOAD_ID],
-                                (Integer)row[INDEX_OF_FILE_ID],
-                                (Integer)row[INDEX_OF_VARIANT_ID],
-                                (Integer)ReferenceController.getInstance().getCurrentReferenceID(),
-                                (Integer)0, // pipeline ID
-                                (String)row[INDEX_OF_DNA_ID],
-                                (String)row[INDEX_OF_CHROM],
-                                (Integer)row[INDEX_OF_POSITION],
-                                (String)row[INDEX_OF_DBSNP_ID],
-                                (String)row[INDEX_OF_REF],
-                                (String)row[INDEX_OF_ALT],
-                                (Float)row[INDEX_OF_QUAL],
-                                (String)row[INDEX_OF_FILTER],
-                                (String)row[INDEX_OF_CUSTOM_INFO],
-                                new Object[]{});
+                    (Integer) row[INDEX_OF_UPLOAD_ID],
+                    (Integer) row[INDEX_OF_FILE_ID],
+                    (Integer) row[INDEX_OF_VARIANT_ID],
+                    (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
+                    (Integer) 0, // pipeline ID
+                    (String) row[INDEX_OF_DNA_ID],
+                    (String) row[INDEX_OF_CHROM],
+                    (Integer) row[INDEX_OF_POSITION],
+                    (String) row[INDEX_OF_DBSNP_ID],
+                    (String) row[INDEX_OF_REF],
+                    (String) row[INDEX_OF_ALT],
+                    (Float) row[INDEX_OF_QUAL],
+                    (String) row[INDEX_OF_FILTER],
+                    (String) row[INDEX_OF_CUSTOM_INFO],
+                    new Object[]{});
 
-                        String type = (String) row[INDEX_OF_VARIANT_TYPE];
-                        String zygosity = (String)row[INDEX_OF_ZYGOSITY];
-                        String genotype = (String)row[INDEX_OF_GT];
+            String type = (String) row[INDEX_OF_VARIANT_TYPE];
+            String zygosity = (String) row[INDEX_OF_ZYGOSITY];
+            String genotype = (String) row[INDEX_OF_GT];
 
-                        r.setType(VariantRecord.VariantType.valueOf(type));
-                        r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
-                        r.setGenotype(genotype);
+            r.setType(VariantRecord.VariantType.valueOf(type));
+            r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+            r.setGenotype(genotype);
 
-             setVariantRecord(r);
+            setVariantRecord(r);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.error(ex);
         }
     }
 
     @Override
     public JPanel getInfoPanel() {
-         if (p == null) {
+        if (p == null) {
             p = new KeyValuePairPanel(4);
             p.addKey(KEY_DNAID);
             p.addKey(KEY_ZYGOSITY);
@@ -244,15 +232,8 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 dnaID);
                         if (bamPath != null && !bamPath.equals("")) {
-                            /*int response = DialogUtils.askYesNo("Load Read Alignments",
-                             "<html>The read alignments for this sample<br>"
-                             + "are available. Would you like to load them<br>"
-                             + "as a track in the genome browser?</html>");*/
-                            int response = DialogUtils.YES;
-                            if (response == DialogUtils.YES) {
-                                //BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
-                                 MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
-                            }
+                            BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                            MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                         }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Unable to load BAM file: %s", ex);
@@ -288,8 +269,8 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
 
             int col = 0;
 
-            p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID,p));
-            p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP,p));
+            p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID, p));
+            p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP, p));
             //p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
 
             col++;
@@ -328,7 +309,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                     ProjectController.getInstance().getCurrentProjectID(),
                     r.getDnaID());
 
-            JButton bamButton = (JButton)p.getAdditionalColumn(KEY_DNAID, 1);
+            JButton bamButton = (JButton) p.getAdditionalColumn(KEY_DNAID, 1);
             if (bamPath != null && !bamPath.equals("")) {
                 bamButton.setVisible(true);
             } else {
@@ -338,5 +319,4 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
             ClientMiscUtils.reportError("Unable to get BAM path for DNA ID: %s", ex);
         }
     }
-
 }

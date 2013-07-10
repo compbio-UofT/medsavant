@@ -22,10 +22,10 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import java.awt.Color;
-import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.JLabel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public abstract class CollapsibleInspector extends JPanel implements Inspector {
-
+    private static final Log LOG = LogFactory.getLog(CollapsibleInspector.class);
     private final JPanel container;
     private final CollapsiblePanes panesContainer;
     private final JPanel messageContainer;
@@ -116,7 +116,7 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
         
-        System.out.println("Adding subinspector...");
+        LOG.debug("Adding subinspector...");
         p.add(ipan.getInfoPanel(), BorderLayout.CENTER);
         panesContainer.add(p);
         panesContainer.addExpansion();

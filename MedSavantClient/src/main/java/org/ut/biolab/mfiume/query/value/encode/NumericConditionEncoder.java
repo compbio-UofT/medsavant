@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.value.encode;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,18 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class NumericConditionEncoder {
+
+
+    static DecimalFormat format;
+    static DecimalFormatSymbols symbols;
+    static char sep;
+
+    static {
+        DecimalFormat f = (DecimalFormat) DecimalFormat.getInstance();
+        symbols = f.getDecimalFormatSymbols();
+        sep = symbols.getDecimalSeparator();
+        format = new DecimalFormat("#" + sep + "##");
+    }
 
     /**
      * Serialization
@@ -26,15 +39,27 @@ public class NumericConditionEncoder {
         return values;
     }
 
-    public static String encodeConditions(double low, double high) {        
-        return Double.toString(low)+DELIM+Double.toString(high);        
+    public static String encodeConditions(double low, double high) {
+
+        String lowString = Double.toString(low);
+        /*if (low != (int) low) {
+            lowString = format.format(low);
+        }*/
+        String highString = Double.toString(high);
+        /*if (high != (int) high) {
+            highString = format.format(high);
+        }
+        */
+        System.out.println("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString);
+
+        return lowString + DELIM + highString;
     }
 
     public static String getDescription(double[] ds) {
 
         double low = ds[0];
         double high = ds[1];
-        
+
         String s;
         if (low == high) {
             s = ViewUtil.numToString(low);

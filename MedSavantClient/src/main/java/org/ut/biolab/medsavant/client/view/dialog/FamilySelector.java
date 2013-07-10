@@ -40,63 +40,55 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
  * @author mfiume
  */
-public class IndividualSelector extends JDialog implements BasicPatientColumns {
+public class FamilySelector extends JDialog implements BasicPatientColumns {
 
-    Set<String> selectedHospitalIDs;
+    int INDEX_OF_KEY = 0;
+
+    Set<String> selectedFamilies;
     private static final Log LOG = LogFactory.getLog(IndividualSelector.class);
     private JPanel middlePanel;
     private JPanel topPanel;
     private JPanel bottomPanel;
     private static final String[] COLUMN_NAMES = new String[]{
-        PATIENT_ID.getAlias(),
-        FAMILY_ID.getAlias(),
-        HOSPITAL_ID.getAlias(),
-        IDBIOMOM.getAlias(),
-        IDBIODAD.getAlias(),
-        GENDER.getAlias(),
-        AFFECTED.getAlias(),
-        DNA_IDS.getAlias(),
-        PHENOTYPES.getAlias()};
-    private static final Class[] COLUMN_CLASSES = new Class[]{Integer.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, String.class, String.class};
-    private static final int[] HIDDEN_COLUMNS = new int[]{0, 3, 4, 6};
+        "Family ID"
+    };
+    private static final Class[] COLUMN_CLASSES = new Class[]{String.class};
+    private static final int[] HIDDEN_COLUMNS = new int[]{};
+    /*private static final String[] COLUMN_NAMES = new String[]{
+     PATIENT_ID.getAlias(),
+     FAMILY_ID.getAlias(),
+     HOSPITAL_ID.getAlias(),
+     IDBIOMOM.getAlias(),
+     IDBIODAD.getAlias(),
+     GENDER.getAlias(),
+     AFFECTED.getAlias(),
+     DNA_IDS.getAlias(),
+     PHENOTYPES.getAlias()};
+     */
+    //private static final Class[] COLUMN_CLASSES = new Class[]{Integer.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, String.class, String.class};
+    //private static final int[] HIDDEN_COLUMNS = new int[]{0, 3, 4, 6};
     private SearchableTablePanel stp;
     private JLabel numselections;
-    private IndividualsReceiver retriever;
+    private FamilyReceiver retriever;
     private HashSet<Integer> selectedRows;
     private JButton ok;
     private boolean hasMadeSelections;
 
-    public IndividualSelector() {
+    public FamilySelector() {
         super(MedSavantFrame.getInstance(), true);
-        setTitle("Select Individuals");
+        setTitle("Select Families");
         this.setPreferredSize(new Dimension(700, 600));
         this.setMinimumSize(new Dimension(700, 600));
-        selectedHospitalIDs = new HashSet<String>();
+        selectedFamilies = new HashSet<String>();
         selectedRows = new HashSet<Integer>();
         initUI();
         refresh();
-    }
-
-    private final static int INDEX_OF_HOSPITAL_ID = 2;
-    private final static int INDEX_OF_DNA_ID = 7;
-
-    public Set<String> getHospitalIDsOfSelectedIndividuals() {
-        return selectedHospitalIDs;
-    }
-
-    private Set<String> getDNAIDsOfSelectedIndividuals() {
-        Set<String> ids = new HashSet<String>();
-        for (int i : selectedRows) {
-           String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_ID];
-           //String dnaID = (String) stp.getTable().getModel().getValueAt(i, INDEX_OF_DNA_ID);
-           ids.add(dnaID);
-        }
-        return ids;
     }
 
     private void refresh() {
@@ -120,7 +112,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         // middle
         middlePanel.setLayout(new BorderLayout());
 
-        retriever = new IndividualsReceiver();
+        retriever = new FamilyReceiver();
 
         stp = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
                 true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, retriever);
@@ -131,7 +123,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         // bottom
         ViewUtil.applyVerticalBoxLayout(bottomPanel);
 
-        numselections = ViewUtil.getTitleLabel("0 individual(s) selected");
+        numselections = ViewUtil.getTitleLabel("0 families selected");
 
         JPanel text = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(text);
@@ -285,7 +277,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         String tooltipText = "<html>";
 
-        for (String o : this.selectedHospitalIDs) {
+        for (String o : this.selectedFamilies) {
             tooltipText += o + "<br>";
         }
         tooltipText += "</html>";
@@ -294,13 +286,13 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         stp.setToggledRows(selectedRows);
 
-        numselections.setText(this.selectedHospitalIDs.size() + " individual(s) selected");
+        numselections.setText(this.selectedFamilies.size() + " " + MiscUtils.pluralize(this.selectedFamilies.size(),"family","families") + " selected");
 
-        ok.setEnabled(this.selectedHospitalIDs.size() > 0);
+        ok.setEnabled(this.selectedFamilies.size() > 0);
     }
 
     private void clearSelections() {
-        selectedHospitalIDs.removeAll(selectedHospitalIDs);
+        selectedFamilies.removeAll(selectedFamilies);
         selectedRows.removeAll(selectedRows);
 
         stp.setToggledRows(null);
@@ -323,7 +315,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         for (int r : rows) {
             int realRow = stp.getActualRowAt(r);
-            Object[] o = retriever.getIndividuals().get(realRow);
+            Object[] o = retriever.getFamilies().get(realRow);
             toUnselect.add(o);
         }
 
@@ -333,7 +325,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
 
         for (Object[] s : toUnselect) {
-            selectedHospitalIDs.remove(s[INDEX_OF_HOSPITAL_ID].toString());
+            selectedFamilies.remove(s[INDEX_OF_KEY].toString());
         }
 
         refreshSelectionIndicator();
@@ -356,7 +348,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         for (int r : rows) {
             int realRow = stp.getActualRowAt(r);
-            Object[] o = retriever.getIndividuals().get(realRow);
+            Object[] o = retriever.getFamilies().get(realRow);
             selected.add(o);
         }
 
@@ -366,24 +358,26 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
 
         for (Object[] s : selected) {
-            selectedHospitalIDs.add(s[INDEX_OF_HOSPITAL_ID].toString());
+            selectedFamilies.add(s[INDEX_OF_KEY].toString());
         }
 
         refreshSelectionIndicator();
     }
 
+    public Set<String> getSelectedFamilies() {
+        return selectedFamilies;
+    }
 
-
-    public void setSelectedIndividuals(Set<String> s) {
+    public void setSelectedFamilies(Set<String> s) {
         selectedRows.removeAll(selectedRows);
-        selectedHospitalIDs = s;
+        selectedFamilies = s;
         hasMadeSelections = true;
 
         for (String arbitraryHostpitalID : s) {
             int rowNumber = 0;
-            List<Object[]> individuals = retriever.getIndividuals();
+            List<Object[]> individuals = retriever.getFamilies();
             for (Object[] inOrderRow : individuals) {
-                if (inOrderRow[INDEX_OF_HOSPITAL_ID].equals(arbitraryHostpitalID)) {
+                if (inOrderRow[INDEX_OF_KEY].equals(arbitraryHostpitalID)) {
                     selectedRows.add(rowNumber);
                 }
                 rowNumber++;
@@ -397,47 +391,50 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     }
 
     public void resetSelections() {
-        setSelectedIndividuals(new HashSet<String>());
+        setSelectedFamilies(new HashSet<String>());
         this.hasMadeSelections = false;
     }
 
-    public static class IndividualsReceiver extends DataRetriever<Object[]> {
-        //private DataRetriever<Object[]> getIndividualsRetriever() {
+    public static class FamilyReceiver extends DataRetriever<Object[]> {
 
-        private List<Object[]> individuals;
+        private List<Object[]> families;
 
-        public List<Object[]> getIndividuals() {
-            return individuals;
+        public List<Object[]> getFamilies() {
+            return families;
         }
 
         @Override
         public List<Object[]> retrieve(int start, int limit) throws Exception {
-            if (individuals == null) {
-                setIndividuals();
+            if (families == null) {
+                setFamilies();
             }
-            return individuals;
+            return families;
         }
 
         @Override
         public int getTotalNum() {
-            if (individuals == null) {
+            if (families == null) {
                 try {
-                    setIndividuals();
+                    setFamilies();
                 } catch (Exception ex) {
                     LOG.error(ex);
                 }
             }
-            return individuals.size();
+            return families.size();
         }
 
         @Override
         public void retrievalComplete() {
         }
 
-        private void setIndividuals() throws SQLException, RemoteException {
+        private void setFamilies() throws SQLException, RemoteException {
             try {
-                individuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+                List<String> fams = MedSavantClient.PatientManager.getFamilyIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                families = new ArrayList<Object[]>(fams.size());
 
+                for (String fam : fams) {
+                    families.add(new Object[]{fam});
+                }
             } catch (SessionExpiredException e) {
                 MedSavantExceptionHandler.handleSessionExpiredException(e);
             }

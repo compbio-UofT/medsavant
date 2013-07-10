@@ -97,7 +97,7 @@ public class SearchConditionItemView extends PillView {
                             editor.loadViewFromExistingSearchConditionParameters();
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
-                                public void run() {
+                                public void run() {                           
                                     conditionsEditor.removeAll();
 
                                     JPanel p = ViewUtil.getClearPanel();
@@ -161,13 +161,23 @@ public class SearchConditionItemView extends PillView {
         refresh();
     }
 
-    public final void refresh() {        
-        
+    public final void refresh() {
+
         this.setActivated(item.getSearchConditionEncoding() != null);
+
+
+        String name = item.getName(); // e.g. "frequency - thousand genomes"
+
+        int index = name.indexOf("-");
+        if (index != -1) {
+            // remove the program name, e.g. frequency
+            name = name.substring(0,index);
+        }
+
         this.setText(
                 "<html>"
                 + (!item.getParent().isFirstItem(item) ? item.getRelation() + " " : "")
-                + "<b>" + item.getName() + "</b>"
+                + "<b>" + name + "</b>"
                 + (item.getDescription() != null ? " is " + item.getDescription() + "" : " is <i>unset</i>") + "</html>");
     }
 

@@ -78,4 +78,10 @@ public class SimpleFamilyMattersGene implements Comparable {
         }
         return ((Long) this.start).compareTo(other.start);
     }
+
+    @Override
+    public String toString() {
+        return "SimpleFamilyMattersGene{" + "chr=" + chr + ", start=" + start + ", end=" + end + ", name=" + name + '}';
+    }
+
 }
