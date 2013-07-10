@@ -19,6 +19,11 @@ public abstract class AbstractQuery implements Query {
     protected QueryExecutor executor;
 
     /**
+     * The query statement
+     */
+    protected String statement;
+
+    /**
      * The start of the result list in the result set.
      */
     protected int start;
@@ -32,11 +37,6 @@ public abstract class AbstractQuery implements Query {
      * The map holding the query parameter values
      */
     protected Map<String, Object> parameters = new HashMap<String, Object>();
-
-    /**
-     * Array of sorts associated for this query.
-     */
-    protected QuerySort[] sorts;
 
     @Override
     public Query setParameter(String parameterName, Object value) {
@@ -88,25 +88,12 @@ public abstract class AbstractQuery implements Query {
     }
 
     @Override
-    public Query setSorts(QuerySort[] sorts) {
-        this.sorts = sorts;
-        return this;
+    public String getStatement() {
+        return statement;
     }
 
     @Override
-    public QuerySort[] getSorts() {
-        return sorts;
-    }
-
-    @Override
-    public Query addSort(QuerySort sort) {
-        this.sorts = ArrayUtils.add(sorts, sort);
-        return this;
-    }
-
-    @Override
-    public Query addSorts(QuerySort[] newSorts) {
-        this.sorts = ArrayUtils.addAll(sorts, newSorts);
-        return this;
+    public void setStatement(String statement) {
+        this.statement = statement;
     }
 }

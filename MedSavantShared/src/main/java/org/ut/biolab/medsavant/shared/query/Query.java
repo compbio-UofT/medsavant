@@ -20,6 +20,18 @@ public interface Query {
     <T> List<T> execute() throws QueryException;
 
     /**
+     * Return the string query statement.
+     * @return                  The query statement as a String.
+     */
+    public String getStatement();
+
+    /**
+     * Set the query statement string.
+     * @param statement         The query statement as a String
+     */
+    public void setStatement(String statement);
+
+    /**
      * Bind a paramter value to the named parameter paramName in the query.
      * @param parameterName             The name of the parameter, appears as :parameterName in the query.
      * @param value                     The object corresponding to the parameter.
@@ -70,32 +82,5 @@ public interface Query {
      * @return          the limit of the result list.
      */
     public int getLimit();
-
-    /**
-     * Set an array of sorts for the current query.
-     * @param sorts     The sorts for the query
-     * @return          The query
-     */
-    public Query setSorts(QuerySort[] sorts);
-
-    /**
-     * Return the sorts for the current query
-     * @return          The sorts for this query
-     */
-    public QuerySort[] getSorts();
-
-    /**
-     * Add a new sort to the query
-     * @param sort      The new Sort
-     * @return          The query
-     */
-    public Query addSort(QuerySort sort);
-
-    /**
-     * Add an array of query sorts to the query.
-     * @param sorts     The new sorts
-     * @return          The query
-     */
-    public Query addSorts(QuerySort[] sorts);
 
 }
