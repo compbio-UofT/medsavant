@@ -95,7 +95,7 @@ public class SearchableTablePanel extends JPanel {
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
-
+    
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
             boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
 
@@ -112,8 +112,8 @@ public class SearchableTablePanel extends JPanel {
                     JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
 
                     // Even index, selected or not selected
-                    if (isRowToggled(this.getActualRowAt(row))) {
-                        comp.setBackground(new Color(86, 176, 6));
+                    if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
+                        comp.setBackground(new Color(178, 225, 92));
                     } else if (isCellSelected(row, col)) {
                         comp.setBackground(new Color(75, 149, 229));
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
