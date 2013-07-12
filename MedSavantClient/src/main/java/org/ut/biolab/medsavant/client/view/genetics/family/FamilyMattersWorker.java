@@ -466,6 +466,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             for (String s : dnaIDs.keySet()) {
                 st += s + ", ";
             }
+
+            if (st.endsWith(", ")) {
+                st = st.substring(0,st.length()-2);
+            }
             return st;
         }
 
