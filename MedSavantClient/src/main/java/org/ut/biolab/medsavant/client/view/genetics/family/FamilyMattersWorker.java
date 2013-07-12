@@ -353,10 +353,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         for (Gene g : msGenes) {
             SimpleFamilyMattersGene simpleGene = new SimpleFamilyMattersGene(g.getChrom(), g.getCodingStart(), g.getCodingEnd(), g.getName());
             genes.add(simpleGene);
-
-            if (simpleGene.name.equals("PBX2")) {
-                LOG.info(simpleGene);
-            }
         }
         return genes;
     }
@@ -468,7 +464,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
 
             if (st.endsWith(", ")) {
-                st = st.substring(0,st.length()-2);
+                st = st.substring(0, st.length() - 2);
             }
             return st;
         }
@@ -886,38 +882,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         LOG.info("Number of variants (grouped by position):\t" + variants.size());
         LOG.info("Number of genes:\t" + genes.size());
 
-        /*
-        // some manual reporting / debugging
-        HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-        HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-        for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-            for (SimpleFamilyMattersGene g : v.getGenes()) {
-                Set<String> fgCount = new HashSet<String>();
-                Set<String> bgCount = new HashSet<String>();
-                if (geneToFGCountMap.containsKey(g)) {
-                    fgCount = geneToFGCountMap.get(g);
-                }
-                if (geneToBGCountMap.containsKey(g)) {
-                    bgCount = geneToBGCountMap.get(g);
-                }
-                for (SimplePatient p : variantToSampleMap.get(v)) {
-                    if (p.dnaID.startsWith("MS_HCS")) {
-                        fgCount.add(p.dnaID);
-                    } else {
-                        bgCount.add(p.dnaID);
-                    }
-                }
-                geneToFGCountMap.put(g, fgCount);
-                geneToBGCountMap.put(g, bgCount);
-            }
-        }
 
-        System.out.println("GENE ANALYSIS: ");
-        for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-            if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() <= 42)) { //&& geneToBGCountMap.get(g).size() < 42)) {
-                System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
-            }
-        }*/
+
 
         Set<SimpleFamilyMattersGene> allExcludedGenes = new HashSet<SimpleFamilyMattersGene>();
 
@@ -928,8 +894,40 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             ++stepNumber;
 
             LOG.info("Getting gene to sample map");
-            Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap,allExcludedGenes);
+            Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
             LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
+
+            // some manual reporting / debugging
+            HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
+            HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
+            for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+                for (SimpleFamilyMattersGene g : v.getGenes()) {
+                    Set<String> fgCount = new HashSet<String>();
+                    Set<String> bgCount = new HashSet<String>();
+                    if (geneToFGCountMap.containsKey(g)) {
+                        fgCount = geneToFGCountMap.get(g);
+                    }
+                    if (geneToBGCountMap.containsKey(g)) {
+                        bgCount = geneToBGCountMap.get(g);
+                    }
+                    for (SimplePatient p : variantToSampleMap.get(v)) {
+                        if (p.dnaID.startsWith("MS_HCS")) {
+                            fgCount.add(p.dnaID);
+                        } else {
+                            bgCount.add(p.dnaID);
+                        }
+                    }
+                    geneToFGCountMap.put(g, fgCount);
+                    geneToBGCountMap.put(g, bgCount);
+                }
+            }
+
+            System.out.println("GENE ANALYSIS at " + stepNumber);
+            for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
+                if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() <= 42) || (geneToBGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
+                    System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
+                }
+            }
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
 
@@ -998,6 +996,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
         }
 
+        getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
+
         InheritanceModel model = inheritanceStep.getInheritanceModel();
 
         System.out.println("Running inheritance model " + model);
@@ -1021,8 +1021,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         }
 
-        /*
-        // some manual reporting / debugging
+
+        /* some manual reporting / debugging
         geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
         geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
         for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
@@ -1045,19 +1045,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 geneToFGCountMap.put(g, fgCount);
                 geneToBGCountMap.put(g, bgCount);
             }
-        }
+        }*
 
         System.out.println("GENE ANALYSIS: ");
         for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
             if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
                 System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
-                /*int i = 1;
-                 for (String pp : geneToBGCountMap.get(g)) {
-                 System.out.println("\t\t" + (i++) + ". " + pp);
-                 }
             }
         }
-*/
+        */
+
 
         return variantToSampleMap;
     }
