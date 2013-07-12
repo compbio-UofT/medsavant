@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
@@ -45,6 +46,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.Notification;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
+import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.IncludeExcludeStep;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep.InheritanceModel;
@@ -102,22 +104,18 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         final List<SimpleFamilyMattersVariant> variants = new ArrayList<SimpleFamilyMattersVariant>(result.keySet());
 
-        LOG.info(variants.size() + " variants to be shown");
+        //LOG.info(variants.size() + " variants to be shown");
 
         DataRetriever<Object[]> retriever = new DataRetriever<Object[]>() {
             @Override
             public List<Object[]> retrieve(int start, int limit) throws Exception {
 
-                LOG.info("Showing " + limit + " results starting from " + start);
+                //LOG.info("Showing " + limit + " results starting from " + start);
                 List<Object[]> rows = new ArrayList<Object[]>();
 
                 for (int i = 0; i < limit && (i + start) < variants.size(); i++) {
 
                     SimpleFamilyMattersVariant v = variants.get(i + start);
-
-                    if (i < 10) {
-                        LOG.info(v);
-                    }
 
                     String geneStr = "";
                     for (SimpleFamilyMattersGene g : v.getGenes()) {
@@ -144,7 +142,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
             @Override
             public int getTotalNum() {
-                LOG.info("Number of results " + result.keySet().size());
+                //LOG.info("Number of results " + result.keySet().size());
                 return variants.size();
             }
 
@@ -180,7 +178,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
 
                 SimpleFamilyMattersVariant fmv = variants.get(index);
-                LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
+                //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
 
                 SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
                 vip.setSimpleVariant(v);
@@ -190,7 +188,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         JDialog f = new JDialog();
         f.setTitle("Cohort Analysis Results");
 
-        LOG.info("Showing table of results");
+        //LOG.info("Showing table of results");
 
         JPanel aligned = new JPanel();
         aligned.setLayout(new BorderLayout());
@@ -235,8 +233,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         for (SimpleFamilyMattersVariant variant : variantToSampleMap.keySet()) {
 
             if (counter % announceEvery == 0) {
-                double percent = ((double)counter)*100/total;
-                LOG.info("Processed " + counter + " of " + variantToSampleMap.keySet().size() +  " (" + percent + "%) variants");
+                double percent = ((double) counter) * 100 / total;
+                LOG.info("Processed " + counter + " of " + variantToSampleMap.keySet().size() + " (" + percent + "%) variants");
             }
             counter++;
 
@@ -277,7 +275,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
     private boolean testVariantsforCompountHeterozygousInFamily(SimpleFamilyMattersVariant variant1, SimpleFamilyMattersVariant variant2, SimplePatientSet possessors1, SimplePatientSet possessors2, SimpleFamily fam) {
 
-        if (possessors1 == null  || possessors2 == null) { return false; }
+        if (possessors1 == null || possessors2 == null) {
+            return false;
+        }
 
         boolean evidenceInFamily = false;
 
@@ -307,18 +307,15 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 // each parents should have one
                 String momDNAId = p.getMomDNAID();
                 String dadDNAId = p.getDadDNAID();
-                if  (momDNAId != null && dadDNAId != null
-                        && (
-                            // both have first
-                            (possessors1.containsDNAID(momDNAId) && possessors1.containsDNAID(dadDNAId))
-                            // neither has first
-                            || (!possessors1.containsDNAID(momDNAId) && !possessors1.containsDNAID(dadDNAId))
-                            // both have second
-                            || (possessors2.containsDNAID(momDNAId) && possessors2.containsDNAID(dadDNAId))
-                            // neither has second
-                            || (!possessors2.containsDNAID(momDNAId) && !possessors2.containsDNAID(dadDNAId))
-                        )
-                    ) {
+                if (momDNAId != null && dadDNAId != null
+                        && ( // both have first
+                        (possessors1.containsDNAID(momDNAId) && possessors1.containsDNAID(dadDNAId))
+                        // neither has first
+                        || (!possessors1.containsDNAID(momDNAId) && !possessors1.containsDNAID(dadDNAId))
+                        // both have second
+                        || (possessors2.containsDNAID(momDNAId) && possessors2.containsDNAID(dadDNAId))
+                        // neither has second
+                        || (!possessors2.containsDNAID(momDNAId) && !possessors2.containsDNAID(dadDNAId)))) {
                     return false;
                 }
 
@@ -337,8 +334,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 // should not be anything but het at these positions
                 String dnaID = p.getDnaID();
 
-                if (possessors1.containsDNAID(dnaID) && possessors1.getZygosityForDNAID(dnaID) != Zygosity.Hetero) { return false; }
-                if (possessors2.containsDNAID(dnaID) && possessors2.getZygosityForDNAID(dnaID) != Zygosity.Hetero) { return false; }
+                if (possessors1.containsDNAID(dnaID) && possessors1.getZygosityForDNAID(dnaID) != Zygosity.Hetero) {
+                    return false;
+                }
+                if (possessors2.containsDNAID(dnaID) && possessors2.getZygosityForDNAID(dnaID) != Zygosity.Hetero) {
+                    return false;
+                }
 
             }
         }
@@ -346,9 +347,105 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
+    private TreeSet<SimpleFamilyMattersGene> getGeneSet() throws SQLException, RemoteException {
+        Collection<Gene> msGenes = GeneSetController.getInstance().getCurrentGenes();
+        TreeSet<SimpleFamilyMattersGene> genes = new TreeSet<SimpleFamilyMattersGene>();
+        for (Gene g : msGenes) {
+            SimpleFamilyMattersGene simpleGene = new SimpleFamilyMattersGene(g.getChrom(), g.getCodingStart(), g.getCodingEnd(), g.getName());
+            genes.add(simpleGene);
+        }
+        return genes;
+    }
+
+    /*private TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> associateGenesAndVariants(TreeSet<SimpleFamilyMattersVariant> variants, TreeSet<SimpleFamilyMattersGene> genes) {
+
+     TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap;
+     Comparator startComparator = new VariantGeneComparator(true);
+     Comparator endComparator = new VariantGeneComparator(false);
+     int zeroIndex = variants.size();
+     genesToVariantsMap = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
+     // make a list, which we can binary search on
+     List<SimpleFamilyMattersVariant> sortedVariants = new ArrayList<SimpleFamilyMattersVariant>(variants);
+
+     for (SimpleFamilyMattersGene g : genes) {
+     int s = Collections.binarySearch(sortedVariants, g, startComparator);
+     int e = Collections.binarySearch(sortedVariants, g, endComparator);
+
+     if (s == zeroIndex) {
+     s = 0;
+     }
+     if (e == zeroIndex) {
+     e = 0;
+     }
+
+     if (s < 0) {
+     s = s * -1;
+     }
+     if (e < 0) {
+     e = e * -1;
+     }
+
+     if (s > variants.size()) {
+     continue;
+     }
+     if (e > variants.size()) {
+     e = variants.size();
+     }
+
+     Set<SimpleFamilyMattersVariant> variantsMappingToGene = new HashSet<SimpleFamilyMattersVariant>();
+
+     for (int i = s; i < e; i++) {
+     SimpleFamilyMattersVariant v = sortedVariants.get(i);
+     v.addGene(g);
+     variantsMappingToGene.add(v);
+     }
+
+     genesToVariantsMap.put(g, variantsMappingToGene);
+
+     // debug
+     if (g.name.equals("NOTCH2")) {
+     LOG.info("NOTCH2 variants:");
+     int i = 1;
+     for (SimpleFamilyMattersVariant v : variantsMappingToGene) {
+     LOG.info("\t" + (i++) + ". " + v);
+     }
+     }
+
+     }
+     return genesToVariantsMap;
+     }*/
+    private TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> associateGenesAndVariants(TreeSet<SimpleFamilyMattersVariant> variants, TreeSet<SimpleFamilyMattersGene> genes) {
+
+        //LOG.info("associate Genes And Variants");
+
+        TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> map = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
+
+        for (SimpleFamilyMattersGene g : genes) {
+            //LOG.info("processing " + g.name);
+
+            Set<SimpleFamilyMattersVariant> set = new HashSet<SimpleFamilyMattersVariant>();
+            for (SimpleFamilyMattersVariant v : variants) {
+                if (intersects(g, v)) {
+                    set.add(v);
+                    v.addGene(g);
+                }
+            }
+            map.put(g, set);
+        }
+        return map;
+    }
+
+    private boolean intersects(SimpleFamilyMattersGene g, SimpleFamilyMattersVariant v) {
+        if (g.chr.equals(v.chr) && g.start <= v.pos && v.pos <= g.end) {
+            return true;
+        }
+        return false;
+    }
+
     protected class SimplePatientSet extends HashSet<SimplePatient> {
 
         private final HashMap<String, SimplePatient> dnaIDs;
+        boolean immutable = false;
 
         public SimplePatientSet() {
             super();
@@ -365,14 +462,40 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             for (String s : dnaIDs.keySet()) {
                 st += s + ", ";
             }
+
+            if (st.endsWith(", ")) {
+                st = st.substring(0, st.length() - 2);
+            }
             return st;
         }
 
-
         @Override
         public boolean add(SimplePatient o) {
+            if (immutable) {
+                throw new UnsupportedOperationException("Can't modify to an immutable set");
+            }
             this.dnaIDs.put(o.getDnaID(), o);
             return super.add(o);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            if (immutable) {
+                throw new UnsupportedOperationException("Can't modify to an immutable set");
+            }
+            return super.remove(o);
+        }
+
+        @Override
+        public void clear() {
+            if (immutable) {
+                throw new UnsupportedOperationException("Can't modify to an immutable set");
+            }
+            super.clear();
+        }
+
+        public void makeImmutable() {
+            immutable = true;
         }
 
         public boolean containsDNAID(String dnaID) {
@@ -736,106 +859,79 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     @Override
     protected TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> doInBackground() throws Exception {
 
-        setLabelText("Parsing variants");
-
-        int stepNumber = 0;
+        TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap;
+        TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap;
+        TreeSet<SimpleFamilyMattersVariant> variants;
+        TreeSet<SimpleFamilyMattersGene> genes;
 
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
          */
-        TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap = readVariantToSampleMap(inFile);
+        setLabelText("Retrieving variants");
+        variantToSampleMap = readVariantToSampleMap(inFile);
 
-        LOG.info("Unique variants " + variantToSampleMap.keySet().size());
+        // get sorted lists of variants and genes
+        variants = new TreeSet<SimpleFamilyMattersVariant>(variantToSampleMap.keySet());
+        setLabelText("Retrieving genes");
+        genes = getGeneSet();
 
-        List<SimpleFamilyMattersVariant> variants = new ArrayList<SimpleFamilyMattersVariant>(variantToSampleMap.keySet());
+        // map variants to genes and vice versa
+        setLabelText("Connecting variants with genes");
+        genesToVariantsMap = associateGenesAndVariants(variants, genes);
 
-        this.setLabelText("Sorting genes");
-        Collection<Gene> msGenes = GeneSetController.getInstance().getCurrentGenes();
-        List<SimpleFamilyMattersGene> genes = new ArrayList<SimpleFamilyMattersGene>();
-        for (Gene g : msGenes) {
-            genes.add(new SimpleFamilyMattersGene(g.getChrom(), g.getStart(), g.getCodingEnd(), g.getName()));
-        }
-        Collections.sort(genes);
-        //this.setLabelText("Done sorting genes");
+        LOG.info("Number of variants (grouped by position):\t" + variants.size());
+        LOG.info("Number of genes:\t" + genes.size());
 
-        Comparator startComparator = new VariantGeneComparator(true);
-        Comparator endComparator = new VariantGeneComparator(false);
 
-        int zeroIndex = variants.size();
 
-        TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
 
-        this.setLabelText("Mapping variants to genes");
-        for (SimpleFamilyMattersGene g : genes) {
-            int s = Collections.binarySearch(variants, g, startComparator);
-            int e = Collections.binarySearch(variants, g, endComparator);
+        Set<SimpleFamilyMattersGene> allExcludedGenes = new HashSet<SimpleFamilyMattersGene>();
 
-            if (s == zeroIndex) {
-                s = 0;
-            }
-            if (e == zeroIndex) {
-                e = 0;
-            }
-
-            if (s < 0) {
-                s = s * -1;
-            }
-            if (e < 0) {
-                e = e * -1;
-            }
-
-            if (s > variants.size()) {
-                continue;
-            }
-            if (e > variants.size()) {
-                e = variants.size();
-            }
-
-            Set<SimpleFamilyMattersVariant> variantsMappingToGene = new HashSet<SimpleFamilyMattersVariant>();
-
-            for (int i = s; i < e; i++) {
-                SimpleFamilyMattersVariant v = variants.get(i);
-                v.addGene(g);
-                variantsMappingToGene.add(v);
-            }
-
-            genesToVariantsMap.put(g, variantsMappingToGene);
-        }
-
-        for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-            if (v.pos == 14930) {
-                System.out.println("BEFORE EXCLUDE STEP 14930 has " + variantToSampleMap.get(v));
-            }
-        }
-
+        // perform steps in serial
+        int stepNumber = 0;
         for (FamilyMattersOptionView.IncludeExcludeStep step : steps) {
 
             ++stepNumber;
 
+            LOG.info("Getting gene to sample map");
+            Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
+            LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
+
+            // some manual reporting / debugging
+            HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
+            HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
             for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-                if (v.pos == 14930) {
-                    System.out.println("T 14930 has " + variantToSampleMap.get(v));
+                for (SimpleFamilyMattersGene g : v.getGenes()) {
+                    Set<String> fgCount = new HashSet<String>();
+                    Set<String> bgCount = new HashSet<String>();
+                    if (geneToFGCountMap.containsKey(g)) {
+                        fgCount = geneToFGCountMap.get(g);
+                    }
+                    if (geneToBGCountMap.containsKey(g)) {
+                        bgCount = geneToBGCountMap.get(g);
+                    }
+                    for (SimplePatient p : variantToSampleMap.get(v)) {
+                        if (p.dnaID.startsWith("MS_HCS")) {
+                            fgCount.add(p.dnaID);
+                        } else {
+                            bgCount.add(p.dnaID);
+                        }
+                    }
+                    geneToFGCountMap.put(g, fgCount);
+                    geneToBGCountMap.put(g, bgCount);
                 }
             }
 
-            LOG.info("Getting gene to sample map");
-            Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap);
-
-            for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-                if (v.pos == 14930) {
-                    System.out.println("T-4 14930 has " + variantToSampleMap.get(v));
+            System.out.println("GENE ANALYSIS at " + stepNumber);
+            for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
+                if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() <= 42) || (geneToBGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
+                    System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
                 }
             }
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
 
             int criteriaNumber = 0;
-
-            for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-                if (v.pos == 14930) {
-                    System.out.println("U 14930 has " + variantToSampleMap.get(v));
-                }
-            }
 
             for (FamilyMattersOptionView.IncludeExcludeCriteria criterion : step.getCriteria()) {
 
@@ -846,52 +942,61 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
 
-
                 Set<String> setOfDNAIDs = criterion.getDNAIDs(); //TODO: write method
                 //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
 
-                Set<SimpleFamilyMattersVariant> excludedVariantsFromThisStep;
+                Set<SimpleFamilyMattersVariant> excludedVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
+
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
-                LOG.info("Threshold is " + frequencyThreshold);
-                LOG.info("Threshold type is " + criterion.getFrequencyType());
+                //LOG.info("Threshold is " + frequencyThreshold);
+                //LOG.info("Threshold type is " + criterion.getFrequencyType());
+
+                //LOG.info("DNA IDs : " + setOfDNAIDs.size());
 
                 FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType at = criterion.getAggregationType();
                 if (at == FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType.Variant) {
-
-                    LOG.info("Type is variant");
                     excludedVariantsFromThisStep = (Set<SimpleFamilyMattersVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<SimplePatient>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
                 } else {
+                    Set<SimpleFamilyMattersGene> includedGenesFromThisStep = (Set<SimpleFamilyMattersGene>) ((Object) flagObjectsForKeepsByCriterion((Map<Object, Set<SimplePatient>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
 
-                    LOG.info("Type is gene");
-
-                    LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
-
-                    Set<SimpleFamilyMattersGene> genesToRemove = (Set<SimpleFamilyMattersGene>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<SimplePatient>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
-
-                    LOG.info("Excluding " + genesToRemove.size() + " genes");
+                    HashSet<SimpleFamilyMattersVariant> keptVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
+                    for (SimpleFamilyMattersGene gene : includedGenesFromThisStep) {
+                        keptVariantsFromThisStep.addAll(genesToVariantsMap.get(gene));
+                    }
 
                     excludedVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
-                    for (SimpleFamilyMattersGene g : genesToRemove) {
-                        Set<SimpleFamilyMattersVariant> variantsToExclude = genesToVariantsMap.get(g);
-                        excludedVariantsFromThisStep.addAll(variantsToExclude);
+                    for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+                        if (!keptVariantsFromThisStep.contains(v)) {
+                            excludedVariantsFromThisStep.add(v);
+                        }
+                    }
+
+                    // queue excluded genes for removal in next steps
+                    for (SimpleFamilyMattersGene g : geneToSampleMap.keySet()) {
+                        if (!includedGenesFromThisStep.contains(g)) {
+                            allExcludedGenes.add(g);
+                        }
                     }
                 }
 
                 LOG.info("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
+
+                int currentNumExcluded = allExcludedVariants.size();
                 allExcludedVariants.addAll(excludedVariantsFromThisStep);
+                int afterNumExcluded = allExcludedVariants.size();
+                int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
+                LOG.info(numSeenBefore + " of these were already excluded previously");
+
             }
 
+            // remove variants
             for (SimpleFamilyMattersVariant v : allExcludedVariants) {
                 variantToSampleMap.remove(v);
             }
-
-            for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-                if (v.pos == 14930) {
-                    System.out.println("AFTER EXCLUDE STEP 14930 has " + variantToSampleMap.get(v));
-                }
-            }
         }
+
+        getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
 
         InheritanceModel model = inheritanceStep.getInheritanceModel();
 
@@ -915,7 +1020,41 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
 
         }
-        //TODO do inheritance model : inheritanceStep
+
+
+        /* some manual reporting / debugging
+        geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
+        geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
+        for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+            for (SimpleFamilyMattersGene g : v.getGenes()) {
+                Set<String> fgCount = new HashSet<String>();
+                Set<String> bgCount = new HashSet<String>();
+                if (geneToFGCountMap.containsKey(g)) {
+                    fgCount = geneToFGCountMap.get(g);
+                }
+                if (geneToBGCountMap.containsKey(g)) {
+                    bgCount = geneToBGCountMap.get(g);
+                }
+                for (SimplePatient p : variantToSampleMap.get(v)) {
+                    if (p.dnaID.startsWith("MS_HCS")) {
+                        fgCount.add(p.dnaID);
+                    } else {
+                        bgCount.add(p.dnaID);
+                    }
+                }
+                geneToFGCountMap.put(g, fgCount);
+                geneToBGCountMap.put(g, bgCount);
+            }
+        }*
+
+        System.out.println("GENE ANALYSIS: ");
+        for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
+            if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
+                System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
+            }
+        }
+        */
+
 
         return variantToSampleMap;
     }
@@ -1014,13 +1153,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             this.gender = gender;
         }
 
-        /*public void setMother(SimplePerson mother) {
-         this.mother = mother;
-         }
-
-         public void setFather(SimplePerson father) {
-         this.father = father;
-         }*/
         public String getMomDNAID() {
             return momDNAID;
         }
@@ -1033,14 +1165,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             return gender;
         }
 
-
-        /*public SimplePerson getMother() {
-         return mother;
-         }
-
-         public SimplePerson getFather() {
-         return father;
-         }*/
         public String getDnaID() {
             return dnaID;
         }
@@ -1087,12 +1211,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         private String dnaID;
         private Zygosity zygosity;
-        //private Gender gender;
 
         public SimplePatient(String dnaID, Zygosity zygosity) {//, Gender gender) {
             this.dnaID = dnaID;
             this.zygosity = zygosity;
-            //this.gender = gender;
         }
 
         public String getDnaID() {
@@ -1117,42 +1239,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
         }
 
-        /*public Gender getGender() {
-         return gender;
-         }
-
-         @Override
-         public int hashCode() {
-         int hash = 3;
-         hash = 67 * hash + (this.dnaID != null ? this.dnaID.hashCode() : 0);
-         hash = 67 * hash + (this.zygosity != null ? this.zygosity.hashCode() : 0);
-         hash = 67 * hash + (this.gender != null ? this.gender.hashCode() : 0);
-         return hash;
-         }
-
-         @Override
-         public boolean equals(Object obj) {
-         if (obj == null) {
-         return false;
-         }
-         if (getClass() != obj.getClass()) {
-         return false;
-         }
-         final SimplePatient other = (SimplePatient) obj;
-         if ((this.dnaID == null) ? (other.dnaID != null) : !this.dnaID.equals(other.dnaID)) {
-         return false;
-         }
-         if (this.zygosity != other.zygosity) {
-         return false;
-         }
-         if (this.gender != other.gender) {
-         return false;
-         }
-         return true;
-         }*/
         @Override
         public int hashCode() {
             int hash = 7;
+            hash = 53 * hash + (this.dnaID != null ? this.dnaID.hashCode() : 0);
             return hash;
         }
 
@@ -1166,9 +1256,6 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
             final SimplePatient other = (SimplePatient) obj;
             if ((this.dnaID == null) ? (other.dnaID != null) : !this.dnaID.equals(other.dnaID)) {
-                return false;
-            }
-            if (this.zygosity != other.zygosity) {
                 return false;
             }
             return true;
@@ -1202,6 +1289,11 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
             map.put(v, samples);
         }
+
+        //LOG.info("Protecting variant to sample map from modification");
+        //for (SimpleFamilyMattersVariant v : map.keySet()) {
+        //    map.get(v).makeImmutable();
+        //}
 
         return map;
     }
@@ -1239,20 +1331,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     private int getFrequencyThresholdForCriterion(FamilyMattersOptionView.IncludeExcludeCriteria criterion) throws SQLException, RemoteException {
         FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType ft = criterion.getFrequencyType(); // all, no, some
         FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount fc = criterion.getFequencyCount(); // count, percent
-        //Cohort c = criterion.getCohort();
+
         Set<String> dnaIDs = criterion.getDNAIDs();
         int frequencyThreshold = criterion.getFreqAmount();
-
-        /*List<SimplePatient> patientsInCohort;
-         try {
-         patientsInCohort = MedSavantClient.CohortManager.getIndividualsInCohort(
-         LoginController.getInstance().getSessionID(),
-         ProjectController.getInstance().getCurrentProjectID(),
-         c.getId());
-         } catch (SessionExpiredException ex) {
-         MedSavantExceptionHandler.handleSessionExpiredException(ex);
-         return 0;
-         }*/
 
         if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL)) {
             frequencyThreshold = dnaIDs.size();
@@ -1277,15 +1358,20 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
      */
     private Set<Object> flagObjectsForRemovalByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
         Set<Object> removeThese = new HashSet<Object>();
+
+        int removed = 0;
+
         for (Object o : map.keySet()) {
 
             // value contains ALL samples having object as key, need to assess
             // only for this cohort
-            int numberOfObjectsSamplesInCohort = 0;
+            //int numberOfObjectsSamplesInCohort = 0;
+            Set<String> patientsInCohortThatHaveIt = new HashSet<String>();
             try {
                 for (SimplePatient s : map.get(o)) {
                     if (setOfDNAIDs.contains(s.getDnaID())) {
-                        numberOfObjectsSamplesInCohort++;
+                        patientsInCohortThatHaveIt.add(s.getDnaID());
+                        //numberOfObjectsSamplesInCohort++;
                     }
                 }
             } catch (NullPointerException npe) {
@@ -1296,21 +1382,126 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 throw npe;
             }
 
+            int numberOfObjectsSamplesInCohort = patientsInCohortThatHaveIt.size();
+
             if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO) {
                 if (numberOfObjectsSamplesInCohort != frequencyThreshold) {
+                    //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
+
                     removeThese.add(o);
+                    removed++;
+                    continue;
                 }
             } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
                 if (numberOfObjectsSamplesInCohort < frequencyThreshold) {
+                    //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
+
                     removeThese.add(o);
+                    removed++;
+                    continue;
                 }
             } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
                 if (numberOfObjectsSamplesInCohort > frequencyThreshold) {
+                    //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
+
                     removeThese.add(o);
+                    removed++;
+                    continue;
                 }
             }
         }
+
+        LOG.info(removed + " items will be removed");
+
         return removeThese;
+    }
+
+    private Set<Object> flagObjectsForKeepsByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
+        Set<Object> keepThese = new HashSet<Object>();
+
+        int kept = 0;
+
+        for (Object o : map.keySet()) {
+
+            if (o instanceof SimpleFamilyMattersGene) {
+                SimpleFamilyMattersGene gene = (SimpleFamilyMattersGene) o;
+                if (gene.name.equals("NOTCH2")) {
+                    Set<SimplePatient> patientsWithNotch = map.get(gene);
+                    System.out.println(patientsWithNotch.size() + " patients have NOTCH2");
+                    System.out.print("\t");
+                    for (SimplePatient p : patientsWithNotch) {
+                        System.out.print(p + ", ");
+                    }
+                    System.out.println();
+                }
+            }
+
+            // value contains ALL samples having object as key, need to assess
+            // only for this cohort
+            //int numberOfObjectsSamplesInCohort = 0;
+            Set<String> patientsInCohortThatHaveIt = new HashSet<String>();
+            try {
+                for (SimplePatient s : map.get(o)) {
+                    if (setOfDNAIDs.contains(s.getDnaID())) {
+                        patientsInCohortThatHaveIt.add(s.dnaID);
+                        //numberOfObjectsSamplesInCohort++;
+                    }
+                }
+            } catch (NullPointerException npe) {
+                if (map.get(o) == null) {
+                    System.err.println("No entry for object in map");
+                }
+                System.err.println(o);
+                throw npe;
+            }
+
+            int numberOfObjectsSamplesInCohort = patientsInCohortThatHaveIt.size();
+
+            /*
+             * DEBUG
+             */
+            if (o instanceof SimpleFamilyMattersGene) {
+                SimpleFamilyMattersGene g = (SimpleFamilyMattersGene) o;
+                if (g.name.equals("NOTCH2")) {
+                    System.out.println(g + " has " + numberOfObjectsSamplesInCohort + " in cohort");
+                }
+            }
+
+
+            if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO) {
+                if (numberOfObjectsSamplesInCohort != frequencyThreshold) {
+                    continue;
+                }
+            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
+                if (numberOfObjectsSamplesInCohort < frequencyThreshold) {
+                    continue;
+                }
+            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
+                if (numberOfObjectsSamplesInCohort > frequencyThreshold) {
+                    continue;
+                }
+            }
+
+            keepThese.add(o);
+            //System.out.println("Keeping " + o + " - " + numberOfObjectsSamplesInCohort + " " + t + " " + frequencyThreshold);
+
+            /*
+             * DEBUG
+             *
+             if (o instanceof SimpleFamilyMattersGene) {
+             SimpleFamilyMattersGene g = (SimpleFamilyMattersGene) o;
+             if (g.name.equals("NOTCH2")) {
+             System.out.println(g + " has " + numberOfObjectsSamplesInCohort + " in cohort and is being kept");
+             }
+             }
+             */
+
+            kept++;
+        }
+
+        LOG.info(kept + " items will be kept");
+
+        return keepThese;
     }
 
     private boolean stepIncludesGeneCriterion(FamilyMattersOptionView.IncludeExcludeStep step) {
@@ -1329,7 +1520,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
      * @param variantToSampleMap The map from variant to patient set
      * @return The map from gene to patient set
      */
-    private Map<SimpleFamilyMattersGene, SimplePatientSet> getGeneToSampleMap(Map<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap) {
+    private Map<SimpleFamilyMattersGene, SimplePatientSet> getGeneToSampleMap(Map<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap, Set<SimpleFamilyMattersGene> excludedGenes) {
 
         // create an empty map
         Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = new HashMap<SimpleFamilyMattersGene, SimplePatientSet>();
@@ -1339,10 +1530,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
             // get genes intersecting this variant
             Set<SimpleFamilyMattersGene> genes = v.getGenes();
+            Set<SimpleFamilyMattersGene> genesThatWereExcluded = new HashSet<SimpleFamilyMattersGene>();
 
             // go through each of these genes, and add the patient set from the variant map
             // to the gene map
             for (SimpleFamilyMattersGene g : genes) {
+
+                if (excludedGenes.contains(g)) {
+                    genesThatWereExcluded.add(g);
+                    continue;
+                }
 
                 // get the samples that have this variant
                 SimplePatientSet newSamples = variantToSampleMap.get(v);
@@ -1356,11 +1553,30 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     geneToSampleMap.put(g, setFromMap);
                 }
 
+                // add patients to gene map
                 for (SimplePatient p : newSamples) {
                     setFromMap.add(new SimplePatient(p.dnaID, p.zygosity));
                 }
             }
+
+            // remove association of excluded genes from variants
+            for (SimpleFamilyMattersGene g : genesThatWereExcluded) {
+                genes.remove(g);
+            }
         }
+
+        /*
+         * DEBUG
+         *
+         for (SimpleFamilyMattersGene gene : geneToSampleMap.keySet()) {
+         if (gene.name.equals("NOTCH2")) {
+         System.out.println("Samples that have variants in NOTCH2");
+         for (SimplePatient p : geneToSampleMap.get(gene)) {
+         System.out.print(p + " ");
+         }
+         System.out.println();
+         }
+         }*/
 
         return geneToSampleMap;
     }
@@ -1372,6 +1588,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         for (SimpleFamilyMattersVariant v : variants) {
             for (Gene g : genes) {
                 if (v.chr.equals(g.getChrom()) && g.getStart() < v.pos && g.getEnd() > v.pos) {
+
                     SimpleFamilyMattersGene sg = new SimpleFamilyMattersGene(g.getChrom(), g.getStart(), g.getEnd(), g.getName());
                     v.addGene(sg);
 

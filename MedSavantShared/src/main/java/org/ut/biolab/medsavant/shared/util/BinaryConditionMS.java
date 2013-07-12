@@ -34,6 +34,16 @@ public class BinaryConditionMS {
         return BinaryCondition.like(value1, value2);
     }
 
+    public static BinaryCondition notlike(Object value1, Object value2){
+        if(value1 != null && value1.getClass().equals(String.class)){
+            value1 = escapeChars((String) value1);
+        }
+        if(value2 != null && value2.getClass().equals(String.class)){
+            value2 = escapeChars((String) value2);
+        }
+        return BinaryCondition.notLike(value1, value2);
+    }
+
 
     private static Object escapeChars(String value){
         return value.replaceAll("'", "''");
