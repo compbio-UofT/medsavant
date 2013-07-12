@@ -64,7 +64,12 @@ public class Menu extends JPanel {
     private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
     private static final Log LOG = LogFactory.getLog(Menu.class);
-
+    private UpdatesPanel updatesPanel = new UpdatesPanel();    
+   
+    public void checkForUpdateNotifications(){
+        updatesPanel.update();
+    }
+    
     public JButton getSubSectionButton(SubSectionView ssv) {
         return map.get(ssv);
     }
@@ -99,8 +104,7 @@ public class Menu extends JPanel {
 
         primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
-
-        UpdatesPanel updatesPanel = new UpdatesPanel();
+        
         NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
         primaryMenu.add(primaryMenuSectionButtonContainer);

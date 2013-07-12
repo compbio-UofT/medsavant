@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.variant;
 
 import java.awt.*;
@@ -34,8 +33,6 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,6 +45,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.util.ProjectWorker;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -61,9 +60,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 public class ImportVariantsWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
-
     private static VariantManagerAdapter manager = MedSavantClient.VariantManager;
-
     private List<VariantTag> variantTags;
     private File[] variantFiles;
     private boolean includeHomoRef = false;
@@ -76,9 +73,9 @@ public class ImportVariantsWizard extends WizardDialog {
     private JTextField serverPathField;
     private JTextField emailField;
     private JCheckBox autoPublish;
+    private static final String NOTIFICATION_TITLE = "Importing Variants";
 
     public ImportVariantsWizard() {
-
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -124,7 +121,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private AbstractWizardPage getVCFSourcePage() {
         return new DefaultWizardPage("Location of Files") {
-
             private JRadioButton onMyComputerButton = new JRadioButton("This computer");
             private JRadioButton onMedSavantServerButton = new JRadioButton("The MedSavant server");
 
@@ -134,7 +130,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 g.add(onMedSavantServerButton);
 
                 onMyComputerButton.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         setUploadRequired(onMyComputerButton.isSelected());
@@ -142,7 +137,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 });
 
                 onMedSavantServerButton.addActionListener(new ActionListener() {
-
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         setUploadRequired(onMyComputerButton.isSelected());
@@ -171,7 +165,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage("Import Variants") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -196,7 +189,6 @@ public class ImportVariantsWizard extends WizardDialog {
     private AbstractWizardPage getChooseFilesPage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage("Choose Files") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -233,7 +225,6 @@ public class ImportVariantsWizard extends WizardDialog {
         final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly discouraged)");
         homoRefBox.setOpaque(false);
         homoRefBox.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 includeHomoRef = homoRefBox.isSelected();
@@ -252,7 +243,6 @@ public class ImportVariantsWizard extends WizardDialog {
     private AbstractWizardPage getAddTagsPage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage("Add Tags") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -292,7 +282,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
         JLabel button = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         button.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
 
@@ -342,15 +331,12 @@ public class ImportVariantsWizard extends WizardDialog {
         valueField.setPreferredSize(LOCATION_SIZE);
         valueField.setMinimumSize(LOCATION_SIZE);
 
-        //tagContainer.setPreferredSize(new Dimension(900,10));
-        //tagContainer.setBorder(BorderFactory.createTitledBorder("Tags"));
         page.addComponent(tagContainer);
 
         page.addComponent(new JScrollPane(ta));
 
         JButton clear = new JButton("Clear");
         clear.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 variantTags.clear();
@@ -380,7 +366,6 @@ public class ImportVariantsWizard extends WizardDialog {
     private AbstractWizardPage getNotificationsPage() {
 
         final CompletionWizardPage page = new CompletionWizardPage("Notifications") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -409,7 +394,6 @@ public class ImportVariantsWizard extends WizardDialog {
     private AbstractWizardPage getCompletePage() {
 
         final CompletionWizardPage page = new CompletionWizardPage("Complete") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -427,9 +411,8 @@ public class ImportVariantsWizard extends WizardDialog {
         final DefaultWizardPage page = new DefaultWizardPage("Transfer, Annotate, and Publish Variants") {
             private static final double UPLOAD_FILES_PERCENT = 20.0;
             private static final double UPDATE_DATABASE_PERCENT = 80.0;
-
             private final JLabel progressLabel = new JLabel("You are now ready to import variants.");
-            private final JProgressBar progressBar = new JProgressBar();
+            //private final JProgressBar progressBar = new JProgressBar();
             private final JButton workButton = new JButton("Import");
             //private final JButton publishButton = new JButton("Publish Variants");
             //private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after import");
@@ -439,7 +422,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
             {
                 addComponent(progressLabel);
-                addComponent(progressBar);
+                //addComponent(progressBar);
 
                 final JComponent j = new JLabel("<html>You may continue. The import process will continue in the<br>background and you will be notified upon completion.</html>");
                 addComponent(j);
@@ -450,46 +433,50 @@ public class ImportVariantsWizard extends WizardDialog {
                 //autoPublishVariants.setOpaque(false);
 
                 workButton.addActionListener(new ActionListener() {
+                    private int notificationId;
+                    private MedSavantWorker<Void> variantWorker;
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
 
                         LOG.info("Starting import worker");
-
+                        workButton.setEnabled(false);
                         j.setVisible(true);
                         page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
 
-                        new VariantWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton) {
+                        new ProjectWorker<Void>("Importing variants", autoPublish.isSelected(), LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID()) {
                             private int fileIndex = 0;
 
                             @Override
-                            protected Void doInBackground() throws Exception {
-                                progressBar.setIndeterminate(true);
-                                //progressBar.setValue(0);
-                                startProgressTimer();
-
+                            protected Void backgroundTask() throws Exception {
                                 String email = emailField.getText();
-                                if (email.isEmpty()) { email = null; }
+                                if (email.isEmpty()) {
+                                    email = null;
+                                }
 
                                 if (uploadRequired) {
+                                    setIndeterminate(false);
                                     inUploading = true;
                                     LOG.info("Creating input streams");
                                     int[] transferIDs = new int[variantFiles.length];
-                                    for (File file: variantFiles) {
+                                    for (File file : variantFiles) {
                                         LOG.info("Created input stream for file");
-                                        progressLabel.setText("Uploading " + file.getName() + " to server...");
+                                        notification.setStatusMessage("Uploading " + file.getName());
+                                        //progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
                                         fileIndex++;
                                     }
+                                    notification.setStatusMessage("Importing variants");
                                     inUploading = false;
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef,email,autoPublish.isSelected());
+                                    setIndeterminate(true);
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, false);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
-                                    progressLabel.setText("Importing variants stored on server...");
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef,email,autoPublish.isSelected());
+                                    notification.setStatusMessage("Importing variants");
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, false);
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -509,7 +496,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 } else {
                                     prog = fract * 100.0;
                                 }
-                                progressBar.setValue((int)prog);
+                                notification.setProgress(prog / 100.0);
                             }
 
                             @Override
@@ -526,13 +513,15 @@ public class ImportVariantsWizard extends WizardDialog {
                                     }
                                 }
                                 if (stat != null) {
-                                    progressLabel.setText(stat.message);
+                                    notification.setStatusMessage(stat.message);
                                 }
                                 return stat;
                             }
                         }.execute();
-                    }
-                });
+                        toFront();
+
+                    }//end actionPerformed
+                }); //end new ActionListener(...){
 
                 addComponent(ViewUtil.alignRight(workButton));
             }
@@ -569,7 +558,6 @@ public class ImportVariantsWizard extends WizardDialog {
         serverPathField = new JTextField();
         ViewUtil.clear(serverPathField);
         serverPathField.addCaretListener(new CaretListener() {
-
             @Override
             public void caretUpdate(CaretEvent ce) {
                 if (serverPathField.getText().isEmpty()) {
@@ -600,7 +588,6 @@ public class ImportVariantsWizard extends WizardDialog {
         outputFileField.setEnabled(false);
         JButton chooseFileButton = new JButton("...");
         chooseFileButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);

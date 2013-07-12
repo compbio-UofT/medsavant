@@ -15,10 +15,8 @@
  */
 package org.ut.biolab.medsavant.client.project;
 
-import com.jidesoft.dialog.AbstractDialogPage;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -37,8 +35,6 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,7 +53,7 @@ import org.ut.biolab.medsavant.client.reference.NewReferenceDialog;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.client.variant.UpdateWorker;
+import org.ut.biolab.medsavant.client.util.ProjectWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -132,8 +128,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         model.append(getReferencePage());
         if (modify) {
             model.append(getNotificationsPage());
+            model.append(getCreatePage());
         }
-        model.append(getCreatePage());
         model.append(getCompletionPage());
         setPageList(model);
 
@@ -153,7 +149,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                         if (modify) {
                             setCurrentPage(PAGENAME_NOTIFICATIONS);
                         } else {
-                            setCurrentPage(PAGENAME_CREATE);
+                            setCurrentPage(PAGENAME_COMPLETE);
                         }
                     } else if (pagename.equals(PAGENAME_NOTIFICATIONS)) {
                         setCurrentPage(PAGENAME_CREATE);
@@ -434,7 +430,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private AbstractWizardPage getReferencePage() throws SQLException, RemoteException {
-
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_REF) {
             @Override
@@ -517,91 +512,85 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         page.addText("You are now ready to " + (modify ? "make changes to" : "create") + " this project. ");
 
         final JLabel progressLabel = new JLabel("");
-        final JProgressBar progressBar = new JProgressBar();
 
         page.addComponent(progressLabel);
-        page.addComponent(progressBar);
 
         final JButton workButton = new JButton((modify ? "Modify Project" : "Create Project"));
         final JButton publishButton = new JButton("Publish Variants");
 
-        //final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
-        final JProgressBar publishProgressBar = new JProgressBar();
-
-        final JComponent j = new JLabel("<html>You may continue. The import process will continue in the<br>background and you will be notified upon completion.</html>");
+        final JComponent j = new JLabel("<html><p>You may continue. The import process will continue in the< background and you will be notified upon completion.</p></html>");
 
 
         workButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 j.setVisible(true);
-                progressBar.setIndeterminate(true);
-                if (modify) {
-                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                }
-                
-                
-                
-                new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton) {
+                page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+
+                new ProjectWorker<Void>("Modifying project", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                     @Override
-                    protected Void doInBackground() throws Exception {
-                        if (!modify) {
-                            createNewProject();
-                        } else {
-                            LOG.info("Requesting modification from server");
-                            updateID = modifyProject(true, true, true);
-                            LOG.info("Modification complete");
-                        }
+                    protected Void backgroundTask() throws Exception {
+                        LOG.info("Requesting modification from server");
+                        modifyProject(true, true, true, this);
+                        LOG.info("Modification complete");
                         return null;
                     }
-
-                    @Override
-                    protected void showSuccess(Void result) {
-                        if (modify) {
-                            LOG.info("Modification sucessful, allowing user to finish wizard");
-                            ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been modified.");
-                            super.showSuccess(result);
-                        } else {
-                            ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been created.");
-                            setCurrentPage(PAGENAME_COMPLETE);
-                        }
-                    }
                 }.execute();
+
+                toFront();
             }
         });
 
         page.addComponent(ViewUtil.alignRight(workButton));
-        //cancelButton.setVisible(false);
-        // page.addComponent(ViewUtil.alignRight(cancelButton));
 
         page.addComponent(j);
         j.setVisible(false);
 
         if (modify) {
-
-            //page.addComponent(publishProgressLabel);
-            page.addComponent(publishProgressBar);
             page.addComponent(ViewUtil.alignRight(publishButton));
-
             publishButton.setVisible(false);
-            //publishProgressLabel.setVisible(false);
-            publishProgressBar.setVisible(false);
         }
 
         return page;
     }
 
     private AbstractWizardPage getCompletionPage() {
-        CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
+        final CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
-                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
+                if (modify) {
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
+                } else {
+                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+
+                    new SwingWorker() {
+                        @Override
+                        protected Object doInBackground() throws Exception {
+                            try {
+                                createNewProject();
+                            } catch (Exception e) {
+                                DialogUtils.displayException("Error", "Error trying to create project", e);
+                                LOG.error(e);
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
+                        }
+                    }.execute();
+                }
             }
         };
 
-        page.addText("You have completed the project modification process.");
+        if (modify) {
+            page.addText("You have completed the project modification process.");
+        } else {
+            page.addText("The project has been created.");
+        }
 
         return page;
     }
@@ -709,7 +698,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         }
     }
 
-    private int modifyProject(boolean modifyProjectName, boolean modifyPatientFields, boolean modifyVariants) throws Exception {
+    private int modifyProject(boolean modifyProjectName, boolean modifyPatientFields, boolean modifyVariants, ProjectWorker projectWorker) throws Exception {
 
         int updateID = -1;
 
@@ -754,8 +743,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 }
 
                 String email = this.emailField.getText();
-                boolean autoPublishWhenComplete = this.autoPublish.isSelected();
-
+                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();                                
+                boolean autoPublishWhenComplete = false;
                 updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }
         }

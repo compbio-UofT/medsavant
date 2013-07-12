@@ -1,16 +1,16 @@
 package org.ut.biolab.medsavant.client.util;
 
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  * @author mfiume
  */
 public class MedSavantExceptionHandler {
-    public static boolean handleSessionExpiredException(SessionExpiredException e) {
-        DialogUtils.displayMessage("Session expired");
-        LoginController.getInstance().logout();
+
+    public static boolean handleSessionExpiredException(SessionExpiredException e) {               
+        MedSavantClient.restart("Your session has expired.  Click OK to restart MedSavant.");
         return false;
     }
 }

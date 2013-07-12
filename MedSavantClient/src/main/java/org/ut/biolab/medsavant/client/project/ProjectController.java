@@ -316,8 +316,7 @@ public class ProjectController extends Controller<ProjectEvent> {
      */
     public boolean promptToPublish(ProjectDetails pd) {
         Object[] options = new Object[]{"Publish", "Delete (Undo Changes)", "Cancel"};
-        int option = JOptionPane.showOptionDialog(null, "<HTML>Publishing this table will log all users out of MedSavant.<BR>Are you sure you want to proceed?</HTML>", "Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
-
+        int option = JOptionPane.showOptionDialog(null, "<HTML>Publishing this table will log all users out of MedSavant, and restart the program. <BR>Are you sure you want to proceed?</HTML>", "Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
         if (option == JOptionPane.NO_OPTION) {
             try {
                 MedSavantClient.VariantManager.cancelPublish(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
@@ -328,7 +327,8 @@ public class ProjectController extends Controller<ProjectEvent> {
         } else if (option == JOptionPane.YES_OPTION) {
             try {
                 MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
-                LoginController.getInstance().logout();
+                MedSavantClient.restart(null);
+                //LoginController.getInstance().logout();
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error publishing variants: %s", ex);
             }

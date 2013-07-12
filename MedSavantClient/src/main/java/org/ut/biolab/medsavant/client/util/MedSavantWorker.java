@@ -37,7 +37,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
 
     private String pageName;
 
-    private Timer progressTimer;
+    protected Timer progressTimer;
 
     /**
      * @param pageName which view created this worker
@@ -76,12 +76,14 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     }
 
     /**
-     * Show progress during a lengthy operation. As a special case, pass 1.0 to remove the progress display.
+     * Show progress during a lengthy operation. As a special case, pass 1.0 to remove the progress display.  
      * 
      * @param fract the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate
      *        indeterminate progress-bar).
      */
-    protected abstract void showProgress(double fract);
+    protected void showProgress(double fract){
+        
+    }
 
     /**
      * Called when the worker has successfully completed its task.
