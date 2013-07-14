@@ -43,7 +43,7 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(),"dna_id:'NA000001' AND id:'rs1234'");
     }
 
-    @Test                                                         	 Issue #33: Add JQPL to Solr query translator
+    @Test
     public void testComplexConditions() {
 
         SolrQuery resultedQuery = translator.translate("select v.a, v.b from Variant v where (v.dna_id='NA000001' AND v.id='rs1234') OR v.chrom=19 ");
