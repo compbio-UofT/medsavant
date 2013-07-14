@@ -163,11 +163,11 @@ select_list =
 select_expression =
     {path} path_expression |
     {agr} aggregate_expression |
-    {object} object left_bracket path_expression right_bracket;
+    {object} object left_bracket_prod path_expression right_bracket_prod;
 
 aggregate_expression =
-    {func} aggregate_func left_bracket distinct? path_expression right_bracket |
-    {count} count left_bracket distinct? count_arg right_bracket;
+    {func} aggregate_func left_bracket_prod distinct? path_expression right_bracket_prod |
+    {count} count left_bracket_prod distinct? count_arg right_bracket_prod;
 
 count_arg =
     {path} path_expression;
@@ -218,7 +218,7 @@ conditional_factor =
 
 conditional_primary =
     simple_cond_expression |
-    {br} left_bracket conditional_expression right_bracket;
+    {br} left_bracket_prod conditional_expression right_bracket_prod;
 
 simple_cond_expression =
     arithmetic_expression  simple_conditional_expression_remainder;
@@ -242,7 +242,7 @@ is_expression =
     {empty} empty_collection_comparison_expression;
 
 in_expression =
-    in left_bracket in_list right_bracket;
+    in left_bracket_prod in_list right_bracket_prod;
 
 in_list =
     {single} in_item |
@@ -295,15 +295,15 @@ arithmetic_primary =
     {funcstr} functions_returning_strings |
     {param} input_parameter |
     {constant} literal |
-    {br} left_bracket simple_arithmetic_expression right_bracket;
+    {br} left_bracket_prod simple_arithmetic_expression right_bracket_prod;
 
 functions_returning_numerics =
-    {length} length left_bracket string_primary right_bracket |
-    {locate} locate left_bracket [what]:string_primary comma_char [where]:string_primary start_spec? right_bracket |
-    {abs} abs left_bracket simple_arithmetic_expression right_bracket |
-    {sqrt} sqrt left_bracket simple_arithmetic_expression right_bracket |
-    {mod} mod left_bracket [dividend]:simple_arithmetic_expression comma_char [divisor]:simple_arithmetic_expression right_bracket |
-    {size} size left_bracket path_expression right_bracket;
+    {length} length left_bracket_prod string_primary right_bracket_prod |
+    {locate} locate left_bracket_prod [what]:string_primary comma_char [where]:string_primary start_spec? right_bracket_prod |
+    {abs} abs left_bracket_prod simple_arithmetic_expression right_bracket_prod |
+    {sqrt} sqrt left_bracket_prod simple_arithmetic_expression right_bracket_prod |
+    {mod} mod left_bracket_prod [dividend]:simple_arithmetic_expression comma_char [divisor]:simple_arithmetic_expression right_bracket_prod |
+    {size} size left_bracket_prod path_expression right_bracket_prod;
 
 string_primary =
     {const} string_literal |
@@ -315,11 +315,11 @@ start_spec =
     comma_char [start]:simple_arithmetic_expression;
 
 functions_returning_strings =
-    {concat} concat left_bracket [s1]:string_primary comma_char [s2]:string_primary right_bracket |
-    {substring} substring left_bracket string_primary [c1]:comma_char [start]:simple_arithmetic_expression [c2]:comma_char [length]:simple_arithmetic_expression right_bracket |
-    {trim} trim left_bracket trim_desc? string_primary right_bracket |
-    {lower} lower left_bracket string_primary right_bracket |
-    {upper} upper left_bracket string_primary right_bracket;
+    {concat} concat left_bracket_prod [s1]:string_primary comma_char [s2]:string_primary right_bracket_prod |
+    {substring} substring left_bracket_prod string_primary [c1]:comma_char [start]:simple_arithmetic_expression [c2]:comma_char [length]:simple_arithmetic_expression right_bracket_prod |
+    {trim} trim left_bracket_prod trim_desc? string_primary right_bracket_prod |
+    {lower} lower left_bracket_prod string_primary right_bracket_prod |
+    {upper} upper left_bracket_prod string_primary right_bracket_prod;
 
 trim_desc = trim_specification? trim_character? from;
 
@@ -328,7 +328,7 @@ abstract_schema_name =
     {x} object_declaration;
 
 object_declaration =
-	identification_variable left_bracket x_class_name right_bracket;
+	identification_variable left_bracket_prod x_class_name right_bracket_prod;
 
 x_class_name =
 	identification_variable|
@@ -366,4 +366,10 @@ single_valued_association_path_expression =
 
 single_valued_association_field =
     identification_variable;
+
+left_bracket_prod =
+    left_bracket;
+
+right_bracket_prod =
+    right_bracket;
 

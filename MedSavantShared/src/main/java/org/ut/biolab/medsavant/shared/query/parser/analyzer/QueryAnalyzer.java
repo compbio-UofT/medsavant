@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.ut.biolab.medsavant.shared.query.QuerySort;
 import org.ut.biolab.medsavant.shared.query.QuerySortDirection;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
@@ -18,7 +19,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
 
     private QueryContext context;
 
-    private SimpleSolrQuery simpleSolrQuery;
+    private SolrQuery solrQuery;
 
     private static final Log LOG = LogFactory.getLog(QueryAnalyzer.class);
 
@@ -26,32 +27,27 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         this.context = queryContext;
     }
 
-    public QueryAnalyzer() {
-        super();
-    }
-
     @Override
     public void inASelectStatement(ASelectStatement node) {
         LOG.debug("Entering Select " + node.toString());
 
-        simpleSolrQuery = new SimpleSolrQuery();
+        solrQuery = new SolrQuery();
 
         super.inASelectStatement(node);
     }
 
-
     @Override
-    public void inAConditionalPrimary(AConditionalPrimary node) {
-        LOG.debug("Exiting conditional primary " + node.toString());
-                 node.getSimpleCondExpression();
+    public void inAWhereClause(AWhereClause node) {
+        LOG.debug("Entering main conditional expression " + node.toString());
+
+        node.getConditionalExpression();
         TermAnalyzer termAnalyzer = new TermAnalyzer();
         node.apply(termAnalyzer);
-        String term = termAnalyzer.getTerm();
-        String value = termAnalyzer.getValue();
 
-        simpleSolrQuery.addQueryTerm(term, value);
+        String query = termAnalyzer.getQuery();
+        solrQuery.setQuery(query);
 
-        super.outAConditionalPrimary(node);
+        super.outAWhereClause(node);
     }
 
     @Override
@@ -62,11 +58,11 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         node.apply(sortsAnalyzer);
 
         String field = sortsAnalyzer.getField();
-        QuerySortDirection direction = sortsAnalyzer.getDirection();
+        SolrQuery.ORDER direction = sortsAnalyzer.getDirection();
 
-        simpleSolrQuery.addSortTerm(field, direction.name());
+        solrQuery.addSortField(field, direction);
 
-        super.inAOrderbyItem(node);
+        super.outAOrderbyItem(node);
     }
 
     @Override
@@ -77,7 +73,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
 
         context.setCoreName(coreAnalyzer.getCoreName());
 
-        super.inASingleFromList(node);
+        super.outASingleFromList(node);
     }
 
     @Override
@@ -88,28 +84,22 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         node.apply(resultFieldAnalyzer);
 
         List<String> resultFields = resultFieldAnalyzer.getField();
-        context.setResultFieldNames(resultFields);
+        addFieldsFromList(resultFields);
 
-        super.inASelectClause(node);
+        super.outASelectClause(node);
     }
 
-    /*@Override
-    public void inASingleSelectList(ASingleSelectList node) {
-        LOG.debug("Select from single: " + node.toString());
-        ResultFieldAnalyzer resultFieldAnalyzer = new ResultFieldAnalyzer();
-
-        node.apply(resultFieldAnalyzer);
-
-        List<String> resultFields = resultFieldAnalyzer.getField();
-        context.setResultFieldNames(resultFields);
-        super.inASingleSelectList(node);
-    }*/
-
-    public SimpleSolrQuery getSimpleSolrQuery() {
-        return simpleSolrQuery;
+    public SolrQuery getSolrQuery() {
+        return solrQuery;
     }
 
-    public void setSimpleSolrQuery(SimpleSolrQuery simpleSolrQuery) {
-        this.simpleSolrQuery = simpleSolrQuery;
+    public void setSolrQuery(SolrQuery solrQuery) {
+        this.solrQuery = solrQuery;
+    }
+
+    private void addFieldsFromList(List<String> fields) {
+        for (String field : fields) {
+            solrQuery.addField(field);
+        }
     }
 }

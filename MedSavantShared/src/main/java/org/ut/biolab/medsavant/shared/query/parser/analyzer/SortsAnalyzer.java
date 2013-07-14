@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.ut.biolab.medsavant.shared.query.QuerySortDirection;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.AOrderbyItem;
@@ -14,7 +15,7 @@ import java.util.Locale;
  */
 public class SortsAnalyzer extends DepthFirstAdapter {
 
-    QuerySortDirection direction = QuerySortDirection.ASC;
+    private SolrQuery.ORDER direction = SolrQuery.ORDER.asc;
 
     String field;
 
@@ -24,9 +25,9 @@ public class SortsAnalyzer extends DepthFirstAdapter {
 
         //if no order direction, keep the default one
         if (orderDirection != null) {
-            String directionString = orderDirection.toString().toLowerCase(Locale.ROOT);
-            if (QuerySortDirection.DESC.toString().toLowerCase(Locale.ROOT).equals(directionString)) {
-                direction = QuerySortDirection.DESC;
+            String directionString = orderDirection.toString().toLowerCase(Locale.ROOT).trim();
+            if (SolrQuery.ORDER.desc.toString().toLowerCase(Locale.ROOT).equals(directionString)) {
+                direction = SolrQuery.ORDER.desc;
             }
         }
         super.outAOrderbyItem(node);
@@ -34,7 +35,7 @@ public class SortsAnalyzer extends DepthFirstAdapter {
 
     @Override
     public void inAOrderbyItem(AOrderbyItem node) {
-        direction = QuerySortDirection.ASC;
+        direction = SolrQuery.ORDER.asc;
 
         super.inAOrderbyItem(node);
     }
@@ -54,11 +55,11 @@ public class SortsAnalyzer extends DepthFirstAdapter {
         this.field = field;
     }
 
-    public QuerySortDirection getDirection() {
+    public SolrQuery.ORDER getDirection() {
         return direction;
     }
 
-    public void setDirection(QuerySortDirection direction) {
+    public void setDirection(SolrQuery.ORDER direction) {
         this.direction = direction;
     }
 }

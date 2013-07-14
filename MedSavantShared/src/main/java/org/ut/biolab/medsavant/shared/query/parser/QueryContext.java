@@ -14,24 +14,6 @@ public class QueryContext {
 
     private String coreName;
 
-    private List<String> resultFieldNames;
-
-    public QueryContext() {
-        resultFieldNames = new ArrayList<String>();
-    }
-
-    public void addResultField(String resultField) {
-        resultFieldNames.add(resultField);
-    }
-
-    public void clearResultFieldNames() {
-        resultFieldNames.clear();
-    }
-
-    public List<String> getResultFieldNames() {
-        return resultFieldNames;
-    }
-
     public String getCoreName() {
         return coreName;
     }
@@ -46,9 +28,5 @@ public class QueryContext {
 
     public void setTree(Start tree) {
         this.tree = tree;
-    }
-
-    public void setResultFieldNames(List<String> resultFieldNames) {
-        this.resultFieldNames = resultFieldNames;
     }
 }

@@ -8,35 +8,80 @@ import org.ut.biolab.medsavant.shared.query.parser.node.*;
  */
 public class TermAnalyzer extends DepthFirstAdapter {
 
-    String term;
-    String value;
+    private static final String TERM_VALUE_SEPARATOR = ":";
+
+    private StringBuilder query;
+
+    /**
+     * Default constructor. Initializes the internal StringBuilder.
+     */
+    public TermAnalyzer() {
+        query = new StringBuilder();
+    }
 
     @Override
-    public void outASingleValuedAssociationField(ASingleValuedAssociationField node) {
+    public void inASingleValuedAssociationField(ASingleValuedAssociationField node) {
         TIdentificationVariable tId = node.getIdentificationVariable();
-        term = tId.toString();
+        String term = tId.toString();
+
+        query.append(term.trim() + TERM_VALUE_SEPARATOR);
         super.outASingleValuedAssociationField(node);
     }
 
     @Override
-    public void outAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
-        value = node.toString();
+    public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
+        String value = node.toString();
+        query.append(value);
         super.outAMathComparisonExpressionRightOperand(node);
     }
 
-    public String getTerm() {
-        return term;
+    @Override
+    public void caseAConditionalExpression(AConditionalExpression node) {
+        TOr or = node.getOr();
+
+        if (or != null) {
+            PConditionalExpression conditionalExpression = node.getConditionalExpression();
+            conditionalExpression.apply(this);
+
+            query.append(or.toString());
+
+            PConditionalTerm conditionalTerm = node.getConditionalTerm();
+            conditionalTerm.apply(this);
+        }
+
     }
 
-    public void setTerm(String term) {
-        this.term = term;
+    @Override
+    public void caseAConditionalTerm(AConditionalTerm node) {
+        TAnd and = node.getAnd();
+
+        if (and != null) {
+
+            PConditionalTerm conditionalTerm = node.getConditionalTerm();
+            conditionalTerm.apply(this);
+
+            query.append(and.toString());
+
+            PConditionalFactor conditionalFactor = node.getConditionalFactor();
+            conditionalFactor.apply(this);
+
+        }
+
     }
 
-    public String getValue() {
-        return value;
+    @Override
+    public void inALeftBracketProd(ALeftBracketProd node) {
+        query.append(node.getLeftBracket().toString().trim());
+        super.outALeftBracketProd(node);
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    @Override
+    public void inARightBracketProd(ARightBracketProd node) {
+        query.append(node.getRightBracket().toString().trim());
+        super.outARightBracketProd(node);
+    }
+
+    public String getQuery() {
+        return query.toString();
     }
 }
