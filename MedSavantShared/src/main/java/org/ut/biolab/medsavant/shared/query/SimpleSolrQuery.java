@@ -50,6 +50,21 @@ public class SimpleSolrQuery {
     private SolrQueryOperator operatorFilterQueryTerms =  SolrQueryOperator.AND;
 
     /**
+     * Separator for the query terms and term values
+     */
+    private static final String QUERY_TERM_SEPARATOR = ":";
+
+    /**
+     * Separator for sort terms and sort directions
+     */
+    private static final String SORT_TERM_DIRECTION_SEPARATOR = " ";
+
+    /**
+     * Separator for sort terms and sort directions
+     */
+    private static final String SORT_TERM_SEPARATOR = ",";
+
+    /**
      *  The position of the first document returned
      */
     private int start = -1;
@@ -60,9 +75,10 @@ public class SimpleSolrQuery {
     private int rows = -1;
 
     /**
-     * Solr for the query
+     * Sorts for the query
      */
-    private String sort;
+    private Map<String, String> sorts;
+
 
     private static final Log LOG = LogFactory.getLog(SimpleSolrQuery.class);
 
@@ -72,6 +88,7 @@ public class SimpleSolrQuery {
     public SimpleSolrQuery() {
         queryTerms = new HashMap<String, String>();
         filterQueryTerms = new HashMap<String, String>();
+        sorts = new HashMap<String, String>();
     }
 
     /**
@@ -80,7 +97,7 @@ public class SimpleSolrQuery {
      * @param terms                 A map containing the fields
      * @return                      Lucene query
      */
-    private String constructQuerySectionFromTerms(SolrQueryOperator termJoinOperator, Map<String, String> terms) {
+    private String constructQuerySectionFromTerms(String termJoinOperator, Map<String, String> terms, String separator) {
         StringBuilder sb = new StringBuilder();
 
         Iterator<Map.Entry<String,String>> iterator = terms.entrySet().iterator();
@@ -88,12 +105,13 @@ public class SimpleSolrQuery {
         if (iterator.hasNext()) {
             Map.Entry<String, String> term = iterator.next();
 
-            sb.append(term.getKey() + ":" + ClientUtils.escapeQueryChars(term.getValue()));
+            sb.append(term.getKey() + separator + term.getValue());
 
             while (iterator.hasNext()) {
                 term = iterator.next();
-                sb.append(termJoinOperator.nameWithSpace());
-                sb.append(term.getKey() + ":" + ClientUtils.escapeQueryChars(term.getValue()));
+                sb.append(termJoinOperator);
+                //sb.append(term.getKey() + ":" + ClientUtils.escapeQueryChars(term.getValue()));
+                sb.append(term.getKey() + separator + term.getValue());
             }
         }
 
@@ -138,7 +156,7 @@ public class SimpleSolrQuery {
      * @return  the regular query
      */
     public String getNormalQuery() {
-        return constructQuerySectionFromTerms(operatorQueryTerms, queryTerms);
+        return constructQuerySectionFromTerms(operatorQueryTerms.nameWithSpace(), queryTerms, QUERY_TERM_SEPARATOR );
     }
 
     /**
@@ -146,7 +164,15 @@ public class SimpleSolrQuery {
      * @return  the filtered query
      */
     public String getFilterQuery() {
-        return constructQuerySectionFromTerms(operatorFilterQueryTerms,  filterQueryTerms);
+        return constructQuerySectionFromTerms(operatorFilterQueryTerms.nameWithSpace(),  filterQueryTerms, QUERY_TERM_SEPARATOR);
+    }
+
+    /**
+     * Construct the "sort" part of the query.
+     * @return  the sort query
+     */
+    public String getSortQuery() {
+        return constructQuerySectionFromTerms(SORT_TERM_SEPARATOR, sorts, SORT_TERM_DIRECTION_SEPARATOR);
     }
 
     /**
@@ -169,6 +195,15 @@ public class SimpleSolrQuery {
         if (value != null) {
             filterQueryTerms.put(term, value);
         }
+    }
+
+    /**
+     * Add a sort term to the map of sort terms.
+     * @param term          The sort term name
+     * @param direction     The sort direction
+     */
+    public void addSortTerm(String term, String direction) {
+        sorts.put(term, direction);
     }
 
     /**
@@ -201,13 +236,6 @@ public class SimpleSolrQuery {
         this.rows = rows;
     }
 
-    public String getSort() {
-        return sort;
-    }
-
-    public void setSort(String sort) {
-        this.sort = sort;
-    }
 
     public Map<String, String> getQueryTerms() {
         return queryTerms;
@@ -241,8 +269,8 @@ public class SimpleSolrQuery {
 
     private Map<String, String> tryAddSort(Map<String, String> params) {
 
-        if (sort != null) {
-            params.put(CommonParams.SORT, sort);
+        if (sorts != null) {
+            params.put(CommonParams.SORT, getSortQuery());
         }
 
         return params;

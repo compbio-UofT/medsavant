@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.shared.query.parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
+import org.ut.biolab.medsavant.shared.query.parser.analyzer.QueryAnalyzer;
 import org.ut.biolab.medsavant.shared.query.parser.lexer.LexerException;
 import org.ut.biolab.medsavant.shared.query.parser.node.Start;
 import org.ut.biolab.medsavant.shared.query.parser.parser.ParserException;
@@ -12,17 +13,17 @@ import java.io.IOException;
 /**
  * Translate JPQL queries.
  */
-public class JQPToSolrTranslator {
+public class JQPLToSolrTranslator {
 
     private QueryAnalyzer analyzer;
 
-    private static final Log LOG = LogFactory.getLog(JQPToSolrTranslator.class);
+    private static final Log LOG = LogFactory.getLog(JQPLToSolrTranslator.class);
 
-    public JQPToSolrTranslator() {
+    public JQPLToSolrTranslator() {
         this.analyzer = new QueryAnalyzer(new QueryContext());
     }
 
-    public JQPToSolrTranslator(QueryAnalyzer analyzer) {
+    public JQPLToSolrTranslator(QueryAnalyzer analyzer) {
         this.analyzer = analyzer;
     }
 

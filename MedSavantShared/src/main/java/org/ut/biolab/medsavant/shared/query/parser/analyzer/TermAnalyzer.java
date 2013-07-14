@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.shared.query.parser;
+package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
