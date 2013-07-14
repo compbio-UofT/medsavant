@@ -13,12 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.vcf;
+package org.ut.biolab.medsavant.server.vcf;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
 
 import java.io.File;
 

@@ -23,11 +23,11 @@ import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.server.solr.service.VariantService;
+import org.ut.biolab.medsavant.shared.solr.service.VariantService;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
-import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 /**
  *

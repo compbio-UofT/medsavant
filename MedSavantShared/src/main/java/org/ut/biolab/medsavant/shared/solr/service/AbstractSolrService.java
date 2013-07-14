@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.service;
+package org.ut.biolab.medsavant.shared.solr.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,7 +23,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
-import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 /**
  * //FIXME this class is more like a DAO than a service, refactor

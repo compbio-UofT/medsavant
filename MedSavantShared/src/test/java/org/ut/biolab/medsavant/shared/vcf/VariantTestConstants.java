@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.vcf;
+package org.ut.biolab.medsavant.shared.vcf;
 
 /**
  * Hacky way to store some example values for the variant terms.

@@ -1,7 +1,7 @@
-package org.ut.biolab.medsavant.vcf;
+package org.ut.biolab.medsavant.shared.vcf;
 
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
-import org.ut.biolab.medsavant.server.solr.service.VariantData;
+import org.ut.biolab.medsavant.shared.solr.service.VariantData;
 
 import java.util.HashMap;
 import java.util.Map;

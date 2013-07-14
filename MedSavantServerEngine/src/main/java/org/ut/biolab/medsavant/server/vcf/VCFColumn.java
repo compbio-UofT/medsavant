@@ -13,10 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.service;
+package org.ut.biolab.medsavant.server.vcf;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.ut.biolab.medsavant.server.vcf.VCFParser;
+import org.ut.biolab.medsavant.shared.solr.service.VariantData;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 import java.util.*;

@@ -13,10 +13,10 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.service;
+package org.ut.biolab.medsavant.shared.solr.service;
 
 
-import org.ut.biolab.medsavant.server.solr.map.ListMap;
+import org.ut.biolab.medsavant.shared.solr.map.ListMap;
 
 import java.util.Collection;
 import java.util.UUID;

@@ -13,16 +13,15 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.vcf;
+package org.ut.biolab.medsavant.server.vcf;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
-import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.server.solr.service.AbstractSolrService;
-import org.ut.biolab.medsavant.server.solr.service.SolrVCFUploader;
-import org.ut.biolab.medsavant.server.solr.service.VariantService;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.service.AbstractSolrService;
+import org.ut.biolab.medsavant.shared.solr.service.VariantService;
 import org.ut.biolab.medsavant.server.vcf.VCFParser;
 
 import java.io.File;

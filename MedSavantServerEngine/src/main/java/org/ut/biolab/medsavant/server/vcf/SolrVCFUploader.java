@@ -13,11 +13,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.server.solr.service;
+package org.ut.biolab.medsavant.server.vcf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.server.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.service.VariantData;
+import org.ut.biolab.medsavant.shared.solr.service.VariantService;
 
 import java.io.BufferedReader;
 import java.io.File;
