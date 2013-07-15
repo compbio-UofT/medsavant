@@ -85,41 +85,40 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static boolean initialized = false;
     private static MedSavantFrame frame;
     private static String restartCommand;
-
     private static boolean restarting = false;
 
+    
+    /**
+     * Quits MedSavant
+     */
+    public static void quit() {
+        LoginController.getInstance().logout();        
+    }
+
+    
     /**
      * Restarts MedSavant
-     *
-     * @param msg If not null, this message is shown in a dialog prior to
-     * restarting.
+     * (This function has NOT been tested with Web Start)
      */
-    public static void restart(final String msg) {          
-        if (!restarting) { 
+    public static void restart() {
+        if (!restarting) {
             restarting = true;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        System.out.println("Showing message " + msg + " from invokeAndWait");
-                        if (msg != null) {
-                            DialogUtils.displayMessage("MedSavant needs to restart.", msg);
-                        }
-                        Runtime.getRuntime().exec(restartCommand);
-                    } catch (IOException e) { //thrown by exec
-                        DialogUtils.displayError("Error restarting MedSavant.  Please restart MedSavant manually.");
-                        LOG.error(e);
-                    } catch (Exception e) {
-                        LOG.error(e);
-                    } finally {
-                        LoginController.getInstance().logout();
-                    }
-
-                }
-            });
+            try {
+                /*  if (msg != null) {
+                 DialogUtils.displayMessage("MedSavant needs to restart.", msg);
+                 }*/
+                Runtime.getRuntime().exec(restartCommand);
+            } catch (IOException e) { //thrown by exec
+                DialogUtils.displayError("Error restarting MedSavant.  Please restart MedSavant manually.");
+                LOG.error(e);
+            } catch (Exception e) {
+                LOG.error(e);
+            } finally {
+                LoginController.getInstance().logout();
+            }           
         }
     }
-    
+
     public static void setRestartCommand(String[] args) {
         StringBuilder cmd = new StringBuilder();
         cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");

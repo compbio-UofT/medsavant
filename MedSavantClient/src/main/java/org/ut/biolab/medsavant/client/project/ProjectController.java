@@ -23,6 +23,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -40,6 +42,7 @@ import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -50,7 +53,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  * @author mfiume
  */
 public class ProjectController extends Controller<ProjectEvent> {
-
+    private static final Log LOG = LogFactory.getLog(ProjectController.class);
     private static ProjectController instance;
 
     private ProjectManagerAdapter manager;
@@ -326,13 +329,36 @@ public class ProjectController extends Controller<ProjectEvent> {
             }
         } else if (option == JOptionPane.YES_OPTION) {
             try {
-                MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
-                MedSavantClient.restart(null);
+                publishVariants(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID(), null);
+                //MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
+                //MedSavantClient.restart(null);
                 //LoginController.getInstance().logout();
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error publishing variants: %s", ex);
             }
         }
         return false;
+    }
+    
+    public void publishVariants(String sessionID, int projectID, int referenceID, int updateID, String msg){
+         try {            
+            MedSavantFrame.getInstance().dispose();
+            if(msg != null){
+                DialogUtils.displayMessage(msg);
+            }
+            if(referenceID > 0 && updateID>0){
+                MedSavantClient.VariantManager.publishVariants(sessionID, projectID, referenceID, updateID);
+            }else{
+                MedSavantClient.VariantManager.publishVariants(sessionID, projectID);
+            }
+            MedSavantClient.quit(); 
+            //MedSavantClient.restart(null);
+        } catch (Exception e) {
+            LOG.error(e);
+        }
+    }
+    
+    public void publishVariants(String sessionID, int projectId, String msg){
+        publishVariants(sessionID, projectId, -1, -1, msg);
     }
 }

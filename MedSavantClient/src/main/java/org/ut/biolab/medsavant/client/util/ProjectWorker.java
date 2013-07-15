@@ -6,12 +6,11 @@ package org.ut.biolab.medsavant.client.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.Notification;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.ViewController;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  * A worker for making changes to a project, which includes project
@@ -111,7 +110,7 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
     private String getLongSuccessMessage() {
         if (longSuccessMessage == null) {
             if (autoPublish) {
-                longSuccessMessage = notification.getTitle() + " was successful.  MedSavant must restart to publish changes.  Press OK to restart";
+                longSuccessMessage = notification.getTitle() + " was successful.  MedSavant will now close.";
             } else {
                 longSuccessMessage = notification.getTitle() + " was successful. Changes have not yet been published.";
             }
@@ -119,7 +118,7 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
         return longSuccessMessage;
     }
 
-    private void publish() {
+   /* private void publish() {
         try {
             //The switch to loginView prevents certain polling threads from trying to 
             //query the server. 
@@ -130,14 +129,15 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
         } catch (Exception e) {
             LOG.error(e);
         }
-    }
+    }*/
 
     @Override
     protected void showSuccess(T result) {
         notification.setStatus(Notification.JobStatus.FINISHED);
         notification.setStatusMessage(shortSuccessMessage);
-        if (autoPublish) {
-            publish();
+        if (autoPublish) {            
+            ProjectController.getInstance().publishVariants(sessionID, projectID, getLongSuccessMessage());
+            
         } else {
             MedSavantFrame.getInstance().notificationMessage(getLongSuccessMessage());
             ViewController.getInstance().getMenu().checkForUpdateNotifications();
