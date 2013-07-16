@@ -682,4 +682,83 @@ public class VariantRecord implements Serializable {
         }
     }
 
+    public void setUploadID(int uploadID) {
+        this.uploadID = uploadID;
+    }
+
+    public void setAncestralAllele(String ancestralAllele) {
+        this.ancestralAllele = ancestralAllele;
+    }
+
+    public void setAlleleCount(Integer alleleCount) {
+        this.alleleCount = alleleCount;
+    }
+
+    public void setAlleleFrequency(Float alleleFrequency) {
+        this.alleleFrequency = alleleFrequency;
+    }
+
+    public void setNumberOfAlleles(Integer numberOfAlleles) {
+        this.numberOfAlleles = numberOfAlleles;
+    }
+
+    public void setBaseQuality(Integer baseQuality) {
+        this.baseQuality = baseQuality;
+    }
+
+    public void setCigar(String cigar) {
+        this.cigar = cigar;
+    }
+
+    public void setDbSNPMembership(Boolean dbSNPMembership) {
+        this.dbSNPMembership = dbSNPMembership;
+    }
+
+    public void setDepthOfCoverage(Integer depthOfCoverage) {
+        this.depthOfCoverage = depthOfCoverage;
+    }
+
+    public void setEndPosition(Long endPosition) {
+        this.endPosition = endPosition;
+    }
+
+    public void setHapmap2Membership(Boolean hapmap2Membership) {
+        this.hapmap2Membership = hapmap2Membership;
+    }
+
+    public void setHapmap3Membership(Boolean hapmap3Membership) {
+        this.hapmap3Membership = hapmap3Membership;
+    }
+
+    public void setMappingQuality(Integer mappingQuality) {
+        this.mappingQuality = mappingQuality;
+    }
+
+    public void setNumberOfZeroMQ(Integer numberOfZeroMQ) {
+        this.numberOfZeroMQ = numberOfZeroMQ;
+    }
+
+    public void setNumberOfSamplesWithData(Integer numberOfSamplesWithData) {
+        this.numberOfSamplesWithData = numberOfSamplesWithData;
+    }
+
+    public void setStrandBias(Float strandBias) {
+        this.strandBias = strandBias;
+    }
+
+    public void setSomatic(Boolean somatic) {
+        isSomatic = somatic;
+    }
+
+    public void setValidated(Boolean validated) {
+        isValidated = validated;
+    }
+
+    public void setInThousandGenomes(Boolean inThousandGenomes) {
+        isInThousandGenomes = inThousandGenomes;
+    }
+
+    public static void setDelim(String delim) {
+        VariantRecord.delim = delim;
+    }
 }
