@@ -33,12 +33,12 @@ public class SolrQueryTest {
     @Test
     public void testQueryTerms() {
 
-        String correctQueryResult = "q=id:rs* AND dna_id:NA*";
+        String correctQueryResult = "id:rs* AND dna_id:NA*";
 
         solrQuery.addQueryTerm("id", "rs*");
         solrQuery.addQueryTerm("dna_id", "NA*");
 
-        String fullSolrQuery = solrQuery.toString().toString();
+        String fullSolrQuery = solrQuery.getNormalQuery();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
 
@@ -47,12 +47,12 @@ public class SolrQueryTest {
     @Test
     public void testFilterQueryTerms() {
 
-        String correctQueryResult = "fq=id:rs* AND dna_id:NA*";
+        String correctQueryResult = "id:rs* AND dna_id:NA*";
 
         solrQuery.addFilterQueryTerm("id", "rs*");
         solrQuery.addFilterQueryTerm("dna_id", "NA*");
 
-        String fullSolrQuery = solrQuery.toSolrParams().toString();
+        String fullSolrQuery = solrQuery.getFilterQuery();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
 
