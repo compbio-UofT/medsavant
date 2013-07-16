@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 
@@ -12,6 +13,12 @@ public class TermAnalyzer extends DepthFirstAdapter {
 
     private StringBuilder query;
 
+    private String term;
+
+    private String value;
+
+    private QueryContext context;
+
     /**
      * Default constructor. Initializes the internal StringBuilder.
      */
@@ -19,10 +26,15 @@ public class TermAnalyzer extends DepthFirstAdapter {
         query = new StringBuilder();
     }
 
+    public TermAnalyzer(QueryContext context) {
+        this();
+        this.context = context;
+    }
+
     @Override
     public void inASingleValuedAssociationField(ASingleValuedAssociationField node) {
         TIdentificationVariable tId = node.getIdentificationVariable();
-        String term = tId.toString();
+        term = tId.toString();
 
         query.append(term.trim() + TERM_VALUE_SEPARATOR);
         super.outASingleValuedAssociationField(node);
@@ -30,8 +42,14 @@ public class TermAnalyzer extends DepthFirstAdapter {
 
     @Override
     public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
-        String value = node.toString();
-        query.append(value);
+        value = node.toString();
+
+        if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {
+            query.append(context.getParameters().get(parseNamedParameter(value)));
+        } else {
+            query.append(value);
+        }
+
         super.outAMathComparisonExpressionRightOperand(node);
     }
 
@@ -43,12 +61,11 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalExpression conditionalExpression = node.getConditionalExpression();
             conditionalExpression.apply(this);
 
-            query.append(or.toString());
+            query.append(spacedString(or.toString()));
 
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
         }
-
     }
 
     @Override
@@ -60,13 +77,19 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
 
-            query.append(and.toString());
+            query.append(spacedString(and.toString()));
 
             PConditionalFactor conditionalFactor = node.getConditionalFactor();
             conditionalFactor.apply(this);
-
         }
+    }
 
+    public boolean isNamedParamter(String parameter) {
+        return  parameter.startsWith(":") ? true : false;
+    }
+
+    public String parseNamedParameter(String nameParameter) {
+        return nameParameter.substring(1).trim();
     }
 
     @Override
@@ -83,5 +106,9 @@ public class TermAnalyzer extends DepthFirstAdapter {
 
     public String getQuery() {
         return query.toString();
+    }
+
+    private String spacedString(String str) {
+        return " " + str.trim() + " ";
     }
 }

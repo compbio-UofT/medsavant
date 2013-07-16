@@ -41,7 +41,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         LOG.debug("Entering main conditional expression " + node.toString());
 
         node.getConditionalExpression();
-        TermAnalyzer termAnalyzer = new TermAnalyzer();
+        TermAnalyzer termAnalyzer = new TermAnalyzer(context);
         node.apply(termAnalyzer);
 
         String query = termAnalyzer.getQuery();
@@ -102,4 +102,5 @@ public class QueryAnalyzer extends DepthFirstAdapter {
             solrQuery.addField(field);
         }
     }
+
 }

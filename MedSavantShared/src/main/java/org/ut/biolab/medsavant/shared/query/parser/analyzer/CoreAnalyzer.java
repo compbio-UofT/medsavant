@@ -4,6 +4,8 @@ import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.ARangeVariableDeclaration;
 import org.ut.biolab.medsavant.shared.query.parser.node.PAbstractSchemaName;
 
+import java.util.Locale;
+
 /**
  * Collect the core name from the query.
  */
@@ -16,7 +18,7 @@ public class CoreAnalyzer extends DepthFirstAdapter {
         PAbstractSchemaName schemaName =  node.getAbstractSchemaName();
 
         if (schemaName != null) {
-            coreName = schemaName.toString();
+            coreName = schemaName.toString().trim().toLowerCase(Locale.ROOT);
         }
 
         super.outARangeVariableDeclaration(node);
