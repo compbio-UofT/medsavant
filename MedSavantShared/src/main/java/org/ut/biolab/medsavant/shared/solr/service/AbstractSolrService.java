@@ -22,7 +22,6 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
@@ -59,6 +58,11 @@ public abstract class AbstractSolrService {
     protected abstract String getName();
 
 
+    /**
+     * Perform search by user a SolrParams object.
+     * @param solrParams            The SolrParams containing the parameters.
+     * @return                      A SolrDocumentList containing the query result.
+     */
     public SolrDocumentList search(SolrParams solrParams) {
 
         SolrDocumentList result = null;
@@ -72,6 +76,11 @@ public abstract class AbstractSolrService {
         return result;
     }
 
+    /**
+     * Perform search by user a SolrQuery object.
+     * @param solrQuery             The SolrQuery to execute
+     * @return                      A SolrDocumentList containing the query result.
+     */
     public SolrDocumentList search(SolrQuery solrQuery) {
         QueryResponse result = null;
 
@@ -82,6 +91,33 @@ public abstract class AbstractSolrService {
         }
 
         return result.getResults();
+    }
+
+    /**
+     * Return the number of results for a query.
+     * @param solrQuery             The SolrQuery to execute
+     * @return                      the number of results
+     */
+    public long count(SolrQuery solrQuery) {
+        QueryResponse result = null;
+
+        int tempStart = solrQuery.getStart();
+        int tempRows = solrQuery.getRows();
+
+        //no need for any results
+        solrQuery.setRows(0);
+        solrQuery.setStart(0);
+
+        try {
+            result = this.server.query(solrQuery);
+        } catch (SolrServerException e) {
+            LOG.error("Error executing query " + solrQuery.toString());
+        } finally {
+            solrQuery.setStart(tempStart);
+            solrQuery.setRows(tempRows);
+        }
+
+        return result.getResults().getNumFound();
     }
 
     public SolrDocumentList search(SimpleSolrQuery simpleSolrQuery) {
