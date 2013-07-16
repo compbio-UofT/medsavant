@@ -20,6 +20,13 @@ public interface Query {
     <T> List<T> execute() throws QueryException;
 
     /**
+     * Execute the current query and return a list of the type ResultRow, each containing
+     * a subset of the entity fields.
+     * @return                  A list of ResultRow objects.
+     */
+    public List<ResultRow> executeForRows();
+
+    /**
      * Return the string query statement.
      * @return                  The query statement as a String.
      */
@@ -39,6 +46,15 @@ public interface Query {
      * @throws IllegalArgumentException If the parameter name does not corresponding to a parameter in the query.
      */
     public Query setParameter(String parameterName, Object value);
+
+    /**
+     * Bind a paramter value to the index-th parameter in the query.
+     * @param index                     The index of the parameter, appears as ?index in the query.
+     * @param value                     he object corresponding to the parameter.
+     * @return                          The query.
+     * @throws IllegalArgumentException If the parameter does not correspond to a parameter in the query.
+     */
+    public Query setParameter(int index, Object value);
 
     /**
      * Get the parameter objects associated with this query.
@@ -82,5 +98,6 @@ public interface Query {
      * @return          the limit of the result list.
      */
     public int getLimit();
+
 
 }

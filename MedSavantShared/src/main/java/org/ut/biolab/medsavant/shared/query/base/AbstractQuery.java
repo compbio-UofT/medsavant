@@ -1,10 +1,7 @@
 package org.ut.biolab.medsavant.shared.query.base;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.query.QueryException;
-import org.ut.biolab.medsavant.shared.query.QueryExecutor;
-import org.ut.biolab.medsavant.shared.query.QuerySort;
+import org.ut.biolab.medsavant.shared.query.*;
 
 import java.util.*;
 
@@ -26,12 +23,12 @@ public abstract class AbstractQuery implements Query {
     /**
      * The start of the result list in the result set.
      */
-    protected int start;
+    protected int start = 0;
 
     /**
      * The maximum number of results that can be returned.
      */
-    protected int limit;
+    protected int limit = 10;
 
     /**
      * The map holding the query parameter values
@@ -49,6 +46,12 @@ public abstract class AbstractQuery implements Query {
     public <T> List<T> execute() throws QueryException {
         return executor.execute(this);
     }
+
+    @Override
+    public List<ResultRow> executeForRows() {
+        return executor.executeForRows(this);
+    }
+
 
     @Override
     public Set<String> getParameterNames() {

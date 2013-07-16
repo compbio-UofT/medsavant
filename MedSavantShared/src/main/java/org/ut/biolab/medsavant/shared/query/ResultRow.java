@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.shared.query;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -9,16 +10,30 @@ public class ResultRow {
 
     private Map<String, Object> results;
 
-    private Object getObject(String key) {
+    public ResultRow() {
+        this.results = new HashMap<String, Object>();
+    }
+
+    public ResultRow(Map<String, Object> results) {
+        this.results = results;
+    }
+
+    public Object getObject(String key) {
         return results.get(key);
     }
 
-    private Object getObject(int index) {
+    public Object getObject(int index) {
         return results.values().toArray()[index];
     }
 
-    private Object put(String key, Object value) {
+    public Object put(String key, Object value) {
         return results.put(key, value);
     }
 
+    @Override
+    public String toString() {
+        return "ResultRow{" +
+                "results=" + results +
+                '}';
+    }
 }
