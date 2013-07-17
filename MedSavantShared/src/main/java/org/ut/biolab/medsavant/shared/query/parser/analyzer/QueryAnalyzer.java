@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.params.CommonParams;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
@@ -102,7 +103,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
     }
 
     public SolrQuery getSolrQuery() {
-        return solrQuery;
+        return addDefaultQueryParameters(solrQuery);
     }
 
     public void setSolrQuery(SolrQuery solrQuery) {
@@ -113,6 +114,17 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         for (String field : fields) {
             solrQuery.addField(field);
         }
+    }
+    
+    private SolrQuery addDefaultQueryParameters(SolrQuery solrQuery) {
+
+        String params = solrQuery.get(CommonParams.Q);
+
+        if (params == null || "".equals(params)) {
+            solrQuery.add(CommonParams.Q, "*:*");
+        }
+
+        return solrQuery;
     }
 
 }

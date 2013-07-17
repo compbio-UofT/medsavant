@@ -65,5 +65,15 @@ public class AbstractSolrQueryTest {
         System.out.println(variantRecordList);
     }
 
+    @Test
+    public void testNoWhereParameters() throws QueryException {
+        Query query = queryManager.createQuery("select v from Variant v");
+
+        List<VariantRecord> variantRecordList = query.execute();
+
+        System.out.print(variantRecordList);
+    }
+
+
 
 }
