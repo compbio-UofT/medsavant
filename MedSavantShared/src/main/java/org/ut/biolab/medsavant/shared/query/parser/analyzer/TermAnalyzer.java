@@ -99,6 +99,15 @@ public class TermAnalyzer extends DepthFirstAdapter {
         }
     }
 
+    @Override
+    public void caseABetweenExpression(ABetweenExpression node) {
+
+        String start = node.getA().toString().trim();
+        String end = node.getB().toString().trim();
+
+        query.append("[" + start + " TO " + end + "]");
+    }
+
     public boolean isNamedParamter(String parameter) {
         return  parameter.startsWith(":") ? true : false;
     }

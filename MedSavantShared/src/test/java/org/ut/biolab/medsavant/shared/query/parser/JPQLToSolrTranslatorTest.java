@@ -71,4 +71,11 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(params, expected);
     }
 
+    @Test
+    public void testBetween() {
+        SolrQuery resultedQuery = translator.translate("select v.a, v.b from Variant v where (pos between 10 and 10000) OR dna_id='NA*'");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "(pos:[10 TO 10000]) OR dna_id:'NA*'");
+    }
+
 }
