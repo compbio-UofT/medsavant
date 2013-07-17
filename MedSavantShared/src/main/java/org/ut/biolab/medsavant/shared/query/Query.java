@@ -42,6 +42,12 @@ public interface Query {
     public List<ResultRow> executeForRows();
 
     /**
+     * Execute the current query and the number of results.
+     * @return                  The number of results.
+     */
+    public long count();
+
+    /**
      * Return the string query statement.
      * @return                  The query statement as a String.
      */

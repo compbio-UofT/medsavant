@@ -22,7 +22,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryExecutor;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
-import org.ut.biolab.medsavant.shared.query.parser.JPQLToSolrTranslator;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.solr.mapper.MapperRegistry;
 import org.ut.biolab.medsavant.shared.solr.mapper.ResultMapper;
@@ -35,8 +34,6 @@ import java.util.List;
  * Query executor for Solr queries
  */
 public class SolrQueryExecutor implements QueryExecutor {
-
-    private JPQLToSolrTranslator translator = new JPQLToSolrTranslator();
 
     private static final Log LOG = LogFactory.getLog(SolrQueryExecutor.class);
 
@@ -79,4 +76,26 @@ public class SolrQueryExecutor implements QueryExecutor {
 
         return null;
     }
+
+    @Override
+    public long count(Query query) {
+        AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
+        SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
+
+        String entityName = abstractSolrQuery.getEntity();
+        AbstractSolrService solrService = null;
+
+        long count = 0;
+
+        try {
+            solrService = SolrServiceRegistry.getService(entityName);
+            count = solrService.count(solrQuery);
+        } catch (InitializationException e) {
+            LOG.error("Error retrieving necessary Solr service ", e);
+        }
+
+        return count;
+    }
+
+
 }

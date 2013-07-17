@@ -38,5 +38,11 @@ public interface QueryExecutor {
      */
     public List<ResultRow> executeForRows(Query query);
 
+    /**
+     * Execute the current query and return the number of results.
+     * @param query             A query that needs to be executed.
+     * @return                  The number of results
+     */
+    public long count(Query query);
 
 }

@@ -69,6 +69,10 @@ public abstract class AbstractQuery implements Query {
         return executor.executeForRows(this);
     }
 
+    @Override
+    public long count() {
+        return executor.count(this);
+    }
 
     @Override
     public Set<String> getParameterNames() {
