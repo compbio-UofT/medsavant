@@ -37,17 +37,6 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
     }
 
     @Override
-    public void outASingleValuedAssociationField(ASingleValuedAssociationField node) {
-
-        TIdentificationVariable tId =  node.getIdentificationVariable();
-        if (tId != null) {
-            field.add(tId.toString());
-        }
-
-        super.outASingleValuedAssociationField(node);
-    }
-
-    @Override
     public void caseAIddotSingleValuedAssociationPathExpression(AIddotSingleValuedAssociationPathExpression node) {
 
         PSingleValuedAssociationField fieldValue =  node.getSingleValuedAssociationField();
