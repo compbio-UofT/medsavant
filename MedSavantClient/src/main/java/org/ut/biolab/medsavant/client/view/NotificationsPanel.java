@@ -11,6 +11,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -42,10 +44,44 @@ public class NotificationsPanel extends JPanel {
 
         this.notifications = new JPopupMenu();
         this.notifications.setBorder(null);
+        
+        //These listeners are a bit of a hack to fix a visual bug where clicking 
+        //the 'jobs' button partially erases the 'Notifications' button on Linux
+        //when the popup is closed.
+        this.notifications.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
+                ViewController.getInstance().getMenu().repaint();
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
+                ViewController.getInstance().getMenu().repaint();
+            }
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
+            }
+        });
 
         this.noNotifications = new JPopupMenu();
         this.noNotifications.add(new JLabel("No notifications"));
         this.noNotifications.setBorder(ViewUtil.getMediumBorder());
+        this.noNotifications.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
+                ViewController.getInstance().getMenu().repaint();
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
+                ViewController.getInstance().getMenu().repaint();
+            }
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
+            }
+        });
 
         ViewUtil.applyVerticalBoxLayout(notifications);
 
@@ -62,6 +98,8 @@ public class NotificationsPanel extends JPanel {
     private void showPopup() {
         if (this.isVisible()) {
             JPopupMenu m;
+
+
             if (notificationCount == 0 && completedNotifications.isEmpty()) {
                 m = noNotifications;
             } else {

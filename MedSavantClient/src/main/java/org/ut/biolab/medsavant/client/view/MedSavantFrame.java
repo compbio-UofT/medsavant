@@ -47,6 +47,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -257,9 +258,23 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
         });
-
-        //fileMenu.add(manageDBItem);
         fileMenu.add(pluginsItem);
+        
+        // Debug code that adds a 'Restart' function to the File menu.
+        /*
+        JMenuItem restartItem = new JMenuItem("Restart");
+        restartItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MedSavantClient.restart();
+            }
+        });
+        fileMenu.add(restartItem);
+        */
+
+        
+        //fileMenu.add(manageDBItem);
+        
 
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");

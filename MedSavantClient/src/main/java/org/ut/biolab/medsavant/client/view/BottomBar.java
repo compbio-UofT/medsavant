@@ -28,7 +28,10 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 /**
  *
  * @author mfiume
+ * 
+ * Deprecated 11/07/2013.  This is never instantiated.
  */
+@Deprecated
 public class BottomBar extends JPanel {
 
     private final JLabel statusLabel;

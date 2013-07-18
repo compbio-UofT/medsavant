@@ -24,4 +24,8 @@ public abstract class PeriodicChecker implements ActionListener {
         this.timer.setInitialDelay(0);
         this.timer.start();
     }
+    
+    public void stop(){
+        timer.stop();
+    }
 }

@@ -35,6 +35,7 @@ public abstract class Notification implements PropertyChangeListener{
     private boolean showResultsOnFinish = true;
 
     public Notification(String title) {
+        this.title = title;
         view = ViewUtil.getClearPanel();
 
         view.setBorder(ViewUtil.getMediumBorder());
@@ -113,7 +114,7 @@ public abstract class Notification implements PropertyChangeListener{
 
     public void setProgress(double progress) {
         //was commented
-        this.progressBar.setIndeterminate(false);
+        setIndeterminate(false);        
         this.progress = progress;
         this.progressBar.setValue((int) (progress * 100));
     }
@@ -149,7 +150,7 @@ public abstract class Notification implements PropertyChangeListener{
         return indeterminate;
     }
 
-    public void setIndeterminate(boolean indeterminate) {
+    public void setIndeterminate(boolean indeterminate) {                
         //was commented
         this.indeterminate = indeterminate;
         this.progressBar.setIndeterminate(indeterminate);
@@ -168,6 +169,7 @@ public abstract class Notification implements PropertyChangeListener{
                         setStatusMessage("Cancelled");
                         cancelButton.setVisible(false);
                         closeButton.setVisible(true);
+                        progressBar.setVisible(false);
                         cancelJob();
                         break;
                     case NOT_STARTED:

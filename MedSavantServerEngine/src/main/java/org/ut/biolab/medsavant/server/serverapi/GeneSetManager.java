@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,8 +36,10 @@ import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 
 
 /**
@@ -98,21 +103,41 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         return null;
     }
 
+    public static void main(String[] argv) {
+        TableSchema table = MedSavantDatabase.GeneSetTableSchema;
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, "hg19", TYPE, "RefSeq").groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+        BinaryCondition dumbChrsCondition1 = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\_%");
+        query.addCondition(dumbChrsCondition1);
+        BinaryCondition dumbChrsCondition2 = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\-%");
+        query.addCondition(dumbChrsCondition2);
+        System.out.println(query.toString());
+    }
+
     @Override
     public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
-        LOG.debug(query);
+        TableSchema table = MedSavantDatabase.GeneSetTableSchema;
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+        BinaryCondition dumbChrsCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\_%");
+        query.addCondition(dumbChrsCondition);
+        BinaryCondition dumbNameCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%");
+        query.addCondition(dumbNameCondition);
+
+        System.out.println(query.toString());
+
+        LOG.info(query);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         Gene[] result = new Gene[geneSet.getSize()];
         int i = 0;
         while (rs.next()) {
-            result[i++] = new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), null);
+            Gene g = new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), null);
+            result[i++] = g;
         }
         if (i != result.length) {
             LOG.info("There were " + result.length + " genes, but only " + i + " were loaded.");
         }
+        result = Arrays.copyOf(result, i);
 
         return result;
     }

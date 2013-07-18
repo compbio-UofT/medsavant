@@ -867,8 +867,11 @@ public class FamilyMattersOptionView {
                 criteriaPanel.add(c.getView());
 
                 final Component strut = Box.createVerticalStrut(10);
-                view.add(strut, view.getComponentCount() - 3);
-                view.add(criteriaPanel, view.getComponentCount() - 3);
+
+                int indexFromBack = 5;
+
+                view.add(strut, view.getComponentCount() - indexFromBack);
+                view.add(criteriaPanel, view.getComponentCount() - indexFromBack);
 
                 removeButton.addMouseListener(new MouseListener() {
                     public void actionPerformed(ActionEvent ae) {
@@ -930,6 +933,7 @@ public class FamilyMattersOptionView {
         view.add(Box.createVerticalStrut(10));
 
         InheritanceModelStep inheritance = new InheritanceModelStep();
+
         view.add(inheritance.getView());
 
         view.add(Box.createVerticalStrut(10));

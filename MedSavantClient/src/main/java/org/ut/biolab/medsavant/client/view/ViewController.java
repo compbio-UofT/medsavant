@@ -118,7 +118,7 @@ public class ViewController {
         currentSection = parent;
     }
 
-    void selectFirstItem() {
+    public void selectFirstItem() {
         // Fake a click on the first section button.
         ((JToggleButton) menu.primaryMenuButtons.getElements().nextElement()).doClick();
     }
