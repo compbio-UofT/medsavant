@@ -60,7 +60,7 @@ public abstract class AbstractQuery implements Query {
     }
 
     @Override
-    public <T> List<T> execute() throws QueryException {
+    public <T> List<T> execute(){
         return executor.execute(this);
     }
 

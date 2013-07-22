@@ -32,7 +32,7 @@ public interface Query {
      * @return                  A list of type T objects
      * @throws QueryException
      */
-    <T> List<T> execute() throws QueryException;
+    <T> List<T> execute();
 
     /**
      * Execute the current query and return a list of the type ResultRow, each containing
