@@ -62,8 +62,8 @@ public class SearcheableVariant {
     }
 
     @Field("pos")
-    public void setPosition(Integer position) {
-        variantRecord.setPosition(Long.valueOf(position));
+    public void setPosition(Float position) {
+        variantRecord.setPosition(Long.valueOf(position.longValue()));
     }
 
     @Field("id")
