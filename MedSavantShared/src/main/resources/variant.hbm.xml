@@ -1,12 +1,12 @@
  <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="org.ut.biolab.medsavant.shared.db.shard">
   <class name="Variant" table="z_variant_proj1_ref3_update1">
-    <id name="variant_id" column="variant_id" type="integer" />
+    <id name="position" column="position" type="integer" />
+    <property name="variant_id" column="variant_id" type="integer" />
     <property name="upload_id" column="upload_id" type="integer" />
     <property name="file_id" column="file_id" type="integer" />
     <property name="dna_id" column="dna_id" />
     <property name="chrom" column="chrom" />
-    <property name="position" column="position" type="integer" />
     <property name="dbsnp_id" column="dbsnp_id" />
     <property name="ref" column="ref" />
     <property name="alt" column="alt" />

@@ -25,18 +25,20 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.shards.ShardId;
 import org.hibernate.shards.ShardedConfiguration;
 import org.hibernate.shards.cfg.ConfigurationToShardConfigurationAdapter;
-import org.hibernate.shards.strategy.ShardStrategy;
 import org.hibernate.shards.strategy.ShardStrategyFactory;
-import org.hibernate.shards.strategy.ShardStrategyImpl;
-import org.hibernate.shards.strategy.access.ParallelShardAccessStrategy;
-import org.hibernate.shards.strategy.access.ShardAccessStrategy;
-import org.hibernate.shards.strategy.resolution.ShardResolutionStrategy;
-import org.hibernate.shards.strategy.selection.ShardSelectionStrategy;
 
+/**
+ * Constructor of factories and necessary sharding utils.
+ * 
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
+ * 
+ */
 public class HibernateShardUtil {
+    // TODO: check whether this is true
+    private static final long MAX_VARIANT_POSITION = 250000000;
+    private static Integer shardNo;
     private static SessionFactory sessionFactory;
 
     public static SessionFactory getSessionFactory() {
@@ -48,6 +50,7 @@ public class HibernateShardUtil {
             Configuration config = new Configuration();
             config.configure("hibernate0.cfg.xml");
             config.addResource("variant.hbm.xml");
+            shardNo = 2;
             List shardConfigs = new ArrayList();
             shardConfigs.add(new ConfigurationToShardConfigurationAdapter(new Configuration().configure("hibernate0.cfg.xml")));
             shardConfigs.add(new ConfigurationToShardConfigurationAdapter(new Configuration().configure("hibernate1.cfg.xml")));
@@ -71,14 +74,7 @@ public class HibernateShardUtil {
 
         final ThreadPoolExecutor exec = new ThreadPoolExecutor(10, 50, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), factory);
 
-        ShardStrategyFactory shardStrategyFactory = new ShardStrategyFactory() {
-            public ShardStrategy newShardStrategy(List<ShardId> shardIds) {
-                ShardSelectionStrategy pss = new VariantShardSelectionStrategy();
-                ShardResolutionStrategy prs = new VariantShardResolutionStrategy(shardIds);
-                ShardAccessStrategy pas = new ParallelShardAccessStrategy(exec);
-                return new ShardStrategyImpl(pss, prs, pas);
-            }
-        };
+        ShardStrategyFactory shardStrategyFactory = new PositionShardStrategyFactory(MAX_VARIANT_POSITION, shardNo, exec);
         return shardStrategyFactory;
     }
 }

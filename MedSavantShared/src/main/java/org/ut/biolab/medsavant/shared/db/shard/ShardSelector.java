@@ -15,33 +15,16 @@
  */
 package org.ut.biolab.medsavant.shared.db.shard;
 
-import javassist.expr.Instanceof;
-
 import org.hibernate.shards.ShardId;
-import org.hibernate.shards.strategy.selection.ShardSelectionStrategy;
 
 /**
- * Mechanism determining the shard on which a new object should be created.
+ * Generic interface used for helpers determining a shard for data.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class VariantShardSelectionStrategy implements ShardSelectionStrategy {
+public interface ShardSelector<T> {
 
-    private ShardSelector<Long> shardSelector;
+    ShardId getShard(T data);
 
-    /**
-     * Determine shard based on position.
-     */
-    public ShardId selectShardIdForNewObject(Object obj) {
-        if (!(obj instanceof Long)) {
-            throw new IllegalArgumentException(obj.toString());
-        }
-        
-        return shardSelector.getShard((Long) obj);
-    }
-
-    public VariantShardSelectionStrategy(Long maxPos, Integer shardNo) {
-        shardSelector = new PositionShardSelector(maxPos, shardNo);
-    }
 }
