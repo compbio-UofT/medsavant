@@ -15,9 +15,13 @@
  */
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
+import org.ut.biolab.medsavant.shared.query.parser.util.ParserUtil;
+
+import java.util.Map;
 
 /**
  * Analyzer which collects a term and term value from a WHERE clause.
@@ -49,21 +53,30 @@ public class TermAnalyzer extends DepthFirstAdapter {
     @Override
     public void inASingleValuedAssociationField(ASingleValuedAssociationField node) {
         TIdentificationVariable tId = node.getIdentificationVariable();
-        term = tId.toString();
-
+        term = FieldMappings.mapToSolrField(tId.toString().trim(), context.getCoreName());
         query.append(term.trim() + TERM_VALUE_SEPARATOR);
         super.outASingleValuedAssociationField(node);
+    }
+
+    @Override
+    public void caseAComparisonExpression(AComparisonExpression node) {
+
+        TComparisonOperator tComparisonOperator = node.getComparisonOperator();
+        String value = getValueToken(node.getComparisonExpressionRightOperand().toString().trim());
+        if (ParserUtil.equal(tComparisonOperator.toString())) {
+            node.getComparisonExpressionRightOperand().apply(this);
+        } else if (ParserUtil.greaterThan(tComparisonOperator.toString())) {
+            query.append("[" + value + " TO *]");
+        } else if (ParserUtil.lessThan(tComparisonOperator.toString())) {
+            query.append("[* TO " + value + " ]");
+        }
     }
 
     @Override
     public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
         value = node.toString();
 
-        if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {
-            query.append(context.getParameters().get(parseNamedParameter(value)));
-        } else {
-            query.append(value);
-        }
+        query.append(getValueToken(value));
 
         super.outAMathComparisonExpressionRightOperand(node);
     }
@@ -128,6 +141,18 @@ public class TermAnalyzer extends DepthFirstAdapter {
         super.outARightBracketProd(node);
     }
 
+    private String getValueToken(String value ) {
+        String parsedValue = null;
+
+        if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {
+            parsedValue = String.valueOf(context.getParameters().get(parseNamedParameter(value)));
+        } else {
+            parsedValue = value;
+        }
+
+        return parsedValue;
+    }
+
     public String getQuery() {
         return query.toString();
     }
@@ -135,4 +160,6 @@ public class TermAnalyzer extends DepthFirstAdapter {
     private String spacedString(String str) {
         return " " + str.trim() + " ";
     }
+
+
 }

@@ -15,10 +15,9 @@
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
-import org.ut.biolab.medsavant.server.db.variants.annotation.BatchVariantAnnotator;
+import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.shared.model.VariantTag;
 import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
-import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.model.Range;
@@ -31,18 +30,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -68,15 +61,16 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.query.*;
+import org.ut.biolab.medsavant.shared.query.solr.SolrQueryManager;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
-import org.ut.biolab.medsavant.server.vcf.VCFIterator;
-import org.ut.biolab.medsavant.server.vcf.VCFParser;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 /**
  *
@@ -104,7 +98,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     //public static boolean REMOVE_TMP_FILES = false;
     static boolean REMOVE_WORKING_DIR = true;
 
+    //Todo make singleton
+    private QueryManager queryManager;
+
     private VariantManager() throws RemoteException, SessionExpiredException {
+        queryManager = new SolrQueryManager();
     }
 
     public static synchronized VariantManager getInstance() throws RemoteException, SessionExpiredException {
@@ -465,7 +463,32 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException {
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
+
+
+        StringBuilder statement = new StringBuilder("Select v from Variant v");
+
+        StringBuilder cond = new StringBuilder();
+        for (int i = 0; i < conditions.length; i++) {
+
+            cond.append(StringUtils.join(conditions[i]," AND "));
+            /*for (int j = 0; j < conditions[i].length; j++) {
+                statement.append(conditions[i][j]);
+            }*/
+        }
+
+        if (!(cond.toString().trim().equals("null") || "".equals(cond))) {
+            statement.append(" where ");
+            statement.append(cond);
+        }
+
+        org.ut.biolab.medsavant.shared.query.Query query = queryManager.createQuery(statement.toString());
+
+        query.setStart(start);
+        query.setLimit(limit);
+
+        List<VariantRecord> resultRowList = query.execute();
+        return convertResultRowListToObjectArrayList(resultRowList);
+        /*TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -499,7 +522,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             result.add(v);
         }
 
-        return result;
+        return result;  */
     }
 
     @Override
@@ -537,7 +560,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     public int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
+       /* TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -551,8 +574,32 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         rs.next();
 
         LOG.info("Number of variants remaining: " + rs.getInt(1));
+        return rs.getInt(1);*/
 
-        return rs.getInt(1);
+
+
+        StringBuilder statement = new StringBuilder("Select v from Variant v");
+        StringBuilder cond = new StringBuilder();
+        for (int i = 0; i < conditions.length; i++) {
+
+            cond.append(StringUtils.join(conditions[i]," AND "));
+            /*for (int j = 0; j < conditions[i].length; j++) {
+                statement.append(conditions[i][j]);
+            }*/
+        }
+
+        if (!(cond.toString().trim().equals("null") || "".equals(cond))) {
+            statement.append(" where ");
+            statement.append(cond);
+        }
+
+        org.ut.biolab.medsavant.shared.query.Query query = queryManager.createQuery(statement.toString());
+
+        int variantsCount = (int) query.count();
+
+        LOG.info("Number of variants remaining: " + variantsCount);
+
+        return (int) query.count();
     }
 
     /*
@@ -1496,5 +1543,53 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("\t" + (i + 1) + ". " + annotations[i].getProgram() + " " + annotations[i].getReferenceName() + " " + annotations[i].getVersion());
         }
         return annotations;
+    }
+
+    private List<Object[]> convertResultRowListToObjectArrayList(List<VariantRecord> variantRecords) {
+        List<Object[]> resultList = new ArrayList(variantRecords.size());
+
+        for (VariantRecord variantRecord : variantRecords) {
+            resultList.add(convertResultRowToObjectArray(variantRecord));
+        }
+
+        return resultList;
+    }
+
+    private Object[] convertResultRowToObjectArray(VariantRecord variantRecord) {
+
+        Object[] result = new Object[31];
+        result[0] = variantRecord.getUploadID();
+        result[1] = variantRecord.getFileID();
+        result[2] = variantRecord.getVariantID();
+        result[3] = variantRecord.getDnaID();
+        result[4] = variantRecord.getChrom();
+        result[5] = variantRecord.getPosition();
+        result[6] = variantRecord.getDbSNPID();
+        result[7] = variantRecord.getRef();
+        result[8] = variantRecord.getAlt();
+        result[9] = variantRecord.getQual();
+        result[10] = variantRecord.getFilter();
+        result[11] = variantRecord.getVariantType(variantRecord.getRef(), variantRecord.getAlt());
+        result[12] = variantRecord.getZygosity();
+        result[13] = variantRecord.getGenotype();
+        result[14] = variantRecord.getCustomInfo();
+        result[15] = variantRecord.getAncestralAllele();
+        result[16] = variantRecord.getAlleleCount();
+        result[17] = variantRecord.getAlleleFrequency();
+        result[18] = variantRecord.getNumberOfAlleles();
+        result[19] = variantRecord.getBaseQuality();
+        result[20] = variantRecord.getCigar();
+        result[21] = variantRecord.getDbSNPMembership();
+        result[22] = variantRecord.getDepthOfCoverage();
+        result[23] = variantRecord.getEndPosition();
+        result[24] = variantRecord.getHapmap2Membership();
+        result[25] = variantRecord.getMappingQuality();
+        result[26] = variantRecord.getNumberOfZeroMQ();
+        result[27] = variantRecord.getNumberOfSamplesWithData();
+        result[28] = variantRecord.getStrandBias();
+        result[29] = variantRecord.getIsSomatic();
+        result[30] = variantRecord.getIsValidated();
+
+        return result;
     }
 }
