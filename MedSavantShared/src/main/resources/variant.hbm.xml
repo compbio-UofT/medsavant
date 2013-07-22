@@ -1,0 +1,35 @@
+ <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.ut.biolab.medsavant.shared.db.shard">
+  <class name="Variant" table="z_variant_proj1_ref3_update1">
+    <id name="variant_id" column="variant_id" type="integer" />
+    <property name="upload_id" column="upload_id" type="integer" />
+    <property name="file_id" column="file_id" type="integer" />
+    <property name="dna_id" column="dna_id" />
+    <property name="chrom" column="chrom" />
+    <property name="position" column="position" type="integer" />
+    <property name="dbsnp_id" column="dbsnp_id" />
+    <property name="ref" column="ref" />
+    <property name="alt" column="alt" />
+    <property name="qual" column="qual" type="float" />
+    <property name="filter" column="filter" />
+    <property name="variant_type" column="variant_type" />
+    <property name="zygosity" column="zygosity" />
+    <property name="gt" column="gt" />
+    <property name="custom_info" column="custom_info" />
+    <property name="aa" column="aa" />
+    <property name="ac" column="ac" type="integer" />
+    <property name="af" column="af" type="float" />
+    <property name="an" column="an" type="integer" />
+    <property name="bq" column="bq" type="float" />
+    <property name="cigar" column="cigar" />
+    <property name="db" column="db" type="boolean" />
+    <property name="end" column="end" type="integer" />
+    <property name="h2" column="h2" type="boolean" />
+    <property name="mq" column="mq" type="float" />
+    <property name="mq0" column="mq0" type="integer" />
+    <property name="ns" column="ns" type="integer" />
+    <property name="sb" column="sb" type="float" />
+    <property name="somatic" column="somatic" type="boolean" />
+    <property name="validated" column="validated" type="boolean" />
+  </class>
+</hibernate-mapping>
