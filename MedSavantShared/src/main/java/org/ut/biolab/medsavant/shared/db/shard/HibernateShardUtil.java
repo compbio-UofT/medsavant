@@ -23,10 +23,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.shards.ShardedConfiguration;
 import org.hibernate.shards.cfg.ConfigurationToShardConfigurationAdapter;
+import org.hibernate.shards.cfg.ShardConfiguration;
 import org.hibernate.shards.strategy.ShardStrategyFactory;
 
 /**
@@ -38,6 +40,8 @@ import org.hibernate.shards.strategy.ShardStrategyFactory;
 public class HibernateShardUtil {
     // TODO: check whether this is true
     private static final long MAX_VARIANT_POSITION = 250000000;
+    private static final String RESOURCE_PREFIX = "hibernate";
+    private static final String RESOURCE_SUFFIX = ".cfg.xml";
     private static Integer shardNo;
     private static SessionFactory sessionFactory;
 
@@ -47,13 +51,27 @@ public class HibernateShardUtil {
 
     static {
         try {
+            // initial config
             Configuration config = new Configuration();
-            config.configure("hibernate0.cfg.xml");
+            config.configure(RESOURCE_PREFIX + "0" + RESOURCE_SUFFIX);
             config.addResource("variant.hbm.xml");
-            shardNo = 2;
-            List shardConfigs = new ArrayList();
-            shardConfigs.add(new ConfigurationToShardConfigurationAdapter(new Configuration().configure("hibernate0.cfg.xml")));
-            shardConfigs.add(new ConfigurationToShardConfigurationAdapter(new Configuration().configure("hibernate1.cfg.xml")));
+
+            // autodetect shards
+            List<ShardConfiguration> shardConfigs = new ArrayList<ShardConfiguration>();
+            shardNo = 0;
+            boolean loadedAll = false;
+            while (!loadedAll) {
+                try {
+                    Configuration c = new Configuration().configure(RESOURCE_PREFIX + shardNo + RESOURCE_SUFFIX);
+                    shardConfigs.add(new ConfigurationToShardConfigurationAdapter(c));
+                } catch (HibernateException ex) {
+                    // loaded all resources
+                    loadedAll = true;
+                }
+                shardNo++;
+            }
+
+            // prepare shard strategy factory
             ShardStrategyFactory shardStrategyFactory = buildShardStrategyFactory();
             ShardedConfiguration shardedConfig = new ShardedConfiguration(config, shardConfigs, shardStrategyFactory);
             sessionFactory = shardedConfig.buildShardedSessionFactory();
@@ -76,5 +94,9 @@ public class HibernateShardUtil {
 
         ShardStrategyFactory shardStrategyFactory = new PositionShardStrategyFactory(MAX_VARIANT_POSITION, shardNo, exec);
         return shardStrategyFactory;
+    }
+
+    static Integer getShardNo() {
+        return shardNo;
     }
 }
