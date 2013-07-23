@@ -53,11 +53,12 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
     }
 
     public static int getExportPort() {
-        return EXPORT_PORT;
+       return EXPORT_PORT;
     }
 
     public static void setListenPort(int port) {
         CONNECT_PORT = port;
+        EXPORT_PORT = port + 1;
     }
 
     /*public static void setExportPort(int port) {

@@ -92,6 +92,12 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private boolean tableShowing;
     private RingChart ringChart;
 
+    public void clearSelection(){
+        if(searchableTablePanel != null){
+            searchableTablePanel.getTable().clearSelection();
+        }
+    }
+    
     public TablePanel(String page) {
 
         pageName = page;
@@ -530,7 +536,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             searchableTablePanel.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
-
+                    LOG.debug("searchableTablePanel valueChanged");
                     if (e.getValueIsAdjusting()) {
                         return;
                     }
@@ -555,13 +561,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
 
                         List<Object[]> rows;
-                        try {
+                        try {                           
                             rows = MedSavantClient.VariantManager.getVariants(
                                     LoginController.getInstance().getSessionID(),
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
                                     conditions,
-                                    0, 1);
+                                    0, 1);      
 
                         } catch (Exception ex) {
                             ClientMiscUtils.reportError("There was a problem retrieving variant results: %s", ex);
@@ -597,7 +603,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         } catch (Exception ex) {
                         }
                         r.setGenotype(genotype);
-
+                        
                         for (Listener<VariantRecord> l : listeners) {
                             l.handleEvent(r);
                         }

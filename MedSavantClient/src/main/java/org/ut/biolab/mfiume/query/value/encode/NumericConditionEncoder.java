@@ -2,9 +2,8 @@ package org.ut.biolab.mfiume.query.value.encode;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -12,8 +11,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class NumericConditionEncoder {
-
-
+    private static final Log LOG = LogFactory.getLog(NumericConditionEncoder.class);
     static DecimalFormat format;
     static DecimalFormatSymbols symbols;
     static char sep;
@@ -24,7 +22,6 @@ public class NumericConditionEncoder {
         sep = symbols.getDecimalSeparator();
         format = new DecimalFormat("#" + sep + "##");
     }
-
     /**
      * Serialization
      */
@@ -43,14 +40,14 @@ public class NumericConditionEncoder {
 
         String lowString = Double.toString(low);
         /*if (low != (int) low) {
-            lowString = format.format(low);
-        }*/
+         lowString = format.format(low);
+         }*/
         String highString = Double.toString(high);
         /*if (high != (int) high) {
-            highString = format.format(high);
-        }
-        */
-        System.out.println("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString);
+         highString = format.format(high);
+         }
+         */
+        LOG.debug("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString);
 
         return lowString + DELIM + highString;
     }

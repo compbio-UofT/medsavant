@@ -18,6 +18,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.view.component.DecimalRangeSlider;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.Range;
@@ -31,6 +33,7 @@ import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
  */
 public class NumberSearchConditionEditorView extends SearchConditionEditorView {
 
+    private static final Log LOG = LogFactory.getLog(NumberSearchConditionEditorView.class);
     private final NumberConditionValueGenerator generator;
     boolean isAdjustingSlider = false;
 
@@ -144,14 +147,14 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
 
         slider.addChangeListener(
                 new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        isAdjustingSlider = true;
-                        fromBox.setText(ViewUtil.numToString(slider.getLow()));
-                        toBox.setText(ViewUtil.numToString(slider.getHigh()));
-                        isAdjustingSlider = false;
-                    }
-                });
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                isAdjustingSlider = true;
+                fromBox.setText(ViewUtil.numToString(slider.getLow()));
+                toBox.setText(ViewUtil.numToString(slider.getHigh()));
+                isAdjustingSlider = false;
+            }
+        });
 
         JButton selectAll = ViewUtil.getSoftButton("Select All");
 
@@ -159,14 +162,14 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
                 false);
         selectAll.addActionListener(
                 new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        slider.setLowValue((int) Math.floor(extremeValues[0]));
-                        slider.setHighValue((int) Math.floor(extremeValues[1]));
-                        fromBox.setText(ViewUtil.numToString(extremeValues[0]));
-                        toBox.setText(ViewUtil.numToString(extremeValues[1]));
-                    }
-                });
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                slider.setLowValue((int) Math.floor(extremeValues[0]));
+                slider.setHighValue((int) Math.floor(extremeValues[1]));
+                fromBox.setText(ViewUtil.numToString(extremeValues[0]));
+                toBox.setText(ViewUtil.numToString(extremeValues[1]));
+            }
+        });
 
         JPanel bottomContainer = new JPanel();
 
@@ -191,7 +194,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
 
     private void encodeValue(double low, double high, double min, double max) {
 
-        System.out.println("Encoding " + low + " - " + high);
+        LOG.debug("Encoding " + low + " - " + high);
         String s = NumericConditionEncoder.encodeConditions(low, high);
 
         saveSearchConditionParameters(s);

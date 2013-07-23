@@ -58,8 +58,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class GeneManiaSubInspector extends SubInspector implements Listener<Gene> {
 
-    private static final Log LOG = LogFactory.getLog(GeneManiaSubInspector.class);
-    private static final int VARIANT_FREQ_DECIMAL_PLACES = 2;
+    private static final Log LOG = LogFactory.getLog(GeneManiaSubInspector.class);    
     private final String name;
     private GenemaniaInfoRetriever genemania;
     private JPanel panel;

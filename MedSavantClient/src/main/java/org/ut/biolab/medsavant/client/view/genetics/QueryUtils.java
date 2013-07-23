@@ -21,8 +21,8 @@ import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
  * @author mfiume
  */
 public class QueryUtils {
-
-    private static SearchConditionGroupItem getRegionGroup(GenomicRegion gr, String alt) {
+    
+    public static SearchConditionGroupItem getRegionGroup(GenomicRegion gr, String alt, boolean setupViews) {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         SearchConditionGroupItem geneGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
         String name = gr.getName();
@@ -38,17 +38,26 @@ public class QueryUtils {
         chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{gr.getChrom()})));
 
         SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
-        startPosItem.setDescription(Integer.toString(gr.getStart()) + " - " + Integer.toString(gr.getEnd()));
+        startPosItem.setDescription(Long.toString(gr.getStart()) + " - " + Long.toString(gr.getEnd()));
         startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd()));
 
 
-        qvc.generateItemViewAndAddToGroup(chromItem, geneGroup);
-        qvc.generateItemViewAndAddToGroup(startPosItem, geneGroup);
+        if(setupViews){
+            qvc.generateItemViewAndAddToGroup(chromItem, geneGroup);
+            qvc.generateItemViewAndAddToGroup(startPosItem, geneGroup);
+        }else{
+            geneGroup.addItem(chromItem);
+            geneGroup.addItem(startPosItem);
+        }
         if (alt != null) {
             SearchConditionItem altItem = new SearchConditionItem(BasicVariantColumns.ALT.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
             altItem.setDescription(alt);
             altItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(alt)));
-            qvc.generateItemViewAndAddToGroup(altItem, geneGroup);
+            if(setupViews){
+                qvc.generateItemViewAndAddToGroup(altItem, geneGroup);
+            }else{
+                geneGroup.addItem(altItem);
+            }
         }
         return geneGroup;
     }
@@ -63,7 +72,7 @@ public class QueryUtils {
     public static void addQueryOnRegionWithAlt(GenomicRegion region, String alt) {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(1);
-        sciList.add(getRegionGroup(region, alt));
+        sciList.add(getRegionGroup(region, alt, true));
         SearchConditionGroupItem scg = qvc.replaceFirstLevelGroup("Genomic Region(s)", sciList, SearchConditionGroupItem.QueryRelation.AND, false);
         qvc.refreshView();
     }
@@ -83,7 +92,7 @@ public class QueryUtils {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(regions.size());
         for (GenomicRegion gr : regions) {
-            SearchConditionGroupItem geneGroup = getRegionGroup(gr, null);
+            SearchConditionGroupItem geneGroup = getRegionGroup(gr, null, true);
             sciList.add(geneGroup);
         }
 

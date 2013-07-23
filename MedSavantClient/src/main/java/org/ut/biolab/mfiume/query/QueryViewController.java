@@ -45,10 +45,16 @@ import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXSearchField;
 import org.jdesktop.swingx.prompt.PromptSupport;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
@@ -122,6 +128,56 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         this.refreshView();
         itemToViewMap = new HashMap<SearchConditionItem, SearchConditionItemView>();
 
+    }
+
+    /**
+     * Re-executes the current query with the given genomic region restrictions, and returns 
+     * the results.  Note the search bar is not changed.
+     * gr and alt should have a one-to-one correspondence, where the alt for
+     * the ith genomic region is in alt[i].            
+     */
+    public List<Object[]> restrictToRegion(List<GenomicRegion> gr, List<String> alt, int limit) {
+        try {   
+            long st = System.currentTimeMillis();
+            Condition r;
+            if(rootGroup.getItems().size() > 0){
+                r = getSQLConditionsFrom(rootGroup);
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
+                r = ComboCondition.and(r, getSQLConditionsFrom(rg));
+            }else{
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
+                r = getSQLConditionsFrom(rg);
+            }
+            
+            for (int i = 1; i < gr.size(); ++i) {
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(i), alt.get(i), false);
+                r = ComboCondition.and(r, getSQLConditionsFrom(rg));
+            }         
+                        
+
+            return MedSavantClient.VariantManager.getVariants(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    new Condition[][]{{r}},
+                    0,
+                    limit); //DEBUG CODE, sets limit to 10!
+            
+
+        } catch (Exception ex) {
+            LOG.error(ex);
+            DialogUtils.displayException("Error", "There was an error performing your search", ex);
+        }
+
+        return null;
+    }
+    
+    public List<Object[]> restrictToRegion(GenomicRegion gr, String alt, int limit){
+        List<GenomicRegion> grl = new ArrayList<GenomicRegion>(1);
+        List<String> al = new ArrayList<String>(1);
+        grl.add(gr);
+        al.add(alt);
+        return restrictToRegion(grl, al, limit);
     }
 
     private void applySearchConditions() {

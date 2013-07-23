@@ -164,6 +164,11 @@ public abstract class SubSectionView {
      */
     public abstract JPanel getView();
 
+    /* Clears the selection in this subsectionview, if applicable.*/
+    public void clearSelection(){
+        //by default, do nothing.
+    }
+    
     public Component[] getSubSectionMenuComponents() {
         return null;
     }

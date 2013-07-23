@@ -131,6 +131,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createOtherIndividualsInspector) {
             otherIndividualsSubInspector = new OtherIndividualsSubInspector();
+            otherIndividualsSubInspector.setVariantSelectionListener(this);
             variantCollapsibleInspector.addSubInspector(otherIndividualsSubInspector);
         }
         // Gene
@@ -189,7 +190,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 instance.socialSubInspector.handleEvent(r);
                 return null;
             }
-        }.execute();
+        }.execute();       
 
     }
 

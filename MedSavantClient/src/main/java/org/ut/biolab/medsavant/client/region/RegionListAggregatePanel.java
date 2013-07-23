@@ -340,8 +340,8 @@ public class RegionListAggregatePanel extends AggregatePanel {
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),
                         reg.getChrom(),
-                        reg.getStart(),
-                        reg.getEnd());
+                        (int)reg.getStart(),
+                        (int)reg.getEnd());
                 updatePatientCount(reg, recordsInRegion);
                 if (Thread.interrupted()) {
                     throw new InterruptedException();

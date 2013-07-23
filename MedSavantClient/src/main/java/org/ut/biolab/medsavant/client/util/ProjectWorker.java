@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.client.util;
 
+import javax.swing.SwingWorker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -64,7 +65,7 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
             progressTimer.stop();
             progressTimer = null;
         }
-        if (this.getState() == StateValue.STARTED) {
+        if (this.getState() == SwingWorker.StateValue.STARTED) {
             startProgressTimer();
         }
         notification.setIndeterminate(b);

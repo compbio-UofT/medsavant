@@ -18,9 +18,13 @@ package org.ut.biolab.medsavant.client.util;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.SwingWorker;
+import javax.swing.SwingWorker.StateValue;
 import javax.swing.Timer;
 
 import org.apache.commons.logging.Log;
@@ -32,11 +36,14 @@ import org.ut.biolab.medsavant.shared.model.ProgressStatus;
  * 
  * @author tarkvara
  */
-public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
+public abstract class MedSavantWorker<T> { //extends SwingWorker<T, Object> {
     private static final Log LOG = LogFactory.getLog(MedSavantWorker.class);
-
+    private static final int MAX_MEDSAVANT_WORKER_THREADS = 20;
+    
     private String pageName;
-
+    private SwingWorker<T, Object> swingWorker;
+    
+    private static ExecutorService threadPool = Executors.newFixedThreadPool(MAX_MEDSAVANT_WORKER_THREADS);
     protected Timer progressTimer;
 
     /**
@@ -45,17 +52,63 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     public MedSavantWorker(String pageName) {
         this.pageName = pageName;
         ThreadController.getInstance().addWorker(pageName, this);
+        
+        final MedSavantWorker instance = this;
+        swingWorker = new SwingWorker<T, Object>(){
+            @Override
+            public void done(){
+                instance.done();
+            }
+            @Override
+            protected T doInBackground() throws Exception {
+                return (T)instance.doInBackground();                
+            }            
+        };                         
+ 
+    }
+    
+    public void execute(){
+        threadPool.submit(swingWorker);        
     }
 
-    @Override
+    protected abstract T doInBackground() throws Exception;
+    
+    public boolean isDone(){
+        return swingWorker.isDone();
+    }
+    
+    public void cancel(boolean cancel){
+        swingWorker.cancel(cancel);
+    }
+    
+    public StateValue getState(){
+        return swingWorker.getState();
+    }
+    
+    public boolean isCancelled(){        
+        return swingWorker.isCancelled();
+    }
+    
+    
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl){
+        swingWorker.addPropertyChangeListener(pcl);        
+    }
+    
+    public final int getProgress(){
+        return swingWorker.getProgress();
+    }
+    
+    
+    //@Override
     public void done() {
         if (this.progressTimer != null) {
             this.progressTimer.stop();
         }
         showProgress(1.0);
         try {
-            if (!isCancelled()) {
-                showSuccess(get());
+            if (!swingWorker.isCancelled()) {
+                showSuccess(swingWorker.get());
             } else {
                 // Send the server one last checkProgress call so that server knows that we've cancelled.
                 try {

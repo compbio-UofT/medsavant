@@ -46,10 +46,19 @@ public class GeneticsTablePage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
     private Thread viewPreparationThread;
     private JPanel view;
+    
+    private JPanel outerTablePanel;
     private TablePanel tablePanel;
     private Component[] settingComponents;
     private PeekingPanel detailView;
 
+    @Override
+    public void clearSelection(){
+        if(tablePanel != null){
+            tablePanel.clearSelection();
+        }
+    }
+    
     public GeneticsTablePage(SectionView parent) {
         super(parent, "Spreadsheet");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
@@ -85,6 +94,27 @@ public class GeneticsTablePage extends SubSectionView {
         }
         return settingComponents;
     }
+    
+    /**
+     * Splits the main table view into an upper and lower section.
+     * The upper section contains the main table pane, and the lower section
+     * contains the given JPanel.     
+     */
+    public void splitScreen(JPanel p){
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, p);
+        splitPane.setResizeWeight(1);        
+        outerTablePanel.removeAll();
+        outerTablePanel.add(splitPane);
+        outerTablePanel.revalidate();
+        outerTablePanel.repaint();
+    }
+    
+    public void unsplitScreen(){
+        outerTablePanel.removeAll();
+        outerTablePanel.add(tablePanel);
+        outerTablePanel.revalidate();
+        outerTablePanel.repaint();
+    }
 
     @Override
     public JPanel getView() {
@@ -116,9 +146,11 @@ public class GeneticsTablePage extends SubSectionView {
                             detailView.setToggleBarVisible(false);
 
                             tmpView.add(detailView, BorderLayout.EAST);
-
+                            outerTablePanel = new JPanel();
+                            outerTablePanel.setLayout(new BoxLayout(outerTablePanel, BoxLayout.Y_AXIS));
                             tablePanel = new TablePanel(pageName);
-                            tmpView.add(tablePanel, BorderLayout.CENTER);
+                            outerTablePanel.add(tablePanel);
+                            tmpView.add(outerTablePanel, BorderLayout.CENTER);
 
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
@@ -130,10 +162,14 @@ public class GeneticsTablePage extends SubSectionView {
                             });
 
                         } catch (Exception ex) {
+                            LOG.error(ex);
+                            System.out.println("Caught spreadsheet loading error: "+ex);
+                            ex.printStackTrace();
                             view.removeAll();
                             WaitPanel p = new WaitPanel("Error loading Spreadsheet");
                             p.setComplete();
                             view.add(p);
+                            
                         }
                     }
                 };

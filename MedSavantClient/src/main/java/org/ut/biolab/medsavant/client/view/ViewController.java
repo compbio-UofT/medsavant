@@ -41,6 +41,10 @@ public class ViewController {
     private PersistencePanel persistencePanel;
     private PeekingPanel peekingPanel;
 
+    public SubSectionView getCurrentSubSectionView(){
+        return currentSubsection;
+    }
+    
     private ViewController(JPanel p) {
         // create the banner
         //banner = new Banner();
