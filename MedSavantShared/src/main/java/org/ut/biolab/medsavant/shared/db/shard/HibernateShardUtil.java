@@ -16,7 +16,9 @@
 package org.ut.biolab.medsavant.shared.db.shard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -42,11 +44,21 @@ public class HibernateShardUtil {
     private static final long MAX_VARIANT_POSITION = 250000000;
     private static final String RESOURCE_PREFIX = "hibernate";
     private static final String RESOURCE_SUFFIX = ".cfg.xml";
+    private static final Integer VIRTUAL_SHARD_NO = 32;
     private static Integer shardNo;
     private static SessionFactory sessionFactory;
 
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
+    }
+
+    private static Map<Integer, Integer> createVirtualShards(Integer virt, Integer phys) {
+        Map<Integer, Integer> virtualShardMap = new HashMap<Integer, Integer>();
+        for (int i = 0; i < virt; i++) {
+            virtualShardMap.put(i, i % phys);
+        }
+
+        return virtualShardMap;
     }
 
     static {
@@ -73,7 +85,7 @@ public class HibernateShardUtil {
 
             // prepare shard strategy factory
             ShardStrategyFactory shardStrategyFactory = buildShardStrategyFactory();
-            ShardedConfiguration shardedConfig = new ShardedConfiguration(config, shardConfigs, shardStrategyFactory);
+            ShardedConfiguration shardedConfig = new ShardedConfiguration(config, shardConfigs, shardStrategyFactory, createVirtualShards(VIRTUAL_SHARD_NO, shardNo));
             sessionFactory = shardedConfig.buildShardedSessionFactory();
         } catch (Throwable ex) {
             ex.printStackTrace();
