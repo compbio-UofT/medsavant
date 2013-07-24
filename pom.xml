@@ -552,5 +552,6 @@
     <module>MedSavantServerEngine</module>
     <module>MedSavantClient</module>
     <module>distribution</module>
+    <module>medsavant-shard</module>
   </modules>
 </project>

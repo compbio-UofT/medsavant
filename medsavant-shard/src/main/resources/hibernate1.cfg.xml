@@ -4,9 +4,9 @@
 <hibernate-configuration>
   <session-factory>
     <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-    <property name="hibernate.connection.url">jdbc:mysql://localhost:5029/test</property>
+    <property name="hibernate.connection.url">jdbc:mysql://localhost:5029/miro</property>
     <property name="hibernate.connection.username">root</property>
-    <property name="connection.password"></property>
+    <property name="connection.password">root</property>
     <property name="connection.pool_size">1</property>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="hibernate.connection.shard_id">1</property>
