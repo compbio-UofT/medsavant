@@ -311,7 +311,7 @@ public class ImportUpdateManager {
         //create sub table dump from the complete table
         LOG.info("Dumping variants to file for sub table");
         File subDump = new File(workingDir, tableName + "sub.tsv");
-        VariantManagerUtils.variantTableToTSVFile(sessionID, tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(VariantManager.getInstance().getNumFilteredVariantsHelper(sessionID, tableName, new Condition[][]{})));
+        VariantManagerUtils.variantTableToTSVFile(sessionID, tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(VariantManager.getInstance().getNumFilteredVariantsHelper(new Condition[][]{})));
 
         //upload to sub table
         LOG.info("Loading into subset table: " + tableNameSub);

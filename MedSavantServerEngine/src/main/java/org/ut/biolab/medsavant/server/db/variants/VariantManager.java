@@ -118,7 +118,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public void publishVariants(String sessID, int projectID) throws Exception {
-
+        //ToDo
         LOG.info("Beginning publish of all tables for project " + projectID);
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -195,7 +195,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] customFields, boolean autoPublish, String email) throws Exception {
-
+        //ToDo
         EmailLogger.logByEmail("Update STARTED", "Update started. " + annotIDs.length + " annotation(s) will be performed. You will be notified again upon completion.", email);
         try {
             int updateID = ImportUpdateManager.doUpdate(sessID, projID, refID, annotIDs, customFields, autoPublish);
@@ -216,7 +216,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws Exception {
-
+        //ToDo
         LOG.info("Importing variants by transferring from client");
 
         NetworkManager netMgr = NetworkManager.getInstance();
@@ -234,13 +234,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return uploadVariants(sessID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish);
     }
 
+
     /**
      * Use when variant files are already on the server. Performs variant import
      * of an entire directory.
      */
     @Override
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, SessionExpiredException, IOException, Exception {
-
+        //ToDo
         LOG.info("Importing variants already stored on server in dir " + dirContainingVCFs.getAbsolutePath());
 
         if (!dirContainingVCFs.exists()) {
@@ -287,6 +288,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
+    //ToDo
     @Override
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception {
         LOG.info("Beginning removal of variants");
@@ -395,6 +397,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
+    //ToDo
     @Override
     public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipOutputFile) throws SQLException, RemoteException, SessionExpiredException, IOException, InterruptedException {
 
@@ -471,9 +474,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         for (int i = 0; i < conditions.length; i++) {
 
             cond.append(StringUtils.join(conditions[i]," AND "));
-            /*for (int j = 0; j < conditions[i].length; j++) {
-                statement.append(conditions[i][j]);
-            }*/
         }
 
         if (!(cond.toString().trim().equals("null") || "".equals(cond))) {
@@ -488,41 +488,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         List<VariantRecord> resultRowList = query.execute();
         return convertResultRowListToObjectArrayList(resultRowList);
-        /*TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        addConditionsToQuery(query, conditions);
-        if (orderByCols != null) {
-            query.addCustomOrderings((Object[]) orderByCols);
-        }
-
-        String queryString = query.toString();
-        if (limit != -1) {
-            if (start != -1) {
-                queryString += " LIMIT " + start + ", " + limit;
-            } else {
-                queryString += " LIMIT " + limit;
-            }
-        }
-
-        LOG.debug(queryString);
-
-        ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
-
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        int numberColumns = rsMetaData.getColumnCount();
-
-        List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()) {
-            Object[] v = new Object[numberColumns];
-            for (int i = 1; i <= numberColumns; i++) {
-                v[i - 1] = rs.getObject(i);
-            }
-            result.add(v);
-        }
-
-        return result;  */
     }
 
     @Override
@@ -537,7 +502,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     private int getFilteredVariantCount(String sid, int projectId, int referenceId, Condition[][] conditions, boolean forceExact) throws SQLException, RemoteException, SessionExpiredException {
 
-        //String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
+        /*//String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
@@ -553,42 +518,20 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             if (estimate >= COUNT_ESTIMATE_THRESHOLD) {
                 return estimate; // TODO: this should be rounded instead of a precise one
             }
-        }
+        }*/
 
         // Approximation not good enough; use actual data.
-        return getNumFilteredVariantsHelper(sid, tablename, conditions);
+        return getNumFilteredVariantsHelper(conditions);
     }
 
-    public int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
-       /* TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addCustomColumns(FunctionCall.countAll());
-        addConditionsToQuery(q, conditions);
-
-        LOG.info(q);
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        rs.next();
-
-        LOG.info("Number of variants remaining: " + rs.getInt(1));
-        return rs.getInt(1);*/
-
-
-
+    public int getNumFilteredVariantsHelper(Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
         StringBuilder statement = new StringBuilder("Select v from Variant v");
         StringBuilder cond = new StringBuilder();
         for (int i = 0; i < conditions.length; i++) {
-
             cond.append(StringUtils.join(conditions[i]," AND "));
-            /*for (int j = 0; j < conditions[i].length; j++) {
-                statement.append(conditions[i][j]);
-            }*/
         }
 
-        if (!(cond.toString().trim().equals("null") || "".equals(cond))) {
+        if (!("(1 = 1)".equals(cond.toString()) || "".equals(cond.toString()))) {
             statement.append(" where ");
             statement.append(cond);
         }
@@ -599,7 +542,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         LOG.info("Number of variants remaining: " + variantsCount);
 
-        return (int) query.count();
+        return variantsCount;
     }
 
     /*
@@ -634,7 +577,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
-
+        //ToDo
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
@@ -687,7 +630,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sessID, int projID, int refID, Condition[][] conditions, String colName) throws SQLException, RemoteException, SessionExpiredException {
-
+        //ToDo
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sessID, projID, refID, conditions);
@@ -925,7 +868,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public int getPatientCountWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException, SessionExpiredException {
-
+        //ToDo
         //TODO: approximate counts??
         //might not be a good idea... don't want to miss a dna id
 
@@ -1545,6 +1488,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return annotations;
     }
 
+    /*
+     * Convert VariantRecords into a list of Object[] to be displayed on the UI.
+     */
     private List<Object[]> convertResultRowListToObjectArrayList(List<VariantRecord> variantRecords) {
         List<Object[]> resultList = new ArrayList(variantRecords.size());
 
@@ -1555,6 +1501,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return resultList;
     }
 
+    /*
+     * Hacky and ugly, needs to be refactored.
+     */
     private Object[] convertResultRowToObjectArray(VariantRecord variantRecord) {
 
         Object[] result = new Object[31];

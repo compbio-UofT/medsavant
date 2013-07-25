@@ -331,8 +331,8 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     private float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException, SessionExpiredException {
-        int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
-        int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
+        int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper( new Condition[0][]);
+        int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(new Condition[0][]);
         if (denominator == 0) denominator = 1;
         return (float)numerator / (float)denominator;
     }
