@@ -18,13 +18,16 @@
 
 package org.hibernate.shards.strategy.exit;
 
-import org.hibernate.criterion.AggregateProjection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.hibernate.criterion.AggregateProjection;
+import org.hibernate.criterion.Projection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Maulik Shah
@@ -34,14 +37,12 @@ public class AggregateExitOperation implements ProjectionExitOperation {
     private final SupportedAggregations aggregate;
 
     private final String fieldName;
-
+    private final Projection proj;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private enum SupportedAggregations {
 
-        SUM("sum"),
-        MIN("min"),
-        MAX("max");
+        SUM("sum"), MIN("min"), MAX("max"), COUNT("count"), DISTINCT_COUNT("distinct count");
 
         private final String aggregate;
 
@@ -56,16 +57,16 @@ public class AggregateExitOperation implements ProjectionExitOperation {
 
     public AggregateExitOperation(final AggregateProjection projection) {
         /**
-         * an aggregateProjection's toString returns
-         * min( ..., max( ..., sum( ..., or avg( ...
-         * we just care about the name of the function
-         * which happens to be before the first left parenthesis
+         * an aggregateProjection's toString returns min( ..., max( ..., sum(
+         * ..., or avg( ... we just care about the name of the function which
+         * happens to be before the first left parenthesis
          */
+        this.proj = projection;
         final String projectionAsString = projection.toString();
         final String aggregateName = projectionAsString.substring(0, projectionAsString.indexOf("("));
         this.fieldName = projectionAsString.substring(projectionAsString.indexOf("(") + 1, projectionAsString.indexOf(")"));
         try {
-            this.aggregate = SupportedAggregations.valueOf(aggregateName.toUpperCase());
+            this.aggregate = SupportedAggregations.valueOf(aggregateName.replace(" ", "_").toUpperCase());
         } catch (IllegalArgumentException e) {
             log.error("Use of unsupported aggregate: " + aggregateName);
             throw e;
@@ -77,16 +78,34 @@ public class AggregateExitOperation implements ProjectionExitOperation {
 
         final List<Object> nonNullResults = ExitOperationUtils.getNonNullList(results);
 
+        /**
+         * aviadl@sentrigo.com (Aviad Lichtenstdadt) added here the return list
+         * with one element. As this is what Hibernate does in cases of empty
+         * result set
+         * 
+         */
         switch (aggregate) {
-            case MAX:
+        case MAX:
+            if (nonNullResults.size() == 0) {
+                return Collections.singletonList(null);
+            } else {
                 return Collections.singletonList((Object) Collections.max(ExitOperationUtils.getComparableList(nonNullResults)));
-            case MIN:
+            }
+        case MIN:
+            if (nonNullResults.size() == 0) {
+                return Collections.singletonList(null);
+            } else {
                 return Collections.singletonList((Object) Collections.min(ExitOperationUtils.getComparableList(nonNullResults)));
-            case SUM:
-                return Collections.<Object>singletonList(getSum(nonNullResults, fieldName));
-            default:
-                log.error("Aggregation Projection is unsupported: " + aggregate);
-                throw new UnsupportedOperationException("Aggregation Projection is unsupported: " + aggregate);
+            }
+        case SUM:
+            return Collections.<Object> singletonList(getSum(nonNullResults, fieldName));
+        case COUNT:
+            return Collections.<Object> singletonList(getSum(results));
+        case DISTINCT_COUNT:
+            return Collections.<Object> singletonList(getDistinctSum(results));
+        default:
+            log.error("Aggregation Projection is unsupported: " + aggregate);
+            throw new UnsupportedOperationException("Aggregation Projection is unsupported: " + aggregate);
         }
     }
 
@@ -94,7 +113,7 @@ public class AggregateExitOperation implements ProjectionExitOperation {
         BigDecimal sum = BigDecimal.ZERO;
         for (final Object obj : results) {
             if (obj instanceof Number) {
-                final Number num = (Number)obj;
+                final Number num = (Number) obj;
                 sum = sum.add(new BigDecimal(num.toString()));
             } else {
                 final Number num = getNumber(obj, fieldName);
@@ -102,6 +121,20 @@ public class AggregateExitOperation implements ProjectionExitOperation {
             }
         }
         return sum;
+    }
+
+    private BigDecimal getSum(List<Object> results) {
+        BigDecimal sum = new BigDecimal(0.0);
+        for (Object obj : results) {
+            Number num = (Number) obj;
+            sum = sum.add(new BigDecimal(num.toString()));
+        }
+        return sum;
+    }
+
+    private int getDistinctSum(List<Object> results) {
+        Set<Object> uniqueResult = new HashSet<Object>(results);
+        return uniqueResult.size();
     }
 
     private Number getNumber(final Object obj, final String fieldName) {

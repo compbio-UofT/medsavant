@@ -41,7 +41,8 @@ public class OrderExitOperation implements ExitOperation {
 
     public OrderExitOperation(final List<InMemoryOrderBy> orderByList) {
         this.orderByList = Lists.newArrayList(orderByList);
-        // need to reverse the list so we build the comparator from the inside out
+        // need to reverse the list so we build the comparator from the inside
+        // out
         Collections.reverse(this.orderByList);
     }
 
@@ -52,6 +53,15 @@ public class OrderExitOperation implements ExitOperation {
         Collections.sort(nonNullList, comparator);
 
         return nonNullList;
+    }
+
+    public static String getSortingProperty(InMemoryOrderBy order) {
+        /**
+         * This method relies on the format that Order is using: propertyName +
+         * ' ' + (ascending?"asc":"desc")
+         */
+        String str = order.toString();
+        return str.substring(0, str.indexOf(' '));
     }
 
     private Comparator<Object> buildComparator() {

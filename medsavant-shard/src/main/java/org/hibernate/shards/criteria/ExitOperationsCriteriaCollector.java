@@ -18,10 +18,15 @@
 
 package org.hibernate.shards.criteria;
 
+import java.util.List;
+
 import org.hibernate.criterion.AggregateProjection;
 import org.hibernate.criterion.Distinct;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.PropertyProjection;
 import org.hibernate.criterion.RowCountProjection;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.shards.strategy.exit.AvgResultsExitOperation;
@@ -31,15 +36,16 @@ import org.hibernate.shards.strategy.exit.FirstResultExitOperation;
 import org.hibernate.shards.strategy.exit.MaxResultsExitOperation;
 import org.hibernate.shards.strategy.exit.OrderExitOperation;
 import org.hibernate.shards.strategy.exit.ProjectionExitOperationFactory;
+import org.hibernate.shards.strategy.exit.PropertyProjectionExitOperation;
+import org.hibernate.shards.strategy.exit.PropertyProjectionOrderExitOperation;
 import org.hibernate.shards.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
- * Implements the ExitOperationsCollector interface for {@link org.hibernate.Criteria}s
- *
+ * Implements the ExitOperationsCollector interface for
+ * {@link org.hibernate.Criteria}s
+ * 
  * @author Maulik Shah
  */
 public class ExitOperationsCriteriaCollector implements ExitOperationsCollector {
@@ -61,7 +67,8 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     // Row Count Projection operation applied to the Criteria
     private RowCountProjection rowCountProjection;
-
+    // Porperty Projection operation applied to the criteria
+    private PropertyProjection propertyProjection;
     // The Session Factory Implementor with which the Criteria is associated
     private SessionFactoryImplementor sessionFactoryImplementor;
 
@@ -73,8 +80,9 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     /**
      * Sets the maximum number of results requested by the client
-     *
-     * @param maxResults maximum number of results requested by the client
+     * 
+     * @param maxResults
+     *            maximum number of results requested by the client
      * @return this
      */
     public ExitOperationsCollector setMaxResults(final int maxResults) {
@@ -84,8 +92,9 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     /**
      * Sets the index of the first result requested by the client
-     *
-     * @param firstResult index of the first result requested by the client
+     * 
+     * @param firstResult
+     *            index of the first result requested by the client
      * @return this
      */
     public ExitOperationsCollector setFirstResult(final int firstResult) {
@@ -95,8 +104,9 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     /**
      * Adds the given projection.
-     *
-     * @param projection the projection to add
+     * 
+     * @param projection
+     *            the projection to add
      * @return this
      */
     public ExitOperationsCollector addProjection(final Projection projection) {
@@ -113,6 +123,13 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
             } else {
                 this.aggregateProjection = (AggregateProjection) projection;
             }
+        } else if (projection instanceof PropertyProjection) {
+            /**
+             * aviadl@sentrigo.com (Aviad Lichtenstadt) we need to set here the
+             * property projection so if there are Order and property projection
+             * we will load all relevant fields from database
+             */
+            this.propertyProjection = (PropertyProjection) projection;
         } else {
             log.error("Adding an unsupported Projection: " + projection.getClass().getName());
             throw new UnsupportedOperationException();
@@ -122,11 +139,13 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     /**
      * Add the given Order
-     *
-     * @param associationPath the association path leading to the object to which
-     *                        this order clause applies - null if the order clause applies to the top
-     *                        level object
-     * @param order           the order to add
+     * 
+     * @param associationPath
+     *            the association path leading to the object to which this order
+     *            clause applies - null if the order clause applies to the top
+     *            level object
+     * @param order
+     *            the order to add
      * @return this
      */
     public ExitOperationsCollector addOrder(final String associationPath, final Order order) {
@@ -138,18 +157,12 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
     public List<Object> apply(List<Object> result) {
         /**
          * Herein lies the glory
-         *
-         * hibernate has done as much as it can, we're going to have to deal with
-         * the rest in memory.
-         *
-         * The hierarchy of operations is this so far:
-         * Distinct
-         * Order
-         * FirstResult
-         * MaxResult
-         * RowCount
-         * Average
-         * Min/Max/Sum
+         * 
+         * hibernate has done as much as it can, we're going to have to deal
+         * with the rest in memory.
+         * 
+         * The hierarchy of operations is this so far: Distinct Order
+         * FirstResult MaxResult RowCount Average Min/Max/Sum
          */
 
         // ordering of the following operations *really* matters!
@@ -160,8 +173,16 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
         // not clear to me why we need to create an OrderExitOperation
         // are we even taking advantage of the fact that it implements the
         // ExitOperation interface?
-        result = new OrderExitOperation(orders).apply(result);
-
+        if (orders.size() > 0) {
+            if (propertyProjection != null) {
+                result = new PropertyProjectionOrderExitOperation(orders).apply(result);
+            } else {
+                result = new OrderExitOperation(orders).apply(result);
+            }
+        }
+        if (propertyProjection != null) {
+            result = new PropertyProjectionExitOperation(propertyProjection).apply(result);
+        }
         if (firstResult != null) {
             result = new FirstResultExitOperation(firstResult).apply(result);
         }
@@ -189,8 +210,9 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     /**
      * Sets the session factory implementor
-     *
-     * @param sessionFactoryImplementor the session factory implementor to set
+     * 
+     * @param sessionFactoryImplementor
+     *            the session factory implementor to set
      */
     public void setSessionFactory(final SessionFactoryImplementor sessionFactoryImplementor) {
         this.sessionFactoryImplementor = sessionFactoryImplementor;
@@ -202,5 +224,17 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
 
     Integer getFirstResult() {
         return firstResult;
+    }
+
+    public Projection getReadyPropertyProjection() {
+        if (propertyProjection != null) {
+            ProjectionList prjList = Projections.projectionList();
+            prjList.add(propertyProjection);
+            for (InMemoryOrderBy ord : this.orders) {
+                prjList.add(Projections.property(OrderExitOperation.getSortingProperty(ord)));
+            }
+            return prjList;
+        }
+        return null;
     }
 }
