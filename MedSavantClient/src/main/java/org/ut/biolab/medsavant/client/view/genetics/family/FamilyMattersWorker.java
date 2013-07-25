@@ -1011,7 +1011,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 bw.write("# here are the excluded variants\n");
                 for (SimpleFamilyMattersVariant v : excludedVariantsFromThisStep) {
-                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + "\n");
+                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
                 }
 
             }
