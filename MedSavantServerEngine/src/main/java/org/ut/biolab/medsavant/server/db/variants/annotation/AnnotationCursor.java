@@ -311,11 +311,11 @@ public class AnnotationCursor {
         }
 
         public boolean matchesRef(String ref) {
-            return this.ref != null && this.ref.equals(ref);
+            return this.alt == null || (this.ref != null && this.ref.equals(ref));
         }
 
         public boolean matchesAlt(String alt) {
-            return this.alt != null && this.alt.equals(alt);
+            return this.alt == null || (this.alt != null && this.alt.equals(alt));
         }
 
         private boolean intersectsPosition(String chrom, int position) {
