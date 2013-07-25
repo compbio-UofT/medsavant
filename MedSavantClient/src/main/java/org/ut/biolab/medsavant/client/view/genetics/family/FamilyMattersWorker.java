@@ -935,7 +935,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
             bw.write("here's the gene analysis at " + stepNumber + "\n");
             for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-                System.out.println("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
+                bw.write("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
             }
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
@@ -1004,7 +1004,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
                 LOG.info(numSeenBefore + " of these were already excluded previously");
 
-                bw.write("#" + numSeenBefore + " of these were already excluded previously\n");
+                bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
 
             }
 
