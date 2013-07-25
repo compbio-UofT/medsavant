@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.InsetsUIResource;
@@ -58,6 +57,7 @@ import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.dialog.BugReport;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
@@ -184,6 +184,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
+        //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
+       
         //required for FORGE plugin
         //NativeInterface.runEventPump();
     }

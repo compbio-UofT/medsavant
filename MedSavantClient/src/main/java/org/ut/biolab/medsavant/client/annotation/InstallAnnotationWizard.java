@@ -19,7 +19,6 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import javax.swing.*;
@@ -35,8 +34,6 @@ import com.jidesoft.wizard.WizardStyle;
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.logging.Log;
@@ -71,6 +68,7 @@ public class InstallAnnotationWizard extends WizardDialog {
     private JPanel repoChoosePanel;
     private JPanel fileChoosePanel;
     private boolean fromRepository;
+    private boolean hasAnnotations = false;
     private AnnotationDownloadInformation annotationToInstall;
     private HashMap<String, AnnotationDownloadInformation> annotationKeyToURLMap;
 
@@ -184,11 +182,18 @@ public class InstallAnnotationWizard extends WizardDialog {
             }
 
             @Override
-            public void setupWizardButtons() {
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
-                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            public void setupWizardButtons() {                
+                if(hasAnnotations){
+                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }else{
+                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
+                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.FINISH);
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
+                }
             }
         };
     }
@@ -208,11 +213,12 @@ public class InstallAnnotationWizard extends WizardDialog {
         try {
             List<AnnotationDownloadInformation> annotationsAvailable = AnnotationDownloadInformation.getDownloadableAnnotations(MedSavantProgramInformation.getVersion());
 
-            if (annotationsAvailable == null) {
+               if (annotationsAvailable == null) {
                 p.add(new JLabel("No annotations are available for this version"), BorderLayout.NORTH);
+                hasAnnotations = false;
                 return p;
             }
-
+            hasAnnotations = true;
             Object[][] data = new Object[annotationsAvailable.size()][4];
             annotationKeyToURLMap = new HashMap<String, AnnotationDownloadInformation>();
             int i = 0;
@@ -282,7 +288,8 @@ public class InstallAnnotationWizard extends WizardDialog {
             private JButton startButton;
 
             {
-                addText("You are now ready to install this annotation.");
+                //addText("You are now ready to install this annotation.");
+                addText("Installing annotation...");
 
                 progressBar = new JProgressBar();
 

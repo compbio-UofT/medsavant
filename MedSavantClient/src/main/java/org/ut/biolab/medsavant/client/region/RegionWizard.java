@@ -54,6 +54,7 @@ import org.ut.biolab.medsavant.client.importing.ImportFilePanel;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.GeneFetcher;
@@ -262,7 +263,7 @@ public class RegionWizard extends WizardDialog {
 
 
                 final JButton runGeneManiaButton = new JButton("Run GeneMANIA");
-                runGeneManiaButton.setEnabled(!GenemaniaInfoRetriever.hasGeneManiaData());
+                runGeneManiaButton.setEnabled(!DirectorySettings.isGeneManiaInstalled());
 
                 ListSelectionListener selectionListener = new ListSelectionListener() {
                     @Override
@@ -271,7 +272,7 @@ public class RegionWizard extends WizardDialog {
                         if (geneManiaGeneNames != null) {
                             numSel += geneManiaResultsPanel.getNumSelected();
                         }
-                        runGeneManiaButton.setEnabled(numSel > 0 && GenemaniaInfoRetriever.hasGeneManiaData());
+                        runGeneManiaButton.setEnabled(numSel > 0 && DirectorySettings.isGeneManiaInstalled());
                     }
                 };
 
@@ -378,7 +379,7 @@ public class RegionWizard extends WizardDialog {
                 hsplitPane.setResizeWeight(1);
                 addComponent(hsplitPane, true);
 
-                if (!GenemaniaInfoRetriever.hasGeneManiaData()) {
+                if (!DirectorySettings.isGeneManiaInstalled()) {
                     runGeneManiaButton.setText("Download GeneMANIA");
                 }
 
@@ -386,7 +387,7 @@ public class RegionWizard extends WizardDialog {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
 
-                        if (!GenemaniaInfoRetriever.hasGeneManiaData()) {
+                        if (!DirectorySettings.isGeneManiaInstalled()) {
                             int response = DialogUtils.askYesNo("Download GeneMANIA?",
                                     "GeneMANIA is not yet installed.  Do you want to download and install it now?");
                             try {

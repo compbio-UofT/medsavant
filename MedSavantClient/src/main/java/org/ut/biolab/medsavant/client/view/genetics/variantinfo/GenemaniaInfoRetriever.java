@@ -78,8 +78,7 @@ public class GenemaniaInfoRetriever {
         }
     }
     private List<String> genes;
-    private static final String DATA_PATH = DirectorySettings.getCacheDirectory().getAbsolutePath() + "/" + "gmdata";
-    private static final String DOWNLOAD_COMPLETE_CHECKFILE = DATA_PATH + "/gmdataOK.txt";
+    
     private static final int DEFAULT_GENE_LIMIT = 50;
     private static final CombiningMethod DEFAULT_COMBINING_METHOD = CombiningMethod.AVERAGE;
     private static final String[] DEFAULT_NETWORKS = {"Genetic interactions", "Shared protein domains", "Other", "Pathway", "Physical interactions", "Co-localization", "Predicted", "Co-expression"};
@@ -99,6 +98,7 @@ public class GenemaniaInfoRetriever {
     private CytoscapeUtils cytoscapeUtils;
     private RelatedGenesEngineResponseDto response;
     //private static String GM_URL = "http://localhost/gmdata.zip";  //for debugging.
+    
     private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
@@ -106,11 +106,7 @@ public class GenemaniaInfoRetriever {
     static {
         sequenceNumbers = new HashMap<Long, Integer>();
     }
-
-    public static boolean hasGeneManiaData() {
-        return new File(DOWNLOAD_COMPLETE_CHECKFILE).exists();
-    }
-
+    
     public static void extractGM(String pathToGMData) {
         String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
         try {
@@ -120,15 +116,15 @@ public class GenemaniaInfoRetriever {
             while (entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
                 if (entry.isDirectory()) {
-                    (new File(directoryPath + "/" + entry.getName())).mkdirs();
+                    (new File(directoryPath + File.separator + entry.getName())).mkdirs();
                     continue;
                 }
 
                 IOUtils.copy(zipData.getInputStream(entry),
-                        new FileOutputStream(directoryPath + "/" + entry.getName()));
+                        new FileOutputStream(directoryPath + File.separator + entry.getName()));
             }
             zipData.close();
-            FileWriter fstream = new FileWriter(DOWNLOAD_COMPLETE_CHECKFILE);
+            FileWriter fstream = new FileWriter(DirectorySettings.getGeneManiaDirectory()+File.separator+DirectorySettings.GENEMANIA_CHECK_FILE);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("This file indicates that the GeneMANIA data has finished downloading.");
             out.close();
@@ -224,7 +220,7 @@ public class GenemaniaInfoRetriever {
     }
 
     public GenemaniaInfoRetriever() throws IOException {
-        if (hasGeneManiaData()) {
+        if (DirectorySettings.isGeneManiaInstalled()) {
             initialize();
         } else {
             throw new IOException("GeneMANIA data not found, please download it first.");
@@ -455,6 +451,7 @@ public class GenemaniaInfoRetriever {
     }
 
     private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException {
+        
         RelatedGenesEngineRequestDto request = createRequest();
         response = runQuery(request);
 
@@ -547,7 +544,7 @@ public class GenemaniaInfoRetriever {
         try {
             dataSetManager = new DataSetManager();
             dataSetManager.addDataSetFactory(new LuceneDataSetFactory<Object, Object, Object>(dataSetManager, null, new FileUtils(), new NullCytoscapeUtils<Object, Object, Object>(), null), Collections.emptyMap());
-            data = dataSetManager.open(new File(DATA_PATH));
+            data = dataSetManager.open(DirectorySettings.getGeneManiaDirectory());
 
             human = getHumanOrganism(data);
             networkUtils = new NetworkUtils();

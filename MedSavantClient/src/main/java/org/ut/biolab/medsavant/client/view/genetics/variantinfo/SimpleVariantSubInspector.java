@@ -275,8 +275,7 @@ public class SimpleVariantSubInspector extends SubInspector {
             return;
         }
 
-        selectedVariant = r;
-
+        selectedVariant = r;                
         p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.pos));
         p.setValue(KEY_REF, r.ref);
         p.setValue(KEY_ALT, r.alt);

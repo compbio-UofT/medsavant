@@ -757,15 +757,19 @@ public final class ViewUtil {
         return list;
     }
 
-    public static String numToString(float num) {
+    public static String numToString(float num) {       
         return NumberFormat.getInstance().format(num);
     }
 
-    public static String numToString(double num) {
+    public static String numToString(double num) {       
         return NumberFormat.getInstance().format(num);
     }
 
-    public static String numToString(int num) {
+    public static String numToString(int num) {        
+        return NumberFormat.getInstance().format(num);
+    }
+    
+    public static String numToString(long num){        
         return NumberFormat.getInstance().format(num);
     }
 

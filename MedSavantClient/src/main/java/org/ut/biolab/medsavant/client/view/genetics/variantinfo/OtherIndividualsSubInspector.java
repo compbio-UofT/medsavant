@@ -186,8 +186,7 @@ public class OtherIndividualsSubInspector extends SubInspector implements Listen
     ///////////////////////PUBLIC
     
     //Constructor
-    public OtherIndividualsSubInspector() {
-        System.out.println("OtherIndividualsSubInspector constructor");
+    public OtherIndividualsSubInspector() {        
         TablePanel.addVariantSelectionChangedListener(this);
         refreshMaps();
 

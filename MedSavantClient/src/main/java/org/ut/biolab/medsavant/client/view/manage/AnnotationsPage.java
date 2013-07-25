@@ -68,11 +68,11 @@ public class AnnotationsPage extends SubSectionView {
         if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<Annotation>("Program") {
-                        @Override
-                        public Annotation[] getData() throws Exception {
-                            return ExternalAnnotationController.getInstance().getExternalAnnotations();
-                        }
-                    },
+                @Override
+                public Annotation[] getData() throws Exception {
+                    return ExternalAnnotationController.getInstance().getExternalAnnotations();
+                }
+            },
                     new ExternalAnnotationDetailedView(),
                     new ExternalAnnotationDetailedListEditor());
         }
@@ -222,16 +222,16 @@ public class AnnotationsPage extends SubSectionView {
         @Override
         public void deleteItems(List<Object[]> items) {
             try {
+                if (items != null && items.size() > 0) {
+                    Annotation an = (Annotation) items.get(0)[0];
 
-                Annotation an = (Annotation) items.get(0)[0];
+                    int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
 
-                int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
-
-                if (response == DialogUtils.YES) {
-                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
-                    DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                    if (response == DialogUtils.YES) {
+                        MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
+                        DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                    }
                 }
-
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error uninstalling annotations", ex);
             }

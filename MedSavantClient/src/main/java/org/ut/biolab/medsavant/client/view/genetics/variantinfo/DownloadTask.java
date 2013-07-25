@@ -65,7 +65,7 @@ public abstract class DownloadTask extends SwingWorker {
         if (destPath.charAt(destPath.length() - 1) == File.separatorChar) {
                return destPath + filename;
             } else {
-                return destPath + "/" + filename;
+                return destPath + File.separator + filename;
             }
     }    
     

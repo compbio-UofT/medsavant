@@ -136,7 +136,7 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
     public JPanel getInfoPanel() {
         panel = ViewUtil.getClearPanel();
         try {
-            if (GenemaniaInfoRetriever.hasGeneManiaData()) {
+            if (DirectorySettings.isGeneManiaInstalled()) {
                 genemania = new GenemaniaInfoRetriever();
                 genemaniaSettings = new GeneManiaSettingsDialog(genemania);
             } else {
@@ -164,7 +164,7 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
                                             panel.repaint();
                                         } else if (ds == DownloadState.FINISHED) {
                                             //this should always be true.
-                                            if (GenemaniaInfoRetriever.hasGeneManiaData()) {
+                                            if (DirectorySettings.isGeneManiaInstalled()) {
                                                 try {
                                                     dataPresent = true;
                                                     genemania = new GenemaniaInfoRetriever();
