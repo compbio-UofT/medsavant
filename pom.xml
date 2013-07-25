@@ -401,6 +401,12 @@
           <version>2.5.1</version>
         </plugin>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <!-- Lock down plugin version for build reproducibility -->
+          <version>1.2.1</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
           <!-- Lock down plugin version for build reproducibility -->
