@@ -908,6 +908,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
             LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
 
+            /*
             // some manual reporting / debugging
             HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
             HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
@@ -933,10 +934,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 }
             }
 
+
             bw.write("here's the gene analysis at " + stepNumber + "\n");
             for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
                 bw.write("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
             }
+            */
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
 
@@ -1005,6 +1008,11 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 LOG.info(numSeenBefore + " of these were already excluded previously");
 
                 bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
+
+                bw.write("# here are the excluded variants\n");
+                for (SimpleFamilyMattersVariant v : excludedVariantsFromThisStep) {
+                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + "\n");
+                }
 
             }
 
