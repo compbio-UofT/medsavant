@@ -192,6 +192,15 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <id>create-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
