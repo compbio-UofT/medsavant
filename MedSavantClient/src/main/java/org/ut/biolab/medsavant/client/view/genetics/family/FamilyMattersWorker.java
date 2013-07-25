@@ -5,6 +5,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -864,6 +867,14 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         TreeSet<SimpleFamilyMattersVariant> variants;
         TreeSet<SimpleFamilyMattersGene> genes;
 
+
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        long secondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
+        File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
+        BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
+        System.out.println("Writing to log file: " + logFile.getAbsolutePath());
+
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
          */
@@ -897,6 +908,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
             LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
 
+            /*
             // some manual reporting / debugging
             HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
             HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
@@ -922,12 +934,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 }
             }
 
-            System.out.println("GENE ANALYSIS at " + stepNumber);
+
+            bw.write("here's the gene analysis at " + stepNumber + "\n");
             for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-                if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() <= 42) || (geneToBGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
-                    System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
-                }
+                bw.write("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
             }
+            */
 
             Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
 
@@ -936,6 +948,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             for (FamilyMattersOptionView.IncludeExcludeCriteria criterion : step.getCriteria()) {
 
                 ++criteriaNumber;
+
+                bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
 
                 LOG.info("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
                 LOG.info(criterion);
@@ -949,6 +963,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
+                bw.write("# threshold is " + frequencyThreshold + "\n");
+                bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
+                bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
                 //LOG.info("Threshold is " + frequencyThreshold);
                 //LOG.info("Threshold type is " + criterion.getFrequencyType());
 
@@ -980,6 +997,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     }
                 }
 
+                bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
+
                 LOG.info("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
 
                 int currentNumExcluded = allExcludedVariants.size();
@@ -987,6 +1006,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 int afterNumExcluded = allExcludedVariants.size();
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
                 LOG.info(numSeenBefore + " of these were already excluded previously");
+
+                bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
+
+                bw.write("# here are the excluded variants\n");
+                for (SimpleFamilyMattersVariant v : excludedVariantsFromThisStep) {
+                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
+                }
 
             }
 
@@ -1055,6 +1081,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
         */
 
+
+        bw.flush();
+        bw.close();
+
+        //Process p = Runtime.getRuntime().exec("open " + logFile.getAbsolutePath());
+        System.out.println("Done. Log file: " + logFile.getAbsolutePath());
 
         return variantToSampleMap;
     }

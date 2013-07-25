@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
@@ -140,10 +143,12 @@ public class BatchVariantAnnotator {
                 previousPosition = -1;
                 previousRef = null;
                 previousAlt = null;
+
             } else {
 
                 /**
-                 * Check that records for a given chromosome are sorted by position, ref, alt
+                 * Check that records for a given chromosome are sorted by
+                 * position, ref, alt
                  */
                 long currentPosition = nextInputRecord.position;
                 String currentRef = nextInputRecord.ref;
@@ -153,19 +158,33 @@ public class BatchVariantAnnotator {
                     throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
                 }
                 if (currentPosition == previousPosition) {
-                    int refCompare = currentRef.compareTo(previousRef);
+
+                    int refCompare;
+                    if (!isAStandardSingleNucleotide(currentRef)) { // ignore lines where ref is not a single nucleotide
+                        refCompare = 1;
+                    } else {
+                        refCompare = currentRef.compareTo(previousRef);
+                    }
+
                     if (refCompare < 0) {
                         throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
                     } else if (refCompare == 0) {
-                        int altCompare = currentAlt.compareTo(previousAlt);
+
+                        int altCompare;
+                        if (!isAStandardSingleNucleotide(currentAlt)) { // ignore lines where alt is not a single nucleotide
+                            altCompare = 1;
+                        } else {
+                            altCompare = currentAlt.compareTo(previousAlt);
+                        }
+
                         if (altCompare < 0) {
                             throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
                         }
                     }
                 }
                 previousPosition = currentPosition;
-                previousRef = currentRef;
-                previousAlt = currentAlt;
+                previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
+                previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
             }
 
             // perform each annotation, in turn
@@ -259,6 +278,10 @@ public class BatchVariantAnnotator {
         // clean up and return
         reader.close();
         return result;
+    }
+
+    private boolean isAStandardSingleNucleotide(String base) {
+        return base.equals("A") || base.equals("C") || base.equals("G") || base.equals("T");
     }
 
     /**
