@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.shared.solr.mapper;
 import org.apache.solr.common.SolrDocumentList;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generic interface for mappers.
@@ -31,4 +32,6 @@ public interface ResultMapper<T> {
      * @return
      */
     public List<T> map(SolrDocumentList solrDocumentList);
+
+    public List<T> map(SolrDocumentList solrDocumentList, Map<String, String> aggregateFieldMap);
 }

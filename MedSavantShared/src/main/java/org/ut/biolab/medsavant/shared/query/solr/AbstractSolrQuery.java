@@ -20,6 +20,8 @@ import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.base.AbstractQuery;
 import org.ut.biolab.medsavant.shared.query.parser.JPQLToSolrTranslator;
 
+import java.util.Map;
+
 /**
  * Provide a Query implementation for the Solr backend.
  */
@@ -28,6 +30,8 @@ public class AbstractSolrQuery extends AbstractQuery {
     private JPQLToSolrTranslator translator;
 
     private SolrQuery solrQuery;
+
+    private Map<String, String> aggregateFields;
 
     public AbstractSolrQuery() {
         translator = new JPQLToSolrTranslator();
@@ -38,6 +42,7 @@ public class AbstractSolrQuery extends AbstractQuery {
     public void setStatement(String statement) {
         super.setStatement(statement);
 
+        //extract named parameters to a map, don't translate yet
         parameters = translator.getNamedParameter(statement);
     }
 
@@ -105,6 +110,8 @@ public class AbstractSolrQuery extends AbstractQuery {
             solrQuery = translator.translate(statement);
             solrQuery.setStart(getStart());
             solrQuery.setRows(getLimit());
+
+            aggregateFields = translator.getContext().getAggregates();
         }
 
         return solrQuery;

@@ -78,4 +78,11 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "(pos:[10 TO 10000]) OR dna_id:'NA*'");
     }
 
+    @Test
+    public void testGroupBy() {
+        SolrQuery resultedQuery = translator.translate("select v.dna_id, count(v) from Variant v where v.dna_id = 'NA00002' group by v.dna_id");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "(pos:[10 TO 10000]) OR dna_id:'NA*'");
+    }
+
 }

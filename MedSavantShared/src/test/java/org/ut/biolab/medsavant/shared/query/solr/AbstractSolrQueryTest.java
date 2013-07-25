@@ -66,6 +66,15 @@ public class AbstractSolrQueryTest {
     }
 
     @Test
+    public void testAggregateTerms() {
+        Query query = queryManager.createQuery("select v.dna_id, count(v), count(v.dna_id) from Variant v group by dna_id,chrom");
+
+        List<ResultRow> variantRecordList = query.executeForRows();
+
+        System.out.println(variantRecordList);
+    }
+
+    @Test
     public void testNoWhereParameters() throws QueryException {
         Query query = queryManager.createQuery("select v from Variant v");
 

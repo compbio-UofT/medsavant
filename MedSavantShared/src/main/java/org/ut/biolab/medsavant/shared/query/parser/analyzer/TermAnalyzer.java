@@ -74,7 +74,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
 
     @Override
     public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
-        value = node.toString();
+        value = node.toString().replace("'", "");
 
         query.append(getValueToken(value));
 

@@ -15,15 +15,20 @@
  */
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.FacetParams;
+import org.apache.solr.common.params.StatsParams;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Responsible for analyzing the queries.
@@ -99,7 +104,25 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         List<String> resultFields = resultFieldAnalyzer.getField();
         addFieldsFromList(resultFields);
 
+        Map<String, String> aggregates = resultFieldAnalyzer.getAggregates();
+        addAggregateTerms(aggregates);
+        context.setAggregates(aggregates);
+
         super.outASelectClause(node);
+    }
+
+    @Override
+    public void caseAGroupbyClause(AGroupbyClause node) {
+
+        LOG.debug("Analyzing group by clause: " + node.toString());
+
+        AggregateAnalyzer aggregateAnalyzer = new AggregateAnalyzer(context);
+        List<String> groupByTerms = new ArrayList<String>();
+        aggregateAnalyzer.getQueryContext().setGroupByTerms(groupByTerms);
+        node.apply(aggregateAnalyzer);
+
+        groupByTerms = aggregateAnalyzer.getQueryContext().getGroupByTerms();
+        addFacetFields(groupByTerms);
     }
 
     public SolrQuery getSolrQuery() {
@@ -115,6 +138,41 @@ public class QueryAnalyzer extends DepthFirstAdapter {
             solrQuery.addField(field);
         }
     }
+
+    private void addFacetFields(List<String> fields) {
+        if (fields != null && fields.size() == 1) {
+            solrQuery.addFacetField(fields.get(0));
+        } else {
+            addFacePivotFields(fields);
+        }
+    }
+
+    private void addFacePivotFields(List<String> fields) {
+
+        String pivotFields = StringUtils.join(fields, ",");
+        solrQuery.add(FacetParams.FACET, "true");
+        solrQuery.add(FacetParams.FACET_PIVOT, pivotFields);
+    }
+
+    private void addAggregateTerms(Map<String, String> aggregates) {
+
+        solrQuery.add(StatsParams.STATS, "true");
+
+        for (Map.Entry<String, String> entry : aggregates.entrySet()) {
+            addAggregateTerm(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private SolrQuery addAggregateTerm(String aggregateExpression, String column) {
+
+        if ("".equals(column)) {
+            solrQuery.add(StatsParams.STATS_FIELD, "uuid");
+        } else {
+            solrQuery.add(StatsParams.STATS_FIELD, column);
+        }
+
+        return solrQuery;
+    }
     
     private SolrQuery addDefaultQueryParameters(SolrQuery solrQuery) {
 
@@ -126,5 +184,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
 
         return solrQuery;
     }
+
+
 
 }

@@ -18,8 +18,7 @@ package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  *  Parse the result fields for the query.
@@ -28,8 +27,11 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
 
     private List<String> field;
 
+    private Map<String, String> aggregates;
+
     public ResultFieldAnalyzer() {
         this.field = new ArrayList<String>();
+        this.aggregates = new HashMap<String, String>();
     }
 
     public ResultFieldAnalyzer(List<String> field) {
@@ -45,11 +47,35 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
         }
     }
 
+    @Override
+    public void caseACountAggregateExpression(ACountAggregateExpression node) {
+
+        String count = node.getCount().toString().toLowerCase(Locale.ROOT).trim();
+
+        EntityPropertyAnalyzer epa = new EntityPropertyAnalyzer();
+        node.apply(epa);
+        String entity = epa.getProperty();
+
+        aggregates.put(count, entity);
+    }
+
     public List<String> getField() {
         return field;
     }
 
     public void setField(List<String> field) {
         this.field = field;
+    }
+
+    public boolean hasAggregates() {
+        return !aggregates.isEmpty();
+    }
+
+    public Map<String, String> getAggregates() {
+        return aggregates;
+    }
+
+    public void setAggregates(Map<String, String> aggregates) {
+        this.aggregates = aggregates;
     }
 }

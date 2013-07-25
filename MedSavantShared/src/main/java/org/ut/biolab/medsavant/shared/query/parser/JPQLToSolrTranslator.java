@@ -54,6 +54,7 @@ public class JPQLToSolrTranslator {
 
     public SolrQuery translate(String input) {
 
+        LOG.info("Translating query: " + input);
         JPQLParser parser = new JPQLParser();
         SolrQuery solrQuery = null;
         try {
@@ -108,5 +109,9 @@ public class JPQLToSolrTranslator {
 
     public void setContext(QueryContext context) {
         this.context = context;
+    }
+
+    private Map<String, String> getAggregates() {
+        return context.getAggregates();
     }
 }

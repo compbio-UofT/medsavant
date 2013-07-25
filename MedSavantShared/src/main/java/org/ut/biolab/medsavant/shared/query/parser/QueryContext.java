@@ -32,6 +32,10 @@ public class QueryContext {
 
     private Map<String, Object> parameters;
 
+    private List<String> groupByTerms;
+
+    private Map<String, String> aggregates;
+
     public Map<String, Object> getParameters() {
         return parameters;
     }
@@ -54,5 +58,26 @@ public class QueryContext {
 
     public void setTree(Start tree) {
         this.tree = tree;
+    }
+
+    public List<String> addGroupByTerm(String term) {
+        groupByTerms.add(term);
+        return groupByTerms;
+    }
+
+    public List<String> getGroupByTerms() {
+        return groupByTerms;
+    }
+
+    public void setGroupByTerms(List<String> groupByTerms) {
+        this.groupByTerms = groupByTerms;
+    }
+
+    public Map<String, String> getAggregates() {
+        return aggregates;
+    }
+
+    public void setAggregates(Map<String, String> aggregates) {
+        this.aggregates = aggregates;
     }
 }
