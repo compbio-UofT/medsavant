@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.client.view;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -11,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 public abstract class Notification implements PropertyChangeListener{
@@ -71,15 +73,15 @@ public abstract class Notification implements PropertyChangeListener{
                 setStatus(JobStatus.CANCELLED);
             }
         });
-        
-        
+
+
         closeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 closeJob();
             }
         });
-        
+
 
         JPanel buttonBar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(buttonBar);
@@ -93,10 +95,17 @@ public abstract class Notification implements PropertyChangeListener{
         statusPanel.add(Box.createHorizontalStrut(20));
         statusPanel.add(Box.createHorizontalGlue());
         statusPanel.add(progressBar);
+        statusPanel.setPreferredSize(new Dimension(300,25));
+        statusPanel.setMinimumSize(new Dimension(300,25));
+
+        if (ClientMiscUtils.MAC) {
+            this.progressBar.putClientProperty("JProgressBar.style", "circular");
+        }
 
         view.add(ViewUtil.alignLeft(titleLabel));
         //view.add(ViewUtil.alignLeft());
         view.add(statusPanel);
+        //view.add(progressBar);
         view.add(ViewUtil.alignRight(buttonBar));
     }
 
@@ -107,16 +116,16 @@ public abstract class Notification implements PropertyChangeListener{
     public double getProgress() {
         return progress;
     }
-    
+
     public void showResultsOnFinish(boolean srof) {
         this.showResultsOnFinish = srof;
     }
 
     public void setProgress(double progress) {
         //was commented
-        setIndeterminate(false);        
+        //setIndeterminate(false);
         this.progress = progress;
-        this.progressBar.setValue((int) (progress * 100));
+        //this.progressBar.setValue((int) (progress * 100));
     }
 
     public String getStatusMessage() {
@@ -125,7 +134,7 @@ public abstract class Notification implements PropertyChangeListener{
 
     public void setStatusMessage(String statusMessage) {
         this.statusMessage = statusMessage;
-        this.statusLabel.setText(ViewUtil.ellipsize(statusMessage, 15));
+        this.statusLabel.setText(ViewUtil.ellipsize(statusMessage, 45));
         this.statusLabel.setToolTipText(statusMessage);
     }
 
@@ -150,7 +159,7 @@ public abstract class Notification implements PropertyChangeListener{
         return indeterminate;
     }
 
-    public void setIndeterminate(boolean indeterminate) {                
+    public void setIndeterminate(boolean indeterminate) {
         //was commented
         this.indeterminate = indeterminate;
         this.progressBar.setIndeterminate(indeterminate);
@@ -189,20 +198,20 @@ public abstract class Notification implements PropertyChangeListener{
             }
         });
     }
-    
+
     public void monitorWorker(SwingWorker worker){
         worker.addPropertyChangeListener(this);
         worker.execute();
     }
-    
+
     //handle progress bar update.
     public void propertyChange(PropertyChangeEvent evt) {
-        if (!progressBar.isIndeterminate() && "progress" == evt.getPropertyName()) {           
-            int progress = (Integer) evt.getNewValue();            
-            progressBar.setValue(progress);            
+        if (!progressBar.isIndeterminate() && "progress" == evt.getPropertyName()) {
+            int progress = (Integer) evt.getNewValue();
+            progressBar.setValue(progress);
         }
     }
-    
+
     //Called when results button pushed
     protected abstract void showResults();
 
@@ -210,5 +219,5 @@ public abstract class Notification implements PropertyChangeListener{
     protected abstract void cancelJob();
 
     //Called when close button pushed.
-    protected abstract void closeJob();    
+    protected abstract void closeJob();
 }

@@ -84,68 +84,68 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private LoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
-      
-    
+
+
     private static Point getPositionRelativeTo(Component root, Component comp){
         if (comp.equals(root)) { return new Point(0,0); }
         Point pos = comp.getLocation();
         Point parentOff = getPositionRelativeTo(root, comp.getParent());
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
-       
-    
+
+
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg){
         if(src != null && dst != null){
              view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
                 public void done(){
-                    if(notificationMsg != null){                        
+                    if(notificationMsg != null){
                         notificationMessage(notificationMsg);
                     }
                 }
             });
-        } 
+        }
     }
-    
-    
+
+
     public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg){
         Point src = getPositionRelativeTo(view, srcComponent);
-        Point dst = getPositionRelativeTo(view, dstComponent);        
-        translationAnimation(src, dst, img, notificationMsg);        
+        Point dst = getPositionRelativeTo(view, dstComponent);
+        translationAnimation(src, dst, img, notificationMsg);
     }
-    
+
     public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg){
         translationAnimation(view, dstComponent, img, notificationMsg);
     }
-     
+
     public void browserAnimationFromMousePos(final String notificationMsg){
-        
+
         /*Point src = view.getMousePosition();
         if(src == null){
             return;
         }
-        
+
         Point dst = null;
         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
         */
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
         for(SubSectionView sv : menu.subSectionViews){
-            if(sv.getPageName().equalsIgnoreCase("Browser")){              
+            if(sv.getPageName().equalsIgnoreCase("Browser")){
                //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
                dstComponent = menu.getSubSectionButton(sv);
                break;
             }
-        }              
-        
+        }
+
         animationFromMousePos(dstComponent, img, notificationMsg);
         if(dstComponent != null){
             animationFromMousePos(dstComponent, img, notificationMsg);
         }
-        
+
         /*
         if(dst != null){
-            //view.cancel();            
+            //view.cancel();
             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
                 public void done(){
                     if(notificationMsg != null){
@@ -154,36 +154,36 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                     }
                 }
             });
-            
-            
-            
-            //view.animate(img.getImage(), src, dst);            
+
+
+
+            //view.animate(img.getImage(), src, dst);
         }
         */
     }
-    
+
     public void notificationMessage(String notificationMsg){
         view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
     }
-    
+
     /**
      * Creates a search animation from the current mouse position.  i.e. creates an image
      * that moves from the current mouse position to the 'Variants' button on the toolbar.
-     * 
-     * Do not call until the previous animation thread is finished.  This 
-     * shouldn't happen as long as the animation time is short. (< 500ms ).  
+     *
+     * Do not call until the previous animation thread is finished.  This
+     * shouldn't happen as long as the animation time is short. (< 500ms ).
      */
     public void searchAnimationFromMousePos(final String notificationMsg){
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         /*Point src = view.getMousePosition();
         if(src == null){
             return;
         }
-        
+
         Point dst = null;
         */
         Component dstComponent = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();        
+        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
         while(e.hasMoreElements()){
             AbstractButton b = e.nextElement();
             if(b.getName().equalsIgnoreCase("Variants")){
@@ -192,10 +192,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         }
         animationFromMousePos(dstComponent, img, notificationMsg);
-        /*                
+        /*
         if(dst != null){
             //view.cancel();
-            
+
             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
                 public void done(){
                     if(notificationMsg != null){
@@ -204,15 +204,15 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                     }
                 }
             });
-                                    
+
         }
         */
     }
-    
+
     public void searchAnimationFromMousePos(){
         searchAnimationFromMousePos(null);
     }
-    
+
      public static MedSavantFrame getInstance() {
         if (instance == null) {
             instance = new MedSavantFrame();
@@ -220,7 +220,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
         return instance;
     }
-     
+
     private MedSavantFrame() {
         super("MedSavant");
 
@@ -229,14 +229,14 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(500, 500));
 
-        view = new AnimatablePanel();        
+        view = new AnimatablePanel();
         view.setDoubleBuffered(true);
         //view = new JPanel();
         view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
         //view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
-                
+
         UIManager.put("ToolTip.background", Color.black);
         UIManager.put("ToolTip.foreground", Color.white);
         UIManager.put("ToolTip.border", ViewUtil.getMediumBorder());
@@ -259,7 +259,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         });
         fileMenu.add(pluginsItem);
-        
+
         // Debug code that adds a 'Restart' function to the File menu.
         /*
         JMenuItem restartItem = new JMenuItem("Restart");
@@ -272,9 +272,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         fileMenu.add(restartItem);
         */
 
-        
+
         //fileMenu.add(manageDBItem);
-        
+
 
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");
@@ -349,7 +349,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 sessionView = new LoggedInView();
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
-                
+
                 ViewController.getInstance().getMenu().updateLoginStatus();
                 //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
@@ -472,6 +472,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             macOSXApplication.setQuitHandler(new QuitHandler() {
                 @Override
                 public void handleQuitRequestWith(QuitEvent evt, QuitResponse resp) {
+                    System.out.println("Requesting close...");
                     instance.requestClose();
                     resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
                 }

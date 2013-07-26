@@ -44,8 +44,8 @@ public class NotificationsPanel extends JPanel {
 
         this.notifications = new JPopupMenu();
         this.notifications.setBorder(null);
-        
-        //These listeners are a bit of a hack to fix a visual bug where clicking 
+
+        //These listeners are a bit of a hack to fix a visual bug where clicking
         //the 'jobs' button partially erases the 'Notifications' button on Linux
         //when the popup is closed.
         this.notifications.addPopupMenuListener(new PopupMenuListener() {
@@ -121,7 +121,7 @@ public class NotificationsPanel extends JPanel {
         this.removeAll();
         this.add(ViewUtil.subTextComponent(button, s));
         setVisible(notificationCount != 0);
-        showPopup();
+        //showPopup();
     }
 
     public int addNotification(JPanel notification) {

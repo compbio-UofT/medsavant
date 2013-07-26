@@ -421,11 +421,47 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         //LOG.info("associate Genes And Variants");
 
+        long startTime = System.currentTimeMillis();
+
+        Map<String,Set<SimpleFamilyMattersVariant>> chromToVariantMap = new HashMap<String,Set<SimpleFamilyMattersVariant>>();
+        for (SimpleFamilyMattersVariant v : variants) {
+            Set<SimpleFamilyMattersVariant> set;
+            if (chromToVariantMap.containsKey(v.chr)) {
+                set = chromToVariantMap.get(v.chr);
+            } else {
+                set = new HashSet<SimpleFamilyMattersVariant>();
+                chromToVariantMap.put(v.chr, set);
+            }
+            set.add(v);
+        }
+
         TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> map = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
+
+
+        int total = genes.size();
+        double counter = 0.0;
 
         for (SimpleFamilyMattersGene g : genes) {
             //LOG.info("processing " + g.name);
 
+            counter += 1;
+            double p = counter*100/total;
+
+            setLabelText(Math.round(p) + "% done connecting");
+
+            if (!chromToVariantMap.containsKey(g.chr)) { continue; }
+
+            Set<SimpleFamilyMattersVariant> set = new HashSet<SimpleFamilyMattersVariant>();
+            for (SimpleFamilyMattersVariant v : chromToVariantMap.get(g.chr)) {
+                 if (intersects(g, v)) {
+                    set.add(v);
+                    v.addGene(g);
+                }
+            }
+            map.put(g, set);
+
+
+            /*
             Set<SimpleFamilyMattersVariant> set = new HashSet<SimpleFamilyMattersVariant>();
             for (SimpleFamilyMattersVariant v : variants) {
                 if (intersects(g, v)) {
@@ -434,7 +470,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 }
             }
             map.put(g, set);
+            */
         }
+
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Connecting genes to variants took " + (endTime - startTime)/1000 + " seconds");
+
         return map;
     }
 
