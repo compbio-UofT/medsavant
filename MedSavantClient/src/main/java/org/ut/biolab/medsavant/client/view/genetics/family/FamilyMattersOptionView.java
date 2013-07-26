@@ -383,9 +383,14 @@ public class FamilyMattersOptionView {
         private AggregationType aggregationType;
         private FrequencyType frequencyType;
         private FrequencyCount frequencyCount;
+        private boolean isNot = false;
 
         public Set<String> getDNAIDs() {
-            return customSelector.getHospitalIDsOfSelectedIndividuals();
+            if (isNot) {
+                return customSelector.getInverseOfHospitalIDsOfSelectedIndividuals();
+            } else {
+                return customSelector.getHospitalIDsOfSelectedIndividuals();
+            }
         }
 
         public enum AggregationType {
@@ -549,7 +554,23 @@ public class FamilyMattersOptionView {
                 }
             });
 
-            view.add(new JLabel("of individuals in"));
+            view.add(new JLabel("of individuals"));
+
+
+            final JComboBox notIndividuals = new JComboBox();
+            notIndividuals.addItem("in");
+            notIndividuals.addItem("not in");
+            notIndividuals.setSelectedIndex(0);
+            view.add(notIndividuals);
+
+            notIndividuals.addItemListener(new ItemListener() {
+
+                @Override
+                public void itemStateChanged(ItemEvent ie) {
+                    isNot = notIndividuals.getSelectedIndex() == 1;
+                }
+
+            });
 
             /*cb = new JComboBox();
              cb.setName(COHORT_COMBO);

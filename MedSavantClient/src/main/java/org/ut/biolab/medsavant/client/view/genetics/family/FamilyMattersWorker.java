@@ -99,7 +99,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     @Override
     protected void showSuccess(final TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> result) {
 
-        setLabelText("Preparing results");
+        setLabelText("Preparing results...");
 
         String pageName = FamilyMattersPage.PAGE_NAME;
         String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
@@ -168,7 +168,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 1000,
                 retriever);
 
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, false);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true);
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -447,7 +447,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             counter += 1;
             double p = counter*100/total;
 
-            setLabelText(Math.round(p) + "% done connecting");
+            setLabelText(Math.round(p) + "% done associating genes and variants...");
 
             if (!chromToVariantMap.containsKey(g.chr)) { continue; }
 
@@ -920,16 +920,16 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
          */
-        setLabelText("Retrieving variants");
+        setLabelText("Parsing variants...");
         variantToSampleMap = readVariantToSampleMap(inFile);
 
         // get sorted lists of variants and genes
         variants = new TreeSet<SimpleFamilyMattersVariant>(variantToSampleMap.keySet());
-        setLabelText("Retrieving genes");
+        setLabelText("Parsing genes...");
         genes = getGeneSet();
 
         // map variants to genes and vice versa
-        setLabelText("Connecting variants with genes");
+        setLabelText("Associating variants with genes...");
         genesToVariantsMap = associateGenesAndVariants(variants, genes);
 
         LOG.info("Number of variants (grouped by position):\t" + variants.size());
@@ -996,7 +996,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 LOG.info("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
                 LOG.info(criterion);
 
-                setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
+                setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "...");
 
                 Set<String> setOfDNAIDs = criterion.getDNAIDs(); //TODO: write method
                 //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());

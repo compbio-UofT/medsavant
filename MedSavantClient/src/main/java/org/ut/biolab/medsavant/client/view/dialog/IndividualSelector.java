@@ -401,6 +401,19 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         this.hasMadeSelections = false;
     }
 
+    public Set<String> getInverseOfHospitalIDsOfSelectedIndividuals() {
+        List<Object[]> allRows = retriever.getIndividuals();
+        Set<String> results = new HashSet<String>();
+        Set<String> selected = getHospitalIDsOfSelectedIndividuals();
+        for (Object[] row : allRows) {
+            String id = (String) row[INDEX_OF_HOSPITAL_ID];
+            if (!selected.contains(id)) {
+                results.add(id);
+            }
+        }
+        return results;
+    }
+
     public static class IndividualsReceiver extends DataRetriever<Object[]> {
         //private DataRetriever<Object[]> getIndividualsRetriever() {
 
