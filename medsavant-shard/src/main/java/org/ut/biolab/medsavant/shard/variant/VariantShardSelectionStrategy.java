@@ -13,9 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shared.db.shard;
-
-import javassist.expr.Instanceof;
+package org.ut.biolab.medsavant.shard.variant;
 
 import org.hibernate.shards.ShardId;
 import org.hibernate.shards.strategy.selection.ShardSelectionStrategy;

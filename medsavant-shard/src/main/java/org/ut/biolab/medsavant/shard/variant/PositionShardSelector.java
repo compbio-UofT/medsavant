@@ -13,22 +13,32 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shared.db.shard;
+package org.ut.biolab.medsavant.shard.variant;
 
-import org.hibernate.Session;
+import org.hibernate.shards.ShardId;
 
 /**
- * Shards session controller.
+ * Selector of shards based on position of variants.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
- * 
+ *
  */
-public class ShardedConnectionController {
-    public static Session openSession() {
-        return HibernateShardUtil.getSessionFactory().openSession();
+public class PositionShardSelector implements ShardSelector<Long> {
+
+    private Long deliminer;
+
+    private Integer divide(Long divisor, Long denominator) {
+        return (int) (divisor / denominator);
     }
 
-    public static void closeSession(Session session) {
-        session.close();
+    public PositionShardSelector(Long maxPos, Integer shardNo) {
+        deliminer = (maxPos + shardNo - 1) / shardNo;
     }
+
+    @Override
+    public ShardId getShard(Long data) {
+        return new ShardId(divide(data, deliminer));
+    }
+
+
 }

@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shared.db.shard;
+package org.ut.biolab.medsavant.shard.variant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ import org.hibernate.shards.strategy.ShardStrategyFactory;
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class HibernateShardUtil {
+public class VariantShardUtil {
     // TODO: check whether this is true
     private static final long MAX_VARIANT_POSITION = 250000000;
     private static final String RESOURCE_PREFIX = "hibernate";

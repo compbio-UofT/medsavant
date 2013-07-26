@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shared.db.shard;
+package org.ut.biolab.medsavant.shard.variant;
 
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +32,7 @@ import org.hibernate.criterion.Restrictions;
 public class Main {
     // TODO: remove this class later
     public static void list() {
-        SessionFactory sessionFactory = HibernateShardUtil.getSessionFactory();
+        SessionFactory sessionFactory = VariantShardUtil.getSessionFactory();
         Session session = sessionFactory.openSession();
 
         // note: beware of this commented out query - it does implicit sorting
