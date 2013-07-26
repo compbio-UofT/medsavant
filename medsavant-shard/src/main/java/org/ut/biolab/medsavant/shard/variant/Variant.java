@@ -19,6 +19,10 @@ import java.io.Serializable;
 
 public class Variant implements Serializable {
 
+    /**
+     * Column representing ID in mapping.
+     */
+    public static final String id = "variant_id";
     private static final long serialVersionUID = 1L;
     private Integer upload_id;
     private Integer file_id;

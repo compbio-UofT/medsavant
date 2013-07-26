@@ -54,6 +54,7 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shard.variant.ShardedVariantManagerHelper;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -111,7 +112,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final double SUBSET_FRACTION = 0.05;
     private static final double LOAD_TABLE_FRACTION = 0.15; // Happens twice
     private static VariantManager instance;
-    private static VariantManagerHelper helper;
+    private static ShardedVariantManagerHelper helper;
     // public static boolean REMOVE_TMP_FILES = false;
     static boolean REMOVE_WORKING_DIR = true;
 
@@ -121,7 +122,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     public static synchronized VariantManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
             instance = new VariantManager();
-            helper = new VariantManagerHelper();
+            helper = new ShardedVariantManagerHelper();
         }
         return instance;
     }

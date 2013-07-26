@@ -1,5 +1,5 @@
  <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<hibernate-mapping package="org.ut.biolab.medsavant.shared.db.shard">
+<hibernate-mapping package="org.ut.biolab.medsavant.shard.variant">
   <class name="Variant" table="z_variant_proj1_ref3_update1">
     <id name="position" column="position" type="integer" />
     <property name="variant_id" column="variant_id" type="integer" />
