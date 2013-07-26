@@ -64,6 +64,8 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
 /**
  *
@@ -75,36 +77,78 @@ public class FamilyMattersOptionView {
     private InheritanceStep inheritanceStep;
     private File lastTDFFile;
     private boolean filtersChangedSinceLastDump;
+    private final ZygosityStep zygosityStep;
 
-    protected class InheritanceModelStep {
+    protected class ZygosityStepViewGenerator {
 
-        private JPanel view;
-        private FamilySelector familyDialog;
-        private final static String ORIGINAL_CHOOSE_TEXT = "choose families";
-
-        public InheritanceModelStep() {
+        private RoundedPanel inheritanceModelView;
+         public ZygosityStepViewGenerator() {
             setupView();
         }
 
         public JPanel getView() {
-            return view;
+            return inheritanceModelView;
         }
 
         private void setupView() {
 
-            view = new RoundedPanel(10);
-            view.add(new JLabel("and follows"));
+            inheritanceModelView = new RoundedPanel(10);
+
+            inheritanceModelView.add(new JLabel("and has zygosity"));
+            final JComboBox b = new JComboBox();
+
+            b.addItem("Any");
+            for (Zygosity z : Zygosity.values()) {
+                b.addItem(z);
+            }
+
+            inheritanceModelView.add(b);
+
+            b.addItemListener(new ItemListener() {
+
+                @Override
+                public void itemStateChanged(ItemEvent ie) {
+                    int index = b.getSelectedIndex();
+                    if (index == 0) {
+                        zygosityStep.setZygosity(null);
+                    } else {
+
+                        zygosityStep.setZygosity((Zygosity)b.getSelectedItem());
+                    }
+                }
+
+            });
+        }
+    }
+
+    protected class InheritanceStepViewGenerator {
+
+        private JPanel inheritanceModelView;
+        private FamilySelector familyDialog;
+        private final static String ORIGINAL_CHOOSE_TEXT = "choose families";
+
+        public InheritanceStepViewGenerator() {
+            setupView();
+        }
+
+        public JPanel getView() {
+            return inheritanceModelView;
+        }
+
+        private void setupView() {
+
+            inheritanceModelView = new RoundedPanel(10);
+            inheritanceModelView.add(new JLabel("and follows"));
 
             familyDialog = new FamilySelector();
 
             JComboBox b = new JComboBox();
 
-
             for (InheritanceModel m : InheritanceModel.values()) {
                 b.addItem(m);
             }
 
-            view.add(b);
+            inheritanceModelView.add(b);
 
             final JButton configure = new JButton(ORIGINAL_CHOOSE_TEXT);
             configure.setVisible(false);
@@ -125,9 +169,9 @@ public class FamilyMattersOptionView {
                 }
             });
 
-            view.add(new JLabel("inheritance model"));
-            view.add(in);
-            view.add(configure);
+            inheritanceModelView.add(new JLabel("inheritance model"));
+            inheritanceModelView.add(in);
+            inheritanceModelView.add(configure);
 
             configure.addActionListener(new ActionListener() {
                 @Override
@@ -276,6 +320,30 @@ public class FamilyMattersOptionView {
         }
     }
 
+    public static class ZygosityStep {
+        private Zygosity zygosity;
+
+        public ZygosityStep() {
+        }
+
+        public ZygosityStep(Zygosity z) {
+            this.zygosity = z;
+        }
+
+        public void setZygosity(Zygosity z) {
+            this.zygosity = z;
+        }
+
+        public boolean isSet() {
+            return zygosity != null;
+        }
+
+        Zygosity getZygosity() {
+            return this.zygosity;
+        }
+
+    }
+
     public static class InheritanceStep {
 
         public enum InheritanceModel {
@@ -352,6 +420,7 @@ public class FamilyMattersOptionView {
     public FamilyMattersOptionView() {
 
         inheritanceStep = new InheritanceStep();
+        zygosityStep = new ZygosityStep();
 
         setupView();
 
@@ -558,6 +627,7 @@ public class FamilyMattersOptionView {
 
 
             final JComboBox notIndividuals = new JComboBox();
+            notIndividuals.setFocusable(false);
             notIndividuals.addItem("in");
             notIndividuals.addItem("not in");
             notIndividuals.setSelectedIndex(0);
@@ -953,7 +1023,12 @@ public class FamilyMattersOptionView {
 
         view.add(Box.createVerticalStrut(10));
 
-        InheritanceModelStep inheritance = new InheritanceModelStep();
+        ZygosityStepViewGenerator zygosity = new ZygosityStepViewGenerator();
+
+        view.add(zygosity.getView());
+        view.add(Box.createVerticalStrut(10));
+
+        InheritanceStepViewGenerator inheritance = new InheritanceStepViewGenerator();
 
         view.add(inheritance.getView());
 
@@ -1022,9 +1097,8 @@ public class FamilyMattersOptionView {
 
                         System.out.println("Running algorithm on file " + fileLock.getFile().getAbsolutePath());
 
-
                         // Algorithm Runner
-                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, inheritanceStep, j, dialogLock);
+                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, zygosityStep, inheritanceStep, j, dialogLock);
                         currentWorker.execute();
 
                         try {
@@ -1051,8 +1125,8 @@ public class FamilyMattersOptionView {
                 DialogUtils.displayMessage("Cohort Analysis Submitted");
             }
 
-            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, InheritanceStep model, Notification j, Locks.DialogLock genericLock) {
-                FamilyMattersWorker w = new FamilyMattersWorker(steps, model, file);
+            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, Notification j, Locks.DialogLock genericLock) {
+                FamilyMattersWorker w = new FamilyMattersWorker(steps, zygosityStep, model, file);
                 w.setUIComponents(j);
                 w.setCompletionLock(genericLock);
                 return w;
