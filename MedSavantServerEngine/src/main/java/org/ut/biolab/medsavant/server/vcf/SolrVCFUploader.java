@@ -71,6 +71,7 @@ public class SolrVCFUploader
      */
     public int processAndIndex(File input) {
 
+        //FIXME add includeHomoref
         BufferedReader in = null;
 
         int variantsIndexed = 0;

@@ -15,6 +15,7 @@ import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
+import org.ut.biolab.medsavant.server.vcf.SolrVCFUploader;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
@@ -35,6 +36,11 @@ public class ImportUpdateManager {
      */
     public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
 
+        return doImportSolr(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags);
+    }
+
+    public static int doImportICE(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
+        //FIXME This is the separation point
         boolean needsToUnlock = acquireLock(sessionID);
 
         try {
@@ -75,6 +81,38 @@ public class ImportUpdateManager {
         }
     }
 
+    public static int doImportSolr(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
+
+        try {
+            LOG.info("Starting import");
+
+            SolrVCFUploader solrVCFUploader = new SolrVCFUploader();
+
+            long variantsIndexed = 0;
+            for (File inputFile : vcfFiles) {
+                variantsIndexed += solrVCFUploader.processAndIndex(inputFile);
+            }
+
+            LOG.info("Indexed " + variantsIndexed + " variants");
+
+            //ToDo add log
+            int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.ADD_VARIANTS);
+
+            // Todo prepare for annotation
+
+            // Todo annotate
+
+            // Todo add variant files to Solr
+
+            // Todo add tags
+
+            LOG.info("Finished import");
+
+            return updateID;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
     /**
      * UPDATE AN EXISTING TABLE
      */
