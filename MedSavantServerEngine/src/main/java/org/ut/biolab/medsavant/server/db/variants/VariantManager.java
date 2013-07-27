@@ -484,36 +484,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        if (orderByCols != null) {
-            query.addCustomOrderings((Object[]) orderByCols);
-        }
 
-        String queryString = query.toString();
-        if (limit != -1) {
-            if (start != -1) {
-                queryString += " LIMIT " + start + ", " + limit;
-            } else {
-                queryString += " LIMIT " + limit;
-            }
-        }
+        LOG.debug(query);
 
-        LOG.debug(queryString);
-
-        ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
-
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        int numberColumns = rsMetaData.getColumnCount();
-
-        List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()) {
-            Object[] v = new Object[numberColumns];
-            for (int i = 1; i <= numberColumns; i++) {
-                v[i - 1] = rs.getObject(i);
-            }
-            result.add(v);
-        }
-
-        return result;
+        return helper.getVariants(sessionId, query, start, limit, orderByCols);
     }
 
     @Override

@@ -32,11 +32,17 @@ package org.ut.biolab.medsavant.shard.variant;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
@@ -51,6 +57,8 @@ public class ShardedVariantManagerHelper implements Serializable {
     private static final long serialVersionUID = 6242924081283721254L;
 
     public Integer getNumFilteredVariants(String sessID, SelectQuery q) {
+        // TODO: deal with table-project mapping, hibernate configuration has to
+        // be provided dynamically
         Session s = ShardedConnectionController.openSession();
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(Variant.id));
@@ -61,4 +69,15 @@ public class ShardedVariantManagerHelper implements Serializable {
         return (res == null ? 0 : res);
     }
 
+    public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) {
+        Session session = ShardedConnectionController.openSession();
+
+        Criteria c = session.createCriteria(Variant.class);
+        c.add(Restrictions.sqlRestriction(q.getWhereClause().toString()));
+        List<Variant> variantList = c.list();
+
+        ShardedConnectionController.closeSession(session);
+
+        return null;
+    }
 }

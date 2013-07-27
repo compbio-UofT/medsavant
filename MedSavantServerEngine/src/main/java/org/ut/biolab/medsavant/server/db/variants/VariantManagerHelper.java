@@ -33,7 +33,10 @@ package org.ut.biolab.medsavant.server.db.variants;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -54,5 +57,36 @@ public class VariantManagerHelper implements Serializable {
         rs.next();
 
         return rs.getInt(1);
+    }
+
+    public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException {
+        if (orderByCols != null) {
+            q.addCustomOrderings((Object[]) orderByCols);
+        }
+
+        String queryString = q.toString();
+        if (limit != -1) {
+            if (start != -1) {
+                queryString += " LIMIT " + start + ", " + limit;
+            } else {
+                queryString += " LIMIT " + limit;
+            }
+        }
+
+        ResultSet rs = ConnectionController.executeQuery(sessID, queryString);
+
+        ResultSetMetaData rsMetaData = rs.getMetaData();
+        int numberColumns = rsMetaData.getColumnCount();
+
+        List<Object[]> result = new ArrayList<Object[]>();
+        while (rs.next()) {
+            Object[] v = new Object[numberColumns];
+            for (int i = 1; i <= numberColumns; i++) {
+                v[i - 1] = rs.getObject(i);
+            }
+            result.add(v);
+        }
+
+        return result;
     }
 }

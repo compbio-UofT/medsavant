@@ -55,5 +55,7 @@ private.xml
 MedSavantServerEngine/medsavant.log
 .medsavant.prop
 
-
 distribution/medsavant-client-dmg/src/main/app-resources/.DS_Store
+
+# test output
+*/test-output/
