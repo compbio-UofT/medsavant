@@ -38,5 +38,11 @@
       <artifactId>javassist</artifactId>
       <version>3.8.0.GA</version>
     </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.8.5</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
