@@ -135,6 +135,9 @@ public class VariantData extends ListMap<String, String>
         remove("dna_id");
         remove("gt");
         remove("zygosity");
+        remove("file_id");
+        remove("variant_id");
+        remove("upload_id");
     }
 
 }

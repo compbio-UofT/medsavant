@@ -88,15 +88,19 @@ public class ImportUpdateManager {
 
             SolrVCFUploader solrVCFUploader = new SolrVCFUploader();
 
+            //ToDo add log
+            int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.ADD_VARIANTS);
+
             long variantsIndexed = 0;
+            int fileId = 0;
             for (File inputFile : vcfFiles) {
-                variantsIndexed += solrVCFUploader.processAndIndex(inputFile);
+                fileId++;
+                variantsIndexed += solrVCFUploader.processAndIndex(inputFile, fileId, updateID);
             }
 
             LOG.info("Indexed " + variantsIndexed + " variants");
 
-            //ToDo add log
-            int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.ADD_VARIANTS);
+
 
             // Todo prepare for annotation
 

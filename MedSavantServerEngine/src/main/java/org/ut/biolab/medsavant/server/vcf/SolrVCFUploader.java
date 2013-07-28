@@ -71,6 +71,17 @@ public class SolrVCFUploader
      */
     public int processAndIndex(File input) {
 
+        return processAndIndex(input, 0, 0);
+    }
+
+    /**
+     * Add fileId and uploadId, to avoid modifications on the client module.
+     * @param input         input fil
+     * @param fileId        file id
+     * @param uploadId      upload id
+     * @return
+     */
+    public int processAndIndex(File input, int fileId, int uploadId) {
         //FIXME add includeHomoref
         BufferedReader in = null;
 
@@ -84,7 +95,7 @@ public class SolrVCFUploader
             String line;
 
             while ((line = in.readLine()) != null) {
-                variantsIndexed+= processLine(line);
+                variantsIndexed+= processLine(line, variantsIndexed, fileId, uploadId);
             }
 
         } catch (FileNotFoundException e) {
@@ -105,13 +116,12 @@ public class SolrVCFUploader
 
         return variantsIndexed;
     }
-
     /**
      * Parse a line and save field values.
      * @param line input line
      * @return The number of variants found on the line.
      */
-    private int processLine(String line) {
+    private int processLine(String line, int variantId, int fileId, int uploadId ) {
 
         int variantsIndexed = 0;
 
@@ -120,7 +130,7 @@ public class SolrVCFUploader
             if (isHeaderLine(line)) {
                 columns = extractColumns(line);
             } else {
-                variantsIndexed = extractValues(line);
+                variantsIndexed = extractValues(line, variantId, fileId, uploadId);
             }
         }
 
@@ -181,7 +191,7 @@ public class SolrVCFUploader
      * @param line  The current line in the document.
      * @return      The number of variants parsed and indexed from the line.
      */
-    private int extractValues(String line) {
+    private int extractValues(String line, int variantId, int fileId, int uploadId) {
 
         Scanner scanner = new Scanner(line);
 
@@ -213,10 +223,14 @@ public class SolrVCFUploader
 
             if (variantData != null) {
                 variantData.addUUID();
+
+                //FIXME add these automatically somehow
+                variantData.addTo("file_id", String.valueOf(fileId));
+                variantData.addTo("upload_id",String.valueOf(uploadId));
+                variantData.addTo("variant_id", String.valueOf(variantId + variantsParsed));
+
                 column.incrementVariantsParsed();
-
                 vcfSolrService.scheduleToIndex(variantData);
-
                 variantData.clearDnaSampleData();
 
                 variantsParsed++;
