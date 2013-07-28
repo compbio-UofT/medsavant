@@ -24,13 +24,17 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
+import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * //FIXME this class is more like a DAO than a service, refactor
  */
-public abstract class AbstractSolrService {
+public abstract class AbstractSolrService<T> {
 
     private static final Log LOG = LogFactory.getLog(AbstractSolrService.class);
 
@@ -123,6 +127,42 @@ public abstract class AbstractSolrService {
     public SolrDocumentList search(SimpleSolrQuery simpleSolrQuery) {
 
         return search(simpleSolrQuery.toSolrParams());
+    }
+
+    /**
+     * Index an entity
+     * @param entity           The entity.
+     * @return
+     */
+    public int index(T entity) {
+        try {
+            this.server.addBean(entity);
+            this.server.commit();
+            return 0;
+        } catch (IOException e) {
+            LOG.error("Cannot connect to server");
+        } catch (SolrServerException e) {
+            LOG.error("Cannot index variant comment");
+        }
+
+        return 1;
+    }
+
+    /**
+     * Index a list of entities
+     * @param entities          The list of entities
+     * @return
+     */
+    public int index(List<T> entities) {
+        try {
+            this.server.addBeans(entities);
+        } catch (IOException e) {
+            LOG.error("Cannot connect to server");
+        } catch (SolrServerException e) {
+            LOG.error("Cannot index variant comment");
+        }
+
+        return 0;
     }
 
 }

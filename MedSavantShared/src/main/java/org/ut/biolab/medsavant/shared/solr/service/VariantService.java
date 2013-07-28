@@ -29,7 +29,7 @@ import java.util.*;
  * Provides access to the Solr server, with the purpose of indexing genome variants from .vcf files.
  * @version $Id$
  */
-public class VariantService extends AbstractSolrService
+public class VariantService extends AbstractSolrService<VariantData>
 {
 
     private static final Log LOG = LogFactory.getLog(VariantService.class);
@@ -55,11 +55,13 @@ public class VariantService extends AbstractSolrService
         return NAME;
     }
 
+
     /**
      * Index a map of variant documents to Solr.
      * @param variantDataList a list of variant data objects
      * @return {@code 0} if the indexing succeeded, {@code 1} if writing to the Solr server failed,
      */
+    @Override
     public int index(List<VariantData> variantDataList) {
 
         Collection<SolrInputDocument> allVariants = new HashSet<SolrInputDocument>();
@@ -90,7 +92,7 @@ public class VariantService extends AbstractSolrService
         return 1;
     }
 
-
+    @Override
     public int index(VariantData variantData) {
 
         variantData.addUUID();
@@ -228,4 +230,6 @@ public class VariantService extends AbstractSolrService
             LOG.error("Failed to communicate with the Solr server");
         }
     }
+
+
 }
