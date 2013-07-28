@@ -15,14 +15,19 @@
  */
 package org.ut.biolab.medsavant.shared.solr.service;
 
+import org.ut.biolab.medsavant.shared.model.solr.SearcheableVariantComment;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+
 
 /**
  * Keep track of references of Solr services.
  */
 public class SolrServiceRegistry {
 
+
     private static AbstractSolrService variantService;
+
+    private static AbstractSolrService variantCommentService;
 
     /**
      * Get the appropriate solr service based on the entity string.
@@ -34,13 +39,39 @@ public class SolrServiceRegistry {
         AbstractSolrService service = null;
 
         if ("variant".equals(entityName)) {
-            if (variantService == null) {
-                variantService =  new VariantService();
-                variantService.initialize();
-            }
-            return variantService;
+            return getVariantService();
+        } else if ("comment".equals(entityName)) {
+            return getVariantCommentService();
         }
 
         return null;
     }
+
+    public static AbstractSolrService getService(Class clazz) throws InitializationException {
+
+        AbstractSolrService service = null;
+
+        if (SearcheableVariantComment.class.getName().equals(clazz.getName())) {
+            return getVariantCommentService();
+        }
+
+        return null;
+    }
+
+    private static AbstractSolrService getVariantService() throws InitializationException {
+        if (variantService == null) {
+            variantService =  new VariantService();
+            variantService.initialize();
+        }
+        return variantService;
+    }
+
+    private static AbstractSolrService getVariantCommentService() throws InitializationException {
+        if (variantCommentService == null) {
+            variantCommentService =  new VariantCommentService();
+            variantCommentService.initialize();
+        }
+        return variantCommentService;
+    }
+
 }
