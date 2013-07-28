@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.shared.query.solr;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryException;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
@@ -75,6 +76,15 @@ public class AbstractSolrQueryTest {
     }
 
     @Test
+    public void testOneAggregateTerm() {
+        Query query = queryManager.createQuery("select v.dna_id, count(v), count(v.dna_id) from Variant v group by dna_id");
+
+        List<ResultRow> variantRecordList = query.executeForRows();
+
+        System.out.println(variantRecordList);
+    }
+
+    @Test
     public void testNoWhereParameters() throws QueryException {
         Query query = queryManager.createQuery("select v from Variant v");
 
@@ -82,7 +92,4 @@ public class AbstractSolrQueryTest {
 
         System.out.print(variantRecordList);
     }
-
-
-
 }

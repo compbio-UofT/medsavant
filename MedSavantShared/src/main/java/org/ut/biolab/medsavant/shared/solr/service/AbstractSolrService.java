@@ -21,7 +21,9 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
@@ -94,7 +96,7 @@ public abstract class AbstractSolrService<T> {
             LOG.error("Error executing query " + solrQuery.toString());
         }
 
-        return result.getResults();
+        return getDocumentList(result);
     }
 
     /**
@@ -156,6 +158,7 @@ public abstract class AbstractSolrService<T> {
     public int index(List<T> entities) {
         try {
             this.server.addBeans(entities);
+            this.server.commit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -163,6 +166,46 @@ public abstract class AbstractSolrService<T> {
         }
 
         return 0;
+    }
+
+    /**
+     * Check if the response contains facets. If that is true, it means it is a group by statement.
+     *
+     * If the facet information is return into FacetFields, the group by is done only on 1 term. If the facet information
+     * is returned into FacetPivotFields, the grouping is done on more than one terms. If there is no facet information
+     * return the result list for the QueryResponse.
+     * @param response              Query response.
+     * @return                      Solr document list.
+     */
+    private SolrDocumentList getDocumentList(QueryResponse response) {
+
+        SolrDocumentList solrDocumentList = null;
+        if (response.getFacetFields() != null) {
+            solrDocumentList = getDocumentListFacetFields(response);
+        } else if (response.getFacetPivot() != null) {
+            //ToDo implement this
+        } else {
+            solrDocumentList = response.getResults();
+        }
+
+        return solrDocumentList;
+    }
+
+    private SolrDocumentList getDocumentListFacetFields(QueryResponse response) {
+
+        SolrDocumentList documentList = new SolrDocumentList();
+        for (FacetField facetField : response.getFacetFields()) {
+
+            String key = facetField.getName();
+            for (FacetField.Count count : facetField.getValues()) {
+                SolrDocument solrDocument = new SolrDocument();
+                solrDocument.setField(key,count.getName());
+                solrDocument.setField("count", count.getCount());
+                documentList.add(solrDocument);
+            }
+        }
+
+        return documentList;
     }
 
 }
