@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Maps SearcheableVariant instances to VariantRecord
@@ -35,6 +36,11 @@ public class VariantMapper implements ResultMapper<VariantRecord> {
         List<SearcheableVariant> searcheableVariantList = binder.getBeans(SearcheableVariant.class, solrDocumentList);
 
         return toModelList(searcheableVariantList);
+    }
+
+    @Override
+    public List<VariantRecord> map(SolrDocumentList solrDocumentList, Map<String, String> aggregateFieldMap) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private List<VariantRecord> toModelList(List<SearcheableVariant> searcheableVariantList) {

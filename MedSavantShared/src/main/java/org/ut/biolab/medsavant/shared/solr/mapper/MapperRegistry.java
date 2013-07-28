@@ -22,6 +22,8 @@ public class MapperRegistry {
 
     private static VariantMapper variantMapper;
 
+    private static VariantCommentMapper variantCommentMapper;
+
     private static ResultRowMapper resultRowMapper;
 
     /**
@@ -33,6 +35,8 @@ public class MapperRegistry {
 
         if ("variant".equals(entity)) {
             return getVariantMapper();
+        } else if ("comment".equals(entity)) {
+            return getVariantCommentMapper();
         }
 
         return null;
@@ -48,6 +52,18 @@ public class MapperRegistry {
             variantMapper = new VariantMapper();
         }
         return variantMapper;
+    }
+
+    /**
+     * Return the variant comment mapper instances. Creates one if it doesn't yet exist.
+     * @return          The variant comment mapper instance.
+     */
+    private static VariantCommentMapper getVariantCommentMapper() {
+
+        if (variantCommentMapper == null) {
+            variantCommentMapper = new VariantCommentMapper();
+        }
+        return variantCommentMapper;
     }
 
     /**
