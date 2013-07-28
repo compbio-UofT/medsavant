@@ -91,10 +91,10 @@ public class SearcheableVariant {
         variantRecord.setFilter(StringUtils.join(filter, ","));
     }
 
-    @Field("zygostiy")
+    @Field("zygosity")
     public void setZygosity(String zygo) {
         for (VariantRecord.Zygosity zygosity : VariantRecord.Zygosity.values()) {
-            if (zygosity.toString().toLowerCase(Locale.ROOT).equals(zygo)) {
+            if (zygosity.toString().equals(zygo)) {
                 variantRecord.setZygosity(zygosity);
             }
         }
@@ -105,7 +105,7 @@ public class SearcheableVariant {
         variantRecord.setGenotype(genotype);
     }
 
-    @Field("info")
+    @Field("custom_info")
     public void setCustomInfo(String customInfo) {
         variantRecord.setCustomInfo(customInfo);
     }
