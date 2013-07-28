@@ -83,7 +83,9 @@ public class JPQLToSolrTranslator {
             tree.apply(parameterAnalyzer);
 
             parameterMap = parameterAnalyzer.getParameters();
+            String coreName = parameterAnalyzer.getCoreName();
             context.setParameters(parameterMap);
+            context.setCoreName(coreName);
         } catch (ParserException e) {
             LOG.error("Unable to parse string " + input, e);
         } catch (IOException e) {

@@ -94,6 +94,15 @@ public class AbstractSolrQueryTest {
     }
 
     @Test
+    public void testMinMaxParameters() throws QueryException {
+        Query query = queryManager.createQuery("select v.position, min(v.position), max(v.position) from Variant v");
+
+        List<ResultRow> variantRecordList = query.executeForRows();
+
+        System.out.print(variantRecordList);
+    }
+
+    @Test
     public void testComments() throws QueryException {
         String statement = "Select c from Comment c where " +
                 "c.project_id = :projectId AND " +

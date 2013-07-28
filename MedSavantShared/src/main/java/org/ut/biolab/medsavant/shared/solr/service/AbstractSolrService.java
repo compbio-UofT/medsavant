@@ -22,16 +22,20 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FieldStatsInfo;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * //FIXME this class is more like a DAO than a service, refactor
@@ -97,6 +101,18 @@ public abstract class AbstractSolrService<T> {
         }
 
         return getDocumentList(result);
+    }
+
+    public SolrDocumentList search(SolrQuery solrQuery, Map<String, String> aggregates) {
+        QueryResponse result = null;
+
+        try {
+            result = this.server.query(solrQuery);
+        } catch (SolrServerException e) {
+            LOG.error("Error executing query " + solrQuery.toString());
+        }
+
+        return getDocumentList(result, aggregates);
     }
 
     /**
@@ -179,19 +195,24 @@ public abstract class AbstractSolrService<T> {
      */
     private SolrDocumentList getDocumentList(QueryResponse response) {
 
+        return getDocumentList(response, new HashMap<String, String>());
+    }
+
+    private SolrDocumentList getDocumentList(QueryResponse response, Map<String, String> aggregates) {
+
         SolrDocumentList solrDocumentList = null;
         if (response.getFacetFields() != null) {
-            solrDocumentList = getDocumentListFacetFields(response);
+            solrDocumentList = getDocumentListFacetFields(response, aggregates);
         } else if (response.getFacetPivot() != null) {
             //ToDo implement this
         } else {
-            solrDocumentList = response.getResults();
+            solrDocumentList = addAggregates(response.getResults(), response.getFieldStatsInfo(), aggregates);
         }
 
         return solrDocumentList;
     }
 
-    private SolrDocumentList getDocumentListFacetFields(QueryResponse response) {
+    private SolrDocumentList getDocumentListFacetFields(QueryResponse response, Map<String, String> aggregates) {
 
         SolrDocumentList documentList = new SolrDocumentList();
         for (FacetField facetField : response.getFacetFields()) {
@@ -200,12 +221,52 @@ public abstract class AbstractSolrService<T> {
             for (FacetField.Count count : facetField.getValues()) {
                 SolrDocument solrDocument = new SolrDocument();
                 solrDocument.setField(key,count.getName());
-                solrDocument.setField("count", count.getCount());
+                solrDocument.setField("count", new Integer((int) count.getCount()));
+
+                if (aggregates != null) {
+
+
+                    for (Map.Entry<String, String> item : aggregates.entrySet()) {
+
+                        Map<String, FieldStatsInfo> stats = response.getFieldStatsInfo();
+
+                        if (stats.containsKey(item.getKey())) {
+                            FieldStatsInfo fieldStatsInfo = stats.get(item.getValue());
+                            if ("min".equals(item.getKey())) {
+                                solrDocument.addField(item.getKey(), fieldStatsInfo.getMin());
+                            } else if ("max".equals(item.getKey())) {
+                                solrDocument.addField(item.getKey(), fieldStatsInfo.getMax());
+                            }
+                        }
+                    }
+                }
+
                 documentList.add(solrDocument);
             }
         }
 
         return documentList;
     }
+
+    private SolrDocumentList addAggregates(SolrDocumentList solrDocumentList, Map<String, FieldStatsInfo> stats, Map<String, String> aggregates) {
+        if (aggregates != null) {
+            for (SolrDocument solrDocument : solrDocumentList) {
+                for (Map.Entry<String, String> item : aggregates.entrySet()) {
+                    String fieldValue = FieldMappings.mapToSolrField(item.getValue(), getName());
+
+                    if (stats.containsKey(fieldValue)) {
+                        FieldStatsInfo fieldStatsInfo = stats.get(fieldValue);
+                        if ("min".equals(item.getKey())) {
+                            solrDocument.addField(item.getKey(), fieldStatsInfo.getMin());
+                        } else if ("max".equals(item.getKey())) {
+                            solrDocument.addField(item.getKey(), fieldStatsInfo.getMax());
+                        }
+                    }
+                }
+            }
+        }
+        return solrDocumentList;
+    }
+
 
 }

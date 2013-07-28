@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
+import org.ut.biolab.medsavant.shared.query.parser.node.ASingleFromList;
 import org.ut.biolab.medsavant.shared.query.parser.node.TInputParameter;
 
 import java.util.HashMap;
@@ -28,6 +29,8 @@ public class NamedParameterAnalyzer extends DepthFirstAdapter {
 
     private Map<String, Object> parameters;
 
+    private String coreName;
+
     private static final String NAMED_PARAM_DELIM = ":";
 
     private static final String POSITIONAL_PARAM_DELIM = "?";
@@ -38,6 +41,16 @@ public class NamedParameterAnalyzer extends DepthFirstAdapter {
         if (inputParamString.startsWith(NAMED_PARAM_DELIM) || inputParamString.startsWith(POSITIONAL_PARAM_DELIM)) {
             parameters.put(inputParamString.substring(1).trim(), "");
         }
+    }
+
+    @Override
+    public void inASingleFromList(ASingleFromList node) {
+        CoreAnalyzer coreAnalyzer = new CoreAnalyzer();
+        node.apply(coreAnalyzer);
+
+        coreName = coreAnalyzer.getCoreName();
+
+        super.outASingleFromList(node);
     }
 
     public NamedParameterAnalyzer() {
@@ -54,5 +67,13 @@ public class NamedParameterAnalyzer extends DepthFirstAdapter {
 
     public void setParameters(HashMap<String, Object> parameters) {
         this.parameters = parameters;
+    }
+
+    public String getCoreName() {
+        return coreName;
+    }
+
+    public void setCoreName(String coreName) {
+        this.coreName = coreName;
     }
 }

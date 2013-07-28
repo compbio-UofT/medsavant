@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.AIddotSingleValuedAssociationPathExpression;
 import org.ut.biolab.medsavant.shared.query.parser.node.ASingleValuedAssociationField;
@@ -22,6 +23,7 @@ public class EntityPropertyAnalyzer extends DepthFirstAdapter {
     @Override
     public void caseAIddotSingleValuedAssociationPathExpression(AIddotSingleValuedAssociationPathExpression node) {
         property = node.getSingleValuedAssociationField().toString().trim().toLowerCase(Locale.ROOT);
+
     }
 
     public String getProperty() {

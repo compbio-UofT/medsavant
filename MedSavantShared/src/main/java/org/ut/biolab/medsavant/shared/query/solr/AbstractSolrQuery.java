@@ -38,6 +38,14 @@ public class AbstractSolrQuery extends AbstractQuery {
         executor = new SolrQueryExecutor();
     }
 
+    public Map<String, String> getAggregateFields() {
+        return aggregateFields;
+    }
+
+    public void setAggregateFields(Map<String, String> aggregateFields) {
+        this.aggregateFields = aggregateFields;
+    }
+
     @Override
     public void setStatement(String statement) {
         super.setStatement(statement);

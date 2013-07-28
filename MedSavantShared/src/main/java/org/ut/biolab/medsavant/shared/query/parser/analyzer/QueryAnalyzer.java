@@ -97,7 +97,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
     @Override
     public void inASelectClause(ASelectClause node) {
         LOG.debug("Select from single: " + node.toString());
-        ResultFieldAnalyzer resultFieldAnalyzer = new ResultFieldAnalyzer();
+        ResultFieldAnalyzer resultFieldAnalyzer = new ResultFieldAnalyzer(context);
 
         node.apply(resultFieldAnalyzer);
 

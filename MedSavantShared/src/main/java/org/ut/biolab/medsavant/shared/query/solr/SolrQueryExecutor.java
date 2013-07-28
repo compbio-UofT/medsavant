@@ -67,7 +67,7 @@ public class SolrQueryExecutor implements QueryExecutor {
 
         try {
             solrService = SolrServiceRegistry.getService(entityName);
-            SolrDocumentList results = solrService.search(solrQuery);
+            SolrDocumentList results = solrService.search(solrQuery, abstractSolrQuery.getAggregateFields());
             ResultMapper mapper = MapperRegistry.getResultRowMapper();
             return mapper.map(results);
         } catch (InitializationException e) {

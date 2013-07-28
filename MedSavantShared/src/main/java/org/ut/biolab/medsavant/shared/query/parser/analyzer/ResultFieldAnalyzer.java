@@ -15,6 +15,8 @@
  */
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
+import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 
@@ -28,6 +30,13 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
     private List<String> field;
 
     private Map<String, String> aggregates;
+
+    private QueryContext queryContext;
+
+    public ResultFieldAnalyzer(QueryContext queryContext) {
+        this();
+        this.queryContext = queryContext;
+    }
 
     public ResultFieldAnalyzer() {
         this.field = new ArrayList<String>();
@@ -54,9 +63,21 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
 
         EntityPropertyAnalyzer epa = new EntityPropertyAnalyzer();
         node.apply(epa);
-        String entity = epa.getProperty();
+        String entity = FieldMappings.mapToSolrField(epa.getProperty(),queryContext.getCoreName());
 
         aggregates.put(count, entity);
+    }
+
+    @Override
+    public void caseAFuncAggregateExpression(AFuncAggregateExpression node) {
+
+        String aggregateFunc = node.getAggregateFunc().toString().toLowerCase(Locale.ROOT).trim();
+
+        EntityPropertyAnalyzer epa = new EntityPropertyAnalyzer();
+        node.apply(epa);
+        String entity = FieldMappings.mapToSolrField(epa.getProperty(),queryContext.getCoreName());
+
+        aggregates.put(aggregateFunc, entity);
     }
 
     public List<String> getField() {
@@ -77,5 +98,13 @@ public class ResultFieldAnalyzer extends DepthFirstAdapter{
 
     public void setAggregates(Map<String, String> aggregates) {
         this.aggregates = aggregates;
+    }
+
+    public QueryContext getQueryContext() {
+        return queryContext;
+    }
+
+    public void setQueryContext(QueryContext queryContext) {
+        this.queryContext = queryContext;
     }
 }

@@ -12,8 +12,15 @@ public class FieldMappings {
     public static String mapToSolrField(String value, String entityName) {
         Map<String, String> mappings = FieldMappings.getMappings(entityName);
 
-        String solrFieldName = mappings.get(value);
-        return (solrFieldName == null) ? value : solrFieldName;
+        String s = null;
+        if (mappings != null) {
+            String solrFieldName = mappings.get(value);
+            s =  (solrFieldName == null) ? value : solrFieldName;
+        } else {
+            s = value;
+        }
+
+        return s;
     }
 
     public static Map<String, String> getMappings(String entity) {
