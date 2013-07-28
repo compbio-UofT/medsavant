@@ -4,12 +4,15 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * Comments about a certain variant.
  */
 public class SearcheableVariantComment {
 
+    private UUID uuid;
     private int uploadId;
     private int fileId;
     private int variantId;
@@ -21,13 +24,21 @@ public class SearcheableVariantComment {
 
     private VariantComment variantComment;
 
+    public SearcheableVariantComment() {
+
+    }
     public SearcheableVariantComment(VariantComment variantComment) {
         this.variantComment = variantComment;
+        this.addUUID();
     }
 
     public VariantComment getVariantComment() {
         variantComment =  new VariantComment(projectId, referenceId, uploadId, fileId, variantId, user, description, timestamp);
         return variantComment;
+    }
+
+    private void addUUID() {
+        this.uuid = UUID.randomUUID();
     }
 
     @Field("upload_id")
@@ -56,8 +67,9 @@ public class SearcheableVariantComment {
     }
 
     @Field("timestamp")
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
+    public void setTimestamp(Date timestamp) {
+        //Solr does not support java.sql.Timestamp
+        this.timestamp =  new Timestamp(timestamp.getTime());
     }
 
     @Field("project_id")
@@ -70,6 +82,10 @@ public class SearcheableVariantComment {
         this.referenceId = referenceId;
     }
 
+    @Field("uuid")
+    public void setUuid(String uuid) {
+        this.uuid = UUID.fromString(uuid);
+    }
 
     public int getUploadId() {
         return variantComment.getUploadId();
@@ -102,4 +118,9 @@ public class SearcheableVariantComment {
     public int getReferenceId() {
         return variantComment.getReferenceId();
     }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
 }

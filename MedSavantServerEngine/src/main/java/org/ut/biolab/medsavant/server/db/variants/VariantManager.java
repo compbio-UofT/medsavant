@@ -61,9 +61,14 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.model.solr.SearcheableVariantComment;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrEntityManager;
 import org.ut.biolab.medsavant.shared.query.*;
+import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.solr.SolrQueryManager;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -100,9 +105,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     //Todo make singleton
     private QueryManager queryManager;
+    private EntityManager entityManager;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
         queryManager = new SolrQueryManager();
+        entityManager = new SolrEntityManager();
     }
 
     public static synchronized VariantManager getInstance() throws RemoteException, SessionExpiredException {
@@ -216,7 +223,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public int uploadVariants(String sessID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws Exception {
-        //ToDo
+        //FIXME update this to contain abstract code
         LOG.info("Importing variants by transferring from client");
 
         NetworkManager netMgr = NetworkManager.getInstance();
@@ -241,7 +248,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, SessionExpiredException, IOException, Exception {
-        //ToDo
+        //FIXME update this to contain abstract code
         LOG.info("Importing variants already stored on server in dir " + dirContainingVCFs.getAbsolutePath());
 
         if (!dirContainingVCFs.exists()) {
@@ -476,7 +483,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             cond.append(StringUtils.join(conditions[i]," AND "));
         }
 
-        if (!(cond.toString().trim().equals("null") || "".equals(cond))) {
+        if (!("(1 = 1)".equals(cond.toString()) || "null".equals(cond.toString()) || "".equals(cond.toString()))) {
             statement.append(" where ");
             statement.append(cond);
         }
@@ -1220,64 +1227,36 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<VariantComment> getVariantComments(String sid, int projectId, int referenceId, int uploadId, int fileID, int variantID) throws SQLException, RemoteException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        String statement = "Select c from Comment c where " +
+                "c.project_id = :projectId AND " +
+                "c.reference_id = :referenceId AND " +
+                "c.upload_id = :uploadId AND " +
+                "c.file_id = :fileId AND " +
+                "c.variant_id = :variantId";
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", projectId);
+        query.setParameter("referenceId", referenceId);
+        query.setParameter("uploadId", uploadId);
+        query.setParameter("fileId", fileID);
+        query.setParameter("variantId", variantID);
 
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addColumns(
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantID));
-
-        //System.out.println(q.toString());
-
-        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
-
-        List<VariantComment> result = new ArrayList<VariantComment>();
-        while (rs.next()) {
-            result.add(new VariantComment(
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
-                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_USER),
-                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                    rs.getTimestamp(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP)));
-        }
-        return result;
+        return query.execute();
     }
 
     @Override
     public void addVariantComments(String sid, List<VariantComment> variants) throws SQLException, RemoteException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-
-        Connection c = ConnectionController.connectPooled(sid);
-        c.setAutoCommit(false);
-
-        for (VariantComment variant : variants) {
-            InsertQuery q = new InsertQuery(table.getTable());
-            List<DbColumn> columnsList = table.getColumns();
-            Column[] columnsArray = new Column[columnsList.size()];
-            columnsArray = columnsList.toArray(columnsArray);
-            q.addColumns(columnsArray, variant.toArray(variant.getProjectId(), variant.getReferenceId()));
-            c.createStatement().executeUpdate(q.toString());
+        List<SearcheableVariantComment> commentList = new ArrayList<SearcheableVariantComment>(variants.size());
+        for (VariantComment variantComment : variants) {
+            SearcheableVariantComment comment = new SearcheableVariantComment(variantComment);
+            commentList.add(comment);
         }
 
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
+        try {
+            entityManager.persistAll(commentList);
+        } catch (InitializationException e) {
+            LOG.error("Failed to persist variant comments.");
+        }
     }
 
 
@@ -1518,8 +1497,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         result[8] = variantRecord.getAlt();
         result[9] = variantRecord.getQual();
         result[10] = variantRecord.getFilter();
-        result[11] = variantRecord.getVariantType(variantRecord.getRef(), variantRecord.getAlt());
-        result[12] = variantRecord.getZygosity();
+        result[11] = variantRecord.getVariantType(variantRecord.getRef(), variantRecord.getAlt()).toString();
+        result[12] = variantRecord.getZygosity().toString();
         result[13] = variantRecord.getGenotype();
         result[14] = variantRecord.getCustomInfo();
         result[15] = variantRecord.getAncestralAllele();

@@ -92,4 +92,22 @@ public class AbstractSolrQueryTest {
 
         System.out.print(variantRecordList);
     }
+
+    @Test
+    public void testComments() throws QueryException {
+        String statement = "Select c from Comment c where " +
+                "c.project_id = :projectId AND " +
+                "c.reference_id = :referenceId AND " +
+                "c.upload_id = :uploadId AND " +
+                "c.file_id = :fileId AND " +
+                "c.variant_id = :variantId";
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", 1);
+        query.setParameter("referenceId", 3);
+        query.setParameter("uploadId", 18);
+        query.setParameter("fileId", 1);
+        query.setParameter("variantId", 7);
+
+        List<VariantComment> comments =  query.execute();
+    }
 }
