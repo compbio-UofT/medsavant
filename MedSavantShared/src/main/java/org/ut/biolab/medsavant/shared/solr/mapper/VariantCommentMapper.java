@@ -27,7 +27,7 @@ public class VariantCommentMapper implements ResultMapper<VariantComment> {
 
     @Override
     public List<VariantComment> map(SolrDocumentList solrDocumentList, Map<String, String> aggregateFieldMap) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        throw new UnsupportedOperationException();
     }
 
     private List<VariantComment> toModelList(List<SearcheableVariantComment> searcheableVariantCommentList) {

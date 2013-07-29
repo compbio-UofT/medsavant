@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.shared.solr.service;
 
 import org.ut.biolab.medsavant.shared.model.solr.SearcheableVariantComment;
+import org.ut.biolab.medsavant.shared.util.Entity;
 
 
 /**
@@ -23,14 +24,9 @@ import org.ut.biolab.medsavant.shared.model.solr.SearcheableVariantComment;
  */
 public class VariantCommentService extends AbstractSolrService<SearcheableVariantComment> {
 
-    /**
-     * Collection name.
-     */
-    private static final String NAME = "comment";
-
     @Override
     protected String getName() {
-        return NAME;
+        return Entity.COMMENT;
     }
 
 

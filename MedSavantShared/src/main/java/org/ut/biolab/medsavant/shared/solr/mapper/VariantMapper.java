@@ -40,7 +40,7 @@ public class VariantMapper implements ResultMapper<VariantRecord> {
 
     @Override
     public List<VariantRecord> map(SolrDocumentList solrDocumentList, Map<String, String> aggregateFieldMap) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        throw new UnsupportedOperationException();
     }
 
     private List<VariantRecord> toModelList(List<SearcheableVariant> searcheableVariantList) {
