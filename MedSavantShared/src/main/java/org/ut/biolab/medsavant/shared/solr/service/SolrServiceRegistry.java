@@ -15,8 +15,9 @@
  */
 package org.ut.biolab.medsavant.shared.solr.service;
 
-import org.ut.biolab.medsavant.shared.model.solr.SearcheableVariantComment;
+import org.ut.biolab.medsavant.shared.model.solr.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.util.Entity;
 
 
 /**
@@ -29,6 +30,18 @@ public class SolrServiceRegistry {
 
     private static AbstractSolrService variantCommentService;
 
+    private static AbstractSolrService variantFileService;
+
+    private static AbstractSolrService patientService;
+
+    private static AbstractSolrService cohortService;
+
+    private static AbstractSolrService annotationLogService;
+
+    private static AbstractSolrService generalLogService;
+
+    private static AbstractSolrService projectDetailsService;
+
     /**
      * Get the appropriate solr service based on the entity string.
      * @param entityName            The entity name.
@@ -36,12 +49,20 @@ public class SolrServiceRegistry {
      */
     public static AbstractSolrService getService(String entityName) throws InitializationException {
 
-        AbstractSolrService service = null;
-
-        if ("variant".equals(entityName)) {
+        if (Entity.VARIANT.equals(entityName)) {
             return getVariantService();
-        } else if ("comment".equals(entityName)) {
+        } else if (Entity.COMMENT.equals(entityName)) {
             return getVariantCommentService();
+        } else if (Entity.ANNOTATION_LOG.equals(entityName)) {
+            return getAnnotationLogService();
+        } else if (Entity.GENERAL_LOG.equals(entityName)) {
+            return getGeneralLogService();
+        } else if (Entity.PATIENT.equals(entityName)) {
+            return getPatientService();
+        } else if (Entity.COHORT.equals(entityName)) {
+            return getCohortService();
+        }  else if (Entity.PROJECT.equals(entityName)) {
+            return getProjectDetailsService();
         }
 
         return null;
@@ -49,9 +70,19 @@ public class SolrServiceRegistry {
 
     public static AbstractSolrService getService(Class clazz) throws InitializationException {
 
-        AbstractSolrService service = null;
-
         if (SearcheableVariantComment.class.getName().equals(clazz.getName())) {
+            return getVariantCommentService();
+        } else if (SearcheableAnnotationLog.class.getName().equals(clazz.getName())) {
+            return getAnnotationLogService();
+        } else if (SearcheableGeneralLog.class.getName().equals(clazz.getName())) {
+            return getGeneralLogService();
+        } else if (SearcheablePatient.class.getName().equals(clazz.getName())) {
+            return getPatientService();
+        } else if (SearcheableProjectDetails.class.getName().equals(clazz.getName())) {
+            return getProjectDetailsService();
+        } else if (SearcheableCohort.class.getName().equals(clazz.getName())) {
+            return getCohortService();
+        } else if (SearcheableVariant.class.getName().equals(clazz.getName())) {
             return getVariantCommentService();
         }
 
@@ -74,4 +105,50 @@ public class SolrServiceRegistry {
         return variantCommentService;
     }
 
+    public static AbstractSolrService getVariantFileService() throws InitializationException {
+        if (variantFileService == null) {
+            variantFileService =  new VariantFileService();
+            variantFileService.initialize();
+        }
+        return variantFileService;
+    }
+
+    public static AbstractSolrService getPatientService() throws InitializationException {
+        if (patientService == null) {
+            patientService =  new PatientService();
+            patientService.initialize();
+        }
+        return patientService;
+    }
+
+    public static AbstractSolrService getCohortService() {
+        if (cohortService == null) {
+            cohortService =  new CohortService();
+        }
+        return cohortService;
+    }
+
+    public static AbstractSolrService getAnnotationLogService() throws InitializationException {
+        if (annotationLogService == null) {
+            annotationLogService =  new AnnotationLogService();
+            annotationLogService.initialize();
+        }
+        return annotationLogService;
+    }
+
+    public static AbstractSolrService getGeneralLogService() throws InitializationException {
+        if (generalLogService == null) {
+            generalLogService =  new GeneralLogService();
+            generalLogService.initialize();
+        }
+        return generalLogService;
+    }
+
+    public static AbstractSolrService getProjectDetailsService() throws InitializationException {
+        if (projectDetailsService == null) {
+            projectDetailsService =  new ProjectDetailsService();
+            projectDetailsService.initialize();
+        }
+        return projectDetailsService;
+    }
 }
