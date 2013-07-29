@@ -106,6 +106,7 @@ Tokens
     order = o r d e r;
     outer = o u t e r;
     select = s e l e c t;
+    delete = d e l e t e;
     size = s i z e;
     sqrt = s q r t;
     substring = s u b s t r i n g;
@@ -136,10 +137,14 @@ Ignored Tokens
 Productions
 
 statement =
-    select_statement;
+    {sel} select_statement |
+    {del} delete_statement;
 
 select_statement =
     select_clause from_clause where_clause? groupby_clause? having_clause? orderby_clause?;
+
+delete_statement =
+    delete_clause where_clause?;
 
 from_clause =
     from from_list;
@@ -155,6 +160,12 @@ range_variable_declaration =
 
 select_clause =
     select distinct? select_list;
+
+delete_clause =
+    delete from abstract_schema_name delete_variable_remainder?;
+
+delete_variable_remainder =
+    as? variable;
 
 select_list =
     {single} select_expression |
