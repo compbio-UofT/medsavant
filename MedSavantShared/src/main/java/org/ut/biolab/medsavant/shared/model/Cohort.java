@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.shared.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -14,9 +15,18 @@ public class Cohort implements Serializable, Comparable {
 
     private int id;
     private String name;
+    private List<Integer> patientIds;
 
     public Cohort(int id, String name){
         this.id = id;
+        this.name = name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -28,6 +38,14 @@ public class Cohort implements Serializable, Comparable {
         return name;
     }
 
+    public List<Integer> getPatientIds() {
+        return patientIds;
+    }
+
+    public void setPatientIds(List<Integer> patientIds) {
+        this.patientIds = patientIds;
+    }
+
     @Override
     public String toString() {
         return getName();
@@ -37,4 +55,5 @@ public class Cohort implements Serializable, Comparable {
     public int compareTo(Object t) {
         return this.getName().compareTo(t.toString());
     }
+
 }
