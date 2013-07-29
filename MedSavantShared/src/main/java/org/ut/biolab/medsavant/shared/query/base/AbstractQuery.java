@@ -70,6 +70,11 @@ public abstract class AbstractQuery implements Query {
     }
 
     @Override
+    public void executeDelete() {
+        executor.executeDelete(this);
+    }
+
+    @Override
     public long count() {
         return executor.count(this);
     }

@@ -1,12 +1,16 @@
 package org.ut.biolab.medsavant.shared.query.solr;
 
+import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrEntityManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryException;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 import java.util.List;
@@ -15,9 +19,12 @@ public class AbstractSolrQueryTest {
 
     private QueryManager queryManager;
 
+    private EntityManager entityManager;
+
     @Before
     public void initialize() {
         queryManager = new SolrQueryManager();
+        entityManager = new SolrEntityManager();
     }
 
     @Test
@@ -100,6 +107,20 @@ public class AbstractSolrQueryTest {
         List<ResultRow> variantRecordList = query.executeForRows();
 
         System.out.print(variantRecordList);
+    }
+
+    @Test
+    public void testDelete() throws InitializationException {
+
+        Query query = queryManager.createQuery("select c from Comment c");
+        List<VariantComment> comments = query.execute();
+
+        query = queryManager.createQuery("delete from Comment c");
+        query.executeDelete();
+        List<VariantComment> comments2 = query.execute();
+
+        entityManager.persistAll(comments);
+        Assert.assertEquals(comments2.size(), 0);
     }
 
     @Test

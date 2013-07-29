@@ -39,6 +39,12 @@ public interface QueryExecutor {
     public List<ResultRow> executeForRows(Query query);
 
     /**
+     * Execute the current delete query.
+     * @param query             A delete query.
+     */
+    public void executeDelete(Query query);
+
+    /**
      * Execute the current query and return the number of results.
      * @param query             A query that needs to be executed.
      * @return                  The number of results
