@@ -185,6 +185,51 @@ public abstract class AbstractSolrService<T> {
     }
 
     /**
+     * Delete some entities by a query.
+     * @param solrQuery
+     */
+    public void delete(SolrQuery solrQuery) {
+        try {
+            this.server.deleteByQuery(solrQuery.getQuery());
+            this.server.commit();
+        } catch (IOException e) {
+            LOG.error("Cannot connect to server");
+        } catch (SolrServerException e) {
+            LOG.error("Cannot execute query");
+        }
+    }
+
+    /**
+     * Delete a set of documents by their ids.
+     * @param ids                   A list of document ids that will be removed from the index.
+     */
+    public void delete(List<String> ids) {
+        try {
+            this.server.deleteById(ids);
+            this.server.commit();
+        } catch (IOException e) {
+            LOG.error("Cannot connect to server");
+        } catch (SolrServerException e) {
+            LOG.error("Cannot execute query");
+        }
+    }
+
+    /**
+     * Delete a document by its id.
+     * @param id                    The id of the document to be removed from the index.
+     */
+    public void delete(String id) {
+        try {
+            this.server.deleteById(id);
+            this.server.commit();
+        } catch (IOException e) {
+            LOG.error("Cannot connect to server");
+        } catch (SolrServerException e) {
+            LOG.error("Cannot execute query");
+        }
+    }
+
+    /**
      * Check if the response contains facets. If that is true, it means it is a group by statement.
      *
      * If the facet information is return into FacetFields, the group by is done only on 1 term. If the facet information

@@ -78,6 +78,22 @@ public class SolrQueryExecutor implements QueryExecutor {
     }
 
     @Override
+    public void executeDelete(Query query) {
+        AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
+        SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
+
+        String entityName = abstractSolrQuery.getEntity();
+        AbstractSolrService solrService = null;
+
+        try {
+            solrService = SolrServiceRegistry.getService(entityName);
+            solrService.delete(solrQuery);
+        } catch (InitializationException e) {
+            LOG.error("Error retrieving necessary Solr service ", e);
+        }
+    }
+
+    @Override
     public long count(Query query) {
         AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
         SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
