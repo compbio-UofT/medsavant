@@ -39,6 +39,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.testng.annotations.Test;
+import org.ut.biolab.medsavant.shard.common.MetaEntity;
 
 /**
  * Tests to verify sharding is working.
@@ -46,7 +47,8 @@ import org.testng.annotations.Test;
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class VariantShardTest {
+public class VariantShardTest extends AbstractShardTest {
+
     @Test
     public void testSelectVariantsWithRestrictions() {
         Session session = ShardedConnectionController.openSession();
@@ -57,7 +59,7 @@ public class VariantShardTest {
         // session.createQuery("select p from Variant p").setMaxResults(10).list();
 
         Criteria crit = session.createCriteria(Variant.class);
-        crit.add(Restrictions.lt(Variant.id, 1));
+        crit.add(Restrictions.lt(VariantMapping.getIdColumn(), 1));
         List<Variant> variantList = crit.list();
 
         Iterator<Variant> iterator = variantList.iterator();
@@ -72,7 +74,7 @@ public class VariantShardTest {
     public void testCountVariants() {
         Session s = ShardedConnectionController.openSession();
 
-        Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(Variant.id));
+        Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
         ShardedConnectionController.closeSession(s);
@@ -107,5 +109,25 @@ public class VariantShardTest {
             System.out.println(v);
         }
         ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
+    public void testAttributes() {
+        MetaEntity<Variant> m = new MetaEntity<Variant>(Variant.class);
+        for (String s : m.getAttributeNames()) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
+    public void testColumns() {
+        for (String s : VariantMapping.getColumnNames()) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
+    public void testId() {
+        System.out.println(VariantMapping.getIdColumn());
     }
 }
