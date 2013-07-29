@@ -47,6 +47,7 @@ public class VariantShardUtil {
     private static final Integer VIRTUAL_SHARD_NO = 32;
     private static Integer shardNo;
     private static SessionFactory sessionFactory;
+    private static Configuration config;
 
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
@@ -64,7 +65,7 @@ public class VariantShardUtil {
     static {
         try {
             // initial config
-            Configuration config = new Configuration();
+            config = new Configuration();
             config.configure(RESOURCE_PREFIX + "0" + RESOURCE_SUFFIX);
             config.addResource("variant.hbm.xml");
 
@@ -111,4 +112,9 @@ public class VariantShardUtil {
     static Integer getShardNo() {
         return shardNo;
     }
+
+    public static Configuration getConfig() {
+        return config;
+    }
+
 }
