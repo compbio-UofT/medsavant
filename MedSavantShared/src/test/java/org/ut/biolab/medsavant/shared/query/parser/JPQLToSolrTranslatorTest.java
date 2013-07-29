@@ -85,4 +85,18 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "(pos:[10 TO 10000]) OR dna_id:'NA*'");
     }
 
+    @Test
+    public void testDeleteSimple() {
+        SolrQuery resultedQuery = translator.translate("delete from Variant v");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "(pos:[10 TO 10000]) OR dna_id:'NA*'");
+    }
+
+    @Test
+    public void testDeleteParameters() {
+        SolrQuery resultedQuery = translator.translate("delete from Variant v where v.dna_id = 'NA00002'");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "dna_id:NA'");
+    }
+
 }
