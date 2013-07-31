@@ -38,6 +38,7 @@ public class MapperRegistry {
 
     private static GeneralLogMapper generalLogMapper;
 
+    private static VariantFileMapper variantFileMapper;
 
     /**
      * Get the appropriate mapper based on the entity name.
@@ -60,6 +61,8 @@ public class MapperRegistry {
             return getCohortMapper();
         }  else if (Entity.PROJECT.equals(entity)) {
             return getProjectMapper();
+        }  else if (Entity.VARIANT_FILE.equals(entity)) {
+            return getVariantFileMapper();
         }
 
         return null;
@@ -153,6 +156,18 @@ public class MapperRegistry {
             resultRowMapper = new ResultRowMapper();
         }
         return resultRowMapper;
+    }
+
+
+    /**
+     * Return the variant file mapper instance. Creates one if it doesn't yet exist.
+     * @return          The variant file mapper instance.
+     */
+    private static ResultMapper getVariantFileMapper() {
+        if (variantFileMapper == null) {
+            variantFileMapper = new VariantFileMapper();
+        }
+        return variantFileMapper;
     }
 
 }

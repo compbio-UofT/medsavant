@@ -63,6 +63,8 @@ public class SolrServiceRegistry {
             return getCohortService();
         }  else if (Entity.PROJECT.equals(entityName)) {
             return getProjectDetailsService();
+        } else if (Entity.VARIANT_FILE.equals(entityName)) {
+            return getVariantFileService();
         }
 
         return null;
@@ -84,6 +86,8 @@ public class SolrServiceRegistry {
             return getCohortService();
         } else if (SearcheableVariant.class.getName().equals(clazz.getName())) {
             return getVariantCommentService();
+        } else if (SearcheableVariantFile.class.getName().equals(clazz.getName())) {
+            return getVariantFileService();
         }
 
         return null;

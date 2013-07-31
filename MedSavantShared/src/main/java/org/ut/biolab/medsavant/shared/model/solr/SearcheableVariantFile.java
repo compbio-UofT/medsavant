@@ -53,7 +53,7 @@ public class SearcheableVariantFile {
     }
 
     @Field("date")
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date.toString();
     }
 
@@ -82,11 +82,13 @@ public class SearcheableVariantFile {
         return variantFile.getUser();
     }
 
+
     public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
+    @Field("uuid")
+    public void setUuid(String uuid) {
+        this.uuid = UUID.fromString(uuid);
     }
 }
