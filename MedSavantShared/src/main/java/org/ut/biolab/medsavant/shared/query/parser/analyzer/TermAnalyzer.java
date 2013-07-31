@@ -51,6 +51,17 @@ public class TermAnalyzer extends DepthFirstAdapter {
     }
 
     @Override
+    public void caseAInExpression(AInExpression node) {
+
+        if (node.getIn() != null) {
+            String inList = node.getInList().toString().replace("'", "").replace(",", "OR");
+            term = node.getLeftBracketProd().toString() + inList + node.getRightBracketProd();
+            query.append(term.trim());
+        }
+
+    }
+
+    @Override
     public void inASingleValuedAssociationField(ASingleValuedAssociationField node) {
         TIdentificationVariable tId = node.getIdentificationVariable();
         term = FieldMappings.mapToSolrField(tId.toString().trim(), context.getCoreName());

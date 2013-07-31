@@ -99,4 +99,11 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "dna_id:NA'");
     }
 
+    @Test
+    public void testInExpression() {
+        SolrQuery resultedQuery = translator.translate("delete from Variant v where v.dna_id IN ('NA00001', 'NA00002', 'NA00003') ");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "dna_id:(NA00001 OR NA00002 OR NA00003)");
+    }
+
 }
