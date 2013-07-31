@@ -227,7 +227,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         setIconImage(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER).getImage());
 
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(500, 500));
+        setMinimumSize(new Dimension(550, 550));
 
         view = new AnimatablePanel();
         view.setDoubleBuffered(true);

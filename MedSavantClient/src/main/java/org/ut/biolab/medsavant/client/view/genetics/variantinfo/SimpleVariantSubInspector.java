@@ -28,9 +28,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-
-import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.shared.model.Gene;
@@ -66,10 +63,14 @@ public class SimpleVariantSubInspector extends SubInspector {
     public SimpleVariantSubInspector() {
     }
 
-    public Gene getSelectedGene(){
+    public SimpleVariant getSimpleVariant() {
+        return selectedVariant;
+    }
+
+    public Gene getSelectedGene() {
         return (Gene) geneBox.getSelectedItem();
     }
-    
+
     public void setGeneListener(Listener<Object> listener) {
         this.geneListener = listener;
     }
@@ -275,7 +276,7 @@ public class SimpleVariantSubInspector extends SubInspector {
             return;
         }
 
-        selectedVariant = r;                
+        selectedVariant = r;
         p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.pos));
         p.setValue(KEY_REF, r.ref);
         p.setValue(KEY_ALT, r.alt);

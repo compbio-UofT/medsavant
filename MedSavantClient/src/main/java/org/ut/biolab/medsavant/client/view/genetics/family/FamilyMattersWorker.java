@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,8 +25,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -36,31 +33,26 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.patient.PedigreeFields;
-import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.Gene;
-import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.Notification;
+import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.component.StripyTable;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.IncludeExcludeStep;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep.InheritanceModel;
 import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.ZygosityStep;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.ZygosityStepViewGenerator;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
 /**
@@ -133,13 +125,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                         geneStr = geneStr.substring(0, geneStr.length() - 2);
 
                         rows.add(new Object[]{
-                                    v.chr,
-                                    v.pos,
-                                    v.ref,
-                                    v.alt,
-                                    v.type,
-                                    result.get(v).toString(),//.replaceAll("\"", ""),//.replaceFirst("\[", "").replaceFirst("\]", ""),
-                                    geneStr});
+                            v.chr,
+                            v.pos,
+                            v.ref,
+                            v.alt,
+                            v.type,
+                            result.get(v).toString(),//.replaceAll("\"", ""),//.replaceFirst("\[", "").replaceFirst("\]", ""),
+                            geneStr});
                     }
 
 
@@ -159,7 +151,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
         };
 
-        final SearchableTablePanel stp =
+        final SearchableTablePanel stp =       
                 new SearchableTablePanel(
                 pageName,
                 columnNames,
@@ -172,8 +164,17 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 SearchableTablePanel.TableSelectionType.ROW,
                 1000,
                 retriever);
+        
+        final SplitScreenPanel ssp = new SplitScreenPanel(stp);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, ssp);
 
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true);
+        vip.addSelectionListener(new Listener<Object>(){
+            @Override
+            public void handleEvent(Object event) {
+                stp.getTable().clearSelection();
+            }
+            
+        });
 
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -182,7 +183,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
-
+                if(stp.getTable().getSelectedRow() != -1){
+                    
+                
                 int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
 
                 SimpleFamilyMattersVariant fmv = variants.get(index);
@@ -190,6 +193,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
                 vip.setSimpleVariant(v);
+                }
             }
         });
 
@@ -207,7 +211,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        p.add(stp, BorderLayout.CENTER);
+        //p.add(stp, BorderLayout.CENTER);
+        p.add(ssp, BorderLayout.CENTER);
         p.add(aligned, BorderLayout.EAST);
 
         f.add(p);
