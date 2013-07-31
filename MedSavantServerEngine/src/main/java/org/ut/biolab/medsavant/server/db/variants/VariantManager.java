@@ -483,7 +483,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             }
         }
 
-        LOG.debug(queryString);
+        LOG.info(queryString);
 
         ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
 

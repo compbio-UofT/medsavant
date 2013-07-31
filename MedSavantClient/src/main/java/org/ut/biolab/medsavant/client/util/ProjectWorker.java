@@ -111,7 +111,7 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
     private String getLongSuccessMessage() {
         if (longSuccessMessage == null) {
             if (autoPublish) {
-                longSuccessMessage = notification.getTitle() + " was successful.  MedSavant will now close.";
+                longSuccessMessage = notification.getTitle() + " was successful. MedSavant will now close.";
             } else {
                 longSuccessMessage = notification.getTitle() + " was successful. Changes have not yet been published.";
             }
@@ -121,8 +121,8 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
 
    /* private void publish() {
         try {
-            //The switch to loginView prevents certain polling threads from trying to 
-            //query the server. 
+            //The switch to loginView prevents certain polling threads from trying to
+            //query the server.
             MedSavantFrame.getInstance().switchToLoginView();
             DialogUtils.displayMessage(getLongSuccessMessage());
             MedSavantClient.VariantManager.publishVariants(sessionID, projectID);
@@ -136,9 +136,9 @@ public abstract class ProjectWorker<T> extends MedSavantWorker<T> {
     protected void showSuccess(T result) {
         notification.setStatus(Notification.JobStatus.FINISHED);
         notification.setStatusMessage(shortSuccessMessage);
-        if (autoPublish) {            
+        if (autoPublish) {
             ProjectController.getInstance().publishVariants(sessionID, projectID, getLongSuccessMessage());
-            
+
         } else {
             MedSavantFrame.getInstance().notificationMessage(getLongSuccessMessage());
             ViewController.getInstance().getMenu().checkForUpdateNotifications();

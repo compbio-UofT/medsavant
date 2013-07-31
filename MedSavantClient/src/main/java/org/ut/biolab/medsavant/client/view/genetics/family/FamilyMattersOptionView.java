@@ -959,7 +959,7 @@ public class FamilyMattersOptionView {
 
                 final Component strut = Box.createVerticalStrut(10);
 
-                int indexFromBack = 6;
+                int indexFromBack = 7;
 
                 view.add(strut, view.getComponentCount() - indexFromBack);
                 view.add(criteriaPanel, view.getComponentCount() - indexFromBack);

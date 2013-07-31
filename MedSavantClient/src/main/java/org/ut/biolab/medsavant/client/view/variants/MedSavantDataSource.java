@@ -156,7 +156,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
             }
         }
         if (this.restrictToTheseDNAIDs == null && (dnaIds != null && dnaIds.size() > 10)) {
-            throw new IOException("too many samples, restrict DNA IDs");
+            throw new IOException(dnaIds.size() + " is too many samples, user must restrict DNA IDs");
         }
 
         //System.err.println("Getting records " + active);
