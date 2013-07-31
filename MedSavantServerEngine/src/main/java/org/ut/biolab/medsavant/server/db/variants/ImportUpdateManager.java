@@ -107,7 +107,8 @@ public class ImportUpdateManager {
             // Todo annotate
 
             // Todo add variant files to Solr
-
+            // do some accounting
+            addVariantFilesToDatabase(sessionID, updateID, vcfFiles);
             // Todo add tags
 
             LOG.info("Finished import");
@@ -362,9 +363,10 @@ public class ImportUpdateManager {
 
     private static void addVariantFilesToDatabase(String sessionID, int updateID, File[] vcfFiles) throws SQLException, SessionExpiredException {
         for (int i = 0; i < vcfFiles.length; i++) {
-            VariantManager.addEntryToFileTable(sessionID, updateID, i, vcfFiles[i].getAbsolutePath());
+            VariantManager.addEntryToFileTable(sessionID, updateID, i+1, vcfFiles[i].getAbsolutePath());
         }
     }
+
 
 
 }
