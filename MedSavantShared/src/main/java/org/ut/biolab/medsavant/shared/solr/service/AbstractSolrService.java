@@ -23,11 +23,12 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
+import org.apache.solr.client.solrj.response.PivotField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
-import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.apache.solr.common.util.NamedList;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
@@ -246,11 +247,11 @@ public abstract class AbstractSolrService<T> {
     private SolrDocumentList getDocumentList(QueryResponse response, Map<String, String> aggregates) {
 
         SolrDocumentList solrDocumentList = null;
-        if (response.getFacetFields() != null) {
+        if (response.getFacetPivot() != null && response.getFacetPivot().size() > 0) {
+            solrDocumentList = getDocumentListFacetPivots(response.getFacetPivot());
+        } else if (response.getFacetFields() != null && response.getFacetFields().size() > 0) {
             solrDocumentList = getDocumentListFacetFields(response, aggregates);
-        } else if (response.getFacetPivot() != null) {
-            //ToDo implement this
-        } else {
+        } else  {
             solrDocumentList = addAggregates(response.getResults(), response.getFieldStatsInfo(), aggregates);
         }
 
@@ -313,5 +314,45 @@ public abstract class AbstractSolrService<T> {
         return solrDocumentList;
     }
 
+    private SolrDocumentList getDocumentListFacetPivots(NamedList<List<PivotField>> pivotFields) {
+
+        SolrDocumentList results = new SolrDocumentList();
+        for (PivotField pivotField : pivotFields.getVal(0)) {
+            SolrDocumentList partialResults = constructFromPivotHierarchy(pivotField);
+            results = listMerge(results, partialResults);
+        }
+
+        return results;
+    }
+
+    private SolrDocumentList constructFromPivotHierarchy(PivotField root) {
+
+        SolrDocumentList solrDocumentList = null;
+        if (root.getPivot() == null) {
+            SolrDocument solrDocument = new SolrDocument();
+            solrDocument.setField("count", root.getCount());
+            solrDocument.setField(root.getField(), root.getValue());
+            solrDocumentList = new SolrDocumentList();
+            solrDocumentList.add(solrDocument);
+        } else {
+            solrDocumentList = new SolrDocumentList();
+            for (PivotField child : root.getPivot()) {
+                SolrDocumentList solrDocuments = constructFromPivotHierarchy(child);
+                for (SolrDocument solrDocument : solrDocuments) {
+                    solrDocument.addField(root.getField(), root.getValue());
+                    solrDocumentList.add(solrDocument);
+                }
+            }
+        }
+
+        return solrDocumentList;
+    }
+
+    private SolrDocumentList listMerge(SolrDocumentList first, SolrDocumentList second) {
+        for (SolrDocument document : second) {
+            first.add(document);
+        }
+        return first;
+    }
 
 }

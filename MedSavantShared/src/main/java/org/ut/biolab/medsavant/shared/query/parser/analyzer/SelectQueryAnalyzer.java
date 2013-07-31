@@ -118,6 +118,7 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
     private void addFacetFields(List<String> fields) {
         if (fields != null && fields.size() == 1) {
             solrQuery.addFacetField(fields.get(0));
+            solrQuery.setFacetMinCount(1);
         } else {
             addFacePivotFields(fields);
         }
@@ -127,13 +128,15 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
 
         String pivotFields = StringUtils.join(fields, ",");
         solrQuery.add(FacetParams.FACET, "true");
+        solrQuery.add(FacetParams.FACET_PIVOT_MINCOUNT, "1");
+        solrQuery.setFacetLimit(-1);
         solrQuery.add(FacetParams.FACET_PIVOT, pivotFields);
     }
 
     private void addAggregateTerms(Map<String, String> aggregates) {
 
         solrQuery.add(StatsParams.STATS, "true");
-
+        solrQuery.setFacetLimit(-1);
         for (Map.Entry<String, String> entry : aggregates.entrySet()) {
             addAggregateTerm(entry.getKey(), entry.getValue());
         }

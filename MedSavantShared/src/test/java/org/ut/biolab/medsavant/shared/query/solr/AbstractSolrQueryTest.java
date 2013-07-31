@@ -75,7 +75,7 @@ public class AbstractSolrQueryTest {
 
     @Test
     public void testAggregateTerms() {
-        Query query = queryManager.createQuery("select v.dna_id, count(v), count(v.dna_id) from Variant v group by dna_id,chrom");
+        Query query = queryManager.createQuery("select v.dna_id, count(v.dna_id), v.upload_id from Variant v group by dna_id,upload_id");
 
         List<ResultRow> variantRecordList = query.executeForRows();
 
