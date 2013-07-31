@@ -122,6 +122,7 @@
     <enforcer.skip>false</enforcer.skip>
     <checkstyle.skip>false</checkstyle.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jide.version>3.5.6</jide.version>
   </properties>
 
   <dependencyManagement>
