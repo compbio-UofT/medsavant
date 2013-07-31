@@ -42,10 +42,6 @@ atlassian-ide-plugin.xml
 
 # Mac files
 .DS_Store
-<<<<<<< HEAD
-MedSavantServerEngine/medsavant.log
-private.xml
-=======
 
 # Other
 *.log.*
@@ -56,10 +52,7 @@ private.xml
 
 # MedSavant custom
 MedSavantServerEngine/medsavant.log
->>>>>>> 9546cd13e0f29c5090a9888d7f46c0b36632b29f
+private.xml
 .medsavant.prop
 
-
-distribution/medsavant-client-dmg/src/main/app-resources/.DS_Store
-
-MedSavantClient/family-matters-1374774902.txt
+MedSavantClient/family-matters-*.txt
