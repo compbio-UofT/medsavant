@@ -57,7 +57,6 @@ import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.dialog.BugReport;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
@@ -135,6 +134,9 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     static public void main(String args[]) {
+        // Avoids "Comparison method violates its general contract" bug.
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         setRestartCommand(args);
         setExceptionHandler();
 
@@ -184,6 +186,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
+        
         //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
        
         //required for FORGE plugin
@@ -212,7 +215,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
-
         AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
         CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
         LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
@@ -236,7 +238,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setLAF() {
         try {
 
-            //UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
+           // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
             //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
             //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.            
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

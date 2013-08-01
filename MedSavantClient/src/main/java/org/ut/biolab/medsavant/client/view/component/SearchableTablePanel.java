@@ -15,23 +15,42 @@
  */
 package org.ut.biolab.medsavant.client.view.component;
 
+import com.jidesoft.grid.AutoFilterTableHeader;
+import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
+import com.jidesoft.grid.FilterableTableModel;
+import com.jidesoft.grid.QuickTableFilterField;
+import com.jidesoft.grid.SortableTable;
+import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
+import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 
-import com.jidesoft.grid.*;
 import java.util.Set;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.ExportTable;
@@ -39,7 +58,6 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -113,11 +131,11 @@ public class SearchableTablePanel extends JPanel {
 
                     // Even index, selected or not selected
                     if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
-                        comp.setBackground(new Color(178, 225, 92));
+                        //comp.setBackground(new Color(178, 225, 92));
                     } else if (isCellSelected(row, col)) {
-                        comp.setBackground(new Color(75, 149, 229));
+                        //comp.setBackground(new Color(75, 149, 229));
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
-                        comp.setBackground(SELECTED_COLOUR);
+                        //comp.setBackground(SELECTED_COLOUR);
                     } else if (row % 2 == 0 && !isCellSelected(row, col)) {
                         comp.setBackground(Color.WHITE);
                     } else {

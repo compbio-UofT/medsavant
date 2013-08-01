@@ -164,10 +164,10 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
     }
 
     private void setupAggregateColumns(String column){
-        String[] ag = new String[columnNames.length - 2];
+        String[] ag = new String[columnNames.length - 2];        
         ag[0] = column;
         int j = 1;
-        for (int i = 0; i < (columnNames.length - 2); ++i) {
+        for (int i = 0; i < (columnNames.length - 2); ++i) {      
             if (!columnNames[i].equals(ag[0])) {
                 ag[j++] = columnNames[i];
             }
@@ -292,8 +292,9 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
                         if (fromColumnIndex == -1) {
                             fromColumnIndex = e.getFromIndex();
                         }
-                        toColumnIndex = e.getToIndex();
+                        toColumnIndex = e.getToIndex();                                                                        
                     }
+                    
                 };
             }
         };
@@ -310,9 +311,17 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
                     aggregateTable.moveColumn(toColumnIndex, fromColumnIndex);
                     String msg = "This column cannot be moved.";
                     DialogUtils.displayMessage(msg);
+                }else{                                     
+                    for(int columnHeaderIndex = 0; columnHeaderIndex < header.getColumnModel().getColumnCount() - 2; columnHeaderIndex++){
+                       String columnTitle = (String)header.getColumnModel().getColumn(columnHeaderIndex).getHeaderValue();                       
+                       aggregateColumns[columnHeaderIndex] = columnTitle;
+                    }
+                    reaggregate();                    
                 }
+                //aggregateTable.aggregate(this.aggregateColumns);
                 fromColumnIndex = -1;
                 toColumnIndex = -1;
+                //expandAllButLast();
             }
         });
 

@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import com.jidesoft.grid.HierarchicalTable;
 import com.jidesoft.grid.HierarchicalTableComponentFactory;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -29,7 +30,6 @@ import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
-import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
@@ -179,7 +179,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         hTable.setShowGrid(false);
         hTable.setTableHeader(null);
         hTable.setSelectInsertedRows(false);
-        hTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        hTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);       
         hTable.setComponentFactory(new HierarchicalTableComponentFactory() {
             @Override
             public Component createChildComponent(HierarchicalTable table, Object value, int row) {
@@ -291,11 +291,13 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
                     //aggregatePane.setVariantRecords(variantRecords);                    
                 }
                 
+                hTable.clearSelection();
+                hTable.revalidate();
+                hTable.repaint();
                 infoPanel.removeAll();
                 infoPanel.add(innerPanel);
                 infoPanel.revalidate();
-                infoPanel.repaint();
-                infoPanel.updateUI();
+                infoPanel.repaint();                
             }
 
             @Override
