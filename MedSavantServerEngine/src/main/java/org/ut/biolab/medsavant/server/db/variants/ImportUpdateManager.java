@@ -6,6 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -210,14 +214,9 @@ public class ImportUpdateManager {
             threads[fileID] = t;
             fileID++;
             LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
-            t.start();
         }
 
-        // wait for all the threads to finish
-        LOG.info("Waiting for parsing threads to finish...");
-        for (Thread t : threads) {
-            t.join();
-        }
+        VariantManagerUtils.processThreadsWithLimit(threads);
 
         // tab separated files
         File[] tsvFiles = new File[threads.length];
@@ -273,7 +272,7 @@ public class ImportUpdateManager {
 
     private static File[] splitFilesByDNAAndFileID(File[] tsvFiles, File workingDir) throws FileNotFoundException, IOException {
 
-        LOG.info("Splitting files by DNA and FileID, working directory is " + workingDir.getAbsolutePath());
+        LOG.info("Splitting " + tsvFiles.length + " files by DNA and FileID, working directory is " + workingDir.getAbsolutePath());
 
         File[] splitTSVFiles = new File[0];
         //TODO: thread each of these

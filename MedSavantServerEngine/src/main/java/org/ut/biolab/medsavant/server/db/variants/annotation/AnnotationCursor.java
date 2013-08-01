@@ -56,18 +56,18 @@ public class AnnotationCursor {
         isEndInclusive = annotation.isEndInclusive();
         numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
 
-        // log
-        LOG.info("Setting up Annotation Cursor for " + annotation);
-        LOG.info("  has reference:\t" + annotationHasRef);
-        LOG.info("  has alternate:\t" + annotationHasAlt);
-        LOG.info("  is interval:\t" + isInterval);
-        LOG.info("  is end inclusive:\t" + isEndInclusive);
-
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
         }
-        LOG.info("  references " + references.substring(2, references.length()));
+        // log
+        /*LOG.info("Setting up Annotation Cursor for " + annotation);
+         LOG.info("  has reference:\t" + annotationHasRef);
+         LOG.info("  has alternate:\t" + annotationHasAlt);
+         LOG.info("  is interval:\t" + isInterval);
+         LOG.info("  is end inclusive:\t" + isEndInclusive);
+         LOG.info("  references " + references.substring(2, references.length()));
+         */
 
     }
     SimpleVariantRecord lastVariantAnnotated;
@@ -133,7 +133,7 @@ public class AnnotationCursor {
                 }
 
                 // get the next annotation and parse it
-                String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER,-1);
+                String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER, -1);
                 SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
 
                 // save this annotation
@@ -244,6 +244,7 @@ public class AnnotationCursor {
 
     /**
      * Get the annotation that this cursor works for
+     *
      * @return The annotation this cursor works for
      */
     Annotation getAnnotation() {
@@ -327,5 +328,9 @@ public class AnnotationCursor {
             return (isInterval && intersectsPosition(r.chrom, r.position))
                     || (!isInterval && intersectsPosition(r.chrom, r.position) && matchesRef(r.ref) && matchesAlt(r.alt));
         }
+    }
+
+    public void cleanup() throws IOException {
+        reader.cleanup();
     }
 }

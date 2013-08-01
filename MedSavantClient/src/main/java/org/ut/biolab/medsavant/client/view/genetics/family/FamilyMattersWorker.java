@@ -524,7 +524,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 counter++;
             }
 
-            return StringUtils.join(toJoin, ',');
+            return StringUtils.join(toJoin, ", ");
         }
 
         /*

@@ -527,6 +527,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 j.setVisible(true);
                 page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
+                workButton.setEnabled(false);
+
                 new ProjectWorker<Void>("Modifying project", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                     @Override
                     protected Void backgroundTask() throws Exception {
@@ -743,7 +745,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 }
 
                 String email = this.emailField.getText();
-                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();                                
+                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();
                 boolean autoPublishWhenComplete = false;
                 updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }

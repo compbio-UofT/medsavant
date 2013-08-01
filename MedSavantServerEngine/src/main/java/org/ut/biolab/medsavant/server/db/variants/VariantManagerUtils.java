@@ -25,8 +25,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -290,8 +294,9 @@ public class VariantManagerUtils {
     }
 
 
-    static File[] splitFileOnColumns(File splitDir, String outputFilename, int[] cols) throws FileNotFoundException, IOException  {
-        BufferedReader br = new BufferedReader(new FileReader(outputFilename));
+    static File[] splitFileOnColumns(File splitDir, String inputFile, int[] cols) throws FileNotFoundException, IOException  {
+
+        BufferedReader br = new BufferedReader(new FileReader(inputFile));
 
         String line;
 
@@ -299,8 +304,15 @@ public class VariantManagerUtils {
 
         BufferedWriter out;
 
-        List<File> files = new ArrayList<File>();
+        boolean conservingFilePointers = false;
+        int filesOpened = 0;
+
+        Set<String> filePaths = new HashSet<String>();
+
+        int lines = 0;
         while ((line = br.readLine()) != null) {
+            lines++;
+
             String[] parsedLine = line.split(FIELD_DELIMITER + "");
 
             String id = "";
@@ -310,26 +322,43 @@ public class VariantManagerUtils {
 
             if (!outputFileMap.containsKey(id)) {
                 File f = new File(splitDir, (id + "part").replace("\"",""));
-                LOG.info("Creating split file " + f.getAbsolutePath());
-                files.add(f);
-                outputFileMap.put(id, new BufferedWriter(new FileWriter(f)));
-            }
-            out = outputFileMap.get(id);
+                outputFileMap.put(id, new BufferedWriter(new FileWriter(f,true)));
 
+                String path = f.getAbsolutePath();
+                filesOpened++;
+                if (!filePaths.contains(path)) {
+                    //LOG.info("Opening split file " + path + " with conserving file pointers " + conservingFilePointers + ", opened " + filePaths.size() + " files so far");
+                    filePaths.add(path);
+                }
+            }
+
+            out = outputFileMap.get(id);
             out.write(line + "\n");
+
+            if (outputFileMap.keySet().size() >= MAX_FILES) {
+                if (!conservingFilePointers) {
+                    LOG.info("Conserving file pointers, " + outputFileMap.keySet().size() + " opened");
+                }
+                conservingFilePointers = true;
+
+                out.close();
+                outputFileMap.remove(id);
+            }
         }
 
+        LOG.info("Closing split files...");
 
         for (BufferedWriter bw : outputFileMap.values()) {
-            bw.flush();
             bw.close();
         }
 
-        File[] fileArray = new File[files.size()];
-        for (int i = 0; i < fileArray.length; i++) {
-            File f = files.get(i);
-            LOG.info("Closing split file " + f.getAbsolutePath());
-            fileArray[i] = f;
+        LOG.info("Split " + lines + " lines into " + filePaths.size() + " files, in " + splitDir.getAbsolutePath());
+
+        File[] fileArray = new File[filePaths.size()];
+        int counter = 0;
+        for (String path : filePaths) {
+            File f = new File(path);
+            fileArray[counter++] = f;
         }
 
         return fileArray;
@@ -417,7 +446,7 @@ public class VariantManagerUtils {
     }
 
     public static void logFileSize(String fn) {
-        LOG.info("Size of " + fn + ": " + ((new File(fn)).length()));
+        //LOG.info("Size of " + fn + ": " + ((new File(fn)).length()));
     }
 
     public static void addCustomVCFFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
@@ -494,6 +523,10 @@ public class VariantManagerUtils {
         out.close();
     }
 
+
+    static int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors());
+    static int MAX_FILES = 20;
+
     public static File[] convertVCFFilesToTSV(File[] vcfFiles, File outDir, int updateID, boolean includeHomozygousReferenceCalls) throws Exception {
 
         // parse each vcf file in a separate thread with a separate file ID
@@ -506,14 +539,9 @@ public class VariantManagerUtils {
             threads[fileID] = t;
             fileID++;
             LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
-            t.start();
         }
 
-        // wait for all the threads to finish
-        LOG.info("Waiting for parsing threads to finish...");
-        for (Thread t : threads) {
-            t.join();
-        }
+        processThreadsWithLimit(threads,MAX_THREADS);
 
         // tab separated files
         File[] tsvFiles = new File[threads.length];
@@ -541,17 +569,12 @@ public class VariantManagerUtils {
         for (int i = 0; i < annotationThreads.length; i++) {
             File toAnnotate = tsvFiles[i];
             String outFile = toAnnotate + "_annotated";
-            LOG.info("Queueing annotation of " + toAnnotate.getAbsolutePath());
             VariantAnnotator t = new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields);
-            t.start();
             annotationThreads[i] = t;
         }
 
-        // wait for all the threads to finish
-        LOG.info("Waiting for annotation threads to finish...");
-        for (Thread t : annotationThreads) {
-            t.join();
-        }
+        processThreadsWithLimit(annotationThreads,MAX_THREADS);
+
         LOG.info("All annotation threads done");
 
         File[] annotatedTsvFiles = new File[annotationThreads.length];
@@ -575,6 +598,43 @@ public class VariantManagerUtils {
         splitDir.mkdir();
         LOG.info("Splitting " + tsvFile + " by DNA and FileIDs");
         return VariantManagerUtils.splitFileOnColumns(splitDir, tsvFile.getAbsolutePath(), new int[]{0, 1, 3});
+    }
+
+    static void processThreadsWithLimit(Thread[] threads, int MAX_THREADS) throws InterruptedException {
+        LOG.info("Processing " + threads.length + " threads, " + MAX_THREADS + " at a time");
+        List<Thread> batch = new ArrayList<Thread>();
+        for (int i = 0; i < threads.length; i++) {
+            batch.add(threads[i]);
+            if (batch.size() >= MAX_THREADS) {
+
+                processBatchAndWait(batch);
+                batch.clear();
+                LOG.info("Completed " + (i+1) + " of " + threads.length + " threads");
+            }
+        }
+        processBatchAndWait(batch);
+        LOG.info("Completed all " + threads.length + " threads");
+    }
+
+
+    private static void processBatchAndWait(List<Thread> batch) throws InterruptedException {
+
+        LOG.info("Starting " + batch.size() + " threads...");
+        for (Thread t : batch) {
+            t.start();
+        }
+        // wait for all the threads to finish
+        LOG.info("Waiting for threads to finish...");
+        for (Thread t : batch) {
+            t.join();
+        }
+        LOG.info(batch.size() + " threads finished");
+
+        System.gc();
+    }
+
+    static void processThreadsWithLimit(VariantParser[] threads) throws InterruptedException {
+        processThreadsWithLimit(threads,MAX_THREADS);
     }
 
 

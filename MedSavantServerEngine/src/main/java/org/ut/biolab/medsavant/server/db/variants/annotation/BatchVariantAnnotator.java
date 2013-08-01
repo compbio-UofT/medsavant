@@ -106,8 +106,8 @@ public class BatchVariantAnnotator {
         CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
         CSVWriter recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
 
-        LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
-        LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
+        //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
+        //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
 
         // read the input, line by line
         String[] inputLine;
@@ -139,7 +139,7 @@ public class BatchVariantAnnotator {
             // report whenever we get to the next chromosome
             if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
                 currentChrom = nextInputRecord.chrom;
-                LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
+                //LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
                 previousPosition = -1;
                 previousRef = null;
                 previousAlt = null;
@@ -155,7 +155,7 @@ public class BatchVariantAnnotator {
                 String currentAlt = nextInputRecord.alt;
 
                 if (currentPosition < previousPosition) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by position, then by ref, then by alt.");
                 }
                 if (currentPosition == previousPosition) {
 
@@ -167,7 +167,7 @@ public class BatchVariantAnnotator {
                     }
 
                     if (refCompare < 0) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by position, then by ref, then by alt.");
                     } else if (refCompare == 0) {
 
                         int altCompare;
@@ -178,7 +178,7 @@ public class BatchVariantAnnotator {
                         }
 
                         if (altCompare < 0) {
-                            throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by position, then by ref, then by alt.");
                         }
                     }
                 }
@@ -205,6 +205,9 @@ public class BatchVariantAnnotator {
         }
 
         // clean up
+        for (AnnotationCursor c : cursors) {
+            c.cleanup();
+        }
         recordReader.close();
         recordWriter.close();
 
@@ -264,7 +267,7 @@ public class BatchVariantAnnotator {
         // open the file
         CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
-        LOG.info("Analyzing annotation file " + file.getAbsolutePath());
+        //LOG.info("Analyzing file to be annotated " + file.getAbsolutePath());
 
         // read the first line
         String[] next = reader.readNext();

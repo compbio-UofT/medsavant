@@ -65,7 +65,7 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
 
             //add custom fields
             if (customFields.length > 0) {
-                LOG.info("Adding " + customFields.length + " custom VCF fields");
+                //LOG.info("Adding " + customFields.length + " custom VCF fields");
                 String customFieldFilename = workingFilePath + "_plusfields";
                 filesUsed.add(customFieldFilename);
                 VariantManagerUtils.addCustomVCFFields(workingFilePath, customFieldFilename, customFields, INDEX_OF_CUSTOM_INFO); //last of the default fields
@@ -77,9 +77,9 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
 
                 String annotatedFilename = workingFilePath + "_annotated";
                 filesUsed.add(annotatedFilename);
-                LOG.info("File containing annotated variants, sorted by position: " + annotatedFilename);
+                //LOG.info("File containing annotated variants, sorted by position: " + annotatedFilename);
 
-                LOG.info("Annotating variants in " + workingFilePath + ", destination " + annotatedFilename);
+                //LOG.info("Annotating variants in " + workingFilePath + ", destination " + annotatedFilename);
 
                 long startTime = System.currentTimeMillis();
 
