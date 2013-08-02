@@ -101,13 +101,18 @@ public class ShardedVariantManagerHelper implements Serializable {
         return os;
     }
 
+    private String getWhereClause(SelectQuery q) {
+        // replace original table identifiers with Hibernate references
+        return q.getWhereClause().toString().replaceAll("t[0-9]+.", "this_.");
+    }
+
     public Integer getNumFilteredVariants(String sessID, SelectQuery q) {
         // TODO: deal with table-project mapping, hibernate configuration has to
         // be provided dynamically
         Session s = ShardedConnectionController.openSession();
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
-        c.add(Restrictions.sqlRestriction(q.getWhereClause().toString()));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
         ShardedConnectionController.closeSession(s);
@@ -117,7 +122,7 @@ public class ShardedVariantManagerHelper implements Serializable {
     public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) {
         Session session = ShardedConnectionController.openSession();
         Criteria c = session.createCriteria(Variant.class).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
-        c.add(Restrictions.sqlRestriction(q.getWhereClause().toString()));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Variant> variantList = c.list();
 
         // convert to rows the editor expects
