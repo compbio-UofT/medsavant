@@ -21,6 +21,7 @@ package org.hibernate.shards.criteria;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
@@ -119,6 +120,43 @@ public class ShardedCriteriaImpl implements ShardedCriteria {
     @Override
     public String getAlias() {
         return getOrEstablishSomeCriteria().getAlias();
+    }
+
+    /**
+     * Sets multiple projections in the same query.
+     * 
+     * @param projections
+     * @return
+     */
+    public Criteria setProjections(Set<Projection> projections) {
+        this.propertyProjectionIsLast = false;
+
+        ProjectionList list = Projections.projectionList();
+        for (Projection p : projections) {
+            criteriaCollector.addProjection(p);
+            list.add(p);
+        }
+
+        setCriteriaEvent(new SetProjectionEvent(list));
+
+        return this;
+    }
+
+    /**
+     * 
+     * Sets projections for aggregate functions with group by.
+     * 
+     * @param ap
+     * @param pp
+     * @return
+     */
+    public Criteria setAggregateGroupByProjection(AggregateProjection ap, PropertyProjection pp) {
+        criteriaCollector.addProjection(ap);
+        criteriaCollector.addProjection(pp);
+
+        setCriteriaEvent(new SetProjectionEvent(Projections.projectionList().add(ap).add(pp)));
+
+        return this;
     }
 
     @Override

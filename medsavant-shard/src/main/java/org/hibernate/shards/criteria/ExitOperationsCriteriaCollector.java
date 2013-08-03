@@ -29,6 +29,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.PropertyProjection;
 import org.hibernate.criterion.RowCountProjection;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.shards.strategy.exit.AggregateGroupExitOperation;
 import org.hibernate.shards.strategy.exit.AvgResultsExitOperation;
 import org.hibernate.shards.strategy.exit.DistinctExitOperation;
 import org.hibernate.shards.strategy.exit.ExitOperationsCollector;
@@ -180,29 +181,35 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
                 result = new OrderExitOperation(orders).apply(result);
             }
         }
-        if (propertyProjection != null) {
-            result = new PropertyProjectionExitOperation(propertyProjection).apply(result);
-        }
-        if (firstResult != null) {
-            result = new FirstResultExitOperation(firstResult).apply(result);
-        }
-        if (maxResults != null) {
-            result = new MaxResultsExitOperation(maxResults).apply(result);
-        }
 
-        final ProjectionExitOperationFactory factory = ProjectionExitOperationFactory.getFactory();
+        // aggregate functions with group by
+        if (aggregateProjection != null && propertyProjection != null) {
+            result = new AggregateGroupExitOperation(aggregateProjection).apply(result);
+        } else {
+            if (propertyProjection != null) {
+                result = new PropertyProjectionExitOperation(propertyProjection).apply(result);
+            }
+            if (firstResult != null) {
+                result = new FirstResultExitOperation(firstResult).apply(result);
+            }
+            if (maxResults != null) {
+                result = new MaxResultsExitOperation(maxResults).apply(result);
+            }
 
-        if (rowCountProjection != null) {
-            result = factory.getProjectionExitOperation(rowCountProjection, sessionFactoryImplementor).apply(result);
-        }
+            final ProjectionExitOperationFactory factory = ProjectionExitOperationFactory.getFactory();
 
-        if (avgProjection != null) {
-            result = new AvgResultsExitOperation().apply(result);
-        }
+            if (rowCountProjection != null) {
+                result = factory.getProjectionExitOperation(rowCountProjection, sessionFactoryImplementor).apply(result);
+            }
 
-        // min, max, sum
-        if (aggregateProjection != null) {
-            result = factory.getProjectionExitOperation(aggregateProjection, sessionFactoryImplementor).apply(result);
+            if (avgProjection != null) {
+                result = new AvgResultsExitOperation().apply(result);
+            }
+
+            // min, max, sum
+            if (aggregateProjection != null) {
+                result = factory.getProjectionExitOperation(aggregateProjection, sessionFactoryImplementor).apply(result);
+            }
         }
 
         return result;
