@@ -38,6 +38,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.shards.criteria.ShardedCriteriaImpl;
 import org.testng.annotations.Test;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
 
@@ -109,6 +110,66 @@ public class VariantShardTest extends AbstractShardTest {
             System.out.println(v);
         }
         ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
+    public void testArithmetic() {
+        Session session = ShardedConnectionController.openSession();
+        Criteria crit = session.createCriteria(Variant.class).setFetchSize(2).setMaxResults(2).setFirstResult(6);
+        List<Variant> variantList = crit.list();
+
+        Iterator<Variant> iterator = variantList.iterator();
+        while (iterator.hasNext()) {
+            Variant v = (Variant) iterator.next();
+            System.out.println(v);
+        }
+        ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
+    public void testCountGroupBy() {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
+                Projections.groupProperty("variant_type"));
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
+        }
+
+        ShardedConnectionController.closeSession(s);
+    }
+
+    @Test
+    public void testMaxGroupBy() {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.max("position"), Projections.groupProperty("variant_type"));
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
+        }
+
+        ShardedConnectionController.closeSession(s);
+    }
+
+    @Test
+    public void testMinGroupBy() {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.min("qual"), Projections.groupProperty("variant_type"));
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
+        }
+
+        ShardedConnectionController.closeSession(s);
     }
 
     @Test
