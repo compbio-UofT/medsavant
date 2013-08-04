@@ -37,9 +37,16 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.util.DBUtils;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
@@ -88,5 +95,39 @@ public class VariantManagerHelper implements Serializable {
         }
 
         return result;
+    }
+
+    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
+            throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
+
+        Range range = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName());
+        double binSize = MiscUtils.generateBins(column, range, logBins);
+
+        String round;
+        if (logBins) {
+            round = "floor(log10(" + column.getColumnName() + ")) as m";
+        } else {
+            round = "floor(" + column.getColumnName() + " / " + binSize + ") as m";
+        }
+
+        String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
+        query += " GROUP BY m ORDER BY m ASC";
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
+
+        Map<Range, Long> results = new TreeMap<Range, Long>();
+        while (rs.next()) {
+            int binNo = rs.getInt(2);
+            Range r;
+            if (logBins) {
+                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
+            } else {
+                r = new Range(binNo * binSize, (binNo + 1) * binSize);
+            }
+            long count = (long) (rs.getLong(1) * multiplier);
+            results.put(r, count);
+        }
+
+        return results;
     }
 }

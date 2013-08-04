@@ -32,16 +32,28 @@ package org.ut.biolab.medsavant.shard.variant;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.shards.criteria.ShardedCriteriaImpl;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
@@ -106,6 +118,30 @@ public class ShardedVariantManagerHelper implements Serializable {
         return q.getWhereClause().toString().replaceAll("t[0-9]+.", "this_.");
     }
 
+    private Range getExtremeValuesForColumn(Session s, String colName) {
+        Object oMin = s.createCriteria(Variant.class).setProjection(Projections.min(colName)).list().get(0);
+        Object oMax = s.createCriteria(Variant.class).setProjection(Projections.max(colName)).list().get(0);
+
+        double min;
+        if (oMin instanceof Integer) {
+            min = (double) (Integer) oMin;
+        } else if (oMin instanceof Double) {
+            min = (Double) oMin;
+        } else {
+            throw new ClassCastException("Min is not double");
+        }
+        double max;
+        if (oMax instanceof Integer) {
+            max = (double) (Integer) oMax;
+        } else if (oMax instanceof Double) {
+            max = (Double) oMax;
+        } else {
+            throw new ClassCastException("Max is not double");
+        }
+
+        return new Range(min, max);
+    }
+
     public Integer getNumFilteredVariants(String sessID, SelectQuery q) {
         // TODO: deal with table-project mapping, hibernate configuration has to
         // be provided dynamically
@@ -136,5 +172,43 @@ public class ShardedVariantManagerHelper implements Serializable {
         ShardedConnectionController.closeSession(session);
 
         return res;
+    }
+
+    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
+            throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
+        Session s = ShardedConnectionController.openSession();
+
+        Range range = getExtremeValuesForColumn(s, column.getColumnName());
+        double binSize = MiscUtils.generateBins(column, range, logBins);
+
+        String round;
+        if (logBins) {
+            round = "floor(log10(" + column.getColumnName() + ")) ";
+        } else {
+            round = "floor(" + column.getColumnName() + " / " + binSize + ") ";
+        }
+
+        // execute query
+        // add order by value ASC if needed
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + round + "as value",
+                "value", new String[] { "value", "pos" }, new Type[] { new IntegerType(), new IntegerType() }));
+
+        Map<Range, Long> results = new TreeMap<Range, Long>();
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            Integer binNo = (int) (((Integer) o[0]) * multiplier);
+            Long count = ((BigDecimal) o[1]).longValue();
+            Range r;
+            if (logBins) {
+                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
+            } else {
+                r = new Range(binNo * binSize, (binNo + 1) * binSize);
+            }
+            results.put(r, count);
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return results;
     }
 }

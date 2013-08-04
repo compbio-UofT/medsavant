@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
@@ -595,40 +593,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             multiplier = 1;
         }
 
-        Range range = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName());
-        double binSize = MiscUtils.generateBins(column, range, logBins);
-
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        String round;
-        if (logBins) {
-            round = "floor(log10(" + column.getColumnName() + ")) as m";
-        } else {
-            round = "floor(" + column.getColumnName() + " / " + binSize + ") as m";
-        }
-
-        String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
-        query += " GROUP BY m ORDER BY m ASC";
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query);
-
-        Map<Range, Long> results = new TreeMap<Range, Long>();
-        while (rs.next()) {
-            int binNo = rs.getInt(2);
-            Range r;
-            if (logBins) {
-                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
-            } else {
-                r = new Range(binNo * binSize, (binNo + 1) * binSize);
-            }
-            long count = (long) (rs.getLong(1) * multiplier);
-            results.put(r, count);
-        }
-
-        return results;
+        return helper.getFilteredFrequencyValuesForNumericColumn(sid, q, table, column, multiplier, logBins);
     }
 
     @Override
