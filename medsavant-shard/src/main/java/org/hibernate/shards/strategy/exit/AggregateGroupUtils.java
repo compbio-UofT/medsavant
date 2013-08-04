@@ -31,14 +31,23 @@ import java.util.Map.Entry;
  */
 public class AggregateGroupUtils {
 
-    public static List<Object> collide(List<Object> results, SupportedAggregations ag) {
+    /**
+     * Aggregates the results across shards. Can handle a single aggregation and
+     * a single group by criterion, which it expects to be on the second
+     * position in the result.
+     * 
+     * @param results
+     * @param ag
+     * @return
+     */
+    public static List<Object> collide(List<Object> results, SupportedAggregations ag, int keyIndex, int valueIndex) {
         // use LinkedHashMap to preserve ordering
         LinkedHashMap<Comparable<Object>, BigDecimal> res = new LinkedHashMap<Comparable<Object>, BigDecimal>();
 
         for (Object pair : results) {
-            Comparable<Object> key = (Comparable<Object>) ((Object[]) pair)[1];
+            Comparable<Object> key = (Comparable<Object>) ((Object[]) pair)[keyIndex];
             // BigDecimal can handle all numbers
-            BigDecimal value = new BigDecimal(((Number) ((Object[]) pair)[0]).toString());
+            BigDecimal value = new BigDecimal(((Number) ((Object[]) pair)[valueIndex]).toString());
 
             if (res.containsKey(key)) {
                 switch (ag) {
@@ -57,7 +66,11 @@ public class AggregateGroupUtils {
                 case DISTINCT_COUNT:
                     res.put(key, value.add(res.get(key)));
                     break;
+                case NONE:
+                    // no aggregation, keep data from an arbitrary shard
+                    break;
                 default:
+                    // unsupported aggregation
                     throw new UnsupportedOperationException("Aggregation is unsupported: " + ag);
                 }
             } else {

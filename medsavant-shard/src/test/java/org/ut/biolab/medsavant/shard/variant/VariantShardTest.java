@@ -135,6 +135,26 @@ public class VariantShardTest extends AbstractShardTest {
     }
 
     @Test
+    public void testArithmeticWithGroupBy() {
+        Session session = ShardedConnectionController.openSession();
+        Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
+                .setFetchSize(4)
+                .setMaxResults(4)
+                .setProjection(
+                        Projections.sqlGroupProjection("position as pos, floor(3.14) as value", "value", new String[] { "value", "pos" }, new Type[] { new IntegerType(),
+                                new IntegerType() }));
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
+        }
+
+        ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
     public void testCountGroupBy() {
         Session s = ShardedConnectionController.openSession();
 

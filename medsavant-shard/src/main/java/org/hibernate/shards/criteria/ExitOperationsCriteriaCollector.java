@@ -41,6 +41,7 @@ import org.hibernate.shards.strategy.exit.ProjectionExitOperationFactory;
 import org.hibernate.shards.strategy.exit.PropertyProjectionExitOperation;
 import org.hibernate.shards.strategy.exit.PropertyProjectionOrderExitOperation;
 import org.hibernate.shards.strategy.exit.SQLExitOperation;
+import org.hibernate.shards.strategy.exit.SQLGroupExitOperation;
 import org.hibernate.shards.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +219,9 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
             }
 
             if (sqlProjection != null) {
-                result = new SQLExitOperation(sqlProjection).apply(result);
+                // distinguish grouped and not grouped to determine how to
+                // aggregate the results across shards
+                result = (sqlProjection.isGrouped()) ? new SQLGroupExitOperation(sqlProjection).apply(result) : new SQLExitOperation(sqlProjection).apply(result);
             }
         }
 

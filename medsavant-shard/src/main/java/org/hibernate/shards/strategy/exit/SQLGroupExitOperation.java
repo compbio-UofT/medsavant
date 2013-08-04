@@ -21,31 +21,22 @@ package org.hibernate.shards.strategy.exit;
 import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.criterion.AggregateProjection;
 import org.hibernate.criterion.Projection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.hibernate.criterion.SQLProjection;
 
 /**
- * Exit operation for queries with aggregate operations and group by.
+ * Exit operation for sql projections.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class AggregateGroupExitOperation implements ProjectionExitOperation {
+public class SQLGroupExitOperation implements ProjectionExitOperation {
 
-    private final SupportedAggregations aggregate;
-
-    private final String fieldName;
     private final Projection proj;
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final String fieldName;
+    private SupportedAggregations aggregate;
 
-    public AggregateGroupExitOperation(final AggregateProjection projection) {
-        /**
-         * an aggregateProjection's toString returns min( ..., max( ..., sum(
-         * ..., or avg( ... we just care about the name of the function which
-         * happens to be before the first left parenthesis
-         */
+    public SQLGroupExitOperation(final SQLProjection projection) {
         this.proj = projection;
         final String projectionAsString = projection.toString();
         final String aggregateName = projectionAsString.substring(0, projectionAsString.indexOf("("));
@@ -53,8 +44,8 @@ public class AggregateGroupExitOperation implements ProjectionExitOperation {
         try {
             this.aggregate = SupportedAggregations.valueOf(aggregateName.replace(" ", "_").toUpperCase());
         } catch (IllegalArgumentException e) {
-            log.error("Use of unsupported aggregate: " + aggregateName);
-            throw e;
+            // no or invalid aggregate
+            this.aggregate = SupportedAggregations.NONE;
         }
     }
 
@@ -66,7 +57,7 @@ public class AggregateGroupExitOperation implements ProjectionExitOperation {
         if (nonNullResults.size() == 0) {
             return Collections.singletonList(null);
         } else {
-            return AggregateGroupUtils.collide(nonNullResults, aggregate, 1, 0);
+            return AggregateGroupUtils.collide(nonNullResults, aggregate, 0, 1);
         }
     }
 }

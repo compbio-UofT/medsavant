@@ -38,7 +38,7 @@ package org.hibernate.shards.strategy.exit;
  */
 public enum SupportedAggregations {
 
-    SUM("sum"), MIN("min"), MAX("max"), COUNT("count"), DISTINCT_COUNT("distinct count");
+    SUM("sum"), MIN("min"), MAX("max"), COUNT("count"), DISTINCT_COUNT("distinct count"), NONE("");
 
     private final String aggregate;
 
