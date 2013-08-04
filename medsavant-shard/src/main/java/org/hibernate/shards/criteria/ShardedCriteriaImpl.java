@@ -40,6 +40,7 @@ import org.hibernate.criterion.Projection;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.PropertyProjection;
+import org.hibernate.criterion.SQLProjection;
 import org.hibernate.shards.Shard;
 import org.hibernate.shards.ShardOperation;
 import org.hibernate.shards.strategy.access.ShardAccessStrategy;
@@ -172,6 +173,8 @@ public class ShardedCriteriaImpl implements ShardedCriteria {
             event = new AggregateProjectionEvent(projection);
         } else if (projection instanceof PropertyProjection) {
             propertyProjectionIsLast = true;
+        } else if (projection instanceof SQLProjection) {
+            setCriteriaEvent(new SetProjectionEvent(projection));
         }
         // for property projection there nothing else to do here
         if (event != null) {

@@ -28,6 +28,7 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.PropertyProjection;
 import org.hibernate.criterion.RowCountProjection;
+import org.hibernate.criterion.SQLProjection;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.shards.strategy.exit.AggregateGroupExitOperation;
 import org.hibernate.shards.strategy.exit.AvgResultsExitOperation;
@@ -39,6 +40,7 @@ import org.hibernate.shards.strategy.exit.OrderExitOperation;
 import org.hibernate.shards.strategy.exit.ProjectionExitOperationFactory;
 import org.hibernate.shards.strategy.exit.PropertyProjectionExitOperation;
 import org.hibernate.shards.strategy.exit.PropertyProjectionOrderExitOperation;
+import org.hibernate.shards.strategy.exit.SQLExitOperation;
 import org.hibernate.shards.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,8 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
     private RowCountProjection rowCountProjection;
     // Porperty Projection operation applied to the criteria
     private PropertyProjection propertyProjection;
+    // SQLProjection operation applied to the criteria
+    private SQLProjection sqlProjection;
     // The Session Factory Implementor with which the Criteria is associated
     private SessionFactoryImplementor sessionFactoryImplementor;
 
@@ -131,6 +135,8 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
              * we will load all relevant fields from database
              */
             this.propertyProjection = (PropertyProjection) projection;
+        } else if (projection instanceof SQLProjection) {
+            this.sqlProjection = (SQLProjection) projection;
         } else {
             log.error("Adding an unsupported Projection: " + projection.getClass().getName());
             throw new UnsupportedOperationException();
@@ -209,6 +215,10 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
             // min, max, sum
             if (aggregateProjection != null) {
                 result = factory.getProjectionExitOperation(aggregateProjection, sessionFactoryImplementor).apply(result);
+            }
+
+            if (sqlProjection != null) {
+                result = new SQLExitOperation(sqlProjection).apply(result);
             }
         }
 

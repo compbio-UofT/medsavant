@@ -39,6 +39,8 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.shards.criteria.ShardedCriteriaImpl;
+import org.hibernate.type.IntegerType;
+import org.hibernate.type.Type;
 import org.testng.annotations.Test;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
 
@@ -115,14 +117,20 @@ public class VariantShardTest extends AbstractShardTest {
     @Test
     public void testArithmetic() {
         Session session = ShardedConnectionController.openSession();
-        Criteria crit = session.createCriteria(Variant.class).setFetchSize(2).setMaxResults(2).setFirstResult(6);
-        List<Variant> variantList = crit.list();
+        Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
+                .setFetchSize(2)
+                .setMaxResults(2)
+                .setFirstResult(6)
+                .setProjection(
+                        Projections.sqlProjection("floor(3.14) as value, position as pos", new String[] { "value", "pos" }, new Type[] { new IntegerType(), new IntegerType() }));
 
-        Iterator<Variant> iterator = variantList.iterator();
-        while (iterator.hasNext()) {
-            Variant v = (Variant) iterator.next();
-            System.out.println(v);
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
         }
+
         ShardedConnectionController.closeSession(session);
     }
 
