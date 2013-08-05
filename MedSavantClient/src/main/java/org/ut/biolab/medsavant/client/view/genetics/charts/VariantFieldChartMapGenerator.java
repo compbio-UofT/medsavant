@@ -369,11 +369,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, BasicPa
             List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     DNA_ID.getColumnName(), true);
-            if (dnaIDs == null) {
-                dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(),
-                        ProjectController.getInstance().getCurrentVariantSubTableName(),
-                        DNA_ID.getColumnName(), false);
-            }
             return dnaIDs;
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);

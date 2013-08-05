@@ -107,7 +107,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
 
                 @Override
                 protected Void doInBackground() throws Exception {
-                    setAvailableValues(MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache));
+                    setAvailableValues(MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), "Variant", columnName, allowInexactMatch, useCache));
                     if (columnName.equals(CHROM.getColumnName())) {
                         Collections.sort(getAvailableValues(), new ChromosomeComparator());
                     }
