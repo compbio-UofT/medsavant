@@ -12,14 +12,21 @@ public class SearcheablePatient {
 
     private Patient patient;
 
-    public SearcheablePatient() {};
+    public SearcheablePatient() {
+        this.patient = new Patient();
+    };
 
     public SearcheablePatient(Patient patient) {
         this.patient = patient;
     }
 
+    @Field("project_id")
+    public void setProjectId(int projectId) {
+        this.patient.setProjectId(projectId);
+    }
+
     @Field("patient_id")
-    public void setPatientId(String patientId) {
+    public void setPatientId(int patientId) {
         this.patient.setPatientId(patientId);
     }
 
@@ -33,23 +40,23 @@ public class SearcheablePatient {
         this.patient.setHospitalId(hospitalId);
     }
 
-    @Field("mother_id")
+    @Field("idbiomom")
     public void setMotherId(String motherId) {
         this.patient.setMotherId(motherId);
     }
 
-    @Field("father_id")
+    @Field("idbiodad")
     public void setFatherId(String fatherId) {
-        this.patient.setFamilyId(fatherId);
+        this.patient.setFatherId(fatherId);
     }
 
     @Field("gender")
-    public void setGender(String gender) {
+    public void setGender(int gender) {
         this.patient.setGender(gender);
     }
 
     @Field("affected")
-    public void setAffected(String affected) {
+    public void setAffected(int affected) {
         this.patient.setAffected(affected);
     }
 
@@ -64,12 +71,12 @@ public class SearcheablePatient {
     }
 
     @Field("bam_url")
-    public void setBamUrl(String bamUrl) {
+    public void setBamUrl(List<String> bamUrl) {
         this.patient.setBamUrl(bamUrl);
     }
 
     @Field("cohort_ids")
-    public void setCohortIds(List<String> cohortIds) {
+    public void setCohortIds(List<Integer> cohortIds) {
         this.patient.setCohortIds(cohortIds);
     }
 
@@ -77,8 +84,12 @@ public class SearcheablePatient {
         return patient;
     }
 
-    public String getPatientId() {
+    public int getPatientId() {
         return patient.getPatientId();
+    }
+
+    public int getProjectId() {
+        return patient.getProjectId();
     }
 
     public String getFamilyId() {
@@ -97,11 +108,11 @@ public class SearcheablePatient {
         return patient.getFatherId();
     }
 
-    public String getGender() {
+    public int getGender() {
         return patient.getGender();
     }
 
-    public String getAffected() {
+    public int getAffected() {
         return patient.getAffected();
     }
 
@@ -113,11 +124,11 @@ public class SearcheablePatient {
         return patient.getPhenotypes();
     }
 
-    public String getBamUrl() {
+    public List<String> getBamUrl() {
         return patient.getBamUrl();
     }
 
-    public List<String> getCohortIds() {
+    public List<Integer> getCohortIds() {
         return patient.getCohortIds();
     }
 

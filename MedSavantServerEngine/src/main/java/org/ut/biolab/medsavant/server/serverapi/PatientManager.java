@@ -16,16 +16,16 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
@@ -42,7 +42,14 @@ import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Patient;
 import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.model.solr.SearcheablePatient;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.*;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -56,8 +63,14 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 public class PatientManager extends MedSavantServerUnicastRemoteObject implements PatientManagerAdapter, BasicPatientColumns {
 
     private static PatientManager instance;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
+
+    private static final Log LOG = LogFactory.getLog(PatientManager.class);
 
     private PatientManager() throws RemoteException, SessionExpiredException {
+        queryManager = QueryManagerFactory.getQueryManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     public static synchronized PatientManager getInstance() throws RemoteException, SessionExpiredException {
@@ -70,92 +83,78 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(
-                table.getDBColumn(PATIENT_ID),
-                table.getDBColumn(FAMILY_ID),
-                table.getDBColumn(HOSPITAL_ID),
-                table.getDBColumn(IDBIOMOM),
-                table.getDBColumn(IDBIODAD),
-                table.getDBColumn(GENDER),
-                table.getDBColumn(AFFECTED),
-                table.getDBColumn(DNA_IDS),
-                table.getDBColumn(PHENOTYPES));
-
-        System.out.println(query);
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
+        /*String tablename = getPatientTableName(sid,projectId);*/
+        Query q = queryManager.createQuery("Select p from Patient p where p.project_id= :projectId");
+        q.setParameter("projectId", projectId);
+        List<ResultRow> resultRows = q.executeForRows();
         List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()) {
-            result.add(new Object[] {
-                rs.getInt(1),
-                rs.getString(2),
-                rs.getString(3),
-                rs.getString(4),
-                rs.getString(5),
-                rs.getInt(6),
-                rs.getInt(7),
-                rs.getString(8),
-                rs.getString(9)
-            });
+        for (ResultRow resultRow : resultRows) {
+            Object[] o = new Object[] {
+                    (Integer) resultRow.getObject("patient_id"),
+                    resultRow.getObject("family_id"),
+                    resultRow.getObject("hospital_id"),
+                    resultRow.getObject("mother_id"),
+                    resultRow.getObject("father_id"),
+                    Integer.parseInt((String) resultRow.getObject("gender")),
+                    Integer.parseInt((String) resultRow.getObject("affected")),
+                    resultRow.getObject("dna_ids"),
+                    resultRow.getObject("bam_url"),
+                    resultRow.getObject("phenotypes")
+            };
+            result.add(o);
         }
+
         return result;
     }
 
     @Override
     public List<Object[]> getPatients(String sid, int projectId) throws SQLException, RemoteException, SessionExpiredException {
-        String tablename = getPatientTableName(sid,projectId);
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
+        Query q = queryManager.createQuery("Select p from Patient p where p.project_id= :projectId");
+        q.setParameter("projectId", projectId);
+        List<ResultRow> resultRows = q.executeForRows();
         List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()) {
-            Object[] o = new Object[rs.getMetaData().getColumnCount()];
-            for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
-                try {
-                    o[i] = rs.getObject(i+1);
-                } catch (SQLException e) {
-                    //ignore...probably invalid input (ie. date 0000-00-00)
-                }
-            }
+        for (ResultRow resultRow : resultRows) {
+            Object[] o = new Object[] {
+                    resultRow.getObject("project_id"),
+                    resultRow.getObject("family_id"),
+                    resultRow.getObject("hospital_id"),
+                    resultRow.getObject("idbiomom"),
+                    resultRow.getObject("idbiodad"),
+                    resultRow.getObject("gender"),
+                    resultRow.getObject("affected"),
+                    resultRow.getObject("dna_ids"),
+                    resultRow.getObject("bam_url"),
+                    resultRow.getObject("phenotypes")
+            };
             result.add(o);
         }
+
         return result;
     }
 
     @Override
     public Object[] getPatientRecord(String sid, int projectId, int patientId) throws SQLException, RemoteException, SessionExpiredException {
-
-        String tablename = getPatientTableName(sid,projectId);
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PATIENT_ID), patientId));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        rs.next();
-        Object[] v = new Object[rs.getMetaData().getColumnCount()];
-        for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-            try {
-                v[i - 1] = rs.getObject(i);
-            } catch (SQLException e) {
-                //ignore...probably invalid input (ie. date 0000-00-00)
-            }
+        Query q = queryManager.createQuery("Select p from Patient p where p.project_id= :projectId and p.patient_id = :patientId");
+        q.setParameter("projectId", projectId);
+        q.setParameter("patientId", patientId);
+        List<ResultRow> resultRows = q.executeForRows();
+        Object[] o = null;
+        if (resultRows.size() > 0) {
+            ResultRow resultRow = resultRows.get(0);
+            o = new Object[] {
+                    resultRow.getObject("project_id"),
+                    resultRow.getObject("family_id"),
+                    resultRow.getObject("hospital_id"),
+                    resultRow.getObject("idbiomom"),
+                    resultRow.getObject("idbiodad"),
+                    resultRow.getObject("gender"),
+                    resultRow.getObject("affected"),
+                    resultRow.getObject("dna_ids"),
+                    resultRow.getObject("bam_url"),
+                    resultRow.getObject("phenotypes")
+            };
         }
-        return v;
+        return o;
     }
 
     @Override
@@ -224,6 +223,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public String getPatientTableName(String sid, int projectId) throws SQLException, SessionExpiredException {
 
+       /* return "Patient";*/
         TableSchema table = MedSavantDatabase.PatienttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -284,26 +284,11 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void removePatient(String sid, int projectId, int[] patientIds) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-
-        PooledConnection conn = ConnectionController.connectPooled(sid);
-        try {
-            conn.setAutoCommit(false);
-            for (int id : patientIds) {
-                //remove all references
-                CohortManager.getInstance().removePatientReferences(sid,projectId, id);
-
-                //remove from patient patientFormatTable
-                DeleteQuery query = new DeleteQuery(table.getTable());
-                query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PATIENT_ID), id));
-                conn.createStatement().executeUpdate(query.toString());
-            }
-            conn.commit();
-        } finally {
-            conn.setAutoCommit(true);
-            conn.close();
-        }
+        String patientIdCol = StringUtils.join(ArrayUtils.toObject(patientIds), ",");
+        String statement = "Delete from Patient p where p.project_id=:projectId AND p.patient_id in (%s)";
+        Query query = queryManager.createQuery(String.format(statement, patientIdCol));
+        query.setParameter("projectId",projectId);
+        query.executeDelete();
     }
 
     @Override
@@ -318,6 +303,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         ConnectionController.executeUpdate(sid,  query.toString());
+
+        Patient patient = mapToPatient(cols, values, projectId);
+        patient.setPatientId(generateId());
+        try {
+            entityManager.persist(patient);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting patient");
+        }
     }
 
     @Override
@@ -587,37 +580,28 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public List<Object[]> getFamily(String sessID, int projID, String famID) throws SQLException, RemoteException, SessionExpiredException {
-
-        String tablename = getPatientTableName(sessID, projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-
-        query.addColumns(table.getDBColumn(HOSPITAL_ID));
-        query.addColumns(table.getDBColumn(IDBIOMOM));
-        query.addColumns(table.getDBColumn(IDBIODAD));
-        query.addColumns(table.getDBColumn(PATIENT_ID));
-        query.addColumns(table.getDBColumn(GENDER));
-        query.addColumns(table.getDBColumn(AFFECTED));
-
-        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
-
-        String s = query.toString();
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
+        Query q = queryManager.createQuery("Select p.hospital_id,p.idbiomom, pidbiodad, p.patient_id, p.gender, p.affected" +
+                " from Patient p " +
+                "where p.project_id= :projectId and p.family_id = :familyId");
+        q.setParameter("projectId", projID);
+        q.setParameter("familyId", famID);
+        List<ResultRow> resultRows = q.executeForRows();
         List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()) {
-            Object[] r = new Object[6];
-            r[0] = rs.getString(1);
-            r[1] = rs.getString(2);
-            r[2] = rs.getString(3);
-            r[3] = rs.getInt(4);
-            r[4] = rs.getInt(5);
-            r[5] = rs.getInt(6);
-            result.add(r);
+        for (ResultRow  resultRow : resultRows) {
+            Object[] o  = new Object[] {
+                    resultRow.getObject("patient_id"),
+                    resultRow.getObject("family_id"),
+                    resultRow.getObject("hospital_id"),
+                    resultRow.getObject("idbiomom"),
+                    resultRow.getObject("idbiodad"),
+                    resultRow.getObject("gender"),
+                    resultRow.getObject("affected"),
+                    resultRow.getObject("dna_ids"),
+                    resultRow.getObject("bam_url"),
+                    resultRow.getObject("phenotypes")
+            };
+            result.add(o);
         }
-
         return result;
     }
 
@@ -709,13 +693,10 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public void clearPatients(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException{
-
-        String tableName = getPatientTableName(sessID, projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
-
-        DeleteQuery query = new DeleteQuery(table.getTable());
-
-        ConnectionController.executeUpdate(sessID, query.toString());
+        String statement = "Delete from Patient p where p.project_id=:projectId";
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId",projID);
+        query.executeDelete();
     }
 
     @Override
@@ -777,5 +758,58 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         return bamURL;
+    }
+
+    private int generateId() {
+        Query query = queryManager.createQuery("Select p.patient_id,max(p.patient_id) from Patient p");
+        List<ResultRow> results = query.executeForRows();
+
+        int newId;
+        if (results.size() == 0 ) {
+            newId = 1;
+        } else {
+            newId = ((Double)(results.get(0).getObject("max"))).intValue() + 1;
+        }
+
+        return newId;
+    }
+
+    private Patient mapToPatient(List<CustomField> columns, List<String> columnValues, int projectId) {
+
+        Patient result = new Patient();
+
+        int index = 0;
+        if (columns.size() == columnValues.size()) {
+            for (CustomField customField : columns) {
+                String columnName = customField.getColumnName();
+                String columnValue = columnValues.get(index);
+
+                if (columnValue != null) {
+                    if ("family_id".equals(columnName)) {
+                        result.setFamilyId(columnValue);
+                    } else if ("hospital_id".equals(columnName)) {
+                        result.setHospitalId(columnValue);
+                    } else if ("idbiomom".equals(columnName)) {
+                        result.setMotherId(columnValue);
+                    } else if ("idbiodad".equals(columnName)) {
+                        result.setFatherId(columnValue);
+                    } else if ("gender".equals(columnName)) {
+                        result.setGender(Integer.parseInt(columnValue));
+                    } else if ("affected".equals(columnName)) {
+                        result.setAffected(Integer.parseInt(columnValue));
+                    } else if ("dna_ids".equals(columnName)) {
+                        result.setDnaIds(Arrays.asList(columnValue.split("\n")));
+                    } else if ("bam_url".equals(columnName)) {
+                        result.setBamUrl(Arrays.asList(columnValue.split("\n")));
+                    } else if ("phenotypes".equals(columnName)) {
+                        result.setDnaIds(Arrays.asList(columnValue.split("\n")));
+                    }
+                }
+
+                index++;
+            }
+        }
+        result.setProjectId(projectId);
+        return result;
     }
 }
