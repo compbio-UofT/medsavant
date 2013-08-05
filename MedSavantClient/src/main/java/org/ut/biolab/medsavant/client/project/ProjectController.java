@@ -78,6 +78,22 @@ public class ProjectController extends Controller<ProjectEvent> {
                 }
             }
         });
+
+        try {
+            currentVariantTableSchema = MedSavantClient.CustomTablesManager.getCustomTableSchema(
+                    LoginController.getInstance().getSessionID(),
+                    "z_variant_proj1_ref3_update1");
+            currentPatientTableSchema = MedSavantClient.CustomTablesManager.getCustomTableSchema(
+                    LoginController.getInstance().getSessionID(),
+                    "z_patient_proj1");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (SessionExpiredException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static ProjectController getInstance() {
@@ -169,12 +185,13 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     public String getCurrentVariantTableName() throws SQLException, RemoteException {
-        try {
+        return "Variant";
+        /*try {
             return manager.getVariantTableName(LoginController.getInstance().getSessionID(), currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
-        }
+        }*/
     }
 
     public String getCurrentVariantSubTableName() throws SQLException, RemoteException {
@@ -195,15 +212,16 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentVariantTable() throws SQLException, RemoteException {
-        try {
+       /* try {
             currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
-        }
+        }*/
     }
 
     public String getCurrentPatientTableName() throws RemoteException, SQLException {
+        /*return "Patient";*/
         try {
             return MedSavantClient.PatientManager.getPatientTableName(LoginController.getInstance().getSessionID(), currentProjectID);
         } catch (SessionExpiredException ex) {
@@ -222,12 +240,12 @@ public class ProjectController extends Controller<ProjectEvent> {
 
     private void setCurrentPatientTable() throws SQLException, RemoteException {
         DbColumn dbc = new DbColumn(null, "A", "B", 1);
-        try {
+        /*try {
             currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentPatientTableName());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
-        }
+        }*/
     }
 
     public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
