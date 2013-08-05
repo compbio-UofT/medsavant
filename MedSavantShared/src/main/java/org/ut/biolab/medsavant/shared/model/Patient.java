@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.shared.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,25 +8,42 @@ import java.util.List;
  */
 public class Patient {
 
-    private String patientId;
+    private int patientId;
     private String familyId;
     private String hospitalId;
     private String motherId;
     private String fatherId;
+    private int projectId;
 
-    private String gender;
-    private String affected;
+    private int gender;
+    private int affected;
     private List<String> dnaIds;
     private List<String> phenotypes;
-    private String bamUrl;
+    private List<String> bamUrl;
 
-    private List<String> cohortIds;
+    private List<Integer> cohortIds;
 
-    public String getPatientId() {
+    public Patient() {
+        this.cohortIds = new ArrayList<Integer>();
+    }
+
+    public SimplePatient getSimplePatient() {
+        return new SimplePatient(patientId, hospitalId, dnaIds);
+    }
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
+    public int getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(String patientId) {
+    public void setPatientId(int patientId) {
         this.patientId = patientId;
     }
 
@@ -61,19 +79,19 @@ public class Patient {
         this.fatherId = fatherId;
     }
 
-    public String getGender() {
+    public int getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(int gender) {
         this.gender = gender;
     }
 
-    public String getAffected() {
+    public int getAffected() {
         return affected;
     }
 
-    public void setAffected(String affected) {
+    public void setAffected(int affected) {
         this.affected = affected;
     }
 
@@ -93,19 +111,23 @@ public class Patient {
         this.phenotypes = phenotypes;
     }
 
-    public String getBamUrl() {
+    public List<String> getBamUrl() {
         return bamUrl;
     }
 
-    public void setBamUrl(String bamUrl) {
+    public void setBamUrl(List<String> bamUrl) {
         this.bamUrl = bamUrl;
     }
 
-    public List<String> getCohortIds() {
+    public List<Integer> getCohortIds() {
         return cohortIds;
     }
 
-    public void setCohortIds(List<String> cohortIds) {
+    public void setCohortIds(List<Integer> cohortIds) {
         this.cohortIds = cohortIds;
+    }
+
+    public Integer removeCohortId(int cohortId) {
+        return this.cohortIds.remove(cohortId);
     }
 }
