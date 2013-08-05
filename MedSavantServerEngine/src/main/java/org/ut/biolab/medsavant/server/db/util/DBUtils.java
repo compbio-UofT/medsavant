@@ -277,4 +277,19 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         return ComboCondition.and(results);
     }
+
+    public static int generateId(String idColumnName, String entity) {
+        String statement = String.format("Select e.%s,max(e.%s) from %s e",idColumnName, idColumnName, entity);
+        Query query = queryManager.createQuery(statement);
+        List<ResultRow> results = query.executeForRows();
+
+        int newId;
+        if (results.size() == 0 ) {
+            newId = 1;
+        } else {
+            newId = ((Double)(results.get(0).getObject("max"))).intValue() + 1;
+        }
+
+        return newId;
+    }
 }
