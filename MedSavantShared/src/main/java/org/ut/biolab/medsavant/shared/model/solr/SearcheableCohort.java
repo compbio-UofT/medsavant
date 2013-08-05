@@ -12,14 +12,18 @@ public class SearcheableCohort {
 
     private Cohort cohort;
 
-    private int id;
-    private String name;
-    private List<Integer> patientIds;
-
+    public SearcheableCohort(Cohort cohort) {
+        this.cohort = cohort;
+    }
 
     @Field("id")
     public void setId(int id) {
         this.cohort.setId(id);
+    }
+
+    @Field("project_id")
+    public void setProjectId(int projectId) {
+        this.cohort.setProjectId(projectId);
     }
 
     @Field("name")
@@ -51,4 +55,9 @@ public class SearcheableCohort {
     public void setCohort(Cohort cohort) {
         this.cohort = cohort;
     }
+
+    public int getProjectId() {
+        return this.cohort.getProjectId();
+    }
+
 }

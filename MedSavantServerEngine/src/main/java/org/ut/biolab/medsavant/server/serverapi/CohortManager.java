@@ -16,35 +16,33 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.CohortTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.CohortMembershipTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.util.CustomTables;
-import org.ut.biolab.medsavant.server.db.variants.VariantManager;
-import org.ut.biolab.medsavant.shared.model.Cohort;
-import org.ut.biolab.medsavant.shared.model.SimplePatient;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.variants.VariantManager;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.model.Cohort;
+import org.ut.biolab.medsavant.shared.model.Patient;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.SimplePatient;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -54,8 +52,14 @@ import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
 public class CohortManager extends MedSavantServerUnicastRemoteObject implements CohortManagerAdapter, BasicPatientColumns {
 
     private static CohortManager instance;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
+
+    private static final Log LOG = LogFactory.getLog(CohortManager.class);
 
     private CohortManager() throws RemoteException, SessionExpiredException {
+        queryManager = QueryManagerFactory.getQueryManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     public static synchronized CohortManager getInstance() throws RemoteException, SessionExpiredException {
@@ -68,204 +72,150 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     @Override
     public List<SimplePatient> getIndividualsInCohort(String sid, int projectId, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = PatientManager.getInstance().getPatientTableName(sid,projectId);
-        TableSchema cohortTable = MedSavantDatabase.CohortmembershipTableSchema;
-        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        Query query = queryManager.createQuery("Select p from Patient p where p.cohort_id := cohortId and p.project_id := projectId");
+        query.setParameter("cohortId", cohortId);
+        query.setParameter("projectId", projectId);
 
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(cohortTable.getTable());
-        query.addFromTable(patientTable.getTable());
-        query.addColumns(
-                cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID),
-                patientTable.getDBColumn(HOSPITAL_ID),
-                patientTable.getDBColumn(DNA_IDS));
-        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(PATIENT_ID)));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        List<SimplePatient> result = new ArrayList<SimplePatient>();
-        while (rs.next()) {
-            result.add(new SimplePatient(rs.getInt(1), rs.getString(2), PatientManager.getInstance().parseDNAIDs(rs.getString(3))));
+        List<Patient> patients = query.execute();
+        List<SimplePatient> simplePatients = new ArrayList<SimplePatient>();
+        for (Patient patient : patients) {
+            simplePatients.add(patient.getSimplePatient());
         }
-        return result;
+
+        return simplePatients;
     }
 
     @Override
     public List<String> getDNAIDsForCohort(String sessID, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
         List<String> list = getIndividualFieldFromCohort(sessID, cohortId, DNA_IDS.getColumnName());
-        List<String> result = new ArrayList<String>();
-        for (String s : list) {
-            if (s == null) continue;
-            String[] dnaIDs = s.split(",");
-            for (String id : dnaIDs) {
-                if (!result.contains(id)) {
-                    result.add(id);
-                }
-            }
-        }
-        return result;
+
+        return list;
     }
 
     @Override
     public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException, SessionExpiredException {
+        String statement = String.format("Select c from Cohort c where c.name IN (%s)", StringUtils.join(cohNames, ","));
+        Query query = queryManager.createQuery(statement);
+        List<ResultRow> cohortResults = query.executeForRows();
 
-        String selQuery = String.format("SELECT %s FROM %s WHERE %s = ANY (SELECT %s FROM %s JOIN %s USING (%s) WHERE %s IN ('%s'))",
-                DNA_IDS.getColumnName(),
-                PatientManager.getInstance().getPatientTableName(sessID, projID),
-                PATIENT_ID.getColumnName(),
-                CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID,
-                CohortMembershipTableSchema.TABLE_NAME,
-                CohortTableSchema.TABLE_NAME,
-                CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID,
-                CohortTableSchema.COLUMNNAME_OF_NAME,
-                StringUtils.join(cohNames, "','"));
+        StringBuilder sb = new StringBuilder();
 
-        List<String> result = new ArrayList<String>();
-        ResultSet rs = ConnectionController.executeQuery(sessID, selQuery);
-        while (rs.next()) {
-            String s = rs.getString(1);
-            if (s != null) {
-                String[] dnaIDs = s.split(",");
-                for (String id : dnaIDs) {
-                    if (!result.contains(id)) {
-                        result.add(id);
-                    }
-                }
+        for (int i = 0; i < cohortResults.size(); i++) {
+            int cohortId = (Integer) cohortResults.get(0).getObject("cohort_id");
+            sb.append(cohortId);
+            if (i != cohortResults.size() - 1) {
+                sb.append(",");
             }
         }
-        return result;
+
+        String patientStatement = String.format("Select p.dna_ids from Patient p where p.cohort_ids IN (%s)",sb.toString());
+        Query patientQuery = queryManager.createQuery(patientStatement);
+        List<ResultRow> resultRows = patientQuery.executeForRows();
+
+        List<String> dnaIds = ListUtils.EMPTY_LIST;
+        for (ResultRow resultRow : resultRows) {
+            dnaIds = ListUtils.union(dnaIds,(List<String>) resultRow.getObject("dna_ids"));
+        }
+
+        return dnaIds;
     }
 
     @Override
     public List<String> getIndividualFieldFromCohort(String sessID, int cohortId, String columnName) throws SQLException, RemoteException, SessionExpiredException {
+        String statement = String.format("Select c.%s from Cohort c where c.cohort_id= :cohortId", columnName);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("cohortId", cohortId);
+        List<ResultRow> resultRows = query.executeForRows();
 
-        TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
-        TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
-        TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
-
-        //get patient tablename
-        SelectQuery query1 = new SelectQuery();
-        query1.addFromTable(patientMapTable.getTable());
-        query1.addFromTable(cohortTable.getTable());
-        query1.addColumns(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME));
-        query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID)));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query1.toString());
-        rs.next();
-        String patientTablename = rs.getString(1);
-
-        //get field lists
-        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID, patientTablename);
-        SelectQuery query2 = new SelectQuery();
-        query2.addFromTable(cohortMembershipTable.getTable());
-        query2.addFromTable(patientTable.getTable());
-        query2.addColumns(patientTable.getDBColumn(columnName));
-        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(PATIENT_ID)));
-
-        rs = ConnectionController.executeQuery(sessID, query2.toString());
-
-        List<String> result = new ArrayList<String>();
-        while(rs.next()) {
-            result.add(rs.getString(1));
+        List<String> result = ListUtils.EMPTY_LIST;
+        for (ResultRow resultRow : resultRows) {
+            result = ListUtils.union(result, (List<String>) resultRow.getObject("cohort_id"));
         }
+
         return result;
+
     }
 
     @Override
     public void addPatientsToCohort(String sessID, int[] patientIDs, int cohortID) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
-
-        Connection c = ConnectionController.connectPooled(sessID);
-        c.setAutoCommit(false);
-
-        for (int id : patientIDs) {
+        Query query = queryManager.createQuery("Select c from Cohort c where c.cohort_id = :cohortId");
+        query.setParameter("cohortId", cohortID);
+        List<Cohort> cohorts = query.execute();
+        if (cohorts.size() > 0) {
+            Cohort cohort = cohorts.get(0);
+            List<Integer> newPatientIds = ListUtils.union(Arrays.asList(patientIDs), cohort.getPatientIds());
+            cohort.setPatientIds(newPatientIds);
             try {
-                InsertQuery query = new InsertQuery(table.getTable());
-                query.addColumn(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortID);
-                query.addColumn(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), id);
-                c.createStatement().executeUpdate(query.toString());
-            } catch (MySQLIntegrityConstraintViolationException e) {
-                //duplicate entry, ignore
+                entityManager.persist(cohort);
+            } catch (InitializationException e) {
+                LOG.error("Failed to persist cohort");
             }
         }
 
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
     }
 
     @Override
     public void removePatientsFromCohort(String sessID, int[] patIDs, int cohID) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
+        Query query = queryManager.createQuery("Select c from Cohort c where c.cohort_id= :cohortId");
+        query.setParameter("cohortId", cohID);
 
-        Connection c = ConnectionController.connectPooled(sessID);
-        c.setAutoCommit(false);
-
-        for (int id : patIDs) {
-            DeleteQuery query = new DeleteQuery(table.getTable());
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohID));
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), id));
-            c.createStatement().executeUpdate(query.toString());
+        List<Cohort> cohorts = query.execute();
+        if (cohorts.size() > 0 ) {
+            Cohort c = cohorts.get(0);
+            for (int id : patIDs) {
+                c.removePatientId(id);
+            }
+            try {
+                entityManager.persist(c);
+            } catch (InitializationException e) {
+                LOG.error("Error persisting cohort");
+            }
         }
 
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
     }
 
     @Override
     public Cohort[] getCohorts(String sessID, int projID) throws SQLException, SessionExpiredException {
+        Query query = queryManager.createQuery("Select c from Cohort c where c.project_id= :projectId");
+        query.setParameter("projectId", projID);
 
-        TableSchema table = MedSavantDatabase.CohortTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        List<Cohort> result = new ArrayList<Cohort>();
-        while (rs.next()) {
-            result.add(new Cohort(rs.getInt(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), rs.getString(CohortTableSchema.COLUMNNAME_OF_NAME)));
-        }
-        return result.toArray(new Cohort[0]);
+        List<Cohort> cohorts = query.execute();
+        return cohorts.toArray(new Cohort[]{});
     }
 
     @Override
     public void addCohort(String sid, int projectId, String name) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.CohortTableSchema;
-        InsertQuery query = new InsertQuery(table.getTable());
-        query.addColumn(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
-        query.addColumn(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_NAME), name);
-
-        ConnectionController.executeUpdate(sid,  query.toString());
+        Cohort cohort = new Cohort(generateId(), projectId, name);
+        try {
+            entityManager.persist(cohort);
+        } catch (InitializationException e) {
+            LOG.error("Failed to persist cohort");
+        }
     }
+
 
     @Override
     public void removeCohort(String sid, int cohortId) throws SQLException, SessionExpiredException {
 
-        TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
-        TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
-        Connection c = ConnectionController.connectPooled(sid);
+        //remove patient references
+        Query query = queryManager.createQuery("Select p from Patient p where p.cohort_id= :cohortId");
+        query.setParameter("cohortId", cohortId);
+        List<Patient> patients = query.execute();
+        for (Patient patient : patients) {
+            patient.removeCohortId(cohortId);
+            try {
+                entityManager.persist(patient);
+            } catch (InitializationException e) {
+                LOG.error("Error persisting patient");
+            }
+        }
 
-
-        //remove all entries from membership
-        DeleteQuery query1 = new DeleteQuery(cohortMembershipTable.getTable());
-        query1.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        c.createStatement().execute(query1.toString());
-
-        //remove from cohorts
-        DeleteQuery query2 = new DeleteQuery(cohortTable.getTable());
-        query2.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        c.createStatement().execute(query2.toString());
-
-        c.close();
+        //delete
+        Query deleteQuery = queryManager.createQuery("Delete from Cohort c where c.cohort_id= :cohortId");
+        deleteQuery.setParameter("cohortId", cohortId);
+        deleteQuery.executeDelete();
     }
 
     @Override
@@ -277,34 +227,31 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     @Override
     public int[] getCohortIDs(String sid, int projectId) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.CohortTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        List<Integer> result = new ArrayList<Integer>();
-        while (rs.next()) {
-            result.add(rs.getInt(1));
+        Query query = queryManager.createQuery("Select c.cohort_id from Cohort c where c.project_id= :projectId");
+        query.setParameter("projectId",projectId);
+        List<ResultRow> resultRowList = query.executeForRows();
+        int[] cohortIds = new int[resultRowList.size()];
+        for (int i = 0; i < resultRowList.size(); i++) {
+            cohortIds[i] = (Integer) resultRowList.get(0).getObject("cohort_id");
         }
-        return ArrayUtils.toPrimitive(result.toArray(new Integer[0]));
+
+        return cohortIds;
     }
 
     @Override
     public void removePatientReferences(String sessID, int projID, int patID) throws SQLException, SessionExpiredException {
 
-        int[] cohIDs = getCohortIDs(sessID, projID);
+        Query query = queryManager.createQuery("Select c from Cohort c where c.project_id= :projectId");
+        query.setParameter("projectId", projID);
 
-        TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
-
-        for (int id : cohIDs) {
-            DeleteQuery query = new DeleteQuery(table.getTable());
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), id));
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patID));
-            ConnectionController.executeUpdate(sessID, query.toString());
+        List<Cohort> cohorts = query.execute();
+        for (Cohort cohort : cohorts) {
+            cohort.removePatientId(patID);
+            try {
+                entityManager.persist(cohort);
+            } catch (InitializationException e) {
+                LOG.error("Error persisting cohort");
+            }
         }
     }
 
@@ -312,5 +259,19 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     public int getNumVariantsInCohort(String sessID, int projID, int refID, int cohortID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException, SessionExpiredException {
         List<String> dnaIDs = getDNAIDsForCohort(sessID, cohortID);
         return VariantManager.getInstance().getVariantCountForDNAIDs(sessID, projID, refID, conditions, dnaIDs);
+    }
+
+    private int generateId() {
+        Query query = queryManager.createQuery("Select c.cohort_id,max(c.cohort_id) from Cohort c");
+        List<ResultRow> results = query.executeForRows();
+
+        int newId;
+        if (results.size() == 0 ) {
+            newId = 1;
+        } else {
+            newId = ((Double)(results.get(0).getObject("max"))).intValue() + 1;
+        }
+
+        return newId;
     }
 }

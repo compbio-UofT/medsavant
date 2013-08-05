@@ -14,11 +14,18 @@ import java.util.List;
 public class Cohort implements Serializable, Comparable {
 
     private int id;
+    private int projectId;
     private String name;
     private List<Integer> patientIds;
 
     public Cohort(int id, String name){
         this.id = id;
+        this.name = name;
+    }
+
+    public Cohort(int id, int projectId, String name){
+        this.id = id;
+        this.projectId = projectId;
         this.name = name;
     }
 
@@ -56,4 +63,15 @@ public class Cohort implements Serializable, Comparable {
         return this.getName().compareTo(t.toString());
     }
 
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer removePatientId(int patientId) {
+        return patientIds.remove(patientId);
+    }
 }
