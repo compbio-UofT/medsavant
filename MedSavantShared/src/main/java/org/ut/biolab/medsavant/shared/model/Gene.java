@@ -40,8 +40,10 @@ public class Gene implements Serializable, Comparable<Gene> {
     private final int codingStart;
     private final int codingEnd;
     private final String transcript;
+    private final int exonStart;
+    private final int exonEnd;
 
-    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript) {
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, int exonStart, int exonEnd) {
         this.name = name;
         this.chrom = chrom;
         this.start = start;
@@ -49,6 +51,8 @@ public class Gene implements Serializable, Comparable<Gene> {
         this.codingStart = codingStart;
         this.codingEnd = codingEnd;
         this.transcript = transcript;
+        this.exonStart = exonStart;
+        this.exonEnd = exonEnd;
     }
 
     /**
@@ -60,7 +64,7 @@ public class Gene implements Serializable, Comparable<Gene> {
      * @param end end position within <code>chrom</code>
      */
     public Gene(String name, String chrom, int start, int end) {
-        this(name, chrom, start, end, -1, -1, null);
+        this(name, chrom, start, end, -1, -1, null,0,0);
     }
 
     public String getName() {
@@ -89,6 +93,14 @@ public class Gene implements Serializable, Comparable<Gene> {
 
     public String getTranscript() {
         return transcript;
+    }
+
+    public int getExonStart() {
+        return exonStart;
+    }
+
+    public int getExonEnd() {
+        return exonEnd;
     }
 
     public String getDescription() throws MalformedURLException, IOException{
