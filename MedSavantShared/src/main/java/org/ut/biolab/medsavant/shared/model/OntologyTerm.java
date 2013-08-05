@@ -36,6 +36,8 @@ public class OntologyTerm implements Serializable {
     private final String[] altIDs;
     private final String[] parentIDs;
 
+    private String[] genes;
+
     public OntologyTerm(OntologyType ontology, String id, String name, String def, String[] altIDs, String[] parentIDs) {
         this.ontology = ontology;
         this.id = id;
@@ -43,6 +45,25 @@ public class OntologyTerm implements Serializable {
         this.def = def;
         this.altIDs = altIDs;
         this.parentIDs = parentIDs;
+        this.genes = new String[0];
+    }
+
+    public OntologyTerm(OntologyType ontology, String id, String name, String def, String[] altIDs, String[] parentIDs, String[] genes) {
+        this.ontology = ontology;
+        this.id = id;
+        this.name = name;
+        this.def = def;
+        this.altIDs = altIDs;
+        this.parentIDs = parentIDs;
+        this.genes = genes;
+    }
+
+    public String[] getGenes() {
+        return genes;
+    }
+
+    public void setGenes(String[] genes) {
+        this.genes = genes;
     }
 
     @Override
