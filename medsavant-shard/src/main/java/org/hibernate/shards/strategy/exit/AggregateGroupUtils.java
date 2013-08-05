@@ -40,14 +40,14 @@ public class AggregateGroupUtils {
      * @param ag
      * @return
      */
-    public static List<Object> collide(List<Object> results, SupportedAggregations ag, int keyIndex, int valueIndex) {
+    public static List<Object> collide(List<Object> results, SupportedAggregations ag) {
         // use LinkedHashMap to preserve ordering
         LinkedHashMap<Comparable<Object>, BigDecimal> res = new LinkedHashMap<Comparable<Object>, BigDecimal>();
 
         for (Object pair : results) {
-            Comparable<Object> key = (Comparable<Object>) ((Object[]) pair)[keyIndex];
+            Comparable<Object> key = (Comparable<Object>) ((Object[]) pair)[1];
             // BigDecimal can handle all numbers
-            BigDecimal value = new BigDecimal(((Number) ((Object[]) pair)[valueIndex]).toString());
+            BigDecimal value = new BigDecimal(((Number) ((Object[]) pair)[0]).toString());
 
             if (res.containsKey(key)) {
                 switch (ag) {

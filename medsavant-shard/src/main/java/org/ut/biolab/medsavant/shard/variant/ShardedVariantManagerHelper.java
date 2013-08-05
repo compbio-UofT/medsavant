@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.shards.criteria.ShardedCriteriaImpl;
 import org.hibernate.type.IntegerType;
+import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -55,6 +57,7 @@ import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 /**
@@ -191,7 +194,7 @@ public class ShardedVariantManagerHelper implements Serializable {
         // execute query
         // add order by value ASC if needed
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + round + "as value",
-                "value", new String[] { "value", "pos" }, new Type[] { new IntegerType(), new IntegerType() }));
+                "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new IntegerType() }));
 
         Map<Range, Long> results = new TreeMap<Range, Long>();
         List<Object[]> os = c.list();
@@ -210,5 +213,29 @@ public class ShardedVariantManagerHelper implements Serializable {
         ShardedConnectionController.closeSession(s);
 
         return results;
+    }
+
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition nucCon, float multiplier) throws SQLException,
+            SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + colName + " as value",
+                "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new StringType() }));
+        if (nucCon != null) {
+            c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        }
+        List<Object[]> os = c.list();
+
+        Map<String, Integer> res = new HashMap<String, Integer>();
+        if (os != null) {
+            for (Object[] o : os) {
+                String key = (o[1] == null) ? "" : (String) o[0];
+                res.put(key, (int) (((BigDecimal) o[1]).intValue() * multiplier));
+            }
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return res;
     }
 }

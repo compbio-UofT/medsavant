@@ -36,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -48,6 +49,7 @@ import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 /**
@@ -129,5 +131,21 @@ public class VariantManagerHelper implements Serializable {
         }
 
         return results;
+    }
+
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition c, float multiplier) throws SQLException,
+            SessionExpiredException {
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
+        Map<String, Integer> map = new HashMap<String, Integer>();
+
+        while (rs.next()) {
+            String key = rs.getString(1);
+            if (key == null) {
+                key = "";
+            }
+            map.put(key, (int) (rs.getInt(2) * multiplier));
+        }
+
+        return map;
     }
 }

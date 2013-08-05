@@ -66,7 +66,7 @@ public class AggregateGroupExitOperation implements ProjectionExitOperation {
         if (nonNullResults.size() == 0) {
             return Collections.singletonList(null);
         } else {
-            return AggregateGroupUtils.collide(nonNullResults, aggregate, 1, 0);
+            return AggregateGroupUtils.collide(nonNullResults, aggregate);
         }
     }
 }

@@ -628,23 +628,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
 
+        Condition c = null;
         if (column.getColumnNameSQL().equals(ALT.getColumnName()) || column.getColumnNameSQL().equals(REF.getColumnName())) {
-            q.addCondition(createNucleotideCondition(column));
+            c = createNucleotideCondition(column);
+            q.addCondition(c);
         }
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        Map<String, Integer> map = new HashMap<String, Integer>();
-
-        while (rs.next()) {
-            String key = rs.getString(1);
-            if (key == null) {
-                key = "";
-            }
-            map.put(key, (int) (rs.getInt(2) * multiplier));
-        }
-
-        return map;
+        return helper.getFilteredFrequencyValuesForCategoricalColumn(sessID, q, column.getColumnNameSQL(), c, multiplier);
     }
 
     @Override

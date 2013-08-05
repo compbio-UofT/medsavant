@@ -57,7 +57,7 @@ public class SQLGroupExitOperation implements ProjectionExitOperation {
         if (nonNullResults.size() == 0) {
             return Collections.singletonList(null);
         } else {
-            return AggregateGroupUtils.collide(nonNullResults, aggregate, 0, 1);
+            return AggregateGroupUtils.collide(nonNullResults, aggregate);
         }
     }
 }
