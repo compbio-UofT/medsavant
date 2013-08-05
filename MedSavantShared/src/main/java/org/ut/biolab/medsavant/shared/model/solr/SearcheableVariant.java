@@ -19,8 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
-import java.util.Locale;
-
 /**
  * Adapter class for mapping Solr documents to VariantRecord objects.
  */
@@ -30,6 +28,10 @@ public class SearcheableVariant {
 
     public SearcheableVariant() {
         variantRecord = new VariantRecord();
+    }
+
+    public SearcheableVariant(VariantRecord variantRecord) {
+        this.variantRecord = variantRecord;
     }
 
     public VariantRecord getVariantRecord() {
