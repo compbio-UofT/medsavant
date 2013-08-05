@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.persistence.solr.SolrEntityManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
@@ -88,7 +89,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     private VariantManager() throws RemoteException, SessionExpiredException {
         queryManager = QueryManagerFactory.getQueryManager();
-        entityManager = new SolrEntityManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     public static synchronized VariantManager getInstance() throws RemoteException, SessionExpiredException {
