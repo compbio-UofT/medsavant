@@ -39,6 +39,12 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
@@ -54,6 +60,7 @@ import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
  */
 public class OntologyManager extends MedSavantServerUnicastRemoteObject implements OntologyManagerAdapter, OntologyColumns, OntologyInfoColumns {
 
+    //ToDo add inserts
     private static final Log LOG = LogFactory.getLog(OntologyManager.class);
 
     private static OntologyManager instance;
@@ -61,6 +68,8 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     private PooledConnection connection;
     private final TableSchema ontologySchema;
     private final TableSchema ontologyInfoSchema;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
 
     public static OntologyManager getInstance() throws RemoteException {
         if (instance == null) {
@@ -72,6 +81,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     private OntologyManager() throws RemoteException {
         ontologySchema = MedSavantDatabase.OntologyTableSchema;
         ontologyInfoSchema = MedSavantDatabase.OntologyInfoTableSchema;
+
+        queryManager = QueryManagerFactory.getQueryManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     @Override
@@ -103,71 +115,48 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     @Override
     public void removeOntology(String sessID, String ontName) throws IOException, SQLException, RemoteException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        throw new UnsupportedOperationException("Not supported yet.");
+        Query query = queryManager.createQuery("Delete from Ontology o where o.name= :name");
+        query.setParameter("name", ontName);
+        query.executeDelete();
+
+
+        query = queryManager.createQuery("Delete from OntologyTerm o where o.name= :name");
+        query.setParameter("name", ontName);
+        query.executeDelete();
+        /*PooledConnection conn = ConnectionController.connectPooled(sessID);
+        throw new UnsupportedOperationException("Not supported yet.");*/
     }
 
     @Override
     public Ontology[] getOntologies(String sessID) throws SQLException, RemoteException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            List<Ontology> results = new ArrayList<Ontology>();
-            ResultSet rs = conn.executePreparedQuery(ontologyInfoSchema.distinct().select(TYPE, ONTOLOGY_NAME, OBO_URL, MAPPING_URL).toString());
-            while (rs.next()) {
-                String name = rs.getString(2);
-                try {
-                    results.add(new Ontology(Enum.valueOf(OntologyType.class, rs.getString(1)), rs.getString(2), new URL(rs.getString(3)), new URL(rs.getString(4))));
-                } catch (MalformedURLException ex) {
-                    LOG.warn(String.format("Error parsing URL for %s: %s", name, MiscUtils.getMessage(ex)), ex);
-                }
-            }
-            return results.toArray(new Ontology[0]);
-        } finally {
-            conn.close();
-        }
+
+        Query query = queryManager.createQuery("Select o from Ontology");
+        List<Ontology> ontologies = query.execute();
+        return ontologies.toArray(new Ontology[ontologies.size()]);
     }
 
     @Override
     public OntologyTerm[] getAllTerms(String sessID, OntologyType ont) throws InterruptedException, SQLException, SessionExpiredException {
-        makeProgress(sessID, "Connecting...", 0.0);
-        List<OntologyTerm> result = new ArrayList<OntologyTerm>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            double prog = 0.2;
-            makeProgress(sessID, "Executing query...", prog);
-            ResultSet rs = conn.executePreparedQuery(ontologySchema.where(ONTOLOGY, ont.toString()).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString());
-            while (rs.next()) {
-                prog = 0.5 + prog * 0.5;    // Just for fun, to converge on 1.0
-                makeProgress(sessID, "Retrieving ontology terms...", prog);
-                result.add(new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
-            }
-        } finally {
-            conn.close();
-        }
-        return result.toArray(new OntologyTerm[0]);
+
+        Query query = queryManager.createQuery("Select t from OntologyTerm where t.type= :type");
+        query.setParameter("type", ont);
+        List<OntologyTerm> terms = query.execute();
+        return terms.toArray(new OntologyTerm[terms.size()]);
     }
 
 
     @Override
     public String[] getGenesForTerm(String sessID, OntologyTerm term, String refID) throws SQLException, SessionExpiredException {
-        List<String> result = new ArrayList<String>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            ResultSet rs = conn.executePreparedQuery(ontologySchema.where(ID, term.getID(), ONTOLOGY, term.getOntology().toString()).select(GENES));
 
-            // Only expecting one row for each term.
-            if (rs.next()) {
-                String geneString = rs.getString(1);
-                if (geneString != null && geneString.length() > 2) {
-                    // Gene-string should be of the form "|gene1|gene2|...|geneN|".
-                    // We start at position 1 to avoid an empty string at the start.
-                    result.addAll(Arrays.asList(geneString.substring(1).split("\\|")));
-                }
-            }
-        } finally {
-            conn.close();
+        Query query = queryManager.createQuery("Select t.genes from OntologyTerm t where t.id= :id");
+        query.setParameter("id", term.getID());
+        List<ResultRow> resultRows = query.executeForRows();
+
+        if (resultRows.size() > 0) {
+            return (String[] )resultRows.get(0).getObject("genes");
+        } else {
+            return null;
         }
-        return result.toArray(new String[0]);
     }
 
     /**
@@ -177,33 +166,26 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      */
     @Override
     public Map<OntologyTerm, String[]> getGenesForTerms(String sessID, OntologyTerm[] terms, String refID) throws SQLException, SessionExpiredException {
+        //this might not be necessary if the genes are stored on the OntologyTerm instances
         Map<OntologyTerm, String[]> result = new HashMap<OntologyTerm, String[]>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            StringBuilder termsString = new StringBuilder("\'");
-            if (terms.length > 0) {
-                termsString.append(terms[0].getID());
-                for (int i = 1; i < terms.length; i++) {
-                    termsString.append("\', \'");
-                    termsString.append(terms[i].getID());
-                }
-                termsString.append('\'');
-                ResultSet rs = conn.executePreparedQuery(String.format("SELECT id,genes FROM ontology WHERE ontology=? and id IN (%s)", termsString), terms[0].getOntology().toString());
 
-                while (rs.next()) {
-                    OntologyTerm term = findTermByID(terms, rs.getString(1));
+        StringBuilder sb = new StringBuilder();
 
-                    String genesString = rs.getString(2);
-                    if (genesString != null && genesString.length() > 2) {
-                        // Gene-string should be of the form "|gene1|gene2|...|geneN|".
-                        // We start splitting at position 1 to avoid an empty string at the start.
-                        result.put(term, genesString.substring(1).split("\\|"));
-                    }
-                }
+        for (int i = 0; i < terms.length; i++) {
+            sb.append("\"" + terms[i].getID() + "\"");
+            if (i != terms.length - 1) {
+                sb.append(",");
             }
-        } finally {
-            conn.close();
         }
+
+        String statement = String.format("Select t from OntologyTerm where t.id IN (%s)", sb.toString());
+        Query query = queryManager.createQuery(statement);
+        List<OntologyTerm> results = query.execute();
+
+        for (OntologyTerm term : results) {
+            result.put(term, term.getGenes());
+        }
+
         return result;
     }
 
@@ -215,24 +197,13 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      */
     @Override
     public OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws SQLException, SessionExpiredException {
-        List<OntologyTerm> result = new ArrayList<OntologyTerm>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            if (ont != null) {
-                ResultSet rs = conn.executePreparedQuery("SELECT id,name,def,alt_ids,parents FROM ontology WHERE ontology=? AND INSTR(genes, ?)", ont.toString(), "|" + geneName + "|");
-                while (rs.next()) {
-                    result.add(new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
-                }
-            } else {
-                ResultSet rs = conn.executePreparedQuery("SELECT id,ontology.name,def,alt_ids,parents,type FROM ontology RIGHT JOIN ontology_info ON ontology = ontology_info.name WHERE INSTR(genes, ?)", "|" + geneName + "|");
-                while (rs.next()) {
-                    result.add(new OntologyTerm(OntologyType.valueOf(rs.getString(6)), rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
-                }
-            }
-        } finally {
-            conn.close();
-        }
-        return result.toArray(new OntologyTerm[0]);
+        //this might not be necessary if the genes are stored on the OntologyTerm instances
+        String statement = "Select t from OntologyTerm where t.genes= :geneName";
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("geneName", geneName);
+        List<OntologyTerm> results = query.execute();
+
+        return results.toArray(new OntologyTerm[results.size()]);
     }
 
     /**
