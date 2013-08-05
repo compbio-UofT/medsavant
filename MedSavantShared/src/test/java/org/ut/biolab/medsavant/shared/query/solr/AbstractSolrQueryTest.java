@@ -5,11 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.persistence.solr.SolrEntityManager;
-import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.query.QueryException;
-import org.ut.biolab.medsavant.shared.query.QueryManager;
-import org.ut.biolab.medsavant.shared.query.ResultRow;
+import org.ut.biolab.medsavant.shared.query.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
@@ -23,8 +21,8 @@ public class AbstractSolrQueryTest {
 
     @Before
     public void initialize() {
-        queryManager = new SolrQueryManager();
-        entityManager = new SolrEntityManager();
+        queryManager = QueryManagerFactory.getQueryManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     @Test
