@@ -38,6 +38,9 @@ import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.query.*;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.solr.SolrQueryManager;
 import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -49,6 +52,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     private static final Log LOG = LogFactory.getLog(DBUtils.class);
     private static DBUtils instance;
+    private static QueryManager queryManager;
+
+    static {
+        queryManager = QueryManagerFactory.getQueryManager();
+    }
 
     public static synchronized DBUtils getInstance() throws RemoteException {
         if (instance == null) {
@@ -58,6 +66,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     private DBUtils() throws RemoteException {
+
     }
 
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException, SessionExpiredException {
@@ -212,61 +221,19 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
+        QueryManager queryManager = new SolrQueryManager();
+
+        Query query = queryManager.createQuery("Select e." + colName + " from " + tableName + " e group by e." + colName);
+
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
 
-        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
-        if (cacheing && DistinctValuesCache.isCached(dbName, tableName, colName)) {
-            try {
-                makeProgress(sessID, "Using cached values...", 1.0);
-                return DistinctValuesCache.getCachedStringList(dbName, tableName, colName);
-            } catch (Exception ex) {
-                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + colName, ex);
-            }
+        List<ResultRow> resultRowList = query.executeForRows();
+        List<String> result = new ArrayList<String>();
+
+        //Todo add cache
+        for (ResultRow resultRow : resultRowList) {
+            result.add(String.valueOf(resultRow.getObject(colName)));
         }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(colName));
-
-        makeProgress(sessID, "Querying database...", 0.2);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cacheing ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
-
-        Set<String> set = new HashSet<String>();
-        while (rs.next()) {
-            makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
-            String val = rs.getString(1);
-            if (val == null) {
-                // We treat nulls and empty strings as being interchangeable.
-                set.add("");
-            } else {
-                if (explodeCommaSeparatedValues) {
-                    String[] vals = val.split(",");
-                    for (int i = 0; i < vals.length; i++) {
-                        vals[i] = vals[i].trim();
-                    }
-                    set.addAll(Arrays.asList(vals));
-                } else {
-                    set.add(val);
-                }
-            }
-        }
-
-        List<String> result = new ArrayList<String>(set);
-        Collections.sort(result);
-
-        if (cacheing) {
-            makeProgress(sessID, "Saving cached values...", 0.9);
-            if (result.size() == DistinctValuesCache.CACHE_LIMIT) {
-                DistinctValuesCache.cacheResults(dbName, tableName, colName, null);
-                result = null;
-            } else {
-                DistinctValuesCache.cacheResults(dbName, tableName, colName, result);
-            }
-        }
-
         return result;
     }
 
@@ -285,20 +252,17 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
                 LOG.warn("Unable to get cached extreme values for " + dbName + "/" + tabName + "/" + colName, ex);
             }
         }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tabName);
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(colName)));
-        query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(colName)));
-
         makeProgress(sessID, "Querying database...", 0.2);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-        rs.next();
 
-        double min = rs.getDouble(1);
-        double max = rs.getDouble(2);
+        String statement = String.format("select e.%s, min(e.%s), max(e.%s) from %s e", colName, colName, colName,tabName);
+
+        Query query = queryManager.createQuery(statement);
+
+        List<ResultRow> results = query.executeForRows();
+
+        double min = (Double) results.get(0).getObject("min");
+        double max = (Double) results.get(0).getObject("max");
+
         Range result = new Range(min, max);
         makeProgress(sessID, "Saving cached values...", 0.9);
         DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(min, max));
