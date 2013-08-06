@@ -53,7 +53,6 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
@@ -182,14 +181,19 @@ public class VariantManagerHelper implements Serializable {
     /**
      * Retrieves frequency values for columns represented by a string.
      * 
-     * @param sid session ID
-     * @param q query
-     * @param colName name of column to use
-     * @param c nucleotide condition or null
-     * @param multiplier multiplier
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param colName
+     *            name of column to use
+     * @param c
+     *            nucleotide condition or null
+     * @param multiplier
+     *            multiplier
      * @return map of column values to counts
      */
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition c, float multiplier) throws SQLException,
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
         Map<String, Integer> map = new HashMap<String, Integer>();
@@ -208,22 +212,32 @@ public class VariantManagerHelper implements Serializable {
     /**
      * Retrieves frequency values for scatter.
      * 
-     * @param sid session ID
-     * @param q query
-     * @param table table ot use
-     * @param columnnameX name of the first column
-     * @param columnnameY name of the second column 
-     * @param cx nucleotide condition for the first column
-     * @param cy nucleotide condition for the second column
-     * @param columnXCategorical true if the first column is nonnumerical, false otherwise
-     * @param columnYCategorical true if the second column is nonnumerical, false otherwise
-     * @param sortKaryotypically true if karyotypical sorting should be done, false otherwise
-     * @param multiplier multiplier
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param table
+     *            table ot use
+     * @param columnnameX
+     *            name of the first column
+     * @param columnnameY
+     *            name of the second column
+     * @param cx
+     *            nucleotide condition for the first column
+     * @param cy
+     *            nucleotide condition for the second column
+     * @param columnXCategorical
+     *            true if the first column is nonnumerical, false otherwise
+     * @param columnYCategorical
+     *            true if the second column is nonnumerical, false otherwise
+     * @param sortKaryotypically
+     *            true if karyotypical sorting should be done, false otherwise
+     * @param multiplier
+     *            multiplier
      * @return scatter chart map
      */
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, Condition cx, Condition cy,
-            boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException,
-            SessionExpiredException {
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, boolean columnXCategorical,
+            boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException, SessionExpiredException {
         DbColumn columnX = table.getDBColumn(columnnameX);
         DbColumn columnY = table.getDBColumn(columnnameY);
 
@@ -300,11 +314,16 @@ public class VariantManagerHelper implements Serializable {
     /**
      * Computes chromosome heat map.
      * 
-     * @param sid session ID
-     * @param q query
-     * @param colName name of the column to use
-     * @param binsize size of the bins
-     * @param multiplier multiplier
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param colName
+     *            name of the column to use
+     * @param binsize
+     *            size of the bins
+     * @param multiplier
+     *            multiplier
      * @return map of chromosomes to maps of ranges and the respective counts
      */
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, String colName, int binsize, float multiplier) throws SQLException,

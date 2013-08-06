@@ -625,13 +625,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
 
-        Condition c = null;
         if (column.getColumnNameSQL().equals(ALT.getColumnName()) || column.getColumnNameSQL().equals(REF.getColumnName())) {
-            c = createNucleotideCondition(column);
-            q.addCondition(c);
+            q.addCondition(createNucleotideCondition(column));
         }
 
-        return helper.getFilteredFrequencyValuesForCategoricalColumn(sessID, q, column.getColumnNameSQL(), c, multiplier);
+        return helper.getFilteredFrequencyValuesForCategoricalColumn(sessID, q, column.getColumnNameSQL(), multiplier);
     }
 
     @Override
@@ -661,19 +659,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        Condition cx = null;
         if (columnnameX.equals(ALT.getColumnName()) || columnnameX.equals(REF.getColumnName())) {
-            cx = createNucleotideCondition(columnX);
-            q.addCondition(cx);
+            q.addCondition(createNucleotideCondition(columnX));
         }
 
-        Condition cy = null;
         if (columnnameY.equals(ALT.getColumnName()) || columnnameY.equals(REF.getColumnName())) {
-            cy = createNucleotideCondition(columnY);
-            q.addCondition(cy);
+            q.addCondition(createNucleotideCondition(columnY));
         }
 
-        return helper.getFilteredFrequencyValuesForScatter(sid, q, table, columnnameX, columnnameY, cx, cy, columnXCategorical, columnYCategorical, sortKaryotypically, multiplier);
+        return helper.getFilteredFrequencyValuesForScatter(sid, q, table, columnnameX, columnnameY, columnXCategorical, columnYCategorical, sortKaryotypically, multiplier);
     }
 
     /*

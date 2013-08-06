@@ -61,7 +61,6 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
@@ -271,13 +270,11 @@ public class ShardedVariantManagerHelper implements Serializable {
      *            query
      * @param colName
      *            name of column to use
-     * @param c
-     *            nucleotide condition or null
      * @param multiplier
      *            multiplier
      * @return map of column values to counts
      */
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition nucCon, float multiplier) throws SQLException,
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
         Session s = ShardedConnectionController.openSession();
 
@@ -326,9 +323,8 @@ public class ShardedVariantManagerHelper implements Serializable {
      *            multiplier
      * @return scatter chart map
      */
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, Condition cx, Condition cy,
-            boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException,
-            SessionExpiredException {
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, boolean columnXCategorical,
+            boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException, SessionExpiredException {
         Session s = ShardedConnectionController.openSession();
 
         DbColumn columnX = table.getDBColumn(columnnameX);
