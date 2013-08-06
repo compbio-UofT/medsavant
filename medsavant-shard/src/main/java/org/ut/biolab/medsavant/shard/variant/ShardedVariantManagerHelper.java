@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,11 +55,15 @@ import org.ut.biolab.medsavant.shard.common.EntityStyle;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
+import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
 /**
  * Sharded version of the helper class for VariantManager.
@@ -237,5 +242,85 @@ public class ShardedVariantManagerHelper implements Serializable {
         ShardedConnectionController.closeSession(s);
 
         return res;
+    }
+
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, Condition cx, Condition cy, String columnnameY,
+            boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException,
+            SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        DbColumn columnX = table.getDBColumn(columnnameX);
+        DbColumn columnY = table.getDBColumn(columnnameY);
+
+        double binSizeX = 0;
+        if (!columnXCategorical) {
+            Range rangeX = getExtremeValuesForColumn(s, columnnameX);
+            binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
+        }
+
+        double binSizeY = 0;
+        if (!columnYCategorical) {
+            Range rangeY = getExtremeValuesForColumn(s, columnnameY);
+            binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
+        }
+
+        // set correct types and aggregation
+        String m = columnnameX;
+        // todo set string types in criteria
+        if (!columnXCategorical) {
+            m = "floor(" + columnnameX + " / " + binSizeX + ")";
+        }
+        String n = columnnameY;
+        if (!columnYCategorical) {
+            n = "floor(" + columnnameY + " / " + binSizeY + ")";
+        }
+
+        // execute query
+        // add order by value ASC if needed
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + m + " as value1, " + n
+                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
+                columnXCategorical ? new StringType() : new IntegerType(), columnYCategorical ? new StringType() : new IntegerType() }));
+
+        List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
+        List<String> xRanges = new ArrayList<String>();
+        List<String> yRanges = new ArrayList<String>();
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            String xs = null;
+            if (columnXCategorical) {
+                xs = (String) o[1];
+            } else {
+                xs = MiscUtils.doubleToString(((Integer) o[1]) * binSizeX, 2) + " - " + MiscUtils.doubleToString(((Integer) o[1]) * binSizeX + binSizeX, 2);
+            }
+            String ys = null;
+            if (columnYCategorical) {
+                ys = (String) o[2];
+            } else {
+                ys = MiscUtils.doubleToString(((Integer) o[2]) * binSizeY, 2) + " - " + MiscUtils.doubleToString(((Integer) o[2]) * binSizeY + binSizeY, 2);
+            }
+
+            ScatterChartEntry entry = new ScatterChartEntry(xs, ys, (int) (((BigDecimal) o[0]).intValue() * multiplier));
+            entries.add(entry);
+            if (!xRanges.contains(entry.getXRange())) {
+                xRanges.add(entry.getXRange());
+            }
+            if (!yRanges.contains(entry.getYRange())) {
+                yRanges.add(entry.getYRange());
+            }
+        }
+
+        if (sortKaryotypically) {
+            Collections.sort(xRanges, new ChromosomeComparator());
+        } else if (columnXCategorical) {
+            Collections.sort(xRanges);
+        }
+        if (columnYCategorical) {
+            Collections.sort(yRanges);
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return new ScatterChartMap(xRanges, yRanges, entries);
     }
 }

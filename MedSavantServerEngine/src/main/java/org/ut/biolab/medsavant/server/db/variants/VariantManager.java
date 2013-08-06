@@ -658,88 +658,25 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         DbColumn columnX = table.getDBColumn(columnnameX);
         DbColumn columnY = table.getDBColumn(columnnameY);
 
-        double binSizeX = 0;
-        if (!columnXCategorical) {
-            Range rangeX = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), columnnameX);
-            binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
-        }
-
-        double binSizeY = 0;
-        if (!columnYCategorical) {
-            Range rangeY = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), columnnameY);
-            binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
-        }
-
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         // q.addColumns(columnX, columnY);
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
+        Condition cx = null;
         if (columnnameX.equals(ALT.getColumnName()) || columnnameX.equals(REF.getColumnName())) {
-            q.addCondition(createNucleotideCondition(columnX));
+            cx = createNucleotideCondition(columnX);
+            q.addCondition(cx);
         }
 
+        Condition cy = null;
         if (columnnameY.equals(ALT.getColumnName()) || columnnameY.equals(REF.getColumnName())) {
-            q.addCondition(createNucleotideCondition(columnY));
+            cy = createNucleotideCondition(columnY);
+            q.addCondition(cy);
         }
 
-        String m = columnnameX + " as m";
-        if (!columnXCategorical) {
-            m = "floor(" + columnnameX + " / " + binSizeX + ") as m";
-        }
-        String n = columnnameY + " as n";
-        if (!columnYCategorical) {
-            n = "floor(" + columnnameY + " / " + binSizeY + ") as n";
-        }
-        String query = q.toString().replace("COUNT(*)", "COUNT(*), " + m + ", " + n);
-        query += " GROUP BY m, n ORDER BY m, n ASC";
-
-        // String round = "floor(" + columnname + " / " + binSize + ") as m";
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query);
-
-        List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
-        List<String> xRanges = new ArrayList<String>();
-        List<String> yRanges = new ArrayList<String>();
-
-        while (rs.next()) {
-            String x = rs.getString(2);
-            String y = rs.getString(3);
-
-            if (x == null) {
-                x = "null"; // prevents NPE when sorting below
-            }
-            if (y == null) {
-                y = "null";
-            }
-
-            if (!columnXCategorical) {
-                x = MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX + binSizeX, 2);
-            }
-            if (!columnYCategorical) {
-                y = MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY + binSizeY, 2);
-            }
-            ScatterChartEntry entry = new ScatterChartEntry(x, y, (int) (rs.getInt(1) * multiplier));
-            entries.add(entry);
-            if (!xRanges.contains(entry.getXRange())) {
-                xRanges.add(entry.getXRange());
-            }
-            if (!yRanges.contains(entry.getYRange())) {
-                yRanges.add(entry.getYRange());
-            }
-        }
-
-        if (sortKaryotypically) {
-            Collections.sort(xRanges, new ChromosomeComparator());
-        } else if (columnXCategorical) {
-            Collections.sort(xRanges);
-        }
-        if (columnYCategorical) {
-            Collections.sort(yRanges);
-        }
-
-        return new ScatterChartMap(xRanges, yRanges, entries);
+        return helper.getFilteredFrequencyValuesForScatter(sid, q, table, columnnameX, cx, cy, columnnameY, columnXCategorical, columnYCategorical, sortKaryotypically, multiplier);
     }
 
     /*
