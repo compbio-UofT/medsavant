@@ -12,12 +12,14 @@ public class SearcheableReference {
 
     private int id;
     private String name;
+    private String url;
 
     public SearcheableReference() {  };
 
-    public SearcheableReference(int id, String name) {
+    public SearcheableReference(int id, String name, String url) {
         this.id = id;
         this.name = name;
+        this.url = url;
     }
 
     @Field("id")
@@ -30,8 +32,13 @@ public class SearcheableReference {
         this.name = name;
     }
 
+    @Field("url")
+    public void setURL(String url) {
+        this.url = url;
+    }
+
     public Reference getReference() {
-        this.reference = new Reference(id,name);
+        this.reference = new Reference(id,name, url);
         return reference;
     }
 
@@ -41,5 +48,9 @@ public class SearcheableReference {
 
     public String getName() {
         return reference.getName();
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

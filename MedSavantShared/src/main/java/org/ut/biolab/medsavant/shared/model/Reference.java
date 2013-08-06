@@ -27,10 +27,18 @@ public class Reference implements Serializable {
 
     private final int id;
     private final String name;
+    private final String url;
 
     public Reference(int id, String name){
         this.id = id;
         this.name = name;
+        this.url = "";
+    }
+
+    public Reference(int id, String name, String url){
+        this.id = id;
+        this.name = name;
+        this.url = url;
     }
 
     @Override
@@ -44,5 +52,9 @@ public class Reference implements Serializable {
 
     public String getName(){
         return name;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }
