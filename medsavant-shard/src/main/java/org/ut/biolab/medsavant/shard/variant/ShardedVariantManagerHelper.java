@@ -281,6 +281,11 @@ public class ShardedVariantManagerHelper implements Serializable {
                 + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
                 columnXCategorical ? new StringType() : new IntegerType(), columnYCategorical ? new StringType() : new IntegerType() }));
 
+        // incorporate nucleotide conditions
+        if (cx != null || cy != null) {
+            c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        }
+
         List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
         List<String> xRanges = new ArrayList<String>();
         List<String> yRanges = new ArrayList<String>();
