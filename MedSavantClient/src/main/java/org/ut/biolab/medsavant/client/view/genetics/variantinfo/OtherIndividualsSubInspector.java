@@ -280,7 +280,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
             variantFetcherThread.cancel(true);
         }
 
-        variantFetcherThread = new MedSavantWorker<Void>(this.getClass().getName()) {
+        variantFetcherThread = new MedSavantWorker<Void>(PAGE_NAME) {
             @Override
             protected void showSuccess(Void result) {
                 otherIndividualsTableModel.setValues(dnaIDVariantMap.keySet());

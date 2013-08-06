@@ -48,7 +48,8 @@ public class UpdatesPanel extends JPanel {
     private static final int UPDATE_INTERVAL = 1000 * 60; //one minute
     private static final Color ALERT_COLOUR = new Color(200, 0, 0);
     private static final int ICON_WIDTH = 17;
-    private static final Dimension MENU_ICON_SIZE = new Dimension(260, 90);
+    //private static final Dimension MENU_ICON_SIZE = new Dimension(260, 90);
+    private static final Dimension MENU_ICON_SIZE = new Dimension(290, 90);
     private Notification[] notifications;
     private JPopupMenu popup;
     //private final JLabel numNotifications;
@@ -155,7 +156,7 @@ public class UpdatesPanel extends JPanel {
     private void showPopup(final int start) {
         popup = new JPopupMenu();
         popup.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-
+        
         if (notifications == null) {
             popup.add(new NotificationIcon(null, null));
         } else {
@@ -295,6 +296,7 @@ public class UpdatesPanel extends JPanel {
                     break;
             }
             add(new JLabel("<HTML>" + message + "</HTML>"), BorderLayout.CENTER);
+            
         }
     }
 }

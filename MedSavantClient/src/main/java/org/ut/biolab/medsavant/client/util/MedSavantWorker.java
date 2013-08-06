@@ -49,7 +49,7 @@ public abstract class MedSavantWorker<T> { //extends SwingWorker<T, Object> {
     /**
      * @param pageName which view created this worker
      */
-    public MedSavantWorker(String pageName) {
+    public MedSavantWorker(String pageName) {        
         this.pageName = pageName;
         ThreadController.getInstance().addWorker(pageName, this);
         

@@ -65,12 +65,11 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private OtherIndividualsVariantSubInspector otherIndividualsVariantSubInspector;
     private OtherIndividualsGeneSubInspector otherIndividualsDetailedSubInspector;
     private List<Listener<Object>> selectionListeners = new LinkedList<Listener<Object>>();
-    
-    
-    public void addSelectionListener(Listener<Object> selectionListener){
+
+    public void addSelectionListener(Listener<Object> selectionListener) {
         selectionListeners.add(selectionListener);
     }
-    
+
     public DetailedVariantSubInspector getDetailedVariantSubInspector() {
         return detailedVariantSubInspector;
     }
@@ -117,7 +116,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         if (createSimpleVariantInspector) {
             simpleVariantInspector = new SimpleVariantSubInspector();
             variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
-            
+
         }
 
         if (createDetailedVariantInspector) {
@@ -132,16 +131,16 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createOtherIndividualsInspector) {
             otherIndividualsVariantSubInspector = new OtherIndividualsVariantSubInspector(splitScreenPanel);
-            otherIndividualsVariantSubInspector.setVariantSelectionListener(this);            
-            variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);           
+            otherIndividualsVariantSubInspector.setVariantSelectionListener(this);
+            variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);
         }
         // Gene
         if (createGeneSubInspector) {
             geneSubInspector = new GeneSubInspector();
             geneCollapsibleInspector.addSubInspector(geneSubInspector);
         }
-        
-        if(createOtherIndividualsInspector){ //TODO: Change to createOtherIndividualsDetailedSubInspector
+
+        if (createOtherIndividualsInspector) { //TODO: Change to createOtherIndividualsDetailedSubInspector
             otherIndividualsDetailedSubInspector = new OtherIndividualsGeneSubInspector(splitScreenPanel);
             otherIndividualsDetailedSubInspector.setVariantSelectionListener(this);
             geneCollapsibleInspector.addSubInspector(otherIndividualsDetailedSubInspector);
@@ -171,40 +170,54 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public CollapsibleInspector getGeneInspector() {
         return geneCollapsibleInspector;
     }
+    private MedSavantWorker<Object> variantRecordSetterThread;
+    private VariantRecord currentVariantRecord;
 
     public void setVariantRecord(final VariantRecord r) {
-        this.switchToVariantInspector();
-        final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getPosition(), r.getRef(), r.getAlt(), r.getType().toString());
+     
+        currentVariantRecord = r;
+        //System.out.println("Setting variant Record");
+        if (variantRecordSetterThread == null || variantRecordSetterThread.isDone()) {            
+            this.switchToVariantInspector();
+            final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getPosition(), r.getRef(), r.getAlt(), r.getType().toString());
 
-        final ComprehensiveInspector instance = this;
+            final ComprehensiveInspector instance = this;
 
-        instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
-        instance.getVariantInspector().switchToMessage();
-        new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
-            @Override
-            protected void showProgress(double fract) {
-            }
-
-            @Override
-            protected void showSuccess(Object result) {
-                instance.getVariantInspector().switchToPanes();
-            }
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                instance.simpleVariantInspector.setSimpleVariant(sv);
-                if(detailedVariantSubInspector != null){
-                    instance.detailedVariantSubInspector.setVariantRecord(r);
+            instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
+            instance.getVariantInspector().switchToMessage();
+            variantRecordSetterThread = new MedSavantWorker<Object>(SubInspector.PAGE_NAME) {
+                @Override
+                protected void showProgress(double fract) {
                 }
-                if(instance.otherIndividualsVariantSubInspector != null){
-                    instance.otherIndividualsVariantSubInspector.handleEvent(sv);
+
+                @Override
+                protected void showSuccess(Object result) {
+                    instance.getVariantInspector().switchToPanes();
                 }
-                if(instance.socialSubInspector != null){
-                    instance.socialSubInspector.handleEvent(r);
+
+                @Override
+                protected Object doInBackground() throws Exception {
+                    VariantRecord r;
+                    do {
+                        r = currentVariantRecord;
+                        instance.simpleVariantInspector.setSimpleVariant(sv);
+                        if (detailedVariantSubInspector != null) {
+                            instance.detailedVariantSubInspector.setVariantRecord(r);
+                        }
+                        if (instance.otherIndividualsVariantSubInspector != null) {
+                            instance.otherIndividualsVariantSubInspector.handleEvent(sv);
+                        }
+                        if (instance.socialSubInspector != null) {
+                            instance.socialSubInspector.handleEvent(r);
+                        }
+                    } while (currentVariantRecord != r);
+                    return null;
                 }
-                return null;
-            }
-        }.execute();       
+            };
+            variantRecordSetterThread.execute();
+        }else{
+            //System.out.println("Reusing existing thread...");
+        }
 
     }
 
@@ -213,7 +226,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         this.getGeneInspector().setMessage(new WaitPanel("Getting detailed gene information..."));
         this.getGeneInspector().switchToMessage();
 
-        new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
+        new MedSavantWorker<Object>(SubInspector.PAGE_NAME) {
             @Override
             protected void showProgress(double fract) {
             }
@@ -225,16 +238,16 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
             @Override
             protected Object doInBackground() throws Exception {
-                if(geneSubInspector != null){
+                if (geneSubInspector != null) {
                     geneSubInspector.handleEvent(gene);
                 }
-                if(ontologySubInspector != null){
+                if (ontologySubInspector != null) {
                     ontologySubInspector.handleEvent(gene);
                 }
-                if(geneManiaInspector != null){
+                if (geneManiaInspector != null) {
                     geneManiaInspector.handleEvent(gene);
                 }
-                if(otherIndividualsDetailedSubInspector != null){
+                if (otherIndividualsDetailedSubInspector != null) {
                     otherIndividualsDetailedSubInspector.handleEvent(gene);
                 }
 
@@ -243,50 +256,94 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         }.execute();
 
     }
+    private MedSavantWorker<Object> variantSetterThread;
+    private SimpleVariant currentSimpleVariant;
 
-    public void setSimpleVariant(final SimpleVariant sv) {
+    public synchronized void setSimpleVariant(final SimpleVariant sv) {
+        currentSimpleVariant = sv;
+        if (variantSetterThread == null || variantSetterThread.isDone()) {
 
-        final ComprehensiveInspector instance = this;
+            final ComprehensiveInspector instance = this;
 
-        instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
-        instance.getVariantInspector().switchToMessage();
-        new MedSavantWorker<Object>(ComprehensiveInspector.class.toString()) {
-            @Override
-            protected void showProgress(double fract) {
-            }
-
-            @Override
-            protected void showSuccess(Object result) {
-                instance.getVariantInspector().switchToPanes();
-            }
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                if(instance.simpleVariantInspector != null){
-                    instance.simpleVariantInspector.setSimpleVariant(sv);
+            instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
+            instance.getVariantInspector().switchToMessage();
+            variantSetterThread = new MedSavantWorker<Object>(SubInspector.PAGE_NAME) {
+                @Override
+                protected void showProgress(double fract) {
                 }
-                if(instance.otherIndividualsVariantSubInspector != null){
-                    instance.otherIndividualsVariantSubInspector.handleEvent(sv);
-                }
-                // TODO hide detailed inspector and social inspector
 
-                return null;
-            }
-        }.execute();
+                @Override
+                protected void showSuccess(Object result) {
+                    instance.getVariantInspector().switchToPanes();
+                }
+
+                @Override
+                protected Object doInBackground() throws Exception {
+                    SimpleVariant sv;
+                    do {
+                        sv = currentSimpleVariant;
+                        if (instance.simpleVariantInspector != null) {
+                            instance.simpleVariantInspector.setSimpleVariant(sv);
+                        }
+                        if (instance.otherIndividualsVariantSubInspector != null) {
+                            instance.otherIndividualsVariantSubInspector.handleEvent(sv);
+                        }
+                        // TODO hide detailed inspector and social inspector
+                    } while (currentSimpleVariant != sv);
+                    return null;
+                }
+            };
+            variantSetterThread.execute();
+        }
     }
+    private MedSavantWorker<Void> eventHandlerThread;
+    private Object currentEvent;
 
     @Override
-    public void handleEvent(Object event) {
-        if (event instanceof Gene) {
-            setGene((Gene) event);
-        } else if (event instanceof SimpleVariant) {
-            this.setSimpleVariant((SimpleVariant) event);
-        } else if (event instanceof VariantRecord) {                     
-            this.setVariantRecord((VariantRecord) event);
-        } 
-        for(Listener<Object> l : selectionListeners){
-            l.handleEvent(event);
+    public synchronized void handleEvent(final Object event) {
+        System.out.println("handleEvent " + System.currentTimeMillis());
+        if (true) {
+            return;
         }
+        currentEvent = event;
+
+        if (eventHandlerThread == null || eventHandlerThread.isDone()) {
+            eventHandlerThread = new MedSavantWorker<Void>(SubInspector.PAGE_NAME) {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    do {
+                        if (event instanceof Gene) {
+                            setGene((Gene) event);
+                        } else if (event instanceof SimpleVariant) {
+                            setSimpleVariant((SimpleVariant) event);
+                        } else if (event instanceof VariantRecord) {
+                            setVariantRecord((VariantRecord) event);
+                        }
+                        for (Listener<Object> l : selectionListeners) {
+                            l.handleEvent(event);
+                        }
+                    } while (currentEvent != event);
+                    return null;
+                }
+
+                @Override
+                protected void showSuccess(Void result) {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            };
+            eventHandlerThread.execute();
+        }
+        //run this in a separate thread.        
+        /*if (event instanceof Gene) {
+         setGene((Gene) event);
+         } else if (event instanceof SimpleVariant) {
+         this.setSimpleVariant((SimpleVariant) event);
+         } else if (event instanceof VariantRecord) {
+         this.setVariantRecord((VariantRecord) event);
+         }
+         for (Listener<Object> l : selectionListeners) {
+         l.handleEvent(event);
+         }*/
     }
 
     private enum InspectorEnum {
@@ -294,7 +351,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         VARIANT, GENE
     };
     private EnumMap<ComprehensiveInspector.InspectorEnum, Integer> inspectorsToTabIndexMap = new EnumMap<ComprehensiveInspector.InspectorEnum, Integer>(ComprehensiveInspector.InspectorEnum.class);
-        
+
     public ComprehensiveInspector(
             boolean createSimpleVariantInspector,
             boolean createDetailedVariantInspector,
@@ -318,8 +375,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 createGeneManiaInspector,
                 createOtherIndividualsInspector,
                 splitScreenPanel);
-        
-        if(createSimpleVariantInspector){
+
+        if (createSimpleVariantInspector) {
             simpleVariantInspector.setGeneListener(this);
             this.addChangeListener(new ChangeListener() {
                 @Override
@@ -327,7 +384,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     int selectedIndex = getSelectedIndex();
                     if (getTitleAt(selectedIndex).equals("Gene")) {
                         setGene(simpleVariantInspector.getSelectedGene());
-                    }else if(getTitleAt(selectedIndex).equals("Variant")){
+                    } else if (getTitleAt(selectedIndex).equals("Variant")) {
                         setSimpleVariant(simpleVariantInspector.getSimpleVariant());
                     }
                 }

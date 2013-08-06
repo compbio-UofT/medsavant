@@ -95,7 +95,7 @@ public class NotificationsPanel extends JPanel {
         setNotificationNumber(0);
     }
 
-    private void showPopup() {
+    private void showPopup() {        
         if (this.isVisible()) {
             JPopupMenu m;
 
@@ -105,9 +105,9 @@ public class NotificationsPanel extends JPanel {
             } else {
                 m = notifications;
             }
-            LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());
+            LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());            
             m.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            m.show(this, 0, getPreferredSize().height);
+            m.show(this, 0, getPreferredSize().height);            
         } else {
             notifications.setVisible(false);
             noNotifications.setVisible(false);

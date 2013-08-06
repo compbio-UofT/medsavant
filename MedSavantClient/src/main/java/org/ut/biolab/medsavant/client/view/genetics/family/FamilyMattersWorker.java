@@ -175,7 +175,26 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
             
         });
+        
+        stp.scrollSafeSelectAction(new Runnable(){
+            @Override
+            public void run() {
+                if(stp.getTable().getSelectedRow() != -1){
+                    
+                
+                int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
 
+                SimpleFamilyMattersVariant fmv = variants.get(index);
+                //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
+
+                SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
+                vip.setSimpleVariant(v);
+                }
+            }
+            
+        });
+
+        /*
         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -195,7 +214,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 vip.setSimpleVariant(v);
                 }
             }
-        });
+        });*/
 
         JDialog f = new JDialog();
         f.setTitle("Cohort Analysis Results");

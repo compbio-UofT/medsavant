@@ -207,19 +207,23 @@ public class BrowserPage extends SubSectionView {
 
     private void setupToolbarButtons(Savant savantInstance) {
 
-        JButton button = new JButton(IconFactory.getInstance().getIcon(StandardIcon.FILTER));
-        button.setToolTipText("Restrict DNA IDs");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                gsc.setLocationRelativeTo(view);
-                gsc.setVisible(true);
-            }
-        });
-
+        // Removed temporarily 06-08-2013, in preparation for 1.1 release.
+        /*
+         JButton button = new JButton(IconFactory.getInstance().getIcon(StandardIcon.FILTER));
+         button.setToolTipText("Restrict DNA IDs");
+         button.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         gsc.setLocationRelativeTo(view);
+         gsc.setVisible(true);
+         }
+         });
+         */
 
         JPanel pluginToolbar = savantInstance.getPluginToolbar();
-        pluginToolbar.add(button);
+        
+        // Removed temporarily 06-08-2013, in preparation for 1.1 release.
+        // pluginToolbar.add(button);
 
         try {
             final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
@@ -403,7 +407,7 @@ public class BrowserPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
-        super.viewDidUnload();        
+        super.viewDidUnload();
     }
 
     public void updateContents() {

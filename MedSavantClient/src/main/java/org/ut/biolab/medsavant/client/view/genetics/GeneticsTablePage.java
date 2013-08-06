@@ -157,7 +157,7 @@ public class GeneticsTablePage extends SubSectionView{
                                     clearSelection();
                                 }                                
                             });
-                            
+                                                        
                             TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
                                 @Override
                                 public void handleEvent(final VariantRecord r) {

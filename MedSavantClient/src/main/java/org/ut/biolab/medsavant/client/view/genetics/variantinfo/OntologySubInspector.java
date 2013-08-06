@@ -132,7 +132,7 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
     private void retrieveTerms(final Gene g) {
         linkButton.setEnabled(false);   // Due to lack of an initially-selected term.
         if (g != null) {
-            new MedSavantWorker<OntologyTerm[]>("Ontology") {
+            new MedSavantWorker<OntologyTerm[]>(PAGE_NAME) {
 
                 @Override
                 protected void showProgress(double fraction) {
