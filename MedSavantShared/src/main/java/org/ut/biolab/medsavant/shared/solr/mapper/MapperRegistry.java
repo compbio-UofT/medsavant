@@ -40,10 +40,25 @@ public class MapperRegistry {
 
     private static VariantFileMapper variantFileMapper;
 
+    private static ChromosomeMapper chromosomeMapper;
+
+    private static GeneMapper geneMapper;
+
+    private static GenomicRegionMapper genomicRegionMapper;
+
+    private static OntologyMapper ontologyMapper;
+
+    private static OntologyTermMapper ontologyTermMapper;
+
+    private static ReferenceMapper referenceMapper;
+
+    private static RegionSetMapper regionSetMapper;
+
     /**
      * Get the appropriate mapper based on the entity name.
-     * @param entity    The name of the entity
-     * @return          The appropriate mapper.
+     *
+     * @param entity The name of the entity
+     * @return The appropriate mapper.
      */
     public static ResultMapper getMapper(String entity) {
 
@@ -59,13 +74,75 @@ public class MapperRegistry {
             return getPatientMapper();
         } else if (Entity.COHORT.equals(entity)) {
             return getCohortMapper();
-        }  else if (Entity.PROJECT.equals(entity)) {
+        } else if (Entity.PROJECT.equals(entity)) {
             return getProjectMapper();
-        }  else if (Entity.VARIANT_FILE.equals(entity)) {
+        } else if (Entity.VARIANT_FILE.equals(entity)) {
             return getVariantFileMapper();
+        } else if (Entity.CHROMOSOME.equals(entity)) {
+            return getChromosomeMapper();
+        } else if (Entity.GENE.equals(entity)) {
+            return getGeneMapper();
+        } else if (Entity.GENOMIC_REGION.equals(entity)) {
+            return getGenomicRegionMapper();
+        } else if (Entity.ONTOLOGY.equals(entity)) {
+            return getOntologyMapper();
+        } else if (Entity.ONTOLOGY_TERM.equals(entity)) {
+            return getOntologyTermMapper();
+        } else if (Entity.REFERENCE.equals(entity)) {
+            return getReferenceMapper();
+        } else if (Entity.REGION_SET.equals(entity)) {
+            return getRegionSetMapper();
         }
 
         return null;
+    }
+
+    /**
+     * Return the ontology term mapper instance. Creates one if it doesn't yet exist.
+     * @return          The ontology term mapper instance.
+     */
+    private static OntologyTermMapper getOntologyTermMapper() {
+
+        if (ontologyTermMapper == null) {
+            ontologyTermMapper = new OntologyTermMapper();
+        }
+        return ontologyTermMapper;
+    }
+
+    /**
+     * Return the ontology mapper instance. Creates one if it doesn't yet exist.
+     * @return          The ontology mapper instance.
+     */
+    private static OntologyMapper getOntologyMapper() {
+
+        if (ontologyMapper == null) {
+            ontologyMapper = new OntologyMapper();
+        }
+        return ontologyMapper;
+    }
+
+    /**
+     * Return the gene mapper instance. Creates one if it doesn't yet exist.
+     * @return          The gene mapper instance.
+     */
+    private static GeneMapper getGeneMapper() {
+
+        if (geneMapper == null) {
+            geneMapper = new GeneMapper();
+        }
+        return geneMapper;
+    }
+
+    /**
+     * Return the chromosome mapper instance. Creates one if it doesn't yet exist.
+     * @return          The chromosome mapper instance.
+     */
+    private static ChromosomeMapper getChromosomeMapper() {
+
+        if (chromosomeMapper == null) {
+            chromosomeMapper = new ChromosomeMapper();
+        }
+        return chromosomeMapper;
     }
 
     /**
@@ -163,11 +240,44 @@ public class MapperRegistry {
      * Return the variant file mapper instance. Creates one if it doesn't yet exist.
      * @return          The variant file mapper instance.
      */
-    private static ResultMapper getVariantFileMapper() {
+    private static VariantFileMapper getVariantFileMapper() {
         if (variantFileMapper == null) {
             variantFileMapper = new VariantFileMapper();
         }
         return variantFileMapper;
     }
 
+    /**
+     * Return the genomic region mapper instance. Creates one if it doesn't yet exist.
+     * @return          The genomic region mapper instance.
+     */
+    public static GenomicRegionMapper getGenomicRegionMapper() {
+
+        if (genomicRegionMapper == null) {
+            genomicRegionMapper = new GenomicRegionMapper();
+        }
+        return genomicRegionMapper;
+    }
+
+    /**
+     * Return the reference mapper instance. Creates one if it doesn't yet exist.
+     * @return          The reference mapper instance.
+     */
+    public static ReferenceMapper getReferenceMapper() {
+        if (referenceMapper == null) {
+            referenceMapper = new ReferenceMapper();
+        }
+        return referenceMapper;
+    }
+
+    /**
+     * Return the region set mapper instance. Creates one if it doesn't yet exist.
+     * @return          The region set mapper instance.
+     */
+    public static RegionSetMapper getRegionSetMapper() {
+        if (regionSetMapper == null) {
+            regionSetMapper = new RegionSetMapper();
+        }
+        return regionSetMapper;
+    }
 }

@@ -15,4 +15,12 @@ public class Entity {
     public static final String PROJECT = "project";
     public static final String COHORT = "cohort";
     public static final String VARIANT_FILE = "variant_file";
+    public static final String CHROMOSOME = "chromosome";
+    public static final String GENE = "gene";
+    public static final String GENOMIC_REGION = "genomic_region";
+    public static final String ONTOLOGY = "ontology";
+    public static final String ONTOLOGY_TERM = "ontology_term";
+    public static final String REFERENCE = "reference";
+    public static final String REGION_SET = "region_set";
+
 }

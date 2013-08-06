@@ -42,10 +42,25 @@ public class SolrServiceRegistry {
 
     private static AbstractSolrService projectDetailsService;
 
+    private static AbstractSolrService chromosomeService;
+
+    private static AbstractSolrService geneService;
+
+    private static AbstractSolrService genomicRegionService;
+
+    private static AbstractSolrService ontologyService;
+
+    private static AbstractSolrService ontologyTermService;
+
+    private static AbstractSolrService referenceService;
+
+    private static AbstractSolrService regionSetService;
+
     /**
      * Get the appropriate solr service based on the entity string.
-     * @param entityName            The entity name.
-     * @return                      An instance of a solr service.
+     *
+     * @param entityName The entity name.
+     * @return An instance of a solr service.
      */
     public static AbstractSolrService getService(String entityName) throws InitializationException {
 
@@ -61,10 +76,24 @@ public class SolrServiceRegistry {
             return getPatientService();
         } else if (Entity.COHORT.equals(entityName)) {
             return getCohortService();
-        }  else if (Entity.PROJECT.equals(entityName)) {
+        } else if (Entity.PROJECT.equals(entityName)) {
             return getProjectDetailsService();
         } else if (Entity.VARIANT_FILE.equals(entityName)) {
             return getVariantFileService();
+        } else if (Entity.CHROMOSOME.equals(entityName)) {
+            return getChromosomeService();
+        } else if (Entity.GENE.equals(entityName)) {
+            return getGeneService();
+        } else if (Entity.GENOMIC_REGION.equals(entityName)) {
+            return getGenomicRegionService();
+        } else if (Entity.ONTOLOGY.equals(entityName)) {
+            return getOntologyService();
+        } else if (Entity.ONTOLOGY_TERM.equals(entityName)) {
+            return getOntologyTermService();
+        } else if (Entity.REFERENCE.equals(entityName)) {
+            return getReferenceService();
+        } else if (Entity.REGION_SET.equals(entityName)) {
+            return getRegionSetService();
         }
 
         return null;
@@ -88,6 +117,20 @@ public class SolrServiceRegistry {
             return getVariantCommentService();
         } else if (SearcheableVariantFile.class.getName().equals(clazz.getName())) {
             return getVariantFileService();
+        } else if (SearcheableChromosome.class.getName().equals(clazz.getName())) {
+            return getChromosomeService();
+        } else if (SearcheableGene.class.getName().equals(clazz.getName())) {
+            return getGeneService();
+        } else if (SearcheableGenomicRegion.class.getName().equals(clazz.getName())) {
+            return getGenomicRegionService();
+        } else if (SearcheableOntology.class.getName().equals(clazz.getName())) {
+            return getOntologyService();
+        } else if (SearcheableOntologyTerm.class.getName().equals(clazz.getName())) {
+            return getOntologyTermService();
+        } else if (SearcheableReference.class.getName().equals(clazz.getName())) {
+            return getReferenceService();
+        } else if (SearcheableRegionSet.class.getName().equals(clazz.getName())) {
+            return getRegionSetService();
         }
 
         return null;
@@ -154,5 +197,54 @@ public class SolrServiceRegistry {
             projectDetailsService.initialize();
         }
         return projectDetailsService;
+    }
+
+    public static AbstractSolrService getChromosomeService() {
+        if (chromosomeService == null) {
+            chromosomeService = new ChromosomeSolrService();
+        }
+        return chromosomeService;
+    }
+
+    public static AbstractSolrService getGeneService() {
+        if (geneService == null) {
+            geneService = new GeneSolrService();
+        }
+        return geneService;
+    }
+
+    public static AbstractSolrService getGenomicRegionService() {
+        if (genomicRegionService == null) {
+            genomicRegionService = new GenomicRegionSolrService();
+        }
+        return genomicRegionService;
+    }
+
+    public static AbstractSolrService getOntologyService() {
+        if (ontologyService == null) {
+            ontologyService = new OntologySolrService();
+        }
+        return ontologyService;
+    }
+
+    public static AbstractSolrService getOntologyTermService() {
+        if (ontologyTermService == null) {
+            ontologyTermService = new OntologyTermSolrService();
+        }
+        return ontologyTermService;
+    }
+
+    public static AbstractSolrService getReferenceService() {
+        if (referenceService == null) {
+            referenceService = new ReferenceSolrService();
+        }
+        return referenceService;
+    }
+
+    public static AbstractSolrService getRegionSetService() {
+        if (regionSetService == null) {
+            regionSetService = new RegionSetSolrService();
+        }
+        return regionSetService;
     }
 }
