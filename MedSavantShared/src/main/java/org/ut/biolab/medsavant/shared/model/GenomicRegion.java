@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
  */
 public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
 
+    private int genomeId;
     private final int id;
     private final String name;
     private final String chrom;
@@ -42,7 +43,8 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
         this.end = end;
     }
 
-    public GenomicRegion(int id, String name, String chrom, int start, int end) {
+    public GenomicRegion(int genomeId, int id, String name, String chrom, int start, int end) {
+        this.genomeId = genomeId;
         this.id = id;
         this.name = name;
         this.chrom = chrom;
@@ -144,5 +146,9 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
 
     public int getId() {
         return id;
+    }
+
+    public int getGenomeId() {
+        return genomeId;
     }
 }

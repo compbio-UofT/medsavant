@@ -25,6 +25,7 @@ public class SearcheableGenomicRegion {
 
     private GenomicRegion region;
 
+    private int genomeId;
     private int regionSetId;
     private String name;
     private String chrom;
@@ -38,7 +39,7 @@ public class SearcheableGenomicRegion {
     }
 
     public GenomicRegion getRegion() {
-        this.region = new GenomicRegion(regionSetId, name, chrom,start, end);
+        this.region = new GenomicRegion(genomeId,regionSetId, name, chrom,start, end);
         return region;
     }
 
@@ -67,6 +68,11 @@ public class SearcheableGenomicRegion {
         this.regionSetId = regionSetId;
     }
 
+    @Field("genome_id")
+    public void setGenomeId(int genomeId) {
+        this.genomeId = genomeId;
+    }
+
     public String getName() {
         return region.getName();
     }
@@ -81,5 +87,13 @@ public class SearcheableGenomicRegion {
 
     public int getEnd() {
         return region.getEnd();
+    }
+
+    public int getGenomeId() {
+        return genomeId;
+    }
+
+    public int getRegionSetId() {
+        return regionSetId;
     }
 }
