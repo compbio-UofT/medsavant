@@ -241,9 +241,10 @@ public class ShardedVariantManagerHelper implements Serializable {
         // add order by value ASC if needed
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + round + "as value",
                 "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new IntegerType() }));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        List<Object[]> os = c.list();
 
         Map<Range, Long> results = new TreeMap<Range, Long>();
-        List<Object[]> os = c.list();
         for (Object[] o : os) {
             Integer binNo = (int) (((Integer) o[1]) * multiplier);
             Long count = ((BigDecimal) o[0]).longValue();
@@ -282,9 +283,7 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + colName + " as value",
                 "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new StringType() }));
-        if (nucCon != null) {
-            c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        }
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
         Map<String, Integer> res = new HashMap<String, Integer>();
@@ -363,17 +362,12 @@ public class ShardedVariantManagerHelper implements Serializable {
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + m + " as value1, " + n
                 + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
                 columnXCategorical ? new StringType() : new IntegerType(), columnYCategorical ? new StringType() : new IntegerType() }));
-
-        // incorporate nucleotide conditions
-        if (cx != null || cy != null) {
-            c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        }
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        List<Object[]> os = c.list();
 
         List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
         List<String> xRanges = new ArrayList<String>();
         List<String> yRanges = new ArrayList<String>();
-
-        List<Object[]> os = c.list();
         for (Object[] o : os) {
             String xs = null;
             if (columnXCategorical) {
