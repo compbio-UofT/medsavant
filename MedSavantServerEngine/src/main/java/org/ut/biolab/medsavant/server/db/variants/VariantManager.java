@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
@@ -68,7 +66,6 @@ import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.model.VariantTag;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -676,7 +673,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             q.addCondition(cy);
         }
 
-        return helper.getFilteredFrequencyValuesForScatter(sid, q, table, columnnameX, cx, cy, columnnameY, columnXCategorical, columnYCategorical, sortKaryotypically, multiplier);
+        return helper.getFilteredFrequencyValuesForScatter(sid, q, table, columnnameX, columnnameY, cx, cy, columnXCategorical, columnYCategorical, sortKaryotypically, multiplier);
     }
 
     /*
@@ -729,43 +726,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         queryBase.addColumns(table.getDBColumn(CHROM));
 
-        String roundFunction = "ROUND(" + POSITION.getColumnName() + "/" + binsize + ",0)";
-
         queryBase.addCustomColumns(FunctionCall.countAll());
         queryBase.addGroupings(table.getDBColumn(CHROM));
 
         addConditionsToQuery(queryBase, conditions);
 
-        String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
-
-        // long start = System.nanoTime();
-        ResultSet rs = ConnectionController.executeQuery(sid, query);
-        // System.out.println(query);
-        // System.out.println("  time:" + (System.nanoTime() - start) /
-        // 1000000000);
-
-        Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
-        while (rs.next()) {
-
-            String chrom = rs.getString(1);
-
-            Map<Range, Integer> chromMap;
-            if (!results.containsKey(chrom)) {
-                chromMap = new HashMap<Range, Integer>();
-            } else {
-                chromMap = results.get(chrom);
-            }
-
-            int binNo = rs.getInt(3);
-            Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
-
-            int count = (int) (rs.getInt(2) * multiplier);
-
-            chromMap.put(binRange, count);
-            results.put(chrom, chromMap);
-        }
-
-        return results;
+        return helper.getChromosomeHeatMap(sid, queryBase, POSITION.getColumnName(), binsize, multiplier);
     }
 
     @Override

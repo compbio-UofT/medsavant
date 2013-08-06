@@ -150,6 +150,15 @@ public class ShardedVariantManagerHelper implements Serializable {
         return new Range(min, max);
     }
 
+    /**
+     * Counts the variants according to a given filter.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @return number of variants satisfying a given filter
+     */
     public Integer getNumFilteredVariants(String sessID, SelectQuery q) {
         // TODO: deal with table-project mapping, hibernate configuration has to
         // be provided dynamically
@@ -163,6 +172,21 @@ public class ShardedVariantManagerHelper implements Serializable {
         return (res == null ? 0 : res);
     }
 
+    /**
+     * Retrieves the variants with the given offset/limit.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @param start
+     *            offset
+     * @param limit
+     *            limit/number of results
+     * @param orderByCols
+     *            ordering
+     * @return list of variants
+     */
     public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) {
         Session session = ShardedConnectionController.openSession();
         Criteria c = session.createCriteria(Variant.class).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
@@ -182,6 +206,23 @@ public class ShardedVariantManagerHelper implements Serializable {
         return res;
     }
 
+    /**
+     * Computes frequency values for column with an arbitrary number type.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param table
+     *            table to use
+     * @param column
+     *            column to use
+     * @param multiplier
+     *            multiplier
+     * @param logBins
+     *            true if logarithmic bins are used, false otherwise
+     * @return map of ranges to counts
+     */
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
             throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
         Session s = ShardedConnectionController.openSession();
@@ -220,6 +261,21 @@ public class ShardedVariantManagerHelper implements Serializable {
         return results;
     }
 
+    /**
+     * Retrieves frequency values for columns represented by a string.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param colName
+     *            name of column to use
+     * @param c
+     *            nucleotide condition or null
+     * @param multiplier
+     *            multiplier
+     * @return map of column values to counts
+     */
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition nucCon, float multiplier) throws SQLException,
             SessionExpiredException {
         Session s = ShardedConnectionController.openSession();
@@ -244,7 +300,34 @@ public class ShardedVariantManagerHelper implements Serializable {
         return res;
     }
 
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, Condition cx, Condition cy, String columnnameY,
+    /**
+     * Retrieves frequency values for scatter.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param table
+     *            table ot use
+     * @param columnnameX
+     *            name of the first column
+     * @param columnnameY
+     *            name of the second column
+     * @param cx
+     *            nucleotide condition for the first column
+     * @param cy
+     *            nucleotide condition for the second column
+     * @param columnXCategorical
+     *            true if the first column is nonnumerical, false otherwise
+     * @param columnYCategorical
+     *            true if the second column is nonnumerical, false otherwise
+     * @param sortKaryotypically
+     *            true if karyotypical sorting should be done, false otherwise
+     * @param multiplier
+     *            multiplier
+     * @return scatter chart map
+     */
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, Condition cx, Condition cy,
             boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException,
             SessionExpiredException {
         Session s = ShardedConnectionController.openSession();
@@ -327,5 +410,55 @@ public class ShardedVariantManagerHelper implements Serializable {
         ShardedConnectionController.closeSession(s);
 
         return new ScatterChartMap(xRanges, yRanges, entries);
+    }
+
+    /**
+     * Computes chromosome heat map.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param colName
+     *            name of the column to use
+     * @param binsize
+     *            size of the bins
+     * @param multiplier
+     *            multiplier
+     * @return map of chromosomes to maps of ranges and the respective counts
+     */
+    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, String colName, int binsize, float multiplier) throws SQLException,
+            SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        String round = "ROUND(" + colName + "/" + binsize + ",0)";
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, chrom as value1, " + round
+                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(), new IntegerType(), new IntegerType() }));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        List<Object[]> os = c.list();
+
+        Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
+        for (Object[] o : os) {
+            String chrom = o[1].toString();
+
+            Map<Range, Integer> chromMap;
+            if (!results.containsKey(chrom)) {
+                chromMap = new HashMap<Range, Integer>();
+            } else {
+                chromMap = results.get(chrom);
+            }
+
+            int binNo = (Integer) o[2];
+            Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
+            int count = (int) (((BigDecimal) o[0]).intValue() * multiplier);
+            chromMap.put(binRange, count);
+
+            results.put(chrom, chromMap);
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return results;
     }
 }

@@ -66,6 +66,15 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 public class VariantManagerHelper implements Serializable {
     private static final long serialVersionUID = 5329416217138693373L;
 
+    /**
+     * Counts the variants according to a given filter.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @return number of variants satisfying a given filter
+     */
     public int getNumFilteredVariants(String sessID, SelectQuery q) throws SQLException, RemoteException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
         rs.next();
@@ -73,6 +82,21 @@ public class VariantManagerHelper implements Serializable {
         return rs.getInt(1);
     }
 
+    /**
+     * Retrieves the variants with the given offset/limit.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @param start
+     *            offset
+     * @param limit
+     *            limit/number of results
+     * @param orderByCols
+     *            ordering
+     * @return list of variants
+     */
     public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException {
         if (orderByCols != null) {
             q.addCustomOrderings((Object[]) orderByCols);
@@ -104,6 +128,23 @@ public class VariantManagerHelper implements Serializable {
         return result;
     }
 
+    /**
+     * Computes frequency values for column with an arbitrary number type.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @param table
+     *            table to use
+     * @param column
+     *            column to use
+     * @param multiplier
+     *            multiplier
+     * @param logBins
+     *            true if logarithmic bins are used, false otherwise
+     * @return map of ranges to counts
+     */
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
             throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
 
@@ -138,6 +179,16 @@ public class VariantManagerHelper implements Serializable {
         return results;
     }
 
+    /**
+     * Retrieves frequency values for columns represented by a string.
+     * 
+     * @param sid session ID
+     * @param q query
+     * @param colName name of column to use
+     * @param c nucleotide condition or null
+     * @param multiplier multiplier
+     * @return map of column values to counts
+     */
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, Condition c, float multiplier) throws SQLException,
             SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
@@ -154,7 +205,23 @@ public class VariantManagerHelper implements Serializable {
         return map;
     }
 
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, Condition cx, Condition cy, String columnnameY,
+    /**
+     * Retrieves frequency values for scatter.
+     * 
+     * @param sid session ID
+     * @param q query
+     * @param table table ot use
+     * @param columnnameX name of the first column
+     * @param columnnameY name of the second column 
+     * @param cx nucleotide condition for the first column
+     * @param cy nucleotide condition for the second column
+     * @param columnXCategorical true if the first column is nonnumerical, false otherwise
+     * @param columnYCategorical true if the second column is nonnumerical, false otherwise
+     * @param sortKaryotypically true if karyotypical sorting should be done, false otherwise
+     * @param multiplier multiplier
+     * @return scatter chart map
+     */
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, Condition cx, Condition cy,
             boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException,
             SessionExpiredException {
         DbColumn columnX = table.getDBColumn(columnnameX);
@@ -228,5 +295,47 @@ public class VariantManagerHelper implements Serializable {
         }
 
         return new ScatterChartMap(xRanges, yRanges, entries);
+    }
+
+    /**
+     * Computes chromosome heat map.
+     * 
+     * @param sid session ID
+     * @param q query
+     * @param colName name of the column to use
+     * @param binsize size of the bins
+     * @param multiplier multiplier
+     * @return map of chromosomes to maps of ranges and the respective counts
+     */
+    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, String colName, int binsize, float multiplier) throws SQLException,
+            SessionExpiredException {
+        String roundFunction = "ROUND(" + colName + "/" + binsize + ",0)";
+
+        String query = q.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
+
+        Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
+        while (rs.next()) {
+
+            String chrom = rs.getString(1);
+
+            Map<Range, Integer> chromMap;
+            if (!results.containsKey(chrom)) {
+                chromMap = new HashMap<Range, Integer>();
+            } else {
+                chromMap = results.get(chrom);
+            }
+
+            int binNo = rs.getInt(3);
+            Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
+
+            int count = (int) (rs.getInt(2) * multiplier);
+
+            chromMap.put(binRange, count);
+            results.put(chrom, chromMap);
+        }
+
+        return results;
     }
 }
