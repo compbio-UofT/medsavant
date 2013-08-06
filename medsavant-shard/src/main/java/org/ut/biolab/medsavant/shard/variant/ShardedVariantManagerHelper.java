@@ -199,8 +199,8 @@ public class ShardedVariantManagerHelper implements Serializable {
         Map<Range, Long> results = new TreeMap<Range, Long>();
         List<Object[]> os = c.list();
         for (Object[] o : os) {
-            Integer binNo = (int) (((Integer) o[0]) * multiplier);
-            Long count = ((BigDecimal) o[1]).longValue();
+            Integer binNo = (int) (((Integer) o[1]) * multiplier);
+            Long count = ((BigDecimal) o[0]).longValue();
             Range r;
             if (logBins) {
                 r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
@@ -229,8 +229,8 @@ public class ShardedVariantManagerHelper implements Serializable {
         Map<String, Integer> res = new HashMap<String, Integer>();
         if (os != null) {
             for (Object[] o : os) {
-                String key = (o[1] == null) ? "" : (String) o[0];
-                res.put(key, (int) (((BigDecimal) o[1]).intValue() * multiplier));
+                String key = (o[1] == null) ? "" : (String) o[1];
+                res.put(key, (int) (((BigDecimal) o[0]).intValue() * multiplier));
             }
         }
 

@@ -20,6 +20,7 @@ package org.hibernate.shards.strategy.exit;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.criterion.Projection;
 import org.hibernate.criterion.SQLProjection;
@@ -33,20 +34,13 @@ import org.hibernate.criterion.SQLProjection;
 public class SQLGroupExitOperation implements ProjectionExitOperation {
 
     private final Projection proj;
-    private final String fieldName;
-    private SupportedAggregations aggregate;
+    private Map<Integer, SupportedAggregations> ags;
+    private List<Integer> keyIndices;
 
     public SQLGroupExitOperation(final SQLProjection projection) {
         this.proj = projection;
-        final String projectionAsString = projection.toString();
-        final String aggregateName = projectionAsString.substring(0, projectionAsString.indexOf("("));
-        this.fieldName = projectionAsString.substring(projectionAsString.indexOf("(") + 1, projectionAsString.indexOf(")"));
-        try {
-            this.aggregate = SupportedAggregations.valueOf(aggregateName.replace(" ", "_").toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // no or invalid aggregate
-            this.aggregate = SupportedAggregations.NONE;
-        }
+        ags = AggregateGroupUtils.getAggregations(projection);
+        keyIndices = AggregateGroupUtils.getGroupIndices(projection);
     }
 
     @Override
@@ -57,7 +51,7 @@ public class SQLGroupExitOperation implements ProjectionExitOperation {
         if (nonNullResults.size() == 0) {
             return Collections.singletonList(null);
         } else {
-            return AggregateGroupUtils.collide(nonNullResults, aggregate);
+            return AggregateGroupUtils.collide(nonNullResults, ags, keyIndices);
         }
     }
 }

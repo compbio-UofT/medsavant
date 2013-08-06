@@ -18,8 +18,11 @@
 
 package org.hibernate.shards.strategy.exit;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.criterion.AggregateProjection;
 import org.hibernate.criterion.Projection;
@@ -66,7 +69,12 @@ public class AggregateGroupExitOperation implements ProjectionExitOperation {
         if (nonNullResults.size() == 0) {
             return Collections.singletonList(null);
         } else {
-            return AggregateGroupUtils.collide(nonNullResults, aggregate);
+            Map<Integer, SupportedAggregations> ag = new LinkedHashMap<Integer, SupportedAggregations>();
+            ag.put(0, aggregate);
+            List<Integer> keyIndeces = new ArrayList<Integer>();
+            keyIndeces.add(1);
+
+            return AggregateGroupUtils.collide(nonNullResults, ag, keyIndeces);
         }
     }
 }

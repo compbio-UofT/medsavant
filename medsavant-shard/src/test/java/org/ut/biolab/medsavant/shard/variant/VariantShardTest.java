@@ -122,7 +122,7 @@ public class VariantShardTest extends AbstractShardTest {
                 .setMaxResults(2)
                 .setFirstResult(6)
                 .setProjection(
-                        Projections.sqlProjection("floor(3.14) as value, position as pos", new String[] { "value", "pos" }, new Type[] { new IntegerType(), new IntegerType() }));
+                        Projections.sqlProjection("floor(3.14) as value, position as pos", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new IntegerType() }));
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
@@ -141,7 +141,7 @@ public class VariantShardTest extends AbstractShardTest {
                 .setFetchSize(4)
                 .setMaxResults(4)
                 .setProjection(
-                        Projections.sqlGroupProjection("position as pos, floor(3.14) as value", "value", new String[] { "value", "pos" }, new Type[] { new IntegerType(),
+                        Projections.sqlGroupProjection("position as pos, floor(3.14) as value", "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(),
                                 new IntegerType() }));
 
         List<Object[]> os = c.list();
@@ -151,6 +151,26 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
+        ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
+    public void testMultiColumnGroupBy() {
+        Session session = ShardedConnectionController.openSession();
+        Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
+                .setFetchSize(4)
+                .setMaxResults(4)
+                .setProjection(
+                        Projections.sqlGroupProjection("position as pos, upload_id as value1, chrom as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
+                                new IntegerType(), new IntegerType() }));
+        
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o) {
+                System.out.println(x.toString());
+            }
+        }
+        
         ShardedConnectionController.closeSession(session);
     }
 

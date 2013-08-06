@@ -21,7 +21,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import org.hibernate.criterion.SQLProjection;
 
 /**
  * Utils for aggregation with group by.
@@ -32,56 +35,136 @@ import java.util.Map.Entry;
 public class AggregateGroupUtils {
 
     /**
-     * Aggregates the results across shards. Can handle a single aggregation and
-     * a single group by criterion, which it expects to be on the second
-     * position in the result.
+     * Aggregates the results across shards.
      * 
      * @param results
+     *            results to collide
      * @param ag
-     * @return
+     *            aggregation function
+     * @param keyIndices
+     *            indices of columns in group by
+     * @return overall result across all shards
      */
-    public static List<Object> collide(List<Object> results, SupportedAggregations ag) {
+    public static List<Object> collide(List<Object> results, Map<Integer, SupportedAggregations> ags, List<Integer> keyIndices) {
         // use LinkedHashMap to preserve ordering
-        LinkedHashMap<Comparable<Object>, BigDecimal> res = new LinkedHashMap<Comparable<Object>, BigDecimal>();
+        LinkedHashMap<List<Comparable<Object>>, List<BigDecimal>> res = new LinkedHashMap<List<Comparable<Object>>, List<BigDecimal>>();
 
-        for (Object pair : results) {
-            Comparable<Object> key = (Comparable<Object>) ((Object[]) pair)[1];
-            // BigDecimal can handle all numbers
-            BigDecimal value = new BigDecimal(((Number) ((Object[]) pair)[0]).toString());
-
-            if (res.containsKey(key)) {
-                switch (ag) {
-                case MAX:
-                    res.put(key, value.max(res.get(key)));
-                    break;
-                case MIN:
-                    res.put(key, value.min(res.get(key)));
-                    break;
-                case SUM:
-                    res.put(key, value.add(res.get(key)));
-                    break;
-                case COUNT:
-                    res.put(key, value.add(res.get(key)));
-                    break;
-                case DISTINCT_COUNT:
-                    res.put(key, value.add(res.get(key)));
-                    break;
-                case NONE:
-                    // no aggregation, keep data from an arbitrary shard
-                    break;
-                default:
-                    // unsupported aggregation
-                    throw new UnsupportedOperationException("Aggregation is unsupported: " + ag);
+        Object[] tuple = new Object[0];
+        for (Object r : results) {
+            List<Comparable<Object>> keys = new ArrayList<Comparable<Object>>();
+            List<BigDecimal> values = new ArrayList<BigDecimal>();
+            tuple = (Object[]) r;
+            for (int i = 0; i < tuple.length; i++) {
+                if (keyIndices.contains(i)) {
+                    keys.add((Comparable<Object>) tuple[i]);
+                } else {
+                    values.add(new BigDecimal(((Number) (tuple)[i]).toString()));
                 }
+            }
+
+            // handle multiple aggregate functions
+            List<BigDecimal> v = null;
+            if (res.containsKey(keys)) {
+                v = res.get(keys);
+                for (Entry<Integer, SupportedAggregations> ag : ags.entrySet()) {
+                    switch (ag.getValue()) {
+                    case MAX:
+                        v.set(ag.getKey(), v.get(ag.getKey()).max(values.get(ag.getKey())));
+                        break;
+                    case MIN:
+                        v.set(ag.getKey(), v.get(ag.getKey()).min(values.get(ag.getKey())));
+                        break;
+                    case SUM:
+                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        break;
+                    case COUNT:
+                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        break;
+                    case DISTINCT_COUNT:
+                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        break;
+                    case NONE:
+                        // no aggregation, keep data from an arbitrary shard
+                        break;
+                    default:
+                        // unsupported aggregation
+                        throw new UnsupportedOperationException("Aggregation is unsupported: " + ag);
+                    }
+                }
+                res.put(keys, v);
             } else {
-                res.put(key, value);
+                res.put(keys, values);
             }
         }
 
         List<Object> out = new ArrayList<Object>();
-        for (Entry e : res.entrySet()) {
-            out.add(new Object[] { e.getKey(), e.getValue() });
+        for (Entry<List<Comparable<Object>>, List<BigDecimal>> e : res.entrySet()) {
+            // construct tuples from keys and values
+            Object[] wrap = new Object[tuple.length];
+            int usedValues = 0;
+            for (int i = 0; i < tuple.length; i++) {
+                int pos = keyIndices.indexOf(i);
+                if (pos < 0) {
+                    wrap[i] = e.getValue().get(usedValues);
+                    usedValues++;
+                } else {
+                    // key
+                    wrap[i] = e.getKey().get(pos);
+                }
+            }
+
+            out.add(wrap);
         }
         return out;
+    }
+
+    /**
+     * Extracts aggregations from an SQLProjection instance.
+     * 
+     * @param p
+     *            projection
+     * @return map of positions of aggregations as a column index and
+     *         aggregations
+     */
+    public static Map<Integer, SupportedAggregations> getAggregations(SQLProjection p) {
+        Map<Integer, SupportedAggregations> res = new LinkedHashMap<Integer, SupportedAggregations>();
+
+        String[] selections = p.toString().split(",");
+        for (int i = 0; i < selections.length; i++) {
+            if (selections[i].toLowerCase().contains(" count(")) {
+                res.put(i, SupportedAggregations.COUNT);
+            } else if (selections[i].toLowerCase().contains(" max(")) {
+                res.put(i, SupportedAggregations.MAX);
+            } else if (selections[i].toLowerCase().contains(" min(")) {
+                res.put(i, SupportedAggregations.MIN);
+            } else if (selections[i].toLowerCase().contains(" sum(")) {
+                res.put(i, SupportedAggregations.SUM);
+            } else if (selections[i].toLowerCase().contains(" distinct count(")) {
+                res.put(i, SupportedAggregations.DISTINCT_COUNT);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Extracts positions of columns used in GROUP BY part of an SQL projection.
+     * Expects to be those values named value*.
+     * 
+     * @param p
+     *            projection
+     * @return list of positions of columns used in GROUP BY
+     */
+    public static List<Integer> getGroupIndices(SQLProjection p) {
+        List<Integer> res = new ArrayList<Integer>();
+        String[] selections = p.toString().split("as ");
+
+        for (int i = 1; i < selections.length; i++) {
+            if (selections[i].startsWith("value")) {
+                res.add(i - 1);
+            }
+        }
+
+        return res;
     }
 }
