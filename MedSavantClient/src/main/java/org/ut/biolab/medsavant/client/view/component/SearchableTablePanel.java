@@ -75,7 +75,7 @@ public class SearchableTablePanel extends JPanel {
     private static final int ROWSPERPAGE_1 = 100;
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
-    private static int KEY_PRESS_TIMER_INTERVAL = 20; //should be greater than key repeat rate
+    private static int KEY_PRESS_TIMER_INTERVAL = 200; //should be greater than key repeat rate
     private static final int KEY_PRESS_TIMER_INTERVAL_LONG = 1000; //should be greater than key initial delay.       
     private static final int KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_RUNS = 5;
     private static final int KEY_PRESS_INTERVAL_EPSILON = 5;
