@@ -161,17 +161,31 @@ public class VariantShardTest extends AbstractShardTest {
                 .setFetchSize(4)
                 .setMaxResults(4)
                 .setProjection(
-                        Projections.sqlGroupProjection("position as pos, upload_id as value1, chrom as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
-                                new IntegerType(), new IntegerType() }));
-        
+                        Projections.sqlGroupProjection("position as pos, upload_id as value1, chrom as value2", "value1, value2", new String[] { "pos", "value1", "value2" },
+                                new Type[] { new IntegerType(), new IntegerType(), new IntegerType() }));
+
         List<Object[]> os = c.list();
         for (Object[] o : os) {
             for (Object x : o) {
                 System.out.println(x.toString());
             }
         }
-        
+
         ShardedConnectionController.closeSession(session);
+    }
+
+    @Test
+    public void testCountDistinct() {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
+        List<Object> os = c.list();
+        
+        for (Object o : os) {
+            System.out.println(o.toString());
+        }
+
+        ShardedConnectionController.closeSession(s);
     }
 
     @Test
