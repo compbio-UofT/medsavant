@@ -451,4 +451,25 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         return results;
     }
+
+    /**
+     * Retrieves number of patients for given variant ranges based on DNA_ID.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @return patient count
+     */
+    public int getPatientCountWithVariantsInRange(String sid, SelectQuery q) throws SQLException, SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+        Integer res = (Integer) c.list().get(0);
+
+        ShardedConnectionController.closeSession(s);
+
+        return res;
+    }
 }

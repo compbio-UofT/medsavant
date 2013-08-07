@@ -357,4 +357,24 @@ public class VariantManagerHelper implements Serializable {
 
         return results;
     }
+
+    /**
+     * Retrieves number of patients for given variant ranges based on DNA_ID.
+     * 
+     * @param sid
+     *            session ID
+     * @param q
+     *            query
+     * @return patient count
+     */
+    public int getPatientCountWithVariantsInRange(String sid, SelectQuery q) throws SQLException, SessionExpiredException {
+        String query = q.toString();
+        query = query.replaceFirst("'", "").replaceFirst("'", "");
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
+        rs.next();
+        int numrows = rs.getInt(1);
+
+        return numrows;
+    }
 }

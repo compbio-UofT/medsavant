@@ -747,15 +747,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(POSITION), end);
         q.addCondition(ComboCondition.and(cond));
 
-        String query = q.toString();
-        query = query.replaceFirst("'", "").replaceFirst("'", "");
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query);
-        rs.next();
-
-        int numrows = rs.getInt(1);
-
-        return numrows;
+        return helper.getPatientCountWithVariantsInRange(sid, q);
     }
 
     @Override
