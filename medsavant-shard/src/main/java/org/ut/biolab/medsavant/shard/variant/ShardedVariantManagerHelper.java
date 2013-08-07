@@ -472,4 +472,36 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         return res;
     }
+
+    /**
+     * Retrieves bookmark positions for DNA IDs.
+     * 
+     * @param sessID
+     *            session ID
+     * @param query
+     *            query
+     * @param limit
+     *            limit on the number of results
+     * @return map of results
+     */
+    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) throws SQLException,
+            SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlProjection("dna_id as dna_id, chrom as chrom, position as position",
+                new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new IntegerType(), new IntegerType() }));
+        c.add(Restrictions.sqlRestriction(getWhereClause(query)));
+        if (limit != -1) {
+            c.setMaxResults(limit).setFetchSize(limit);
+        }
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            results.get((String) o[0]).add((String) o[1] + ":" + ((Long) o[2] - 100) + "-" + ((Long) o[2] + 100));
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return results;
+    }
 }

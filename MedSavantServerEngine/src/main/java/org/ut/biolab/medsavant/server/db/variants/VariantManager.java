@@ -762,7 +762,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIds, int limit)
             throws SQLException, RemoteException, SessionExpiredException {
-
         Map<String, List<String>> results = new HashMap<String, List<String>>();
 
         TableSchema table = getCustomTableSchema(sessID, projID, refID);
@@ -777,13 +776,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addCondition(ComboCondition.or(dnaIdConditions));
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
-
-        while (rs.next()) {
-            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3) - 100) + "-" + (rs.getLong(3) + 100));
-        }
-
-        return results;
+        return helper.getSavantBookmarkPositionsForDNAIDs(sessID, query, limit, results);
     }
 
     @Override

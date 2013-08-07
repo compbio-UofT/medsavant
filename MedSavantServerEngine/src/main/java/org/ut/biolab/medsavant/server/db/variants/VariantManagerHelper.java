@@ -377,4 +377,25 @@ public class VariantManagerHelper implements Serializable {
 
         return numrows;
     }
+
+    /**
+     * Retrieves bookmark positions for DNA IDs.
+     * 
+     * @param sessID
+     *            session ID
+     * @param query
+     *            query
+     * @param limit
+     *            limit on the number of results
+     * @return map of results
+     */
+    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) throws SQLException,
+            SessionExpiredException {
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        while (rs.next()) {
+            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3) - 100) + "-" + (rs.getLong(3) + 100));
+        }
+
+        return results;
+    }
 }
