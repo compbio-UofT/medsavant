@@ -213,7 +213,7 @@ public class ExitOperationsCriteriaCollector implements ExitOperationsCollector 
                 result = new AvgResultsExitOperation().apply(result);
             }
 
-            // min, max, sum
+            // min, max, sum, count, count distinct
             if (aggregateProjection != null) {
                 result = factory.getProjectionExitOperation(aggregateProjection, sessionFactoryImplementor).apply(result);
             }

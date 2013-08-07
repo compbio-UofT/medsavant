@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Exit operation for aggregate functions except for count distinct.
+ * 
  * @author Maulik Shah
  */
 public class AggregateExitOperation implements ProjectionExitOperation {
@@ -102,7 +104,7 @@ public class AggregateExitOperation implements ProjectionExitOperation {
         case COUNT:
             return Collections.<Object> singletonList(getSum(results));
         case DISTINCT_COUNT:
-            return Collections.<Object> singletonList(getDistinctSum(results));
+            return AggregateGroupUtils.getDistinctCount(nonNullResults);
         default:
             log.error("Aggregation Projection is unsupported: " + aggregate);
             throw new UnsupportedOperationException("Aggregation Projection is unsupported: " + aggregate);

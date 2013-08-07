@@ -19,10 +19,12 @@ package org.hibernate.shards.strategy.exit;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.hibernate.criterion.SQLProjection;
 
@@ -164,6 +166,25 @@ public class AggregateGroupUtils {
                 res.add(i - 1);
             }
         }
+
+        return res;
+    }
+
+    /**
+     * Uses grouping to compute correct distinct count.
+     * 
+     * @param results
+     *            list of results from all shards
+     * @return collapsed (grouped) list of results
+     */
+    public static List<Object> getDistinctCount(List<Object> result) {
+        Set<String> group = new HashSet<String>();
+        for (Object o : result) {
+            group.add(o.toString());
+        }
+
+        List<Object> res = new ArrayList<Object>();
+        res.add(group.size());
 
         return res;
     }

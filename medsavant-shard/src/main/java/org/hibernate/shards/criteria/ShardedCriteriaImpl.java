@@ -168,7 +168,14 @@ public class ShardedCriteriaImpl implements ShardedCriteria {
         if (projection instanceof AvgProjection) {
             setAvgProjection(projection);
         } else if (projection instanceof CountProjection) {
-            event = new CountProjectionEvent(projection);
+            if (projection.toString().contains("distinct")) {
+                // we have no way of knowing if distinct results from different
+                // shards overlap, hence we need to use group by and modify the
+                // query to pull all groupings
+                setCriteriaEvent(new SetProjectionEvent(projection));
+            } else {
+                event = new CountProjectionEvent(projection);
+            }
         } else if (projection instanceof AggregateProjection) {
             event = new AggregateProjectionEvent(projection);
         } else if (projection instanceof PropertyProjection) {
