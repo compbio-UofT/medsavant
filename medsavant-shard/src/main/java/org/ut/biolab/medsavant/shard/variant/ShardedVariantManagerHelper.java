@@ -484,8 +484,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      *            limit on the number of results
      * @return map of results
      */
-    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) throws SQLException,
-            SessionExpiredException {
+    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) {
         Session s = ShardedConnectionController.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlProjection("dna_id as dna_id, chrom as chrom, position as position",
@@ -503,5 +502,35 @@ public class ShardedVariantManagerHelper implements Serializable {
         ShardedConnectionController.closeSession(s);
 
         return results;
+    }
+
+    /**
+     * Counts variants per family.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query to execute
+     * @param dnaIDsToCountMap
+     *            map of dna ids to counts
+     * @return map of dna ids to counts
+     * @throws SessionExpiredException
+     * @throws SQLException
+     */
+    public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, Map<String, Integer> dnaIDsToCountMap) {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
+                Projections.groupProperty("dna_id"));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            dnaIDsToCountMap.put((String) o[1], ((BigDecimal) o[0]).intValue());
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return dnaIDsToCountMap;
     }
 }

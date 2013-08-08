@@ -830,11 +830,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             q.addCondition(ComboCondition.or(dnaIDConditions));
 
-            ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-            while (rs.next()) {
-                dnaIDsToCountMap.put(rs.getString(1), rs.getInt(2));
-            }
+            dnaIDsToCountMap = helper.getNumVariantsInFamily(sessID, q, dnaIDsToCountMap);
         }
 
         Map<String, Integer> patientIDTOCount = new HashMap<String, Integer>();

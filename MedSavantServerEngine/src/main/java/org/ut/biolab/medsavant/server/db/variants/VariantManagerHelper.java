@@ -398,4 +398,27 @@ public class VariantManagerHelper implements Serializable {
 
         return results;
     }
+
+    /**
+     * Counts variants per family.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query to execute
+     * @param dnaIDsToCountMap
+     *            map of dna ids to counts
+     * @return map of dna ids to counts
+     * @throws SessionExpiredException
+     * @throws SQLException
+     */
+    public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, Map<String, Integer> dnaIDsToCountMap) throws SQLException, SessionExpiredException {
+        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
+
+        while (rs.next()) {
+            dnaIDsToCountMap.put(rs.getString(1), rs.getInt(2));
+        }
+
+        return dnaIDsToCountMap;
+    }
 }
