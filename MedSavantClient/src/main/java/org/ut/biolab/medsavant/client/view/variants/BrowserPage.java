@@ -152,7 +152,6 @@ public class BrowserPage extends SubSectionView {
             @Override
             public void handleEvent(GenomeChangedEvent event) {
                 if (!variantTrackLoaded) {
-
                     // load a gene track if it exists
 
                     try {
@@ -163,7 +162,7 @@ public class BrowserPage extends SubSectionView {
                     } catch (Exception ex) {
                         LOG.error("Error loading gene track", ex);
                     }
-
+                
 
                     // load the MedSavant variant track
                     try {
@@ -178,6 +177,8 @@ public class BrowserPage extends SubSectionView {
 
                     } catch (SavantTrackCreationCancelledException ex) {
                         LOG.error("Error loading MedSavant variant track", ex);
+                    }catch(Exception ex){
+                        LOG.error("Misc. error loading MedSavant variant track", ex);                        
                     }
                 }
             }
@@ -355,7 +356,7 @@ public class BrowserPage extends SubSectionView {
     }
 
     public void addTrackFromURLString(String urlString, final DataFormat format) {
-        try {
+        try {            
             final URL url = new URL(urlString);
             if (!TrackController.getInstance().containsTrack(urlString)) {
                 if (view == null) {
@@ -363,7 +364,7 @@ public class BrowserPage extends SubSectionView {
                     Thread t = new Thread(new Runnable() {
                         public void run() {
                             try {
-                                trackAdditionLock.acquire();
+                                trackAdditionLock.acquire();                                
                                 FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
                                 trackAdditionLock.release();
                             } catch (Exception ex) {
@@ -372,7 +373,7 @@ public class BrowserPage extends SubSectionView {
                         }
                     });
                     t.start();
-                } else {
+                } else {                    
                     FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
                 }
             }

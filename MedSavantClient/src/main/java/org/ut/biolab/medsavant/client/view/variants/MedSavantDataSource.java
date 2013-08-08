@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -26,7 +28,6 @@ import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
@@ -54,7 +55,7 @@ import savant.util.MiscUtils;
  * @author Andrew
  */
 public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, VariantDataSourceAdapter, Listener<SelectionEvent> {
-
+    private static final Log LOG = LogFactory.getLog(MedSavantDataSource.class);
     /*static void setActive(boolean b) {
      active = b;
      }*/
@@ -89,6 +90,8 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 refresh();
             }
         });
+
+
     }
 
     private void updateSource() throws SQLException, RemoteException, InterruptedException {
@@ -159,13 +162,19 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         //if (this.restrictToTheseDNAIDs == null && (dnaIds != null && dnaIds.size() > 10)) {
         //    throw new IOException(dnaIds.size() + " is too many samples, user must restrict DNA IDs");
         //}
-        
+
 
         //System.err.println("Getting records " + active);
 
         if (true) { // used to check if active
 
             try {
+
+
+                Track track = getTrack();
+                if (track != null) {                    
+                    track.getFrame().setCloseable(false);
+                }
 
                 String savantChrom = MiscUtils.homogenizeSequence(ref);
                 String chrom = savantChrom;
@@ -195,8 +204,8 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
 
                 Condition rangeCondition = ComboCondition.and(
                         new Condition[]{
-                            BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), chrom),
-                            new RangeCondition(table.getDBColumn(BasicVariantColumns.POSITION.getColumnName()), range.getFrom(), range.getTo())});
+                    BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), chrom),
+                    new RangeCondition(table.getDBColumn(BasicVariantColumns.POSITION.getColumnName()), range.getFrom(), range.getTo())});
                 Condition[][] conditions;
                 if (filterConditions.length == 0) {
                     conditions = new Condition[][]{new Condition[]{rangeCondition}};
@@ -315,7 +324,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
     }
 
     private void setRestrictToDNAIDs(List<String> dnaIDs) {
-        System.out.println("Restricting genome browser to " + dnaIDs + " dna ids");
+        LOG.info("Restricting genome browser to " + dnaIDs + " dna ids");
         this.restrictToTheseDNAIDs = dnaIDs;
         refresh();
     }
