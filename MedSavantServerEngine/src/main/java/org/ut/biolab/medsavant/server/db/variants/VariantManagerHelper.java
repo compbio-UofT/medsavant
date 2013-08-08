@@ -421,4 +421,35 @@ public class VariantManagerHelper implements Serializable {
 
         return dnaIDsToCountMap;
     }
+
+    /**
+     * Creates DNA ID heat map.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @param patientHeatMapThreshold
+     *            patient heat map threshold
+     * @param multiplier
+     *            multiplier
+     * @param useThreshold
+     *            true if threshold should be used, false otherwise
+     * @param map
+     *            heat map
+     * @return updated heat map
+     */
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, int patientHeatMapThreshold, float multiplier, boolean useThreshold, Map<String, Integer> map)
+            throws SQLException, SessionExpiredException {
+        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
+
+        while (rs.next()) {
+            int value = (int) (rs.getInt(1) * multiplier);
+            if (!useThreshold || value >= patientHeatMapThreshold) {
+                map.put(rs.getString(2), value);
+            }
+        }
+
+        return map;
+    }
 }

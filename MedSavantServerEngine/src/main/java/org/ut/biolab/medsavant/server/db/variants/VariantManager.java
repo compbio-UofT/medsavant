@@ -1256,14 +1256,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Map<String, Integer> dnaIDMap = new HashMap<String, Integer>();
 
         if (!dnaIDs.isEmpty()) {
-            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
-            String tablename = (String) variantTableInfo[0];
-            String tablenameSub = (String) variantTableInfo[1];
-            float multiplier = (Float) variantTableInfo[2];
-
-            TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
-            TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
             // combine conditions
             Condition[] c1 = new Condition[conditions.length];
             for (int i = 0; i < conditions.length; i++) {
@@ -1271,20 +1263,35 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             }
             Condition c2 = ComboCondition.or(c1);
 
-            // Try sub table first.
-            getDNAIDHeatMapHelper(sessID, subTable, multiplier, dnaIDs, c2, true, dnaIDMap);
+            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
+            String tablename = (String) variantTableInfo[0];
+            String tablenameSub = (String) variantTableInfo[1];
+            float multiplier = (Float) variantTableInfo[2];
 
-            // Determine dnaIDs with no value yet.
+            // be careful if table names are null
             List<String> dnaIDs2 = new ArrayList<String>();
-            for (String id : dnaIDs) {
-                if (!dnaIDMap.containsKey(id)) {
-                    dnaIDs2.add(id);
+            TableSchema subTable = null;
+            if (tablenameSub != null) {
+                subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
+
+                getDNAIDHeatMapHelper(sessID, subTable, multiplier, dnaIDs, c2, true, dnaIDMap);
+
+                // Determine dnaIDs with no value yet.
+                for (String id : dnaIDs) {
+                    if (!dnaIDMap.containsKey(id)) {
+                        dnaIDs2.add(id);
+                    }
                 }
             }
 
-            // get remaining dna ids from actual table
-            if (!dnaIDs2.isEmpty()) {
-                getDNAIDHeatMapHelper(sessID, table, 1, dnaIDs2, c2, false, dnaIDMap);
+            TableSchema table = null;
+            if (tablename != null) {
+                table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
+
+                // get remaining dna ids from actual table
+                if (!dnaIDs2.isEmpty()) {
+                    getDNAIDHeatMapHelper(sessID, table, 1, dnaIDs2, c2, false, dnaIDMap);
+                }
             }
         }
 
@@ -1304,14 +1311,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCondition(ComboCondition.and(new Condition[] { dnaCondition, c }));
         q.addGroupings(table.getDBColumn(DNA_ID));
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        while (rs.next()) {
-            int value = (int) (rs.getInt(1) * multiplier);
-            if (!useThreshold || value >= PATIENT_HEATMAP_THRESHOLD) {
-                map.put(rs.getString(2), value);
-            }
-        }
+        map = helper.getDNAIDHeatMap(sessID, q, PATIENT_HEATMAP_THRESHOLD, multiplier, useThreshold, map);
     }
 
     private Condition createNucleotideCondition(DbColumn column) {

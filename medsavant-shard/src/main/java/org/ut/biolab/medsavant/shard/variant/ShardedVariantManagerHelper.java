@@ -533,4 +533,42 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         return dnaIDsToCountMap;
     }
+
+    /**
+     * Creates DNA ID heat map.
+     * 
+     * @param sessID
+     *            session ID
+     * @param q
+     *            query
+     * @param patientHeatMapThreshold
+     *            patient heat map threshold
+     * @param multiplier
+     *            multiplier
+     * @param useThreshold
+     *            true if threshold should be used, false otherwise
+     * @param map
+     *            heat map
+     * @return updated heat map
+     */
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, int patientHeatMapThreshold, float multiplier, boolean useThreshold, Map<String, Integer> map)
+            throws SQLException, SessionExpiredException {
+        Session s = ShardedConnectionController.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
+                Projections.groupProperty("dna_id"));
+        c.add(Restrictions.sqlRestriction(getWhereClause(q)));
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            int value = (int) ((Integer) o[0] * multiplier);
+            if (!useThreshold || value >= patientHeatMapThreshold) {
+                map.put((String) o[1], value);
+            }
+        }
+
+        ShardedConnectionController.closeSession(s);
+
+        return map;
+    }
 }
