@@ -30,7 +30,8 @@ public class DirectorySettings {
     private static File tmpDir;
 
     static {
-        DirectorySettings.setTmpDirectory((new File(System.getProperty("java.io.tmpdir"), "msavant")).getAbsolutePath());
+        String username = System.getProperty("user.name");
+        DirectorySettings.setTmpDirectory((new File(System.getProperty("java.io.tmpdir"), "msavant_"+username)).getAbsolutePath());
         DirectorySettings.setMedSavantDirectory((new File(System.getProperty("user.home"), MiscUtils.WINDOWS ? "medsavant" : ".medsavant")).getAbsolutePath());
     }
 
