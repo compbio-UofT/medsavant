@@ -245,8 +245,7 @@ public class AnnotationsPage extends SubSectionView {
                                 dispose();
                                 if (!inUse) {                                    
                                     //int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
-                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                                    //end else.
+                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);                                    
 
                                     if (response == DialogUtils.YES) {
                                         try {
