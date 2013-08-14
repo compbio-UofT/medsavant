@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.img.ImagePanel;
@@ -34,6 +36,7 @@ public class PillView extends JPanel {
 
     public final static Color[] COLOR_SCHEME_INACTIVE = new Color[]{new Color(241, 215, 215), new Color(233, 139, 139), new Color(233, 49, 49), new Color(239, 97, 97)};
     public final static Color[] COLOR_SCHEME_ACTIVE = new Color[]{new Color(222, 231, 241), new Color(166, 190, 236), new Color(49, 121, 233), new Color(97, 155, 239)}; // 0 is background, 1 is border
+    private final static int MAXIMUM_HEIGHT = 100; //*maximum* height, in pixels.
     int backoff = 1;
     int vpad = 2;
     int hpad = 7;
@@ -71,7 +74,10 @@ public class PillView extends JPanel {
         this.add(rightPanel);
 
         setIsDisclosureVisible(true);
-
+        
+        int w = SearchBar.getInstance().getWidth() - 2*hpad;           
+        this.setMaximumSize(new Dimension(w, MAXIMUM_HEIGHT));
+        
         final PillView instance = this;
 
         this.addMouseListener(new MouseAdapter() {
@@ -280,11 +286,7 @@ public class PillView extends JPanel {
         textLabel = new JLabel(text);
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
-
-        /*if (!shortenedText.equals(text)) {
-            textLabel.setToolTipText(text);
-        }*/
-
+     
         this.middlePanel.add(textLabel);
 
         updateUI();

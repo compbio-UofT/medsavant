@@ -182,9 +182,17 @@ public class BatchVariantAnnotator {
                         }
                     }
                 }
-                previousPosition = currentPosition;
-                previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
-                previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
+                
+                if(isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)){
+                    previousPosition = currentPosition;
+                    previousRef = currentRef;
+                    previousAlt = currentAlt;
+                }
+                                
+                // previousPosition = currentPosition;
+                // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
+                // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
+                
             }
 
             // perform each annotation, in turn

@@ -131,7 +131,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         }
         restartCommand = cmd.toString();
         //LOG.debug("Got restartCommand " + restartCommand);
-        System.out.println("Got resetart Command "+restartCommand);
+        //System.out.println("Got resetart Command "+restartCommand);
     }
 
     static public void main(String args[]) {
