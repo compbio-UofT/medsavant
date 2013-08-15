@@ -13,33 +13,32 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.strategy;
 
 import org.hibernate.shards.ShardId;
-import org.hibernate.shards.strategy.selection.ShardSelectionStrategy;
 
 /**
- * Mechanism determining the shard on which a new object should be created.
+ * Selector of shards based on position of variants.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
- * 
+ *
  */
-public class VariantShardSelectionStrategy implements ShardSelectionStrategy {
+public class PositionShardSelector implements ShardSelector<Long> {
 
-    private ShardSelector<Long> shardSelector;
+    private Long deliminer;
 
-    /**
-     * Determine shard based on position.
-     */
-    public ShardId selectShardIdForNewObject(Object obj) {
-        if (!(obj instanceof Long)) {
-            throw new IllegalArgumentException(obj.toString());
-        }
-        
-        return shardSelector.getShard((Long) obj);
+    private Integer divide(Long divisor, Long denominator) {
+        return (int) (divisor / denominator);
     }
 
-    public VariantShardSelectionStrategy(Long maxPos, Integer shardNo) {
-        shardSelector = new PositionShardSelector(maxPos, shardNo);
+    public PositionShardSelector(Long maxPos, Integer shardNo) {
+        deliminer = (maxPos + shardNo - 1) / shardNo;
     }
+
+    @Override
+    public ShardId getShard(Long data) {
+        return new ShardId(divide(data, deliminer));
+    }
+
+
 }

@@ -52,6 +52,7 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
+import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;

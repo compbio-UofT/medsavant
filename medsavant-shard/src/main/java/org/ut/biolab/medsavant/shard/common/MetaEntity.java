@@ -70,8 +70,8 @@ public class MetaEntity<T> {
         String atts = ReflectionToStringBuilder.toString(entity, EntityStyle.getInstance());
 
         // parse attributes, expects null values for entity fields
-        atts = atts.substring(1, atts.length() - 1) + ",";
-        return atts.split("=<null>,");
+        atts = atts.substring(1, atts.length() - 1) + EntityStyle.FIELD_SEPARATOR;
+        return atts.split("=<null>" + EntityStyle.FIELD_SEPARATOR);
     }
 
     /**

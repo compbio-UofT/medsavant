@@ -32,6 +32,7 @@ import org.hibernate.shards.ShardedConfiguration;
 import org.hibernate.shards.cfg.ConfigurationToShardConfigurationAdapter;
 import org.hibernate.shards.cfg.ShardConfiguration;
 import org.hibernate.shards.strategy.ShardStrategyFactory;
+import org.ut.biolab.medsavant.shard.strategy.PositionShardStrategyFactory;
 
 /**
  * Constructor of factories and necessary sharding utils.

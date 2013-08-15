@@ -44,6 +44,7 @@ import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.testng.annotations.Test;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
+import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 
 /**
  * Tests to verify sharding is working.

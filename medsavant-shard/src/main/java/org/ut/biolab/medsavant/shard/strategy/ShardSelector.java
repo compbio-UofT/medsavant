@@ -13,32 +13,18 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.strategy;
 
 import org.hibernate.shards.ShardId;
 
 /**
- * Selector of shards based on position of variants.
+ * Generic interface used for helpers determining a shard for data.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
- *
+ * 
  */
-public class PositionShardSelector implements ShardSelector<Long> {
+public interface ShardSelector<T> {
 
-    private Long deliminer;
-
-    private Integer divide(Long divisor, Long denominator) {
-        return (int) (divisor / denominator);
-    }
-
-    public PositionShardSelector(Long maxPos, Integer shardNo) {
-        deliminer = (maxPos + shardNo - 1) / shardNo;
-    }
-
-    @Override
-    public ShardId getShard(Long data) {
-        return new ShardId(divide(data, deliminer));
-    }
-
+    ShardId getShard(T data);
 
 }

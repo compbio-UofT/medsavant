@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.List;
 import org.hibernate.shards.ShardId;
 import org.hibernate.shards.strategy.resolution.AllShardsShardResolutionStrategy;
 import org.hibernate.shards.strategy.selection.ShardResolutionStrategyData;
+import org.ut.biolab.medsavant.shard.variant.Variant;
 
 /**
  * Mechanism determining the set of shards on which an object with a given id

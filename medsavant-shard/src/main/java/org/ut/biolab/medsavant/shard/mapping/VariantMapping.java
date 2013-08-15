@@ -28,11 +28,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.mapping;
 
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
+import org.ut.biolab.medsavant.shard.variant.Variant;
+import org.ut.biolab.medsavant.shard.variant.VariantShardUtil;
 
 /**
  * Provider of information related to mapping of variants via Hibernate.
