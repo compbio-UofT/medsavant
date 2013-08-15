@@ -16,7 +16,12 @@
 
 package org.ut.biolab.medsavant.client.controller;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -24,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+
 import savant.util.CryptoUtils;
 
 
@@ -47,9 +53,6 @@ public class SettingsController {
     private static final String DELIM = "="; // delimiter used in the settings file
     private static final String PERSISTENCE_FILE_PATH = ".medsavant.prop"; // location to save settings file
 
-    //static {
-        //PERSISTENCE_FILE_PATH = new File(DirectorySettings.getMedSavantDirectory(),".medsavant.prop").getAbsolutePath(); // location to save settings file
-    //}
 
     /**
      * Settings keys
@@ -100,7 +103,7 @@ public class SettingsController {
      * Initialize the SettingsController
      */
     public SettingsController() {
-        persistenceMap = new TreeMap<String,String>();
+        this.persistenceMap = new TreeMap<String,String>();
         readPersistenceMap();
     }
 
@@ -122,9 +125,9 @@ public class SettingsController {
      */
     private void setValueSilent(String key, String value) {
         if (value == null) {
-            persistenceMap.remove(key);
+            this.persistenceMap.remove(key);
         } else {
-            persistenceMap.put(key, value);
+            this.persistenceMap.put(key, value);
         }
     }
 
@@ -134,10 +137,10 @@ public class SettingsController {
      * @return The value of the setting
      */
     public String getValue(String key) {
-        if (!persistenceMap.containsKey(key)) {
+        if (!this.persistenceMap.containsKey(key)) {
             return getDefaultValue(key);
         }
-        return persistenceMap.get(key);
+        return this.persistenceMap.get(key);
     }
 
     /**
@@ -205,14 +208,13 @@ public class SettingsController {
                 }
             }
         }
-
     }
 
     /*
      * Clear existing settings and use defaults
      */
     private void resetPersistenceMap() {
-        persistenceMap.clear();
+        this.persistenceMap.clear();
         setValueSilent(KEY_VERSION,MedSavantProgramInformation.getVersion());
         resetSettingSilent(KEY_USERNAME);
         resetSettingSilent(KEY_PASSWORD);
@@ -232,7 +234,7 @@ public class SettingsController {
      * @param key
      */
     private void resetSettingSilent(String key) {
-       setValueSilent(key,getDefaultValue(key));
+        setValueSilent(key,getDefaultValue(key));
     }
 
     /**
@@ -243,13 +245,9 @@ public class SettingsController {
         try {
             File pFile = new File(DirectorySettings.getMedSavantDirectory(), PERSISTENCE_FILE_PATH);
 
-            /*if (pFile.exists()) {
-                pFile.delete();
-            }*/
             bw = new BufferedWriter(new FileWriter(pFile));
-            bw.write("");
-            for (String key : persistenceMap.keySet()) {
-                bw.write(key + DELIM + persistenceMap.get(key) + "\n");
+            for (String key : this.persistenceMap.keySet()) {
+                bw.write(key + DELIM + this.persistenceMap.get(key) + "\n");
             }
         } catch (Exception ex) {
             LOG.error("Error writing " + PERSISTENCE_FILE_PATH + ".", ex);
@@ -297,7 +295,7 @@ public class SettingsController {
     }
 
     public boolean getRememberPassword() {
-         return stringToBoolean(getValue(KEY_REMEMBER_PASSWORD));
+        return stringToBoolean(getValue(KEY_REMEMBER_PASSWORD));
     }
 
     public void setAutoLogin(boolean b) {
@@ -305,7 +303,7 @@ public class SettingsController {
     }
 
     public boolean getAutoLogin() {
-         return stringToBoolean(getValue(KEY_AUTOLOGIN));
+        return stringToBoolean(getValue(KEY_AUTOLOGIN));
     }
 
     public void setUsername(String str) {
