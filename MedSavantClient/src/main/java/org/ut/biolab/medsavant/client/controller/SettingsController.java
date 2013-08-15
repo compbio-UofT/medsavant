@@ -202,9 +202,11 @@ public class SettingsController {
                 LOG.error("Error reading " + PERSISTENCE_FILE_PATH, ex);
                 resetPersistenceMap();
             } finally {
-                try {
-                    br.close();
-                } catch (IOException ignored) {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException ignored) {
+                    }
                 }
             }
         }
@@ -252,9 +254,11 @@ public class SettingsController {
         } catch (Exception ex) {
             LOG.error("Error writing " + PERSISTENCE_FILE_PATH + ".", ex);
         } finally {
-            try {
-                bw.close();
-            } catch (IOException ignored) {
+            if (bw != null) {
+                try {
+                    bw.close();
+                } catch (IOException ignored) {
+                }
             }
         }
     }
