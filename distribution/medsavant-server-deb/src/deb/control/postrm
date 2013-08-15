@@ -1,0 +1,38 @@
+#!/bin/sh
+
+CONFFILE=/etc/default/medsavant-server
+
+case "$1" in
+    remove)
+        # Stop the service and remove it from autostart
+        invoke-rc.d medsavant-server stop || true
+        update-rc.d medsavant-server remove >/dev/null
+
+        # Remove the special user and group
+        MEDSAVANT_USER=medsavant
+        MEDSAVANT_GROUP=medsavant
+        if [ -f "$CONFFILE" ]; then
+            . "$CONFFILE"
+        fi
+        deluser --quiet $MEDSAVANT_USER || true
+        delgroup --quiet $MEDSAVANT_GROUP || true
+    ;;
+
+    purge)
+        if [ -x "/usr/bin/ucf" ]; then
+            ucf --purge $CONFFILE
+        fi
+
+        rm -rf /var/lib/medsavant-server
+        rm -rf /usr/local/medsavant-server
+    ;;
+
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # Nothing to do here
+    ;;
+
+    *)
+        echo "$0 called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac

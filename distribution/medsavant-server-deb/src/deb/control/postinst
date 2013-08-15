@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+
+CONFFILE="/etc/default/medsavant-server"
+
+case "$1" in
+    configure)
+        . $CONFFILE
+        if ! getent group "$MEDSAVANT_GROUP" > /dev/null 2>&1 ; then
+            addgroup --system "$MEDSAVANT_GROUP" --quiet
+        fi
+        if ! id $MEDSAVANT_USER > /dev/null 2>&1 ; then
+            adduser --system --home /var/lib/medsavant-server/ --no-create-home \
+                --ingroup "$MEDSAVANT_GROUP" --disabled-password --shell /bin/false \
+                "$MEDSAVANT_USER"
+        fi
+
+        chown $MEDSAVANT_USER:$MEDSAVANT_GROUP /etc/default/medsavant-server
+        chmod 664 /etc/default/medsavant-server
+
+        chown -R $MEDSAVANT_USER:$MEDSAVANT_GROUP /var/lib/medsavant-server/
+        chmod -R u=rwX,g=rwX,o=rX /var/lib/medsavant-server/
+    ;;
+esac
+
+if [ -x "/etc/init.d/medsavant-server" ]; then
+        update-rc.d medsavant-server defaults 92 08 >/dev/null
+        invoke-rc.d medsavant-server start || true
+fi
