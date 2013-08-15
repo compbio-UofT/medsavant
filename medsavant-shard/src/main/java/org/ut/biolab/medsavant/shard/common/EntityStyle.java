@@ -44,6 +44,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class EntityStyle extends ToStringStyle {
 
     private static final long serialVersionUID = -6907977923855540120L;
+    public static final String FIELD_SEPARATOR = "\t";
     private static ToStringStyle instance;
 
     protected EntityStyle() {
@@ -52,7 +53,7 @@ public class EntityStyle extends ToStringStyle {
         setUseShortClassName(true);
         setUseClassName(false);
         setUseIdentityHashCode(false);
-        setFieldSeparator(",");
+        setFieldSeparator(FIELD_SEPARATOR);
     }
 
     public static ToStringStyle getInstance() {

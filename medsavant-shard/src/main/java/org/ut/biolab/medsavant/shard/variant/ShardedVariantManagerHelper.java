@@ -110,10 +110,11 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         // parse
         atts = atts.substring(1, atts.length() - 1);
-        String[] pairs = atts.split(",");
+        String[] pairs = atts.split(EntityStyle.FIELD_SEPARATOR);
         Object[] os = new Object[pairs.length];
         for (int i = 0; i < pairs.length; i++) {
             String[] pieces = pairs[i].split("=", 2);
+            System.out.println(pieces[0].toString() + " " + pieces[1].toString());
             os[i] = castToItsType(pieces[0], pieces[1]);
         }
 
@@ -130,8 +131,11 @@ public class ShardedVariantManagerHelper implements Serializable {
         Object oMax = s.createCriteria(Variant.class).setProjection(Projections.max(colName)).list().get(0);
 
         double min;
+        System.out.println(oMin.getClass().getCanonicalName());
         if (oMin instanceof Integer) {
             min = (double) (Integer) oMin;
+        } else if (oMin instanceof Float) {
+            min = (double) (Float) oMin;
         } else if (oMin instanceof Double) {
             min = (Double) oMin;
         } else {
@@ -140,6 +144,8 @@ public class ShardedVariantManagerHelper implements Serializable {
         double max;
         if (oMax instanceof Integer) {
             max = (double) (Integer) oMax;
+        } else if (oMax instanceof Float) {
+            max = (double) (Float) oMax;
         } else if (oMax instanceof Double) {
             max = (Double) oMax;
         } else {
@@ -424,7 +430,7 @@ public class ShardedVariantManagerHelper implements Serializable {
         String round = "ROUND(" + colName + "/" + binsize + ",0)";
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, chrom as value1, " + round
-                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(), new IntegerType(), new IntegerType() }));
+                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(), new StringType(), new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
@@ -488,7 +494,7 @@ public class ShardedVariantManagerHelper implements Serializable {
         Session s = ShardedConnectionController.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlProjection("dna_id as dna_id, chrom as chrom, position as position",
-                new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new IntegerType(), new IntegerType() }));
+                new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new StringType(), new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(query)));
         if (limit != -1) {
             c.setMaxResults(limit).setFetchSize(limit);
@@ -561,7 +567,7 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
-            int value = (int) ((Integer) o[0] * multiplier);
+            int value = (int) (((BigDecimal) o[0]).intValue() * multiplier);
             if (!useThreshold || value >= patientHeatMapThreshold) {
                 map.put((String) o[1], value);
             }

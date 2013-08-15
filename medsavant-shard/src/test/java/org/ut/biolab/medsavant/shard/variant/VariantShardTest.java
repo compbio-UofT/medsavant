@@ -40,6 +40,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.shards.criteria.ShardedCriteriaImpl;
 import org.hibernate.type.IntegerType;
+import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.testng.annotations.Test;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
@@ -162,7 +163,7 @@ public class VariantShardTest extends AbstractShardTest {
                 .setMaxResults(4)
                 .setProjection(
                         Projections.sqlGroupProjection("position as pos, upload_id as value1, chrom as value2", "value1, value2", new String[] { "pos", "value1", "value2" },
-                                new Type[] { new IntegerType(), new IntegerType(), new IntegerType() }));
+                                new Type[] { new IntegerType(), new IntegerType(), new StringType() }));
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
