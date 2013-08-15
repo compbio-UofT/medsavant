@@ -482,7 +482,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         LOG.debug(query);
 
-        return helper.getVariants(sessionId, query, start, limit, orderByCols);
+        return helper.getVariants(sessionId, query, table, start, limit, orderByCols);
     }
 
     @Override
@@ -533,7 +533,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         LOG.info(q);
 
-        int res = helper.getNumFilteredVariants(sessID, q);
+        int res = helper.getNumFilteredVariants(sessID, q, table);
 
         LOG.info("Number of variants remaining: " + res);
 
@@ -629,7 +629,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             q.addCondition(createNucleotideCondition(column));
         }
 
-        return helper.getFilteredFrequencyValuesForCategoricalColumn(sessID, q, column.getColumnNameSQL(), multiplier);
+        return helper.getFilteredFrequencyValuesForCategoricalColumn(sessID, q, table, column.getColumnNameSQL(), multiplier);
     }
 
     @Override
@@ -725,7 +725,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         addConditionsToQuery(queryBase, conditions);
 
-        return helper.getChromosomeHeatMap(sid, queryBase, POSITION.getColumnName(), binsize, multiplier);
+        return helper.getChromosomeHeatMap(sid, queryBase, table, POSITION.getColumnName(), binsize, multiplier);
     }
 
     @Override
@@ -747,7 +747,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(POSITION), end);
         q.addCondition(ComboCondition.and(cond));
 
-        return helper.getPatientCountWithVariantsInRange(sid, q);
+        return helper.getPatientCountWithVariantsInRange(sid, q, table);
     }
 
     @Override
@@ -776,7 +776,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addCondition(ComboCondition.or(dnaIdConditions));
 
-        return helper.getSavantBookmarkPositionsForDNAIDs(sessID, query, limit, results);
+        return helper.getSavantBookmarkPositionsForDNAIDs(sessID, query, table, limit, results);
     }
 
     @Override
@@ -830,7 +830,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             q.addCondition(ComboCondition.or(dnaIDConditions));
 
-            dnaIDsToCountMap = helper.getNumVariantsInFamily(sessID, q, dnaIDsToCountMap);
+            dnaIDsToCountMap = helper.getNumVariantsInFamily(sessID, q, table, dnaIDsToCountMap);
         }
 
         Map<String, Integer> patientIDTOCount = new HashMap<String, Integer>();
@@ -1311,7 +1311,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCondition(ComboCondition.and(new Condition[] { dnaCondition, c }));
         q.addGroupings(table.getDBColumn(DNA_ID));
 
-        map = helper.getDNAIDHeatMap(sessID, q, PATIENT_HEATMAP_THRESHOLD, multiplier, useThreshold, map);
+        map = helper.getDNAIDHeatMap(sessID, q, table, PATIENT_HEATMAP_THRESHOLD, multiplier, useThreshold, map);
     }
 
     private Condition createNucleotideCondition(DbColumn column) {

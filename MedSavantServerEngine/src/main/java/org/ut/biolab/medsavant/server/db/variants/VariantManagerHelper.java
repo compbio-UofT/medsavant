@@ -72,9 +72,11 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @return number of variants satisfying a given filter
      */
-    public int getNumFilteredVariants(String sessID, SelectQuery q) throws SQLException, RemoteException, SessionExpiredException {
+    public int getNumFilteredVariants(String sessID, SelectQuery q, TableSchema table) throws SQLException, RemoteException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
         rs.next();
 
@@ -88,6 +90,8 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @param start
      *            offset
      * @param limit
@@ -96,7 +100,8 @@ public class VariantManagerHelper implements Serializable {
      *            ordering
      * @return list of variants
      */
-    public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException {
+    public List<Object[]> getVariants(String sessID, SelectQuery q, TableSchema table, int start, int limit, String[] orderByCols) throws SQLException, RemoteException,
+            SessionExpiredException {
         if (orderByCols != null) {
             q.addCustomOrderings((Object[]) orderByCols);
         }
@@ -185,6 +190,8 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @param colName
      *            name of column to use
      * @param c
@@ -193,7 +200,7 @@ public class VariantManagerHelper implements Serializable {
      *            multiplier
      * @return map of column values to counts
      */
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, float multiplier) throws SQLException,
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, TableSchema table, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
         Map<String, Integer> map = new HashMap<String, Integer>();
@@ -318,6 +325,8 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @param colName
      *            name of the column to use
      * @param binsize
@@ -326,7 +335,7 @@ public class VariantManagerHelper implements Serializable {
      *            multiplier
      * @return map of chromosomes to maps of ranges and the respective counts
      */
-    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, String colName, int binsize, float multiplier) throws SQLException,
+    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, TableSchema table, String colName, int binsize, float multiplier) throws SQLException,
             SessionExpiredException {
         String roundFunction = "ROUND(" + colName + "/" + binsize + ",0)";
 
@@ -365,9 +374,11 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @return patient count
      */
-    public int getPatientCountWithVariantsInRange(String sid, SelectQuery q) throws SQLException, SessionExpiredException {
+    public int getPatientCountWithVariantsInRange(String sid, SelectQuery q, TableSchema table) throws SQLException, SessionExpiredException {
         String query = q.toString();
         query = query.replaceFirst("'", "").replaceFirst("'", "");
 
@@ -385,12 +396,14 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param query
      *            query
+     * @param table
+     *            variants table
      * @param limit
      *            limit on the number of results
      * @return map of results
      */
-    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) throws SQLException,
-            SessionExpiredException {
+    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, TableSchema table, int limit, Map<String, List<String>> results)
+            throws SQLException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         while (rs.next()) {
             results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3) - 100) + "-" + (rs.getLong(3) + 100));
@@ -406,13 +419,16 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query to execute
+     * @param table
+     *            variants table
      * @param dnaIDsToCountMap
      *            map of dna ids to counts
      * @return map of dna ids to counts
      * @throws SessionExpiredException
      * @throws SQLException
      */
-    public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, Map<String, Integer> dnaIDsToCountMap) throws SQLException, SessionExpiredException {
+    public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, TableSchema table, Map<String, Integer> dnaIDsToCountMap) throws SQLException,
+            SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         while (rs.next()) {
@@ -429,6 +445,8 @@ public class VariantManagerHelper implements Serializable {
      *            session ID
      * @param q
      *            query
+     * @param table
+     *            variants table
      * @param patientHeatMapThreshold
      *            patient heat map threshold
      * @param multiplier
@@ -439,8 +457,8 @@ public class VariantManagerHelper implements Serializable {
      *            heat map
      * @return updated heat map
      */
-    public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, int patientHeatMapThreshold, float multiplier, boolean useThreshold, Map<String, Integer> map)
-            throws SQLException, SessionExpiredException {
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, TableSchema table, int patientHeatMapThreshold, float multiplier, boolean useThreshold,
+            Map<String, Integer> map) throws SQLException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         while (rs.next()) {
