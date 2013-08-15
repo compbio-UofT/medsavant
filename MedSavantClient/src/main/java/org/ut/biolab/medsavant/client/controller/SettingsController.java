@@ -175,8 +175,7 @@ public class SettingsController {
      * Read the settings in from file (usually performed once, on load)
      */
     private void readPersistenceMap() {
-         String s = new File(DirectorySettings.getMedSavantDirectory(),".medsavant.prop").getAbsolutePath();
-        File pFile = new File(PERSISTENCE_FILE_PATH);
+        File pFile = new File(DirectorySettings.getMedSavantDirectory(), PERSISTENCE_FILE_PATH);
 
         if (!pFile.exists()) {
             resetPersistenceMap();
@@ -242,7 +241,7 @@ public class SettingsController {
     private void savePersistenceMap() {
         BufferedWriter bw = null;
         try {
-            File pFile = new File(PERSISTENCE_FILE_PATH);
+            File pFile = new File(DirectorySettings.getMedSavantDirectory(), PERSISTENCE_FILE_PATH);
 
             /*if (pFile.exists()) {
                 pFile.delete();
