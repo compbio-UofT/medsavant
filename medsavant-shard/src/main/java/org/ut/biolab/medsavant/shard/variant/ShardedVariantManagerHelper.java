@@ -168,13 +168,13 @@ public class ShardedVariantManagerHelper implements Serializable {
     public Integer getNumFilteredVariants(String sessID, SelectQuery q) {
         // TODO: deal with table-project mapping, hibernate configuration has to
         // be provided dynamically
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
         return (res == null ? 0 : res);
     }
 
@@ -194,7 +194,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return list of variants
      */
     public List<Object[]> getVariants(String sessID, SelectQuery q, int start, int limit, String[] orderByCols) {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
         Criteria c = session.createCriteria(Variant.class).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Variant> variantList = c.list();
@@ -207,7 +207,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             res.add(getAttributeValues((Variant) iterator.next()));
         }
 
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
 
         return res;
     }
@@ -231,7 +231,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
             throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Range range = getExtremeValuesForColumn(s, column.getColumnName());
         double binSize = MiscUtils.generateBins(column, range, logBins);
@@ -263,7 +263,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             results.put(r, count);
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return results;
     }
@@ -283,7 +283,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + colName + " as value",
                 "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new StringType() }));
@@ -298,7 +298,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             }
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return res;
     }
@@ -332,7 +332,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, boolean columnXCategorical,
             boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException, SessionExpiredException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         DbColumn columnX = table.getDBColumn(columnnameX);
         DbColumn columnY = table.getDBColumn(columnnameY);
@@ -404,7 +404,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             Collections.sort(yRanges);
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return new ScatterChartMap(xRanges, yRanges, entries);
     }
@@ -426,7 +426,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, String colName, int binsize, float multiplier) throws SQLException,
             SessionExpiredException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         String round = "ROUND(" + colName + "/" + binsize + ",0)";
 
@@ -454,7 +454,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             results.put(chrom, chromMap);
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return results;
     }
@@ -469,13 +469,13 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return patient count
      */
     public int getPatientCountWithVariantsInRange(String sid, SelectQuery q) throws SQLException, SessionExpiredException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         Integer res = (Integer) c.list().get(0);
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return res;
     }
@@ -492,7 +492,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return map of results
      */
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, int limit, Map<String, List<String>> results) {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlProjection("dna_id as dna_id, chrom as chrom, position as position",
                 new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new StringType(), new IntegerType() }));
@@ -506,7 +506,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             results.get((String) o[0]).add((String) o[1] + ":" + ((Long) o[2] - 100) + "-" + ((Long) o[2] + 100));
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return results;
     }
@@ -525,7 +525,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @throws SQLException
      */
     public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, Map<String, Integer> dnaIDsToCountMap) {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
                 Projections.groupProperty("dna_id"));
@@ -536,7 +536,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             dnaIDsToCountMap.put((String) o[1], ((BigDecimal) o[0]).intValue());
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return dnaIDsToCountMap;
     }
@@ -560,7 +560,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, int patientHeatMapThreshold, float multiplier, boolean useThreshold, Map<String, Integer> map)
             throws SQLException, SessionExpiredException {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
                 Projections.groupProperty("dna_id"));
@@ -574,7 +574,7 @@ public class ShardedVariantManagerHelper implements Serializable {
             }
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
 
         return map;
     }

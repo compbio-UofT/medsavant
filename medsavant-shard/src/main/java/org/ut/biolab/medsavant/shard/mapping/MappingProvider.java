@@ -30,55 +30,77 @@
  */
 package org.ut.biolab.medsavant.shard.mapping;
 
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.PersistentClass;
-import org.ut.biolab.medsavant.shard.common.MetaEntity;
-import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
-import org.ut.biolab.medsavant.shard.variant.Variant;
+import java.util.List;
 
 /**
- * Provider of information related to mapping of variants via Hibernate.
+ * Provider of dynamic Hibernate mappings.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class VariantMapping {
-    private static MetaEntity<Variant> model;
-    private static PersistentClass mapping;
-
-    static {
-        model = new MetaEntity<Variant>(Variant.class);
-        mapping = ShardedSessionManager.getConfig().getClassMapping(Variant.class.getName());
-    }
+public interface MappingProvider {
 
     /**
-     * Retrieve columns in the table the entity is mapped to.
+     * Retrieves the mapping in place.
      * 
-     * @return names of columns
+     * @return mapping in XML
      */
-    public static String[] getColumnNames() {
-        String[] atts = model.getAttributeNames();
-        String[] res = new String[atts.length];
-        for (int i = 0; i < atts.length; i++) {
-            res[i] = ((Column) (mapping.getProperty(atts[i]).getColumnIterator().next())).getName();
-        }
-
-        return res;
-    }
+    String getMapping();
 
     /**
-     * Retrieves the name of the column serving as ID.
-     */
-    public static String getIdColumn() {
-        return mapping.getIdentifierProperty().getName();
-    }
-
-    /**
-     * Count the number of columns in the mapping.
+     * Returns the name of the entity the mapping is for.
      * 
-     * @return number of columns
+     * @return entity name
      */
-    public static int getColumnCount() {
-        return model.getAttributesCount();
-    }
+    String getClassName();
+
+    /**
+     * Change mapping to the given class.
+     * 
+     * @param clazz
+     *            class name
+     */
+    void setClassName(String pack, String clazz);
+
+    /**
+     * Retrieves the name of table the entity is mapped to.
+     * 
+     * @return table name
+     */
+    String getTable();
+
+    /**
+     * Changes the table the entity is mapped to.
+     * 
+     * @param table
+     *            table name
+     */
+    void setTable(String table);
+
+    /**
+     * Retrieves the list of active properties in the mapping.
+     * 
+     * @return properties
+     */
+    List<MappingProperty> getProperties();
+
+    /**
+     * Changes the properties in the mapping.
+     * 
+     * @param properties
+     *            new properties
+     */
+    void setProperties(List<MappingProperty> properties);
+
+    /**
+     * Adds a property to the mapping.
+     * 
+     * @param propertyName
+     *            name of the property
+     * @param columnName
+     *            name of the column to map to
+     * @param propertyType
+     *            type of the property
+     */
+    void addProperty(String propertyName, String columnName, String propertyType);
 }

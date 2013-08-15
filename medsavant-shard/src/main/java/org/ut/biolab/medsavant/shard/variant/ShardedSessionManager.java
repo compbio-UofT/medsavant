@@ -26,21 +26,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.shards.ShardedConfiguration;
 import org.hibernate.shards.cfg.ConfigurationToShardConfigurationAdapter;
 import org.hibernate.shards.cfg.ShardConfiguration;
 import org.hibernate.shards.strategy.ShardStrategyFactory;
+import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 import org.ut.biolab.medsavant.shard.strategy.PositionShardStrategyFactory;
 
 /**
- * Constructor of factories and necessary sharding utils.
+ * Manager of sharded sessions.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class VariantShardUtil {
+public class ShardedSessionManager {
     // TODO: check whether this is true
     private static final long MAX_VARIANT_POSITION = 250000000;
     private static final String RESOURCE_PREFIX = "hibernate";
@@ -48,7 +50,35 @@ public class VariantShardUtil {
     private static final Integer VIRTUAL_SHARD_NO = 32;
     private static Integer shardNo;
     private static SessionFactory sessionFactory;
+    private static ShardStrategyFactory shardStrategyFactory;
     private static Configuration config;
+    private static List<ShardConfiguration> shardConfigs;
+
+    static {
+        try {
+            // autodetect shards
+            shardConfigs = new ArrayList<ShardConfiguration>();
+            shardNo = 0;
+            boolean loadedAll = false;
+            while (!loadedAll) {
+                try {
+                    Configuration c = new Configuration().configure(RESOURCE_PREFIX + shardNo + RESOURCE_SUFFIX);
+                    shardConfigs.add(new ConfigurationToShardConfigurationAdapter(c));
+                } catch (HibernateException ex) {
+                    // loaded all resources
+                    loadedAll = true;
+                }
+                shardNo++;
+            }
+
+            // prepare shard utils
+            shardStrategyFactory = buildShardStrategyFactory();
+            buildConfig();
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            sessionFactory = null;
+        }
+    }
 
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
@@ -63,39 +93,18 @@ public class VariantShardUtil {
         return virtualShardMap;
     }
 
-    static {
-        try {
-            // initial config
-            config = new Configuration();
-            config.configure(RESOURCE_PREFIX + "0" + RESOURCE_SUFFIX);
-            config.addResource("variant.hbm.xml");
+    private static void buildConfig() {
+        // initialize config
+        config = new Configuration();
+        config.configure(RESOURCE_PREFIX + "0" + RESOURCE_SUFFIX);
+        config.addXML(VariantMappingGenerator.getInstance().getMapping());
 
-            // autodetect shards
-            List<ShardConfiguration> shardConfigs = new ArrayList<ShardConfiguration>();
-            shardNo = 0;
-            boolean loadedAll = false;
-            while (!loadedAll) {
-                try {
-                    Configuration c = new Configuration().configure(RESOURCE_PREFIX + shardNo + RESOURCE_SUFFIX);
-                    shardConfigs.add(new ConfigurationToShardConfigurationAdapter(c));
-                } catch (HibernateException ex) {
-                    // loaded all resources
-                    loadedAll = true;
-                }
-                shardNo++;
-            }
-
-            // prepare shard strategy factory
-            ShardStrategyFactory shardStrategyFactory = buildShardStrategyFactory();
-            ShardedConfiguration shardedConfig = new ShardedConfiguration(config, shardConfigs, shardStrategyFactory, createVirtualShards(VIRTUAL_SHARD_NO, shardNo));
-            sessionFactory = shardedConfig.buildShardedSessionFactory();
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-            sessionFactory = null;
-        }
+        // build sharded config
+        ShardedConfiguration shardedConfig = new ShardedConfiguration(config, shardConfigs, shardStrategyFactory, createVirtualShards(VIRTUAL_SHARD_NO, shardNo));
+        sessionFactory = shardedConfig.buildShardedSessionFactory();
     }
 
-    static ShardStrategyFactory buildShardStrategyFactory() {
+    private static ShardStrategyFactory buildShardStrategyFactory() {
         ThreadFactory factory = new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -110,12 +119,60 @@ public class VariantShardUtil {
         return shardStrategyFactory;
     }
 
-    static Integer getShardNo() {
+    /**
+     * Retrieves number of shards in use.
+     * 
+     * @return shard count
+     */
+    public static Integer getShardNo() {
         return shardNo;
     }
 
+    /**
+     * Exposes active configuration.
+     * 
+     * @return configuration
+     */
     public static Configuration getConfig() {
         return config;
+    }
+
+    /**
+     * Retrieves the table currently used in the mapping.
+     * 
+     * @return
+     */
+    public static String getTable() {
+        return VariantMappingGenerator.getInstance().getTable();
+    }
+
+    /**
+     * Updates the configuration with a mapping pointing to a new table.
+     * 
+     * @param table
+     *            name of the new table
+     */
+    public static synchronized void setTable(String table) {
+        VariantMappingGenerator.getInstance().setTable(table);
+        buildConfig();
+    }
+
+    /**
+     * Opens a new session.
+     * 
+     * @return session
+     */
+    public static Session openSession() {
+        return getSessionFactory().openSession();
+    }
+
+    /**
+     * Closes the given session.
+     * 
+     * @param session
+     */
+    public static void closeSession(Session session) {
+        session.close();
     }
 
 }

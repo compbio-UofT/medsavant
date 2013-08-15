@@ -43,20 +43,19 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.testng.annotations.Test;
-import org.ut.biolab.medsavant.shard.common.MetaEntity;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 
 /**
- * Tests to verify sharding is working.
+ * Tests to verify different types of queries.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class VariantShardTest extends AbstractShardTest {
+public class VariantQueryTest extends AbstractShardTest {
 
     @Test
     public void testSelectVariantsWithRestrictions() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
 
         // note: beware of this commented out query - it does implicit sorting
         // and many comparisons across shards - unusably slow
@@ -72,23 +71,24 @@ public class VariantShardTest extends AbstractShardTest {
             Variant v = (Variant) iterator.next();
             System.out.println(v);
         }
-        ShardedConnectionController.closeSession(session);
+
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testCountVariants() {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
         System.out.println("Count: " + res);
     }
 
     @Test
     public void testSelectVariantsWithLimit() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
 
         Criteria crit = session.createCriteria(Variant.class).setMaxResults(2);
         List<Variant> variantList = crit.list();
@@ -98,12 +98,12 @@ public class VariantShardTest extends AbstractShardTest {
             Variant v = (Variant) iterator.next();
             System.out.println(v);
         }
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testSelectVariantsWithLimitAndOffset() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
 
         Criteria crit = session.createCriteria(Variant.class).setFetchSize(2).setMaxResults(2).setFirstResult(6);
         List<Variant> variantList = crit.list();
@@ -113,12 +113,12 @@ public class VariantShardTest extends AbstractShardTest {
             Variant v = (Variant) iterator.next();
             System.out.println(v);
         }
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testArithmetic() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
         Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
                 .setFetchSize(2)
                 .setMaxResults(2)
@@ -133,12 +133,12 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testArithmeticWithGroupBy() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
         Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
                 .setFetchSize(4)
                 .setMaxResults(4)
@@ -153,12 +153,12 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testMultiColumnGroupBy() {
-        Session session = ShardedConnectionController.openSession();
+        Session session = ShardedSessionManager.openSession();
         Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
                 .setFetchSize(4)
                 .setMaxResults(4)
@@ -173,26 +173,26 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(session);
+        ShardedSessionManager.closeSession(session);
     }
 
     @Test
     public void testCountDistinct() {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
         List<Object> os = c.list();
-        
+
         for (Object o : os) {
             System.out.println(o.toString());
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
     }
 
     @Test
     public void testCountGroupBy() {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
                 Projections.groupProperty("variant_type"));
@@ -203,12 +203,12 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
     }
 
     @Test
     public void testMaxGroupBy() {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.max("position"), Projections.groupProperty("variant_type"));
         List<Object[]> os = c.list();
@@ -218,12 +218,12 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(s);
+        ShardedSessionManager.closeSession(s);
     }
 
     @Test
     public void testMinGroupBy() {
-        Session s = ShardedConnectionController.openSession();
+        Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.min("qual"), Projections.groupProperty("variant_type"));
         List<Object[]> os = c.list();
@@ -233,26 +233,6 @@ public class VariantShardTest extends AbstractShardTest {
             }
         }
 
-        ShardedConnectionController.closeSession(s);
-    }
-
-    @Test
-    public void testAttributes() {
-        MetaEntity<Variant> m = new MetaEntity<Variant>(Variant.class);
-        for (String s : m.getAttributeNames()) {
-            System.out.println(s);
-        }
-    }
-
-    @Test
-    public void testColumns() {
-        for (String s : VariantMapping.getColumnNames()) {
-            System.out.println(s);
-        }
-    }
-
-    @Test
-    public void testId() {
-        System.out.println(VariantMapping.getIdColumn());
+        ShardedSessionManager.closeSession(s);
     }
 }
