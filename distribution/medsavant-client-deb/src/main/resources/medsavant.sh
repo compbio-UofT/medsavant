@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Go to the savant directory:
+# Go to the medsavant directory:
 cd /usr/local/medsavant-client-${project.version}/
 
 # Prefer to use IPv4:
