@@ -20,6 +20,15 @@ case "$1" in
 
         chown -R $MEDSAVANT_USER:$MEDSAVANT_GROUP /var/lib/medsavant-server/
         chmod -R u=rwX,g=rwX,o=rX /var/lib/medsavant-server/
+
+        TMP_DIR="/tmp/medsavant"
+        if [ -f "/var/lib/medsavant-server/medsavant.properties" ]; then
+            TMP_DIR=`cat /var/lib/medsavant-server/medsavant.properties | grep tmp-dir | cut -d= -f2`
+        fi
+
+        mkdir -p $TMP_DIR
+        chown -R $MEDSAVANT_USER:$MEDSAVANT_GROUP $TMP_DIR
+        chmod -R u=rwX,g=rwX,o=rX $TMP_DIR
     ;;
 esac
 

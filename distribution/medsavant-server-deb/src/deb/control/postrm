@@ -7,6 +7,8 @@ case "$1" in
         # Stop the service and remove it from autostart
         invoke-rc.d medsavant-server stop || true
         update-rc.d medsavant-server remove >/dev/null
+        # Also remove the startup script, since it was kept in order to be able to stop the service
+        rm -f /etc/init.d/medsavant-server
 
         # Remove the special user and group
         MEDSAVANT_USER=medsavant
@@ -25,6 +27,7 @@ case "$1" in
 
         rm -rf /var/lib/medsavant-server
         rm -rf /usr/local/medsavant-server
+        rm -rf /tmp/medsavant
     ;;
 
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
