@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=MedSavant Variant Search Engine ${project.version}
+Name[en]=MedSavant Variant Search Engine ${project.version}
+GenericName=MedSavant Variant Search Engine
+GenericName[en]=MedSavant Variant Search Engine
+Exec=/usr/bin/medsavant-client-${project.version}
+Categories=Science;Biology;Bioinformatics;DataVisualization;Java;
+Comment=Starts the MedSavant Variant Search Engine ${project.version}
+Comment[en]=Starts the Variant Search Engine ${project.version}
+Encoding=UTF-8
+Icon=/usr/local/medsavant-client-${project.version}/medsavant.png
+Path=/usr/local/medsavant-client-${project.version}
+ServiceTypes=
+Terminal=false
+Type=Application
