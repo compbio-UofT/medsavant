@@ -117,7 +117,7 @@ public class SearchConditionItemView extends PillView {
                 };
                 t.start();
 
-                if (item.getParent().getItems().size() > 1) {
+                if (item.getParent().getItems().size() > 0) {  
                     m.add(new JMenuItem(new AbstractAction("Convert to group") {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
