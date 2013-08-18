@@ -66,7 +66,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public Reference[] getReferences(String sessID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select r from Reference");
+        Query query = queryManager.createQuery("Select r from Reference r");
         List<Reference> referenceList = query.execute();
         return referenceList.toArray(new Reference[referenceList.size()]);
     }
