@@ -19,16 +19,27 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.SettingsTableSchema;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.shared.model.Setting;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -42,8 +53,13 @@ import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
 public class SettingsManager extends MedSavantServerUnicastRemoteObject implements SettingsManagerAdapter {
     private static SettingsManager instance;
     private boolean lockReleased = false;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
+    private static final Log LOG = LogFactory.getLog(SettingsManager.class);
 
     private SettingsManager() throws RemoteException, SessionExpiredException {
+        queryManager = QueryManagerFactory.getQueryManager();
+        entityManager = EntityManagerFactory.getEntityManager();
     }
 
     public static synchronized SettingsManager getInstance() throws RemoteException, SessionExpiredException {
@@ -55,52 +71,44 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
 
     @Override
     public void addSetting(String sid, String key, String value) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.SettingsTableSchema;
-        InsertQuery query = new InsertQuery(table.getTable());
-        query.addColumn(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key);
-        query.addColumn(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
-
-        ConnectionController.executeUpdate(sid,  query.toString());
+        Setting setting = new Setting(key, value);
+        try {
+            entityManager.persist(setting);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting setting");
+        }
     }
 
     @Override
     public String getSetting(String sid, String key) throws SQLException, SessionExpiredException {
+        Query query = queryManager.createQuery("Select s.value from Setting s where s.key= :key");
+        query.setParameter("key", "\"" + key + "\"" );
+        List<ResultRow> resultRowList = query.executeForRows();
 
-        TableSchema table = MedSavantDatabase.SettingsTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        if (rs.next()) {
-            String result = rs.getString(1);
-            return result;
-        } else {
-            return null;
+        String result = null;
+        if (resultRowList.size() > 0) {
+            result = String.valueOf(resultRowList.get(0).getObject("value"));
         }
+
+        return result;
     }
 
     @Override
     public void updateSetting(String sessID, String key, String value) throws SQLException, SessionExpiredException {
-        Connection conn = ConnectionController.connectPooled(sessID);
+        updateSetting(key, value);
+    }
+
+    private void updateSetting(String key, String value) {
+        Setting setting = new Setting(key, value);
         try {
-            updateSetting(conn, key, value);
-        } finally {
-            conn.close();
+            entityManager.persist(setting);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting setting");
         }
     }
 
     private void updateSetting(Connection conn, String key, String value) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.SettingsTableSchema;
-        UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
-
-        conn.createStatement().executeUpdate(query.toString());
+        updateSetting(key, value);
     }
 
     @Override
