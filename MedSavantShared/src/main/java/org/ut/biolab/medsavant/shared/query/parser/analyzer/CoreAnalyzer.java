@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.ARangeVariableDeclaration;
 import org.ut.biolab.medsavant.shared.query.parser.node.PAbstractSchemaName;
@@ -33,7 +34,8 @@ public class CoreAnalyzer extends DepthFirstAdapter {
         PAbstractSchemaName schemaName =  node.getAbstractSchemaName();
 
         if (schemaName != null) {
-            coreName = schemaName.toString().trim().toLowerCase(Locale.ROOT);
+            String entityName = schemaName.toString().trim().toLowerCase(Locale.ROOT);
+            coreName = FieldMappings.mapToSolrCore(entityName);
         }
 
         super.outARangeVariableDeclaration(node);

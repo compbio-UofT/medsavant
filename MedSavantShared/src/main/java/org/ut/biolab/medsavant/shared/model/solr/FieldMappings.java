@@ -26,6 +26,18 @@ import java.util.Map;
  */
 public class FieldMappings {
 
+    public static String mapToSolrCore(String entityName) {
+
+        String coreName;
+        if (ENTITY_CORE_MAP.containsKey(entityName)) {
+            coreName = ENTITY_CORE_MAP.get(entityName);
+        } else {
+            coreName = entityName;
+        }
+
+        return coreName;
+    }
+
     public static String mapToSolrField(String value, String entityName) {
         Map<String, String> mappings = FieldMappings.getMappings(entityName);
 
@@ -71,7 +83,20 @@ public class FieldMappings {
         put("sb", "INFO_SB");
         put("somatic", "INFO_SOMATIC");
         put("validated", "INFO_vALIDATED");
+    }}
+    );
 
-    }});
+    private static final Map<String, String> ENTITY_CORE_MAP = Collections.unmodifiableMap(
+        new HashMap<String, String> () {{
+            put("regionset", "region_set");
+            put("genomicregion", "genomic_region");
+            put("variantfile", "variant_file");
+            put("ontologyterm", "ontology_term");
+            put("annotationlog", "annotation_log");
+            put("generallog", "general_log");
+            put("annotationformat", "annotation_format");
+            put("annotationcolumn", "annotation_column");
+        }}
+    );
 
 }
