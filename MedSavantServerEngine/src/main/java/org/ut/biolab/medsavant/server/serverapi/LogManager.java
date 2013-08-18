@@ -71,7 +71,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     @Override
     public List<GeneralLog> getClientLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select l from GeneralLog where l.user <> :user order by l.timestamp");
+        Query query = queryManager.createQuery("Select l from GeneralLog l where l.user <> :user order by l.timestamp");
         query.setParameter("user", "server");
         query.setStart(start);
         query.setLimit(limit);
@@ -82,7 +82,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     @Override
     public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select l from GeneralLog where l.user= :user order by l.timestamp");
+        Query query = queryManager.createQuery("Select l from GeneralLog l where l.user= :user order by l.timestamp");
         query.setParameter("user", "server");
         query.setStart(start);
         query.setLimit(limit);
@@ -92,7 +92,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
 
     @Override
     public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
-        Query query = queryManager.createQuery("Select l from AnnotationLog where l.user= :user order by l.timestamp");
+        Query query = queryManager.createQuery("Select l from AnnotationLog l where l.user= :user order by l.timestamp");
         query.setStart(start);
         query.setLimit(limit);
         List<AnnotationLog> annotationLogList = query.execute();
