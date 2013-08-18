@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.shared.persistence.solr;
 
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.solr.*;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
@@ -54,19 +55,45 @@ public class SolrEntityManager implements EntityManager {
             return new SearcheableVariant((VariantRecord)entity);
         } else if (entity instanceof SimpleVariantFile) {
             return new SearcheableVariantFile((SimpleVariantFile) entity);
-        } if (entity instanceof VariantComment) {
+        } else if (entity instanceof VariantComment) {
             return new SearcheableVariantComment((VariantComment) entity);
-        } if (entity instanceof Patient) {
+        } else if (entity instanceof Patient) {
             return new SearcheablePatient((Patient) entity);
-        } if (entity instanceof Cohort) {
+        } else if (entity instanceof Cohort) {
             return new SearcheableCohort((Cohort) entity);
-        } if (entity instanceof SearcheableAnnotationLog) {
+        } else if (entity instanceof AnnotationLog) {
             return new SearcheableAnnotationLog((AnnotationLog) entity);
-        } if (entity instanceof SearcheableGeneralLog) {
+        } else if (entity instanceof GeneralLog) {
             return new SearcheableGeneralLog((GeneralLog) entity);
-        } if (entity instanceof ProjectDetails) {
+        } else if (entity instanceof ProjectDetails) {
             return new SearcheableProjectDetails((ProjectDetails) entity);
-        }  else {
+        } else if (entity instanceof AnnotatedColumn) {
+            return new SearcheableAnnotatedColumn((AnnotatedColumn) entity);
+        } else if (entity instanceof Annotation) {
+            return new SearcheableAnnotation((Annotation) entity);
+        } else if (entity instanceof AnnotationFormat) {
+            return new SearcheableAnnotationFormat((AnnotationFormat) entity);
+        } else if (entity instanceof Chromosome) {
+            return new SearcheableChromosome((Chromosome) entity);
+        } else if (entity instanceof Gene) {
+            return new SearcheableGene((Gene) entity);
+        } else if (entity instanceof GeneSet) {
+            return new SearcheableGeneSet((GeneSet) entity);
+        } else if (entity instanceof GenomicRegion) {
+            return new SearcheableGenomicRegion((GenomicRegion) entity);
+        } else if (entity instanceof Ontology) {
+            return new SearcheableOntology((Ontology) entity);
+        } else if (entity instanceof OntologyTerm) {
+            return new SearcheableOntologyTerm((OntologyTerm) entity);
+        } else if (entity instanceof Reference) {
+            return new SearcheableReference((Reference) entity);
+        } else if (entity instanceof RegionSet) {
+            return new SearcheableRegionSet((RegionSet) entity);
+        } else if (entity instanceof Setting) {
+            return new SearcheableSetting((Setting) entity);
+        } else if (entity instanceof User) {
+            return new SearcheableUser((User) entity);
+        } else {
             return entity;
         }
     }

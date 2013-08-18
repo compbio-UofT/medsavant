@@ -54,6 +54,18 @@ public class MapperRegistry {
 
     private static RegionSetMapper regionSetMapper;
 
+    private static AnnotationMapper annotationMapper;
+
+    private static UserMapper userMapper;
+
+    private static SettingMapper settingMapper;
+
+    private static AnnotationFormatMapper annotationFormatMapper;
+
+    private static ResultMapper geneSetMapper;
+
+    private static AnnotationColumnMapper annotationColumnMapper;
+
     /**
      * Get the appropriate mapper based on the entity name.
      *
@@ -92,6 +104,18 @@ public class MapperRegistry {
             return getReferenceMapper();
         } else if (Entity.REGION_SET.equals(entity)) {
             return getRegionSetMapper();
+        } else if (Entity.ANNOTATION.equals(entity)) {
+            return getAnnotationMapper();
+        } else if (Entity.USER.equals(entity)) {
+            return getUserMapper();
+        } else if (Entity.SETTING.equals(entity)) {
+            return getSettingMapper();
+        } else if (Entity.ANNOTATION_FORMAT.equals(entity)) {
+            return getAnnotationFormatMapper();
+        } else if (Entity.GENE_SET.equals(entity)) {
+            return getGeneSetMapper();
+        } else if (Entity.ANNOTATION_COLUMN.equals(entity)) {
+            return getAnnotationColumnMapper();
         }
 
         return null;
@@ -214,6 +238,17 @@ public class MapperRegistry {
     }
 
     /**
+     * Return the Annotation mapper instance. Creates one if it doesn't yet exist.
+     * @return          The Annotation mapper instance.
+     */
+    public static AnnotationMapper getAnnotationMapper() {
+        if (annotationMapper == null) {
+            annotationMapper = new AnnotationMapper();
+        }
+        return annotationMapper;
+    }
+
+    /**
      * Return the GeneralLog mapper instance. Creates one if it doesn't yet exist.
      * @return          The GeneralLog mapper instance.
      */
@@ -279,5 +314,60 @@ public class MapperRegistry {
             regionSetMapper = new RegionSetMapper();
         }
         return regionSetMapper;
+    }
+
+    /**
+     * Return the user mapper instance. Creates one if it doesn't yet exist.
+     * @return          The user mapper instance.
+     */
+    public static UserMapper getUserMapper() {
+        if (userMapper == null) {
+            userMapper = new UserMapper();
+        }
+        return userMapper;
+    }
+
+    /**
+     * Return the setting mapper instance. Creates one if it doesn't yet exist.
+     * @return          The setting mapper instance.
+     */
+    public static SettingMapper getSettingMapper() {
+        if (settingMapper == null) {
+            settingMapper = new SettingMapper();
+        }
+        return settingMapper;
+    }
+
+    /**
+     * Return the gene set mapper instance. Creates one if it doesn't yet exist.
+     * @return          The gene set mapper instance.
+     */
+    public static ResultMapper getGeneSetMapper() {
+        if (geneSetMapper == null) {
+            geneSetMapper = new GeneSetMapper();
+        }
+        return geneSetMapper;
+    }
+
+    /**
+     * Return the annotation format mapper instance. Creates one if it doesn't yet exist.
+     * @return          The annotation format mapper instance.
+     */
+    public static AnnotationFormatMapper getAnnotationFormatMapper() {
+        if (annotationFormatMapper == null) {
+            annotationFormatMapper = new AnnotationFormatMapper();
+        }
+        return annotationFormatMapper;
+    }
+
+    /**
+     * Return the annotation column mapper instance. Creates one if it doesn't yet exist.
+     * @return          The annotation column mapper instance.
+     */
+    public static AnnotationColumnMapper getAnnotationColumnMapper() {
+        if (annotationColumnMapper == null) {
+            annotationColumnMapper = new AnnotationColumnMapper();
+        }
+        return annotationColumnMapper;
     }
 }

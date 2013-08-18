@@ -15,6 +15,8 @@
  */
 package org.ut.biolab.medsavant.shared.solr.service;
 
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.solr.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.Entity;
@@ -24,7 +26,6 @@ import org.ut.biolab.medsavant.shared.util.Entity;
  * Keep track of references of Solr services.
  */
 public class SolrServiceRegistry {
-
 
     private static AbstractSolrService variantService;
 
@@ -55,6 +56,18 @@ public class SolrServiceRegistry {
     private static AbstractSolrService referenceService;
 
     private static AbstractSolrService regionSetService;
+
+    private static AbstractSolrService annotationService;
+
+    private static AbstractSolrService annotationFormatService;
+
+    private static AbstractSolrService geneSetService;
+
+    private static AbstractSolrService userService;
+
+    private static AbstractSolrService settingService;
+
+    private static AbstractSolrService annotationColumnService;
 
     /**
      * Get the appropriate solr service based on the entity string.
@@ -94,6 +107,18 @@ public class SolrServiceRegistry {
             return getReferenceService();
         } else if (Entity.REGION_SET.equals(entityName)) {
             return getRegionSetService();
+        } else if (Entity.ANNOTATION.equals(entityName)) {
+            return getAnnotationService();
+        } else if (Entity.USER.equals(entityName)) {
+            return getUserService();
+        } else if (Entity.SETTING.equals(entityName)) {
+            return getSettingService();
+        } else if (Entity.GENE_SET.equals(entityName)) {
+            return getGeneSetService();
+        } else if (Entity.ANNOTATION_FORMAT.equals(entityName)) {
+            return getAnnotationFormatService();
+        } else if (Entity.ANNOTATION_COLUMN.equals(entityName)) {
+            return getAnnotationColumnService();
         }
 
         return null;
@@ -101,36 +126,48 @@ public class SolrServiceRegistry {
 
     public static AbstractSolrService getService(Class clazz) throws InitializationException {
 
-        if (SearcheableVariantComment.class.getName().equals(clazz.getName())) {
+        if (VariantComment.class.getName().equals(clazz.getName())) {
             return getVariantCommentService();
-        } else if (SearcheableAnnotationLog.class.getName().equals(clazz.getName())) {
+        } else if (AnnotationLog.class.getName().equals(clazz.getName())) {
             return getAnnotationLogService();
-        } else if (SearcheableGeneralLog.class.getName().equals(clazz.getName())) {
+        } else if (GeneralLog.class.getName().equals(clazz.getName())) {
             return getGeneralLogService();
-        } else if (SearcheablePatient.class.getName().equals(clazz.getName())) {
+        } else if (Patient.class.getName().equals(clazz.getName())) {
             return getPatientService();
-        } else if (SearcheableProjectDetails.class.getName().equals(clazz.getName())) {
+        } else if (ProjectDetails.class.getName().equals(clazz.getName())) {
             return getProjectDetailsService();
-        } else if (SearcheableCohort.class.getName().equals(clazz.getName())) {
+        } else if (Cohort.class.getName().equals(clazz.getName())) {
             return getCohortService();
-        } else if (SearcheableVariant.class.getName().equals(clazz.getName())) {
+        } else if (VariantData.class.getName().equals(clazz.getName())) {
             return getVariantCommentService();
-        } else if (SearcheableVariantFile.class.getName().equals(clazz.getName())) {
+        } else if (SimpleVariantFile.class.getName().equals(clazz.getName())) {
             return getVariantFileService();
-        } else if (SearcheableChromosome.class.getName().equals(clazz.getName())) {
+        } else if (Chromosome.class.getName().equals(clazz.getName())) {
             return getChromosomeService();
-        } else if (SearcheableGene.class.getName().equals(clazz.getName())) {
+        } else if (Gene.class.getName().equals(clazz.getName())) {
             return getGeneService();
-        } else if (SearcheableGenomicRegion.class.getName().equals(clazz.getName())) {
+        } else if (GenomicRegion.class.getName().equals(clazz.getName())) {
             return getGenomicRegionService();
-        } else if (SearcheableOntology.class.getName().equals(clazz.getName())) {
+        } else if (Ontology.class.getName().equals(clazz.getName())) {
             return getOntologyService();
-        } else if (SearcheableOntologyTerm.class.getName().equals(clazz.getName())) {
+        } else if (OntologyTerm.class.getName().equals(clazz.getName())) {
             return getOntologyTermService();
-        } else if (SearcheableReference.class.getName().equals(clazz.getName())) {
+        } else if (Reference.class.getName().equals(clazz.getName())) {
             return getReferenceService();
-        } else if (SearcheableRegionSet.class.getName().equals(clazz.getName())) {
+        } else if (RegionSet.class.getName().equals(clazz.getName())) {
             return getRegionSetService();
+        } else if (Annotation.class.getName().equals(clazz.getName())) {
+            return getAnnotationService();
+        } else if (User.class.getName().equals(clazz.getName())) {
+            return getUserService();
+        } else if (Setting.class.getName().equals(clazz.getName())) {
+            return getSettingService();
+        } else if (GeneSet.class.getName().equals(clazz.getName())) {
+            return getGeneSetService();
+        } else if (AnnotationFormat.class.getName().equals(clazz.getName())) {
+            return getAnnotationFormatService();
+        } else if (AnnotatedColumn.class.getName().equals(clazz.getName())) {
+            return getAnnotationColumnService();
         }
 
         return null;
@@ -168,9 +205,10 @@ public class SolrServiceRegistry {
         return patientService;
     }
 
-    public static AbstractSolrService getCohortService() {
+    public static AbstractSolrService getCohortService() throws InitializationException {
         if (cohortService == null) {
             cohortService =  new CohortService();
+            cohortService.initialize();
         }
         return cohortService;
     }
@@ -199,52 +237,107 @@ public class SolrServiceRegistry {
         return projectDetailsService;
     }
 
-    public static AbstractSolrService getChromosomeService() {
+    public static AbstractSolrService getChromosomeService() throws InitializationException {
         if (chromosomeService == null) {
             chromosomeService = new ChromosomeSolrService();
+            chromosomeService.initialize();
         }
         return chromosomeService;
     }
 
-    public static AbstractSolrService getGeneService() {
+    public static AbstractSolrService getGeneService() throws InitializationException {
         if (geneService == null) {
             geneService = new GeneSolrService();
+            geneService.initialize();
         }
         return geneService;
     }
 
-    public static AbstractSolrService getGenomicRegionService() {
+    public static AbstractSolrService getGenomicRegionService() throws InitializationException {
         if (genomicRegionService == null) {
             genomicRegionService = new GenomicRegionSolrService();
+            genomicRegionService.initialize();
         }
         return genomicRegionService;
     }
 
-    public static AbstractSolrService getOntologyService() {
+    public static AbstractSolrService getOntologyService() throws InitializationException {
         if (ontologyService == null) {
             ontologyService = new OntologySolrService();
+            ontologyService.initialize();
         }
         return ontologyService;
     }
 
-    public static AbstractSolrService getOntologyTermService() {
+    public static AbstractSolrService getOntologyTermService() throws InitializationException {
         if (ontologyTermService == null) {
             ontologyTermService = new OntologyTermSolrService();
+            ontologyService.initialize();
         }
         return ontologyTermService;
     }
 
-    public static AbstractSolrService getReferenceService() {
+    public static AbstractSolrService getReferenceService() throws InitializationException {
         if (referenceService == null) {
             referenceService = new ReferenceSolrService();
+            referenceService.initialize();
         }
         return referenceService;
     }
 
-    public static AbstractSolrService getRegionSetService() {
+    public static AbstractSolrService getRegionSetService() throws InitializationException {
         if (regionSetService == null) {
             regionSetService = new RegionSetSolrService();
+            regionSetService.initialize();
         }
         return regionSetService;
+    }
+
+    public static AbstractSolrService getAnnotationService() throws InitializationException {
+        if (annotationService == null) {
+            annotationService = new AnnotationSolrService();
+            annotationService.initialize();
+        }
+        return annotationService;
+    }
+
+    public static AbstractSolrService getUserService() throws InitializationException {
+        if (userService == null) {
+            userService = new UserSolrService();
+            userService.initialize();
+        }
+        return userService;
+    }
+
+    public static AbstractSolrService getSettingService() throws InitializationException {
+        if (settingService == null) {
+            settingService = new SettingSolrService();
+            settingService.initialize();
+        }
+        return settingService;
+    }
+
+    public static AbstractSolrService getAnnotationFormatService() throws InitializationException {
+        if (annotationFormatService == null) {
+            annotationFormatService = new AnnotationFormatSolrService();
+            annotationFormatService.initialize();
+        }
+        return annotationFormatService;
+    }
+
+    public static AbstractSolrService getGeneSetService() throws InitializationException {
+        if (geneSetService == null) {
+            geneSetService = new GeneSetSolrService();
+            geneSetService.initialize();
+        }
+        return geneSetService;
+    }
+
+    public static AbstractSolrService getAnnotationColumnService() throws InitializationException {
+        if (annotationColumnService == null) {
+            annotationColumnService = new AnnotationColumnService();
+            annotationColumnService.initialize();
+        }
+        return annotationColumnService;
     }
 }
