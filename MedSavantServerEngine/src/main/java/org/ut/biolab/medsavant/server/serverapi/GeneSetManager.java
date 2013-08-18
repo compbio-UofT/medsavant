@@ -34,6 +34,11 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 
 
@@ -46,6 +51,8 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     private static final Log LOG = LogFactory.getLog(GeneSetManager.class);
 
     private static GeneSetManager instance;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
 
     public static synchronized GeneSetManager getInstance() throws RemoteException, SessionExpiredException {
         if (instance == null) {
@@ -55,6 +62,8 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     private GeneSetManager() throws RemoteException, SessionExpiredException {
+        entityManager = EntityManagerFactory.getEntityManager();
+        queryManager = QueryManagerFactory.getQueryManager();
     }
 
 
@@ -67,16 +76,10 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet[] getGeneSets(String sessID) throws SQLException, SessionExpiredException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().groupBy(GENOME).select(GENOME, TYPE, "COUNT(DISTINCT name)");
-        LOG.info("getGeneSets:" + query);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        List<GeneSet> result = new ArrayList<GeneSet>();
-        while (rs.next()) {
-            result.add(new GeneSet(rs.getString(1), rs.getString(2), rs.getInt(3)));
-        }
-
+        Query query = queryManager.createQuery("Select g from GeneSet");
+        List<GeneSet> result = query.execute();
         return result.toArray(new GeneSet[0]);
+
     }
 
     /**
@@ -89,48 +92,35 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet getGeneSet(String sessID, String refName) throws SQLException, SessionExpiredException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().where(GENOME, refName).select(TYPE, "COUNT(DISTINCT name)");
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+        Query query = queryManager.createQuery("Select g from GeneSet where g.genome= :refName");
+        query.setParameter("refName",refName);
+        List<GeneSet> result = query.execute();
 
-        if (rs.next()) {
-            return new GeneSet(refName, rs.getString(1), rs.getInt(2));
+        if (result.size() > 0 ) {
+            return result.get(0);
+        } else {
+            return null;
         }
-        return null;
     }
 
     @Override
     public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
-        LOG.debug(query);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        Gene[] result = new Gene[geneSet.getSize()];
-        int i = 0;
-        while (rs.next()) {
-            result[i++] = new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), null);
-        }
-        if (i != result.length) {
-            LOG.info("There were " + result.length + " genes, but only " + i + " were loaded.");
-        }
-
-        return result;
+        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        query.setParameter("reference", geneSet.getReference());
+        query.setParameter("type", geneSet.getType());
+        List<Gene> result = query.execute();
+        return result.toArray(new Gene[0]);
     }
 
     @Override
     public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END, TRANSCRIPT);
-        LOG.debug(query);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        Gene[] result = new Gene[geneSet.getSize()];
-        int i = 0;
-        while (rs.next()) {
-            result[i++] = new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getString(7));
-        }
-
-        return result;
+        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        query.setParameter("reference", geneSet.getReference());
+        query.setParameter("type", geneSet.getType());
+        List<Gene> result = query.execute();
+        return result.toArray(new Gene[0]);
     }
 
     @Override
