@@ -49,6 +49,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 /**
  *
@@ -280,7 +281,7 @@ public class OntologyWizard extends WizardDialog {
         }
     }
 
-    private void create() throws InterruptedException, SQLException, IOException {
+    private void create() throws InterruptedException, SQLException, IOException, InitializationException {
         try {
             MedSavantClient.OntologyManager.addOntology(LoginController.getInstance().getSessionID(), name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
         } catch (SessionExpiredException ex) {

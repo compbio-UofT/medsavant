@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 
@@ -74,7 +75,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param oboData URL of OBO file containing the ontology
      * @param geneData URL of text file defining mapping between terms and genes (format may vary)
      */
-    void addOntology(String sessID, String ontName, OntologyType ont, URL oboData, URL mappingData) throws IOException, InterruptedException, SQLException, RemoteException, SessionExpiredException;
+    void addOntology(String sessID, String ontName, OntologyType ont, URL oboData, URL mappingData) throws IOException, InterruptedException, SQLException, RemoteException, SessionExpiredException, InitializationException;
 
     /**
      * As part of the maintenance process, remove the tables for a given ontology.

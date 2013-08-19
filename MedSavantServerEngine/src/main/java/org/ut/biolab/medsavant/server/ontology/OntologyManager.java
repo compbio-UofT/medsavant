@@ -49,6 +49,7 @@ import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
 
@@ -87,7 +88,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public void addOntology(String sessID, String name, OntologyType type, URL oboData, URL mappingData) throws IOException, SQLException, SessionExpiredException {
+    public void addOntology(String sessID, String name, OntologyType type, URL oboData, URL mappingData) throws IOException, SQLException, SessionExpiredException, InitializationException {
 
         switch (type) {
             case GO:
@@ -235,12 +236,15 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         }
                     }
                 }
+                entityManager.persistAll(new ArrayList<OntologyTerm>(terms.values()));
                 PreparedStatement updateStatement = connection.prepareStatement("UPDATE ontology SET genes=? WHERE id=?");
                 for (String t: allGenes.keySet()) {
                     Set<String> termGenes = allGenes.get(t);
                     String geneString = StringUtils.join(termGenes, '|');
-                    connection.executePreparedUpdate(updateStatement, "|" + geneString + "|", t);
+                    //connection.executePreparedUpdate(updateStatement, "|" + geneString + "|", t);
                 }
+            } catch (InitializationException e) {
+                LOG.error("Error persisting ontology terms.");
             } finally {
                 reader.close();
             }
@@ -267,7 +271,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         }
     }
 
-    private void populateHPOTables(String sessID, String name, URL oboData, URL hpoToGeneData) throws IOException, SQLException, SessionExpiredException {
+    private void populateHPOTables(String sessID, String name, URL oboData, URL hpoToGeneData) throws IOException, SQLException, SessionExpiredException, InitializationException {
         Map<String, OntologyTerm> terms = new OBOParser(OntologyType.HPO).load(oboData);
         connection = ConnectionController.connectPooled(sessID);
         try {
@@ -278,6 +282,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             // Mapping file from charite.de has HP terms one per line.
             BufferedReader reader = new BufferedReader(new FileReader(RemoteFileCache.getCacheFile(hpoToGeneData)));
             String line;
+            OntologyTerm current = null;
             while ((line = reader.readLine()) != null) {
                 if (line.length() > 0 && line.charAt(0) != '#') {
                     int hpPos = line.indexOf("(HP:");
@@ -289,6 +294,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                             // The list of genes will be
                             line = line.substring(genesStart + 2, line.length() - 1);
                             String[] genes = line.split(", ");
+                            current = terms.get(term);
+                            current.setGenes(genes);
+                            entityManager.persist(current);
                             String geneString = "|";
                             for (String g: genes) {
                                 geneString += g.substring(0, g.indexOf('(')) + "|";
@@ -373,8 +381,12 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     private void populateTable(String name, Map<String, OntologyTerm> terms) throws SQLException {
         String backupTableName = null;
-
-        // Insert records for all the terms.  Different prepared statement used depending on whether we have parents or not.
+        try {
+            entityManager.persistAll(new ArrayList<OntologyTerm>(terms.values()));
+        } catch (InitializationException e) {
+            LOG.error("Error persisting ontology terms");
+        }
+       /* // Insert records for all the terms.  Different prepared statement used depending on whether we have parents or not.
         PreparedStatement prep4 = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF).toString());
         PreparedStatement prep5a = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, ALT_IDS).toString());
         PreparedStatement prep5b = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, PARENTS).toString());
@@ -412,7 +424,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         if (backupTableName != null) {
             connection.executeUpdate("DROP TABLE ontology_back");
             LOG.debug("Dropped ontology_back.");
-        }
+        }*/
     }
 
     private static OntologyTerm findTermByID(OntologyTerm[] terms, String termID) {
