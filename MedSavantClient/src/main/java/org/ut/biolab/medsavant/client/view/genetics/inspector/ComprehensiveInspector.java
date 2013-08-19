@@ -301,10 +301,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     @Override
     public synchronized void handleEvent(final Object event) {
-        System.out.println("handleEvent " + System.currentTimeMillis());
-        if (true) {
-            return;
-        }
+      //  System.out.println("handleEvent " + System.currentTimeMillis());
+        
         currentEvent = event;
 
         if (eventHandlerThread == null || eventHandlerThread.isDone()) {
