@@ -45,7 +45,7 @@ public class SearcheableChromosome {
         this.name = name;
     }
 
-    @Field("lengths")
+    @Field("length")
     public void setLength(int length) {
         this.length = length;
     }
