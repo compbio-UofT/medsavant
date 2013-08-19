@@ -41,6 +41,8 @@
     <module>medsavant-server-deb</module>
     <module>medsavant-server-rpm</module>
     <module>medsavant-client-zip</module>
+    <module>medsavant-client-installer</module>
+    <module>medsavant-client-exe</module>
     <module>medsavant-client-deb</module>
     <module>medsavant-client-rpm</module>
     <module>medsavant-client-dmg</module>
