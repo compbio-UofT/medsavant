@@ -20,5 +20,5 @@ PRGDIR=`dirname "$SCRIPT"`
 # Go to the program directory
 cd "$PRGDIR"
 
-# Run the medsavant client jar
-java -Xmx4g -jar medsavant-client-*.jar
+# Run the medsavant server jar
+java -Xmx4g -jar medsavant-server-*.jar
