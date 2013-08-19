@@ -56,6 +56,9 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
         solrQuery = new SolrQuery();
 
         super.inASelectStatement(node);
+
+        String statement = solrQuery.get(CommonParams.Q);
+        solrQuery.setQuery(addEntityField(statement, context.getCoreName()));
     }
 
     @Override
@@ -68,7 +71,7 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
 
         String query = termAnalyzer.getQuery();
 
-        solrQuery.setQuery(addEntityField(query, context.getCoreName()));
+        solrQuery.setQuery(query);
 
         super.outAWhereClause(node);
     }
@@ -173,6 +176,12 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
 
     private String addEntityField(String query, String entity) {
         String entityClassName = FieldMappings.getClassName(entity);
-        return query + " AND " + Entity.ENTITY_DISCRIMINANT_FIELD + ":" + entityClassName;
+        String finalQuery;
+        if (query == null) {
+            finalQuery = Entity.ENTITY_DISCRIMINANT_FIELD + ":" + entityClassName;
+        } else {
+            finalQuery = query + " AND " + Entity.ENTITY_DISCRIMINANT_FIELD + ":" + entityClassName;
+        }
+        return finalQuery;
     }
 }
