@@ -22,7 +22,7 @@
   <outfile>${project.build.directory}/${project.artifactId}-${project.version}.exe</outfile>
   <errTitle>MedSavant Installer</errTitle>
   <customProcName>true</customProcName>
-  <icon>${project.build.directory}/classes/savant.ico</icon>
+  <icon>${project.build.directory}/classes/medsavant.ico</icon>
   <jre>
     <minVersion>1.6.0</minVersion>
   </jre>
