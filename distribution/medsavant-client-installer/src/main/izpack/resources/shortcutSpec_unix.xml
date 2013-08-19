@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<shortcuts>
+  <skipIfNotSupported/>
+  <lateShortcutInstall/>
+  <programGroup defaultName="$APP_NAME" location="applications"/>
+  <shortcut
+    name="$APP_NAME $APP_VER"
+    description="Starts $APP_NAME $APP_VER"
+
+    target="bash"
+    workingDirectory="$INSTALL_PATH"
+    commandLine="&quot;$INSTALL_PATH/medsavant.sh&quot;"
+    iconFile="$INSTALL_PATH/medsavant.png"
+
+    programGroup="yes"
+    desktop="yes"
+
+    type="Application"
+    terminal="false"
+    encoding="UTF-8"
+    categories="Science;Biology;Bioinformatics;DataVisualization;Java;"
+    createForAll="true"/>
+  <shortcut
+    name="Documentation"
+    description="Read the MedSavant Documentation online"
+
+    target="xdg-open"
+    commandLine="http://genomesavant.com/p/medsavant/learn"
+    url="http://genomesavant.com/p/medsavant/learn"
+    iconFile="$INSTALL_PATH/medsavant.png"
+
+    programGroup="yes"
+
+    type="Application"
+    terminal="false"
+    encoding="UTF-8"
+    createForAll="true"/>
+  <shortcut
+    name="Uninstall $APP_NAME $APP_VER"
+    description="Uninstall $APP_NAME $APP_VER"
+
+    target="java"
+    workingDirectory="$INSTALL_PATH/Uninstaller/"
+    commandLine="-jar &quot;$INSTALL_PATH/Uninstaller/uninstaller.jar&quot;"
+    iconFile="$INSTALL_PATH/uninstall_medsavant.png"
+
+    programGroup="yes"
+
+    type="Application"
+    terminal="false"
+    encoding="UTF-8"/>
+</shortcuts>

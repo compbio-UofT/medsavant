@@ -42,9 +42,6 @@
   </dependencies>
 
   <build>
-    <!-- Append a timestamp to distinguish between different snapshot builds -->
-    <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
-
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

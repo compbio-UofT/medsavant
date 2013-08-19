@@ -25,6 +25,15 @@
     <!-- Include a top level directory in the zip -->
     <includeBaseDirectory>true</includeBaseDirectory>
 
+    <fileSets>
+        <fileSet>
+            <directory>${basedir}/src/main/resources/</directory>
+            <outputDirectory>/</outputDirectory>
+            <fileMode>755</fileMode>
+            <directoryMode>755</directoryMode>
+        </fileSet>
+    </fileSets>
+
     <dependencySets>
         <dependencySet>
             <excludes>
