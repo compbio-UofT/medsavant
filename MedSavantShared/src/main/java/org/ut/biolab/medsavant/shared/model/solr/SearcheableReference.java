@@ -22,6 +22,10 @@ public class SearcheableReference {
         this.url = url;
     }
 
+    public SearcheableReference(Reference reference) {
+        this.reference = reference;
+    }
+
     @Field("id")
     public void setId(int id) {
         this.id = id;
@@ -50,7 +54,7 @@ public class SearcheableReference {
         return reference.getName();
     }
 
-    public String getUrl() {
+    public String getURL() {
         return url;
     }
 }

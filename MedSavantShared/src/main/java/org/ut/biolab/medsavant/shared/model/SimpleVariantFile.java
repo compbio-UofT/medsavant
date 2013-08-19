@@ -17,6 +17,8 @@ public class SimpleVariantFile implements Serializable {
     private String name;
     private String date;
     private String user;
+    //ToDo Enforce the project id
+    private int projectId;
 
     public SimpleVariantFile(int uploadId, int fileId, String name, String date, String user){
         this.uploadId = uploadId;

@@ -25,14 +25,6 @@ public class SearcheableProjectDetails {
 
     private ProjectDetails projectDetails;
 
-    private int projectID;
-    private int referenceID;
-    private int updateID;
-    private boolean published;
-    private String projectName;
-    private String referenceName;
-    private int[] annotationIDs;
-
     /**
      * Default constructor. Called by the Document Object Binder
      */
@@ -51,70 +43,69 @@ public class SearcheableProjectDetails {
       * @return                         The ProjectDetails instance.
      */
     public ProjectDetails getProjectDetails() {
-        this.projectDetails = new ProjectDetails(projectID, referenceID, updateID, published, projectName, referenceName, annotationIDs);
         return projectDetails;
     }
 
     @Field("project_id")
     public void setProjectID(int projectID) {
-        this.projectID = projectID;
+        projectDetails.setProjectID(projectID);
     }
 
     @Field("reference_id")
     public void setReferenceID(int referenceID) {
-        this.referenceID = referenceID;
+        projectDetails.setReferenceID(referenceID);
     }
 
     @Field("update_id")
     public void setUpdateID(int updateID) {
-        this.updateID = updateID;
+        projectDetails.setUpdateID(updateID);
     }
 
     @Field("published")
     public void setPublished(boolean published) {
-        this.published = published;
+        projectDetails.setPublished(published);
     }
 
     @Field("name")
     public void setProjectName(String projectName) {
-        this.projectName = projectName;
+        projectDetails.setProjectName(projectName);
     }
 
     @Field("reference_name")
     public void setReferenceName(String referenceName) {
-        this.referenceName = referenceName;
+        projectDetails.setReferenceName(referenceName);
     }
 
     @Field("annotation_ids")
     public void setAnnotationIDs(int[] annotationIDs) {
-        this.annotationIDs = annotationIDs;
+        projectDetails.setAnnotationIDs(annotationIDs);
     }
 
     public int getProjectID() {
-        return projectID;
+        return projectDetails.getProjectID();
     }
 
     public int getReferenceID() {
-        return referenceID;
+        return projectDetails.getReferenceID();
     }
 
     public int getUpdateID() {
-        return updateID;
+        return projectDetails.getUpdateID();
     }
 
-    public boolean isPublished() {
-        return published;
+    public boolean getPublished() {
+        return projectDetails.isPublished();
     }
 
     public String getProjectName() {
-        return projectName;
+        return projectDetails.getProjectName();
     }
 
     public String getReferenceName() {
-        return referenceName;
+        return projectDetails.getReferenceName();
     }
 
     public int[] getAnnotationIDs() {
-        return annotationIDs;
+        return projectDetails.getAnnotationIDs();
     }
 }

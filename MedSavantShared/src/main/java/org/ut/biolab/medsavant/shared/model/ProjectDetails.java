@@ -25,13 +25,15 @@ import java.io.Serializable;
  */
 public class ProjectDetails implements Serializable {
 
-    private final int projectID;
-    private final int referenceID;
-    private final int updateID;
-    private final boolean published;
-    private final String projectName;
-    private final String referenceName;
-    private final int[] annotationIDs;
+    private int projectID;
+    private int referenceID;
+    private int updateID;
+    private boolean published;
+    private String projectName;
+    private String referenceName;
+    private int[] annotationIDs;
+
+    public ProjectDetails() {};
 
     public ProjectDetails(int projID, int refID, int updID, boolean published, String projName, String refNam, int[] annIDs) {
         this.projectID = projID;
@@ -74,4 +76,34 @@ public class ProjectDetails implements Serializable {
     public int getNumAnnotations() {
         return annotationIDs.length;
     }
+
+    public void setProjectID(int projectID) {
+        this.projectID = projectID;
+    }
+
+    public void setReferenceID(int referenceID) {
+        this.referenceID = referenceID;
+    }
+
+    public void setUpdateID(int updateID) {
+        this.updateID = updateID;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public void setReferenceName(String referenceName) {
+        this.referenceName = referenceName;
+    }
+
+    public void setAnnotationIDs(int[] annotationIDs) {
+        this.annotationIDs = annotationIDs;
+    }
+
+
 }

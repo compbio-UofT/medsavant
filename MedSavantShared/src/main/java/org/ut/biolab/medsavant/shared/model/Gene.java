@@ -33,6 +33,7 @@ import org.jsoup.select.Elements;
  * @author tarkvara
  */
 public class Gene implements Serializable, Comparable<Gene> {
+
     private final String name;
     private final String chrom;
     private final int start;
@@ -42,6 +43,20 @@ public class Gene implements Serializable, Comparable<Gene> {
     private final String transcript;
     private final int exonStart;
     private final int exonEnd;
+    private final int geneSetId;
+
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript) {
+        this.name = name;
+        this.chrom = chrom;
+        this.start = start;
+        this.end = end;
+        this.codingStart = codingStart;
+        this.codingEnd = codingEnd;
+        this.transcript = transcript;
+        this.exonStart = -1;
+        this.exonEnd = -1;
+        this.geneSetId = -1;
+    }
 
     public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, int exonStart, int exonEnd) {
         this.name = name;
@@ -53,6 +68,20 @@ public class Gene implements Serializable, Comparable<Gene> {
         this.transcript = transcript;
         this.exonStart = exonStart;
         this.exonEnd = exonEnd;
+        this.geneSetId = -1;
+    }
+
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, int exonStart, int exonEnd, int geneSetId) {
+        this.name = name;
+        this.chrom = chrom;
+        this.start = start;
+        this.end = end;
+        this.codingStart = codingStart;
+        this.codingEnd = codingEnd;
+        this.transcript = transcript;
+        this.exonStart = exonStart;
+        this.exonEnd = exonEnd;
+        this.geneSetId = geneSetId;
     }
 
     /**
