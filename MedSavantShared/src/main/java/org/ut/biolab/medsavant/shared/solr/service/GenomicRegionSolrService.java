@@ -10,6 +10,6 @@ public class GenomicRegionSolrService extends AbstractSolrService<GenomicRegion>
 
     @Override
     protected String getName() {
-        return Entity.GENOMIC_REGION;
+        return Entity.MEDSAVANT;
     }
 }

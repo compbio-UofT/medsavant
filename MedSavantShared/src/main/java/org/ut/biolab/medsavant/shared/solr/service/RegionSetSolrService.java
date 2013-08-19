@@ -10,6 +10,6 @@ public class RegionSetSolrService extends AbstractSolrService<RegionSet> {
 
     @Override
     protected String getName() {
-        return Entity.REGION_SET;
+        return Entity.MEDSAVANT;
     }
 }

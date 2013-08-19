@@ -10,6 +10,6 @@ public class ChromosomeSolrService extends AbstractSolrService<Chromosome> {
 
     @Override
     protected String getName() {
-        return Entity.CHROMOSOME;
+        return Entity.MEDSAVANT;
     }
 }

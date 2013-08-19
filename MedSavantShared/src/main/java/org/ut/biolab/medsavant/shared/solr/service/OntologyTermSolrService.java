@@ -10,6 +10,6 @@ public class OntologyTermSolrService extends AbstractSolrService<Ontology>{
 
     @Override
     protected String getName() {
-        return Entity.ONTOLOGY_TERM;
+        return Entity.MEDSAVANT;
     }
 }

@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
+import org.ut.biolab.medsavant.shared.util.Entity;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class VariantService extends AbstractSolrService<VariantData>
     @Override
     protected String getName()
     {
-        return NAME;
+        return Entity.MEDSAVANT;
     }
 
 

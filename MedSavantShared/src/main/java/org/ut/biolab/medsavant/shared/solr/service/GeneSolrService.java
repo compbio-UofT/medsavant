@@ -10,6 +10,6 @@ public class GeneSolrService extends AbstractSolrService<Gene> {
 
     @Override
     protected String getName() {
-        return Entity.GENE;
+        return Entity.MEDSAVANT;
     }
 }

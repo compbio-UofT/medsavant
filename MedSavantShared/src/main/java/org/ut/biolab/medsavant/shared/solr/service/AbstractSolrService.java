@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FieldStatsInfo;
@@ -27,16 +28,17 @@ import org.apache.solr.client.solrj.response.PivotField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
+import org.ut.biolab.medsavant.shared.solr.decorator.EntityDecorator;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.decorator.SolrInputDocumentDecorator;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * //FIXME this class is more like a DAO than a service, refactor
@@ -46,6 +48,8 @@ public abstract class AbstractSolrService<T> {
     private static final Log LOG = LogFactory.getLog(AbstractSolrService.class);
 
     private static final String SOLR_HOST = "http://localhost:8983/solr/";
+
+    private static final SolrInputDocumentDecorator decorator = new EntityDecorator();
 
     /** The Solr server instance used. */
     protected SolrServer server;
@@ -155,7 +159,7 @@ public abstract class AbstractSolrService<T> {
      */
     public int index(T entity) {
         try {
-            this.server.addBean(entity);
+            this.server.add(getSolrInputDocument(entity));
             this.server.commit();
             return 0;
         } catch (IOException e) {
@@ -174,7 +178,7 @@ public abstract class AbstractSolrService<T> {
      */
     public int index(List<T> entities) {
         try {
-            this.server.addBeans(entities);
+            this.server.add(getSolrInputDocuments(entities));
             this.server.commit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
@@ -353,6 +357,20 @@ public abstract class AbstractSolrService<T> {
             first.add(document);
         }
         return first;
+    }
+
+    private SolrInputDocument getSolrInputDocument(T entity) {
+        DocumentObjectBinder binder = new DocumentObjectBinder();
+        SolrInputDocument document = binder.toSolrInputDocument(entity);
+        return decorator.decorate(document, entity.getClass());
+    }
+
+    private List<SolrInputDocument> getSolrInputDocuments(Collection<T> entities) {
+        List<SolrInputDocument> documents = new ArrayList<SolrInputDocument>();
+        for (T entity : entities) {
+            documents.add(getSolrInputDocument(entity));
+        }
+        return documents;
     }
 
 }

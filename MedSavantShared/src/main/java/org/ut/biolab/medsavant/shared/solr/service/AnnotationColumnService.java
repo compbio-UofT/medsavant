@@ -10,6 +10,6 @@ public class AnnotationColumnService extends AbstractSolrService<AnnotatedColumn
 
     @Override
     protected String getName() {
-        return Entity.ANNOTATION_COLUMN;
+        return Entity.MEDSAVANT;
     }
 }

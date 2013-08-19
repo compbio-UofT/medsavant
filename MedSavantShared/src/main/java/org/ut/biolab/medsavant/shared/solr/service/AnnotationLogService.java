@@ -25,6 +25,6 @@ public class AnnotationLogService extends AbstractSolrService<AnnotationLog>{
 
     @Override
     protected String getName() {
-        return Entity.ANNOTATION_LOG;
+        return Entity.MEDSAVANT;
     }
 }

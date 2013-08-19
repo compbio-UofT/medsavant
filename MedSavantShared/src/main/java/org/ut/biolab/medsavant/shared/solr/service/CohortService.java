@@ -25,6 +25,6 @@ public class CohortService extends AbstractSolrService<Cohort>{
 
     @Override
     protected String getName() {
-        return Entity.COHORT;
+        return Entity.MEDSAVANT;
     }
 }

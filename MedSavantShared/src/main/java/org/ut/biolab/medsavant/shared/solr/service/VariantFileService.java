@@ -25,6 +25,6 @@ public class VariantFileService extends AbstractSolrService<SimpleVariantFile>{
 
     @Override
     protected String getName() {
-        return Entity.VARIANT_FILE;
+        return Entity.MEDSAVANT;
     }
 }

@@ -10,6 +10,6 @@ public class AnnotationFormatSolrService extends AbstractSolrService<AnnotationF
 
     @Override
     protected String getName() {
-        return Entity.ANNOTATION_FORMAT;
+        return Entity.MEDSAVANT;
     }
 }

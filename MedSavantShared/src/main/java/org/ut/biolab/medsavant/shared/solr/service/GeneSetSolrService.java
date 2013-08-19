@@ -10,6 +10,6 @@ public class GeneSetSolrService extends AbstractSolrService<GeneSet> {
 
     @Override
     protected String getName() {
-        return Entity.GENE_SET;
+        return Entity.MEDSAVANT;
     }
 }

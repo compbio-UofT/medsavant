@@ -26,7 +26,7 @@ public class VariantCommentService extends AbstractSolrService<SearcheableVarian
 
     @Override
     protected String getName() {
-        return Entity.COMMENT;
+        return Entity.MEDSAVANT;
     }
 
 

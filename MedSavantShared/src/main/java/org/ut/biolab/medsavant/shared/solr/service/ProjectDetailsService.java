@@ -25,6 +25,6 @@ public class ProjectDetailsService extends AbstractSolrService<ProjectDetails> {
 
     @Override
     protected String getName() {
-        return Entity.PROJECT;
+        return Entity.MEDSAVANT;
     }
 }

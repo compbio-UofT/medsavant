@@ -25,7 +25,7 @@ public class PatientService extends AbstractSolrService<Patient> {
 
     @Override
     protected String getName() {
-        return Entity.PATIENT;
+        return Entity.MEDSAVANT;
     }
 
 }

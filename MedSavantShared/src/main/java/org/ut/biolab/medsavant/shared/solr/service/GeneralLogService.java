@@ -25,6 +25,6 @@ public class GeneralLogService extends AbstractSolrService<GeneralLog> {
 
     @Override
     protected String getName() {
-        return Entity.GENERAL_LOG;
+        return Entity.MEDSAVANT;
     }
 }

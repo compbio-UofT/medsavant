@@ -10,6 +10,6 @@ public class ReferenceSolrService extends AbstractSolrService<Reference> {
 
     @Override
     protected String getName() {
-        return Entity.REFERENCE;
+        return Entity.MEDSAVANT;
     }
 }

@@ -10,6 +10,6 @@ public class UserSolrService extends AbstractSolrService<User> {
 
     @Override
     protected String getName() {
-        return Entity.USER;
+        return Entity.MEDSAVANT;
     }
 }

@@ -10,6 +10,6 @@ public class AnnotationSolrService extends AbstractSolrService<Annotation> {
 
     @Override
     protected String getName() {
-        return Entity.ANNOTATION;
+        return Entity.MEDSAVANT;
     }
 }

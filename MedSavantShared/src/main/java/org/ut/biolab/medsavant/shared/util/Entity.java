@@ -29,4 +29,7 @@ public class Entity {
     public static final String REGION_SET = "region_set";
     public static final String SETTING = "setting";
 
+    public static final String MEDSAVANT = "medsavant";
+
+    public static final String ENTITY_DISCRIMINANT_FIELD = "entity";
 }

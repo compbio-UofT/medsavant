@@ -10,6 +10,6 @@ public class SettingSolrService extends AbstractSolrService<Setting>{
 
     @Override
     protected String getName() {
-        return Entity.SETTING;
+        return Entity.MEDSAVANT;
     }
 }
