@@ -28,7 +28,7 @@ public class Entity {
     public static final String REFERENCE = "reference";
     public static final String REGION_SET = "region_set";
     public static final String SETTING = "setting";
-
+    public static final String CUSTOM_COLUMN = "custom_column";
     public static final String MEDSAVANT = "medsavant";
 
     public static final String ENTITY_DISCRIMINANT_FIELD = "entity";

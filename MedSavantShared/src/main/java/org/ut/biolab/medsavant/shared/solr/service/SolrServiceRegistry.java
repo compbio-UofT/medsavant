@@ -69,6 +69,8 @@ public class SolrServiceRegistry {
 
     private static AbstractSolrService annotationColumnService;
 
+    private static AbstractSolrService customColumnService;
+
     /**
      * Get the appropriate solr service based on the entity string.
      *
@@ -119,6 +121,8 @@ public class SolrServiceRegistry {
             return getAnnotationFormatService();
         } else if (Entity.ANNOTATION_COLUMN.equals(entityName)) {
             return getAnnotationColumnService();
+        } else if (Entity.CUSTOM_COLUMN.equals(entityName)) {
+            return getCustomColumnService();
         }
 
         return null;
@@ -168,6 +172,8 @@ public class SolrServiceRegistry {
             return getAnnotationFormatService();
         } else if (AnnotatedColumn.class.getName().equals(clazz.getName())) {
             return getAnnotationColumnService();
+        } else if (CustomColumn.class.getName().equals(clazz.getName())) {
+            return getCustomColumnService();
         }
 
         return null;
@@ -339,5 +345,13 @@ public class SolrServiceRegistry {
             annotationColumnService.initialize();
         }
         return annotationColumnService;
+    }
+
+    public static AbstractSolrService getCustomColumnService() throws InitializationException {
+        if (customColumnService == null) {
+            customColumnService = new CustmColumnService();
+            customColumnService.initialize();
+        }
+        return customColumnService;
     }
 }

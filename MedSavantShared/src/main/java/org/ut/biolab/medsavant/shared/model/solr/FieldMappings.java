@@ -107,33 +107,35 @@ public class FieldMappings {
             put("generallog", "general_log");
             put("annotationformat", "annotation_format");
             put("annotationcolumn", "annotation_column");
+            put("customcolumn", "custom_column");
         }}
     );
 
     private static final Map<String, String> ENTITY_CLASS_NAMES = Collections.unmodifiableMap(
             new HashMap<String, String> () {{
-                put(Entity.ANNOTATION, Annotation.class.getName());
-                put(Entity.ANNOTATION_COLUMN, AnnotatedColumn.class.getName());
-                put(Entity.ANNOTATION_FORMAT, AnnotationFormat.class.getName());
-                put(Entity.ANNOTATION_LOG, AnnotationLog.class.getName());
-                put(Entity.VARIANT, VariantRecord.class.getName());
-                put(Entity.VARIANT_FILE, SimpleVariantFile.class.getName());
-                put(Entity.COMMENT, VariantComment.class.getName());
-                put(Entity.CHROMOSOME, Chromosome.class.getName());
-                put(Entity.GENE, Gene.class.getName());
-                put(Entity.GENE_SET, GeneSet.class.getName());
-                put(Entity.COHORT, Cohort.class.getName());
-                put(Entity.PATIENT, Patient.class.getName());
-                put(Entity.ONTOLOGY, Ontology.class.getName());
-                put(Entity.ONTOLOGY_TERM, OntologyTerm.class.getName());
-                put(Entity.REGION_SET, RegionSet.class.getName());
-                put(Entity.GENOMIC_REGION, GenomicRegion.class.getName());
-                put(Entity.REFERENCE, Reference.class.getName());
-                put(Entity.PROJECT, ProjectDetails.class.getName());
-                put(Entity.USER, User.class.getName());
-                put(Entity.SETTING, Setting.class.getName());
-                put(Entity.REFERENCE, Reference.class.getName());
-                put(Entity.GENERAL_LOG, GeneralLog.class.getName());
+                put(Entity.ANNOTATION, SearcheableAnnotation.class.getName());
+                put(Entity.ANNOTATION_COLUMN, SearcheableAnnotatedColumn.class.getName());
+                put(Entity.ANNOTATION_FORMAT, SearcheableAnnotationFormat.class.getName());
+                put(Entity.ANNOTATION_LOG, SearcheableAnnotationLog.class.getName());
+                put(Entity.VARIANT, SearcheableVariant.class.getName());
+                put(Entity.VARIANT_FILE, SearcheableVariantFile.class.getName());
+                put(Entity.COMMENT, SearcheableVariantComment.class.getName());
+                put(Entity.CHROMOSOME, SearcheableChromosome.class.getName());
+                put(Entity.GENE, SearcheableGene.class.getName());
+                put(Entity.GENE_SET, SearcheableGeneSet.class.getName());
+                put(Entity.COHORT, SearcheableCohort.class.getName());
+                put(Entity.PATIENT, SearcheablePatient.class.getName());
+                put(Entity.ONTOLOGY, SearcheableOntology.class.getName());
+                put(Entity.ONTOLOGY_TERM, SearcheableOntologyTerm.class.getName());
+                put(Entity.REGION_SET, SearcheableRegionSet.class.getName());
+                put(Entity.GENOMIC_REGION, SearcheableGenomicRegion.class.getName());
+                put(Entity.REFERENCE, SearcheableReference.class.getName());
+                put(Entity.PROJECT, SearcheableProjectDetails.class.getName());
+                put(Entity.USER, SearcheableUser.class.getName());
+                put(Entity.SETTING, SearcheableSetting.class.getName());
+                put(Entity.REFERENCE, SearcheableReference.class.getName());
+                put(Entity.GENERAL_LOG, SearcheableGeneralLog.class.getName());
+                put(Entity.CUSTOM_COLUMN, SearcheableCustomColumn.class.getName());
             }}
     );
 

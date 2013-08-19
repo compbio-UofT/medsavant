@@ -93,6 +93,8 @@ public class SolrEntityManager implements EntityManager {
             return new SearcheableSetting((Setting) entity);
         } else if (entity instanceof User) {
             return new SearcheableUser((User) entity);
+        } else if (entity instanceof CustomColumn) {
+            return new SearcheableCustomColumn((CustomColumn) entity);
         } else {
             return entity;
         }

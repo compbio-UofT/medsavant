@@ -66,6 +66,8 @@ public class MapperRegistry {
 
     private static AnnotationColumnMapper annotationColumnMapper;
 
+    private static CustomColumnMapper customColumnMapper;
+
     /**
      * Get the appropriate mapper based on the entity name.
      *
@@ -116,6 +118,8 @@ public class MapperRegistry {
             return getGeneSetMapper();
         } else if (Entity.ANNOTATION_COLUMN.equals(entity)) {
             return getAnnotationColumnMapper();
+        } else if (Entity.CUSTOM_COLUMN.equals(entity)) {
+            return getCustomColumnMapper();
         }
 
         return null;
@@ -369,5 +373,16 @@ public class MapperRegistry {
             annotationColumnMapper = new AnnotationColumnMapper();
         }
         return annotationColumnMapper;
+    }
+
+    /**
+     * Return the custom column mapper instance. Creates one if it doesn't yet exist.
+     * @return          The custom column mapper instance.
+     */
+    public static CustomColumnMapper getCustomColumnMapper() {
+        if (customColumnMapper == null) {
+            customColumnMapper = new CustomColumnMapper();
+        }
+        return customColumnMapper;
     }
 }
