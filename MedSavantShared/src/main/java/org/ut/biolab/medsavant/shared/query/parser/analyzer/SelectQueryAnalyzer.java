@@ -22,10 +22,12 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.FacetParams;
 import org.apache.solr.common.params.StatsParams;
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 import org.ut.biolab.medsavant.shared.query.parser.util.ParserUtil;
+import org.ut.biolab.medsavant.shared.util.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +67,8 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
         node.apply(termAnalyzer);
 
         String query = termAnalyzer.getQuery();
-        solrQuery.setQuery(query);
+
+        solrQuery.setQuery(addEntityField(query, context.getCoreName()));
 
         super.outAWhereClause(node);
     }
@@ -166,5 +169,10 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
         }
 
         return solrQuery;
+    }
+
+    private String addEntityField(String query, String entity) {
+        String entityClassName = FieldMappings.getClassName(entity);
+        return query + " AND " + Entity.ENTITY_DISCRIMINANT_FIELD + ":" + entityClassName;
     }
 }

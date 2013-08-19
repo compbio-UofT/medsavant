@@ -15,7 +15,10 @@
  */
 package org.ut.biolab.medsavant.shared.model.solr;
 
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.util.Entity;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,6 +65,14 @@ public class FieldMappings {
         return result;
     }
 
+    public static String getClassName(String entityName) {
+        String className = entityName;
+        if (ENTITY_CLASS_NAMES.containsKey(entityName)) {
+         className = ENTITY_CLASS_NAMES.get(entityName);
+        }
+        return className;
+    }
+
     //FIXME move to a property file maybe
     private static final Map<String, String> VARIANT_FIELDS = Collections.unmodifiableMap( new HashMap<String, String>() {{
         put("position", "pos");
@@ -97,6 +108,33 @@ public class FieldMappings {
             put("annotationformat", "annotation_format");
             put("annotationcolumn", "annotation_column");
         }}
+    );
+
+    private static final Map<String, String> ENTITY_CLASS_NAMES = Collections.unmodifiableMap(
+            new HashMap<String, String> () {{
+                put(Entity.ANNOTATION, Annotation.class.getName());
+                put(Entity.ANNOTATION_COLUMN, AnnotatedColumn.class.getName());
+                put(Entity.ANNOTATION_FORMAT, AnnotationFormat.class.getName());
+                put(Entity.ANNOTATION_LOG, AnnotationLog.class.getName());
+                put(Entity.VARIANT, VariantRecord.class.getName());
+                put(Entity.VARIANT_FILE, SimpleVariantFile.class.getName());
+                put(Entity.COMMENT, VariantComment.class.getName());
+                put(Entity.CHROMOSOME, Chromosome.class.getName());
+                put(Entity.GENE, Gene.class.getName());
+                put(Entity.GENE_SET, GeneSet.class.getName());
+                put(Entity.COHORT, Cohort.class.getName());
+                put(Entity.PATIENT, Patient.class.getName());
+                put(Entity.ONTOLOGY, Ontology.class.getName());
+                put(Entity.ONTOLOGY_TERM, OntologyTerm.class.getName());
+                put(Entity.REGION_SET, RegionSet.class.getName());
+                put(Entity.GENOMIC_REGION, GenomicRegion.class.getName());
+                put(Entity.REFERENCE, Reference.class.getName());
+                put(Entity.PROJECT, ProjectDetails.class.getName());
+                put(Entity.USER, User.class.getName());
+                put(Entity.SETTING, Setting.class.getName());
+                put(Entity.REFERENCE, Reference.class.getName());
+                put(Entity.GENERAL_LOG, GeneralLog.class.getName());
+            }}
     );
 
 }
