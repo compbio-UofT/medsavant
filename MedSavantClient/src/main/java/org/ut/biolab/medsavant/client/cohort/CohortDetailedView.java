@@ -143,7 +143,8 @@ class CohortDetailedView extends DetailedView {
                     cohort = cohorts[0].getName();
                 }                
                 QueryUtils.addQueryOnHospitals(hospitalIds, cohort);                
-                MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                
+                MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Cohort and Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");
             }
         });
         popupMenu.add(filter1Item);
@@ -324,7 +325,7 @@ class CohortDetailedView extends DetailedView {
                         qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
                     }*/
                     qvc.refreshView();
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Cohorts have been added to query.  Click 'Variants' to review and execute search.");
 
                 }
             });

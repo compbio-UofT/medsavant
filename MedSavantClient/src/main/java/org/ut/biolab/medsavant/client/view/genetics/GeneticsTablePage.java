@@ -81,6 +81,9 @@ public class GeneticsTablePage extends SubSectionView {
                 System.err.println(e);
             }
             
+            if(detailView == null){
+                System.err.println("detailView is null!");
+            }
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(detailView, "Inspector");
         }
         return settingComponents;
@@ -99,6 +102,7 @@ public class GeneticsTablePage extends SubSectionView {
                     @Override
                     public void run() {
                         try {
+                            System.out.println("Running thread prepareViewINBackground!");
                             final JPanel tmpView = new JPanel();
                             tmpView.setLayout(new BorderLayout());
 
@@ -110,7 +114,7 @@ public class GeneticsTablePage extends SubSectionView {
                                     inspectorPanel.setVariantRecord(r);
                                 }
                             });
-
+                            System.out.println("Constructing detailView");
                             detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
                             detailView.setToggleBarVisible(false);
 
@@ -137,7 +141,7 @@ public class GeneticsTablePage extends SubSectionView {
                     }
                 };
 
-               viewPreparationThread =  new Thread(prepareViewInBackground);
+               viewPreparationThread =  new Thread(prepareViewInBackground);               
                viewPreparationThread.start();
                 
 

@@ -187,6 +187,9 @@ public class PluginController extends Controller {
         return result;
     }
 
+    /**
+     * @deprecated
+     */
     public void getGeneManiaData() {
         Runnable r = new Runnable() {
 
@@ -226,6 +229,10 @@ public class PluginController extends Controller {
         Thread t = new Thread(r);
         t.start();
     }
+    
+    /**
+     * @deprecated
+     */    
     private static final void copyInputStream(InputStream in, OutputStream out)
             throws IOException {
         byte[] buffer = new byte[1024];
@@ -236,6 +243,7 @@ public class PluginController extends Controller {
         in.close();
         out.close();
     }
+    
     public MedSavantPlugin getPlugin(String id) {
         return loadedPlugins.get(id);
     }

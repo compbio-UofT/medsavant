@@ -189,7 +189,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
                 @Override
                 public void actionPerformed(ActionEvent e) {                    
                     QueryUtils.addQueryOnVariantFiles(files);                                                                                           
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos();
+                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected File has been added to query.  Click 'Variants' to review and execute search.");
                 }
             });
             
