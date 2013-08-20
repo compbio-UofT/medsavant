@@ -17,6 +17,7 @@ package org.ut.biolab.medsavant.server.serverapi;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -37,8 +38,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.model.AnnotatedColumn;
+import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.persistence.SolrCustomFieldManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
@@ -84,10 +87,12 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     private static AnnotationManager instance;
     private static QueryManager queryManager;
     private static EntityManager entityManager;
+    private static CustomFieldManager customFieldManager;
 
     private AnnotationManager() throws RemoteException, SessionExpiredException {
         entityManager = EntityManagerFactory.getEntityManager();
         queryManager = QueryManagerFactory.getQueryManager();
+        customFieldManager = new SolrCustomFieldManager();
     }
 
     public static synchronized AnnotationManager getInstance() throws RemoteException, SessionExpiredException {
@@ -148,7 +153,12 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         AnnotatedColumn annotatedColumn = new AnnotatedColumn(annotID,pos,colName,colType,filterable,alias,desc);
         try {
             entityManager.persist(annotatedColumn);
+            customFieldManager.addCustomField(annotatedColumn);
         } catch (InitializationException e) {
+            LOG.error("Error persisting annotated column");
+        } catch (IOException e) {
+            LOG.error("Error persisting annotated column");
+        } catch (URISyntaxException e) {
             LOG.error("Error persisting annotated column");
         }
     }
