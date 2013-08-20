@@ -31,6 +31,7 @@ import javax.swing.JPanel;
  *
  * @author tarkvara
  */
+@Deprecated
 public class PartSelectorPanel extends JPanel {
     private ListViewTablePanel leftList, rightList;
 
@@ -53,7 +54,8 @@ public class PartSelectorPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent me) {
                 if (me.getClickCount() == 2) {
-                    moveSelectedItems(leftList, rightList);
+                    leftList.moveSelectedItems(rightList);
+                    //ListViewTablePanel.moveSelectedItems(leftList, rightList);
                 }
             }
         });
@@ -62,7 +64,8 @@ public class PartSelectorPanel extends JPanel {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                moveSelectedItems(leftList, rightList);
+                leftList.moveSelectedItems(rightList);
+                //ListViewTablePanel.moveSelectedItems(leftList, rightList);
             }
         });
         gbc.gridx = 1;
@@ -76,7 +79,8 @@ public class PartSelectorPanel extends JPanel {
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                moveSelectedItems(rightList, leftList);
+                rightList.moveSelectedItems(leftList);
+                //moveSelectedItems(rightList, leftList);
             }
         });
         gbc.gridy = 1;
@@ -93,35 +97,12 @@ public class PartSelectorPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent me) {
                 if (me.getClickCount() == 2) {
-                    moveSelectedItems(rightList, leftList);
+                    rightList.moveSelectedItems(leftList);
+                    //moveSelectedItems(rightList, leftList);
                 }
             }
         });
     }
 
-    private void moveSelectedItems(ListViewTablePanel fromList, ListViewTablePanel toList) {
-        int[] rows = fromList.getSelectedRows();
-        Object[][] oldFromData = fromList.getData();
-        Object[][] oldToData = toList.getData();
-
-        Object[][] newToData = new Object[oldToData.length + rows.length][];
-        System.arraycopy(oldToData, 0, newToData, 0, oldToData.length);
-        int i = oldToData.length;
-        for (int r: rows) {
-            newToData[i++] = oldFromData[r];
-            oldFromData[r] = null;
-        }
-        toList.updateData(newToData);
-        toList.updateView();
-
-        Object[][] newFromData = new Object[oldFromData.length - rows.length][];
-        i = 0;
-        for (Object[] fromRow: oldFromData) {
-            if (fromRow != null) {
-                newFromData[i++] = fromRow;
-            }
-        }
-        fromList.updateData(newFromData);
-        fromList.updateView();
-    }
+   
 }

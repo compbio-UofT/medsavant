@@ -16,13 +16,8 @@
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import javax.swing.BorderFactory;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
@@ -39,43 +34,15 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class ViewController {
 
     private Menu menu;
-    private JPanel contentContainer;
-    private PersistencePanel persistencePanel;
-    private PeekingPanel peekingPanel;
     private SectionView currentSection;
     private SubSectionView currentSubsection;
     private static ViewController instance;
+    private JPanel contentContainer;
+    private PersistencePanel persistencePanel;
+    private PeekingPanel peekingPanel;
 
-    private JPanel undockablePanel;
-    private Container outerContainer;
-        
-    
-    public void dock(){
-        outerContainer.add(undockablePanel);
-        outerContainer.validate();             
-    }
-    
-    public void undock(){
-        final JFrame undockedFrame = new JFrame("Savant Browser");
-        undockedFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        undockedFrame.addWindowListener(new WindowAdapter(){
-            @Override
-            public void windowClosing(WindowEvent we) {
-                dock();  
-                undockedFrame.dispose();               
-            }                      
-        });
-                
-        
-        Container p = undockablePanel.getParent();
-        p.remove(undockablePanel);        
-        undockedFrame.add(undockablePanel);
-        undockedFrame.pack();
-        undockedFrame.setLocationRelativeTo(null);
-        undockedFrame.setVisible(true);
-        //p.validate();      
-        p.repaint();
-        outerContainer = p;        
+    public SubSectionView getCurrentSubSectionView(){
+        return currentSubsection;
     }
     
     private ViewController(JPanel p) {
@@ -107,6 +74,7 @@ public class ViewController {
 
         menu = new Menu(contentContainer);
         p.add(menu, BorderLayout.NORTH);
+
         p.add(menu.getSecondaryMenu(), BorderLayout.WEST);
 
         JPanel h2 = ViewUtil.getClearPanel();
@@ -116,12 +84,9 @@ public class ViewController {
 
 
         h1.add(h2, BorderLayout.NORTH);
-        h1.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
-        undockablePanel = h1;
     }
 
-    
     public static ViewController getInstance() {
         return instance;
     }
@@ -157,7 +122,7 @@ public class ViewController {
         currentSection = parent;
     }
 
-    void selectFirstItem() {
+    public void selectFirstItem() {
         // Fake a click on the first section button.
         ((JToggleButton) menu.primaryMenuButtons.getElements().nextElement()).doClick();
     }
@@ -170,7 +135,7 @@ public class ViewController {
         menu.clearMenu();
     }
 
-    public void addSection(SectionView section) {       
+    public void addSection(SectionView section) {
         menu.addSection(section);
     }
 

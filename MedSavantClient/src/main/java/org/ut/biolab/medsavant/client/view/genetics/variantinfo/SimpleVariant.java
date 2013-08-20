@@ -1,5 +1,7 @@
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
+import org.ut.biolab.medsavant.shared.model.GenomicRegion;
+
 /**
  *
  * @author mfiume
@@ -20,6 +22,15 @@ public class SimpleVariant {
         this.type = type;
     }
 
+    public GenomicRegion getGenomicRegion(String name){
+        //GenomicRegion(String name, String chrom, int start, int end)             
+        return new GenomicRegion(name, chr, (int)pos, (int)pos);
+    }
+    
+    public GenomicRegion getGenomicRegion(){
+        return getGenomicRegion("Chr: "+chr+"Pos: "+pos);
+    }
+    
     @Override
     public String toString() {
         return "SimpleVariant{" + "pos=" + pos + ", chr=" + chr + ", ref=" + ref + ", alt=" + alt + ", type=" + type + '}';

@@ -45,10 +45,16 @@ import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXSearchField;
 import org.jdesktop.swingx.prompt.PromptSupport;
 import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
@@ -67,7 +73,6 @@ import org.w3c.dom.NodeList;
  */
 public class QueryViewController extends JPanel implements SearchConditionListener {
 
-
     private static Log LOG = LogFactory.getLog(QueryViewController.class);
     private final SearchConditionGroupItem rootGroup;
     private final HashMap<SearchConditionItem, SearchConditionItemView> itemToViewMap;
@@ -75,16 +80,14 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private final ConditionViewGenerator conditionViewGenerator;
     private boolean didChangeSinceLastApply;
     private JButton applyButton;
-
     private final JLabel warningText;
-
 
     private JButton getHelpButton() {
         final JButton helpButton = new JButton("?");
         ViewUtil.makeSmall(helpButton);
         helpButton.setFocusable(false);
         if (MiscUtils.MAC) {
-            helpButton.putClientProperty( "JButton.buttonType", "help" );
+            helpButton.putClientProperty("JButton.buttonType", "help");
             helpButton.setText("");
         }
         helpButton.setToolTipText("<html>Type a search condition into the search box, e.g. \"Chromosome\".<br>"
@@ -92,16 +95,14 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 + "You\'ll then be prompted to specify parameters for this condition</html>");
 
         helpButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 // programmatically show tooltip
                 ToolTipManager.sharedInstance().mouseMoved(
-                new MouseEvent(helpButton, 0, 0, 0,
-                    10, 10, // X-Y of the mouse for the tool tip
-                    0, false));
+                        new MouseEvent(helpButton, 0, 0, 0,
+                        10, 10, // X-Y of the mouse for the tool tip
+                        0, false));
             }
-
         });
         return helpButton;
     }
@@ -129,6 +130,56 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     }
 
+    /**
+     * Re-executes the current query with the given genomic region restrictions, and returns 
+     * the results.  Note the search bar is not changed.
+     * gr and alt should have a one-to-one correspondence, where the alt for
+     * the ith genomic region is in alt[i].            
+     */
+    public List<Object[]> restrictToRegion(List<GenomicRegion> gr, List<String> alt, int limit) {
+        try {   
+            long st = System.currentTimeMillis();
+            Condition r;
+            if(rootGroup.getItems().size() > 0){
+                r = getSQLConditionsFrom(rootGroup);
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
+                r = ComboCondition.and(r, getSQLConditionsFrom(rg));
+            }else{
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
+                r = getSQLConditionsFrom(rg);
+            }
+            
+            for (int i = 1; i < gr.size(); ++i) {
+                SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(i), alt.get(i), false);
+                r = ComboCondition.and(r, getSQLConditionsFrom(rg));
+            }         
+                        
+
+            return MedSavantClient.VariantManager.getVariants(
+                    LoginController.getInstance().getSessionID(),
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    new Condition[][]{{r}},
+                    0,
+                    limit); //DEBUG CODE, sets limit to 10!
+            
+
+        } catch (Exception ex) {
+            LOG.error(ex);
+            DialogUtils.displayException("Error", "There was an error performing your search", ex);
+        }
+
+        return null;
+    }
+    
+    public List<Object[]> restrictToRegion(GenomicRegion gr, String alt, int limit){
+        List<GenomicRegion> grl = new ArrayList<GenomicRegion>(1);
+        List<String> al = new ArrayList<String>(1);
+        grl.add(gr);
+        al.add(alt);
+        return restrictToRegion(grl, al, limit);
+    }
+
     private void applySearchConditions() {
 
         Thread t = new Thread(new Runnable() {
@@ -141,7 +192,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         c = ConditionUtils.TRUE_CONDITION;
                     }
 
-                    System.out.println(c.toString());
+                    LOG.debug(c.toString());
 
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
@@ -162,7 +213,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     });
                 } catch (Exception ex) {
                     LOG.error(ex);
-                    ex.printStackTrace();
                     DialogUtils.displayException("Error", "There was an error performing your search", ex);
                 }
             }
@@ -172,31 +222,29 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     }
 
-    public void saveConditions(File file){
+    public void saveConditions(File file) {
         String xml = rootGroup.toXML();
-        try{
+        try {
             PrintWriter out = new PrintWriter(file);
             out.println(xml);
             out.close();
-        }catch(Exception ex){
+        } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
             DialogUtils.displayException("Error", "There was an error saving your search", ex);
         }
 
     }
 
-
-    private SearchConditionItem getItemFromXML(Element element, SearchConditionGroupItem parentGroup) throws ParseException{
+    private SearchConditionItem getItemFromXML(Element element, SearchConditionGroupItem parentGroup) throws ParseException {
 
         String name = StringEscapeUtils.unescapeXml(element.getAttribute("name"));
 
         QueryRelation qr;
-        if(element.getAttribute("queryRelation").equalsIgnoreCase("OR")){
+        if (element.getAttribute("queryRelation").equalsIgnoreCase("OR")) {
             qr = QueryRelation.OR;
-        }else if(element.getAttribute("queryRelation").equalsIgnoreCase("AND")){
+        } else if (element.getAttribute("queryRelation").equalsIgnoreCase("AND")) {
             qr = QueryRelation.AND;
-        }else{
+        } else {
             throw new ParseException("Malformed input file contains invalid query relation", 0);
         }
 
@@ -204,99 +252,94 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
 
         String encodedConditions = StringEscapeUtils.unescapeXml(element.getAttribute("encodedConditions"));
-        if(encodedConditions != null && encodedConditions.length() > 0){
+        if (encodedConditions != null && encodedConditions.length() > 0) {
             sci.setSearchConditionEncoding(encodedConditions);
         }
 
 
         //The description does not need to be unescaped.
         String desc = element.getAttribute("description");
-        if(desc != null && desc.length() > 0){
+        if (desc != null && desc.length() > 0) {
             sci.setDescription(desc);
         }
         generateItemViewAndAddToGroup(sci, parentGroup);
         return sci;
     }
 
-    private SearchConditionGroupItem getGroupFromXML(Element rootElement, SearchConditionGroupItem parentGroup) throws ParseException{
-            if(!rootElement.getNodeName().toLowerCase().equals("group")){
-                DialogUtils.displayError("ERROR: Malformed/Invalid Input file");
+    private SearchConditionGroupItem getGroupFromXML(Element rootElement, SearchConditionGroupItem parentGroup) throws ParseException {
+        if (!rootElement.getNodeName().toLowerCase().equals("group")) {
+            DialogUtils.displayError("ERROR: Malformed/Invalid Input file");
+        }
+
+        QueryRelation qr;
+        if (rootElement.getAttribute("queryRelation").equalsIgnoreCase("OR")) {
+            qr = QueryRelation.OR;
+        } else if (rootElement.getAttribute("queryRelation").equalsIgnoreCase("AND")) {
+            qr = QueryRelation.AND;
+        } else {
+            throw new ParseException("Malformed input file contains invalid query relation", 0);
+        }
+
+        String desc = rootElement.getAttribute("description");
+
+        SearchConditionGroupItem scg;
+        if (parentGroup == null) {
+            scg = this.rootGroup;
+        } else {
+            scg = new SearchConditionGroupItem(qr, null, parentGroup);
+            if (desc != null && desc.length() > 0) {
+                scg.setDescription(desc);
             }
+        }
 
-            QueryRelation qr;
-            if(rootElement.getAttribute("queryRelation").equalsIgnoreCase("OR")){
-                qr = QueryRelation.OR;
-            }else if(rootElement.getAttribute("queryRelation").equalsIgnoreCase("AND")){
-                qr = QueryRelation.AND;
-            }else{
-                 throw new ParseException("Malformed input file contains invalid query relation", 0);
-            }
-
-            String desc = rootElement.getAttribute("description");
-
-            SearchConditionGroupItem scg;
-            if(parentGroup == null){
-                scg = this.rootGroup;
-            }else{
-                scg = new SearchConditionGroupItem(qr, null, parentGroup);
-                if(desc != null && desc.length() > 0){
-                    scg.setDescription(desc);
+        NodeList nl = rootElement.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) n;
+                if (el.getNodeName().equalsIgnoreCase("group")) {
+                    SearchConditionGroupItem childGroup = getGroupFromXML(el, scg);
+                    scg.addItem(childGroup);
+                } else if (el.getNodeName().equalsIgnoreCase("item")) {
+                    SearchConditionItem sci = getItemFromXML(el, scg);
+                    //scg.addItem(sci);
+                } else {
+                    throw new ParseException("Malformed input file contains invalid XML element", 0);
                 }
             }
+        }
 
-            NodeList nl = rootElement.getChildNodes();
-            for(int i = 0 ; i < nl.getLength(); i++) {
-                Node n = nl.item(i);
-                if(n.getNodeType() == Node.ELEMENT_NODE){
-                    Element el = (Element)n;
-                    if(el.getNodeName().equalsIgnoreCase("group")){
-                        SearchConditionGroupItem childGroup = getGroupFromXML(el, scg);
-                        scg.addItem(childGroup);
-                    }else if(el.getNodeName().equalsIgnoreCase("item")){
-                        SearchConditionItem sci = getItemFromXML(el, scg);
-                        //scg.addItem(sci);
-                    }else{
-                        throw new ParseException("Malformed input file contains invalid XML element", 0);
-                    }
-                }
-            }
-
-            return scg;
+        return scg;
 
     }
 
-
-
-
-
-    public List<SearchConditionItem> getFirstLevelItemsByDesc(String itemDesc){
+    public List<SearchConditionItem> getFirstLevelItemsByDesc(String itemDesc) {
         List<SearchConditionItem> results = new LinkedList<SearchConditionItem>();
         SearchConditionItem sci = null;
-        for(SearchConditionItem i : getQueryRootGroup().getItems()){
-            if(i.getDescription() != null && i.getDescription().equals(itemDesc)){
+        for (SearchConditionItem i : getQueryRootGroup().getItems()) {
+            if (i.getDescription() != null && i.getDescription().equals(itemDesc)) {
                 results.add(i);
             }
         }
         return results;
     }
 
-    public List<SearchConditionItem> getFirstLevelItemsByName(String itemName){
+    public List<SearchConditionItem> getFirstLevelItemsByName(String itemName) {
         List<SearchConditionItem> results = new LinkedList<SearchConditionItem>();
-        for(SearchConditionItem i : getQueryRootGroup().getItems()){
-            if(i.getName() != null && i.getName().equals(itemName)){
+        for (SearchConditionItem i : getQueryRootGroup().getItems()) {
+            if (i.getName() != null && i.getName().equals(itemName)) {
                 results.add(i);
             }
         }
         return results;
     }
 
-
-    public void replaceFirstLevelItem(String name, String encodedConditions, String description){
+    public void replaceFirstLevelItem(String name, String encodedConditions, String description) {
         List<SearchConditionItem> sciList = getFirstLevelItemsByName(name);
-        for(SearchConditionItem sci : sciList){
+        for (SearchConditionItem sci : sciList) {
             getQueryRootGroup().removeItem(sci);
-            if(sci instanceof SearchConditionGroupItem){
-                expandedItemsMap.remove((SearchConditionGroupItem)sci);
+            if (sci instanceof SearchConditionGroupItem) {
+                expandedItemsMap.remove((SearchConditionGroupItem) sci);
             }
         }
 
@@ -308,23 +351,23 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         sci.setDescription(description);
     }
 
-
-
     /**
-     * Replaces the items in the first level group (i.e. a group immediately under
-     * the root node) with the description "groupDesc" with those in the list 'sciList'.
+     * Replaces the items in the first level group (i.e. a group immediately
+     * under the root node) with the description "groupDesc" with those in the
+     * list 'sciList'.
      *
      * If the group does not exist, a new one is created under the root query
      * group.
      *
      * No views are created or updated by this function.
      *
-     * @return The SearchConditionGroupItem matching the description, or the one that was created.
+     * @return The SearchConditionGroupItem matching the description, or the one
+     * that was created.
      */
-    public SearchConditionGroupItem replaceFirstLevelGroup(String groupDesc, List<SearchConditionItem> sciList, QueryRelation qr, boolean listIsItems){
+    public SearchConditionGroupItem replaceFirstLevelGroup(String groupDesc, List<SearchConditionItem> sciList, QueryRelation qr, boolean listIsItems) {
 
         List<SearchConditionItem> scgList = getFirstLevelItemsByDesc(groupDesc);
-        for(SearchConditionItem sci : scgList){
+        for (SearchConditionItem sci : scgList) {
             getQueryRootGroup().removeItem(sci);
             //expandedItemsMap.remove(getQueryRootGroup());
             expandedItemsMap.remove(sci);
@@ -336,12 +379,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         getQueryRootGroup().addItem(scg);
 
 
-        if(sciList != null){
-            for(SearchConditionItem sci : sciList){
+        if (sciList != null) {
+            for (SearchConditionItem sci : sciList) {
                 sci.setParent(scg);
-                if(listIsItems){
+                if (listIsItems) {
                     generateItemViewAndAddToGroup(sci, scg);
-                }else{
+                } else {
                     scg.addItem(sci);
                 }
             }
@@ -351,12 +394,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
 
     //clears all search terms, and refreshes the view only if refresh is set.
-    private void clearSearch(boolean refresh){
+    private void clearSearch(boolean refresh) {
 
         this.rootGroup.clearItems();
         this.itemToViewMap.clear();
         this.expandedItemsMap.clear();
-        if(refresh){
+        if (refresh) {
             refreshView();
         }
     }
@@ -364,35 +407,24 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     /**
      * Clears all search terms and refreshes the view
      */
-    public void clearSearch(){
+    public void clearSearch() {
         clearSearch(true);
     }
 
-    public void loadConditions(File f){
+    public void loadConditions(File f) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
-         try{
+        try {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Element rootElement = db.parse(f).getDocumentElement();
-
-
-            //this.rootGroup.clearItems();
             clearSearch(false);
-
-            //ensure that the controller is registered as a listener exactly
-            //once.      Unnecessary?
-            // this.rootGroup.removeListener(this);
-            // this.rootGroup.addListener(this);
-
             getGroupFromXML(rootElement, null);
-
             refreshView();
-         }catch(Exception ex){
+        } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
             DialogUtils.displayException("Error", "There was an error loading your search", ex);
-         }
-   }
+        }
+    }
 
     public final void refreshView() {
         List<JComponent> cs;
@@ -406,28 +438,26 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         p.setLayout(new MigLayout("wrap 1, hidemode 1"));
 
         this.removeAll();
-        p.add(getHelpButton(),"center");
+        p.add(getHelpButton(), "center");
         for (JComponent c : cs) {
             p.add(c, "left");
         }
         p.add(warningText, "center");
         p.add(applyButton, "center");
 
-        this.add(ViewUtil.getClearBorderlessScrollPane(p),BorderLayout.CENTER);
+        this.add(ViewUtil.getClearBorderlessScrollPane(p), BorderLayout.CENTER);
 
         this.invalidate();
         this.updateUI();
     }
 
-    private String getGroupTitle(SearchConditionGroupItem scg){
-        if(scg.getDescription() != null && scg.getDescription().length() > 0){
-            return (scg.getParent().isFirstItem(scg) ? "" : scg.getRelation().toString())+ " "+scg.getDescription();
-        }else{
+    private String getGroupTitle(SearchConditionGroupItem scg) {
+        if (scg.getDescription() != null && scg.getDescription().length() > 0) {
+            return (scg.getParent().isFirstItem(scg) ? "" : scg.getRelation().toString()) + " " + scg.getDescription();
+        } else {
             return (scg.getParent().isFirstItem(scg) ? "" : scg.getRelation().toString()) + " " + scg.getItems().size() + " grouped condition(s)";
         }
     }
-
-
 
     private List<JComponent> getComponentsFromQueryModel(SearchConditionGroupItem g) {
         List<JComponent> components = new ArrayList<JComponent>();
@@ -446,13 +476,13 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 final PillView pv = new PillView(true);
                 pv.setActivated(true);
 
-                final ActionListener toggleGroupExpand =   new ActionListener() {
+                final ActionListener toggleGroupExpand = new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        expandedItemsMap.put((SearchConditionGroupItem)item, !p.isVisible());
+                        expandedItemsMap.put((SearchConditionGroupItem) item, !p.isVisible());
                         p.setVisible(!p.isVisible());
                         //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
-                        pv.setText(getGroupTitle((SearchConditionGroupItem)item));
+                        pv.setText(getGroupTitle((SearchConditionGroupItem) item));
                     }
                 };
 
@@ -463,14 +493,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     public JPopupMenu generatePopup() {
                         final SearchConditionGroupItem groupItem = (SearchConditionGroupItem) item;
                         JPopupMenu m = new JPopupMenu();
-                        JMenuItem visibility = new JMenuItem(p.isVisible() ? "Hide group conditions" : "Show group conditions");
-                        visibility.addActionListener(new ActionListener(){
-                            @Override
-                            public void actionPerformed(ActionEvent ae){
-                                pv.toggleExpandButton();
-                            }
-                        });
-                        m.add(visibility);
 
                         if (!item.getParent().isFirstItem(item)) {
                             if (item.getRelation() == QueryRelation.AND) {
@@ -499,12 +521,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         }
 
                         JMenuItem delgroup = new JMenuItem("Delete");
-                        delgroup.addActionListener(new ActionListener(){
+                        delgroup.addActionListener(new ActionListener() {
                             @Override
-                            public void actionPerformed(ActionEvent ae){
+                            public void actionPerformed(ActionEvent ae) {
                                 groupItem.getParent().removeItem(groupItem);
                                 refreshView();
-                                expandedItemsMap.remove((SearchConditionGroupItem)item);
+                                expandedItemsMap.remove((SearchConditionGroupItem) item);
                             }
                         });
                         m.add(delgroup);
@@ -515,18 +537,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 SearchConditionGroupItem g2 = (SearchConditionGroupItem) item;
 
                 pv.setText(getGroupTitle(g2));
-                /*
-                if(g2.getDescription() != null && g2.getDescription().length() > 0){
-                    pv.setText(g2.getDescription());
-                }else{
-                    pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g2.getItems().size() + " grouped condition(s)");
-                }*/
-                Boolean exp = expandedItemsMap.get((SearchConditionGroupItem)item);
-                //System.out.println("ExpandedItemsMap returns "+exp);
-                if(exp == null){
+                Boolean exp = expandedItemsMap.get((SearchConditionGroupItem) item);
+
+                if (exp == null) {
                     p.setVisible(false);
                     pv.collapse();
-                }else{
+                } else {
                     p.setVisible(true);
                     pv.expand();
                 }
@@ -551,7 +567,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     @Override
     public void searchConditionsOrderChanged(SearchConditionItem m) {
-        System.out.println("Order changed");
         setConditionsChanged(true);
         this.refreshView();
     }
@@ -566,18 +581,16 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         itemToViewMap.remove(m);
     }
 
-
-    public void generateItemViewAndAddToGroup(SearchConditionItem sci, SearchConditionGroupItem parent){
+    public void generateItemViewAndAddToGroup(SearchConditionItem sci, SearchConditionGroupItem parent) {
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(sci);
         addItemToGroup(sci, view, parent);
     }
 
-
     // Commented out during git merge.
 /*    public void generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
-        SearchConditionItem item = new SearchConditionItem(fieldName, parent);
-        generateItemViewAndAddToGroup(item, parent);
-*/
+     SearchConditionItem item = new SearchConditionItem(fieldName, parent);
+     generateItemViewAndAddToGroup(item, parent);
+     */
     public SearchConditionItemView generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(item);
@@ -700,17 +713,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 m = new ScrollableJPopupMenu(15);
                 m.setFocusable(false);
-                /*m.addMouseWheelListener(new MouseWheelListener() {
-
-                    @Override
-                    public void mouseWheelMoved(MouseWheelEvent e) {
-                        int amount = e.getWheelRotation();
-                        System.out.println("Got mouse wheel rotation "+amount);
-                        moveUpOrDown(amount);
-                    }
-
-                });*/
-
                 m.removeAll();
 
                 for (JComponent c : menuComponents) {

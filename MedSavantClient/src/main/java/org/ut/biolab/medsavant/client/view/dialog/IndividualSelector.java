@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
-    Set<String> selectedIndividuals;
+    Set<String> selectedHospitalIDs;
     private static final Log LOG = LogFactory.getLog(IndividualSelector.class);
     private JPanel middlePanel;
     private JPanel topPanel;
@@ -66,7 +66,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     private static final int[] HIDDEN_COLUMNS = new int[]{0, 3, 4, 6};
     private SearchableTablePanel stp;
     private JLabel numselections;
-    private IndividualReceiver retriever;
+    private IndividualsReceiver retriever;
     private HashSet<Integer> selectedRows;
     private JButton ok;
     private boolean hasMadeSelections;
@@ -76,10 +76,27 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         setTitle("Select Individuals");
         this.setPreferredSize(new Dimension(700, 600));
         this.setMinimumSize(new Dimension(700, 600));
-        selectedIndividuals = new HashSet<String>();
+        selectedHospitalIDs = new HashSet<String>();
         selectedRows = new HashSet<Integer>();
         initUI();
         refresh();
+    }
+
+    private final static int INDEX_OF_HOSPITAL_ID = 2;
+    private final static int INDEX_OF_DNA_ID = 7;
+
+    public Set<String> getHospitalIDsOfSelectedIndividuals() {
+        return selectedHospitalIDs;
+    }
+
+    private Set<String> getDNAIDsOfSelectedIndividuals() {
+        Set<String> ids = new HashSet<String>();
+        for (int i : selectedRows) {
+           String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_ID];
+           //String dnaID = (String) stp.getTable().getModel().getValueAt(i, INDEX_OF_DNA_ID);
+           ids.add(dnaID);
+        }
+        return ids;
     }
 
     private void refresh() {
@@ -103,7 +120,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         // middle
         middlePanel.setLayout(new BorderLayout());
 
-        retriever = new IndividualReceiver();
+        retriever = new IndividualsReceiver();
 
         stp = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
                 true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, retriever);
@@ -268,7 +285,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         String tooltipText = "<html>";
 
-        for (String o : this.selectedIndividuals) {
+        for (String o : this.selectedHospitalIDs) {
             tooltipText += o + "<br>";
         }
         tooltipText += "</html>";
@@ -277,13 +294,13 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         stp.setToggledRows(selectedRows);
 
-        numselections.setText(this.selectedIndividuals.size() + " individual(s) selected");
+        numselections.setText(this.selectedHospitalIDs.size() + " individual(s) selected");
 
-        ok.setEnabled(this.selectedIndividuals.size() > 0);
+        ok.setEnabled(this.selectedHospitalIDs.size() > 0);
     }
 
     private void clearSelections() {
-        selectedIndividuals.removeAll(selectedIndividuals);
+        selectedHospitalIDs.removeAll(selectedHospitalIDs);
         selectedRows.removeAll(selectedRows);
 
         stp.setToggledRows(null);
@@ -316,7 +333,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
 
         for (Object[] s : toUnselect) {
-            selectedIndividuals.remove(s[2].toString());
+            selectedHospitalIDs.remove(s[INDEX_OF_HOSPITAL_ID].toString());
         }
 
         refreshSelectionIndicator();
@@ -349,26 +366,24 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
 
         for (Object[] s : selected) {
-            selectedIndividuals.add(s[2].toString());
+            selectedHospitalIDs.add(s[INDEX_OF_HOSPITAL_ID].toString());
         }
 
         refreshSelectionIndicator();
     }
 
-    public Set<String> getSelectedIndividuals() {
-        return selectedIndividuals;
-    }
+
 
     public void setSelectedIndividuals(Set<String> s) {
         selectedRows.removeAll(selectedRows);
-        selectedIndividuals = s;
+        selectedHospitalIDs = s;
         hasMadeSelections = true;
 
         for (String arbitraryHostpitalID : s) {
             int rowNumber = 0;
             List<Object[]> individuals = retriever.getIndividuals();
             for (Object[] inOrderRow : individuals) {
-                if (inOrderRow[2].equals(arbitraryHostpitalID)) {
+                if (inOrderRow[INDEX_OF_HOSPITAL_ID].equals(arbitraryHostpitalID)) {
                     selectedRows.add(rowNumber);
                 }
                 rowNumber++;
@@ -386,7 +401,20 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         this.hasMadeSelections = false;
     }
 
-    public static class IndividualReceiver extends DataRetriever<Object[]> {
+    public Set<String> getInverseOfHospitalIDsOfSelectedIndividuals() {
+        List<Object[]> allRows = retriever.getIndividuals();
+        Set<String> results = new HashSet<String>();
+        Set<String> selected = getHospitalIDsOfSelectedIndividuals();
+        for (Object[] row : allRows) {
+            String id = (String) row[INDEX_OF_HOSPITAL_ID];
+            if (!selected.contains(id)) {
+                results.add(id);
+            }
+        }
+        return results;
+    }
+
+    public static class IndividualsReceiver extends DataRetriever<Object[]> {
         //private DataRetriever<Object[]> getIndividualsRetriever() {
 
         private List<Object[]> individuals;

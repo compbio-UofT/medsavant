@@ -11,36 +11,88 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.swing.SwingWorker;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.view.Notification;
+import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 
 /**
  *
  * @author jim
  */
 public abstract class DownloadTask extends SwingWorker {
-
+    private static final Log LOG = LogFactory.getLog(DownloadTask.class);
     private final String URLStr;
     private final String destPath;
     private final long filesize;
     private long totalBytesRead = 0;
     private final String filename;
     private static final int BUFFER_SIZE = 4096;  
-
+    protected final Notification notification;   
+    private int notificationId = 0;
+    
+    public enum DownloadState{RUNNING, FINISHED, CANCELLED, NOT_STARTED};
+    private DownloadState downloadState = DownloadState.NOT_STARTED;
+                
+    protected void setDownloadState(DownloadState downloadState){
+        switch(downloadState){
+            case RUNNING:
+                notification.setStatus(Notification.JobStatus.RUNNING);
+                break;
+            case FINISHED:
+                notification.setStatus(Notification.JobStatus.FINISHED);
+                break;
+            case CANCELLED:
+                notification.setStatus(Notification.JobStatus.CANCELLED);
+                break;
+        }
+        
+        DownloadState oldDownloadState = this.downloadState;
+        this.downloadState = downloadState;
+        this.firePropertyChange("downloadState", oldDownloadState, downloadState);
+    }
+    
+    public DownloadState getDownloadState(){        
+        return downloadState;
+    }
+    
     private String extractFileFromURL(){
         return URLStr.substring(URLStr.lastIndexOf("/") + 1,
                     URLStr.length());        
     }
-    
+        
     public String getDestPath(){
         if (destPath.charAt(destPath.length() - 1) == File.separatorChar) {
                return destPath + filename;
             } else {
-                return destPath + "/" + filename;
+                return destPath + File.separator + filename;
             }
-    }
+    }    
     
-    public DownloadTask(String URLStr, String destPath) throws IOException {
+    public DownloadTask(String URLStr, String destPath, String notificationTitle) throws IOException {
         this.URLStr = URLStr;
-        this.destPath = destPath;
+        this.destPath = destPath;        
+        this.notification = new Notification(notificationTitle) {	   	
+	    @Override
+	    public void cancelJob() {
+                DownloadTask.this.cancelDownload();
+	    }
+
+            @Override
+            protected void showResults() {
+            }
+
+            @Override
+            protected void closeJob() {                
+                NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).removeNotification(notificationId);
+            }
+            
+	};
+        notification.showResultsOnFinish(false);
+       
+	notificationId = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(notification.getView());
+	
+        
         int filesize;
         String filename;
 
@@ -71,7 +123,7 @@ public abstract class DownloadTask extends SwingWorker {
         }
         this.filename = filename;
         this.filesize = filesize;        
-        httpConn.disconnect();
+        httpConn.disconnect();     
     }
     
     public long getFileSize(){
@@ -82,11 +134,34 @@ public abstract class DownloadTask extends SwingWorker {
         return totalBytesRead;
     }
 
-    protected abstract void done();
+    
+    @Override
+    protected final void done(){   
+        if(isCancelled()){            
+            setDownloadState(DownloadState.CANCELLED);            
+        }
+        doneDownload();        
+    }
+    
+    protected void doneDownload(){
+        setDownloadState(DownloadState.FINISHED);        
+    }
+          
+    //called when user clicks 'results' button.
+    public void showResults(){
+        
+    }
 
-    protected Object doInBackground() {        
-      //  if(true){ try{ Thread.sleep(2000); }catch(Exception e){ System.out.println(e); } return null; }
+    public void cancelDownload(){        
+        System.out.println("Cancelled job");
+        cancel(true);
+    }
+    
+    @Override
+    protected Object doInBackground() {              
         try {          
+            LOG.debug("Starting download of genemania");
+            setDownloadState(DownloadState.RUNNING);            
             String saveFilePath = getDestPath();    
             URL url = new URL(URLStr);
             HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
@@ -100,13 +175,26 @@ public abstract class DownloadTask extends SwingWorker {
             int bytesRead = -1;
             totalBytesRead = 0;
             int percentCompleted = 0;
-
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
+            int op=-1;
+            while ((bytesRead = inputStream.read(buffer)) != -1 && !isCancelled()) {
                 outputStream.write(buffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
-                percentCompleted = (int) (totalBytesRead * 100 / filesize);
+                totalBytesRead += bytesRead;               
+                try{
+                    int desiredKBPS = 3000;
+                    long sleepTime = Math.round(BUFFER_SIZE*1000 / (desiredKBPS << 10));
+                    Thread.sleep(sleepTime);
+                }catch(InterruptedException e){
+                    
+                }
+                //x1000 to force more frequent updates of status message.
+                percentCompleted = (int) (totalBytesRead * 1000 / filesize);
 
-                setProgress(percentCompleted);
+                if(op != percentCompleted){
+                    notification.setProgress(totalBytesRead/(double)filesize);                                        
+                    notification.setStatusMessage(Math.round((totalBytesRead/1024.0/1024.0))+"M of "+Math.round((filesize/1024.0/1024.0))+"M");
+                }
+                
+                op = percentCompleted;
             }
 
             outputStream.close();
@@ -114,9 +202,8 @@ public abstract class DownloadTask extends SwingWorker {
             httpConn.disconnect();
            
         } catch (IOException ex) {
-            System.out.println(ex);
-            setProgress(0);
-            cancel(true);
+            LOG.error(ex);
+            cancelDownload();    
         }
         return null;
     }

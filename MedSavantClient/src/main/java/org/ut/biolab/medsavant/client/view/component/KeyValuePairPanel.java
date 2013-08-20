@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -50,6 +52,7 @@ public class KeyValuePairPanel extends JPanel {
     private JPanel kvpPanel;
     private JPanel toolbar;
     private boolean keysVisible = true;
+    private static final Log LOG = LogFactory.getLog(KeyValuePairPanel.class);
 
     public KeyValuePairPanel() {
         this(0);
@@ -148,7 +151,7 @@ public class KeyValuePairPanel extends JPanel {
             // the text of the label may be truncated, use the tooltip instead
             return ((JLabel) c).getToolTipText();
         } else {
-            System.err.println("WARNING: accessing string value of non-string label");
+            LOG.warn("WARNING: accessing string value of non-string label");
             return c.toString();
         }
     }
@@ -228,6 +231,7 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void addKey(final String key, boolean showExpand) {
+
         Color rowColor = Color.WHITE;
         if (keyKeyComponentMap.size() % 2 == 0) {
             rowColor = ViewUtil.getAlternateRowColor();
@@ -459,7 +463,7 @@ public class KeyValuePairPanel extends JPanel {
             for (int i = 0; i < additionalColumns; i++) {
                 JComponent extraComp = getAdditionalColumn(k, i);
                 if (extraComp != null) {
-                    maxAdditionalColumnsWidth[i] = Math.max(maxAdditionalColumnsWidth[i],extraComp.getPreferredSize().width);
+                    maxAdditionalColumnsWidth[i] = Math.max(maxAdditionalColumnsWidth[i], extraComp.getPreferredSize().width);
                 }
             }
         }
@@ -475,11 +479,11 @@ public class KeyValuePairPanel extends JPanel {
             if (comp != null) {
                 int avail = width;
                 /*for (int i = 0; i < additionalColumns; i++) {
-                    JComponent extraComp = getAdditionalColumn(k, i);
-                    if (extraComp != null) {
-                        avail -= extraComp.getPreferredSize().width;
-                    }
-                }*/
+                 JComponent extraComp = getAdditionalColumn(k, i);
+                 if (extraComp != null) {
+                 avail -= extraComp.getPreferredSize().width;
+                 }
+                 }*/
 
                 if (comp instanceof JLabel) {
                     while (avail < comp.getPreferredSize().width) {
@@ -501,6 +505,10 @@ public class KeyValuePairPanel extends JPanel {
 
                                 while (fm.stringWidth(text + "…") > avail) {
                                     //causes StringIndexOutOfBoundsException if text is empty.  
+                                    if(text == null || text.length() < 2){
+                                        LOG.info("Text is null or empty in KeyValuePairPanel");
+                                        break;
+                                    }
                                     text = text.substring(0, text.length() - 2);
                                 }
                                 //text = text + "…";

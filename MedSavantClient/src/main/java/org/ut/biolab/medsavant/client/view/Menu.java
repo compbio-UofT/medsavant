@@ -15,8 +15,6 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
-import com.explodingpixels.macwidgets.MacUtils;
-import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -38,12 +38,11 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.SubSectionView.DockState;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -64,11 +63,17 @@ public class Menu extends JPanel {
     private JPanel previousSectionPanel;
     private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
-
-    public JButton getSubSectionButton(SubSectionView ssv){
-        return map.get(ssv);
+    private static final Log LOG = LogFactory.getLog(Menu.class);
+    private UpdatesPanel updatesPanel = new UpdatesPanel();    
+   
+    public void checkForUpdateNotifications(){
+        updatesPanel.update();
     }
     
+    public JButton getSubSectionButton(SubSectionView ssv) {
+        return map.get(ssv);
+    }
+
     public Menu(JPanel panel) {
 
         resetMap();
@@ -76,7 +81,7 @@ public class Menu extends JPanel {
         setLayout(new BorderLayout());
 
         primaryMenuButtons = new ButtonGroup();
-        
+
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
 
         secondaryMenu = new JPanel();
@@ -84,7 +89,7 @@ public class Menu extends JPanel {
 
         tertiaryMenu = new JPanel();
         tertiaryMenu.setBackground(Color.darkGray);
-       // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
+        // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
         //tertiaryMenu.setMinimumSize(new Dimension(9999, 30));
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
@@ -99,8 +104,7 @@ public class Menu extends JPanel {
 
         primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
-
-        UpdatesPanel updatesPanel = new UpdatesPanel();
+        
         NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
         primaryMenu.add(primaryMenuSectionButtonContainer);
@@ -119,7 +123,7 @@ public class Menu extends JPanel {
 
         secondaryMenu.setPreferredSize(new Dimension(150, 100));
 
-        contentContainer = panel;        
+        contentContainer = panel;
 
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
@@ -162,6 +166,9 @@ public class Menu extends JPanel {
         clearMenu();
     }
 
+    public void deactivateSubsection(String subsectionName) {
+    }
+
     public JPanel getSecondaryMenu() {
         return secondaryMenu;
     }
@@ -170,8 +177,6 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
-   
-    
     public void addSection(SectionView section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
@@ -228,58 +233,68 @@ public class Menu extends JPanel {
             subSectionViews.get(i).setUpdateRequired(true);
         }
         if (currentView != null) {
-            setContentTo(currentView, true);
+            setContentTo(currentView);
         }
     }
 
     public void switchToSubSection(SubSectionView view) {
-        System.out.println("Switching to subsection " + view.getPageName());
-        map.get(view).subSectionClicked();
+        LOG.debug("Switching to subsection " + view.getPageName());
+        if (view.getDockState() == DockState.UNDOCKED) {
+            view.focusUndockedFrame();
+        } else {
+            map.get(view).subSectionClicked();
+        }
     }
 
-    public void setContentTo(SubSectionView v, boolean update) {
+    /**
+     * Refreshes the given content pane with content from the subsection view.
+     */
+    public void refreshSubSection(JPanel contentPanel, SubSectionView v) {
+        contentPanel.removeAll();
+        contentPanel.add(v.getDockedView(), BorderLayout.CENTER);
+        contentPanel.updateUI();
+        tertiaryMenuPanelVisibilityContainer.removeAll();
+        tertiaryMenuPanelAccessoryContainer.removeAll();
+
+        if (v.getParent().getPersistentPanels() != null && v.getParent().getPersistentPanels().length > 0) {
+            JComponent box = PeekingPanel.getToggleButtonForPanel(ViewController.getInstance().getPersistencePanel(), v.getParent().getPersistentPanels()[0].getName());
+            tertiaryMenuPanelVisibilityContainer.add(box);
+        }
+
+        if (v.getSubSectionMenuComponents() != null) {
+            for (Component c : v.getSubSectionMenuComponents()) {
+                if (c instanceof JToggleButton) {
+                    tertiaryMenuPanelVisibilityContainer.add(c);
+                } else {
+                    tertiaryMenuPanelAccessoryContainer.add(c);
+                }
+            }
+        }
+
+        if (v.getParent().getSectionMenuComponents() != null) {
+            for (Component c : v.getParent().getSectionMenuComponents()) {
+                if (c instanceof JToggleButton) {
+                    tertiaryMenuPanelVisibilityContainer.add(c);
+                } else {
+                    tertiaryMenuPanelAccessoryContainer.add(c);
+                }
+            }
+        }
+
+        v.setUpdateRequired(false);
+        ViewController.getInstance().changeSubSectionTo(v);
+    }
+
+    public void setContentTo(SubSectionView v) {
         if (currentView != v) {
             currentView = v;
-            contentContainer.removeAll();
-            contentContainer.add(v.getView(), BorderLayout.CENTER);
-            contentContainer.updateUI();
-
-            tertiaryMenuPanelVisibilityContainer.removeAll();
-            tertiaryMenuPanelAccessoryContainer.removeAll();
-
-            if (v.getParent().getPersistentPanels() != null && v.getParent().getPersistentPanels().length > 0) {
-                JComponent box = PeekingPanel.getToggleButtonForPanel(ViewController.getInstance().getPersistencePanel(), v.getParent().getPersistentPanels()[0].getName());
-                tertiaryMenuPanelVisibilityContainer.add(box);
-            }
-
-            if (v.getSubSectionMenuComponents() != null) {
-                for (Component c : v.getSubSectionMenuComponents()) {
-                    if (c instanceof JToggleButton) {
-                        tertiaryMenuPanelVisibilityContainer.add(c);
-                    } else {
-                        tertiaryMenuPanelAccessoryContainer.add(c);
-                    }
-                }
-            }
-
-            if (v.getParent().getSectionMenuComponents() != null) {
-                for (Component c : v.getParent().getSectionMenuComponents()) {
-                    if (c instanceof JToggleButton) {
-                        tertiaryMenuPanelVisibilityContainer.add(c);
-                    } else {
-                        tertiaryMenuPanelAccessoryContainer.add(c);
-                    }
-                }
-            }
-
-            v.setUpdateRequired(false);
-            ViewController.getInstance().changeSubSectionTo(v);
+            refreshSubSection(contentContainer, currentView);
         }
     }
 
     public void refreshSelection() {
         if (currentView != null) {
-            setContentTo(currentView, true);
+            refreshSubSection(contentContainer, currentView);
         }
     }
 
@@ -410,7 +425,7 @@ public class Menu extends JPanel {
 
         public void subSectionClicked() {
             group.setSelected(getModel(), true);
-            setContentTo(view, false);
+            setContentTo(view);
         }
     }
 }

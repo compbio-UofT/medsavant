@@ -371,6 +371,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String statement = "Select v from Variant v";
         StringBuilder q = addConditionsToQuery(statement, conditions);
 
+        LOG.info(queryString);
         org.ut.biolab.medsavant.shared.query.Query query = queryManager.createQuery(q.toString());
 
         query.setStart(start);

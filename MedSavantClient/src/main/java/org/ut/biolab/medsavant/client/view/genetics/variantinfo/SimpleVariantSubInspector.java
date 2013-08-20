@@ -26,33 +26,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.*;
-
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Gene;
-import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticGeneInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
-import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
 
@@ -77,6 +63,14 @@ public class SimpleVariantSubInspector extends SubInspector {
     public SimpleVariantSubInspector() {
     }
 
+    public SimpleVariant getSimpleVariant() {
+        return selectedVariant;
+    }
+
+    public Gene getSelectedGene() {
+        return (Gene) geneBox.getSelectedItem();
+    }
+
     public void setGeneListener(Listener<Object> listener) {
         this.geneListener = listener;
     }
@@ -97,7 +91,7 @@ public class SimpleVariantSubInspector extends SubInspector {
             p.addKey(KEY_GENES);
 
             geneBox = new JComboBox();
-            Dimension d = new Dimension(150,22);
+            Dimension d = new Dimension(150, 22);
             geneBox.setMinimumSize(d);
             geneBox.setPreferredSize(d);
             geneBox.setMaximumSize(d);
@@ -121,7 +115,9 @@ public class SimpleVariantSubInspector extends SubInspector {
             geneInspectorButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    if (geneListener != null) { geneListener.handleEvent((Gene) geneBox.getSelectedItem()); }
+                    if (geneListener != null) {
+                        geneListener.handleEvent((Gene) geneBox.getSelectedItem());
+                    }
                 }
             });
 
@@ -169,14 +165,14 @@ public class SimpleVariantSubInspector extends SubInspector {
             b.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list,
-                                                           Object value,
-                                                           int index,
-                                                           boolean isSelected,
-                                                           boolean cellHasFocus) {
+                        Object value,
+                        int index,
+                        boolean isSelected,
+                        boolean cellHasFocus) {
 
                     if (value != null) {
-                        Gene g = (Gene)value;
-                        value = g.getName() + "  " + MiscUtils.numToStringWithOrder(g.getEnd()-g.getStart()) + "bp";
+                        Gene g = (Gene) value;
+                        value = g.getName() + "  " + MiscUtils.numToStringWithOrder(g.getEnd() - g.getStart()) + "bp";
                     }
                     return super.getListCellRendererComponent(list, value,
                             index, isSelected, cellHasFocus);
@@ -193,14 +189,12 @@ public class SimpleVariantSubInspector extends SubInspector {
             }
 
             Collections.sort(intersectingGenes, new Comparator<Gene>() {
-
                 @Override
                 public int compare(Gene t, Gene t1) {
-                    int l = Math.abs(t.getEnd()- t.getStart());
-                    int l1 = Math.abs(t1.getEnd()-t1.getStart());
+                    int l = Math.abs(t.getEnd() - t.getStart());
+                    int l1 = Math.abs(t1.getEnd() - t1.getStart());
                     return new Integer(l).compareTo(new Integer(l1));
                 }
-
             });
 
             for (Gene g : intersectingGenes) {
@@ -283,7 +277,6 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         selectedVariant = r;
-
         p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.pos));
         p.setValue(KEY_REF, r.ref);
         p.setValue(KEY_ALT, r.alt);

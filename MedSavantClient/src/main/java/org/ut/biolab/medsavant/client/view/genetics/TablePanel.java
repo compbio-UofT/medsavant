@@ -18,7 +18,6 @@ package org.ut.biolab.medsavant.client.view.genetics;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
@@ -26,16 +25,29 @@ import java.awt.event.MouseAdapter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,7 +57,6 @@ import org.ut.biolab.medsavant.client.controller.ResultController;
 import org.ut.biolab.medsavant.client.filter.FilterEffectivenessPanel;
 import org.ut.biolab.medsavant.client.filter.FilterState;
 import org.ut.biolab.medsavant.client.filter.NumericFilterView;
-import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.filter.StringListFilterView;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -66,12 +77,25 @@ import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.FILE_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ALT;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CHROM;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CUSTOM_INFO;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_DBSNP_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_DNA_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILE_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILTER;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_GT;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_POSITION;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_QUAL;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_REF;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_UPLOAD_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_TYPE;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ZYGOSITY;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.UPLOAD_ID;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.VARIANT_ID;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 
 /**
  *
@@ -91,6 +115,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private SearchableTablePanel searchableTablePanel;
     private boolean tableShowing;
     private RingChart ringChart;
+
+    //If the time between keypress events exceeds this interval (in ms), we assume 
+    //the key has been released.  Larger values are safer, but make the UI response slower.    
+    public void clearSelection() {
+        if (searchableTablePanel != null) {
+            searchableTablePanel.getTable().clearSelection();
+        }
+    }
 
     public TablePanel(String page) {
 
@@ -119,8 +151,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, gbc, JLayeredPane.MODAL_LAYER);
-        
-                
+
+
     }
 
     private void showWaitCard() {
@@ -251,13 +283,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         posItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {                
+            public void actionPerformed(ActionEvent ae) {
                 //QueryUtils.addQueryOnChromPosition(chrom,pos);
-                
+
                 List<GenomicRegion> gr = new ArrayList<GenomicRegion>(1);
                 gr.add(new GenomicRegion(null, chrom, pos, pos));
-                
-                QueryUtils.addQueryOnRegions(gr, null);                
+
+                QueryUtils.addQueryOnRegions(gr, null);
             }
         });
 
@@ -267,8 +299,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         JMenuItem posAndAltItem = new JMenuItem("Filter by Position and Alt");
         posAndAltItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent ae) {                
-                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, pos, pos), alt);                                
+            public void actionPerformed(ActionEvent ae) {
+                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, pos, pos), alt);
             }
         });
         menu.add(posAndAltItem);
@@ -329,43 +361,43 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);
-               
+
                 //QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
                 List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = searchableTablePanel.getTable().getModel();
                 int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, searchableTablePanel.getTable().getSelectedRows(), false);
                 List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(selRows.length);
 
-                for (int r : selRows) {            
-                    
-                    
+                for (int r : selRows) {
+
+
                     String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
                     int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
-                                       
+
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
-                    
+
                     /*
-                    SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
-                    posGroup.setDescription("Chromosome "+chrom+", Pos. "+pos);
+                     SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
+                     posGroup.setDescription("Chromosome "+chrom+", Pos. "+pos);
                     
-                    SearchConditionItem chromItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
-                    chromItem.setDescription(chrom);
-                    chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom})));
+                     SearchConditionItem chromItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
+                     chromItem.setDescription(chrom);
+                     chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom})));
                                       
-                    SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
-                    startPosItem.setDescription(Integer.toString(pos));
-                    startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(pos, pos));                                                            
+                     SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
+                     startPosItem.setDescription(Integer.toString(pos));
+                     startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(pos, pos));                                                            
                     
                     
-                    qvc.generateItemViewAndAddToGroup(chromItem, posGroup);
-                    qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);                    
+                     qvc.generateItemViewAndAddToGroup(chromItem, posGroup);
+                     qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);                    
                     
-                    sciList.add(posGroup);                    */
+                     sciList.add(posGroup);                    */
                 }
                 //qvc.replaceFirstLevelGroup("Selected Position(s)", sciList, QueryRelation.OR, false);
                 //qvc.refreshView();
                 QueryUtils.addQueryOnRegions(regions, null);
-                
+
 
             }
         });
@@ -526,85 +558,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     }
                 }
             };
-
-            searchableTablePanel.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            searchableTablePanel.scrollSafeSelectAction(new Runnable(){
                 @Override
-                public void valueChanged(ListSelectionEvent e) {
-
-                    if (e.getValueIsAdjusting()) {
-                        return;
-                    }
-
-                    SortableTable t = searchableTablePanel.getTable();
-                    int[] selRows = t.getSelectedRows();
-                    if (selRows.length > 0) {
-                        int rowToFetch = selRows[0];
-
-                        int uploadID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
-                        int fileID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
-                        int variantID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
-
-                        DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
-                        DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
-                        DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(VARIANT_ID);
-
-                        Condition[][] conditions = new Condition[1][3];
-                        conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
-                        conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
-                        conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
-
-
-                        List<Object[]> rows;
-                        try {
-                            rows = MedSavantClient.VariantManager.getVariants(
-                                    LoginController.getInstance().getSessionID(),
-                                    ProjectController.getInstance().getCurrentProjectID(),
-                                    ReferenceController.getInstance().getCurrentReferenceID(),
-                                    conditions,
-                                    0, 1);
-
-                        } catch (Exception ex) {
-                            ClientMiscUtils.reportError("There was a problem retrieving variant results: %s", ex);
-                            return;
-                        }
-
-                        Object[] row = rows.get(0);
-
-                        VariantRecord r = new VariantRecord(
-                                (Integer) row[INDEX_OF_UPLOAD_ID],
-                                (Integer) row[INDEX_OF_FILE_ID],
-                                (Integer) row[INDEX_OF_VARIANT_ID],
-                                (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
-                                (Integer) 0, // pipeline ID
-                                (String) row[INDEX_OF_DNA_ID],
-                                (String) row[INDEX_OF_CHROM],
-                                (Long) row[INDEX_OF_POSITION],
-                                (String) row[INDEX_OF_DBSNP_ID],
-                                (String) row[INDEX_OF_REF],
-                                (String) row[INDEX_OF_ALT],
-                                (Float) row[INDEX_OF_QUAL],
-                                (String) row[INDEX_OF_FILTER],
-                                (String) row[INDEX_OF_CUSTOM_INFO],
-                                new Object[]{});
-
-                        String type = (String) row[INDEX_OF_VARIANT_TYPE];
-                        String zygosity = (String) row[INDEX_OF_ZYGOSITY];
-                        String genotype = (String) row[INDEX_OF_GT];
-
-                        r.setType(VariantRecord.VariantType.valueOf(type));
-                        try {
-                            r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
-                        } catch (Exception ex) {
-                        }
-                        r.setGenotype(genotype);
-
-                        for (Listener<VariantRecord> l : listeners) {
-                            l.handleEvent(r);
-                        }
-                    }
-                }
-            });
-
+                public void run() {
+                    selectItem();
+                }                
+            });            
+            
             searchableTablePanel.setExportButtonVisible(false);
 
             searchableTablePanel.getTable().addMouseListener(new MouseAdapter() {
@@ -670,6 +630,77 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         public void retrievalComplete() {
             showShowCard();
             updateRequired = false;
+        }
+    }
+
+    private void selectItem() {
+        try {
+            SortableTable t = searchableTablePanel.getTable();
+            int[] selRows = t.getSelectedRows();
+            if (selRows.length > 0) {
+                int rowToFetch = selRows[0];
+
+                int uploadID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
+                int fileID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
+                int variantID = (Integer) t.getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
+
+                DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
+                DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
+                DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(VARIANT_ID);
+
+                Condition[][] conditions = new Condition[1][3];
+                conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
+                conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
+                conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
+
+
+                List<Object[]> rows;
+
+                rows = MedSavantClient.VariantManager.getVariants(
+                        LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        ReferenceController.getInstance().getCurrentReferenceID(),
+                        conditions,
+                        0, 1);
+
+
+
+                Object[] row = rows.get(0);
+
+                VariantRecord r = new VariantRecord(
+                        (Integer) row[INDEX_OF_UPLOAD_ID],
+                        (Integer) row[INDEX_OF_FILE_ID],
+                        (Integer) row[INDEX_OF_VARIANT_ID],
+                        (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
+                        (Integer) 0, // pipeline ID
+                        (String) row[INDEX_OF_DNA_ID],
+                        (String) row[INDEX_OF_CHROM],
+                        (Integer) row[INDEX_OF_POSITION],
+                        (String) row[INDEX_OF_DBSNP_ID],
+                        (String) row[INDEX_OF_REF],
+                        (String) row[INDEX_OF_ALT],
+                        (Float) row[INDEX_OF_QUAL],
+                        (String) row[INDEX_OF_FILTER],
+                        (String) row[INDEX_OF_CUSTOM_INFO],
+                        new Object[]{});
+
+                String type = (String) row[INDEX_OF_VARIANT_TYPE];
+                String zygosity = (String) row[INDEX_OF_ZYGOSITY];
+                String genotype = (String) row[INDEX_OF_GT];
+
+                r.setType(VariantRecord.VariantType.valueOf(type));
+                try {
+                    r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+                } catch (Exception ex) {
+                }
+                r.setGenotype(genotype);
+
+                for (Listener<VariantRecord> l : listeners) {
+                    l.handleEvent(r);
+                }
+            }
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("There was a problem retrieving variant results: %s", ex);
         }
     }
 }

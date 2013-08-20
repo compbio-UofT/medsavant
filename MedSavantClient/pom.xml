@@ -43,7 +43,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.17</version>
+      <version>5.1.25</version>
     </dependency>
     <dependency>
       <groupId>gnu.getopt</groupId>
@@ -120,6 +120,11 @@
       <artifactId>jide-charts</artifactId>
       <version>${jide.version}</version>
     </dependency>
+     <dependency>
+      <groupId>jide</groupId>
+      <artifactId>jide-pivot</artifactId>
+      <version>${jide.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.apple</groupId>
       <artifactId>AppleJavaExtensions</artifactId>
@@ -128,12 +133,12 @@
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi</artifactId>
-      <version>3.7</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
-      <version>3.7</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>net.ericaro</groupId>
@@ -143,8 +148,8 @@
     <dependency>
       <groupId>edu.toronto.cs.savant</groupId>
       <artifactId>savant-core</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </dependency>
+      <version>2.0-SNAPSHOT</version>     
+    </dependency>    
     <dependency>
       <groupId>com.explodingpixels</groupId>
       <artifactId>mac_widgets</artifactId>
@@ -208,6 +213,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
       </plugin>
     </plugins>
   </build>

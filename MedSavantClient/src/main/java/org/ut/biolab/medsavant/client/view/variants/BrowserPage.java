@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -46,12 +46,12 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
-import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.images.IconFactory.StandardIcon;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -86,6 +86,7 @@ public class BrowserPage extends SubSectionView {
     private boolean variantTrackLoaded = false;
     private static BrowserPage instance;
     private MedSavantDataSource msds;
+    private final Semaphore trackAdditionLock = new Semaphore(1, true);
 
     // Do not use unless you're sure BrowserPage has been initialized
     public static BrowserPage getInstance() {
@@ -96,12 +97,8 @@ public class BrowserPage extends SubSectionView {
     private final ArrayList<String> sampleIdsHavingBams;
     private final HashMap<String, String> dnaIDToURLMap;
 
-   
-    
-    
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
-
         instance = this;
 
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
@@ -146,7 +143,6 @@ public class BrowserPage extends SubSectionView {
                     dnaIDToURLMap.put(s, splitUrls[0]);
                 }
             }
-
         } catch (Exception ex) {
             LOG.error(ex);
         }
@@ -156,25 +152,23 @@ public class BrowserPage extends SubSectionView {
             @Override
             public void handleEvent(GenomeChangedEvent event) {
                 if (!variantTrackLoaded) {
-
                     // load a gene track if it exists
 
                     try {
-                        System.out.println("Loading gene track");
+                        LOG.debug("Loading gene track");
                         String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
                         String urlOfTrack = getTrackURL(referenceName, "gene");
                         addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
                     } catch (Exception ex) {
-                        LOG.info("Error loading gene track");
-                        ex.printStackTrace();
+                        LOG.error("Error loading gene track", ex);
                     }
-
+                
 
                     // load the MedSavant variant track
                     try {
-                        System.out.println("Loading MedSavant variant track");
+                        LOG.debug("Loading MedSavant variant track");
                         msds = new MedSavantDataSource();
-                        System.out.println("Subscribing selection change listener");
+                        LOG.debug("Subscribing selection change listener");
                         gsc.addListener(msds);
                         Track t = TrackFactory.createTrack(msds);
                         FrameController c = FrameController.getInstance();
@@ -182,8 +176,9 @@ public class BrowserPage extends SubSectionView {
                         variantTrackLoaded = true;
 
                     } catch (SavantTrackCreationCancelledException ex) {
-                        LOG.info("Error loading MedSavant variant track");
-                        ex.printStackTrace();
+                        LOG.error("Error loading MedSavant variant track", ex);
+                    }catch(Exception ex){
+                        LOG.error("Misc. error loading MedSavant variant track", ex);                        
                     }
                 }
             }
@@ -196,73 +191,77 @@ public class BrowserPage extends SubSectionView {
 
             while (genomeView == null && variationPanel == null) {
                 try {
-                    System.out.println("Waiting for panels...");
+                    LOG.debug("Waiting for panels...");
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(BrowserPage.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
-            settingComponents = new Component[5];
+            settingComponents = new Component[3];
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getToggleButtonForPanel(variationPanel, "Variation");
+            settingComponents[2] = getUndockButton();
+        }
+        return settingComponents;
+    }
 
-            JButton button = new JButton("Restrict DNA IDs");
-            button.addActionListener(new ActionListener() {
+    private void setupToolbarButtons(Savant savantInstance) {
+
+        // Removed temporarily 06-08-2013, in preparation for 1.1 release.
+        /*
+         JButton button = new JButton(IconFactory.getInstance().getIcon(StandardIcon.FILTER));
+         button.setToolTipText("Restrict DNA IDs");
+         button.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         gsc.setLocationRelativeTo(view);
+         gsc.setVisible(true);
+         }
+         });
+         */
+
+        JPanel pluginToolbar = savantInstance.getPluginToolbar();
+        
+        // Removed temporarily 06-08-2013, in preparation for 1.1 release.
+        // pluginToolbar.add(button);
+
+        try {
+            final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
+
+            JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(StandardIcon.BAMFILE));
+            dnaButton.setToolTipText("Open BAM File(s)");
+            dnaButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    gsc.setVisible(true);
+                    bamFileChooser.setLocationRelativeTo(view);
+                    bamFileChooser.setVisible(true);
                 }
             });
 
-            settingComponents[2] = button;
-
-            try {
-
-                final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
-
-                JButton dnaButton = new JButton("Open BAM File(s)");
-                dnaButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        bamFileChooser.setVisible(true);
-                    }
-                });
-
-                bamFileChooser.addListener(new Listener<SelectableListView.SelectionEvent>() {
-                    @Override
-                    public void handleEvent(SelectableListView.SelectionEvent event) {
-                        List selections = event.getSelections();
-                        for (Object o : selections) {
-                            String url = dnaIDToURLMap.get(o.toString());
-                            addTrackFromURLString(url, DataFormat.ALIGNMENT);
-                        }
-                    }
-                });
-
-                settingComponents[3] = dnaButton;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR); 
-            JButton undockButton = new JButton("Undock", img);
-            undockButton.addActionListener(new ActionListener(){
+            bamFileChooser.addListener(new Listener<SelectableListView.SelectionEvent>() {
                 @Override
-                public void actionPerformed(ActionEvent ae){
-                   ViewController.getInstance().undock();
-               } 
+                public void handleEvent(SelectableListView.SelectionEvent event) {
+                    List selections = event.getSelections();
+                    for (Object o : selections) {
+                        String url = dnaIDToURLMap.get(o.toString());
+                        addTrackFromURLString(url, DataFormat.ALIGNMENT);
+                    }
+                }
             });
-            settingComponents[4] = undockButton;
+
+            pluginToolbar.add(dnaButton);
+            pluginToolbar.setVisible(true);
+        } catch (Exception e) {
+            LOG.error("ERROR ", e);
         }
-        return settingComponents;
     }
 
     @Override
     public JPanel getView() {
         try {
             if (view == null) {
-
+                trackAdditionLock.acquire();
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
                 view.add(new WaitPanel("Preparing Savant Genome Browser..."));
@@ -292,6 +291,8 @@ public class BrowserPage extends SubSectionView {
                             browserPanel.setLayout(new BorderLayout());
 
                             Savant savantInstance = Savant.getInstance(false, false);
+                            setupToolbarButtons(savantInstance);
+
 
                             PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
                             PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
@@ -314,7 +315,6 @@ public class BrowserPage extends SubSectionView {
                             browserPanel.add(savantInstance.getBrowserPanel(), BorderLayout.CENTER);
 
                             tmpView.add(browserPanel, BorderLayout.CENTER);
-
                             tmpView.add(variationPanel, BorderLayout.EAST);
 
                             SwingUtilities.invokeLater(new Runnable() {
@@ -330,16 +330,14 @@ public class BrowserPage extends SubSectionView {
                                 @Override
                                 public void run() {
                                     addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                                    trackAdditionLock.release();
                                 }
                             });
                             t.start();
 
 
                         } catch (Exception ex) {
-                            view.removeAll();
-                            WaitPanel p = new WaitPanel("Error loading genome browser");
-                            p.setComplete();
-                            view.add(p);
+                            LOG.error("Got exception: " + ex);
                         }
                     }
                 };
@@ -357,15 +355,30 @@ public class BrowserPage extends SubSectionView {
         return view;
     }
 
-    public void addTrackFromURLString(String urlString, DataFormat format) {
-        try {
+    public void addTrackFromURLString(String urlString, final DataFormat format) {
+        try {            
+            final URL url = new URL(urlString);
             if (!TrackController.getInstance().containsTrack(urlString)) {
-                URL url = new URL(urlString);
-                //TODO: get data format appropriately
-                FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
+                if (view == null) {
+                    getView();
+                    Thread t = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                trackAdditionLock.acquire();                                
+                                FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
+                                trackAdditionLock.release();
+                            } catch (Exception ex) {
+                                LOG.error(ex);
+                            }
+                        }
+                    });
+                    t.start();
+                } else {                    
+                    FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
+                }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.error(ex);
         }
     }
 
@@ -396,7 +409,6 @@ public class BrowserPage extends SubSectionView {
     @Override
     public void viewDidUnload() {
         super.viewDidUnload();
-        //MedSavantDataSource.setActive(false);
     }
 
     public void updateContents() {

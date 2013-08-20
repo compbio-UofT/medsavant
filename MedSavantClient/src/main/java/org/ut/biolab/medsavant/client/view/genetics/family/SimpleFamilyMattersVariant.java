@@ -38,6 +38,40 @@ public class SimpleFamilyMattersVariant implements Comparable {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + (this.chr != null ? this.chr.hashCode() : 0);
+        hash = 83 * hash + (int) (this.pos ^ (this.pos >>> 32));
+        hash = 83 * hash + (this.ref != null ? this.ref.hashCode() : 0);
+        hash = 83 * hash + (this.alt != null ? this.alt.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SimpleFamilyMattersVariant other = (SimpleFamilyMattersVariant) obj;
+        if ((this.chr == null) ? (other.chr != null) : !this.chr.equals(other.chr)) {
+            return false;
+        }
+        if (this.pos != other.pos) {
+            return false;
+        }
+        if ((this.ref == null) ? (other.ref != null) : !this.ref.equals(other.ref)) {
+            return false;
+        }
+        if ((this.alt == null) ? (other.alt != null) : !this.alt.equals(other.alt)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public int compareTo(Object o) {
         if (!(o instanceof SimpleFamilyMattersVariant)) {
             return -1;
