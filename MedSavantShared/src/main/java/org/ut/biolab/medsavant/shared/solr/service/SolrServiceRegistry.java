@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.shared.solr.service;
 
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
-import org.ut.biolab.medsavant.shared.model.solr.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.Entity;
 
@@ -349,7 +348,7 @@ public class SolrServiceRegistry {
 
     public static AbstractSolrService getCustomColumnService() throws InitializationException {
         if (customColumnService == null) {
-            customColumnService = new CustmColumnService();
+            customColumnService = new CustomColumnSolrService();
             customColumnService.initialize();
         }
         return customColumnService;

@@ -6,7 +6,7 @@ import org.ut.biolab.medsavant.shared.util.Entity;
 /**
  * Handle indexing of custom columns.
  */
-public class CustmColumnService extends AbstractSolrService<CustomColumn>{
+public class CustomColumnSolrService extends AbstractSolrService<CustomColumn>{
 
     @Override
     protected String getName() {
