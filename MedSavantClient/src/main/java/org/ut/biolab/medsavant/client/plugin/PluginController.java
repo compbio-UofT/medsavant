@@ -229,10 +229,10 @@ public class PluginController extends Controller {
         Thread t = new Thread(r);
         t.start();
     }
-    
+
     /**
      * @deprecated
-     */    
+     */
     private static final void copyInputStream(InputStream in, OutputStream out)
             throws IOException {
         byte[] buffer = new byte[1024];
@@ -243,7 +243,7 @@ public class PluginController extends Controller {
         in.close();
         out.close();
     }
-    
+
     public MedSavantPlugin getPlugin(String id) {
         return loadedPlugins.get(id);
     }
@@ -389,14 +389,19 @@ public class PluginController extends Controller {
      */
     public void installPlugin(File selectedFile) throws Throwable {
         File pluginFile = new File(DirectorySettings.getPluginsDirectory(), selectedFile.getName());
+        LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
         ClientIOUtils.copyFile(selectedFile, pluginFile);
+        LOG.info("Getting plugin information...");
         PluginDescriptor desc = addPlugin(pluginFile);
+        LOG.info("Got plugin information");
         if (desc != null) {
+            LOG.info("Loading plugin...");
             if (pluginLoader == null) {
                 pluginLoader = new PluginLoader(new URL[] { pluginFile.toURI().toURL() }, getClass().getClassLoader());
             }
             pluginLoader.addJar(pluginFile);
             loadPlugin(desc);
+            LOG.info("Done loading plugin");
         }
     }
 

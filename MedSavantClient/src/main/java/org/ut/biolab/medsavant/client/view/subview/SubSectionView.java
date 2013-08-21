@@ -63,8 +63,9 @@ public abstract class SubSectionView {
     }
 
     private void dock(JFrame undockedFrame) {
-        undockButton.setText("Undock");
-        undockButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.UNDOCK));
+        undockButton.setText("Undock Genome Browser");
+
+        //undockButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.UNDOCK));
         undockedFrame.dispose();
         undockedFrame = null;
         dockState = DockState.DOCKED;
@@ -73,8 +74,9 @@ public abstract class SubSectionView {
 
     private JFrame undock() {
         dockState = DockState.UNDOCKING;
-        undockButton.setText("Dock");
-        undockButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DOCK));
+        undockButton.setText("Dock Genome Browser");
+        //undockButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DOCK));
+        //undockButton = new JButton("Undock Genome Browser");
 
         undockedFrame = new JFrame("Savant Browser");
 
@@ -108,8 +110,9 @@ public abstract class SubSectionView {
 
     protected JButton getUndockButton() {
         if (undockButton == null) {
-            ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.UNDOCK);
-            undockButton = new JButton("Undock", img);
+            //ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.UNDOCK);
+            undockButton = new JButton("Undock Genome Browser");
+            undockButton.putClientProperty( "JButton.buttonType", "segmentedTextured" );
             undockButton.addActionListener(new ActionListener() {
                 private JFrame undockedFrame;
 
@@ -168,7 +171,7 @@ public abstract class SubSectionView {
     public void clearSelection(){
         //by default, do nothing.
     }
-    
+
     public Component[] getSubSectionMenuComponents() {
         return null;
     }

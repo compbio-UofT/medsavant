@@ -173,7 +173,8 @@ public class PeekingPanel extends JPanel {
              //this.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
              this.side = side;
 
-             this.putClientProperty( "JButton.buttonType", "segmented" );
+             this.putClientProperty( "JButton.buttonType", "segmentedTextured" );
+             //this.setForeground(Color.gray);
 
              switch (side) {
                  case EAST:
