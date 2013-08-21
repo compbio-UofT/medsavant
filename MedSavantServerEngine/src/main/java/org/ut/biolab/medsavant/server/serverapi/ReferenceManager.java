@@ -73,8 +73,8 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
     @Override
     public String[] getReferenceNames(String sessID) throws SQLException, SessionExpiredException {
-        Query query = queryManager.createQuery("Select r.name from Reference");
-        List<ResultRow> resultRowList = query.execute();
+        Query query = queryManager.createQuery("Select r.name from Reference r");
+        List<ResultRow> resultRowList = query.executeForRows();
 
         String[] names = new String[resultRowList.size()];
         for (int i = 0; i < resultRowList.size(); i++) {
@@ -87,7 +87,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public int getReferenceID(String sessID, String refName) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select r from Reference where r.name= :name");
+        Query query = queryManager.createQuery("Select r from Reference r where r.name= :name");
         query.setParameter("name", refName);
         List<Reference> referenceList = query.execute();
 
@@ -103,7 +103,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public boolean containsReference(String sessID, String refName) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select r from Reference where r.name= :name");
+        Query query = queryManager.createQuery("Select r from Reference r where r.name= :name");
         query.setParameter("name", refName);
         List<Reference> referenceList = query.execute();
 

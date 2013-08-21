@@ -113,14 +113,14 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public List<RegionSet> getRegionSets(String sessID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select r from RegionSet");
+        Query query = queryManager.createQuery("Select r from RegionSet r");
         return query.execute();
     }
 
     @Override
     public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from GenomicRegion where g.id= :id");
+        Query query = queryManager.createQuery("Select g from GenomicRegion g where g.id= :id");
         query.setParameter("id", set.getID());
         return query.execute();
     }
@@ -129,7 +129,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets) throws SQLException, SessionExpiredException {
 
         String rsCol = StringUtils.join(sets, ",");
-        Query query = queryManager.createQuery(String.format("Select g from GenomicRegion where g.id IN (%s)", rsCol));
+        Query query = queryManager.createQuery(String.format("Select g from GenomicRegion g where g.id IN (%s)", rsCol));
         return query.execute();
     }
 

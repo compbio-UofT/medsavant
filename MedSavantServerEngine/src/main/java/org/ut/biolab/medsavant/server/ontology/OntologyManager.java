@@ -131,7 +131,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public Ontology[] getOntologies(String sessID) throws SQLException, RemoteException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select o from Ontology");
+        Query query = queryManager.createQuery("Select o from Ontology o");
         List<Ontology> ontologies = query.execute();
         return ontologies.toArray(new Ontology[ontologies.size()]);
     }
@@ -139,7 +139,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public OntologyTerm[] getAllTerms(String sessID, OntologyType ont) throws InterruptedException, SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select t from OntologyTerm where t.type= :type");
+        Query query = queryManager.createQuery("Select t from OntologyTerm t where t.type= :type");
         query.setParameter("type", ont);
         List<OntologyTerm> terms = query.execute();
         return terms.toArray(new OntologyTerm[terms.size()]);
@@ -179,7 +179,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             }
         }
 
-        String statement = String.format("Select t from OntologyTerm where t.id IN (%s)", sb.toString());
+        String statement = String.format("Select t from OntologyTerm t where t.id IN (%s)", sb.toString());
         Query query = queryManager.createQuery(statement);
         List<OntologyTerm> results = query.execute();
 
@@ -199,7 +199,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws SQLException, SessionExpiredException {
         //this might not be necessary if the genes are stored on the OntologyTerm instances
-        String statement = "Select t from OntologyTerm where t.genes= :geneName";
+        String statement = "Select t from OntologyTerm t where t.genes= :geneName";
         Query query = queryManager.createQuery(statement);
         query.setParameter("geneName", geneName);
         List<OntologyTerm> results = query.execute();
