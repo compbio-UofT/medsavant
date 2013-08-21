@@ -56,9 +56,6 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
         solrQuery = new SolrQuery();
 
         super.inASelectStatement(node);
-
-        String statement = solrQuery.get(CommonParams.Q);
-        solrQuery.setQuery(addEntityField(statement, context.getCoreName()));
     }
 
     @Override
@@ -123,6 +120,8 @@ public class SelectQueryAnalyzer extends DepthFirstAdapter {
     }
 
     public SolrQuery getSolrQuery() {
+        String statement = solrQuery.get(CommonParams.Q);
+        solrQuery.setQuery(addEntityField(statement, context.getCoreName()));
         return ParserUtil.addDefaultQueryParameters(solrQuery);
     }
 
