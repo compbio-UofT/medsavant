@@ -28,7 +28,9 @@ public class SearcheableProjectDetails {
     /**
      * Default constructor. Called by the Document Object Binder
      */
-    public SearcheableProjectDetails() {}
+    public SearcheableProjectDetails() {
+        projectDetails = new ProjectDetails();
+    }
 
     /**
      * Initialize the class and set the ProjectDetails instance.

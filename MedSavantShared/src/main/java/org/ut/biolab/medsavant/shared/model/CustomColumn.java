@@ -14,6 +14,19 @@ public class CustomColumn extends CustomField {
     private int position;
     private CustomColumnType entity;
 
+    public CustomColumn(CustomField customField, ProjectDetails projectDetails, CustomColumnType entity, int position) {
+        super(customField.getColumnName(),
+                customField.getTypeString(),
+                customField.isFilterable(),
+                customField.getAlias(),
+                customField.getDescription());
+        this.projectId = projectDetails.getProjectID();
+        this.referenceId = projectDetails.getReferenceID();
+        this.uploadId = projectDetails.getReferenceID();
+        this.position = position;
+        this.entity = entity;
+    }
+
     public CustomColumn(String name, String typeStr, boolean filterable, String alias, String description) {
         super(name, typeStr, filterable, alias, description);
     }

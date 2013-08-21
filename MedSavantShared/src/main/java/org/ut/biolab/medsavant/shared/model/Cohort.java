@@ -18,6 +18,8 @@ public class Cohort implements Serializable, Comparable {
     private String name;
     private List<Integer> patientIds;
 
+    public Cohort() {};
+
     public Cohort(int id, String name){
         this.id = id;
         this.name = name;

@@ -36,6 +36,9 @@ public class Annotation implements Serializable {
     private final AnnotationType type;
     private boolean isEndInclusive = false;
 
+    private boolean hasRef;
+    private boolean hasAlt;
+
     public Annotation(int id, String program, String version, int refID, String refName, String dataPath, AnnotationType type, boolean isEndInclusive) {
         this.id = id;
         this.program = program;
@@ -45,6 +48,19 @@ public class Annotation implements Serializable {
         this.dataPath = dataPath;
         this.type = type;
         this.isEndInclusive = isEndInclusive;
+    }
+
+    public Annotation(int id, String program, String version, int refID, String refName, String dataPath, AnnotationType type, boolean isEndInclusive, boolean hasAlt, boolean hasRef) {
+        this.id = id;
+        this.program = program;
+        this.version = version;
+        this.referenceID = refID;
+        this.referenceName = refName;
+        this.dataPath = dataPath;
+        this.type = type;
+        this.isEndInclusive = isEndInclusive;
+        this.hasAlt = hasAlt;
+        this.hasRef = hasRef;
     }
 
     public int getID() {
@@ -77,6 +93,14 @@ public class Annotation implements Serializable {
 
     public AnnotationType getAnnotationType(){
         return type;
+    }
+
+    public boolean isHasRef() {
+        return hasRef;
+    }
+
+    public boolean isHasAlt() {
+        return hasAlt;
     }
 
     @Override
