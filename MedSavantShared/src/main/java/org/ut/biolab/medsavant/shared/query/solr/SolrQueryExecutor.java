@@ -78,6 +78,20 @@ public class SolrQueryExecutor implements QueryExecutor {
     }
 
     @Override
+    public <T> T getFirst(Query query) {
+        query.setLimit(0);
+        List<T> resultList = query.execute();
+        return (T) getFirstElement(resultList);
+    }
+
+    @Override
+    public ResultRow getFirstRow(Query query) {
+        query.setLimit(0);
+        List<ResultRow> resultRowList = query.executeForRows();
+        return (ResultRow) getFirstElement(resultRowList);
+    }
+
+    @Override
     public void executeDelete(Query query) {
         AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
         SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
@@ -111,6 +125,14 @@ public class SolrQueryExecutor implements QueryExecutor {
         }
 
         return count;
+    }
+
+    private Object getFirstElement(List<?> objectList) {
+        if (objectList.size() > 0 ) {
+            return objectList.get(0);
+        } else {
+            return null;
+        }
     }
 
 

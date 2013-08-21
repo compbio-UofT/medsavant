@@ -39,6 +39,21 @@ public interface QueryExecutor {
     public List<ResultRow> executeForRows(Query query);
 
     /**
+     * Execute the current query and get first entity.
+     * @param query             A query that needs to be executed
+     * @param <T>               The type of entity returned by the query.
+     * @return                  The first T object in the query result.
+     */
+    <T> T getFirst(Query query);
+
+    /**
+     * Execute the current query and get the first row from the result list.
+     * @param query             A query that needs to be executed
+     * @return                  The first ResultRow object in the query result list.
+     */
+    ResultRow getFirstRow(Query query);
+
+    /**
      * Execute the current delete query.
      * @param query             A delete query.
      */

@@ -70,6 +70,16 @@ public abstract class AbstractQuery implements Query {
     }
 
     @Override
+    public <T> T getFirst() {
+        return executor.getFirst(this);
+    }
+
+    @Override
+    public ResultRow getFirstRow() {
+        return executor.getFirstRow(this);
+    }
+
+    @Override
     public void executeDelete() {
         executor.executeDelete(this);
     }

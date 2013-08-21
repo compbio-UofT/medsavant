@@ -42,6 +42,19 @@ public interface Query {
     public List<ResultRow> executeForRows();
 
     /**
+     * Execute the current query and get first entity.
+     * @param <T>               The type of entity returned by the query.
+     * @return                  The first T object in the query result.
+     */
+    <T> T getFirst();
+
+    /**
+     * Execute the current query and get the first row from the result list.
+     * @return                  The first ResultRow object in the query result list.
+     */
+    ResultRow getFirstRow();
+
+    /**
      * Execute the current delete queries.
      */
     public void executeDelete();
