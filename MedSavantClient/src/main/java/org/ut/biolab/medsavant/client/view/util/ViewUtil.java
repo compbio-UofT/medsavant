@@ -156,11 +156,11 @@ public final class ViewUtil {
             @Override
             public void paintComponent(Graphics g) {
 
-                //Color top = Color.darkGray;
-                //Color bottom = Color.black;
+                Color top = new Color(220,220,220);
+                Color bottom = new Color(220,220,220);
 
-                Color top = new Color(227, 227, 227);
-                Color bottom = new Color(179, 179, 179);
+                //Color top = new Color(227, 227, 227);
+                //Color bottom = new Color(179, 179, 179);
 
                 GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
@@ -275,7 +275,8 @@ public final class ViewUtil {
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(41, 46, 53);
+        return new Color(20,20,20);
+        //return new Color(41, 46, 53);
     }
 
     public static Color getLightColor() {
@@ -287,7 +288,7 @@ public final class ViewUtil {
     }
 
     public static Color getBGColor() {
-        return new Color(237, 237, 237);
+        return new Color(255, 255, 255);
     }
 
     public static Color getMenuColor() {
@@ -577,7 +578,8 @@ public final class ViewUtil {
     public static JToggleButton getTogglableIconButton(ImageIcon icon) {
 
         final ImageIcon selectedIcon = icon;
-        final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        //final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        final ImageIcon unselectedIcon = new ImageIcon(GrayFilter.createDisabledImage(icon.getImage()));
 
         final JToggleButton button = new JToggleButton(icon);
         button.setFocusable(false);
@@ -757,19 +759,19 @@ public final class ViewUtil {
         return list;
     }
 
-    public static String numToString(float num) {       
+    public static String numToString(float num) {
         return NumberFormat.getInstance().format(num);
     }
 
-    public static String numToString(double num) {       
+    public static String numToString(double num) {
         return NumberFormat.getInstance().format(num);
     }
 
-    public static String numToString(int num) {        
+    public static String numToString(int num) {
         return NumberFormat.getInstance().format(num);
     }
-    
-    public static String numToString(long num){        
+
+    public static String numToString(long num){
         return NumberFormat.getInstance().format(num);
     }
 

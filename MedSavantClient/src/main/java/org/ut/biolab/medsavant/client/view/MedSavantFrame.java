@@ -31,6 +31,7 @@ import com.apple.eawt.Application;
 import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
+import com.explodingpixels.macwidgets.MacUtils;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -66,6 +67,9 @@ import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.mfiume.app.jAppStore;
+import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
+import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 
 /**
  *
@@ -85,20 +89,21 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private String currentCard;
     private boolean queuedForExit = false;
 
-
-    private static Point getPositionRelativeTo(Component root, Component comp){
-        if (comp.equals(root)) { return new Point(0,0); }
+    private static Point getPositionRelativeTo(Component root, Component comp) {
+        if (comp.equals(root)) {
+            return new Point(0, 0);
+        }
         Point pos = comp.getLocation();
         Point parentOff = getPositionRelativeTo(root, comp.getParent());
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
+    private final jAppStore appStore;
 
-
-    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg){
-        if(src != null && dst != null){
-             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){
+    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
+        if (src != null && dst != null) {
+            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME) {
+                public void done() {
+                    if (notificationMsg != null) {
                         notificationMessage(notificationMsg);
                     }
                 }
@@ -106,114 +111,118 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
     }
 
-
-    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg){
+    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg) {
         Point src = getPositionRelativeTo(view, srcComponent);
         Point dst = getPositionRelativeTo(view, dstComponent);
         translationAnimation(src, dst, img, notificationMsg);
     }
 
-    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg){
+    public void showAppStore() {
+        appStore.showStore();
+    }
+
+    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg) {
         translationAnimation(view, dstComponent, img, notificationMsg);
     }
 
-    public void browserAnimationFromMousePos(final String notificationMsg){
+    public void browserAnimationFromMousePos(final String notificationMsg) {
 
         /*Point src = view.getMousePosition();
-        if(src == null){
-            return;
-        }
+         if(src == null){
+         return;
+         }
 
-        Point dst = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        */
+         Point dst = null;
+         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
+         */
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
-        for(SubSectionView sv : menu.subSectionViews){
-            if(sv.getPageName().equalsIgnoreCase("Browser")){
-               //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
-               dstComponent = menu.getSubSectionButton(sv);
-               break;
+        for (SubSectionView sv : menu.subSectionViews) {
+            if (sv.getPageName().equalsIgnoreCase("Browser")) {
+                //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
+                dstComponent = menu.getSubSectionButton(sv);
+                break;
             }
         }
 
         animationFromMousePos(dstComponent, img, notificationMsg);
-        if(dstComponent != null){
+        if (dstComponent != null) {
             animationFromMousePos(dstComponent, img, notificationMsg);
         }
 
         /*
-        if(dst != null){
-            //view.cancel();
-            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){
-                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-                        notificationMessage(notificationMsg);
-                    }
-                }
-            });
+         if(dst != null){
+         //view.cancel();
+         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+         public void done(){
+         if(notificationMsg != null){
+         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+         notificationMessage(notificationMsg);
+         }
+         }
+         });
 
 
 
-            //view.animate(img.getImage(), src, dst);
-        }
-        */
+         //view.animate(img.getImage(), src, dst);
+         }
+         */
     }
 
-    public void notificationMessage(String notificationMsg){
+    public void notificationMessage(String notificationMsg) {
         view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
     }
 
     /**
-     * Creates a search animation from the current mouse position.  i.e. creates an image
-     * that moves from the current mouse position to the 'Variants' button on the toolbar.
+     * Creates a search animation from the current mouse position. i.e. creates
+     * an image that moves from the current mouse position to the 'Variants'
+     * button on the toolbar.
      *
-     * Do not call until the previous animation thread is finished.  This
+     * Do not call until the previous animation thread is finished. This
      * shouldn't happen as long as the animation time is short. (< 500ms ).
      */
-    public void searchAnimationFromMousePos(final String notificationMsg){
+    public void searchAnimationFromMousePos(final String notificationMsg) {
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         /*Point src = view.getMousePosition();
-        if(src == null){
-            return;
-        }
+         if(src == null){
+         return;
+         }
 
-        Point dst = null;
-        */
+         Point dst = null;
+         */
         Component dstComponent = null;
         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        while(e.hasMoreElements()){
+        while (e.hasMoreElements()) {
             AbstractButton b = e.nextElement();
-            if(b.getName().equalsIgnoreCase("Variants")){
+            if (b.getName().equalsIgnoreCase("Variants")) {
                 //dst = getPositionRelativeTo(view, b);
                 dstComponent = b;
             }
         }
         animationFromMousePos(dstComponent, img, notificationMsg);
         /*
-        if(dst != null){
-            //view.cancel();
+         if(dst != null){
+         //view.cancel();
 
-            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){
-                        notificationMessage(notificationMsg);
-                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-                    }
-                }
-            });
+         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+         public void done(){
+         if(notificationMsg != null){
+         notificationMessage(notificationMsg);
+         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+         }
+         }
+         });
 
-        }
-        */
+         }
+         */
     }
 
-    public void searchAnimationFromMousePos(){
+    public void searchAnimationFromMousePos() {
         searchAnimationFromMousePos(null);
     }
 
-     public static MedSavantFrame getInstance() {
+    public static MedSavantFrame getInstance() {
         if (instance == null) {
             instance = new MedSavantFrame();
             LoginController.getInstance().addListener(instance);
@@ -241,6 +250,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         UIManager.put("ToolTip.foreground", Color.white);
         UIManager.put("ToolTip.border", ViewUtil.getMediumBorder());
         UIManager.put("ToolTip.font", ViewUtil.detailFontBold);
+        UIManager.put("Table.gridColor", new Color(250, 250, 250));
 
         add(view, BorderLayout.CENTER);
 
@@ -260,17 +270,30 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         });
         fileMenu.add(pluginsItem);
 
-        // Debug code that adds a 'Restart' function to the File menu.
-        /*
-        JMenuItem restartItem = new JMenuItem("Restart");
-        restartItem.addActionListener(new ActionListener() {
+        final MedSavantAppFetcher maf = new MedSavantAppFetcher();
+        final MedSavantAppInstaller mai = new MedSavantAppInstaller();
+        appStore = new jAppStore("MedSavant App Store", maf, mai);
+
+        JMenuItem appItem = new JMenuItem("App Store");
+        appItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                MedSavantClient.restart();
+                showAppStore();
             }
         });
-        fileMenu.add(restartItem);
-        */
+        fileMenu.add(appItem);
+
+        // Debug code that adds a 'Restart' function to the File menu.
+        /*
+         JMenuItem restartItem = new JMenuItem("Restart");
+         restartItem.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         MedSavantClient.restart();
+         }
+         });
+         fileMenu.add(restartItem);
+         */
 
 
         //fileMenu.add(manageDBItem);
@@ -413,6 +436,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private void customizeForMac() {
 
         try {
+            MacUtils.makeWindowLeopardStyle(this.getRootPane());
+            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
+
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 

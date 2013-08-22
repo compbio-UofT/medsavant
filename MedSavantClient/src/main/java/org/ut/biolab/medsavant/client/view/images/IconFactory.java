@@ -93,6 +93,7 @@ public class IconFactory {
         LOAD_ON_TOOLBAR,
         MENU_USER,
         MENU_SERVER,
+        MENU_STORE,
         CLOSE,
         SEARCH_PH,
         DOCK,
@@ -142,6 +143,8 @@ public class IconFactory {
                 return getIcon(iconroot + "section_variants2.png");
             case MENU_USER:
                 return getIcon(iconroot + "menu-user.png");
+            case MENU_STORE:
+                return getIcon(iconroot + "menu-store.png");
             case SECTION_TABLE:
                 return getIcon(iconroot + "menu-search.png");
             case SECTION_DATA:
