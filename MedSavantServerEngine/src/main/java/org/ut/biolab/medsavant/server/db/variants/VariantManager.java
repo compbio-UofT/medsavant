@@ -83,9 +83,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     //public static boolean REMOVE_TMP_FILES = false;
     static boolean REMOVE_WORKING_DIR = true;
 
-    //Todo make singleton
-    private QueryManager queryManager;
-    private EntityManager entityManager;
+    private static QueryManager queryManager;
+    private static EntityManager entityManager;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
         queryManager = QueryManagerFactory.getQueryManager();
@@ -1016,35 +1015,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-
-    /*
-     * private void updateStarredVariant(Connection c, int projectId, int
-     * referenceId, VariantComment variant) throws SQLException {
-     *
-     * TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-     *
-     * UpdateQuery q = new UpdateQuery(table.getTable());
-     * //q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
-     * variant.getUser());
-     * q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
-     * variant.getDescription());
-     * q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP),
-     * variant.getTimestamp());
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
-     * projectId));
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-     * referenceId));
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
-     * variant.getUploadId()));
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
-     * variant.getFileId()));
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
-     * variant.getVariantId()));
-     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
-     * variant.getUser()));
-     *
-     * c.createStatement().executeUpdate(q.toString()); }
-     */
     @Override
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, SessionExpiredException {
 
@@ -1094,8 +1064,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     Calendar.getInstance().getTime().toString(),
                     user);
 
-            //FIXME remove hardcoded - factory
-            EntityManager entityManager = new SolrEntityManager();
             entityManager.persist(simpleVariantFile);
         } catch (RemoteException e) {
             LOG.error("Error retrieving current user", e);
@@ -1147,41 +1115,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException, SessionExpiredException {
 
-
         Map<String, Integer> dnaIDMap = new HashMap<String, Integer>();
 
-
         if (!dnaIDs.isEmpty()) {
-            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
-            String tablename = (String) variantTableInfo[0];
-            String tablenameSub = (String) variantTableInfo[1];
-            float multiplier = (Float) variantTableInfo[2];
-
-            TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
-            TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-            //combine conditions
             Condition[] c1 = new Condition[conditions.length];
             for (int i = 0; i < conditions.length; i++) {
                 c1[i] = ComboCondition.and(conditions[i]);
             }
             Condition c2 = ComboCondition.or(c1);
 
-            // Try sub table first.
-            getDNAIDHeatMapHelper(sessID, subTable, multiplier, dnaIDs, c2, true, dnaIDMap);
-
-            // Determine dnaIDs with no value yet.
-            List<String> dnaIDs2 = new ArrayList<String>();
-            for (String id : dnaIDs) {
-                if (!dnaIDMap.containsKey(id)) {
-                    dnaIDs2.add(id);
-                }
-            }
-
-            //get remaining dna ids from actual table
-            if (!dnaIDs2.isEmpty()) {
-                getDNAIDHeatMapHelper(sessID, table, 1, dnaIDs2, c2, false, dnaIDMap);
-            }
+            getDNAIDHeatMapHelper(sessID, null, 1, dnaIDs, c2, true, dnaIDMap);
         }
 
         return dnaIDMap;
@@ -1241,7 +1184,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         StringBuilder cond = new StringBuilder();
         for (int i = 0; i < conditions.length; i++) {
-
             cond.append(StringUtils.join(conditions[i]," AND "));
         }
 
