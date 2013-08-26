@@ -60,6 +60,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -129,7 +130,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         fontZoomButtonsPanel = new JPanel();
         fontZoomButtonsPanel.setLayout(new BoxLayout(fontZoomButtonsPanel, BoxLayout.X_AXIS));
         
-        JButton zoomFont = new JButton("+");
+        JButton zoomFont = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FONT_INCREASE)); 
         zoomFont.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -140,7 +141,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }                        
         });
         
-        JButton unZoomFont = new JButton("-");
+        JButton unZoomFont = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FONT_DECREASE));
         unZoomFont.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -167,7 +168,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         addBottomComponent(menu);
 
         blockPanel = new BlockingPanel("No individual selected", content);
-        viewContainer.add(blockPanel, BorderLayout.CENTER);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);        
     }
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
@@ -349,10 +350,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 } else {
                     b.setText("Show");
                 }                              
-                pedigreeDetails.revalidate();
-                pedigreeDetails.repaint();
+                //pedigreeDetails.revalidate();
+                //pedigreeDetails.repaint();                                                
                 
-                //MedSavantFrame.getInstance().pack();
+                MedSavantFrame.getInstance().pack();
                 
             }
         });

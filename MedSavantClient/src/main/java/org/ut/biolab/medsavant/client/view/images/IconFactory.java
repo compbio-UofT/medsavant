@@ -99,7 +99,9 @@ public class IconFactory {
         CLOSE,
         SEARCH_PH,
         DOCK,
-        UNDOCK
+        UNDOCK,
+        FONT_INCREASE,
+        FONT_DECREASE
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
@@ -223,6 +225,10 @@ public class IconFactory {
                 return getIcon(iconroot + "export.png");
             case DOCK:
                 return getIcon(iconroot + "import.png");
+            case FONT_INCREASE:
+                return getIcon(iconroot + "font_increase.png");
+            case FONT_DECREASE:
+                return getIcon(iconroot + "font_decrease.png");
             default:
                 return null;
         }
