@@ -467,8 +467,7 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         p.add(ViewUtil.alignLeft(connectionSettings));
         p.add(userField);
         p.add(passwordField);
-        p.add(ViewUtil.alignLeft(loginButton));
-        p.add(progressSigningIn);
+        p.add(ViewUtil.horizontallyAlignComponents(new Component[] {loginButton,progressSigningIn}));
 
         return p;
     }
