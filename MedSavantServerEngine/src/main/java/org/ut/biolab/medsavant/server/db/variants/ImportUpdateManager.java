@@ -34,11 +34,6 @@ public class ImportUpdateManager {
      * IMPORT FILES INTO AN EXISTING TABLE
      */
     public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
-
-        return doImportSolr(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags);
-    }
-
-    public static int doImportICE(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
         //FIXME This is the separation point
         boolean needsToUnlock = acquireLock(sessionID);
 
@@ -98,9 +93,6 @@ public class ImportUpdateManager {
             }
 
             LOG.info("Indexed " + variantsIndexed + " variants");
-
-
-
             // Todo prepare for annotation
 
             // Todo annotate
