@@ -358,35 +358,14 @@ public class Menu extends JPanel {
         ViewUtil.applyHorizontalBoxLayout(loginMenu);
 
         userButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER));
-        loginMenu.add(ViewUtil.subTextComponent(userButton, LoginController.getInstance().getUserName()));
+        loginMenu.add(ViewUtil.subTextComponent(userButton, "Log Out"));//LoginController.getInstance().getUserName()));
 
         final JPopupMenu m = new JPopupMenu();
-
-        /*JMenuItem chpass = new JMenuItem("Change Password");
-         chpass.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         LoginController.getInstance().logout();
-         }
-         });
-         m.add(chpass);*/
-
-
-        JMenuItem logout = new JMenuItem("Log Out");
-        logout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                LoginController.getInstance().logout();
-
-            }
-        });
-        m.add(logout);
 
         userButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                m.show(userButton, 0, userButton.getHeight());
+                MedSavantFrame.getInstance().requestClose();
             }
         });
 
@@ -397,7 +376,7 @@ public class Menu extends JPanel {
 
     public void updateLoginStatus() {
         if (LoginController.getInstance().isLoggedIn()) {
-            userButton.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
+            userButton.setToolTipText("Logged in as " + LoginController.getInstance().getUserName() + " since: " + new SimpleDateFormat().format((new Date())));
         } else {
             userButton.setToolTipText(null);
         }

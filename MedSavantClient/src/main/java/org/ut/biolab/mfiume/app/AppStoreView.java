@@ -23,7 +23,6 @@ class AppStoreView extends JDialog {
     public AppStoreView(String title, AppInfoFetcher fetcher, AppInstaller installer) {
         //MacUtils.makeWindowLeopardStyle(this.getRootPane());
         //WindowUtils.createAndInstallRepaintWindowFocusListener(this);
-
         this.setTitle(title);
         this.setModal(true);
         //this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
@@ -32,6 +31,7 @@ class AppStoreView extends JDialog {
         this.fetcher = fetcher;
         this.installer = installer;
         initView();
+        this.setLocationRelativeTo(null);
     }
 
     public void setVisible(boolean b) {

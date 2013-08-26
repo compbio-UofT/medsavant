@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -103,12 +104,12 @@ public class ProjectSummaryPage extends SubSectionView {
     private CollapsiblePane createPatientSummary() {
 
         CollapsiblePane p = new CollapsiblePane("Patients");
+        p.setStyle(CollapsiblePane.TREE_STYLE);
         p.setCollapsible(false);
 
         p.getContentPane().setLayout(new BorderLayout());
         KeyValuePairPanel kvp = new KeyValuePairPanel();
         p.add(kvp,BorderLayout.CENTER);
-
 
         ValueFetcher pFetcher = new ValueFetcher() {
             @Override

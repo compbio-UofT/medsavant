@@ -132,13 +132,13 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         loginButton = new javax.swing.JButton();
         progressSigningIn = new javax.swing.JProgressBar();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setLayout(new java.awt.GridBagLayout());
 
         titlePanel.setBackground(new java.awt.Color(255, 255, 255));
         titlePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         titlePanel.setMaximumSize(new java.awt.Dimension(400, 32767));
         titlePanel.setMinimumSize(new java.awt.Dimension(400, 800));
+        titlePanel.setOpaque(false);
 
         userField.setColumns(25);
         userField.setHorizontalAlignment(javax.swing.JTextField.CENTER);

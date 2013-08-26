@@ -32,6 +32,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.AlphaImageIcon;
 
@@ -530,12 +531,14 @@ public final class ViewUtil {
         return b;
     }
 
-    public static void makeSmall(JComponent c) {
+    public static JComponent makeSmall(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "small");
+        return c;
     }
 
-    public static void makeMini(JComponent c) {
+    public static JComponent makeMini(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "mini");
+        return c;
     }
 
     public static JToggleButton getMenuToggleButton(String title) { //, int num) {
@@ -564,6 +567,7 @@ public final class ViewUtil {
         return button;
     }
 
+
     public static JButton getIconButton(ImageIcon icon) {
 
         final JButton button = new JButton(icon);
@@ -585,7 +589,7 @@ public final class ViewUtil {
         button.setFocusable(false);
         button.setContentAreaFilled(false);
         button.setBorder(null);
-        ViewUtil.makeSmall(button);
+        //ViewUtil.makeSmall(button);
 
         final Runnable setSelected = new Runnable() {
             @Override
@@ -709,6 +713,21 @@ public final class ViewUtil {
         });
 
         return p;
+    }
+
+    public static JProgressBar getIndeterminateProgressBar() {
+        JProgressBar b = new JProgressBar();
+        b.setIndeterminate(true);
+        if (ClientMiscUtils.MAC) {
+            b.putClientProperty("JProgressBar.style", "circular");
+        }
+        return b;
+    }
+
+    public static void setFontSize(JLabel label, int i) {
+        Font f = label.getFont();
+        Font newFont = new Font(f.getFamily(),f.getStyle(),i);
+        label.setFont(newFont);
     }
 
 

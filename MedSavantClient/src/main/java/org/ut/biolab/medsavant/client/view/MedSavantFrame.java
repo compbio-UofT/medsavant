@@ -85,7 +85,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
     private JPanel sessionView;
-    private LoginView loginView;
+    private NewLoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
 
@@ -393,7 +393,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (loginView != null) {
             LoginController.getInstance().removeListener(loginView);
         }
-        loginView = new LoginView();
+        loginView = new NewLoginView();
         LoginController.getInstance().addListener(loginView);
         view.add(loginView, LOGIN_CARD_NAME);
 
@@ -407,15 +407,18 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void requestClose() {
+        System.out.print("Asking to quit...");
         final LoginController controller = LoginController.getInstance();
-        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Exit MedSavant?", "Are you sure you want to quit?") == DialogUtils.YES) {
-            controller.unregister();
+        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
+            controller.logout();
+            /*controller.unregister();
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
             }
-            System.exit(0);
+            System.exit(0);*/
         }
+        System.out.print("NOT QUITTING!");
     }
 
     @Override

@@ -63,6 +63,7 @@ public class IconFactory {
         EXPAND,
         COLLAPSE,
         EDIT,
+        GEAR,
         IMPORT,
         EXPORT,
         FILTER,
@@ -85,6 +86,7 @@ public class IconFactory {
         LINKOUT,
         COPY,
         MORE,
+        NETWORK,
         CHART_SMALL,
         CONFIGURE,
         HISTORY_ON_TOOLBAR,
@@ -185,6 +187,10 @@ public class IconFactory {
                 return getIcon(iconroot + "add_f.png");
             case EDIT:
                 return getIcon(iconroot + "mac_edit.png");
+            case GEAR:
+                return getIcon(iconroot + "mac_gear.png");
+                case NETWORK:
+                return getIcon(iconroot + "mac_link.png");
             case IMPORT:
                 return getIcon(iconroot + "import.png");
             case EXPORT:
