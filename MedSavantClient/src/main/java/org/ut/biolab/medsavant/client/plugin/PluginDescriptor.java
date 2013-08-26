@@ -55,7 +55,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
 
     public enum Type {
         FILTER,
-        SECTION,
+        VARIANT,
         UNKNOWN
     }
 
