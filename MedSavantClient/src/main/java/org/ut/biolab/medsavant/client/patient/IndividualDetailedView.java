@@ -32,8 +32,7 @@ import javax.swing.*;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Semaphore;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -87,6 +86,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private Graph graph;
     private final CollapsiblePane collapsiblePane;
     private final BlockingPanel blockPanel;
+   
+    private final Semaphore csvSem = new Semaphore(1);
 
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
@@ -141,7 +142,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
-        pedigreeDetails.removeAll();
+        pedigreeDetails.removeAll();        
         pedigreeDetails.setLayout(new BorderLayout());
 
         //Step 1
@@ -149,7 +150,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
         loader.setSettings(HOSPITAL_ID, MOM, DAD);
         loader.load(graph);
-
+        
         //numIndivids = graph.getSize();
 
         //Step 2
@@ -241,7 +242,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         });
 
-        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
+        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);        
 
         pedigreeDetails.updateUI();
     }
@@ -317,7 +318,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 } else {
                     b.setText("Show");
                 }
-                pedigreeDetails.updateUI();
+                pedigreeDetails.updateUI();                              
             }
         });
 
@@ -387,9 +388,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         infoDetails.removeAll();
         infoDetails.updateUI();
 
+        
         if (pedigreeWorker != null) {
-            pedigreeWorker.cancel(true);
+            pedigreeWorker.cancel(true);            
         }
+                        
 
         pedigreeWorker = new PedigreeWorker(patientId);
         pedigreeWorker.execute();
@@ -511,25 +514,26 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         protected File doInBackground() throws Exception {
-
+            csvSem.acquire();
             List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
 
             familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
-            File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");
-
-            CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);
-            w.writeNext(new String[]{HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED});
+            File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");                        
+            CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);           
+            w.writeNext(new String[]{HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED, DNA_ID});
             for (Object[] row : results) {
                 String[] srow = new String[row.length];
                 for (int i = 0; i < row.length; i++) {
                     String entry = row[i] == null ? "" : row[i].toString();
                     srow[i] = entry;
+              //      System.out.println("\t"+Thread.currentThread().getId()+": Adding to file");
                 }
                 w.writeNext(srow);
             }
-            w.close();
+            w.close();                        
+            //System.out.println(Thread.currentThread().getId()+": File written");
             return outfile;
         }
 
@@ -541,6 +545,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         protected void showSuccess(File result) {
             showPedigree(result);
             result.delete();
+            csvSem.release();
         }
     }
 
