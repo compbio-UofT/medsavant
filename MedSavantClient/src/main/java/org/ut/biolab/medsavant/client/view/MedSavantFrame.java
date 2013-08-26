@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -39,8 +40,10 @@ import java.awt.Point;
 import java.util.Enumeration;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -48,6 +51,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -70,6 +74,10 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
+import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
+import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
+import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 
 /**
  *
@@ -98,6 +106,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
     private final jAppStore appStore;
+    private int textFieldAdminColumns = 20;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
         if (src != null && dst != null) {
@@ -268,7 +277,17 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
         });
-        fileMenu.add(pluginsItem);
+        //fileMenu.add(pluginsItem);
+
+        JMenuItem dbManagementItem = new JMenuItem("Database Management");
+        dbManagementItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog adminDialog = new AdminDialog();
+                adminDialog.setVisible(true);
+            }
+        });
+        fileMenu.add(dbManagementItem);
 
         final MedSavantAppFetcher maf = new MedSavantAppFetcher();
         final MedSavantAppInstaller mai = new MedSavantAppInstaller();
@@ -349,6 +368,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             switchToLoginView();
         }
     }
+
 
     public void switchToSessionView() {
         if (!LoginController.getInstance().isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) {

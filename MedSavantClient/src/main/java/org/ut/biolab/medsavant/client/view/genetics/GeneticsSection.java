@@ -71,7 +71,7 @@ public class GeneticsSection extends SectionView {
 
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
+        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.VARIANT);
 
         SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
         for (int i = 0; i < knownPlugins.size(); i++) {
