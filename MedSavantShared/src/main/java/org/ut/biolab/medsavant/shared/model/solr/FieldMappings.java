@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Field mappings between MedSavant field names and solr field names.
+ * Field mappings between MedSavant field names and org.ut.biolab.medsavant.persistence.query.solr.solr field names.
  */
 public class FieldMappings {
 
@@ -76,7 +76,7 @@ public class FieldMappings {
     //FIXME move to a property file maybe
     private static final Map<String, String> VARIANT_FIELDS = Collections.unmodifiableMap( new HashMap<String, String>() {{
         put("position", "pos");
-        put("dbnsp_id", "id");
+        put("dbsnp_id", "id");
         put("custom_info", "info");
         put("aa", "INFO_AA");
         put("ac", "INFO_AC");
@@ -102,6 +102,7 @@ public class FieldMappings {
             put("regionset", "region_set");
             put("genomicregion", "genomic_region");
             put("variantfile", "variant_file");
+            put("varianttag", "variant_tag");
             put("ontologyterm", "ontology_term");
             put("annotationlog", "annotation_log");
             put("generallog", "general_log");
@@ -119,6 +120,7 @@ public class FieldMappings {
                 put(Entity.ANNOTATION_LOG, SearcheableAnnotationLog.class.getName());
                 put(Entity.VARIANT, SearcheableVariant.class.getName());
                 put(Entity.VARIANT_FILE, SearcheableVariantFile.class.getName());
+                put(Entity.VARIANT_TAG, SearcheableVariantTag.class.getName());
                 put(Entity.COMMENT, SearcheableVariantComment.class.getName());
                 put(Entity.CHROMOSOME, SearcheableChromosome.class.getName());
                 put(Entity.GENE, SearcheableGene.class.getName());

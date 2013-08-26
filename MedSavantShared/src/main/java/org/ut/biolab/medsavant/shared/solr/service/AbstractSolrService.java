@@ -29,7 +29,9 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.params.UpdateParams;
 import org.apache.solr.common.util.NamedList;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
@@ -37,6 +39,7 @@ import org.ut.biolab.medsavant.shared.solr.decorator.EntityDecorator;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.solr.decorator.SolrInputDocumentDecorator;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -52,13 +55,12 @@ public abstract class AbstractSolrService<T> {
     private static final SolrInputDocumentDecorator decorator = new EntityDecorator();
 
     /** The Solr server instance used. */
-    protected SolrServer server;
+    protected HttpSolrServer server;
 
     public void initialize() throws InitializationException {
-
         try {
-            this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
 
+            this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
         } catch (RuntimeException ex) {
             LOG.error("Invalid URL specified for the Solr server: {}",ex);
         }
@@ -183,8 +185,57 @@ public abstract class AbstractSolrService<T> {
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
-            LOG.error("Cannot index variant comment");
+            LOG.error("Cannot execute query");
         }
+
+        return 0;
+    }
+
+    /**
+     * Index a SolrInputDocument. Can be also used for updates.
+     * @param solrInputDocument
+     * @return
+     */
+    public int index(SolrInputDocument solrInputDocument) {
+        try {
+            this.server.add(solrInputDocument);
+            this.server.commit();
+        } catch (SolrServerException e) {
+            LOG.error("Cannot connect to server");
+        } catch (IOException e) {
+            LOG.error("Cannot ");
+        }
+
+        return 0;
+    }
+
+    /**
+     * Index data from a certain file on the same filesystem.
+     * @param file
+     * @return
+     */
+    public int index(String file, String separator, String escape) {
+
+        String oldBaseURL = server.getBaseURL();
+
+        try {
+            SolrQuery query = new SolrQuery();
+            query.add(CommonParams.STREAM_FILE, file);
+            query.add("separator", separator);
+            query.add("escape", escape);
+
+
+            server.setBaseURL(oldBaseURL + "/csv");
+
+            server.query(query);
+
+            server.setBaseURL(oldBaseURL);
+        } catch (SolrServerException e) {
+            LOG.error("Error uploading from document");
+        } finally {
+            server.setBaseURL(oldBaseURL);
+        }
+
 
         return 0;
     }

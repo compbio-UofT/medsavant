@@ -68,6 +68,8 @@ public class MapperRegistry {
 
     private static CustomColumnMapper customColumnMapper;
 
+    private static VariantTagMapper variantTagMapper;
+
     /**
      * Get the appropriate mapper based on the entity name.
      *
@@ -120,6 +122,8 @@ public class MapperRegistry {
             return getAnnotationColumnMapper();
         } else if (Entity.CUSTOM_COLUMN.equals(entity)) {
             return getCustomColumnMapper();
+        } else if (Entity.VARIANT_TAG.equals(entity)) {
+            return getVariantTagMapper();
         }
 
         return null;
@@ -384,5 +388,16 @@ public class MapperRegistry {
             customColumnMapper = new CustomColumnMapper();
         }
         return customColumnMapper;
+    }
+
+    /**
+     * Return the variant tag mapper instance. Creates one if it doesn't yet exist.
+     * @return          The variant tag mapper instance.
+     */
+    public static VariantTagMapper getVariantTagMapper() {
+        if (variantTagMapper == null) {
+            variantTagMapper = new VariantTagMapper();
+        }
+        return variantTagMapper;
     }
 }

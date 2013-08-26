@@ -70,11 +70,13 @@ public class SolrServiceRegistry {
 
     private static AbstractSolrService customColumnService;
 
+    private static AbstractSolrService variantTagService;
+
     /**
-     * Get the appropriate solr service based on the entity string.
+     * Get the appropriate org.ut.biolab.medsavant.persistence.query.solr.solr service based on the entity string.
      *
      * @param entityName The entity name.
-     * @return An instance of a solr service.
+     * @return An instance of a org.ut.biolab.medsavant.persistence.query.solr.solr service.
      */
     public static AbstractSolrService getService(String entityName) throws InitializationException {
 
@@ -122,6 +124,8 @@ public class SolrServiceRegistry {
             return getAnnotationColumnService();
         } else if (Entity.CUSTOM_COLUMN.equals(entityName)) {
             return getCustomColumnService();
+        } else if (Entity.VARIANT_TAG.equals(entityName)) {
+            return getVariantTagService();
         }
 
         return null;
@@ -173,6 +177,8 @@ public class SolrServiceRegistry {
             return getAnnotationColumnService();
         } else if (CustomColumn.class.getName().equals(clazz.getName())) {
             return getCustomColumnService();
+        } else if (VariantTag.class.getName().equals(clazz.getName())) {
+            return getVariantTagService();
         }
 
         return null;
@@ -352,5 +358,13 @@ public class SolrServiceRegistry {
             customColumnService.initialize();
         }
         return customColumnService;
+    }
+
+    public static AbstractSolrService getVariantTagService() throws InitializationException {
+        if (variantTagService == null) {
+            variantTagService = new VariantTagService();
+            variantTagService.initialize();
+        }
+        return variantTagService;
     }
 }

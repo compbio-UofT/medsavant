@@ -26,8 +26,8 @@ public class VariantTag {
     public static final String UPLOAD_DATE = "Upload Date";
     public static final String UPLOADER = "Uploader";
 
-    public final String key;
-    public final String value;
+    public String key;
+    public String value;
 
     public VariantTag(String key, String value) {
         this.key = key;
@@ -46,5 +46,21 @@ public class VariantTag {
     public static VariantTag fromString(String stringVal) {
         String[] vals = stringVal.split(" = ");
         return new VariantTag(vals[0], vals[1]);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
