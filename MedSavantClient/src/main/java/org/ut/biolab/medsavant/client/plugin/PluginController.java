@@ -89,6 +89,7 @@ public class PluginController extends Controller {
      * Try to load all JAR files in the given directory.
      */
     public void loadPlugins(File pluginsDir) {
+        LOG.info("Loading plugins in " + pluginsDir.getAbsolutePath());
         File[] files = pluginsDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -97,6 +98,7 @@ public class PluginController extends Controller {
         });
         for (File f: files) {
             try {
+                LOG.info("Loading plugin at " + f.getAbsolutePath());
                 addPlugin(f);
             } catch (PluginVersionException x) {
                 LOG.warn(String.format("No compatible plugins found in %s.", f));

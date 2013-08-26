@@ -1,5 +1,10 @@
-package org.ut.biolab.medsavant.client.view.genetics.family;
+package medsavant.mendel.controller;
 
+import medsavant.mendel.model.Locks;
+import medsavant.mendel.view.OptionView;
+import medsavant.mendel.view.MendelPanel;
+import medsavant.mendel.model.MendelVariant;
+import medsavant.mendel.model.MendelGene;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.BorderLayout;
@@ -29,9 +34,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
@@ -46,10 +49,10 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.Notification;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.IncludeExcludeStep;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep.InheritanceModel;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.ZygosityStep;
+import medsavant.mendel.view.OptionView.IncludeExcludeStep;
+import medsavant.mendel.view.OptionView.InheritanceStep;
+import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
+import medsavant.mendel.view.OptionView.ZygosityStep;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -59,9 +62,8 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
  *
  * @author mfiume
  */
-public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMattersVariant, FamilyMattersWorker.SimplePatientSet>> implements PedigreeFields {
+public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, ApplicationWorker.SimplePatientSet>> implements PedigreeFields {
 
-    private static final Log LOG = LogFactory.getLog(FamilyMattersWorker.class);
     private final List<IncludeExcludeStep> steps;
     private final File inFile;
     //private JProgressBar progressBar;
@@ -72,8 +74,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     private final InheritanceStep inheritanceStep;
     private final ZygosityStep zygosityStep;
 
-    public FamilyMattersWorker(List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, File inFile) {
-        super(FamilyMattersPage.PAGE_NAME);
+    public ApplicationWorker(List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, File inFile) {
+        super("FamilyMatters");
         this.steps = steps;
         this.zygosityStep = zygosityStep;
         this.inheritanceStep = model;
@@ -94,15 +96,15 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     }
 
     @Override
-    protected void showSuccess(final TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> result) {
+    protected void showSuccess(final TreeMap<MendelVariant, SimplePatientSet> result) {
 
         setLabelText("Preparing results...");
 
-        String pageName = FamilyMattersPage.PAGE_NAME;
+        String pageName = MendelPanel.PAGE_NAME;
         String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
         Class[] columnClasses = new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, String.class};
 
-        final List<SimpleFamilyMattersVariant> variants = new ArrayList<SimpleFamilyMattersVariant>(result.keySet());
+        final List<MendelVariant> variants = new ArrayList<MendelVariant>(result.keySet());
 
         //LOG.info(variants.size() + " variants to be shown");
 
@@ -115,10 +117,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 for (int i = 0; i < limit && (i + start) < variants.size(); i++) {
 
-                    SimpleFamilyMattersVariant v = variants.get(i + start);
+                    MendelVariant v = variants.get(i + start);
 
                     String geneStr = "";
-                    for (SimpleFamilyMattersGene g : v.getGenes()) {
+                    for (MendelGene g : v.getGenes()) {
                         geneStr += g.name + ", ";
                     }
                     if (v.getGenes().size() > 0) {
@@ -151,7 +153,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
         };
 
-        final SearchableTablePanel stp =       
+        final SearchableTablePanel stp =
                 new SearchableTablePanel(
                 pageName,
                 columnNames,
@@ -164,7 +166,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 SearchableTablePanel.TableSelectionType.ROW,
                 1000,
                 retriever);
-        
+
         final SplitScreenPanel ssp = new SplitScreenPanel(stp);
         final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, ssp);
 
@@ -173,25 +175,23 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             public void handleEvent(Object event) {
                 stp.getTable().clearSelection();
             }
-            
         });
-        
+
         stp.scrollSafeSelectAction(new Runnable(){
             @Override
             public void run() {
                 if(stp.getTable().getSelectedRow() != -1){
-                    
-                
+
                 int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
 
-                SimpleFamilyMattersVariant fmv = variants.get(index);
+                MendelVariant fmv = variants.get(index);
                 //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
 
                 SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
                 vip.setSimpleVariant(v);
                 }
             }
-            
+
         });
 
         /*
@@ -203,8 +203,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     return;
                 }
                 if(stp.getTable().getSelectedRow() != -1){
-                    
-                
+
+
                 int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
 
                 SimpleFamilyMattersVariant fmv = variants.get(index);
@@ -217,7 +217,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         });*/
 
         JDialog f = new JDialog();
-        f.setTitle("Cohort Analysis Results");
+        f.setTitle("Mendel Results");
 
         //LOG.info("Showing table of results");
 
@@ -248,13 +248,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
     }
 
-    void setCompletionLock(Locks.DialogLock lock) {
+    public void setCompletionLock(Locks.DialogLock lock) {
         this.completionLock = lock;
     }
 
-    private void filterForCompoundHeterozygote(TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap, TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap, List<SimpleFamily> families) {
+    private void filterForCompoundHeterozygote(TreeMap<MendelVariant, SimplePatientSet> variantToSampleMap, TreeMap<MendelGene, Set<MendelVariant>> genesToVariantsMap, List<SimpleFamily> families) {
         // a list of variants to eventually remove
-        List<SimpleFamilyMattersVariant> variantsToRemove = new ArrayList<SimpleFamilyMattersVariant>();
+        List<MendelVariant> variantsToRemove = new ArrayList<MendelVariant>();
 
         int counter = 0;
         int announceEvery = 100;
@@ -262,11 +262,11 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         int total = variantToSampleMap.keySet().size();
 
         // consider each variant in turn
-        for (SimpleFamilyMattersVariant variant : variantToSampleMap.keySet()) {
+        for (MendelVariant variant : variantToSampleMap.keySet()) {
 
             if (counter % announceEvery == 0) {
                 double percent = ((double) counter) * 100 / total;
-                LOG.info("Processed " + counter + " of " + variantToSampleMap.keySet().size() + " (" + percent + "%) variants");
+                System.out.println("Processed " + counter + " of " + variantToSampleMap.keySet().size() + " (" + percent + "%) variants");
             }
             counter++;
 
@@ -277,9 +277,9 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 boolean passesForFamily = false;
 
-                for (SimpleFamilyMattersGene gene : variant.getGenes()) {
+                for (MendelGene gene : variant.getGenes()) {
 
-                    for (SimpleFamilyMattersVariant otherVariantInGene : genesToVariantsMap.get(gene)) {
+                    for (MendelVariant otherVariantInGene : genesToVariantsMap.get(gene)) {
                         if (variant == otherVariantInGene) {
                             continue;
                         }
@@ -300,12 +300,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
 
         // remove the ones that don't pass
-        for (SimpleFamilyMattersVariant v : variantsToRemove) {
+        for (MendelVariant v : variantsToRemove) {
             variantToSampleMap.remove(v);
         }
     }
 
-    private boolean testVariantsforCompountHeterozygousInFamily(SimpleFamilyMattersVariant variant1, SimpleFamilyMattersVariant variant2, SimplePatientSet possessors1, SimplePatientSet possessors2, SimpleFamily fam) {
+    private boolean testVariantsforCompountHeterozygousInFamily(MendelVariant variant1, MendelVariant variant2, SimplePatientSet possessors1, SimplePatientSet possessors2, SimpleFamily fam) {
 
         if (possessors1 == null || possessors2 == null) {
             return false;
@@ -379,11 +379,11 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
-    private TreeSet<SimpleFamilyMattersGene> getGeneSet() throws SQLException, RemoteException {
+    private TreeSet<MendelGene> getGeneSet() throws SQLException, RemoteException {
         Collection<Gene> msGenes = GeneSetController.getInstance().getCurrentGenes();
-        TreeSet<SimpleFamilyMattersGene> genes = new TreeSet<SimpleFamilyMattersGene>();
+        TreeSet<MendelGene> genes = new TreeSet<MendelGene>();
         for (Gene g : msGenes) {
-            SimpleFamilyMattersGene simpleGene = new SimpleFamilyMattersGene(g.getChrom(), g.getCodingStart(), g.getCodingEnd(), g.getName());
+            MendelGene simpleGene = new MendelGene(g.getChrom(), g.getCodingStart(), g.getCodingEnd(), g.getName());
             genes.add(simpleGene);
         }
         return genes;
@@ -446,31 +446,31 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
      }
      return genesToVariantsMap;
      }*/
-    private TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> associateGenesAndVariants(TreeSet<SimpleFamilyMattersVariant> variants, TreeSet<SimpleFamilyMattersGene> genes) {
+    private TreeMap<MendelGene, Set<MendelVariant>> associateGenesAndVariants(TreeSet<MendelVariant> variants, TreeSet<MendelGene> genes) {
 
         //LOG.info("associate Genes And Variants");
 
         long startTime = System.currentTimeMillis();
 
-        Map<String, Set<SimpleFamilyMattersVariant>> chromToVariantMap = new HashMap<String, Set<SimpleFamilyMattersVariant>>();
-        for (SimpleFamilyMattersVariant v : variants) {
-            Set<SimpleFamilyMattersVariant> set;
+        Map<String, Set<MendelVariant>> chromToVariantMap = new HashMap<String, Set<MendelVariant>>();
+        for (MendelVariant v : variants) {
+            Set<MendelVariant> set;
             if (chromToVariantMap.containsKey(v.chr)) {
                 set = chromToVariantMap.get(v.chr);
             } else {
-                set = new HashSet<SimpleFamilyMattersVariant>();
+                set = new HashSet<MendelVariant>();
                 chromToVariantMap.put(v.chr, set);
             }
             set.add(v);
         }
 
-        TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> map = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
+        TreeMap<MendelGene, Set<MendelVariant>> map = new TreeMap<MendelGene, Set<MendelVariant>>();
 
 
         int total = genes.size();
         double counter = 0.0;
 
-        for (SimpleFamilyMattersGene g : genes) {
+        for (MendelGene g : genes) {
             //LOG.info("processing " + g.name);
 
             counter += 1;
@@ -482,8 +482,8 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                 continue;
             }
 
-            Set<SimpleFamilyMattersVariant> set = new HashSet<SimpleFamilyMattersVariant>();
-            for (SimpleFamilyMattersVariant v : chromToVariantMap.get(g.chr)) {
+            Set<MendelVariant> set = new HashSet<MendelVariant>();
+            for (MendelVariant v : chromToVariantMap.get(g.chr)) {
                 if (intersects(g, v)) {
                     set.add(v);
                     v.addGene(g);
@@ -511,7 +511,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return map;
     }
 
-    private boolean intersects(SimpleFamilyMattersGene g, SimpleFamilyMattersVariant v) {
+    private boolean intersects(MendelGene g, MendelVariant v) {
         if (g.chr.equals(v.chr) && g.start <= v.pos && v.pos <= g.end) {
             return true;
         }
@@ -606,13 +606,13 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
     }
 
-    private void filterForSimpleModels(InheritanceModel model, TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap, List<SimpleFamily> families) {
+    private void filterForSimpleModels(InheritanceModel model, TreeMap<MendelVariant, SimplePatientSet> variantToSampleMap, List<SimpleFamily> families) {
 
         // a list of variants to eventually remove
-        List<SimpleFamilyMattersVariant> variantsToRemove = new ArrayList<SimpleFamilyMattersVariant>();
+        List<MendelVariant> variantsToRemove = new ArrayList<MendelVariant>();
 
         // consider each variant in turn
-        for (SimpleFamilyMattersVariant variant : variantToSampleMap.keySet()) {
+        for (MendelVariant variant : variantToSampleMap.keySet()) {
             boolean passesForAllFamilies = true;
 
             // test the model on each family
@@ -649,12 +649,12 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         System.out.println("Done running model" + model);
 
         // remove the ones that don't pass
-        for (SimpleFamilyMattersVariant v : variantsToRemove) {
+        for (MendelVariant v : variantsToRemove) {
             variantToSampleMap.remove(v);
         }
     }
 
-    private boolean testVariantforDeNovoInFamily(SimpleFamilyMattersVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
+    private boolean testVariantforDeNovoInFamily(MendelVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
 
         boolean evidenceInFamily = false;
 
@@ -689,7 +689,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
-    private boolean testVariantforXLinkedDominantInFamily(SimpleFamilyMattersVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
+    private boolean testVariantforXLinkedDominantInFamily(MendelVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
 
         // remove non-x chrs
         String simpleChr = variant.chr.toLowerCase();
@@ -721,7 +721,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
-    private boolean testVariantforXLinkedRecessiveInFamily(SimpleFamilyMattersVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
+    private boolean testVariantforXLinkedRecessiveInFamily(MendelVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
 
         // remove non-x chrs
         String simpleChr = variant.chr.toLowerCase();
@@ -828,7 +828,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
-    private boolean testVariantforAutosmalDominantInFamily(SimpleFamilyMattersVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
+    private boolean testVariantforAutosmalDominantInFamily(MendelVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
 
         // remove sex chrs
         String simpleChr = variant.chr.toLowerCase();
@@ -860,7 +860,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return evidenceInFamily;
     }
 
-    private boolean testVariantforAutosmalRecessiveInFamily(SimpleFamilyMattersVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
+    private boolean testVariantforAutosmalRecessiveInFamily(MendelVariant variant, SimplePatientSet possessors, SimpleFamily fam) {
 
         // remove sex chrs
         String simpleChr = variant.chr.toLowerCase();
@@ -930,10 +930,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
         @Override
         public int compare(Object v, Object g) {
-            if (v instanceof SimpleFamilyMattersVariant && g instanceof SimpleFamilyMattersGene) {
+            if (v instanceof MendelVariant && g instanceof MendelGene) {
 
-                SimpleFamilyMattersVariant v0 = (SimpleFamilyMattersVariant) v;
-                SimpleFamilyMattersGene g0 = (SimpleFamilyMattersGene) g;
+                MendelVariant v0 = (MendelVariant) v;
+                MendelGene g0 = (MendelGene) g;
                 int c = cc.compare(v0.chr, g0.chr);
                 if (c == 0) {
                     if (useGeneStart) {
@@ -945,19 +945,19 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     return c;
                 }
             } else {
-                LOG.error("Cannot compare given objects");
+                System.out.println("Cannot compare given objects");
                 return 0;
             }
         }
     };
 
     @Override
-    protected TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> doInBackground() throws Exception {
+    protected TreeMap<MendelVariant, SimplePatientSet> doInBackground() throws Exception {
 
-        TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap;
-        TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap;
-        TreeSet<SimpleFamilyMattersVariant> variants;
-        TreeSet<SimpleFamilyMattersGene> genes;
+        TreeMap<MendelVariant, SimplePatientSet> variantToSampleMap;
+        TreeMap<MendelGene, Set<MendelVariant>> genesToVariantsMap;
+        TreeSet<MendelVariant> variants;
+        TreeSet<MendelGene> genes;
 
 
 
@@ -974,7 +974,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         variantToSampleMap = readVariantToSampleMap(inFile);
 
         // get sorted lists of variants and genes
-        variants = new TreeSet<SimpleFamilyMattersVariant>(variantToSampleMap.keySet());
+        variants = new TreeSet<MendelVariant>(variantToSampleMap.keySet());
         setLabelText("Parsing genes...");
         genes = getGeneSet();
 
@@ -982,23 +982,23 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         setLabelText("Associating variants with genes...");
         genesToVariantsMap = associateGenesAndVariants(variants, genes);
 
-        LOG.info("Number of variants (grouped by position):\t" + variants.size());
-        LOG.info("Number of genes:\t" + genes.size());
+        System.out.println("Number of variants (grouped by position):\t" + variants.size());
+        System.out.println("Number of genes:\t" + genes.size());
 
 
 
 
-        Set<SimpleFamilyMattersGene> allExcludedGenes = new HashSet<SimpleFamilyMattersGene>();
+        Set<MendelGene> allExcludedGenes = new HashSet<MendelGene>();
 
         // perform steps in serial
         int stepNumber = 0;
-        for (FamilyMattersOptionView.IncludeExcludeStep step : steps) {
+        for (OptionView.IncludeExcludeStep step : steps) {
 
             ++stepNumber;
 
-            LOG.info("Getting gene to sample map");
-            Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
-            LOG.info("Size of gene map is " + geneToSampleMap.keySet().size());
+            System.out.println("Getting gene to sample map");
+            Map<MendelGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
+            System.out.println("Size of gene map is " + geneToSampleMap.keySet().size());
 
             /*
              // some manual reporting / debugging
@@ -1033,25 +1033,25 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
              }
              */
 
-            Set<SimpleFamilyMattersVariant> allExcludedVariants = new HashSet<SimpleFamilyMattersVariant>();
+            Set<MendelVariant> allExcludedVariants = new HashSet<MendelVariant>();
 
             int criteriaNumber = 0;
 
-            for (FamilyMattersOptionView.IncludeExcludeCriteria criterion : step.getCriteria()) {
+            for (OptionView.IncludeExcludeCriteria criterion : step.getCriteria()) {
 
                 ++criteriaNumber;
 
                 bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
 
-                LOG.info("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
-                LOG.info(criterion);
+                System.out.println("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
+                System.out.println(criterion);
 
                 setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "...");
 
                 Set<String> setOfDNAIDs = criterion.getDNAIDs(); //TODO: write method
                 //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
 
-                Set<SimpleFamilyMattersVariant> excludedVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
+                Set<MendelVariant> excludedVariantsFromThisStep = new HashSet<MendelVariant>();
 
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
@@ -1063,26 +1063,26 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 //LOG.info("DNA IDs : " + setOfDNAIDs.size());
 
-                FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType at = criterion.getAggregationType();
-                if (at == FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType.Variant) {
-                    excludedVariantsFromThisStep = (Set<SimpleFamilyMattersVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<SimplePatient>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
+                OptionView.IncludeExcludeCriteria.AggregationType at = criterion.getAggregationType();
+                if (at == OptionView.IncludeExcludeCriteria.AggregationType.Variant) {
+                    excludedVariantsFromThisStep = (Set<MendelVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<SimplePatient>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
                 } else {
-                    Set<SimpleFamilyMattersGene> includedGenesFromThisStep = (Set<SimpleFamilyMattersGene>) ((Object) flagObjectsForKeepsByCriterion((Map<Object, Set<SimplePatient>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
+                    Set<MendelGene> includedGenesFromThisStep = (Set<MendelGene>) ((Object) flagObjectsForKeepsByCriterion((Map<Object, Set<SimplePatient>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
 
-                    HashSet<SimpleFamilyMattersVariant> keptVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
-                    for (SimpleFamilyMattersGene gene : includedGenesFromThisStep) {
+                    HashSet<MendelVariant> keptVariantsFromThisStep = new HashSet<MendelVariant>();
+                    for (MendelGene gene : includedGenesFromThisStep) {
                         keptVariantsFromThisStep.addAll(genesToVariantsMap.get(gene));
                     }
 
-                    excludedVariantsFromThisStep = new HashSet<SimpleFamilyMattersVariant>();
-                    for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+                    excludedVariantsFromThisStep = new HashSet<MendelVariant>();
+                    for (MendelVariant v : variantToSampleMap.keySet()) {
                         if (!keptVariantsFromThisStep.contains(v)) {
                             excludedVariantsFromThisStep.add(v);
                         }
                     }
 
                     // queue excluded genes for removal in next steps
-                    for (SimpleFamilyMattersGene g : geneToSampleMap.keySet()) {
+                    for (MendelGene g : geneToSampleMap.keySet()) {
                         if (!includedGenesFromThisStep.contains(g)) {
                             allExcludedGenes.add(g);
                         }
@@ -1091,25 +1091,25 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
                 bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
 
-                LOG.info("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
+                System.out.println("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
 
                 int currentNumExcluded = allExcludedVariants.size();
                 allExcludedVariants.addAll(excludedVariantsFromThisStep);
                 int afterNumExcluded = allExcludedVariants.size();
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
-                LOG.info(numSeenBefore + " of these were already excluded previously");
+                System.out.println(numSeenBefore + " of these were already excluded previously");
 
                 bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
 
                 bw.write("# here are the excluded variants\n");
-                for (SimpleFamilyMattersVariant v : excludedVariantsFromThisStep) {
+                for (MendelVariant v : excludedVariantsFromThisStep) {
                     bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
                 }
 
             }
 
             // remove variants
-            for (SimpleFamilyMattersVariant v : allExcludedVariants) {
+            for (MendelVariant v : allExcludedVariants) {
                 variantToSampleMap.remove(v);
             }
         }
@@ -1124,7 +1124,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             List<Object> variantsToRemove = new ArrayList<Object>();
 
             // consider each variant
-            for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+            for (MendelVariant v : variantToSampleMap.keySet()) {
 
                 SimplePatientSet patients = variantToSampleMap.get(v);
                 List<Object> patientsToRemove = new ArrayList<Object>();
@@ -1355,10 +1355,10 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
     }
 
-    private void writeVariantToSampleMap(Map<SimpleFamilyMattersVariant, Set<String>> map, File outFile) throws IOException {
+    private void writeVariantToSampleMap(Map<MendelVariant, Set<String>> map, File outFile) throws IOException {
         CSVWriter w = new CSVWriter(new FileWriter(outFile));
 
-        for (SimpleFamilyMattersVariant v : map.keySet()) {
+        for (MendelVariant v : map.keySet()) {
             String[] arr = new String[]{map.get(v).toString(), v.chr, v.pos + "", v.ref, v.alt, v.type};
             w.writeNext(arr);
         }
@@ -1427,15 +1427,15 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         }
     }
 
-    private TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> readVariantToSampleMap(File f) throws FileNotFoundException, IOException {
-        TreeMap<SimpleFamilyMattersVariant, SimplePatientSet> map = new TreeMap<SimpleFamilyMattersVariant, SimplePatientSet>();
+    private TreeMap<MendelVariant, SimplePatientSet> readVariantToSampleMap(File f) throws FileNotFoundException, IOException {
+        TreeMap<MendelVariant, SimplePatientSet> map = new TreeMap<MendelVariant, SimplePatientSet>();
 
         CSVReader r = new CSVReader(new FileReader(f), '\t', '\"');
 
         String[] line = new String[0];
 
         while ((line = readNext(r)) != null) {
-            SimpleFamilyMattersVariant v = variantFromLine(line);
+            MendelVariant v = variantFromLine(line);
 
             String sample = line[0];
 
@@ -1489,22 +1489,22 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
     }
 
     // line in format: "8243_0000","chr17","6115","G","C","SNP","Hetero"
-    private SimpleFamilyMattersVariant variantFromLine(String[] line) {
-        return new SimpleFamilyMattersVariant(line[1], Integer.parseInt(line[2]), line[3], line[4], line[5]);
+    private MendelVariant variantFromLine(String[] line) {
+        return new MendelVariant(line[1], Integer.parseInt(line[2]), line[3], line[4], line[5]);
     }
 
-    private int getFrequencyThresholdForCriterion(FamilyMattersOptionView.IncludeExcludeCriteria criterion) throws SQLException, RemoteException {
-        FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType ft = criterion.getFrequencyType(); // all, no, some
-        FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount fc = criterion.getFequencyCount(); // count, percent
+    private int getFrequencyThresholdForCriterion(OptionView.IncludeExcludeCriteria criterion) throws SQLException, RemoteException {
+        OptionView.IncludeExcludeCriteria.FrequencyType ft = criterion.getFrequencyType(); // all, no, some
+        OptionView.IncludeExcludeCriteria.FrequencyCount fc = criterion.getFequencyCount(); // count, percent
 
         Set<String> dnaIDs = criterion.getDNAIDs();
         int frequencyThreshold = criterion.getFreqAmount();
 
-        if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL)) {
+        if (ft.equals(OptionView.IncludeExcludeCriteria.FrequencyType.ALL)) {
             frequencyThreshold = dnaIDs.size();
-        } else if (ft.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO)) {
+        } else if (ft.equals(OptionView.IncludeExcludeCriteria.FrequencyType.NO)) {
             frequencyThreshold = 0;
-        } else if (fc.equals(FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyCount.Percent)) {
+        } else if (fc.equals(OptionView.IncludeExcludeCriteria.FrequencyCount.Percent)) {
             frequencyThreshold = (int) Math.round(frequencyThreshold / 100.0 * dnaIDs.size());
         }
 
@@ -1521,7 +1521,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
      * @param setOfDNAIDs The set of DNA ids to consider
      * @return The set of objects to be removed
      */
-    private Set<Object> flagObjectsForRemovalByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
+    private Set<Object> flagObjectsForRemovalByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, OptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
         Set<Object> removeThese = new HashSet<Object>();
 
         int removed = 0;
@@ -1549,7 +1549,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
 
             int numberOfObjectsSamplesInCohort = patientsInCohortThatHaveIt.size();
 
-            if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO) {
+            if (t == OptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == OptionView.IncludeExcludeCriteria.FrequencyType.NO) {
                 if (numberOfObjectsSamplesInCohort != frequencyThreshold) {
                     //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
 
@@ -1557,7 +1557,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     removed++;
                     continue;
                 }
-            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
+            } else if (t == OptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
                 if (numberOfObjectsSamplesInCohort < frequencyThreshold) {
                     //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
 
@@ -1565,7 +1565,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
                     removed++;
                     continue;
                 }
-            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
+            } else if (t == OptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
                 if (numberOfObjectsSamplesInCohort > frequencyThreshold) {
                     //System.out.println("Removing " + o + " - " + numberOfObjectsSamplesInCohort + " NOT " + t + " " + frequencyThreshold);
 
@@ -1576,20 +1576,20 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
         }
 
-        LOG.info(removed + " items will be removed");
+        System.out.println(removed + " items will be removed");
 
         return removeThese;
     }
 
-    private Set<Object> flagObjectsForKeepsByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
+    private Set<Object> flagObjectsForKeepsByCriterion(Map<Object, Set<SimplePatient>> map, int frequencyThreshold, OptionView.IncludeExcludeCriteria.FrequencyType t, Set<String> setOfDNAIDs) {
         Set<Object> keepThese = new HashSet<Object>();
 
         int kept = 0;
 
         for (Object o : map.keySet()) {
 
-            if (o instanceof SimpleFamilyMattersGene) {
-                SimpleFamilyMattersGene gene = (SimpleFamilyMattersGene) o;
+            if (o instanceof MendelGene) {
+                MendelGene gene = (MendelGene) o;
                 if (gene.name.equals("NOTCH2")) {
                     Set<SimplePatient> patientsWithNotch = map.get(gene);
                     System.out.println(patientsWithNotch.size() + " patients have NOTCH2");
@@ -1625,23 +1625,23 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             /*
              * DEBUG
              */
-            if (o instanceof SimpleFamilyMattersGene) {
-                SimpleFamilyMattersGene g = (SimpleFamilyMattersGene) o;
+            if (o instanceof MendelGene) {
+                MendelGene g = (MendelGene) o;
                 if (g.name.equals("NOTCH2")) {
                     System.out.println(g + " has " + numberOfObjectsSamplesInCohort + " in cohort");
                 }
             }
 
 
-            if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.NO) {
+            if (t == OptionView.IncludeExcludeCriteria.FrequencyType.ALL || t == OptionView.IncludeExcludeCriteria.FrequencyType.NO) {
                 if (numberOfObjectsSamplesInCohort != frequencyThreshold) {
                     continue;
                 }
-            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
+            } else if (t == OptionView.IncludeExcludeCriteria.FrequencyType.AT_LEAST) {
                 if (numberOfObjectsSamplesInCohort < frequencyThreshold) {
                     continue;
                 }
-            } else if (t == FamilyMattersOptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
+            } else if (t == OptionView.IncludeExcludeCriteria.FrequencyType.AT_MOST) {
                 if (numberOfObjectsSamplesInCohort > frequencyThreshold) {
                     continue;
                 }
@@ -1664,14 +1664,14 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             kept++;
         }
 
-        LOG.info(kept + " items will be kept");
+        System.out.println(kept + " items will be kept");
 
         return keepThese;
     }
 
-    private boolean stepIncludesGeneCriterion(FamilyMattersOptionView.IncludeExcludeStep step) {
-        for (FamilyMattersOptionView.IncludeExcludeCriteria c : step.getCriteria()) {
-            if (c.getAggregationType() == FamilyMattersOptionView.IncludeExcludeCriteria.AggregationType.Gene) {
+    private boolean stepIncludesGeneCriterion(OptionView.IncludeExcludeStep step) {
+        for (OptionView.IncludeExcludeCriteria c : step.getCriteria()) {
+            if (c.getAggregationType() == OptionView.IncludeExcludeCriteria.AggregationType.Gene) {
                 return true;
             }
         }
@@ -1685,21 +1685,21 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
      * @param variantToSampleMap The map from variant to patient set
      * @return The map from gene to patient set
      */
-    private Map<SimpleFamilyMattersGene, SimplePatientSet> getGeneToSampleMap(Map<SimpleFamilyMattersVariant, SimplePatientSet> variantToSampleMap, Set<SimpleFamilyMattersGene> excludedGenes) {
+    private Map<MendelGene, SimplePatientSet> getGeneToSampleMap(Map<MendelVariant, SimplePatientSet> variantToSampleMap, Set<MendelGene> excludedGenes) {
 
         // create an empty map
-        Map<SimpleFamilyMattersGene, SimplePatientSet> geneToSampleMap = new HashMap<SimpleFamilyMattersGene, SimplePatientSet>();
+        Map<MendelGene, SimplePatientSet> geneToSampleMap = new HashMap<MendelGene, SimplePatientSet>();
 
         // go through each variant, finding the intersecting gene, and adding to the map
-        for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
+        for (MendelVariant v : variantToSampleMap.keySet()) {
 
             // get genes intersecting this variant
-            Set<SimpleFamilyMattersGene> genes = v.getGenes();
-            Set<SimpleFamilyMattersGene> genesThatWereExcluded = new HashSet<SimpleFamilyMattersGene>();
+            Set<MendelGene> genes = v.getGenes();
+            Set<MendelGene> genesThatWereExcluded = new HashSet<MendelGene>();
 
             // go through each of these genes, and add the patient set from the variant map
             // to the gene map
-            for (SimpleFamilyMattersGene g : genes) {
+            for (MendelGene g : genes) {
 
                 if (excludedGenes.contains(g)) {
                     genesThatWereExcluded.add(g);
@@ -1725,7 +1725,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
             }
 
             // remove association of excluded genes from variants
-            for (SimpleFamilyMattersGene g : genesThatWereExcluded) {
+            for (MendelGene g : genesThatWereExcluded) {
                 genes.remove(g);
             }
         }
@@ -1746,22 +1746,22 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return geneToSampleMap;
     }
 
-    private Map<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> mapVariantsToGenesAndViceVersa(Set<SimpleFamilyMattersVariant> variants) throws SQLException, RemoteException {
+    private Map<MendelGene, Set<MendelVariant>> mapVariantsToGenesAndViceVersa(Set<MendelVariant> variants) throws SQLException, RemoteException {
         Collection<Gene> genes = GeneSetController.getInstance().getCurrentGenes();
-        Map<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap = new HashMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
+        Map<MendelGene, Set<MendelVariant>> genesToVariantsMap = new HashMap<MendelGene, Set<MendelVariant>>();
 
-        for (SimpleFamilyMattersVariant v : variants) {
+        for (MendelVariant v : variants) {
             for (Gene g : genes) {
                 if (v.chr.equals(g.getChrom()) && g.getStart() < v.pos && g.getEnd() > v.pos) {
 
-                    SimpleFamilyMattersGene sg = new SimpleFamilyMattersGene(g.getChrom(), g.getStart(), g.getEnd(), g.getName());
+                    MendelGene sg = new MendelGene(g.getChrom(), g.getStart(), g.getEnd(), g.getName());
                     v.addGene(sg);
 
-                    Set<SimpleFamilyMattersVariant> variantSet;
+                    Set<MendelVariant> variantSet;
                     if (genesToVariantsMap.containsKey(sg)) {
                         variantSet = genesToVariantsMap.get(sg);
                     } else {
-                        variantSet = new HashSet<SimpleFamilyMattersVariant>();
+                        variantSet = new HashSet<MendelVariant>();
                     }
                     variantSet.add(v);
                     genesToVariantsMap.put(sg, variantSet);
@@ -1772,7 +1772,7 @@ public class FamilyMattersWorker extends MedSavantWorker<TreeMap<SimpleFamilyMat
         return genesToVariantsMap;
     }
 
-    private int binarySearchToVariant(long end, List<SimpleFamilyMattersVariant> variants) {
+    private int binarySearchToVariant(long end, List<MendelVariant> variants) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

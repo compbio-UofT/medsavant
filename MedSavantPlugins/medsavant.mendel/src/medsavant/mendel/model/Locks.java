@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.genetics.family;
+package medsavant.mendel.model;
 
 import java.io.File;
 import javax.swing.JDialog;

@@ -311,7 +311,8 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
     private JPanel getSettingsPanel() {
 
         MigLayout ml = new MigLayout("insets 0");
-        JPanel p = new JPanel(ml);
+        JPanel p = ViewUtil.getClearPanel();
+        p.setLayout(ml);
         p.setBorder(BorderFactory.createEmptyBorder());
         //p.setBorder(null);
         //p.setOpaque(false);
@@ -410,7 +411,7 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
 
     private JPanel getLoginForm() {
 
-        JPanel p = new JPanel();
+        JPanel p = ViewUtil.getClearPanel();
         p.setLayout(new MigLayout());
 
         loginButton = new JButton("Log In");

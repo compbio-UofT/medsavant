@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.genetics.family;
+package medsavant.mendel.model;
 
 import org.broad.igv.feature.genome.Genome;
 
@@ -6,7 +6,7 @@ import org.broad.igv.feature.genome.Genome;
  *
  * @author mfiume
  */
-public class SimpleFamilyMattersGene implements Comparable {
+public class MendelGene implements Comparable {
 
     public final String chr;
     public final long start;
@@ -14,7 +14,7 @@ public class SimpleFamilyMattersGene implements Comparable {
     public final String name;
     //private Set<SimpleVariant> variants;
 
-    public SimpleFamilyMattersGene(String chr, long start, long end, String name) {
+    public MendelGene(String chr, long start, long end, String name) {
         this.chr = chr;
         this.start = start;
         this.end = end;
@@ -40,7 +40,7 @@ public class SimpleFamilyMattersGene implements Comparable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final SimpleFamilyMattersGene other = (SimpleFamilyMattersGene) obj;
+        final MendelGene other = (MendelGene) obj;
         if ((this.chr == null) ? (other.chr != null) : !this.chr.equals(other.chr)) {
             return false;
         }
@@ -68,10 +68,10 @@ public class SimpleFamilyMattersGene implements Comparable {
      */
     @Override
     public int compareTo(Object o) {
-        if (!(o instanceof SimpleFamilyMattersGene)) {
+        if (!(o instanceof MendelGene)) {
             return -1;
         }
-        SimpleFamilyMattersGene other = (SimpleFamilyMattersGene) o;
+        MendelGene other = (MendelGene) o;
         int chromCompare = (new Genome.ChromosomeComparator()).compare(this.chr, other.chr);
         if (chromCompare != 0) {
             return chromCompare;
