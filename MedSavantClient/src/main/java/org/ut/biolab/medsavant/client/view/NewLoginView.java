@@ -171,12 +171,12 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
     private JXCollapsiblePane getSettingsPanel() {
 
         JXCollapsiblePane pan = new JXCollapsiblePane();//ViewUtil.getClearPanel();
+        pan.setOpaque(false);
 
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
         p.setBorder(BorderFactory.createEmptyBorder());
         p.setBorder(null);
-        //p.setOpaque(false);
 
         addressField = new PlaceHolderTextField();
         portField = new PlaceHolderTextField();
@@ -404,6 +404,6 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
             }
 
         });
-        
+
     }
 }
