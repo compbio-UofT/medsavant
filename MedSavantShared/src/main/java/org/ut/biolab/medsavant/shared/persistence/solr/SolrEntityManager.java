@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.shared.persistence.solr;
 
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.solr.*;
@@ -43,6 +44,14 @@ public class SolrEntityManager implements EntityManager {
     public <T> void persistAll(List<T> entities) throws InitializationException {
         AbstractSolrService solrService = SolrServiceRegistry.getService(entities.get(0).getClass());
         solrService.index(mapToSolrEntities(entities));
+    }
+
+    @Override
+    public void persist(String tsvFile, Class clazz) throws InitializationException {
+        AbstractSolrService solrService = SolrServiceRegistry.getService(clazz);
+        String tab = ClientUtils.escapeQueryChars("\t");
+        String backslash = ClientUtils.escapeQueryChars("\"");
+        solrService.index(tsvFile, tab, backslash);
     }
 
     /**

@@ -38,5 +38,10 @@ public interface EntityManager {
      */
     public <T> void persistAll(List<T> entities) throws InitializationException;
 
-
+    /**
+     * Persist entities stored as files.
+     * @param tsvFile       The TSV file containing the entities
+     * @param clazz         The class of the entities
+     */
+    public void persist(String tsvFile, Class clazz) throws InitializationException;
 }
