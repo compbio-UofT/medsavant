@@ -13,11 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shared.persistence;
+package org.ut.biolab.medsavant.shared.persistence.solr;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -27,12 +25,14 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,6 +58,13 @@ public class SolrCustomFieldManager implements CustomFieldManager {
         request.addHeader("Content-Type", "application/json");
 
         httpClient.execute(request);
+    }
+
+    @Override
+    public void addCustomFields(List<CustomField> customFieldList) throws URISyntaxException, IOException {
+        for (CustomField customField : customFieldList) {
+            addCustomField(customField);
+        }
     }
 
     private String getJSONForCustomField(CustomField customField) {

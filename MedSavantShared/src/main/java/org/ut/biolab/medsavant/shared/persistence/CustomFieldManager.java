@@ -19,6 +19,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Add custom fields.
@@ -26,4 +27,6 @@ import java.net.URISyntaxException;
 public interface CustomFieldManager {
 
     public void addCustomField(CustomField customField) throws URISyntaxException, IOException;
+
+    public void addCustomFields(List<CustomField> customFieldList) throws URISyntaxException, IOException;
 }

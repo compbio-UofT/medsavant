@@ -38,7 +38,7 @@ public class SearcheableCustomColumn {
         this.customColumn.setPosition(position);
     }
 
-    @Field("entity")
+    @Field("entity_name")
     public void setEntity(String entity) {
         this.customColumn.setEntity(CustomColumnType.valueOf(entity));
     }
@@ -110,5 +110,7 @@ public class SearcheableCustomColumn {
     public CustomColumn getCustomColumn() {
         return customColumn;
     }
+
+
 }
 

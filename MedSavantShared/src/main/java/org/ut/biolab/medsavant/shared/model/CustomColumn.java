@@ -74,5 +74,7 @@ public class CustomColumn extends CustomField {
     public void setEntity(CustomColumnType entity) {
         this.entity = entity;
     }
+
+
 }
 
