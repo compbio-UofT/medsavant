@@ -17,34 +17,29 @@
 package org.ut.biolab.medsavant.server.db.variants;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.io.*;
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+
+import java.io.*;
+import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 
 /**
@@ -78,7 +73,7 @@ public class VariantManagerUtils {
         return typeNameSQL.equals(varchar);
     }
 
-     private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
+    private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
 
          LOG.info("Cleaning file " + inputFile.getAbsolutePath() + " for table " + tableName);
 
@@ -147,9 +142,7 @@ public class VariantManagerUtils {
         return outputFile;
     }
 
-
     public static void uploadTSVFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException, SessionExpiredException {
-
         file = cleanVariantFile(file, tableName, sid);
 
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -168,8 +161,9 @@ public class VariantManagerUtils {
         boolean stateOpen = false;
 
         String parentDirectory = file.getParentFile().getAbsolutePath();
-
+        EntityManager entityManager = EntityManagerFactory.getEntityManager();
         String line;
+
         while ((line = br.readLine()) != null) {
             lineNumber++;
 
@@ -184,23 +178,16 @@ public class VariantManagerUtils {
             // write line to chunk file
             bw.write(line + "\n");
 
+
             // close and upload this output file
             if (lineNumber % chunkSize == 0) {
                 bw.close();
 
-                LOG.info("Closing and uploading partial file " + currentOutputPath);
-
-                String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
-                        + "INTO TABLE " + tableName + " "
-                        + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
-                        //+ " LINES TERMINATED BY '\\r\\n'";
-                        + ";";
-
-                //LOG.info(query);
-                Statement s = c.createStatement();
-                s.setQueryTimeout(30 * 60); // 30 minutes
-                s.execute(query);
+                try {
+                    entityManager.persist(currentOutputPath, VariantRecord.class);
+                } catch (InitializationException e) {
+                    LOG.error("Error persisting data from file " + currentOutputPath);
+                }
 
                 /*if (VariantManager.REMOVE_TMP_FILES) {
                     boolean deleted = new File(currentOutputPath).delete();
@@ -213,19 +200,12 @@ public class VariantManagerUtils {
         // write the remaining open file
         if (bw != null && stateOpen) {
             bw.close();
-            String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
-                    + "INTO TABLE " + tableName + " "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
-                    //+ " LINES TERMINATED BY '\\r\\n'"
-                    + ";";
-
+            try {
+                entityManager.persist(currentOutputPath, VariantRecord.class);
+            } catch (InitializationException e) {
+                LOG.error("Error persisting data from file " + currentOutputPath);
+            }
             LOG.info("Closing and uploading last partial file " + currentOutputPath);
-
-            //LOG.info(query);
-            Statement s = c.createStatement();
-            s.setQueryTimeout(60 * 60); // 1 hour
-            s.execute(query);
 
             /*if (VariantManager.REMOVE_TMP_FILES) {
                 boolean deleted = new File(currentOutputPath).delete();
@@ -247,36 +227,22 @@ public class VariantManagerUtils {
     }
 
     public static void variantTableToTSVFile(String sid, String tableName, File file, String conditions, boolean complete, int step) throws SQLException, SessionExpiredException {
-        String query;
+        EntityManager entityManager = EntityManagerFactory.getEntityManager();
+        QueryManager queryManager = QueryManagerFactory.getQueryManager();
+
+        String statement;
 
         if (complete) {
-            query = "SELECT *";
+            statement = "Select v from Variant v";
         } else {
-            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
+            statement = "Select v.upload_id, v.file_id, v.variant_id, v.dna_id, v.chrom, v.position, v.dbsnp_id, " +
+                    "v.ref, v.alt, v.qual, v.filter, v.variant_type, v.zygosity, v.gt, v.custom_info";
         }
+        statement += "from Variant";
 
-        query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(FIELD_DELIMITER) + "' ENCLOSED BY '\"' "
-                + "ESCAPED BY '"+StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR)+"' "
-                //+ " LINES TERMINATED BY '\\r\\n'"
-                + "FROM " + tableName;
-
-
-        if (step > 1) {
-            if (conditions != null && conditions.length()> 1) {
-                conditions += " AND `variant_id`%" + step + "=0";
-            } else {
-                conditions = "`variant_id`%" + step + "=0";
-            }
-        }
-
-        if (conditions != null && conditions.length()> 1) {
-            query += " WHERE " + conditions;
-        }
-
-        LOG.info(query);
-
-        ConnectionController.executeQuery(sid, query);
+        LOG.info("Dumping variants to file " + file.getAbsolutePath() + ". Variant filtering conditions " + conditions );
+        Query query = queryManager.createQuery(statement);
+        queryManager.toTSV(query, file);
     }
 
     public static void removeTemp(String filename) {
@@ -292,7 +258,6 @@ public class VariantManagerUtils {
     public static void dropTableIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
         ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName);
     }
-
 
     static File[] splitFileOnColumns(File splitDir, String inputFile, int[] cols) throws FileNotFoundException, IOException  {
 
