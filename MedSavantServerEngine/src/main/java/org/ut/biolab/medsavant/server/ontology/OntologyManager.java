@@ -16,29 +16,21 @@
 
 package org.ut.biolab.medsavant.server.ontology;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.rmi.RemoteException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyInfoColumns;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.query.Query;
@@ -46,12 +38,17 @@ import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.server.SessionController;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
+
+import java.io.*;
+import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -105,13 +102,12 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 break;
         }
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            conn.executePreparedUpdate(ontologyInfoSchema.delete(ONTOLOGY_NAME, name).toString());
-            conn.executePreparedUpdate(ontologyInfoSchema.preparedInsert(TYPE, ONTOLOGY_NAME, OBO_URL, MAPPING_URL).toString(), type.toString(), name, oboData.toString(), mappingData.toString());
-        } finally {
-            conn.close();
-        }
+        //remove old entries
+        removeOntology(sessID, name);
+
+        //add new ones
+        Ontology ontology = new Ontology(type,name,oboData,mappingData);
+        entityManager.persist(ontology);
     }
 
     @Override
@@ -124,8 +120,6 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         query = queryManager.createQuery("Delete from OntologyTerm o where o.name= :name");
         query.setParameter("name", ontName);
         query.executeDelete();
-        /*PooledConnection conn = ConnectionController.connectPooled(sessID);
-        throw new UnsupportedOperationException("Not supported yet.");*/
     }
 
     @Override
@@ -457,5 +451,15 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 }
             }
         }.start();
+    }
+
+    /**
+     * As opposed to removeOntology(), this method only removes the entry in the ontology table, not the terms.
+     * @param name
+     */
+    private void deleteOntology(String name) {
+        Query query = queryManager.createQuery("Delete from Ontology o where o.name = :name");
+        query.setParameter("name", name);
+        query.executeDelete();
     }
 }
