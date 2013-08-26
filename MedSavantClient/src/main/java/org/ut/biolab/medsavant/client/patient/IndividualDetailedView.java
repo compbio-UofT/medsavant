@@ -56,6 +56,7 @@ import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
@@ -86,9 +87,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private Graph graph;
     private final CollapsiblePane collapsiblePane;
     private final BlockingPanel blockPanel;
-   
+    private static int pedigreeFontSize = 1;
     private final Semaphore csvSem = new Semaphore(1);
-
+    private JPanel fontZoomButtonsPanel;
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
         try {
@@ -124,10 +125,39 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         collapsiblePane.setLayout(new BorderLayout());
         collapsiblePane.add(infoContent, BorderLayout.CENTER);
 
+        
+        fontZoomButtonsPanel = new JPanel();
+        fontZoomButtonsPanel.setLayout(new BoxLayout(fontZoomButtonsPanel, BoxLayout.X_AXIS));
+        
+        JButton zoomFont = new JButton("+");
+        zoomFont.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(pedigreeFontSize < 20){
+                    pedigreeFontSize++;
+                    pedigreeDetails.repaint();
+                }                
+            }                        
+        });
+        
+        JButton unZoomFont = new JButton("-");
+        unZoomFont.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(pedigreeFontSize > 2){
+                    pedigreeFontSize--;
+                    pedigreeDetails.repaint();
+                }                
+            }                        
+        });
+        fontZoomButtonsPanel.add(zoomFont);
+        fontZoomButtonsPanel.add(unZoomFont);
+        
         infoDetails = ViewUtil.getClearPanel();
         pedigreeDetails = new JPanel();
         pedigreeDetails.setBackground(Color.white);
-
+        pedigreeDetails.setLayout(new BoxLayout(pedigreeDetails, BoxLayout.Y_AXIS));
+        pedigreeDetails.add(fontZoomButtonsPanel);
         ViewUtil.setBoxYLayout(infoContent);
         infoContent.add(infoDetails);
 
@@ -142,9 +172,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
-        pedigreeDetails.removeAll();        
-        pedigreeDetails.setLayout(new BorderLayout());
-
+        pedigreeDetails.removeAll();                
+///        pedigreeDetails.setLayout(new BorderLayout());
+        
+        pedigreeDetails.add(fontZoomButtonsPanel);//, BorderLayout.NORTH);
         //Step 1
         graph = new Graph();
         CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
@@ -156,7 +187,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         //Step 2
         Sugiyama s = new Sugiyama(graph);
         s.run();
-
+       
         //Step 3
         GraphView2D view = new GraphView2D(s.getLayoutedGraph());
 
@@ -242,8 +273,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         });
 
-        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);        
-
+        pedigreeDetails.add(view.getComponent());
+//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);                
         pedigreeDetails.updateUI();
     }
 
@@ -317,8 +348,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     b.setText("Hide");
                 } else {
                     b.setText("Show");
-                }
-                pedigreeDetails.updateUI();                              
+                }                              
+                pedigreeDetails.revalidate();
+                pedigreeDetails.repaint();
+                
+                //MedSavantFrame.getInstance().pack();
+                
             }
         });
 
@@ -559,7 +594,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         public void drawSymbol(Graphics2D g2, Float position, float size, Color color, Color color1, NodeView nv) {
-            g2.setFont(new Font("Arial", Font.PLAIN, 1));
+            g2.setFont(new Font("Arial", Font.PLAIN, pedigreeFontSize));
             FontMetrics fm = g2.getFontMetrics();
             int height = fm.getMaxAscent();
             float startX = (float) position.getX() - size / 2;// (float) (position.getX()-(double)width/2);
