@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.server.db.variants;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +38,6 @@ import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
-import org.ut.biolab.medsavant.shared.persistence.solr.SolrEntityManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
@@ -294,12 +292,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Query query = queryManager.createQuery(String.format(statement,conditions));
         query.executeDelete();
         return 0;
-
     }
 
-    //ToDo
     @Override
-    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipOutputFile) throws SQLException, RemoteException, SessionExpiredException, IOException, InterruptedException {
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipOutputFile) throws SQLException, RemoteException, SessionExpiredException, IOException, InterruptedException, InitializationException {
 
         //generate directory
         File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
@@ -312,25 +308,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         LOG.info("Exporting variants to " + file.getAbsolutePath());
 
         long start = System.currentTimeMillis();
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true));
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        addConditionsToQuery(query, conditions);
-        if (orderedByPosition) {
-            query.addOrderings(table.getDBColumn(POSITION));
-        }
-        String intoString =
-                "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'" //+ " LINES TERMINATED BY '\\r\\n' ";
-                ;
-        String queryString = query.toString().replace("FROM", intoString + "FROM");
 
-        LOG.info(queryString);
-        ConnectionController.executeQuery(sessID, queryString);
+        Query query = queryManager.createQuery("Select v from Variant v");
+        queryManager.toTSV(query,file);
 
+        LOG.info(query);
         LOG.info("Done exporting variants to " + file.getAbsolutePath());
         LOG.info("Export took " + ((System.currentTimeMillis() - start) / 1000) + " seconds");
 
@@ -400,7 +382,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String statement = "Select v from Variant v";
         StringBuilder q = addConditionsToQuery(statement, conditions);
 
-        org.ut.biolab.medsavant.shared.query.Query query = queryManager.createQuery(q.toString());
+        Query query = queryManager.createQuery(q.toString());
 
         int variantsCount = (int) query.count();
 
@@ -1074,7 +1056,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     public void removeEntryFromFileTable(String sessID, int uploadID, int fileID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Delete from Variant_File where upload_id = :uploadId AND file_id = :fileId");
+        Query query = queryManager.createQuery("Delete from VariantFile v. where v.upload_id = :uploadId AND v.file_id = :fileId");
         query.setParameter("uploadId", uploadID);
         query.setParameter("fileId", fileID);
 
