@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.client.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -25,6 +26,7 @@ import javax.swing.JToggleButton;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -65,7 +67,7 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
     private PlaceHolderTextField userAdminField;
     private PlaceHolderPasswordField passwordAdminField;
     private JButton connectionSettingsButton;
-    private JPanel connectionSettings;
+    private JXCollapsiblePane connectionSettings;
 
     public NewLoginView() {
         this.setBackground(new Color(237, 237, 237));//new Color(223,223,223));//Color.white);
@@ -113,7 +115,7 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         }
     }
     int textFieldColumns = 15;
-    int textFieldSettingsColumns = 20;
+    int textFieldAdminColumns = 20;
 
     private void initView() {
 
@@ -140,11 +142,11 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         container.add(Box.createVerticalStrut(10), "wrap");
         container.add(loginForm);
 
-        ViewUtil.applyHorizontalBoxLayout(this);
+
+        ViewUtil.applyVerticalBoxLayout(this);
         //this.add(Box.createHorizontalGlue());
         this.add(container);
-        this.add(Box.createHorizontalGlue());
-
+        this.add(Box.createVerticalGlue());
     }
 
     private void initFromCache() {
@@ -170,25 +172,27 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         addressAdminField = new PlaceHolderTextField();
         addressAdminField.setPlaceholder("address");
         addressAdminField.setText(addressField.getText());
-        addressAdminField.setColumns(textFieldSettingsColumns);
+        addressAdminField.setColumns(textFieldAdminColumns);
         portAdminField = new PlaceHolderTextField();
         portAdminField.setPlaceholder("port number");
         portAdminField.setText(portField.getText());
-        portAdminField.setColumns(textFieldSettingsColumns);
+        portAdminField.setColumns(textFieldAdminColumns);
         dbnameAdminField = new PlaceHolderTextField();
         dbnameAdminField.setPlaceholder("database");
-        dbnameAdminField.setColumns(textFieldSettingsColumns);
+        dbnameAdminField.setColumns(textFieldAdminColumns);
         userAdminField = new PlaceHolderTextField();
         userAdminField.setPlaceholder("admin username");
-        userAdminField.setColumns(textFieldSettingsColumns);
+        userAdminField.setColumns(textFieldAdminColumns);
         passwordAdminField = new PlaceHolderPasswordField();
         passwordAdminField.setPlaceholder("password");
-        passwordAdminField.setColumns(textFieldSettingsColumns);
+        passwordAdminField.setColumns(textFieldAdminColumns);
 
         JButton addDB = new JButton("Create");
         JButton removeDB = new JButton("Delete");
 
-        p.add(ViewUtil.makeSmall(new JLabel("Administrators only")), "wrap");
+        JLabel adminOnly = new JLabel("Administrators only");
+        adminOnly.setForeground(Color.red);
+        p.add(ViewUtil.makeSmall(adminOnly), "wrap");
         p.add(addressAdminField, "wrap");
         p.add(portAdminField, "wrap");
         p.add(dbnameAdminField, "wrap");
@@ -308,11 +312,10 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         }
     }
 
-    private JPanel getSettingsPanel() {
+    private JXCollapsiblePane getSettingsPanel() {
 
-        MigLayout ml = new MigLayout("insets 0");
-        JPanel p = ViewUtil.getClearPanel();
-        p.setLayout(ml);
+        JXCollapsiblePane p = new JXCollapsiblePane();//ViewUtil.getClearPanel();
+        //ViewUtil.applyVerticalBoxLayout(p);
         p.setBorder(BorderFactory.createEmptyBorder());
         //p.setBorder(null);
         //p.setOpaque(false);
@@ -320,30 +323,35 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         addressField = new PlaceHolderTextField();
         loginOnEnter(addressField);
         addressField.setPlaceholder("address");
-        addressField.setColumns(textFieldSettingsColumns);
+        addressField.setColumns(textFieldColumns);
         portField = new PlaceHolderTextField();
         loginOnEnter(portField);
         portField.setPlaceholder("port number");
-        portField.setColumns(textFieldSettingsColumns);
+        portField.setColumns(textFieldColumns);
         dbnameField = new PlaceHolderTextField();
         loginOnEnter(dbnameField);
         dbnameField.setPlaceholder("database");
-        dbnameField.setColumns(textFieldSettingsColumns);
+        dbnameField.setColumns(textFieldColumns);
 
         JButton addDB = new JButton("Create");
         JButton removeDB = new JButton("Delete");
 
-        p.add(new JLabel("Server Settings"), "wrap, gapx 0, gapy 0");
-        p.add(addressField, "wrap");
-        p.add(portField, "wrap");
-        p.add(dbnameField, "wrap");
+        JButton adminButton = getAdminButton();
+
+        Component dbComponent = ViewUtil.horizontallyAlignComponents(new Component[] {dbnameField,adminButton});
+
+        //p.add(new JLabel("Server Settings"));
+        p.add(addressField);
+        p.add(portField);
+        p.add(dbComponent);
 
         return p;
     }
 
     private void showConnectionSettings() {
         //connectionSettingsButton.setSelected(true);
-        connectionSettings.setVisible(true);
+        connectionSettings.setCollapsed(false);
+        connectionSettingsButton.setText("▲");
     }
 
     private void loginOnEnter(JTextField f) {
@@ -412,7 +420,7 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
     private JPanel getLoginForm() {
 
         JPanel p = ViewUtil.getClearPanel();
-        p.setLayout(new MigLayout());
+        ViewUtil.applyVerticalBoxLayout(p);
 
         loginButton = new JButton("Log In");
         loginButton.addActionListener(new ActionListener() {
@@ -426,31 +434,21 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         progressSigningIn.setVisible(false);
 
         //final JToggleButton connectionSettingsButton = new JToggleButton("Settings");
-        connectionSettingsButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.NETWORK));
+        connectionSettingsButton = new JButton("▼");//ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.NETWORK));
+        connectionSettingsButton.setMargin(new Insets(0,0,0,0));
+        connectionSettingsButton.setFocusable(false);
+        //connectionSettingsButton.setBorder(null);
+        //connectionSettingsButton.setBorderPainted(false);
 
-        final JButton adminButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GEAR));
-        adminButton.setBorderPainted(false);
-        adminButton.setFocusable(false);
-        adminButton.putClientProperty("JButton.buttonType", "textured");
-        adminButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                JDialog adminDialog = new JDialog(MedSavantFrame.getInstance(), "Database Management", true);
-                adminDialog.add(getAdminPanel());
-                adminDialog.setResizable(false);
-                adminDialog.pack();
-                adminDialog.setLocationRelativeTo(MedSavantFrame.getInstance());
-                adminDialog.setVisible(true);
-            }
-        });
 
         connectionSettings = getSettingsPanel();
-        connectionSettings.setVisible(false);
+        connectionSettings.setCollapsed(true);
 
         connectionSettingsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                connectionSettings.setVisible(!connectionSettings.isVisible());
+                connectionSettings.setCollapsed(!connectionSettings.isCollapsed());
+                connectionSettingsButton.setText(connectionSettingsButton.getText().equals("▼") ? "▲" : "▼");
             }
         });
 
@@ -464,15 +462,13 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         passwordField.setColumns(textFieldColumns);
 
         connectionSettingsButton.setMaximumSize(new Dimension(26, 23));
-        adminButton.setMaximumSize(new Dimension(26, 23));
 
-        p.add(ViewUtil.makeSmall(connectionSettingsButton), "split 2");
-        p.add(ViewUtil.makeSmall(adminButton), "gapx 2");
-        p.add(connectionSettings, "wrap, gapx 20, span 1 4");
-        p.add(userField, "wrap, gapy 8");
-        p.add(passwordField, "wrap");
-        p.add(loginButton, "split2");
-        p.add(progressSigningIn, "wrap");
+        p.add(ViewUtil.alignLeft(connectionSettingsButton));
+        p.add(ViewUtil.alignLeft(connectionSettings));
+        p.add(userField);
+        p.add(passwordField);
+        p.add(ViewUtil.alignLeft(loginButton));
+        p.add(progressSigningIn);
 
         return p;
     }
@@ -522,5 +518,29 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         }
 
         return true;
+    }
+
+    private JButton getAdminButton() {
+        final JButton adminButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GEAR));
+
+        adminButton.setToolTipText("Create or delete databases");
+        adminButton.setBorderPainted(false);
+        adminButton.setFocusable(false);
+        adminButton.putClientProperty("JButton.buttonType", "textured");
+        adminButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog adminDialog = new JDialog(MedSavantFrame.getInstance(), "Database Management", true);
+                adminDialog.add(getAdminPanel());
+                adminDialog.setResizable(false);
+                adminDialog.pack();
+                adminDialog.setLocationRelativeTo(MedSavantFrame.getInstance());
+                adminDialog.setVisible(true);
+            }
+        });
+
+        adminButton.setMaximumSize(new Dimension(26, 23));
+
+        return adminButton;
     }
 }
