@@ -69,10 +69,10 @@ public class PathField extends JPanel {
                 } else {
                     f = DialogUtils.chooseFileForOpen(button.getToolTipText(), null, null);
                 }
-                if (f == null) {
-                    System.out.println("What the fuck?");
+               
+                if(f != null){
+                    setPath(f.getAbsolutePath());
                 }
-                setPath(f.getAbsolutePath());
             }
         });
     }

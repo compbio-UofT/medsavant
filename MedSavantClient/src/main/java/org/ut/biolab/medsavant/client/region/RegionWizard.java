@@ -200,14 +200,14 @@ public class RegionWizard extends WizardDialog {
         //setup page
         return new DefaultWizardPage(PAGENAME_FILE) {
             {
-                ImportFilePanel importPanel = new ImportFilePanel() {
+                ImportFilePanel importPanel = new ImportFilePanel(1) {
                     @Override
                     public void setReady(boolean ready) {
                         if (ready) {
                             path = getPath();
                             delim = getDelimiter();
                             fileFormat = getFileFormat();
-                            numHeaderLines = getNumHeaderLines();
+                            numHeaderLines = getNumHeaderLines();                            
                             fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                         } else {
                             fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
