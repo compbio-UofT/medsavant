@@ -74,6 +74,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
+import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
@@ -267,6 +269,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             customizeForMac();
         }
 
+        PluginController pc = PluginController.getInstance();
+        pc.loadPlugins(DirectorySettings.getPluginsDirectory());
+
         JMenuBar menu = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
 
@@ -277,7 +282,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
         });
-        //fileMenu.add(pluginsItem);
+        fileMenu.add(pluginsItem);
 
         JMenuItem dbManagementItem = new JMenuItem("Database Management");
         dbManagementItem.addActionListener(new ActionListener() {
@@ -297,7 +302,11 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         appItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                showAppStore();
+                //if (LoginController.getInstance().isLoggedIn()) {
+                    showAppStore();
+                //} else {
+                //    DialogUtils.displayMessage("You must login to access the App Store.");
+                //}
             }
         });
         fileMenu.add(appItem);

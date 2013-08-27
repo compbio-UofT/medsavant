@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -16,6 +17,7 @@ import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppStorePage;
 import org.ut.biolab.mfiume.app.AppStoreViewManager;
+import org.ut.biolab.mfiume.app.api.AppInstaller;
 import org.ut.biolab.mfiume.app.component.TitleBar;
 
 /**
@@ -28,9 +30,11 @@ public class AppStoreLandingPage implements AppStorePage {
     private final AppInfoFetcher fetcher;
     private FlowView flowView;
     private final AppStoreViewManager avm;
+    private final AppInstaller installer;
 
-    public AppStoreLandingPage(AppInfoFetcher fetcher, AppStoreViewManager avm, AppStoreInstalledPage installedPage) {
+    public AppStoreLandingPage(AppInfoFetcher fetcher, AppInstaller installer, AppStoreViewManager avm, AppStoreInstalledPage installedPage) {
         this.fetcher = fetcher;
+        this.installer = installer;
         this.avm = avm;
         this.installedPage = installedPage;
     }
@@ -56,8 +60,11 @@ public class AppStoreLandingPage implements AppStorePage {
     private synchronized void setAppInfo(List<AppInfo> info) {
         flowView.removeAll();
 
+        Set<AppInfo> installRegistry = installer.getInstallRegistry();
+
         for (AppInfo i : info) {
-            JPanel infoBox = new AppInfoFlowView(i,avm,installedPage);
+            boolean installedAlready = installRegistry.contains(i);
+            AppInfoFlowView infoBox = new AppInfoFlowView(i,avm,installedPage,installedAlready);
             flowView.add(infoBox);
         }
 
@@ -97,5 +104,6 @@ public class AppStoreLandingPage implements AppStorePage {
     public ImageIcon getIcon() {
         return new ImageIcon(getClass().getResource(iconroot + "icon_shop_selected.png"));
     }
+
 
 }

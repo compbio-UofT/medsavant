@@ -176,7 +176,6 @@ public class NewLoginView extends JPanel implements Listener<LoginEvent> {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
         p.setBorder(BorderFactory.createEmptyBorder());
-        p.setBorder(null);
 
         addressField = new PlaceHolderTextField();
         portField = new PlaceHolderTextField();

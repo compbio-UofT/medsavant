@@ -43,7 +43,7 @@ class AppStoreView extends JDialog {
         AppStoreViewManager avm = new AppStoreViewManager();
 
         AppStoreInstalledPage installedAppsPage = new AppStoreInstalledPage(installer);
-        AppStoreLandingPage landingPage = new AppStoreLandingPage(fetcher, avm, installedAppsPage);
+        AppStoreLandingPage landingPage = new AppStoreLandingPage(fetcher, installer, avm, installedAppsPage);
 
         AppStorePage[] pages = new AppStorePage[]{landingPage, installedAppsPage};
         AppStoreMenu menu = new AppStoreMenu(pages, avm);

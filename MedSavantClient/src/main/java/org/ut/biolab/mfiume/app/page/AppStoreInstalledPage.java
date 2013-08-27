@@ -23,6 +23,8 @@ public class AppStoreInstalledPage implements AppStorePage {
     AppInstaller installer;
     private final HashSet<AppInfo> installQueue;
     private final JPanel view;
+    private final HashSet<AppInfo> recentlyInstalled;
+    private final HashSet<AppInfo> recentlyUninstalled;
 
     public AppStoreInstalledPage(AppInstaller installer) {
         this.installer = installer;
@@ -30,6 +32,9 @@ public class AppStoreInstalledPage implements AppStorePage {
         this.view = new JPanel();
 
         view.setOpaque(false);
+
+        recentlyInstalled = new HashSet<AppInfo>();
+        recentlyUninstalled = new HashSet<AppInfo>();
     }
 
     @Override
@@ -73,12 +78,26 @@ public class AppStoreInstalledPage implements AppStorePage {
         view.add(queuedTitle);
 
         Set<AppInfo> installedApps = installer.getInstallRegistry();
+
         for (AppInfo i : installedApps) {
-            view.add(new AppInstallInstalledView(i, installer,this), "width 100%");
+            if (recentlyInstalled.contains(i) || recentlyUninstalled.contains(i)) { continue; }
+            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.INSTALLED), "width 100%");
+        }
+
+        for (AppInfo i : recentlyInstalled) {
+            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.JUST_INSTALLED), "width 100%");
+        }
+
+        for (AppInfo i : recentlyUninstalled) {
+            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.JUST_UNINSTALLED), "width 100%");
         }
 
         if (installedApps.isEmpty()) {
             view.add(new JLabel("No apps installed"));
+        }
+
+        if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
+             view.add(new JLabel("<html><font color=RED>Restart MedSavant for changes to take effect</font></html>"));
         }
 
         view.updateUI();
@@ -101,6 +120,7 @@ public class AppStoreInstalledPage implements AppStorePage {
             public void run() {
                 boolean success = installer.installApp(i);
                 if (success) {
+                    addRecentlyInstalledApp(i);
                     dequeueAppForInstallation(i);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -120,6 +140,14 @@ public class AppStoreInstalledPage implements AppStorePage {
     @Override
     public ImageIcon getIcon() {
         return new ImageIcon(getClass().getResource(iconroot + "icon_installed_selected.png"));
+    }
+
+    public void addRecentlyUninstalledApp(AppInfo i) {
+        recentlyUninstalled.add(i);
+    }
+
+    public void addRecentlyInstalledApp(AppInfo i) {
+        recentlyInstalled.add(i);
     }
 
 }

@@ -22,10 +22,13 @@ import org.ut.biolab.mfiume.app.jAppStore;
  * @author mfiume
  */
 class AppInfoFlowView extends JPanel {
+
     private final AppStoreInstalledPage installedPage;
     private final AppStoreViewManager avm;
+    private final JButton downloadButton;
+    private final AppInfoModal aim;
 
-    public AppInfoFlowView(final AppInfo i, final AppStoreViewManager avm, final AppStoreInstalledPage installedPage) {
+    public AppInfoFlowView(final AppInfo i, final AppStoreViewManager avm, final AppStoreInstalledPage installedPage, boolean installedAlready) {
         super();
 
         this.avm = avm;
@@ -43,16 +46,13 @@ class AppInfoFlowView extends JPanel {
         this.setBorder(BorderFactory.createEmptyBorder(border, border, border, border));
 
         // bold
-        JLabel nameLabel = new JLabel(i.getName() + " " + i.getVersion());
+        JLabel nameLabel = new JLabel("<html><b>" + i.getName() + "</b> " + i.getVersion() + "</html>");
         Font font = nameLabel.getFont();
 
-
-
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-        Font smallFont = new Font(font.getFontName(), Font.PLAIN, font.getSize()-3);
-        Font mediumFont = new Font(font.getFontName(), Font.PLAIN, font.getSize()-2);
+        Font smallFont = new Font(font.getFontName(), Font.PLAIN, font.getSize() - 3);
+        Font mediumFont = new Font(font.getFontName(), Font.PLAIN, font.getSize() - 2);
 
-        nameLabel.setFont(boldFont);
 
         // small, gray
         JLabel categoryLabel = new JLabel(i.getCategory());
@@ -64,11 +64,10 @@ class AppInfoFlowView extends JPanel {
         authorLabel.setFont(mediumFont);
         authorLabel.setForeground(Color.darkGray);
 
-        JButton downloadButton = getSoftButton("Install App");
+        downloadButton = getSoftButton("Install App");
         JButton moreInfo = getSoftButton("More Info");
 
         downloadButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 installedPage.queueAppForInstallation(i);
@@ -76,23 +75,24 @@ class AppInfoFlowView extends JPanel {
             }
         });
 
-        moreInfo.addActionListener(new ActionListener() {
+        aim = new AppInfoModal(i, installedPage, avm);
 
+        moreInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                AppInfoModal aim = new AppInfoModal(i, installedPage, avm);
                 aim.setVisible(true);
             }
-
         });
+
+        setInstalled(installedAlready);
 
         JPanel actionBar = new JPanel();
         actionBar.setOpaque(false);
-        actionBar.setLayout(new BoxLayout(actionBar,BoxLayout.X_AXIS));
-                actionBar.add(moreInfo);
+        actionBar.setLayout(new BoxLayout(actionBar, BoxLayout.X_AXIS));
+        actionBar.add(moreInfo);
 
         actionBar.add(Box.createHorizontalGlue());
-                actionBar.add(downloadButton);
+        actionBar.add(downloadButton);
 
         this.add(getLeftAlignedComponent(nameLabel));
         this.add(getLeftAlignedComponent(categoryLabel));
@@ -100,6 +100,10 @@ class AppInfoFlowView extends JPanel {
         this.add(getLeftAlignedComponent(authorLabel));
         this.add(actionBar);
         jAppStore.wrapComponentWithLineBorder(this);
+
+        this.updateUI();
+
+        System.out.println("Getting info flow view for " + i.getName() + " installed " + installedAlready);
     }
 
     public static JButton getSoftButton(String string) {
@@ -118,5 +122,16 @@ class AppInfoFlowView extends JPanel {
         p.add(c);
         p.add(Box.createHorizontalGlue());
         return p;
+    }
+
+    final void setInstalled(boolean installedAlready) {
+        if (installedAlready) {
+            downloadButton.setEnabled(false);
+            downloadButton.setText("Installed");
+            //downloadButton.removeActionListener(downloadButton.getActionListeners()[0]);
+            downloadButton.updateUI();
+            downloadButton.invalidate();
+        }
+        aim.setInstalled(installedAlready);
     }
 }
