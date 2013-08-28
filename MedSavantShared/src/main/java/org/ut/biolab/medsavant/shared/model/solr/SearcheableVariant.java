@@ -93,6 +93,11 @@ public class SearcheableVariant {
         variantRecord.setFilter(StringUtils.join(filter, ","));
     }
 
+    @Field("variant_type")
+    public void setVariantType(String variantType) {
+        variantRecord.setType(VariantRecord.VariantType.valueOf(variantType));
+    }
+
     @Field("zygosity")
     public void setZygosity(String zygo) {
         for (VariantRecord.Zygosity zygosity : VariantRecord.Zygosity.values()) {
