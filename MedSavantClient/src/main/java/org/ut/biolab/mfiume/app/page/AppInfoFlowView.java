@@ -12,6 +12,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppStoreViewManager;
 import org.ut.biolab.mfiume.app.component.RoundedJPanel;
@@ -34,10 +35,10 @@ class AppInfoFlowView extends JPanel {
         this.avm = avm;
         this.installedPage = installedPage;
 
-        Dimension d = new Dimension(220, 90);
+        /*Dimension d = new Dimension(220, 90);
         this.setPreferredSize(d);
         this.setMinimumSize(d);
-        this.setMaximumSize(d);
+        this.setMaximumSize(d);*/
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -46,7 +47,11 @@ class AppInfoFlowView extends JPanel {
         this.setBorder(BorderFactory.createEmptyBorder(border, border, border, border));
 
         // bold
-        JLabel nameLabel = new JLabel("<html><b>" + i.getName() + "</b> " + i.getVersion() + "</html>");
+        String shortName = ViewUtil.ellipsize(i.getName(), 24);
+        JLabel nameLabel = new JLabel("<html><b>" + shortName + "</b> " + i.getVersion() + "</html>");
+        if (!shortName.equals(i.getName())) {
+            nameLabel.setToolTipText(i.getName());
+        }
         Font font = nameLabel.getFont();
 
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
@@ -61,6 +66,7 @@ class AppInfoFlowView extends JPanel {
 
         // gray
         JLabel authorLabel = new JLabel(i.getAuthor());
+        ViewUtil.shortenLabelToLength(authorLabel,30);
         authorLabel.setFont(mediumFont);
         authorLabel.setForeground(Color.darkGray);
 
@@ -94,6 +100,7 @@ class AppInfoFlowView extends JPanel {
         actionBar.add(Box.createHorizontalGlue());
         actionBar.add(downloadButton);
 
+        this.add(Box.createRigidArea(new Dimension(220,1)));
         this.add(getLeftAlignedComponent(nameLabel));
         this.add(getLeftAlignedComponent(categoryLabel));
         this.add(Box.createVerticalStrut(3));

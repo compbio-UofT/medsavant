@@ -740,6 +740,14 @@ public final class ViewUtil {
         return p;
     }
 
+    public static void shortenLabelToLength(JLabel label, int length) {
+        String text = label.getText();
+        if (text.length() > length) {
+            label.setText(ViewUtil.ellipsize(text, length));
+            label.setToolTipText(text);
+        }
+    }
+
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
