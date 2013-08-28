@@ -21,7 +21,7 @@ import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 import org.ut.biolab.medsavant.shared.query.parser.util.ParserUtil;
 
-import java.util.Map;
+import java.util.Locale;
 
 /**
  * Analyzer which collects a term and term value from a WHERE clause.
@@ -100,7 +100,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalExpression conditionalExpression = node.getConditionalExpression();
             conditionalExpression.apply(this);
 
-            query.append(spacedString(or.toString()));
+            query.append(spacedString(or.toString().toUpperCase(Locale.ROOT)));
 
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
@@ -116,7 +116,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
 
-            query.append(spacedString(and.toString()));
+            query.append(spacedString(and.toString().toUpperCase(Locale.ROOT)));
 
             PConditionalFactor conditionalFactor = node.getConditionalFactor();
             conditionalFactor.apply(this);
