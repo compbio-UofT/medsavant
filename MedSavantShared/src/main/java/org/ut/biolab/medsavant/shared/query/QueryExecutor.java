@@ -59,6 +59,13 @@ public interface QueryExecutor {
      */
     public void executeDelete(Query query);
 
+
+    /**
+     * Execute the current update query.
+     * @param query     An update query.
+     */
+    void executeUpdate(Query query);
+
     /**
      * Execute the current query and return the number of results.
      * @param query             A query that needs to be executed.

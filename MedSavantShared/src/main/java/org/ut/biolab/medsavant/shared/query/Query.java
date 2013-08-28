@@ -60,6 +60,11 @@ public interface Query {
     public void executeDelete();
 
     /**
+     * Execute the current
+      */
+    public void executeUpdate();
+
+    /**
      * Execute the current query and the number of results.
      * @return                  The number of results.
      */
