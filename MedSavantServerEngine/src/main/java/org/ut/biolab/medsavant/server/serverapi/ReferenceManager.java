@@ -89,15 +89,10 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
         Query query = queryManager.createQuery("Select r from Reference r where r.name= :name");
         query.setParameter("name", refName);
-        List<Reference> referenceList = query.execute();
 
-        int referenceId = -1;
 
-        if (referenceList.size() > 0) {
-            referenceId =  referenceList.get(0).getID();
-        }
-
-        return referenceId;
+        Reference reference = query.getFirst();
+        return (reference == null) ? -1 : reference.getID();
     }
 
     @Override
@@ -168,15 +163,9 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
         Query query = queryManager.createQuery("Select r from Reference r where r.id= :id");
         query.setParameter("id", referenceid);
-        List<Reference> referenceList = query.execute();
+        Reference reference = query.getFirst();
 
-        String url = null;
-
-        if (referenceList.size() > 0) {
-            url = referenceList.get(0).getUrl();
-        }
-
-        return url;
+        return reference.getUrl();
     }
 
     @Override
@@ -191,14 +180,8 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     String getReferenceName(String sid, int refID) throws SQLException, SessionExpiredException {
         Query query = queryManager.createQuery("Select r from Reference r where r.id= :id");
         query.setParameter("id", refID);
-        List<Reference> referenceList = query.execute();
+        Reference reference = query.getFirst();
 
-        String name = null;
-
-        if (referenceList.size() > 0) {
-            name = referenceList.get(0).getName();
-        }
-
-        return name;
+        return reference.getName();
     }
 }

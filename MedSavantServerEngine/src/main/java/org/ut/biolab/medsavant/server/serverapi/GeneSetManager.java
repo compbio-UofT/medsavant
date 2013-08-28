@@ -16,27 +16,13 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import java.rmi.RemoteException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
@@ -44,7 +30,10 @@ import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.List;
 
 
 /**
@@ -97,7 +86,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet getGeneSet(String sessID, String refName) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from GeneSet where g.genome= :refName");
+        Query query = queryManager.createQuery("Select g from GeneSet g where g.genome= :refName");
         query.setParameter("refName",refName);
         List<GeneSet> result = query.execute();
 
@@ -108,20 +97,10 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    public static void main(String[] argv) {
-        TableSchema table = MedSavantDatabase.GeneSetTableSchema;
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, "hg19", TYPE, "RefSeq").groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
-        BinaryCondition dumbChrsCondition1 = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\_%");
-        query.addCondition(dumbChrsCondition1);
-        BinaryCondition dumbChrsCondition2 = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\-%");
-        query.addCondition(dumbChrsCondition2);
-        System.out.println(query.toString());
-    }
-
     @Override
     public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        Query query = queryManager.createQuery("Select g from Gene g where g.reference = :reference and g.type= :type");
         query.setParameter("reference", geneSet.getReference());
         query.setParameter("type", geneSet.getType());
         List<Gene> result = query.execute();
@@ -131,7 +110,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        Query query = queryManager.createQuery("Select g from Gene g where g.reference = :reference and g.type= :type");
         query.setParameter("reference", geneSet.getReference());
         query.setParameter("type", geneSet.getType());
         List<Gene> result = query.execute();

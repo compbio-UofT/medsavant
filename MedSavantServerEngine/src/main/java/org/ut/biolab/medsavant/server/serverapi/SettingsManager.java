@@ -15,23 +15,12 @@
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.UpdateQuery;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.SettingsTableSchema;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.shared.db.Settings;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.shared.db.Settings;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.Setting;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
@@ -39,11 +28,13 @@ import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
-import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+
+import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 
 /**
@@ -99,12 +90,10 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     private void updateSetting(String key, String value) {
-        Setting setting = new Setting(key, value);
-        try {
-            entityManager.persist(setting);
-        } catch (InitializationException e) {
-            LOG.error("Error persisting setting");
-        }
+        Query query = queryManager.createQuery("Update Setting s set s.value = :value where s.key = :key");
+        query.setParameter("key", key);
+        query.setParameter("value", value);
+        query.executeUpdate();
     }
 
     private void updateSetting(Connection conn, String key, String value) throws SQLException, SessionExpiredException {
