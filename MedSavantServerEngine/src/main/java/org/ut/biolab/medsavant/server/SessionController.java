@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.util.PersistenceUtil;
 import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -56,7 +57,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
         int newSessionIdNumber = ++lastSessionId;
         String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
 
-        ConnectionController.registerCredentials(sessionId, user, password, dbName);
+        PersistenceUtil.registerCredentials(sessionId, user, password, dbName);
         System.out.println("Registered session " + sessionId + " for " + user);
         LOG.info("Registered session " + sessionId + " for " + user);
         return sessionId;
