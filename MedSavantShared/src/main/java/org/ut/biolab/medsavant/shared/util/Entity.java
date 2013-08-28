@@ -9,6 +9,7 @@ public class Entity {
 
     public static final String USER = "user";
     public static final String VARIANT = "variant";
+    public static final String VARIANT_TAG = "variant_tag";
     public static final String COMMENT = "comment";
     public static final String ANNOTATION = "annotation";
     public static final String ANNOTATION_LOG = "annotation_log";
