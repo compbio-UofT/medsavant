@@ -14,6 +14,8 @@ Helpers
     single_quoted_string_literal = singlequote_char [any_char - singlequote_char]* singlequote_char;
     double_quoted_string_literal = doublequote_char [any_char - doublequote_char]* doublequote_char;
 
+    equal = '=';
+
     /*
      * Lowercase support
      */
@@ -106,6 +108,8 @@ Tokens
     order = o r d e r;
     outer = o u t e r;
     select = s e l e c t;
+    set = s e t;
+    update = u p d a t e;
     delete = d e l e t e;
     size = s i z e;
     sqrt = s q r t;
@@ -123,7 +127,7 @@ Tokens
 
     aggregate_func = avg | max | min | sum;
     order_direction = asc | desc;
-    comparison_operator = '=' | '>' | '>=' | '<' | '<=' | '<>';
+    comparison_operator = '=' | '>' | '>=' | '<' | '<=' | '<>' ;
     add_sub = '+' | '-';
     mul_div = '*' | '/';
     functions_returning_datetime = current_date | current_time | current_timestamp;
@@ -138,10 +142,14 @@ Productions
 
 statement =
     {sel} select_statement |
+    {upd} update_statement |
     {del} delete_statement;
 
 select_statement =
     select_clause from_clause where_clause? groupby_clause? having_clause? orderby_clause?;
+
+update_statement =
+    update_clause where_clause?;
 
 delete_statement =
     delete_clause where_clause?;
@@ -162,10 +170,25 @@ select_clause =
     select distinct? select_list;
 
 delete_clause =
-    delete from abstract_schema_name delete_variable_remainder?;
+    delete from range_variable_declaration delete_variable_remainder?;
 
 delete_variable_remainder =
     as? variable;
+
+update_clause =
+    update range_variable_declaration set update_field_list;
+
+update_field_list =
+    {single} update_field |
+    update_field comma_char update_field_list;
+
+update_field =
+    path_expression comparison_operator new_value;
+
+new_value =
+    {literal} literal |
+    {param} input_parameter;
+
 
 select_list =
     {single} select_expression |
@@ -232,7 +255,7 @@ conditional_primary =
     {br} left_bracket_prod conditional_expression right_bracket_prod;
 
 simple_cond_expression =
-    arithmetic_expression  simple_conditional_expression_remainder;
+    arithmetic_expression simple_conditional_expression_remainder;
 
 simple_conditional_expression_remainder =
     {compare} comparison_expression |
