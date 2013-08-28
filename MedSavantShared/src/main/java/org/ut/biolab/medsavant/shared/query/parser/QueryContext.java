@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.shared.query.parser;
 
 import org.ut.biolab.medsavant.shared.query.parser.node.Start;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +34,8 @@ public class QueryContext {
     private List<String> groupByTerms;
 
     private Map<String, String> aggregates;
+
+    private Map<String, Map<String, String>> updateFields;
 
     public Map<String, Object> getParameters() {
         return parameters;
@@ -79,5 +80,13 @@ public class QueryContext {
 
     public void setAggregates(Map<String, String> aggregates) {
         this.aggregates = aggregates;
+    }
+
+    public Map<String, Map<String, String>> getUpdateFields() {
+        return updateFields;
+    }
+
+    public void setUpdateFields(Map<String, Map<String, String>> updateFields) {
+        this.updateFields = updateFields;
     }
 }

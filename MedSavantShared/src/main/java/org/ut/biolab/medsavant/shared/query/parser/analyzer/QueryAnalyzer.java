@@ -22,6 +22,10 @@ import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.ADelStatement;
 import org.ut.biolab.medsavant.shared.query.parser.node.ASelStatement;
+import org.ut.biolab.medsavant.shared.query.parser.node.AUpdStatement;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Responsible for analyzing the queries.
@@ -55,6 +59,15 @@ public class QueryAnalyzer extends DepthFirstAdapter {
         node.apply(deleteQueryAnalyzer);
 
         this.solrQuery = deleteQueryAnalyzer.getSolrQuery();
+    }
+
+    @Override
+    public void caseAUpdStatement(AUpdStatement node) {
+        context.setUpdateFields(new HashMap<String, Map<String, String>>());
+        UpdateQueryAnalyzer updateQueryAnalyzer = new UpdateQueryAnalyzer(context);
+        node.apply(updateQueryAnalyzer);
+
+        this.solrQuery = updateQueryAnalyzer.getSolrQuery();
     }
 
     public QueryContext getContext() {

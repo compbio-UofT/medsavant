@@ -18,7 +18,9 @@ package org.ut.biolab.medsavant.shared.query.solr;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryExecutor;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
@@ -37,6 +39,7 @@ public class SolrQueryExecutor implements QueryExecutor {
 
     private static final Log LOG = LogFactory.getLog(SolrQueryExecutor.class);
 
+    private static final String UNIQUE_KEY_FIELD = "uuid";
     @Override
     public <T> List<T> execute(Query query) {
 
@@ -105,6 +108,37 @@ public class SolrQueryExecutor implements QueryExecutor {
         } catch (InitializationException e) {
             LOG.error("Error retrieving necessary Solr service ", e);
         }
+    }
+
+    /**
+     * Performs a document update in Solr.
+     *
+     * This is non-trivial at the moment, since Solr documents can only be update using the uniqueKey field.
+     * To perform the update, this method retrieves the uniqueKey for all documents maching the
+     * update conditions and sets the appropriate fields.
+     *
+     * @param query     An update query.
+     */
+    @Override
+    public void executeUpdate(Query query) {
+        AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
+        SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
+        String entityName = abstractSolrQuery.getEntity();
+
+        try {
+            AbstractSolrService solrService = SolrServiceRegistry.getService(entityName);
+            SolrDocumentList documentsToUpdate = solrService.search(solrQuery);
+
+            SolrInputDocument updatedDocument = abstractSolrQuery.getUpdateFields();
+            for (SolrDocument solrDocument : documentsToUpdate) {
+                String uuid = String.valueOf(solrDocument.getFieldValue(UNIQUE_KEY_FIELD));
+                updatedDocument.setField(UNIQUE_KEY_FIELD, uuid);
+                solrService.index(updatedDocument);
+            }
+        } catch (InitializationException e) {
+            LOG.error("Error executing update with query " + query.getStatement());
+        }
+
     }
 
     @Override

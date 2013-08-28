@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.shared.query.solr;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.SolrInputDocument;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.base.AbstractQuery;
 import org.ut.biolab.medsavant.shared.query.parser.JPQLToSolrTranslator;
@@ -123,6 +124,15 @@ public class AbstractSolrQuery extends AbstractQuery {
         }
 
         return solrQuery;
+    }
+
+    public SolrInputDocument getUpdateFields() {
+        Map<String, Map<String, String>> updateFields =  this.translator.getContext().getUpdateFields();
+        SolrInputDocument document = new SolrInputDocument();
+        for (Map.Entry<String, Map<String, String>> field : updateFields.entrySet()) {
+            document.addField(field.getKey(), field.getValue());
+        }
+        return document;
     }
 
 }

@@ -15,8 +15,10 @@
  */
 package org.ut.biolab.medsavant.shared.query;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Holds a result row
@@ -43,6 +45,14 @@ public class ResultRow {
 
     public Object put(String key, Object value) {
         return results.put(key, value);
+    }
+
+    public Collection<Object> valueSet() {
+        return results.values();
+    }
+
+    public Set<String> keySet() {
+        return results.keySet();
     }
 
     @Override
