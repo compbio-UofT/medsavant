@@ -15,13 +15,24 @@
  */
 package org.ut.biolab.medsavant.shared.query.solr;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.params.CommonParams;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.solr.service.AbstractSolrService;
+import org.ut.biolab.medsavant.shared.solr.service.SolrServiceRegistry;
+
+import java.io.File;
 
 /**
  * Solr implementation for the QueryManager.
  */
 public class SolrQueryManager implements QueryManager {
+
+    private static final Log LOG = LogFactory.getLog(SolrQueryManager.class);
 
     @Override
     public Query createQuery(String queryString) {
@@ -29,5 +40,22 @@ public class SolrQueryManager implements QueryManager {
         solrQuery.setStatement(queryString);
 
         return solrQuery;
+    }
+
+    @Override
+    public void toTSV(Query query, File file) {
+        AbstractSolrQuery abstractSolrQuery = (AbstractSolrQuery) query;
+        SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
+
+        solrQuery.add(CommonParams.WT, "csv");
+        String entityName = abstractSolrQuery.getEntity();
+
+        AbstractSolrService solrService = null;
+        try {
+            solrService = SolrServiceRegistry.getService(entityName);
+            solrService.queryAndWriteToFile(solrQuery, file);
+        } catch (InitializationException e) {
+            LOG.error("Error retrieving solr service.");
+        }
     }
 }

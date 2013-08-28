@@ -15,6 +15,8 @@
  */
 package org.ut.biolab.medsavant.shared.query;
 
+import java.io.File;
+
 /**
  * Encapsulate the methods needed for query
  */
@@ -22,4 +24,5 @@ public interface QueryManager {
 
     public Query createQuery(String queryString);
 
+    public void toTSV(Query query, File file);
 }

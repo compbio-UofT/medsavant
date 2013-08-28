@@ -17,8 +17,9 @@ package org.ut.biolab.medsavant.shared.solr.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -31,15 +32,16 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.common.params.UpdateParams;
 import org.apache.solr.common.util.NamedList;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.shared.solr.decorator.EntityDecorator;
-import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.solr.decorator.SolrInputDocumentDecorator;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
@@ -59,7 +61,6 @@ public abstract class AbstractSolrService<T> {
 
     public void initialize() throws InitializationException {
         try {
-
             this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
         } catch (RuntimeException ex) {
             LOG.error("Invalid URL specified for the Solr server: {}",ex);
@@ -108,6 +109,17 @@ public abstract class AbstractSolrService<T> {
         }
 
         return getDocumentList(result);
+    }
+
+    public void queryAndWriteToFile(SolrQuery query, File file) {
+        HttpGet request = new HttpGet(SOLR_HOST + "select" + "?" + query);
+        try {
+            HttpResponse httpResponse = server.getHttpClient().execute(request);
+            FileOutputStream fileOutputStream = new FileOutputStream(file,false);
+            IOUtils.copyStream(httpResponse.getEntity().getContent(), fileOutputStream);
+        } catch (IOException e) {
+            LOG.error("Error executing query");
+        }
     }
 
     public SolrDocumentList search(SolrQuery solrQuery, Map<String, String> aggregates) {
