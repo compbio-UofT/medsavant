@@ -59,9 +59,8 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
     @Override
     public JPanel getInfoPanel() {
         if (panel == null) {
-            panel = new JPanel();
+            panel = ViewUtil.getClearPanel();
             panel.setLayout(new GridBagLayout());
-            panel.setBackground(Color.WHITE);
 
             JLabel keyLabel = KeyValuePairPanel.getKeyLabel("Terms");
 

@@ -73,7 +73,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         }
         this.progressSigningIn.setVisible(false);
 
-        titlePanel.setBackground(ViewUtil.getMenuColor());
+        titlePanel.setBackground(ViewUtil.getBGColor());
         loginButton.setOpaque(false);
 
         userField.setText(controller.getUserName());
@@ -117,30 +117,30 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         passwordField = new javax.swing.JPasswordField();
         spiralPanel = new javax.swing.JPanel();
         versionLabel = new javax.swing.JLabel();
-        userLabel = new javax.swing.JLabel();
-        passwordLabel = new javax.swing.JLabel();
-        button_settings = new javax.swing.JToggleButton();
+        javax.swing.JLabel userLabel = new javax.swing.JLabel();
+        javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
+        javax.swing.JToggleButton button_settings = new javax.swing.JToggleButton();
         detailsPanel = new javax.swing.JPanel();
-        hostLabel = new javax.swing.JLabel();
+        javax.swing.JLabel hostLabel = new javax.swing.JLabel();
         hostField = new javax.swing.JTextField();
-        portLabel = new javax.swing.JLabel();
+        javax.swing.JLabel portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
-        dbCreateButton = new javax.swing.JButton();
+        javax.swing.JButton dbCreateButton = new javax.swing.JButton();
         databaseField = new javax.swing.JTextField();
-        databaseLabel = new javax.swing.JLabel();
-        dbRemoveButton = new javax.swing.JButton();
+        javax.swing.JLabel databaseLabel = new javax.swing.JLabel();
+        javax.swing.JButton dbRemoveButton = new javax.swing.JButton();
         loginButton = new javax.swing.JButton();
         progressSigningIn = new javax.swing.JProgressBar();
 
         setLayout(new java.awt.GridBagLayout());
 
-        titlePanel.setBackground(new java.awt.Color(217, 222, 229));
+        titlePanel.setBackground(new java.awt.Color(255, 255, 255));
         titlePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         titlePanel.setMaximumSize(new java.awt.Dimension(400, 32767));
         titlePanel.setMinimumSize(new java.awt.Dimension(400, 800));
+        titlePanel.setOpaque(false);
 
         userField.setColumns(25);
-        userField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         userField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         userField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -149,7 +149,6 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         });
 
         passwordField.setColumns(25);
-        passwordField.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         passwordField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -250,7 +249,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             .addGroup(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                    .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(hostField)
                     .addComponent(portField)
                     .addComponent(portLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -305,12 +304,9 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
                     .addGroup(titlePanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(titlePanelLayout.createSequentialGroup()
-                                .addComponent(button_settings)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(titlePanelLayout.createSequentialGroup()
-                                .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                            .addComponent(button_settings)
+                            .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(titlePanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
@@ -340,10 +336,10 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
                     .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(button_settings)
+                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(loginButton)
-                    .addComponent(progressSigningIn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(progressSigningIn, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(button_settings))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(detailsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -414,24 +410,16 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     }//GEN-LAST:event_userFieldKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JToggleButton button_settings;
     private javax.swing.JTextField databaseField;
-    private javax.swing.JLabel databaseLabel;
-    private javax.swing.JButton dbCreateButton;
-    private javax.swing.JButton dbRemoveButton;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JTextField hostField;
-    private javax.swing.JLabel hostLabel;
     private javax.swing.JButton loginButton;
     private javax.swing.JPasswordField passwordField;
-    private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField portField;
-    private javax.swing.JLabel portLabel;
     private javax.swing.JProgressBar progressSigningIn;
     private javax.swing.JPanel spiralPanel;
     private javax.swing.JPanel titlePanel;
     private javax.swing.JTextField userField;
-    private javax.swing.JLabel userLabel;
     private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 

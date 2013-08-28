@@ -66,7 +66,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
     private static final Log LOG = LogFactory.getLog(ProjectWizard.class);
     private static final String PAGENAME_NAME = "Project Name";
-    private static final String PAGENAME_PATIENTS = "Individuals";
+    private static final String PAGENAME_PATIENTS = "Patients";
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
     private static final String PAGENAME_NOTIFICATIONS = "Notifications";
@@ -220,7 +220,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         };
 
-        page.addText("Add relevant fields for individuals. ");
+        page.addText("Add relevant fields for patients. ");
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setPreferredSize(new Dimension(300, 250));
@@ -313,7 +313,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         };
 
-        page.addText("Add extra fields to retrieve from VCF files. ");
+        page.addText("Add extra fields to parse from INFO text in VCF files. ");
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setPreferredSize(new Dimension(300, 250));

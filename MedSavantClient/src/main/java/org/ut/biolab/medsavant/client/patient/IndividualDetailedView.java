@@ -32,8 +32,7 @@ import javax.swing.*;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Semaphore;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -57,9 +56,11 @@ import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -87,7 +88,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private Graph graph;
     private final CollapsiblePane collapsiblePane;
     private final BlockingPanel blockPanel;
-
+    private static int pedigreeFontSize = 1;
+    private final Semaphore csvSem = new Semaphore(1);
+    private JPanel fontZoomButtonsPanel;
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
         try {
@@ -123,10 +126,39 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         collapsiblePane.setLayout(new BorderLayout());
         collapsiblePane.add(infoContent, BorderLayout.CENTER);
 
+        
+        fontZoomButtonsPanel = new JPanel();
+        fontZoomButtonsPanel.setLayout(new BoxLayout(fontZoomButtonsPanel, BoxLayout.X_AXIS));
+        
+        JButton zoomFont = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FONT_INCREASE)); 
+        zoomFont.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(pedigreeFontSize < 20){
+                    pedigreeFontSize++;
+                    pedigreeDetails.repaint();
+                }                
+            }                        
+        });
+        
+        JButton unZoomFont = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FONT_DECREASE));
+        unZoomFont.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if(pedigreeFontSize > 2){
+                    pedigreeFontSize--;
+                    pedigreeDetails.repaint();
+                }                
+            }                        
+        });
+        fontZoomButtonsPanel.add(zoomFont);
+        fontZoomButtonsPanel.add(unZoomFont);
+        
         infoDetails = ViewUtil.getClearPanel();
         pedigreeDetails = new JPanel();
         pedigreeDetails.setBackground(Color.white);
-
+        pedigreeDetails.setLayout(new BoxLayout(pedigreeDetails, BoxLayout.Y_AXIS));
+        pedigreeDetails.add(fontZoomButtonsPanel);
         ViewUtil.setBoxYLayout(infoContent);
         infoContent.add(infoDetails);
 
@@ -136,26 +168,27 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         addBottomComponent(menu);
 
         blockPanel = new BlockingPanel("No individual selected", content);
-        viewContainer.add(blockPanel, BorderLayout.CENTER);
+        viewContainer.add(blockPanel, BorderLayout.CENTER);        
     }
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
-        pedigreeDetails.removeAll();
-        pedigreeDetails.setLayout(new BorderLayout());
-
+        pedigreeDetails.removeAll();                
+///        pedigreeDetails.setLayout(new BorderLayout());
+        
+        pedigreeDetails.add(fontZoomButtonsPanel);//, BorderLayout.NORTH);
         //Step 1
         graph = new Graph();
         CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
         loader.setSettings(HOSPITAL_ID, MOM, DAD);
         loader.load(graph);
-
+        
         //numIndivids = graph.getSize();
 
         //Step 2
         Sugiyama s = new Sugiyama(graph);
         s.run();
-
+       
         //Step 3
         GraphView2D view = new GraphView2D(s.getLayoutedGraph());
 
@@ -241,8 +274,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         });
 
-        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
-
+        pedigreeDetails.add(view.getComponent());
+//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);                
         pedigreeDetails.updateUI();
     }
 
@@ -316,8 +349,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     b.setText("Hide");
                 } else {
                     b.setText("Show");
-                }
-                pedigreeDetails.updateUI();
+                }                              
+                //pedigreeDetails.revalidate();
+                //pedigreeDetails.repaint();                                                
+                
+                MedSavantFrame.getInstance().pack();
+                
             }
         });
 
@@ -387,9 +424,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         infoDetails.removeAll();
         infoDetails.updateUI();
 
+        
         if (pedigreeWorker != null) {
-            pedigreeWorker.cancel(true);
+            pedigreeWorker.cancel(true);            
         }
+                        
 
         pedigreeWorker = new PedigreeWorker(patientId);
         pedigreeWorker.execute();
@@ -511,25 +550,26 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         protected File doInBackground() throws Exception {
-
+            csvSem.acquire();
             List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
 
             familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
-            File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");
-
-            CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);
-            w.writeNext(new String[]{HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED});
+            File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");                        
+            CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);           
+            w.writeNext(new String[]{HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED, DNA_ID});
             for (Object[] row : results) {
                 String[] srow = new String[row.length];
                 for (int i = 0; i < row.length; i++) {
                     String entry = row[i] == null ? "" : row[i].toString();
                     srow[i] = entry;
+              //      System.out.println("\t"+Thread.currentThread().getId()+": Adding to file");
                 }
                 w.writeNext(srow);
             }
-            w.close();
+            w.close();                        
+            //System.out.println(Thread.currentThread().getId()+": File written");
             return outfile;
         }
 
@@ -541,6 +581,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         protected void showSuccess(File result) {
             showPedigree(result);
             result.delete();
+            csvSem.release();
         }
     }
 
@@ -554,7 +595,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         public void drawSymbol(Graphics2D g2, Float position, float size, Color color, Color color1, NodeView nv) {
-            g2.setFont(new Font("Arial", Font.PLAIN, 1));
+            g2.setFont(new Font("Arial", Font.PLAIN, pedigreeFontSize));
             FontMetrics fm = g2.getFontMetrics();
             int height = fm.getMaxAscent();
             float startX = (float) position.getX() - size / 2;// (float) (position.getX()-(double)width/2);

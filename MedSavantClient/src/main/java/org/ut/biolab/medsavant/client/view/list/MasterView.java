@@ -84,7 +84,7 @@ public class MasterView extends JPanel {
 
         add(errorPanel, CARD_ERROR);
 
-        buttonPanel = new JPanel();
+        buttonPanel = ViewUtil.getClearPanel();
         buttonPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = GridBagConstraints.RELATIVE;
@@ -290,7 +290,7 @@ public class MasterView extends JPanel {
             stp.getTable().addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isRightMouseButton(e)) {                                                
+                    if (SwingUtilities.isRightMouseButton(e)) {
                         JPopupMenu popup = detailedView.createPopup();
                         if (popup != null) {
                             popup.show(e.getComponent(), e.getX(), e.getY());

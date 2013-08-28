@@ -59,7 +59,6 @@ public class PluginController extends Controller {
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
 
-
     /** SINGLETON **/
     public static synchronized PluginController getInstance() {
         if (instance == null) {
@@ -89,6 +88,7 @@ public class PluginController extends Controller {
      * Try to load all JAR files in the given directory.
      */
     public void loadPlugins(File pluginsDir) {
+        LOG.info("Loading plugins in " + pluginsDir.getAbsolutePath());
         File[] files = pluginsDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -97,6 +97,7 @@ public class PluginController extends Controller {
         });
         for (File f: files) {
             try {
+                LOG.info("Loading plugin at " + f.getAbsolutePath());
                 addPlugin(f);
             } catch (PluginVersionException x) {
                 LOG.warn(String.format("No compatible plugins found in %s.", f));
@@ -229,10 +230,10 @@ public class PluginController extends Controller {
         Thread t = new Thread(r);
         t.start();
     }
-    
+
     /**
      * @deprecated
-     */    
+     */
     private static final void copyInputStream(InputStream in, OutputStream out)
             throws IOException {
         byte[] buffer = new byte[1024];
@@ -243,13 +244,14 @@ public class PluginController extends Controller {
         in.close();
         out.close();
     }
-    
+
     public MedSavantPlugin getPlugin(String id) {
         return loadedPlugins.get(id);
     }
 
-    public void queuePluginForRemoval(String id) {
+    public boolean queuePluginForRemoval(String id) {
         FileWriter fstream = null;
+        boolean success = false;
         try {
             PluginDescriptor info = knownPlugins.get(id);
             LOG.info(String.format("Adding plugin %s to uninstall list %s.", info.getFile().getAbsolutePath(), uninstallFile.getPath()));
@@ -262,11 +264,11 @@ public class PluginController extends Controller {
             out.write(info.getFile().getAbsolutePath() + "\n");
             out.close();
 
-            DialogUtils.displayMessage("Uninstallation Complete", "Please restart MedSavant for changes to take effect.");
             pluginsToRemove.add(id);
 
             fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
 
+            success = true;
         } catch (IOException ex) {
             LOG.error(String.format("Error uninstalling plugin: %s.", uninstallFile), ex);
         } finally {
@@ -275,6 +277,8 @@ public class PluginController extends Controller {
             } catch (IOException ignored) {
             }
         }
+
+        return success;
     }
 
     public boolean isPluginQueuedForRemoval(String id) {
@@ -360,6 +364,7 @@ public class PluginController extends Controller {
      * data structures, but not yet loaded.
      */
     public PluginDescriptor addPlugin(File f) throws PluginVersionException {
+        LOG.info(String.format("Loading plugin from %s", f.getAbsolutePath()));
         PluginDescriptor desc = PluginDescriptor.fromFile(f);
         if (desc != null) {
             LOG.debug(String.format("Found usable %s in %s.", desc, f.getName()));
@@ -389,14 +394,19 @@ public class PluginController extends Controller {
      */
     public void installPlugin(File selectedFile) throws Throwable {
         File pluginFile = new File(DirectorySettings.getPluginsDirectory(), selectedFile.getName());
+        LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
         ClientIOUtils.copyFile(selectedFile, pluginFile);
+        LOG.info("Getting plugin information...");
         PluginDescriptor desc = addPlugin(pluginFile);
+        LOG.info("Got plugin information");
         if (desc != null) {
+            LOG.info("Loading plugin...");
             if (pluginLoader == null) {
                 pluginLoader = new PluginLoader(new URL[] { pluginFile.toURI().toURL() }, getClass().getClassLoader());
             }
             pluginLoader.addJar(pluginFile);
             loadPlugin(desc);
+            LOG.info("Done loading plugin");
         }
     }
 

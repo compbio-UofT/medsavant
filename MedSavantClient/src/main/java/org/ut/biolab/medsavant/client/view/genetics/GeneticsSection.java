@@ -15,7 +15,6 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics;
 
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersPage;
 import org.ut.biolab.medsavant.client.aggregate.AggregatePage;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,6 +28,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.apache.commons.lang3.ArrayUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -70,20 +70,27 @@ public class GeneticsSection extends SectionView {
         SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
 
         PluginController pc = PluginController.getInstance();
-        pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-       // pc.getGeneManiaData();
-        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
+        //pc.loadPlugins(DirectorySettings.getPluginsDirectory());
+        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.VARIANT);
+
+        SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
         for (int i = 0; i < knownPlugins.size(); i++) {
-            variantCollectionPlugins.addSubSectionView(new PluginPage(this, knownPlugins.get(i)));
+            appSections[i] = new PluginPage(this, knownPlugins.get(i));
         }
 
-        return new SubSectionView[]{
+        SubSectionView[] builtInSections = new SubSectionView[] { new GeneticsTablePage(this),
+                    new BrowserPage(this),
+                    new GeneticsChartPage(this),
+                    new AnalyticsPage(this) };
+
+        return ArrayUtils.addAll(builtInSections, appSections);
+        /*new SubSectionView[]{
                     new GeneticsTablePage(this),
                     new BrowserPage(this),
                     new GeneticsChartPage(this),
-                    new AnalyticsPage(this)
-                //,variantCollectionPlugins
-                };
+                    new AnalyticsPage(this),
+                    variantCollectionPlugins
+                };*/
     }
 
     @Override

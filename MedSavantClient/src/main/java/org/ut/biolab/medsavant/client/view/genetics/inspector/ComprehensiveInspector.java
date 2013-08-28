@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsGeneSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsVariantSubInspector;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  *
@@ -174,10 +175,10 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private VariantRecord currentVariantRecord;
 
     public void setVariantRecord(final VariantRecord r) {
-     
+
         currentVariantRecord = r;
         //System.out.println("Setting variant Record");
-        if (variantRecordSetterThread == null || variantRecordSetterThread.isDone()) {            
+        if (variantRecordSetterThread == null || variantRecordSetterThread.isDone()) {
             this.switchToVariantInspector();
             final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getPosition(), r.getRef(), r.getAlt(), r.getType().toString());
 
@@ -215,7 +216,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 }
             };
             variantRecordSetterThread.execute();
-        }else{
+        } else {
             //System.out.println("Reusing existing thread...");
         }
 
@@ -282,11 +283,13 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     SimpleVariant sv;
                     do {
                         sv = currentSimpleVariant;
-                        if (instance.simpleVariantInspector != null) {
-                            instance.simpleVariantInspector.setSimpleVariant(sv);
-                        }
-                        if (instance.otherIndividualsVariantSubInspector != null) {
-                            instance.otherIndividualsVariantSubInspector.handleEvent(sv);
+                        if (sv != null) {
+                            if (instance.simpleVariantInspector != null) {
+                                instance.simpleVariantInspector.setSimpleVariant(sv);
+                            }
+                            if (instance.otherIndividualsVariantSubInspector != null) {
+                                instance.otherIndividualsVariantSubInspector.handleEvent(sv);
+                            }
                         }
                         // TODO hide detailed inspector and social inspector
                     } while (currentSimpleVariant != sv);
@@ -301,8 +304,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     @Override
     public synchronized void handleEvent(final Object event) {
-      //  System.out.println("handleEvent " + System.currentTimeMillis());
-        
+        //  System.out.println("handleEvent " + System.currentTimeMillis());
+
         currentEvent = event;
 
         if (eventHandlerThread == null || eventHandlerThread.isDone()) {
@@ -381,9 +384,14 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 public void stateChanged(ChangeEvent ce) {
                     int selectedIndex = getSelectedIndex();
                     if (getTitleAt(selectedIndex).equals("Gene")) {
-                        setGene(simpleVariantInspector.getSelectedGene());
+                        if(simpleVariantInspector.getSelectedGene() !=null){
+                            setGene(simpleVariantInspector.getSelectedGene());
+                        }
+
                     } else if (getTitleAt(selectedIndex).equals("Variant")) {
-                        setSimpleVariant(simpleVariantInspector.getSimpleVariant());
+                        if(simpleVariantInspector.getSimpleVariant() != null){
+                            setSimpleVariant(simpleVariantInspector.getSimpleVariant());
+                        }
                     }
                 }
             });

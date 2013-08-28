@@ -142,6 +142,8 @@ public class NetworkUtils {
         while ((bytesRead = in.read(buf)) != -1) {
             out.write(buf, 0, bytesRead);
         }
+        in.close();
+        out.close();
 
         return f;
     }

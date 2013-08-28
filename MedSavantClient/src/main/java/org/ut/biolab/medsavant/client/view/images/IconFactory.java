@@ -63,6 +63,7 @@ public class IconFactory {
         EXPAND,
         COLLAPSE,
         EDIT,
+        GEAR,
         IMPORT,
         EXPORT,
         FILTER,
@@ -85,6 +86,7 @@ public class IconFactory {
         LINKOUT,
         COPY,
         MORE,
+        NETWORK,
         CHART_SMALL,
         CONFIGURE,
         HISTORY_ON_TOOLBAR,
@@ -93,10 +95,13 @@ public class IconFactory {
         LOAD_ON_TOOLBAR,
         MENU_USER,
         MENU_SERVER,
+        MENU_STORE,
         CLOSE,
         SEARCH_PH,
         DOCK,
-        UNDOCK
+        UNDOCK,
+        FONT_INCREASE,
+        FONT_DECREASE
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
@@ -142,6 +147,8 @@ public class IconFactory {
                 return getIcon(iconroot + "section_variants2.png");
             case MENU_USER:
                 return getIcon(iconroot + "menu-user.png");
+            case MENU_STORE:
+                return getIcon(iconroot + "menu-store.png");
             case SECTION_TABLE:
                 return getIcon(iconroot + "menu-search.png");
             case SECTION_DATA:
@@ -182,6 +189,10 @@ public class IconFactory {
                 return getIcon(iconroot + "add_f.png");
             case EDIT:
                 return getIcon(iconroot + "mac_edit.png");
+            case GEAR:
+                return getIcon(iconroot + "mac_gear.png");
+                case NETWORK:
+                return getIcon(iconroot + "mac_link.png");
             case IMPORT:
                 return getIcon(iconroot + "import.png");
             case EXPORT:
@@ -214,6 +225,10 @@ public class IconFactory {
                 return getIcon(iconroot + "export.png");
             case DOCK:
                 return getIcon(iconroot + "import.png");
+            case FONT_INCREASE:
+                return getIcon(iconroot + "font_increase.png");
+            case FONT_DECREASE:
+                return getIcon(iconroot + "font_decrease.png");
             default:
                 return null;
         }

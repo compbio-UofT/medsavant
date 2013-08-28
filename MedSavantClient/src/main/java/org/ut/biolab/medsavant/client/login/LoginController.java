@@ -198,7 +198,13 @@ public class LoginController extends Controller<LoginEvent> {
     public void logout() {
         MedSavantFrame.getInstance().setTitle("MedSavant");
         setLoggedIn(false);
-        System.exit(0);
+        this.unregister();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        } finally {
+            System.exit(0);
+        }
     }
 
     public void unregister() {
@@ -232,16 +238,16 @@ public class LoginController extends Controller<LoginEvent> {
         String proj = null;
         if (projNames.length == 0) {
             if (level == UserLevel.ADMIN) {
-                int result = DialogUtils.askOKCancel("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
-                if (result == DialogUtils.OK) {
+                DialogUtils.displayMessage("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
+                //if (result == DialogUtils.OK) {
                     new ProjectWizard().setVisible(true);
                     projNames = pc.getProjectNames();
                     if (projNames.length > 0) {
                         proj = projNames[0];
                     }
-                } else {
-                    MedSavantFrame.getInstance().requestClose();
-                }
+                //} else {
+                //    MedSavantFrame.getInstance().requestClose();
+                //}
 
             } else {
                 DialogUtils.displayMessage("Welcome to MedSavant", "No projects have been started. Please contact your administrator.");

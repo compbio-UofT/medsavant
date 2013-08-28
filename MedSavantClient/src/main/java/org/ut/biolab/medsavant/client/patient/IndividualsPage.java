@@ -32,7 +32,7 @@ public class IndividualsPage extends SubSectionView {
     private SplitScreenView view;
 
     public IndividualsPage(SectionView parent) {
-        super(parent, "Individuals");
+        super(parent, "Patients");
     }
 
     @Override

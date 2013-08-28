@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.genetics.family;
+package medsavant.mendel.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,18 +18,15 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class FamilyMattersPage extends SubSectionView {
+public class MendelPanel {
+    public static String PAGE_NAME = "Mendel";
 
     private JPanel view;
-    private FamilyMattersOptionView fo;
+    private OptionView fo;
 
-    public static final String PAGE_NAME = "Cohort Analysis";
-
-    public FamilyMattersPage(SectionView parent) {
-        super(parent, PAGE_NAME);
+    public MendelPanel() {
     }
 
-    @Override
     public JPanel getView() {
 
         if (view == null) {
@@ -40,7 +37,7 @@ public class FamilyMattersPage extends SubSectionView {
             JPanel titlePanel = new JPanel();
             ViewUtil.applyHorizontalBoxLayout(titlePanel);
 
-            JLabel title = new JLabel("Cohort Analysis");
+            JLabel title = new JLabel("Mendel");
             title.setOpaque(true);
             title.setBorder(ViewUtil.getBigBorder());
             title.setOpaque(false);
@@ -53,7 +50,7 @@ public class FamilyMattersPage extends SubSectionView {
             p.setBorder(ViewUtil.getBigBorder());
             p.setLayout(new BorderLayout());
 
-            fo = new FamilyMattersOptionView();
+            fo = new OptionView();
             p.add(ViewUtil.centerHorizontally(fo.getView()),BorderLayout.NORTH);
 
             view.add(p, BorderLayout.CENTER);
@@ -62,9 +59,7 @@ public class FamilyMattersPage extends SubSectionView {
         return view;
     }
 
-    @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void refresh() {
         fo.viewDidLoad();
     }
 }

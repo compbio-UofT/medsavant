@@ -64,12 +64,12 @@ public class Menu extends JPanel {
     private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
     private static final Log LOG = LogFactory.getLog(Menu.class);
-    private UpdatesPanel updatesPanel = new UpdatesPanel();    
-   
+    private UpdatesPanel updatesPanel = new UpdatesPanel();
+
     public void checkForUpdateNotifications(){
         updatesPanel.update();
     }
-    
+
     public JButton getSubSectionButton(SubSectionView ssv) {
         return map.get(ssv);
     }
@@ -88,7 +88,8 @@ public class Menu extends JPanel {
         secondaryMenu.setBackground(ViewUtil.getSecondaryMenuColor());
 
         tertiaryMenu = new JPanel();
-        tertiaryMenu.setBackground(Color.darkGray);
+        tertiaryMenu.setBorder(ViewUtil.getBottomLineBorder());
+        tertiaryMenu.setBackground(Color.white);
         // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
         //tertiaryMenu.setMinimumSize(new Dimension(9999, 30));
@@ -104,18 +105,47 @@ public class Menu extends JPanel {
 
         primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
-        
+
         NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
+        JPanel appStorePanel = ViewUtil.getClearPanel();
+        JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
+        ViewUtil.applyHorizontalBoxLayout(appStorePanel);
+        appStorePanel.add(ViewUtil.subTextComponent(appStoreButton, "App Store"));
+
+        appStoreButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MedSavantFrame.getInstance().showAppStore();
+            }
+
+        });
+
+        int componentpadding = 10;
+        primaryMenu.add(Box.createHorizontalStrut(componentpadding));
         primaryMenu.add(primaryMenuSectionButtonContainer);
         primaryMenu.add(Box.createHorizontalGlue());
 
+        FlowLayout fl = new FlowLayout(FlowLayout.RIGHT,componentpadding,1);
+        JPanel rightSidePanel = ViewUtil.getClearPanel();
+        rightSidePanel.setLayout(fl);
+        rightSidePanel.add(updatesPanel);
+        rightSidePanel.add(n);
+        rightSidePanel.add(appStorePanel);
+        rightSidePanel.add(getLoginMenuItem());
+        primaryMenu.add(rightSidePanel);
+        /*
         primaryMenu.add(updatesPanel);
-        primaryMenu.add(ViewUtil.getLargeSeparator());
+        primaryMenu.add(ViewUtil.getMediumSeparator());
 
         primaryMenu.add(n);
-        primaryMenu.add(ViewUtil.getLargeSeparator());
+        primaryMenu.add(ViewUtil.getMediumSeparator());
+
+        primaryMenu.add(appStorePanel);
+        primaryMenu.add(ViewUtil.getMediumSeparator());
         primaryMenu.add(getLoginMenuItem());
+        */
         add(primaryMenu, BorderLayout.NORTH);
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
@@ -328,35 +358,14 @@ public class Menu extends JPanel {
         ViewUtil.applyHorizontalBoxLayout(loginMenu);
 
         userButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER));
-        loginMenu.add(ViewUtil.subTextComponent(userButton, LoginController.getInstance().getUserName()));
+        loginMenu.add(ViewUtil.subTextComponent(userButton, "Log Out"));//LoginController.getInstance().getUserName()));
 
         final JPopupMenu m = new JPopupMenu();
-
-        /*JMenuItem chpass = new JMenuItem("Change Password");
-         chpass.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         LoginController.getInstance().logout();
-         }
-         });
-         m.add(chpass);*/
-
-
-        JMenuItem logout = new JMenuItem("Log Out");
-        logout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                LoginController.getInstance().logout();
-
-            }
-        });
-        m.add(logout);
 
         userButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                m.show(userButton, 0, userButton.getHeight());
+                MedSavantFrame.getInstance().requestClose();
             }
         });
 
@@ -367,7 +376,7 @@ public class Menu extends JPanel {
 
     public void updateLoginStatus() {
         if (LoginController.getInstance().isLoggedIn()) {
-            userButton.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
+            userButton.setToolTipText("Logged in as " + LoginController.getInstance().getUserName() + " since: " + new SimpleDateFormat().format((new Date())));
         } else {
             userButton.setToolTipText(null);
         }

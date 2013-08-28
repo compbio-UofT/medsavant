@@ -39,8 +39,7 @@ public class PluginsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         PluginController pc = PluginController.getInstance();
-        pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
+        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.VARIANT);
 
         PluginPage[] pages = new PluginPage[knownPlugins.size()];
         for (int i = 0; i < pages.length; i++) {

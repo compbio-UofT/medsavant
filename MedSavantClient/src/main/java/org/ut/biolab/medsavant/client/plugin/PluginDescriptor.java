@@ -54,9 +54,24 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     };
 
     public enum Type {
-        FILTER,
-        SECTION,
-        UNKNOWN
+        FILTER {
+            @Override
+            public String toString() {
+                return "Search Condition";
+            }
+        },
+        VARIANT {
+            @Override
+            public String toString() {
+                return "Variant Addition";
+            }
+        },
+        UNKNOWN {
+            @Override
+            public String toString() {
+                return "Unknown";
+            }
+        }
     }
 
     final String className;

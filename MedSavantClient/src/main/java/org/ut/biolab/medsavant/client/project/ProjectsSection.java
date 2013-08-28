@@ -16,6 +16,10 @@
 package org.ut.biolab.medsavant.client.project;
 
 import javax.swing.ImageIcon;
+import org.ut.biolab.medsavant.client.cohort.CohortsPage;
+import org.ut.biolab.medsavant.client.patient.IndividualsPage;
+import org.ut.biolab.medsavant.client.region.RegionPage;
+import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
@@ -37,7 +41,11 @@ public class ProjectsSection extends SectionView {
     public SubSectionView[] getSubSections() {
         if (subSections == null) {
             subSections = new SubSectionView[]{
-                new ProjectSummaryPage(this)
+                new ProjectSummaryPage(this),
+                new IndividualsPage(this),
+                new CohortsPage(this),
+                new RegionPage(this),
+                new VariantFilesPage(this)
             };
         }
         return subSections;

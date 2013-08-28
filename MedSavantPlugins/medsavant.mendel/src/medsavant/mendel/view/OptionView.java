@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.genetics.family;
+package medsavant.mendel.view;
 
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.Notification;
@@ -35,6 +35,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import medsavant.mendel.controller.ApplicationWorker;
+import medsavant.mendel.model.Locks;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -49,7 +51,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView.InheritanceStep.InheritanceModel;
+import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -60,7 +62,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
  *
  * @author mfiume
  */
-public class FamilyMattersOptionView {
+public class OptionView {
 
     private List<IncludeExcludeStep> steps;
     private InheritanceStep inheritanceStep;
@@ -180,7 +182,7 @@ public class FamilyMattersOptionView {
         }
     }
 
-    protected static class IncludeExcludeStep {
+    public static class IncludeExcludeStep {
 
         private JPanel view;
         private JLabel datasetLabel;
@@ -327,7 +329,7 @@ public class FamilyMattersOptionView {
             return zygosity != null;
         }
 
-        Zygosity getZygosity() {
+        public Zygosity getZygosity() {
             return this.zygosity;
         }
 
@@ -406,7 +408,7 @@ public class FamilyMattersOptionView {
     private AggregateBy aggregateBy = AggregateBy.Variant;
     private JPanel view;
 
-    public FamilyMattersOptionView() {
+    public OptionView() {
 
         inheritanceStep = new InheritanceStep();
         zygosityStep = new ZygosityStep();
@@ -425,7 +427,7 @@ public class FamilyMattersOptionView {
         return view;
     }
 
-    protected static class IncludeExcludeCriteria {
+    public static class IncludeExcludeCriteria {
 
         private static Map<String, Set<String>> groupNameToIndividualsMap = new HashMap<String, Set<String>>();
         private JButton chooseIndividualsButton;
@@ -630,14 +632,6 @@ public class FamilyMattersOptionView {
                 }
 
             });
-
-            /*cb = new JComboBox();
-             cb.setName(COHORT_COMBO);
-             updateCohorts(cb);
-             view.add(cb);
-
-             view.add(new JLabel("cohort"));*/
-
 
             individualsGroupName = "";
 
@@ -861,56 +855,12 @@ public class FamilyMattersOptionView {
 
             view.add(chooseIndividualsButton);
         }
-
-        private void updateCohortComboBoxes() {
-            updateCohorts(cb);
-        }
     }
-    private static String COHORT_COMBO = "COHORT_COMBO";
+    //private static String COHORT_COMBO = "COHORT_COMBO";
 
     void viewDidLoad() {
-        for (IncludeExcludeStep s : steps) {
-            for (IncludeExcludeCriteria c : s.criteria) {
-                c.updateCohortComboBoxes();
-            }
-        }
     }
 
-    private static void updateCohorts(JComboBox b) {
-
-        Object o = b.getSelectedItem();
-        Cohort selected = null;
-        if (o instanceof Cohort) {
-            selected = (Cohort) o;
-        }
-
-        b.removeAllItems();
-        Cohort[] cohorts = null;
-
-        try {
-            cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
-        } catch (Exception ex) {
-            DialogUtils.displayErrorMessage("Error loading cohorts", ex);
-        }
-
-        if (cohorts == null || cohorts.length == 0) {
-            b.addItem("no cohorts");
-            b.setEnabled(false);
-
-        } else {
-            b.setEnabled(true);
-            for (Cohort c : cohorts) {
-                b.addItem(c);
-                if (selected != null && c.toString().equals(selected.toString())) {
-                    b.setSelectedItem(c);
-                }
-            }
-            //if (selected != null) {
-            //    b.setSelectedItem(selected);
-            //}
-        }
-
-    }
     int jobNumber = 0;
 
     private void setupView() {
@@ -1030,7 +980,7 @@ public class FamilyMattersOptionView {
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                new MedSavantWorker<Object>(FamilyMattersOptionView.class.getCanonicalName()) {
+                new MedSavantWorker<Object>(OptionView.class.getCanonicalName()) {
                     MedSavantWorker currentWorker;
                     private int notificationID;
                     @Override
@@ -1049,7 +999,7 @@ public class FamilyMattersOptionView {
                         final Locks.FileResultLock fileLock = new Locks.FileResultLock();
                         final Locks.DialogLock dialogLock = new Locks.DialogLock();
 
-                        Notification j = new Notification("Cohort Analysis #" + jobNumber) {
+                        Notification j = new Notification("Mendel #" + jobNumber) {
                             @Override
                             public void showResults() {
                                 dialogLock.getResultsDialog().setTitle(this.getTitle());
@@ -1102,7 +1052,7 @@ public class FamilyMattersOptionView {
                         j.setStatus(Notification.JobStatus.FINISHED);
                         j.setStatusMessage("Complete");
 
-                        int result = DialogUtils.askYesNo("Cohort Analysis Complete", "<html>Would you like to view the<br/>results now?</html>");
+                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
                         if (result == DialogUtils.YES) {
                             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                             dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
@@ -1113,18 +1063,18 @@ public class FamilyMattersOptionView {
                     }
                 }.execute();
 
-                DialogUtils.displayMessage("Cohort Analysis Submitted");
+                DialogUtils.displayMessage("Mendel Submitted");
             }
 
             private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, Notification j, Locks.DialogLock genericLock) {
-                FamilyMattersWorker w = new FamilyMattersWorker(steps, zygosityStep, model, file);
+                ApplicationWorker w = new ApplicationWorker(steps, zygosityStep, model, file);
                 w.setUIComponents(j);
                 w.setCompletionLock(genericLock);
                 return w;
             }
 
             private MedSavantWorker getRetrieverWorker(final Notification m, final Locks.FileResultLock fileLock) {
-                return new MedSavantWorker<File>(FamilyMattersOptionView.class.getCanonicalName()) {
+                return new MedSavantWorker<File>(OptionView.class.getCanonicalName()) {
                     @Override
                     protected void showProgress(double fract) {
                         m.setProgress(fract);
