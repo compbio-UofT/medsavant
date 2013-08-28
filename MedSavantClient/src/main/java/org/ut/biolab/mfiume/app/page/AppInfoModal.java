@@ -28,6 +28,7 @@ public class AppInfoModal extends JDialog {
 
     private final AppStoreInstalledPage installedPage;
     private final AppStoreViewManager avm;
+    private final JButton downloadButton;
 
     public AppInfoModal(final AppInfo i, final AppStoreInstalledPage installedPage, final AppStoreViewManager avm) {
         super((JFrame) null, i.getName(), true);
@@ -55,14 +56,13 @@ public class AppInfoModal extends JDialog {
         mig.setLayout(new MigLayout("wrap 1"));
 
         // bold
-        JLabel nameLabel = new JLabel(i.getName() + " " + i.getVersion());
+        JLabel nameLabel = new JLabel("<html><b>" + i.getName() + "</b> " + i.getVersion() + "</html>");
         Font font = nameLabel.getFont();
 
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
         Font smallFont = new Font(font.getFontName(), Font.PLAIN, font.getSize() - 3);
         Font mediumFont = new Font(font.getFontName(), Font.PLAIN, font.getSize() - 2);
 
-        nameLabel.setFont(boldFont);
 
         // small, gray
         JLabel categoryLabel = new JLabel(i.getCategory());
@@ -81,9 +81,8 @@ public class AppInfoModal extends JDialog {
         description.setLineWrap(true);
         description.setText(i.getDescription());
 
-
-        JButton downloadButton = getSoftButton("Install App");
-        JButton moreInfo = getSoftButton("More Info");
+        downloadButton = AppInfoFlowView.getSoftButton("Install App");
+        JButton moreInfo = AppInfoFlowView.getSoftButton("More Info");
 
         final JDialog thisInstance = this;
 
@@ -107,18 +106,19 @@ public class AppInfoModal extends JDialog {
         mig.add(Box.createVerticalStrut(3));
         mig.add(authorLabel);
         mig.add(Box.createVerticalStrut(3));
-        mig.add(description,"width 100%");
+        mig.add(description, "width 100%");
         mig.add(actionBar);
 
         this.add(mig);
     }
 
-    public static JButton getSoftButton(String string) {
-        JButton b = new JButton(string);
-        b.putClientProperty("JButton.buttonType", "segmentedRoundRect");
-        b.putClientProperty("JButton.segmentPosition", "only");
-        b.setFocusable(false);
-        b.putClientProperty("JComponent.sizeVariant", "small");
-        return b;
+    final void setInstalled(boolean installedAlready) {
+        if (installedAlready) {
+            downloadButton.setEnabled(false);
+            downloadButton.setText("Installed");
+            //downloadButton.removeActionListener(downloadButton.getActionListeners()[0]);
+            downloadButton.updateUI();
+            downloadButton.invalidate();
+        }
     }
 }

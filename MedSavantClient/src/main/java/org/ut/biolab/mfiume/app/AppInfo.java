@@ -8,6 +8,19 @@ import java.net.URL;
  */
 public class AppInfo implements Comparable {
 
+    /*public enum State {
+        LOADED {
+            public String toString() {return "Loaded";}
+        }, INSTALLED{
+            public String toString() {return "Installed";}
+        }, UNINSTALLED{
+            public String toString() {return "Uninstalled";}
+        }, UNKNOWN {
+            public String toString() {return "Unknown";}
+        };
+    }*/
+
+    //private State state;
     private String name;
     private String category;
     private String version;
@@ -16,6 +29,7 @@ public class AppInfo implements Comparable {
     private String author;
     private String web;
     private URL downloadURL;
+    private String id;
 
     public AppInfo(String name, String version, String category, String compatibleWith, String description, String author, String web, URL downloadURL) {
         this.name = name;
@@ -27,7 +41,16 @@ public class AppInfo implements Comparable {
         this.author = author;
         this.web = web;
         this.downloadURL = downloadURL;
+        //state = State.UNKNOWN;
     }
+
+    /*public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }*/
 
     public String getName() {
         return name;
@@ -64,9 +87,7 @@ public class AppInfo implements Comparable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + (this.version != null ? this.version.hashCode() : 0);
-        hash = 97 * hash + (this.author != null ? this.author.hashCode() : 0);
+        hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
 
@@ -82,12 +103,6 @@ public class AppInfo implements Comparable {
         if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }
-        if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
-            return false;
-        }
-        if ((this.author == null) ? (other.author != null) : !this.author.equals(other.author)) {
-            return false;
-        }
         return true;
     }
 
@@ -98,13 +113,15 @@ public class AppInfo implements Comparable {
             if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
                 return name.compareTo(other.name);
             }
-            if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
-                return version.compareTo(other.version);
-            }
-            if ((this.author == null) ? (other.author != null) : !this.author.equals(other.author)) {
-                return author.compareTo(other.author);
-            }
         }
         return -1;
+    }
+
+    public void setID(String id) {
+        this.id = id;
+    }
+
+    public String getID() {
+        return this.id;
     }
 }

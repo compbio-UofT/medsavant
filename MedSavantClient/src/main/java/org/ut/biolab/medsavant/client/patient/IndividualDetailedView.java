@@ -127,7 +127,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         collapsiblePane.add(infoContent, BorderLayout.CENTER);
 
 
-        fontZoomButtonsPanel = new JPanel();
+        fontZoomButtonsPanel = ViewUtil.getClearPanel();
         fontZoomButtonsPanel.setLayout(new BoxLayout(fontZoomButtonsPanel, BoxLayout.X_AXIS));
 
         JButton zoomFont = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FONT_INCREASE));
@@ -151,6 +151,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 }
             }
         });
+        fontZoomButtonsPanel.add(Box.createHorizontalGlue());
         fontZoomButtonsPanel.add(zoomFont);
         fontZoomButtonsPanel.add(unZoomFont);
 
@@ -275,7 +276,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         });
 
         pedigreeDetails.add(view.getComponent());
-//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);                
+//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
         pedigreeDetails.updateUI();
     }
 
@@ -441,7 +442,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
 
 
-        // if (patientIDs != null && patientIDs.length > 0) {            
+       // if (patientIDs != null && patientIDs.length > 0) {            
         // return PatientUtils.createPopup(patientIDs);
         //
         if (hospitalIDs != null && hospitalIDs.length > 0) {

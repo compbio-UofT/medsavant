@@ -2,11 +2,15 @@ package org.ut.biolab.medsavant.client.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.client.plugin.PluginBrowser;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.dialog.DownloadDialog;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -19,10 +23,9 @@ import org.ut.biolab.mfiume.app.api.AppInstaller;
  */
 public class MedSavantAppInstaller implements AppInstaller {
 
-    private final HashSet<AppInfo> installedApps;
+    private HashSet<AppInfo> installedApps;
 
     public MedSavantAppInstaller() {
-        installedApps = new HashSet<AppInfo>();
     }
 
     @Override
@@ -30,9 +33,9 @@ public class MedSavantAppInstaller implements AppInstaller {
 
         System.out.println("Installing app " + i.getName());
         //TODO: use Apache commons-io instead
-        String url = i.getDownloadURL().getPath();
+        String url = i.getDownloadURL().getFile();
 
-        System.out.println("Downloading from " + url);
+        System.out.println("Downloading from " + i.getDownloadURL().toString());
 
         String fileName = url.substring(url.lastIndexOf('/') + 1, url.length());
         try {
@@ -53,18 +56,35 @@ public class MedSavantAppInstaller implements AppInstaller {
         }
 
         System.out.println("Done installing app " + i.getName());
-        installedApps.add(i);
+        //installedApps.add(i);
         return true;
+    }
+
+    private void updateRegistry() {
+        installedApps = new HashSet<AppInfo>();
+
+        List<PluginDescriptor> descriptors = PluginController.getInstance().getDescriptors();
+        //public AppInfo(String name, String version, String category, String compatibleWith, String description, String author, String web, URL downloadURL) {
+
+        for (PluginDescriptor pd : descriptors) {
+            String name = pd.getName();
+            String version = pd.getVersion();
+            String type = pd.getType().toString();
+            String sdkVersion = pd.getSDKVersion();
+            AppInfo ai = new AppInfo(name, version, type, sdkVersion, null, null, null, null);
+            ai.setID(pd.getID());
+            installedApps.add(ai);
+        }
     }
 
     @Override
     public Set<AppInfo> getInstallRegistry() {
+        updateRegistry();
         return installedApps;
     }
 
     @Override
     public boolean uninstallApp(AppInfo appInfo) {
-        installedApps.remove(appInfo);
-        return true;
+        return PluginController.getInstance().queuePluginForRemoval(appInfo.getID());
     }
 }

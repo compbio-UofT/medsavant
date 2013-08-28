@@ -59,7 +59,6 @@ public class PluginController extends Controller {
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
 
-
     /** SINGLETON **/
     public static synchronized PluginController getInstance() {
         if (instance == null) {
@@ -250,8 +249,9 @@ public class PluginController extends Controller {
         return loadedPlugins.get(id);
     }
 
-    public void queuePluginForRemoval(String id) {
+    public boolean queuePluginForRemoval(String id) {
         FileWriter fstream = null;
+        boolean success = false;
         try {
             PluginDescriptor info = knownPlugins.get(id);
             LOG.info(String.format("Adding plugin %s to uninstall list %s.", info.getFile().getAbsolutePath(), uninstallFile.getPath()));
@@ -264,11 +264,11 @@ public class PluginController extends Controller {
             out.write(info.getFile().getAbsolutePath() + "\n");
             out.close();
 
-            DialogUtils.displayMessage("Uninstallation Complete", "Please restart MedSavant for changes to take effect.");
             pluginsToRemove.add(id);
 
             fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
 
+            success = true;
         } catch (IOException ex) {
             LOG.error(String.format("Error uninstalling plugin: %s.", uninstallFile), ex);
         } finally {
@@ -277,6 +277,8 @@ public class PluginController extends Controller {
             } catch (IOException ignored) {
             }
         }
+
+        return success;
     }
 
     public boolean isPluginQueuedForRemoval(String id) {
@@ -362,6 +364,7 @@ public class PluginController extends Controller {
      * data structures, but not yet loaded.
      */
     public PluginDescriptor addPlugin(File f) throws PluginVersionException {
+        LOG.info(String.format("Loading plugin from %s", f.getAbsolutePath()));
         PluginDescriptor desc = PluginDescriptor.fromFile(f);
         if (desc != null) {
             LOG.debug(String.format("Found usable %s in %s.", desc, f.getName()));
