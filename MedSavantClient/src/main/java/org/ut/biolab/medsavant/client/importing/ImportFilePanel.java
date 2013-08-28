@@ -306,9 +306,7 @@ public class ImportFilePanel extends JPanel {
         }
 
         @Override
-        protected void showFailure(Throwable t) {
-            //System.out.println("Failure message: "+t.getMessage());
-            //t.printStackTrace();
+        protected void showFailure(Throwable t) {            
             previewPanel.removeAll();
             previewPanel.add(new JLabel("<html><center><font color=\"#ff0000\">Problem generating preview.<br>Please check that the file is formatted correctly.</font></center></html>", JLabel.CENTER), BorderLayout.CENTER);
             previewPanel.updateUI();
