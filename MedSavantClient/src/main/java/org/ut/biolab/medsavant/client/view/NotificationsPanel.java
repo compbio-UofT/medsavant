@@ -106,7 +106,8 @@ public class NotificationsPanel extends JPanel {
                 m = notifications;
             }
             LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());            
-            m.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            m.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+
             m.show(this, 0, getPreferredSize().height);            
         } else {
             notifications.setVisible(false);
