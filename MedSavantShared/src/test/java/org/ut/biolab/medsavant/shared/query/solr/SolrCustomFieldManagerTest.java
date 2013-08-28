@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.shared.query.solr;
 import org.junit.Test;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
-import org.ut.biolab.medsavant.shared.persistence.SolrCustomFieldManager;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrCustomFieldManager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

@@ -15,15 +15,25 @@
  */
 package org.ut.biolab.medsavant.shared.vcf;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.common.params.CommonParams;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
+
+import java.io.IOException;
 
 
 public class SolrQueryTest {
 
     private SimpleSolrQuery solrQuery;
+
+    private HttpSolrServer server = new HttpSolrServer("http://localhost:8983/solr/medsavant/select");
 
     @Before
     public void initializeTest() {
@@ -41,7 +51,6 @@ public class SolrQueryTest {
         String fullSolrQuery = solrQuery.getNormalQuery();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
-
     }
 
     @Test
@@ -55,7 +64,18 @@ public class SolrQueryTest {
         String fullSolrQuery = solrQuery.getFilterQuery();
 
         Assert.assertEquals(fullSolrQuery, correctQueryResult);
+    }
 
+    @Test
+    public void testHttpClient() throws IOException {
+        SolrQuery query = new SolrQuery("key:bogdan");
+        query.setParam(CommonParams.WT, "csv");
+        query.setParam("csv.separator", "\t");
+
+        HttpGet request = new HttpGet(server.getBaseURL() + "?" + query);
+        HttpResponse httpResponse = server.getHttpClient().execute(request);
+
+        IOUtils.copyStream(httpResponse.getEntity().getContent(), System.out);
     }
 
 }

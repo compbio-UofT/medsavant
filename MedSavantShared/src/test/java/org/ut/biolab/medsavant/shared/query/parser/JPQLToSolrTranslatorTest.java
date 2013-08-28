@@ -106,4 +106,11 @@ public class JPQLToSolrTranslatorTest {
         Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "dna_id:(NA00001 OR NA00002 OR NA00003)");
     }
 
+    @Test
+    public void testUpdate() {
+        SolrQuery resultedQuery = translator.translate("update Setting s set s.value= 1 where s.key = 'hello'");
+
+        Assert.assertEquals(resultedQuery.get(CommonParams.Q).trim(), "key:hello");
+    }
+
 }
