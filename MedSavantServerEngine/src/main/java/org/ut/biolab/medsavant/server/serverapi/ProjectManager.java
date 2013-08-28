@@ -15,8 +15,11 @@
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
-import com.healthmarketscience.sqlbuilder.*;
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -25,23 +28,23 @@ import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ProjectTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFormatTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
-import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.CustomColumn;
+import org.ut.biolab.medsavant.shared.model.CustomColumnType;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrCustomFieldManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
@@ -50,14 +53,14 @@ import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -70,11 +73,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     private static ProjectManager instance;
     private static QueryManager queryManager;
     private static EntityManager entityManager;
+    private static CustomFieldManager customFieldManager;
 
 
     private ProjectManager() throws RemoteException, SessionExpiredException {
         queryManager = QueryManagerFactory.getQueryManager();
         entityManager = EntityManagerFactory.getEntityManager();
+        customFieldManager = new SolrCustomFieldManager();
     }
 
     public static synchronized ProjectManager getInstance() throws RemoteException, SessionExpiredException {
@@ -95,7 +100,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             results.add(String.valueOf(resultRow.getObject("name")));
         }
 
-        return resultRowList.toArray(new String[resultRowList.size()]);
+        return results.toArray(new String[0]);
     }
 
     @Override
@@ -113,11 +118,11 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public int getProjectID(String sid, String projectName) throws SQLException, SessionExpiredException {
         Query query = queryManager.createQuery("Select p.project_id from Project p where p.name= :name");
-        query.setParameter("project_id", projectName);
-        List<ProjectDetails> resultRows = query.execute();
+        query.setParameter("name", projectName);
+        List<ResultRow> resultRows = query.executeForRows();
 
         if (resultRows.size() > 0) {
-            return resultRows.get(0).getProjectID();
+            return (Integer ) (resultRows.get(0).getObject("project_id"));
         } else {
             return -1;
         }
@@ -149,12 +154,12 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws RemoteException, SQLException, SessionExpiredException {
-        //not used by Solr
+        //Todo not used by Solr, maybe move logic
         return createVariantTable(sessID, projID, refID, updID, annIDs, staging, false);
     }
 
     public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException, SessionExpiredException {
-        //not used by Solr
+        //Todo not used by Solr, maybe move logic
         // Create basic fields.
         String tableName = DBSettings.getVariantTableName(projID, refID, updID);
         if (sub) {
@@ -197,38 +202,26 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException{
-        //not used by solr
-        TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
-        InsertQuery query = new InsertQuery(variantTableMap.getTable());
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID);
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID);
+        //Todo add reference + annotation info to project now  - not used by solr
+        //Cannot update, since annotation ids is a multi valued field
+        Query query = queryManager.createQuery("Select p from Project where p.project_id = :projectId");
+        query.setParameter("projectId", projID);
 
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tableName);
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
-
-        float subMultiplier = 1.0f;
-        if (subTableName != null) {
-            subMultiplier = getMultiplier(sessID, tableName, subTableName);
-        }
-        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER), subMultiplier);
-
-
-        // add annotation ids
-        //LOG.info("\n\n\n\n\n\n\n");
-        //LOG.info(annotationIDs);
-        if (annotationIDs.length > 0) {
-            String annIDString = "";
-            for (int id : annotationIDs) {
-                annIDString += id + ",";
-            }
-            //LOG.info(annIDString);
-            annIDString = annIDString.substring(0,annIDString.length()-1); // remove the last comma
-            query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDString);
+        String referenceName = ReferenceManager.getInstance().getReferenceName(sessID, refID);
+        //FIXME add a project entity which actually models a project
+        List<ProjectDetails> projectDetailsList = query.execute();
+        for (ProjectDetails projectDetails : projectDetailsList) {
+            projectDetails.setReferenceID(refID);
+            projectDetails.setReferenceName(referenceName);
+            projectDetails.setUpdateID(updID);
+            projectDetails.setAnnotationIDs(annotationIDs);
         }
 
-        ConnectionController.executeUpdate(sessID, query.toString());
+        try {
+            entityManager.persistAll(projectDetailsList);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting entity");
+        }
     }
 
     /*
@@ -242,7 +235,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
-
+        //Todo return Entity.VARIANT
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -264,7 +257,8 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
-
+        //FIXME implement
+        //return new Object[] { "Variant" , "Variant" , "Variant" }
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -289,7 +283,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     public void addSubsetInfoToMap(String sessID, int projID, int refID, int updID, String subTableName, float multiplier) throws SQLException, SessionExpiredException{
-
+        //no longer used
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addCustomSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
@@ -310,7 +304,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, RemoteException, SessionExpiredException {
-
+        //Todo custom fields?
         ProjectDetails projectDetails = new ProjectDetails();
 
         int projectId = DBUtils.generateId("project_id", "Project");
@@ -363,17 +357,21 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void setAnnotations(String sessID, int projID, int refID, int updID, String annIDs) throws SQLException, SessionExpiredException {
         //Todo
-        String tablename = getVariantTableName(sessID, projID, refID, true);
+        Query query = queryManager.createQuery("Select p from Project where p.project_id = :projectId AND " +
+                "p.reference_id := referenceId");
+        query.setParameter("projectId", projID);
+        query.setParameter("referenceId", refID);
 
-        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-        UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDs);
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tablename)); //should only affect published table
+        ProjectDetails project = query.getFirst();
 
-        ConnectionController.executeUpdate(sessID, query.toString());
+        Integer[] annotationIds = Arrays.copyOf(annIDs.split(","), annIDs.length(), Integer[].class);
+        project.setAnnotationIDs(ArrayUtils.toPrimitive(annotationIds));
+
+        try {
+            entityManager.persist(project);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting annotations");
+        }
     }
 
     @Override
@@ -405,237 +403,111 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void setCustomVariantFields(String sid, int projectId, int referenceId, int updateId, CustomField[] fields) throws SQLException, SessionExpiredException {
+    public void setCustomVariantFields(String sid, int projectId, int referenceId, int updateId, CustomField[] fields) throws SQLException, SessionExpiredException, IOException, InitializationException, URISyntaxException {
         //Todo implement this
-        Connection c = ConnectionController.connectPooled(sid);
-        TableSchema table = MedSavantDatabase.VariantformatTableSchema;
 
-        c.setAutoCommit(false);
-        for (int i = 0; i < fields.length; i++) {
-            CustomField f = fields[i];
-            InsertQuery insertQuery = new InsertQuery(table.getTable());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId);
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId);
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), i);
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getTypeString());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
-            c.createStatement().execute(insertQuery.toString());
+        List<CustomField> customColumnList = new ArrayList<CustomField>();
+        ProjectDetails project =  ProjectManager.getInstance().getProjectDetails(sid, projectId)[0];
+        int i = 0;
+        for (CustomField customField : fields) {
+            customColumnList.add(new CustomColumn(customField, project, CustomColumnType.PATIENT,i));
+            i++;
         }
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
+
+        entityManager.persistAll(customColumnList);
+        customFieldManager.addCustomFields(customColumnList);
     }
 
     //Get the most up-to-date custom fields, as specified in variant_format table
     @Override
     public CustomField[] getCustomVariantFields(String sid, int projectId, int referenceId, int updateId) throws SQLException, SessionExpiredException {
-        //Todo implement this
-        TableSchema table = MedSavantDatabase.VariantformatTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        query.addOrdering(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
+        Query query = queryManager.createQuery("Select c from CustomColumn c where c.entity_name = :entityName and" +
+                "c.project_id = :projectId and c.reference_id = :referenceId and c.update_id = :updateId");
+        query.setParameter("entity_name", CustomColumnType.VARIANT.name());
+        query.setParameter("projectId", projectId);
+        query.setParameter("referenceId", referenceId);
+        query.setParameter("updateId", updateId);
 
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        List<CustomColumn> results = query.execute();
 
-        List<CustomField> result = new ArrayList<CustomField>();
-        while (rs.next()) {
-            result.add(new CustomField(
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME).toLowerCase(),
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
-                    rs.getBoolean(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE),
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS),
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION)));
-        }
-        return result.toArray(new CustomField[0]);
+        return results.toArray(new CustomField[0]);
     }
 
     @Override
     public int getNewestUpdateID(String sid, int projectId, int referenceId, boolean published) throws SQLException, SessionExpiredException {
-        //Todo implement this
-        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        if (published) {
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
-        }
-        query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        rs.next();
-        return rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
+        Query query = queryManager.createQuery("Select max(v.update_id) from Variant v " +
+                "where v.project_id = :projectId and v.reference_id = :referenceId and v.published = :published");
+        query.setParameter("projectId", projectId);
+        query.setParameter("referenceId", referenceId);
+        query.setParameter("published", published);
+        ResultRow result = query.getFirstRow();
+        return (Integer) result.getObject("update_id");
     }
 
     public void publishVariantTable(PooledConnection conn, int projID, int refID, int updID) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-        UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true);
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID));
-
-        conn.executeUpdate(query.toString());
+        Query query = queryManager.createQuery("Update Project p set p.published = :published " +
+                "where p.project_id := projectId and p.reference_id = :referenceId and p.update_id = :updateId");
+        query.setParameter("published", true);
+        query.setParameter("projectId", projID);
+        query.setParameter("referenceId", refID);
+        query.setParameter("updateId", updID);
+        query.execute();
     }
 
     @Override
     public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, SessionExpiredException {
 
-        TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
-        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
+        Query query = queryManager.createQuery("Select p from Project where p.published = :published");
+        query.setParameter("published", true);
 
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(variantMapTable.getTable());
-        query.addAliasedColumn(projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), "A");
-        query.addAliasedColumn(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), "B");
-        query.addAllTableColumns(variantMapTable.getTable());
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                variantMapTable.getTable(),
-                refTable.getTable(),
-                BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                variantMapTable.getTable(),
-                projectTable.getTable(),
-                BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
-
-        List<ProjectDetails> unpublished = new ArrayList<ProjectDetails>();
-        while (rs.next()) {
-            int projID = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID);
-            int refID = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID);
-            int updID = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
-            boolean published = rs.getBoolean(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED);
-
-            if (!map.containsKey(projID)) {
-                map.put(projID, new HashMap<Integer, ProjectDetails>());
-            }
-
-            if (!map.get(projID).containsKey(refID) || map.get(projID).get(refID).getUpdateID() < updID) {
-                ProjectDetails pd = new ProjectDetails(projID, refID, updID, published, rs.getString("A"), rs.getString("B"), null);
-                map.get(projID).put(refID, pd);
-                if (!pd.isPublished()) {
-                    unpublished.add(pd);
-                }
-            }
-        }
-
-        return unpublished.toArray(new ProjectDetails[0]);
+        return query.execute().toArray(new ProjectDetails[0]);
     }
 
     @Override
     public String[] getReferenceNamesForProject(String sessID, int projID) throws SQLException, SessionExpiredException {
 
-        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
+        Query query = queryManager.createQuery("Select p from Project where p.project_id = :projectId");
+        query.setParameter("projectId", projID);
 
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(variantMapTable.getTable());
-        query.addColumns(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
-        query.addJoin(SelectQuery.JoinType.LEFT_OUTER,
-                variantMapTable.getTable(),
-                refTable.getTable(),
-                BinaryConditionMS.equalTo(
-                        refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                        variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-        query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
+        List<ProjectDetails> projectDetailsList = query.execute();
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        List<String> references = new ArrayList<String>();
-        while (rs.next()) {
-            if (!references.contains(rs.getString(1))){
-                references.add(rs.getString(1));
-            }
+        List<String> referenceNames = new ArrayList<String>();
+        for (ProjectDetails p : projectDetailsList) {
+           referenceNames.add(p.getReferenceName());
         }
 
-        return references.toArray(new String[0]);
+        return referenceNames.toArray(new String[0]);
     }
 
     @Override
     public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        Query query = queryManager.createQuery("Select p from Project where p.project_id = :projectId");
+        query.setParameter("projectId", projID);
 
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
+        List<ProjectDetails> projectDetailsList = query.execute();
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+        int[] referenceIds = new int[projectDetailsList.size()];
 
-        List<Integer> references = new ArrayList<Integer>();
-        while (rs.next()) {
-            references.add(rs.getInt(1));
+        int i = 0;
+        for (ProjectDetails p : projectDetailsList) {
+            referenceIds[i++] = p.getProjectID();
         }
 
-        return ArrayUtils.toPrimitive(references.toArray(new Integer[0]));
+        return referenceIds;
     }
-
 
     /**
      * Remove any variant tables with updateMin <= updateId <= updateMax
      */
     public void removeTables(String sessID, int projID, int refID, int updateMax, int updateMin) throws SQLException, SessionExpiredException {
+        //ToDo table remove functionality does not belong to the abstraction layer, but rather to a persistence implementation
+        //until then, just delete all variants with update_id between the 2 values
 
-        //find update ids
-        TableSchema mapTable = MedSavantDatabase.VarianttablemapTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(mapTable.getTable());
-        query.addColumns(
-                mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID),
-                mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
-        query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-        query.addCondition(ComboCondition.and(
-                BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true),
-                BinaryCondition.greaterThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMin, true)));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {
-            while (rs.next()) {
-                int updateId = rs.getInt(1);
-                String tableName = rs.getString(2);
-
-                //remove variant table
-                VariantManagerUtils.dropTableIfExists(sessID, tableName);
-
-                //remove from variant tablemap
-                DeleteQuery dq1 = new DeleteQuery(mapTable.getTable());
-                dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-                dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-                dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-                conn.executeUpdate(dq1.toString());
-
-                //remove from variant format
-                TableSchema formatTable = MedSavantDatabase.VariantformatTableSchema;
-                DeleteQuery dq2 = new DeleteQuery(formatTable.getTable());
-                dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-                dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-                dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-            }
-        } finally {
-            conn.close();
-        }
+        Query query = queryManager.createQuery("Delete from Variant v where v.upload_id between :updateMin and :updateMax");
+        query.setParameter("updateMin", updateMin);
+        query.setParameter("updateMax", updateMax);
+        query.executeDelete();
     }
 }
