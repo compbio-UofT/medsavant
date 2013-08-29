@@ -69,7 +69,7 @@ public class AppStoreLandingPage implements AppStorePage {
             boolean canUpdate = false;
             if (installedAlready) {
                 AppInfo installedApp = AppInstallUtils.getAppWithName(installer,i.getName());
-                if (new AppDescriptor.Version(i.getVersion()).isNewerThan(new AppDescriptor.Version(installedApp.getVersion()))) {
+                if (new AppDescriptor.AppVersion(i.getVersion()).isNewerThan(new AppDescriptor.AppVersion(installedApp.getVersion()))) {
                     canUpdate = true;
                 }
             }

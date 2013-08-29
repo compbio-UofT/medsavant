@@ -16,13 +16,13 @@
 package org.ut.biolab.medsavant.client.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-
 
 /**
  * Plugin description read from the plugin.xml file.
@@ -31,17 +31,22 @@ import javax.xml.stream.XMLStreamReader;
  */
 public class AppDescriptor implements Comparable<AppDescriptor> {
 
-    public static class Version implements Comparable {
+    public static class AppVersion implements Comparable {
+
         private final int minorVersion;
         private final int majorVersion;
         private final int bugfixVersion;
 
-        public Version(String version) {
-            String[] s = version.split("\\.",0);
+        public AppVersion(String version) {
+            String[] s = version.split("\\.", 0);
             System.out.println("Parsing version " + version);
-            majorVersion = Integer.parseInt(s[0]);
-            minorVersion = Integer.parseInt(s[1]);
-            bugfixVersion = Integer.parseInt(s[2]);
+            try {
+                majorVersion = Integer.parseInt(s[0]);
+                minorVersion = Integer.parseInt(s[1]);
+                bugfixVersion = Integer.parseInt(s[2]);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new AssertionError("Invalid App Version " + version + ". App Versions must be of the format <major>.<minor>.<bugfix>");
+            }
         }
 
         @Override
@@ -61,7 +66,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final Version other = (Version) obj;
+            final AppVersion other = (AppVersion) obj;
             if (this.minorVersion != other.minorVersion) {
                 return false;
             }
@@ -74,7 +79,6 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             return true;
         }
 
-
         @Override
         public int compareTo(Object obj) {
             if (obj == null) {
@@ -83,7 +87,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             if (getClass() != obj.getClass()) {
                 return -1;
             }
-            final Version other = (Version) obj;
+            final AppVersion other = (AppVersion) obj;
 
             if (this.majorVersion != other.majorVersion) {
                 return new Integer(this.majorVersion).compareTo(new Integer(other.majorVersion));
@@ -97,15 +101,17 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             return 0;
         }
 
-        public boolean isNewerThan(Version version) {
+        public boolean isNewerThan(AppVersion version) {
             return this.compareTo(version) > 0;
         }
     }
 
     /**
-     * Bare-bones set of tags we need to recognise in plugin.xml in order to identify plugins.
+     * Bare-bones set of tags we need to recognise in plugin.xml in order to
+     * identify plugins.
      */
     private enum PluginXMLElement {
+
         PLUGIN,
         ATTRIBUTE,
         PARAMETER,
@@ -113,9 +119,11 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     };
 
     /**
-     * Bare-bones set of attributes we need to recognise in plugin.xml in order to identify plugins.
+     * Bare-bones set of attributes we need to recognise in plugin.xml in order
+     * to identify plugins.
      */
     private enum PluginXMLAttribute {
+
         ID,
         VALUE,
         VERSION,
@@ -125,6 +133,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     };
 
     public enum Type {
+
         FILTER {
             @Override
             public String toString() {
@@ -144,7 +153,6 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             }
         }
     }
-
     final String className;
     final String id;
     final String version;
@@ -152,7 +160,6 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     final String sdkVersion;
     final File file;
     final Type type;
-
     private static XMLStreamReader reader;
 
     private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
@@ -203,9 +210,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         return (id + version).compareTo(t.id + t.version);
     }
 
-
     /**
-     * Here's where we do our SDK compatibility check.  Update this code whenever the API changes.
+     * Here's where we do our SDK compatibility check. Update this code whenever
+     * the API changes.
      */
     public boolean isCompatible() {
         return sdkVersion.equals("1.0.0");
@@ -275,6 +282,4 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     private static String readAttribute(PluginXMLAttribute attr) {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
     }
-
-
 }
