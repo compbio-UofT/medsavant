@@ -28,17 +28,13 @@ class AppInfoFlowView extends JPanel {
     private final AppStoreViewManager avm;
     private final JButton downloadButton;
     private final AppInfoModal aim;
+    private final InstallActionListener ial;
 
-    public AppInfoFlowView(final AppInfo i, final AppStoreViewManager avm, final AppStoreInstalledPage installedPage, boolean installedAlready) {
+    public AppInfoFlowView(final AppInfo i, final AppStoreViewManager avm, final AppStoreInstalledPage installedPage, boolean installedAlready, boolean canUpdate) {
         super();
 
         this.avm = avm;
         this.installedPage = installedPage;
-
-        /*Dimension d = new Dimension(220, 90);
-        this.setPreferredSize(d);
-        this.setMinimumSize(d);
-        this.setMaximumSize(d);*/
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -73,13 +69,8 @@ class AppInfoFlowView extends JPanel {
         downloadButton = getSoftButton("Install App");
         JButton moreInfo = getSoftButton("More Info");
 
-        downloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                installedPage.queueAppForInstallation(i);
-                avm.switchToPage(installedPage);
-            }
-        });
+        ial = new InstallActionListener(installedPage, i, avm);
+        downloadButton.addActionListener(ial);
 
         aim = new AppInfoModal(i, installedPage, avm);
 
@@ -90,7 +81,13 @@ class AppInfoFlowView extends JPanel {
             }
         });
 
-        setInstalled(installedAlready);
+        if (installedAlready) {
+            if (canUpdate) {
+                setUpdateAllowed(true);
+            } else {
+                setInstalled(true);
+            }
+        }
 
         JPanel actionBar = new JPanel();
         actionBar.setOpaque(false);
@@ -115,8 +112,8 @@ class AppInfoFlowView extends JPanel {
 
     public static JButton getSoftButton(String string) {
         JButton b = new JButton(string);
-        b.putClientProperty("JButton.buttonType", "segmentedRoundRect");
-        b.putClientProperty("JButton.segmentPosition", "only");
+        //b.putClientProperty("JButton.buttonType", "segmentedRoundRect");
+        //b.putClientProperty("JButton.segmentPosition", "only");
         b.setFocusable(false);
         b.putClientProperty("JComponent.sizeVariant", "small");
         return b;
@@ -135,10 +132,17 @@ class AppInfoFlowView extends JPanel {
         if (installedAlready) {
             downloadButton.setEnabled(false);
             downloadButton.setText("Installed");
-            //downloadButton.removeActionListener(downloadButton.getActionListeners()[0]);
             downloadButton.updateUI();
             downloadButton.invalidate();
         }
         aim.setInstalled(installedAlready);
+    }
+
+    private void setUpdateAllowed(boolean canUpdate) {
+        if (canUpdate) {
+            downloadButton.setText("Update");
+            ial.setModeToUpdate(true);
+        }
+        aim.setUpdateAllowed(canUpdate);
     }
 }

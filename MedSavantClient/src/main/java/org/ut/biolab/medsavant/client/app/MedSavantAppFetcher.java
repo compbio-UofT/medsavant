@@ -27,7 +27,8 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
                 "http://genomesavant.com",
                 new URL("http://www.genomesavant.com/p/medsavant/serve/plugin/medsavant.mendel-1.0.0.jar"));
 
-        AppInfo mendelAppInfo2 = new AppInfo(
+
+        AppInfo mendelAppInfo3 = new AppInfo(
                 "Gene Enrichment Testing",
                 "1.0.0",
                 "Visualization",
@@ -39,7 +40,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
 
         List<AppInfo> results = new ArrayList<AppInfo>();
         results.add(mendelAppInfo);
-        results.add(mendelAppInfo2);
+        results.add(mendelAppInfo3);
         return results;
     }
 }

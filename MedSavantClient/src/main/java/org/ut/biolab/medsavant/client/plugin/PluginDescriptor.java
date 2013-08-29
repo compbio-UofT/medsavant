@@ -31,6 +31,77 @@ import javax.xml.stream.XMLStreamReader;
  */
 public class PluginDescriptor implements Comparable<PluginDescriptor> {
 
+    public static class Version implements Comparable {
+        private final int minorVersion;
+        private final int majorVersion;
+        private final int bugfixVersion;
+
+        public Version(String version) {
+            String[] s = version.split("\\.",0);
+            System.out.println("Parsing version " + version);
+            majorVersion = Integer.parseInt(s[0]);
+            minorVersion = Integer.parseInt(s[1]);
+            bugfixVersion = Integer.parseInt(s[2]);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + this.minorVersion;
+            hash = 59 * hash + this.majorVersion;
+            hash = 59 * hash + this.bugfixVersion;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.minorVersion != other.minorVersion) {
+                return false;
+            }
+            if (this.majorVersion != other.majorVersion) {
+                return false;
+            }
+            if (this.bugfixVersion != other.bugfixVersion) {
+                return false;
+            }
+            return true;
+        }
+
+
+        @Override
+        public int compareTo(Object obj) {
+            if (obj == null) {
+                return -1;
+            }
+            if (getClass() != obj.getClass()) {
+                return -1;
+            }
+            final Version other = (Version) obj;
+
+            if (this.majorVersion != other.majorVersion) {
+                return new Integer(this.majorVersion).compareTo(new Integer(other.majorVersion));
+            }
+            if (this.minorVersion != other.minorVersion) {
+                return new Integer(this.minorVersion).compareTo(new Integer(other.minorVersion));
+            }
+            if (this.bugfixVersion != other.bugfixVersion) {
+                return new Integer(this.bugfixVersion).compareTo(new Integer(other.bugfixVersion));
+            }
+            return 0;
+        }
+
+        public boolean isNewerThan(Version version) {
+            return this.compareTo(version) > 0;
+        }
+    }
+
     /**
      * Bare-bones set of tags we need to recognise in plugin.xml in order to identify plugins.
      */

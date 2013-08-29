@@ -2,6 +2,8 @@ package org.ut.biolab.mfiume.app.page;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -10,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.mfiume.app.AppInfo;
+import org.ut.biolab.mfiume.app.AppInstallUtils;
 import org.ut.biolab.mfiume.app.AppStorePage;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
 import org.ut.biolab.mfiume.app.component.TitleBar;
@@ -80,16 +83,18 @@ public class AppStoreInstalledPage implements AppStorePage {
         Set<AppInfo> installedApps = installer.getInstallRegistry();
 
         for (AppInfo i : installedApps) {
-            if (recentlyInstalled.contains(i) || recentlyUninstalled.contains(i)) { continue; }
-            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.INSTALLED), "width 100%");
+            if (recentlyInstalled.contains(i) || recentlyUninstalled.contains(i)) {
+                continue;
+            }
+            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.INSTALLED), "width 100%");
         }
 
         for (AppInfo i : recentlyInstalled) {
-            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.JUST_INSTALLED), "width 100%");
+            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_INSTALLED), "width 100%");
         }
 
         for (AppInfo i : recentlyUninstalled) {
-            view.add(new AppInstallInstalledView(i, installer,this,AppInstallInstalledView.State.JUST_UNINSTALLED), "width 100%");
+            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_UNINSTALLED), "width 100%");
         }
 
         if (installedApps.isEmpty()) {
@@ -97,19 +102,27 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
-             view.add(new JLabel("<html><font color=RED>Restart MedSavant for changes to take effect</font></html>"));
+            view.add(new JLabel("<html><font color=RED>Restart MedSavant for changes to take effect</font></html>"));
         }
 
         view.updateUI();
     }
 
-    synchronized void dequeueAppForInstallation(AppInfo i) {
+    private synchronized void dequeueAppForInstallation(AppInfo i) {
         installQueue.remove(i);
     }
 
     synchronized void queueAppForInstallation(final AppInfo i) {
+        queueAppForInstallation(i, true);
+    }
 
-        if (installer.getInstallRegistry().contains(i) || this.installQueue.contains(i)) {
+    synchronized void queueAppForInstallation(final AppInfo i, boolean async) {
+
+        System.out.println("Installing " + i.toString());
+
+        if (!recentlyUninstalled.contains(i)
+                && (installer.getInstallRegistry().contains(i) || this.installQueue.contains(i))) {
+            System.out.println("App already installed, stopping");
             return;
         }
 
@@ -133,8 +146,55 @@ public class AppStoreInstalledPage implements AppStorePage {
         });
         t.start();
 
+        if (!async) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+            }
+        }
+
     }
 
+    synchronized void queueAppWithNameForUninstallation(String name) {
+        queueAppWithNameForUninstallation(name, true);
+    }
+
+    synchronized void queueAppWithNameForUninstallation(String name, boolean async) {
+
+        final AppInfo i = AppInstallUtils.getAppWithName(installer,name);
+
+        if (i == null || !installer.getInstallRegistry().contains(i)) {
+            return;
+        }
+
+        final AppStoreInstalledPage thisInstance = this;
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                boolean success = installer.uninstallApp(i);
+                if (success) {
+                    thisInstance.addRecentlyUninstalledApp(i);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            thisInstance.updateInstalledList();
+                        }
+                    });
+                }
+            }
+        });
+        t.start();
+
+        if (!async) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+            }
+        }
+
+    }
     private static final String iconroot = "/org/ut/biolab/mfiume/app/icon/";
 
     @Override

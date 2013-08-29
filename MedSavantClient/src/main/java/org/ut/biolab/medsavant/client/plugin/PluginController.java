@@ -259,6 +259,8 @@ public class PluginController extends Controller {
             if (!uninstallFile.exists()) {
                 uninstallFile.createNewFile();
             }
+
+            // append to the remove file
             fstream = new FileWriter(uninstallFile, true);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(info.getFile().getAbsolutePath() + "\n");

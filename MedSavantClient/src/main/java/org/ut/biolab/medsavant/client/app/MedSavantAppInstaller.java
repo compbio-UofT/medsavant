@@ -85,6 +85,7 @@ public class MedSavantAppInstaller implements AppInstaller {
 
     @Override
     public boolean uninstallApp(AppInfo appInfo) {
+        System.out.println("Uninstalling app " + appInfo.toString());
         return PluginController.getInstance().queuePluginForRemoval(appInfo.getID());
     }
 }

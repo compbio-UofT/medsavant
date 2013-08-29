@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.app;
 
 import java.net.URL;
+import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
 
 /**
  *
@@ -8,19 +9,6 @@ import java.net.URL;
  */
 public class AppInfo implements Comparable {
 
-    /*public enum State {
-        LOADED {
-            public String toString() {return "Loaded";}
-        }, INSTALLED{
-            public String toString() {return "Installed";}
-        }, UNINSTALLED{
-            public String toString() {return "Uninstalled";}
-        }, UNKNOWN {
-            public String toString() {return "Unknown";}
-        };
-    }*/
-
-    //private State state;
     private String name;
     private String category;
     private String version;
@@ -123,5 +111,10 @@ public class AppInfo implements Comparable {
 
     public String getID() {
         return this.id;
+    }
+
+    @Override
+    public String toString() {
+        return "AppInfo{" + "name=" + name + ", category=" + category + ", version=" + version + ", compatibleWith=" + compatibleWith + ", description=" + description + ", author=" + author + ", web=" + web + ", downloadURL=" + downloadURL + '}';
     }
 }
