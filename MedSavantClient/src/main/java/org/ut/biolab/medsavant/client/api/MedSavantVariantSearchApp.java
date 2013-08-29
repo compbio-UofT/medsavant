@@ -18,7 +18,7 @@ package org.ut.biolab.medsavant.client.api;
 
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 
 
 /**
@@ -26,7 +26,7 @@ import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
  *
  * @author mfiume
  */
-public abstract class MedSavantFilterPlugin extends MedSavantPlugin {
+public abstract class MedSavantVariantSearchApp extends MedSavantApp {
 
     /**
      * This method is called once during the lifecycle of each instance of the plugin

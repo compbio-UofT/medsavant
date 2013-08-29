@@ -54,7 +54,7 @@ public class PluginController extends Controller {
     private File uninstallFile;
     private List<String> pluginsToRemove = new ArrayList<String>();
     private Map<String, AppDescriptor> knownPlugins = new HashMap<String, AppDescriptor>();
-    private Map<String, MedSavantPlugin> loadedPlugins = new HashMap<String, MedSavantPlugin>();
+    private Map<String, MedSavantApp> loadedPlugins = new HashMap<String, MedSavantApp>();
     private Map<String, String> pluginErrors = new LinkedHashMap<String, String>();
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
@@ -245,7 +245,7 @@ public class PluginController extends Controller {
         out.close();
     }
 
-    public MedSavantPlugin getPlugin(String id) {
+    public MedSavantApp getPlugin(String id) {
         return loadedPlugins.get(id);
     }
 
@@ -354,7 +354,7 @@ public class PluginController extends Controller {
     private void loadPlugin(AppDescriptor desc) throws Throwable {
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
-        MedSavantPlugin plugin = (MedSavantPlugin)pluginClass.newInstance();
+        MedSavantApp plugin = (MedSavantApp)pluginClass.newInstance();
         plugin.setDescriptor(desc);
         loadedPlugins.put(desc.getID(), plugin);
         LOG.debug(String.format("Firing LOADED event to %s listeners.", listeners.size()));

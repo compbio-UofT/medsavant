@@ -17,7 +17,7 @@
 package org.ut.biolab.medsavant.client.filter;
 
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
-import org.ut.biolab.medsavant.client.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 
 
 /**
@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.client.api.MedSavantFilterPlugin;
  */
 public class PluginFilterView {
 
-    public static FilterView getFilterView(final MedSavantFilterPlugin plugin, final int queryID) {
+    public static FilterView getFilterView(final MedSavantVariantSearchApp plugin, final int queryID) {
         return new FilterView(plugin.getTitle(), queryID) {
             {
                 plugin.init(this, queryID);

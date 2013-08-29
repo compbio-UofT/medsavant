@@ -21,13 +21,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.client.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.client.ontology.OntologyFilter;
 import org.ut.biolab.medsavant.client.ontology.OntologyFilterView;
-import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -259,9 +259,9 @@ class OntologyFilterHolder extends FilterHolder {
 
 
 class PluginFilterHolder extends FilterHolder {
-    private final MedSavantFilterPlugin plugin;
+    private final MedSavantVariantSearchApp plugin;
 
-    PluginFilterHolder(MedSavantFilterPlugin p, int queryID) {
+    PluginFilterHolder(MedSavantVariantSearchApp p, int queryID) {
         super(p.getTitle(), p.getDescriptor().getID(), queryID);
         plugin = p;
     }
@@ -275,10 +275,10 @@ class PluginFilterHolder extends FilterHolder {
     public void loadFilterView(FilterState state) {
         PluginController pc = PluginController.getInstance();
         for (AppDescriptor desc: pc.getDescriptors()) {
-            MedSavantPlugin p = pc.getPlugin(desc.getID());
-            if (p instanceof MedSavantFilterPlugin && ((MedSavantFilterPlugin)p).getTitle().equals(state.getName())) {
-                filterView = PluginFilterView.getFilterView((MedSavantFilterPlugin)p, queryID);
-                ((MedSavantFilterPlugin)p).loadState(state, queryID);
+            MedSavantApp p = pc.getPlugin(desc.getID());
+            if (p instanceof MedSavantVariantSearchApp && ((MedSavantVariantSearchApp)p).getTitle().equals(state.getName())) {
+                filterView = PluginFilterView.getFilterView((MedSavantVariantSearchApp)p, queryID);
+                ((MedSavantVariantSearchApp)p).loadState(state, queryID);
             }
         }
     }

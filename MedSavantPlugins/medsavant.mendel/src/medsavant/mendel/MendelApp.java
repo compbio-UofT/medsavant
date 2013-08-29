@@ -21,7 +21,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantSectionPlugin;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 import medsavant.mendel.view.MendelPanel;
 
 /**
@@ -29,7 +29,7 @@ import medsavant.mendel.view.MendelPanel;
  *
  * @author tarkvara
  */
-public class MendelApp extends MedSavantSectionPlugin {
+public class MendelApp extends MedSavantVariantSectionApp {
     private MendelPanel fmp;
     /**
      * Create the user-interface which appears within the panel.

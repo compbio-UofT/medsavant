@@ -26,12 +26,12 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
-import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -146,9 +146,9 @@ public class QueryPanel extends CollapsiblePanes {
             // Plugin filters
             PluginController pc = PluginController.getInstance();
             for (AppDescriptor desc : pc.getDescriptors()) {
-                MedSavantPlugin plugin = pc.getPlugin(desc.getID());
-                if (plugin instanceof MedSavantFilterPlugin) {
-                    catHolders.add(new PluginFilterHolder((MedSavantFilterPlugin)plugin, queryID));
+                MedSavantApp plugin = pc.getPlugin(desc.getID());
+                if (plugin instanceof MedSavantVariantSearchApp) {
+                    catHolders.add(new PluginFilterHolder((MedSavantVariantSearchApp)plugin, queryID));
                 }
             }
 
