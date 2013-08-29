@@ -87,17 +87,9 @@ public class GeneticsSection extends SectionView {
 
         SubSectionView[] builtInSections = new SubSectionView[] { new GeneticsTablePage(this),
                     new BrowserPage(this),
-                    new GeneticsChartPage(this),
-                    new AnalyticsPage(this) };
+                    new GeneticsChartPage(this)};
 
         return ArrayUtils.addAll(builtInSections, appSections);
-        /*new SubSectionView[]{
-                    new GeneticsTablePage(this),
-                    new BrowserPage(this),
-                    new GeneticsChartPage(this),
-                    new AnalyticsPage(this),
-                    variantCollectionPlugins
-                };*/
     }
 
     @Override
