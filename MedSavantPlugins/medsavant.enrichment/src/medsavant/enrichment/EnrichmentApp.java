@@ -14,19 +14,19 @@
  *    limitations under the License.
  */
 
-package medsavant.listenrichment;
+package medsavant.enrichment;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantSectionPlugin;
-import medsavant.listenrichment.app.AggregatePage;
+import medsavant.enrichment.app.AggregatePage;
 
 /**
  * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class ListEnrichmentApp extends MedSavantSectionPlugin {
+public class EnrichmentApp extends MedSavantSectionPlugin {
     private AggregatePage fmp;
 
     /**
@@ -43,7 +43,7 @@ public class ListEnrichmentApp extends MedSavantSectionPlugin {
 
     @Override
     public String getTitle() {
-        return "List Enrichment";
+        return "Enrichment";
     }
 
     @Override

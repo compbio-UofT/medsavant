@@ -102,6 +102,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
+            view.add(Box.createVerticalStrut(5));
             view.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
         }
 

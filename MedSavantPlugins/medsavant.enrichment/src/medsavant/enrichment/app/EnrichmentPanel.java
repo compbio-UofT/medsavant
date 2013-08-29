@@ -1,8 +1,8 @@
-package medsavant.listenrichment.app;
+package medsavant.enrichment.app;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import medsavant.listenrichment.app.AggregatesStatsPanel;
+import medsavant.enrichment.app.AggregatesStatsPanel;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;

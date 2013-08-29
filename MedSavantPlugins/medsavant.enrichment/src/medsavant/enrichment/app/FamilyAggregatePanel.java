@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package medsavant.listenrichment.app;
+package medsavant.enrichment.app;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -51,7 +51,7 @@ import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import medsavant.listenrichment.app.AggregatePanel;
+import medsavant.enrichment.app.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.patient.PedigreeBasicRule;

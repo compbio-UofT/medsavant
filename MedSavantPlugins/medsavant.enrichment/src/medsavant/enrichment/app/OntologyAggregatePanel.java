@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package medsavant.listenrichment.app;
+package medsavant.enrichment.app;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -38,7 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import medsavant.listenrichment.app.AggregatePanel;
+import medsavant.enrichment.app.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.login.LoginController;

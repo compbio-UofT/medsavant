@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package medsavant.listenrichment.app;
+package medsavant.enrichment.app;
 
 import javax.swing.JPanel;
 

@@ -23,24 +23,24 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
                 "1.0.0",
                 "Analysis",
                 "1.0.1",
-                "Scegli su www.trenitalia.com il tuo prossimo viaggio rispettando le regole sopra descritte Una volta selezionata la soluzione di viaggio, inserisci i riferimenti del viaggiatore e nel campo dedicato il codice buono sconto, facendo attenzione a riportare per intero le 19 cifre che lo compongono, zero compresi. Il sistema una volta verificata la validità del codice procederà a sottrarre il valore del buono sconto dall'importo totale. Procedi al pagamento selezionando la modalità che preferisci. Ti ricordiamo che nel caso dovessi modificare in un secondo momento il tuo viaggio, perderai il valore del buono sconto e che il valore del buono non è rimborsabile e non dà diritto ad indennità.",
+                "Mendel adds the ability to perform case control analysis and to implement inheritance models.",
                 "University of Toronto Biolab",
                 "http://genomesavant.com",
                 new URL("http://www.genomesavant.com/p/medsavant/serve/plugin/medsavant.mendel-1.0.0.jar"));
 
-        AppInfo mendelAppInfo3 = new AppInfo(
-                "Gene Enrichment Testing",
+        AppInfo mendelAppInfo2 = new AppInfo(
+                "Enrichment",
                 "1.0.0",
-                "Visualization",
+                "Statistics",
                 "1.0.1",
-                "Mendel is a great app",
+                "Enrichment adds the ability to aggregate variants by user-specified gene-lists, and terms in the Gene Ontology, Human Phenotype Ontology, and OMIM. Aggregation is a basic form of enrichment testing, and facilitates the process of identifying biological functions that are significantly affected within the sequenced population and to ultimately learn and understand the genetic mechanisms of their diseases.",
                 "University of Toronto Biolab",
                 "http://genomesavant.com",
-                new URL("http://www.genomesavant.com/medsavant/plugins/medsavant.demo-1.0.0.jar"));
+                new URL("http://www.genomesavant.com/p/medsavant/serve/plugin/medsavant.enrichment-1.0.0.jar"));
 
         List<AppInfo> results = new ArrayList<AppInfo>();
         results.add(mendelAppInfo);
-        results.add(mendelAppInfo3);
+        results.add(mendelAppInfo2);
         return results;
     }
 }
