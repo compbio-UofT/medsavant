@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.client.cohort;
+package medsavant.listenrichment.app;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -36,7 +36,7 @@ import com.jidesoft.grid.*;
 import java.awt.BorderLayout;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.aggregate.AggregatePanel;
+import medsavant.listenrichment.app.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;

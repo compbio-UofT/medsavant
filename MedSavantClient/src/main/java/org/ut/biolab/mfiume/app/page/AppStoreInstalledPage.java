@@ -102,7 +102,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
-            view.add(new JLabel("<html><font color=RED>Restart MedSavant for changes to take effect</font></html>"));
+            view.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
         }
 
         view.updateUI();

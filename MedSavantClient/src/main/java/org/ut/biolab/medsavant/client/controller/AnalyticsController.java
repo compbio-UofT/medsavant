@@ -50,7 +50,9 @@ public class AnalyticsController {
     }
 
     private void installStandardAnalytics() {
-        Analysis enrichment = new Analysis() {
+
+        /*
+         * Analysis enrichment = new Analysis() {
             private EnrichmentPanel epanel;
 
             @Override
@@ -78,5 +80,6 @@ public class AnalyticsController {
         };
 
         this.installVariantAnalytic(enrichment);
+        */
     }
 }

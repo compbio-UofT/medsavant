@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.client.aggregate;
+package medsavant.listenrichment.app;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -33,13 +33,13 @@ import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class AggregatePage extends SubSectionView {
+public class AggregatePage {
 
     private JPanel view;
     private AggregatesStatsPanel statsPanel;
+    private String pageName = "Aggregation";
 
-    public AggregatePage(SectionView parent) {
-        super(parent, "Enrichment");
+    public AggregatePage() {
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
@@ -59,7 +59,6 @@ public class AggregatePage extends SubSectionView {
         });
     }
 
-    @Override
     public JPanel getView() {
         if (view == null) {
             view = new JPanel();
@@ -74,8 +73,4 @@ public class AggregatePage extends SubSectionView {
         return view;
     }
 
-    @Override
-    public Component[] getSubSectionMenuComponents() {
-        return null;
-    }
 }

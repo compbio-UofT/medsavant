@@ -14,4 +14,6 @@ public interface AppInstaller {
     public Set<AppInfo> getInstallRegistry();
 
     public boolean uninstallApp(AppInfo appInfo);
+
+    public String getProgramName();
 }

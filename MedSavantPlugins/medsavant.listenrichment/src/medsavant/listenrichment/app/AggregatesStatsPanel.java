@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.client.aggregate;
+package medsavant.listenrichment.app;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -25,10 +25,6 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-import org.ut.biolab.medsavant.client.cohort.CohortAggregatePanel;
-import org.ut.biolab.medsavant.client.ontology.OntologyAggregatePanel;
-import org.ut.biolab.medsavant.client.patient.FamilyAggregatePanel;
-import org.ut.biolab.medsavant.client.region.RegionListAggregatePanel;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 

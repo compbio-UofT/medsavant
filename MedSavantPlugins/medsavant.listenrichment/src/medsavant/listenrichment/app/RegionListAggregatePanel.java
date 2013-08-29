@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.client.region;
+package medsavant.listenrichment.app;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,13 +32,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.aggregate.AggregatePanel;
+import medsavant.listenrichment.app.AggregatePanel;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
@@ -178,26 +179,26 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selRows.length == 1 ? "Region <i>" + model.getValueAt(selRows[0], 0) + "</i>" : "Selected Regions"));
         posItem.addActionListener(new ActionListener() {
-            
-            
+
+
             @Override
-            public void actionPerformed(ActionEvent ae) {                
+            public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);
-                
+
                 List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
                 TableModel model = tablePanel.getTable().getModel();
-                                                                            
+
                 for (int r : selRows) {
                     String geneName = (String) model.getValueAt(r, 0);
                     String chrom = (String)model.getValueAt(r,1);
                     Integer start = (Integer) model.getValueAt(r, 2);
                     Integer end = (Integer) model.getValueAt(r, 3);
-                                 
+
                     regions.add(new GenomicRegion(geneName, chrom, start, end));
                 }
-                
-                QueryUtils.addQueryOnRegions(regions, Arrays.asList(new RegionSet[]{(RegionSet) regionSetCombo.getSelectedItem()}));                
-                  
+
+                QueryUtils.addQueryOnRegions(regions, Arrays.asList(new RegionSet[]{(RegionSet) regionSetCombo.getSelectedItem()}));
+
             }
         });
         menu.add(posItem);

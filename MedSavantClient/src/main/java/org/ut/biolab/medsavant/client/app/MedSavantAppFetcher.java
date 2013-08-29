@@ -17,6 +17,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
 
     @Override
     public List<AppInfo> fetchApplicationInformation(String search) throws Exception {
+
         AppInfo mendelAppInfo = new AppInfo(
                 "Mendel",
                 "1.0.0",
@@ -26,7 +27,6 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
                 "University of Toronto Biolab",
                 "http://genomesavant.com",
                 new URL("http://www.genomesavant.com/p/medsavant/serve/plugin/medsavant.mendel-1.0.0.jar"));
-
 
         AppInfo mendelAppInfo3 = new AppInfo(
                 "Gene Enrichment Testing",
