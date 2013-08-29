@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.client.plugin.PluginBrowser;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.dialog.DownloadDialog;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -63,10 +63,10 @@ public class MedSavantAppInstaller implements AppInstaller {
     private void updateRegistry() {
         installedApps = new HashSet<AppInfo>();
 
-        List<PluginDescriptor> descriptors = PluginController.getInstance().getDescriptors();
+        List<AppDescriptor> descriptors = PluginController.getInstance().getDescriptors();
         //public AppInfo(String name, String version, String category, String compatibleWith, String description, String author, String web, URL downloadURL) {
 
-        for (PluginDescriptor pd : descriptors) {
+        for (AppDescriptor pd : descriptors) {
             String name = pd.getName();
             String version = pd.getVersion();
             String type = pd.getType().toString();

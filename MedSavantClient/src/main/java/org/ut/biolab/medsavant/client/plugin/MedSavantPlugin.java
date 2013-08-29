@@ -16,7 +16,7 @@
 
 package org.ut.biolab.medsavant.client.plugin;
 
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 
 
 /**
@@ -26,9 +26,9 @@ import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
  */
 public abstract class MedSavantPlugin {
 
-    private PluginDescriptor descriptor;
+    private AppDescriptor descriptor;
 
-    public PluginDescriptor getDescriptor() {
+    public AppDescriptor getDescriptor() {
         return descriptor;
     }
 
@@ -36,7 +36,7 @@ public abstract class MedSavantPlugin {
      * Called by the PluginController after instantiating the plugin.
      * @param desc descriptor from which this plugin was created
      */
-    public void setDescriptor(PluginDescriptor desc) {
+    public void setDescriptor(AppDescriptor desc) {
         descriptor = desc;
     }
 

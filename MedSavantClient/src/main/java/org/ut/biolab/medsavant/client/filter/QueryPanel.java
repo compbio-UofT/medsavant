@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -145,7 +145,7 @@ public class QueryPanel extends CollapsiblePanes {
 
             // Plugin filters
             PluginController pc = PluginController.getInstance();
-            for (PluginDescriptor desc : pc.getDescriptors()) {
+            for (AppDescriptor desc : pc.getDescriptors()) {
                 MedSavantPlugin plugin = pc.getPlugin(desc.getID());
                 if (plugin instanceof MedSavantFilterPlugin) {
                     catHolders.add(new PluginFilterHolder((MedSavantFilterPlugin)plugin, queryID));

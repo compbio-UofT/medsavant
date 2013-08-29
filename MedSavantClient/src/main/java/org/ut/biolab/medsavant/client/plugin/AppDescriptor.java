@@ -29,7 +29,7 @@ import javax.xml.stream.XMLStreamReader;
  *
  * @author tarkvara
  */
-public class PluginDescriptor implements Comparable<PluginDescriptor> {
+public class AppDescriptor implements Comparable<AppDescriptor> {
 
     public static class Version implements Comparable {
         private final int minorVersion;
@@ -155,7 +155,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
 
     private static XMLStreamReader reader;
 
-    private PluginDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
+    private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
         this.className = className;
         this.id = id;
         this.version = version;
@@ -199,7 +199,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     }
 
     @Override
-    public int compareTo(PluginDescriptor t) {
+    public int compareTo(AppDescriptor t) {
         return (id + version).compareTo(t.id + t.version);
     }
 
@@ -211,7 +211,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         return sdkVersion.equals("1.0.0");
     }
 
-    public static PluginDescriptor fromFile(File f) throws PluginVersionException {
+    public static AppDescriptor fromFile(File f) throws PluginVersionException {
         try {
             JarFile jar = new JarFile(f);
             ZipEntry entry = jar.getEntry("plugin.xml");
@@ -254,7 +254,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                 } while (reader != null);
 
                 if (className != null && id != null && name != null) {
-                    return new PluginDescriptor(className, id, version, name, sdkVersion, type, f);
+                    return new AppDescriptor(className, id, version, name, sdkVersion, type, f);
                 }
             }
         } catch (Exception x) {

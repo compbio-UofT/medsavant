@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.client.api.MedSavantSectionPlugin;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.plugin.PluginEvent;
 import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -47,7 +47,7 @@ public class PluginPage extends SubSectionView {
     private MedSavantSectionPlugin plugin;
     private final JPanel view;
 
-    public PluginPage(SectionView parent, PluginDescriptor desc) {
+    public PluginPage(SectionView parent, AppDescriptor desc) {
         super(parent, desc.getName());
         view = new JPanel();
         view.setLayout(new GridBagLayout());

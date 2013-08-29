@@ -13,7 +13,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppInstallUtils;
@@ -69,7 +69,7 @@ public class AppStoreLandingPage implements AppStorePage {
             boolean canUpdate = false;
             if (installedAlready) {
                 AppInfo installedApp = AppInstallUtils.getAppWithName(installer,i.getName());
-                if (new PluginDescriptor.Version(i.getVersion()).isNewerThan(new PluginDescriptor.Version(installedApp.getVersion()))) {
+                if (new AppDescriptor.Version(i.getVersion()).isNewerThan(new AppDescriptor.Version(installedApp.getVersion()))) {
                     canUpdate = true;
                 }
             }

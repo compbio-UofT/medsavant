@@ -19,7 +19,7 @@ import java.util.List;
 import javax.swing.ImageIcon;
 
 import org.ut.biolab.medsavant.client.plugin.PluginController;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
@@ -39,7 +39,7 @@ public class PluginsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         PluginController pc = PluginController.getInstance();
-        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.VARIANT);
+        List<AppDescriptor> knownPlugins = pc.getDescriptorsOfType(AppDescriptor.Type.VARIANT);
 
         PluginPage[] pages = new PluginPage[knownPlugins.size()];
         for (int i = 0; i < pages.length; i++) {

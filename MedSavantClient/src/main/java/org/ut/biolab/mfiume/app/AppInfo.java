@@ -1,7 +1,7 @@
 package org.ut.biolab.mfiume.app;
 
 import java.net.URL;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 
 /**
  *

@@ -53,7 +53,7 @@ public class PluginController extends Controller {
 
     private File uninstallFile;
     private List<String> pluginsToRemove = new ArrayList<String>();
-    private Map<String, PluginDescriptor> knownPlugins = new HashMap<String, PluginDescriptor>();
+    private Map<String, AppDescriptor> knownPlugins = new HashMap<String, AppDescriptor>();
     private Map<String, MedSavantPlugin> loadedPlugins = new HashMap<String, MedSavantPlugin>();
     private Map<String, String> pluginErrors = new LinkedHashMap<String, String>();
     private PluginLoader pluginLoader;
@@ -140,7 +140,7 @@ public class PluginController extends Controller {
         }
 
         Set<URL> jarURLs = new HashSet<URL>();
-        for (PluginDescriptor desc: knownPlugins.values()) {
+        for (AppDescriptor desc: knownPlugins.values()) {
             try {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     jarURLs.add(desc.getFile().toURI().toURL());
@@ -151,7 +151,7 @@ public class PluginController extends Controller {
         if (jarURLs.size() > 0) {
             pluginLoader = new PluginLoader(jarURLs.toArray(new URL[0]), getClass().getClassLoader());
 
-            for (final PluginDescriptor desc: knownPlugins.values()) {
+            for (final AppDescriptor desc: knownPlugins.values()) {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     new Thread("PluginLoader-" + desc) {
                         @Override
@@ -170,16 +170,16 @@ public class PluginController extends Controller {
         }
     }
 
-    public List<PluginDescriptor> getDescriptors() {
-        List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
+    public List<AppDescriptor> getDescriptors() {
+        List<AppDescriptor> result = new ArrayList<AppDescriptor>();
         result.addAll(knownPlugins.values());
         Collections.sort(result);
         return result;
     }
 
-    public List<PluginDescriptor> getDescriptorsOfType(PluginDescriptor.Type t) {
-        List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
-        for (PluginDescriptor desc: knownPlugins.values()) {
+    public List<AppDescriptor> getDescriptorsOfType(AppDescriptor.Type t) {
+        List<AppDescriptor> result = new ArrayList<AppDescriptor>();
+        for (AppDescriptor desc: knownPlugins.values()) {
             if (desc.getType() == t) {
                 result.add(desc);
             }
@@ -253,7 +253,7 @@ public class PluginController extends Controller {
         FileWriter fstream = null;
         boolean success = false;
         try {
-            PluginDescriptor info = knownPlugins.get(id);
+            AppDescriptor info = knownPlugins.get(id);
             LOG.info(String.format("Adding plugin %s to uninstall list %s.", info.getFile().getAbsolutePath(), uninstallFile.getPath()));
 
             if (!uninstallFile.exists()) {
@@ -351,7 +351,7 @@ public class PluginController extends Controller {
     }
 
 
-    private void loadPlugin(PluginDescriptor desc) throws Throwable {
+    private void loadPlugin(AppDescriptor desc) throws Throwable {
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
         MedSavantPlugin plugin = (MedSavantPlugin)pluginClass.newInstance();
@@ -365,12 +365,12 @@ public class PluginController extends Controller {
      * Try to add a plugin from the given file.  It is inserted into our internal
      * data structures, but not yet loaded.
      */
-    public PluginDescriptor addPlugin(File f) throws PluginVersionException {
+    public AppDescriptor addPlugin(File f) throws PluginVersionException {
         LOG.info(String.format("Loading plugin from %s", f.getAbsolutePath()));
-        PluginDescriptor desc = PluginDescriptor.fromFile(f);
+        AppDescriptor desc = AppDescriptor.fromFile(f);
         if (desc != null) {
             LOG.debug(String.format("Found usable %s in %s.", desc, f.getName()));
-            PluginDescriptor existingDesc = knownPlugins.get(desc.getID());
+            AppDescriptor existingDesc = knownPlugins.get(desc.getID());
             if (existingDesc != null && existingDesc.getVersion().compareTo(desc.getVersion()) >= 0) {
                 LOG.debug(String.format("   Ignored %s due to presence of existing %s.", desc, existingDesc));
                 return null;
@@ -399,7 +399,7 @@ public class PluginController extends Controller {
         LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
         ClientIOUtils.copyFile(selectedFile, pluginFile);
         LOG.info("Getting plugin information...");
-        PluginDescriptor desc = addPlugin(pluginFile);
+        AppDescriptor desc = addPlugin(pluginFile);
         LOG.info("Got plugin information");
         if (desc != null) {
             LOG.info("Loading plugin...");
