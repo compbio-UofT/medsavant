@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.server.db;
 
+import org.ut.biolab.medsavant.server.db.util.PersistenceUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -147,14 +148,7 @@ public class ConnectionController {
         synchronized (sessionPoolMap) {
             sessionPoolMap.put(sessID, pool);
 
-            Connection c = null;
-            try {
-                c = pool.getConnection();
-            } finally {
-                if (c != null) {
-                    c.close();
-                }
-            }
+            PersistenceUtil.initializePooledConnectio(pool);
         }
     }
 

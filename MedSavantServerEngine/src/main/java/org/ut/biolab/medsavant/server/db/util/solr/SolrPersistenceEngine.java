@@ -6,6 +6,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.db.ConnectionPool;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.util.PersistenceEngine;
 import org.ut.biolab.medsavant.shared.db.ColumnDef;
@@ -43,7 +45,7 @@ public class SolrPersistenceEngine implements PersistenceEngine {
 
     @Override
     public DbTable importTable(String sessionId, String tablename) throws SQLException, SessionExpiredException {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -79,27 +81,39 @@ public class SolrPersistenceEngine implements PersistenceEngine {
     }
 
     @Override
-    public void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
-        throw new UnsupportedOperationException();
+    public void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException { }
+
+    @Override
+    public void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException, SessionExpiredException { }
+
+    @Override
+    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, SessionExpiredException { }
+
+    @Override
+    public void removeUser(String sid, String name) throws SQLException, SessionExpiredException { }
+
+    @Override
+    public void registerCredentials(String sessionId, String user, String password, String dbName) { }
+
+    @Override
+    public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) { }
+
+    @Override
+    public String createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws RemoteException, SQLException {
+        SessionController sessController = SessionController.getInstance();
+        return sessController.registerNewSession(adminName, new String(rootPassword), "");
     }
 
     @Override
-    public void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException, SessionExpiredException {
-        //nothing to do here
+    public void createTables(String sessID) throws SQLException, RemoteException, SessionExpiredException {  }
+
+    @Override
+    public void testConnection(String sessIDs) {
+        //nothing for now
     }
 
     @Override
-    public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, SessionExpiredException {
-        //nothing to do here
-    }
-
-    @Override
-    public void removeUser(String sid, String name) throws SQLException, SessionExpiredException {
-        //nothing to do here
-    }
-
-    @Override
-    public void registerCredentials(String sessionId, String user, String password, String dbName) {
-        //nothing to do here
+    public void initializePooledConnection(ConnectionPool pool) {
+        //nothing for now
     }
 }

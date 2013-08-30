@@ -1,10 +1,13 @@
 package org.ut.biolab.medsavant.server.db.util;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import org.ut.biolab.medsavant.server.db.ConnectionPool;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 /**
@@ -45,5 +48,25 @@ public class PersistenceUtil {
 
     public static void registerCredentials(String sessionId, String user, String password, String dbName) throws SQLException {
         engine.registerCredentials(sessionId, user, password, dbName);
+    }
+
+    public static String createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, SessionExpiredException {
+        return engine.createDatabase(dbHost, port, dbName, adminName, rootPassword,versionString);
+    }
+
+    public static void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, SessionExpiredException, RemoteException {
+        engine.removeDatabase(dbHost, port, dbName, adminName, rootPassword);
+    }
+
+    public static void createTables(String sessID) throws SQLException, RemoteException, SessionExpiredException {
+        engine.createTables(sessID);
+    }
+
+    public static void testConnection(String sessID) throws SQLException, SessionExpiredException {
+        engine.testConnection(sessID);
+    }
+
+    public static void initializePooledConnectio(ConnectionPool pool) throws SQLException {
+        engine.initializePooledConnection(pool);
     }
 }
