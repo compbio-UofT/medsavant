@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.client.api;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
 
 
 /**
@@ -30,17 +31,10 @@ public abstract class MedSavantVariantSearchApp extends MedSavantApp {
 
     /**
      * This method is called once during the lifecycle of each instance of the plugin
-     * filter to give the filter instance a chance to set up its user interface.
+     * filter to give the filter instance a chance to set up.
      */
-    public abstract void init(JPanel panel, int queryID);
+    public abstract void init();
 
-    /**
-     * This method is called once during the lifecycle of an instance of the plugin
-     * filter to give the filter instance a chance to clean up after itself.
-     */
-    public abstract void cleanup(int queryID);
+    public abstract ComprehensiveConditionGenerator getSearchConditionGenerator();
 
-    public abstract FilterStateAdapter saveState(int queryID);
-
-    public abstract void loadState(FilterStateAdapter state, int queryID);
 }

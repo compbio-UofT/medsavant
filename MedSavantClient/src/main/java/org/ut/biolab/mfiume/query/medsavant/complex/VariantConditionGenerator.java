@@ -26,6 +26,7 @@ import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
 import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 import org.ut.biolab.mfiume.query.view.NumberSearchConditionEditorView;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
@@ -98,11 +99,11 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public SearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         return generateViewFromDatabaseField(item);
     }
 
-    private SearchConditionItemView generateViewFromDatabaseField(SearchConditionItem item) {
+    private SearchConditionEditorView generateViewFromDatabaseField(SearchConditionItem item) {
 
         if (columnsToForceStringView.contains(columnName)) {
             return generateStringViewFromDatabaseField(item);
@@ -119,7 +120,7 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
     }
 
-    private SearchConditionItemView generateStringViewFromDatabaseField(SearchConditionItem item) {
+    private StringSearchConditionEditorView generateStringViewFromDatabaseField(SearchConditionItem item) {
 
         StringConditionValueGenerator valueGenerator;
         String colName = field.getColumnName();
@@ -164,16 +165,14 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         }
 
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, valueGenerator);
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
     private static final WhichTable whichTable = WhichTable.VARIANT;
 
-    private SearchConditionItemView generateNumericViewFromDatabaseField(SearchConditionItem item) {
+    private NumberSearchConditionEditorView generateNumericViewFromDatabaseField(SearchConditionItem item) {
 
         NumberSearchConditionEditorView editor = new NumberSearchConditionEditorView(item, new MedSavantDatabaseNumberConditionValueGenerator(field, whichTable));
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
 
     private Condition generateStringConditionForVariantDatabaseField(String encoding) {

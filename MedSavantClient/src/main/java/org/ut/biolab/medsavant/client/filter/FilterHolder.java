@@ -20,22 +20,20 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
-import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.client.ontology.OntologyFilter;
 import org.ut.biolab.medsavant.client.ontology.OntologyFilterView;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
-import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.OntologyType;
 
 /**
  * Class which lets us create the user interface around a filter-view without having to instantiate it.  The actual UI is maintained
@@ -254,32 +252,5 @@ class OntologyFilterHolder extends FilterHolder {
     @Override
     public void loadFilterView(FilterState state) throws Exception {
         filterView = new OntologyFilterView(state, queryID);
-    }
-}
-
-
-class PluginFilterHolder extends FilterHolder {
-    private final MedSavantVariantSearchApp plugin;
-
-    PluginFilterHolder(MedSavantVariantSearchApp p, int queryID) {
-        super(p.getTitle(), p.getDescriptor().getID(), queryID);
-        plugin = p;
-    }
-
-    @Override
-    public FilterView createFilterView() {
-        return PluginFilterView.getFilterView(plugin, queryID);
-    }
-
-    @Override
-    public void loadFilterView(FilterState state) {
-        PluginController pc = PluginController.getInstance();
-        for (AppDescriptor desc: pc.getDescriptors()) {
-            MedSavantApp p = pc.getPlugin(desc.getID());
-            if (p instanceof MedSavantVariantSearchApp && ((MedSavantVariantSearchApp)p).getTitle().equals(state.getName())) {
-                filterView = PluginFilterView.getFilterView((MedSavantVariantSearchApp)p, queryID);
-                ((MedSavantVariantSearchApp)p).loadState(state, queryID);
-            }
-        }
     }
 }

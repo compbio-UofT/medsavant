@@ -143,15 +143,6 @@ public class QueryPanel extends CollapsiblePanes {
             catHolders.add(new SimpleFilterHolder(RegionSetFilterView.class, queryID));
             panes.add(addFilterCategory("Ontology and Region Conditions", catHolders, true), BorderLayout.CENTER);
 
-            // Plugin filters
-            PluginController pc = PluginController.getInstance();
-            for (AppDescriptor desc : pc.getDescriptors()) {
-                MedSavantApp plugin = pc.getPlugin(desc.getID());
-                if (plugin instanceof MedSavantVariantSearchApp) {
-                    catHolders.add(new PluginFilterHolder((MedSavantVariantSearchApp)plugin, queryID));
-                }
-            }
-
             panes.add(addFilterCategory("Plugin Conditions", catHolders, false));
 
 

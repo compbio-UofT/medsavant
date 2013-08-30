@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2011 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,34 +14,29 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.client.filter;
+package medsavant.search;
 
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
-
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
+import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
 
 /**
- * Create a FilterView which presents the user-interface for a filter plugin.
+ * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class PluginFilterView {
+public class ExampleSearchApp extends MedSavantVariantSearchApp {
 
-    public static FilterView getFilterView(final MedSavantVariantSearchApp plugin, final int queryID) {
-        return new FilterView(plugin.getTitle(), queryID) {
-            {
-                plugin.init(this, queryID);
-            }
-
-            @Override
-            public void cleanup() {
-                plugin.cleanup(queryID);
-            }
-
-            @Override
-            public FilterStateAdapter saveState() {
-                return plugin.saveState(queryID);
-            }
-        };
+    @Override
+    public void init() {
     }
+
+    @Override
+    public ComprehensiveConditionGenerator getSearchConditionGenerator() {
+        return new ExampleSearchConditionGenerator();
+    }
+
 }

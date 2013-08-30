@@ -18,8 +18,8 @@ package medsavant.enrichment;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 import medsavant.enrichment.app.AggregatePage;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 
 /**
  * Demonstration plugin to show how to do a simple panel.

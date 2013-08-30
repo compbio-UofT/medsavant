@@ -88,7 +88,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public StringSearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, new StringConditionValueGenerator() {
             private HashMap<String, OntologyTerm> termNameToTermObjectMap;
 
@@ -99,8 +99,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
 
             }
         });
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
 
     }
 

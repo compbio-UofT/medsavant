@@ -136,7 +136,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
     public enum Type {
 
-        FILTER {
+        SEARCH {
             @Override
             public String toString() {
                 return "Search Condition";
