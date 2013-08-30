@@ -22,7 +22,6 @@ import java.util.zip.ZipEntry;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -209,8 +208,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                             if (reader.isWhiteSpace()) {
                                 break;
                             } else if (currentElement != null) {
-                                currentText += reader.getText().trim().replace("\t", "");
-                                //System.out.println("currentText="+currentText);
+                                currentText += reader.getText().trim().replace("\t", "");                                
                             }
                             break;
 
@@ -234,8 +232,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                             break;
                     }
                 } while (reader != null);
-
-                //System.out.println("className="+className+" id="+id+" name="+name);
+                
                 if (className != null && id != null && name != null) {
                     return new PluginDescriptor(className, id, version, name, sdkVersion, type, f);
                 }
@@ -260,21 +257,5 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
     }
     
-    //For testing, delete once finalized.
-    public static void test(){
-        File f = new File("/tmp/medsavant.demo-1.0.0.jar");
-        try{
-            PluginDescriptor pd = PluginDescriptor.fromFile(f);
-            
-            System.out.println("ID=["+pd.getID()+"]");
-            System.out.println("Name=["+pd.getName()+"]");
-            System.out.println("SDKVersion=["+pd.getSDKVersion()+"]");
-            System.out.println("Version=["+pd.getVersion()+"]");
-            System.out.println("ClassName=["+pd.getClassName()+"]");
-            System.out.println("Type=["+pd.getType()+"]");
-            System.out.println("File=["+pd.getFile().getAbsolutePath()+"]"); 
-        }catch(Exception ex){
-            System.err.println("Error reading file: "+ex);
-        }
-    }
+    
 }
