@@ -22,7 +22,9 @@ import java.util.zip.ZipEntry;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Plugin description read from the plugin.xml file.
@@ -30,22 +32,28 @@ import javax.xml.stream.XMLStreamReader;
  * @author tarkvara
  */
 public class PluginDescriptor implements Comparable<PluginDescriptor> {
-
+    private static Log LOG = LogFactory.getLog(PluginDescriptor.class);
     /**
-     * Bare-bones set of tags we need to recognise in plugin.xml in order to identify plugins.
+     * Bare-bones set of tags we need to recognise in plugin.xml in order to
+     * identify plugins.
      */
     private enum PluginXMLElement {
+
         PLUGIN,
         ATTRIBUTE,
         PARAMETER,
+        PROPERTY,
         IGNORED
     };
 
     /**
-     * Bare-bones set of attributes we need to recognise in plugin.xml in order to identify plugins.
+     * Bare-bones set of attributes we need to recognise in plugin.xml in order
+     * to identify plugins.
      */
     private enum PluginXMLAttribute {
+
         ID,
+        NAME,
         VALUE,
         VERSION,
         CLASS,
@@ -54,6 +62,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     };
 
     public enum Type {
+
         FILTER {
             @Override
             public String toString() {
@@ -71,9 +80,14 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
             public String toString() {
                 return "Unknown";
             }
+        },
+        SECTION {
+            @Override
+            public String toString(){
+                return "Section";
+            }
         }
     }
-
     final String className;
     final String id;
     final String version;
@@ -81,7 +95,6 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     final String sdkVersion;
     final File file;
     final Type type;
-
     private static XMLStreamReader reader;
 
     private PluginDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
@@ -132,9 +145,9 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         return (id + version).compareTo(t.id + t.version);
     }
 
-
     /**
-     * Here's where we do our SDK compatibility check.  Update this code whenever the API changes.
+     * Here's where we do our SDK compatibility check. Update this code whenever
+     * the API changes.
      */
     public boolean isCompatible() {
         return sdkVersion.equals("1.0.0");
@@ -153,11 +166,13 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                 String sdkVersion = null;
                 String name = null;
                 String type = "FILTER";
+                String currentElement = null;
+                String currentText = "";
                 do {
                     switch (reader.next()) {
                         case XMLStreamConstants.START_ELEMENT:
                             switch (readElement()) {
-                                case PLUGIN:
+                                case PLUGIN:                                    
                                     className = readAttribute(PluginXMLAttribute.CLASS);
                                     id = readAttribute(PluginXMLAttribute.ID);
                                     version = readAttribute(PluginXMLAttribute.VERSION);
@@ -173,8 +188,46 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                                         name = readAttribute(PluginXMLAttribute.VALUE);
                                     }
                                     break;
+                                case PROPERTY:
+                                    if ("name".equals(readAttribute(PluginXMLAttribute.NAME))) {
+                                        name = readAttribute(PluginXMLAttribute.VALUE);
+                                        if (name == null) {
+                                            currentElement = "name";
+                                        }
+                                    }
+
+                                    if ("sdk-version".equals(readAttribute(PluginXMLAttribute.NAME))) {
+                                        sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
+                                        if (sdkVersion == null) {
+                                            currentElement = "sdk-version";
+                                        }
+                                    }
+                                    break;
                             }
                             break;
+                        case XMLStreamConstants.CHARACTERS:
+                            if (reader.isWhiteSpace()) {
+                                break;
+                            } else if (currentElement != null) {
+                                currentText += reader.getText().trim().replace("\t", "");
+                                //System.out.println("currentText="+currentText);
+                            }
+                            break;
+
+                        case XMLStreamConstants.END_ELEMENT:
+                            if (readElement() == PluginXMLElement.PROPERTY) {
+                                if (currentElement != null && currentText.length() > 0) {
+                                    if (currentElement.equals("name")) {
+                                        name = currentText;
+                                    } else if (currentElement.equals("sdk-version")) {
+                                        sdkVersion = currentText;
+                                    }
+                                }
+                                currentText = "";
+                                currentElement = null;
+                            }
+                            break;
+
                         case XMLStreamConstants.END_DOCUMENT:
                             reader.close();
                             reader = null;
@@ -182,11 +235,13 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                     }
                 } while (reader != null);
 
+                //System.out.println("className="+className+" id="+id+" name="+name);
                 if (className != null && id != null && name != null) {
                     return new PluginDescriptor(className, id, version, name, sdkVersion, type, f);
                 }
             }
         } catch (Exception x) {
+            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
         }
         throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
     }
@@ -204,6 +259,22 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     private static String readAttribute(PluginXMLAttribute attr) {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
     }
-
-
+    
+    //For testing, delete once finalized.
+    public static void test(){
+        File f = new File("/tmp/medsavant.demo-1.0.0.jar");
+        try{
+            PluginDescriptor pd = PluginDescriptor.fromFile(f);
+            
+            System.out.println("ID=["+pd.getID()+"]");
+            System.out.println("Name=["+pd.getName()+"]");
+            System.out.println("SDKVersion=["+pd.getSDKVersion()+"]");
+            System.out.println("Version=["+pd.getVersion()+"]");
+            System.out.println("ClassName=["+pd.getClassName()+"]");
+            System.out.println("Type=["+pd.getType()+"]");
+            System.out.println("File=["+pd.getFile().getAbsolutePath()+"]"); 
+        }catch(Exception ex){
+            System.err.println("Error reading file: "+ex);
+        }
+    }
 }
