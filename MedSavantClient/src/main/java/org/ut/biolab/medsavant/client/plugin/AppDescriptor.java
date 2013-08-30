@@ -329,8 +329,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                 }
             }
         } catch (Exception x) {
-            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
-            x.printStackTrace();
+            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);            
         }
         throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
     }
