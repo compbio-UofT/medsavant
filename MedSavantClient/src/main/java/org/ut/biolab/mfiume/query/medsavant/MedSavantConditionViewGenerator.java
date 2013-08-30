@@ -1,46 +1,25 @@
 package org.ut.biolab.mfiume.query.medsavant;
 
 import org.ut.biolab.mfiume.query.medsavant.complex.CohortConditionGenerator;
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.InCondition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.awt.BorderLayout;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
-import org.ut.biolab.medsavant.client.cohort.CohortFilterView;
-import org.ut.biolab.medsavant.client.filter.FilterHolder;
-import org.ut.biolab.medsavant.client.filter.NumericFilterView;
-import org.ut.biolab.medsavant.client.filter.StringListFilterView;
-import org.ut.biolab.medsavant.client.filter.TagFilterView;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
-import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.mfiume.query.ConditionViewGenerator;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
@@ -50,12 +29,7 @@ import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.TagConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.VariantConditionGenerator;
 import org.ut.biolab.mfiume.query.value.DatabaseConditionGenerator;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
-import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.view.NumberSearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
-import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
  *
@@ -230,15 +204,19 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         }
     }
 
-    private MedSavantVariantSearchApp[] loadSearchApps() {
-        List<AppDescriptor> searchAppDescriptors = PluginController.getInstance().getDescriptorsOfType(AppDescriptor.Type.SEARCH);
-        MedSavantVariantSearchApp[] results = new MedSavantVariantSearchApp[searchAppDescriptors.size()];
+    private MedSavantVariantSearchApp[] loadSearchApps() {        
+        List<MedSavantVariantSearchApp> results = new LinkedList<MedSavantVariantSearchApp>();
         int counter = 0;
-        for (AppDescriptor ad : searchAppDescriptors) {
-            results[counter] =  (MedSavantVariantSearchApp)PluginController.getInstance().getPlugin(ad.getID());
-            counter++;
+        
+        for(AppDescriptor ad : PluginController.getInstance().getDescriptors()){
+            MedSavantApp ap = PluginController.getInstance().getPlugin(ad.getID());
+            if(ap instanceof MedSavantVariantSearchApp){
+                results.add((MedSavantVariantSearchApp)ap);
+                counter++;
+            }            
         }
-        return results;
+        
+        return results.toArray(new MedSavantVariantSearchApp[counter]);        
     }
 
     public static class DatabaseFieldStruct {
