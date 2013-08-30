@@ -13,18 +13,21 @@ public class AppInfo implements Comparable {
     private String category;
     private String version;
     private String compatibleWith;
+    private String newInVersion;
+    private String shortdesc;    
     private String description;
     private String author;
-    private String web;
+    private String web; 
     private URL downloadURL;
     private String id;
 
-    public AppInfo(String name, String version, String category, String compatibleWith, String description, String author, String web, URL downloadURL) {
-        this.name = name;
-
+    public AppInfo(String name, String version, String category, String compatibleWith, String newInVersion, String shortdesc, String description, String author, String web, URL downloadURL) {
+        this.name = name;        
         this.version = version;
         this.category = category;
         this.compatibleWith = compatibleWith;
+        this.newInVersion = newInVersion;
+        this.shortdesc = shortdesc;
         this.description = description;
         this.author = author;
         this.web = web;
@@ -40,6 +43,14 @@ public class AppInfo implements Comparable {
         this.state = state;
     }*/
 
+    public String getShortDescription(){
+        return shortdesc;
+    }
+    
+    public String getNewInVersion(){
+        return newInVersion;
+    }
+    
     public String getName() {
         return name;
     }

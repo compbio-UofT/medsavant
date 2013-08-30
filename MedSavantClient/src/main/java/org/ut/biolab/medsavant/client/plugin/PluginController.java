@@ -177,10 +177,10 @@ public class PluginController extends Controller {
         return result;
     }
 
-    public List<AppDescriptor> getDescriptorsOfType(AppDescriptor.Type t) {
+    public List<AppDescriptor> getDescriptorsOfType(AppDescriptor.Category t) {
         List<AppDescriptor> result = new ArrayList<AppDescriptor>();
         for (AppDescriptor desc: knownPlugins.values()) {
-            if (desc.getType() == t) {
+            if (desc.getCategory() == t) {
                 result.add(desc);
             }
         }

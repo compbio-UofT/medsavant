@@ -1,18 +1,12 @@
 package org.ut.biolab.medsavant.client.app;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.client.plugin.PluginBrowser;
 import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.view.dialog.DownloadDialog;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
@@ -69,9 +63,9 @@ public class MedSavantAppInstaller implements AppInstaller {
         for (AppDescriptor pd : descriptors) {
             String name = pd.getName();
             String version = pd.getVersion();
-            String type = pd.getType().toString();
-            String sdkVersion = pd.getSDKVersion();
-            AppInfo ai = new AppInfo(name, version, type, sdkVersion, null, null, null, null);
+            String category = pd.getCategory().toString();
+            String sdkVersion = pd.getSDKVersion();            
+            AppInfo ai = new AppInfo(name, version, category, sdkVersion, null, null, null, null, null, null);
             ai.setID(pd.getID());
             installedApps.add(ai);
         }

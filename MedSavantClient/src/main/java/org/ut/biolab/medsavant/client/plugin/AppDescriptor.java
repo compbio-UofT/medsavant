@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.client.plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -39,8 +38,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         private final int bugfixVersion;
 
         public AppVersion(String version) {
-            String[] s = version.split("\\.", 0);
-            System.out.println("Parsing version " + version);
+            String[] s = version.split("\\.", 0);            
             try {
                 majorVersion = Integer.parseInt(s[0]);
                 minorVersion = Integer.parseInt(s[1]);
@@ -130,53 +128,60 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         VALUE,
         VERSION,
         CLASS,
-        TYPE,
+        CATEGORY,
         IGNORED
     };
 
-    public enum Type {
+    public enum Category {
 
-        FILTER {
+        VISUALIZATION{
             @Override
-            public String toString() {
-                return "Search Condition";
+                    public String toString(){
+                return "Visualization";
             }
         },
-        VARIANT {
-            @Override
-            public String toString() {
-                return "Variant Addition";
-            }
-        },
-        UNKNOWN {
-            @Override
-            public String toString() {
-                return "Unknown";
-            }
-        },
-        SECTION {
+        ANALYSIS{
             @Override
             public String toString(){
-                return "Section";
+                return "Analysis and Statistics";
+            }
+        },
+        SEARCH{
+            @Override
+            public String toString(){
+                return "Search";
+            }
+        },
+        UTILITY{
+            @Override
+            public String toString(){
+                return "Utility";
+            }
+        },
+        DATASOURCE{
+            @Override
+            public String toString(){
+                return "External Datasource";
             }
         }
-    }
+    };
+    
     final String className;
     final String id;
     final String version;
     final String name;
     final String sdkVersion;
     final File file;
-    final Type type;
+    final Category category;
     private static XMLStreamReader reader;
 
-    private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
+    private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String category, File file) {
         this.className = className;
         this.id = id;
         this.version = version;
         this.name = name;
         this.sdkVersion = sdkVersion;
-        this.type = Type.valueOf(type.toUpperCase());
+        this.category = Category.valueOf(category.toUpperCase());
         this.file = file;
     }
 
@@ -205,8 +210,8 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         return sdkVersion;
     }
 
-    public Type getType() {
-        return type;
+    public Category getCategory() {
+        return category;
     }
 
     public File getFile() {
@@ -238,7 +243,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                 String version = null;
                 String sdkVersion = null;
                 String name = null;
-                String type = "FILTER";
+                String category = Category.UTILITY.toString();
                 String currentElement = null;
                 String currentText = "";
                 do {
@@ -248,8 +253,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                 case PLUGIN:                                    
                                     className = readAttribute(PluginXMLAttribute.CLASS);
                                     id = readAttribute(PluginXMLAttribute.ID);
-                                    version = readAttribute(PluginXMLAttribute.VERSION);
-                                    type = readAttribute(PluginXMLAttribute.TYPE);
+                                    version = readAttribute(PluginXMLAttribute.VERSION);                                                                        
+                                    //category can be specified as an attribute or <property>.
+                                    category = readAttribute(PluginXMLAttribute.CATEGORY);                                     
                                     break;
                                 case ATTRIBUTE:
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
@@ -275,9 +281,18 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                             currentElement = "sdk-version";
                                         }
                                     }
+                                    
+                                    if ("category".equals(readAttribute(PluginXMLAttribute.NAME))) {
+                                        category = readAttribute(PluginXMLAttribute.VALUE);                                        
+                                        if (category == null) {
+                                            currentElement = "category";
+                                        }
+                                    }
+                                     
                                     break;
                             }
                             break;
+                            
                         case XMLStreamConstants.CHARACTERS:
                             if (reader.isWhiteSpace()) {
                                 break;
@@ -293,6 +308,8 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                         name = currentText;
                                     } else if (currentElement.equals("sdk-version")) {
                                         sdkVersion = currentText;
+                                    }else if(currentElement.equals("category")){
+                                        category = currentText;
                                     }
                                 }
                                 currentText = "";
@@ -308,11 +325,12 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                 } while (reader != null);
                 
                 if (className != null && id != null && name != null) {
-                    return new AppDescriptor(className, id, version, name, sdkVersion, type, f);
+                    return new AppDescriptor(className, id, version, name, sdkVersion, category, f);
                 }
             }
         } catch (Exception x) {
             LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
+            x.printStackTrace();
         }
         throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
     }
