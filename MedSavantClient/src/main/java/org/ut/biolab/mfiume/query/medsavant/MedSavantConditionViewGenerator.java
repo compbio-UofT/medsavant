@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.client.cohort.CohortFilterView;
 import org.ut.biolab.medsavant.client.filter.FilterHolder;
 import org.ut.biolab.medsavant.client.filter.NumericFilterView;
@@ -29,6 +30,8 @@ import org.ut.biolab.medsavant.client.filter.StringListFilterView;
 import org.ut.biolab.medsavant.client.filter.TagFilterView;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.plugin.PluginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
@@ -72,6 +75,7 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
     //private Map<String, ComprehensiveConditionGenerator> variantConditionGenerators;
     public static final String PATIENT_CONDITIONS = "Patient Conditions";
     public static final String VARIANT_CONDITIONS = "Variant Conditions";
+    public static final String OTHER_CONDITIONS = "Other Conditions";
 
     private MedSavantConditionViewGenerator() {
         itemToCustomFieldMap = new HashMap<String, DatabaseFieldStruct>();
@@ -131,6 +135,13 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         ComprehensiveConditionGenerator omim = new OntologyConditionGenerator(OntologyType.OMIM);
         conditionGenerators.put(omim.getName(), omim);
 
+        // plugin
+        MedSavantVariantSearchApp[] searchApps = loadSearchApps();
+        for (MedSavantVariantSearchApp searchApp : searchApps) {
+            ComprehensiveConditionGenerator generator = searchApp.getSearchConditionGenerator();
+            conditionGenerators.put(generator.getName(), generator);
+        }
+
         init();
     }
 
@@ -147,10 +158,11 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         String conditionName = item.getName();
 
         if (conditionGenerators.containsKey(conditionName)) {
-            return conditionGenerators.get(conditionName).generateViewFromItem(item);
+            SearchConditionItemView view = new SearchConditionItemView(item,conditionGenerators.get(conditionName).getViewGeneratorForItem(item));
+            return view;
         }
 
-        throw new UnsupportedOperationException("No view for item " + item.getName());
+        throw new UnsupportedOperationException("No view for item " + conditionName);
     }
 
     @Override
@@ -216,6 +228,17 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
                 allowedMap.put(gen.category(), arr);
             }
         }
+    }
+
+    private MedSavantVariantSearchApp[] loadSearchApps() {
+        List<AppDescriptor> searchAppDescriptors = PluginController.getInstance().getDescriptorsOfType(AppDescriptor.Type.SEARCH);
+        MedSavantVariantSearchApp[] results = new MedSavantVariantSearchApp[searchAppDescriptors.size()];
+        int counter = 0;
+        for (AppDescriptor ad : searchAppDescriptors) {
+            results[counter] =  (MedSavantVariantSearchApp)PluginController.getInstance().getPlugin(ad.getID());
+            counter++;
+        }
+        return results;
     }
 
     public static class DatabaseFieldStruct {

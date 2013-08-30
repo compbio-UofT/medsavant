@@ -124,20 +124,18 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
         });
 
-
         this.refreshView();
         itemToViewMap = new HashMap<SearchConditionItem, SearchConditionItemView>();
-
     }
 
     /**
-     * Re-executes the current query with the given genomic region restrictions, and returns 
+     * Re-executes the current query with the given genomic region restrictions, and returns
      * the results.  Note the search bar is not changed.
      * gr and alt should have a one-to-one correspondence, where the alt for
-     * the ith genomic region is in alt[i].            
+     * the ith genomic region is in alt[i].
      */
     public List<Object[]> restrictToRegion(List<GenomicRegion> gr, List<String> alt, int limit) {
-        try {   
+        try {
             long st = System.currentTimeMillis();
             Condition r;
             if(rootGroup.getItems().size() > 0){
@@ -148,12 +146,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
                 r = getSQLConditionsFrom(rg);
             }
-            
+
             for (int i = 1; i < gr.size(); ++i) {
                 SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(i), alt.get(i), false);
                 r = ComboCondition.and(r, getSQLConditionsFrom(rg));
-            }         
-                        
+            }
+
 
             return MedSavantClient.VariantManager.getVariants(
                     LoginController.getInstance().getSessionID(),
@@ -162,7 +160,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     new Condition[][]{{r}},
                     0,
                     limit); //DEBUG CODE, sets limit to 10!
-            
+
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -171,7 +169,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         return null;
     }
-    
+
     public List<Object[]> restrictToRegion(GenomicRegion gr, String alt, int limit){
         List<GenomicRegion> grl = new ArrayList<GenomicRegion>(1);
         List<String> al = new ArrayList<String>(1);

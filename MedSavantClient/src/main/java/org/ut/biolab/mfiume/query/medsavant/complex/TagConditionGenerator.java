@@ -59,7 +59,7 @@ public class TagConditionGenerator implements ComprehensiveConditionGenerator {
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public StringSearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, new StringConditionValueGenerator() {
             @Override
             public List<String> getStringValues() {
@@ -67,8 +67,7 @@ public class TagConditionGenerator implements ComprehensiveConditionGenerator {
                 return acceptableValues;
             }
         });
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
 
     private void init() {
