@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.client.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -24,14 +25,87 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 /**
  * Plugin description read from the plugin.xml file.
  *
  * @author tarkvara
  */
-public class PluginDescriptor implements Comparable<PluginDescriptor> {
-    private static Log LOG = LogFactory.getLog(PluginDescriptor.class);
+public class AppDescriptor implements Comparable<AppDescriptor> {
+    private static final Log LOG = LogFactory.getLog(AppDescriptor.class);
+    public static class AppVersion implements Comparable {
+
+        private final int minorVersion;
+        private final int majorVersion;
+        private final int bugfixVersion;
+
+        public AppVersion(String version) {
+            String[] s = version.split("\\.", 0);
+            System.out.println("Parsing version " + version);
+            try {
+                majorVersion = Integer.parseInt(s[0]);
+                minorVersion = Integer.parseInt(s[1]);
+                bugfixVersion = Integer.parseInt(s[2]);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new AssertionError("Invalid App Version " + version + ". App Versions must be of the format <major>.<minor>.<bugfix>");
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + this.minorVersion;
+            hash = 59 * hash + this.majorVersion;
+            hash = 59 * hash + this.bugfixVersion;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AppVersion other = (AppVersion) obj;
+            if (this.minorVersion != other.minorVersion) {
+                return false;
+            }
+            if (this.majorVersion != other.majorVersion) {
+                return false;
+            }
+            if (this.bugfixVersion != other.bugfixVersion) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(Object obj) {
+            if (obj == null) {
+                return -1;
+            }
+            if (getClass() != obj.getClass()) {
+                return -1;
+            }
+            final AppVersion other = (AppVersion) obj;
+
+            if (this.majorVersion != other.majorVersion) {
+                return new Integer(this.majorVersion).compareTo(new Integer(other.majorVersion));
+            }
+            if (this.minorVersion != other.minorVersion) {
+                return new Integer(this.minorVersion).compareTo(new Integer(other.minorVersion));
+            }
+            if (this.bugfixVersion != other.bugfixVersion) {
+                return new Integer(this.bugfixVersion).compareTo(new Integer(other.bugfixVersion));
+            }
+            return 0;
+        }
+
+        public boolean isNewerThan(AppVersion version) {
+            return this.compareTo(version) > 0;
+        }
+    }
     /**
      * Bare-bones set of tags we need to recognise in plugin.xml in order to
      * identify plugins.
@@ -96,7 +170,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     final Type type;
     private static XMLStreamReader reader;
 
-    private PluginDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
+    private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
         this.className = className;
         this.id = id;
         this.version = version;
@@ -140,7 +214,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     }
 
     @Override
-    public int compareTo(PluginDescriptor t) {
+    public int compareTo(AppDescriptor t) {
         return (id + version).compareTo(t.id + t.version);
     }
 
@@ -152,7 +226,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         return sdkVersion.equals("1.0.0");
     }
 
-    public static PluginDescriptor fromFile(File f) throws PluginVersionException {
+    public static AppDescriptor fromFile(File f) throws PluginVersionException {
         try {
             JarFile jar = new JarFile(f);
             ZipEntry entry = jar.getEntry("plugin.xml");
@@ -234,7 +308,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                 } while (reader != null);
                 
                 if (className != null && id != null && name != null) {
-                    return new PluginDescriptor(className, id, version, name, sdkVersion, type, f);
+                    return new AppDescriptor(className, id, version, name, sdkVersion, type, f);
                 }
             }
         } catch (Exception x) {
@@ -255,7 +329,5 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
 
     private static String readAttribute(PluginXMLAttribute attr) {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
-    }
-    
-    
+    }    
 }

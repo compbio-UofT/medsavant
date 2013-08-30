@@ -14,23 +14,21 @@
  *    limitations under the License.
  */
 
-package medsavant.mendel;
+package medsavant.enrichment;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
-import medsavant.mendel.view.MendelPanel;
+import medsavant.enrichment.app.AggregatePage;
 
 /**
  * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class MendelApp extends MedSavantVariantSectionApp {
-    private MendelPanel fmp;
+public class EnrichmentApp extends MedSavantVariantSectionApp {
+    private AggregatePage fmp;
+
     /**
      * Create the user-interface which appears within the panel.
      *
@@ -39,22 +37,18 @@ public class MendelApp extends MedSavantVariantSectionApp {
     @Override
     public void init(JPanel panel) {
         panel.setLayout(new BorderLayout());
-        fmp = new MendelPanel();
+        fmp = new AggregatePage();
         panel.add(fmp.getView(),BorderLayout.CENTER);
     }
 
-    /**
-     * Title which will appear on plugin's tab in Savant user interface.
-     */
     @Override
     public String getTitle() {
-        return "Mendel";
+        return "Enrichment";
     }
 
     @Override
     public void viewDidLoad() {
         //do something
-        fmp.refresh();
     }
 
     @Override

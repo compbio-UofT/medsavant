@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.client.aggregate;
+package medsavant.enrichment.app;
 
 
 /**

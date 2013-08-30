@@ -15,7 +15,6 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics;
 
-import org.ut.biolab.medsavant.client.aggregate.AggregatePage;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +28,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -36,7 +37,7 @@ import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.client.login.LoginController;
 
 import org.ut.biolab.medsavant.client.plugin.PluginController;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
@@ -56,6 +57,8 @@ import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
  */
 public class GeneticsSection extends SectionView {
 
+    private static final Log LOG = LogFactory.getLog(GeneticsSection.class);
+
     public static boolean isInitialized = false;
     private JPanel[] persistencePanels;
 
@@ -71,26 +74,22 @@ public class GeneticsSection extends SectionView {
 
         PluginController pc = PluginController.getInstance();
         //pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.VARIANT);
+        List<AppDescriptor> knownPlugins = pc.getDescriptorsOfType(AppDescriptor.Type.VARIANT);
 
         SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
         for (int i = 0; i < knownPlugins.size(); i++) {
-            appSections[i] = new PluginPage(this, knownPlugins.get(i));
+            try {
+                appSections[i] = new PluginPage(this, knownPlugins.get(i));
+            } catch (Exception e) {
+                LOG.error(e);
+            }
         }
 
         SubSectionView[] builtInSections = new SubSectionView[] { new GeneticsTablePage(this),
                     new BrowserPage(this),
-                    new GeneticsChartPage(this),
-                    new AnalyticsPage(this) };
+                    new GeneticsChartPage(this)};
 
         return ArrayUtils.addAll(builtInSections, appSections);
-        /*new SubSectionView[]{
-                    new GeneticsTablePage(this),
-                    new BrowserPage(this),
-                    new GeneticsChartPage(this),
-                    new AnalyticsPage(this),
-                    variantCollectionPlugins
-                };*/
     }
 
     @Override

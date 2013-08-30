@@ -65,8 +65,8 @@ public class PluginBrowser extends HierarchicalTable {
         HierarchicalTableComponentFactory factory = new HierarchicalTableComponentFactory() {
             @Override
             public Component createChildComponent(HierarchicalTable table, Object value, int row) {
-                if (value instanceof PluginDescriptor) {
-                    return new ProgramPanel((PluginDescriptor)value);
+                if (value instanceof AppDescriptor) {
+                    return new ProgramPanel((AppDescriptor)value);
                 }
                 return null;
             }
@@ -91,9 +91,9 @@ public class PluginBrowser extends HierarchicalTable {
      * Panel which displays full information about a single plugin.
      */
     class ProgramPanel extends JPanel {
-        PluginDescriptor program;
+        AppDescriptor program;
 
-        public ProgramPanel(PluginDescriptor program) {
+        public ProgramPanel(AppDescriptor program) {
             this.program = program;
             setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
@@ -134,7 +134,7 @@ public class PluginBrowser extends HierarchicalTable {
     }
 
     class ProgramTableModel extends AbstractTableModel implements HierarchicalTableModel, Listener<PluginEvent> {
-        List<PluginDescriptor> descriptors;
+        List<AppDescriptor> descriptors;
 
         ProgramTableModel() {
             descriptors = pluginController.getDescriptors();

@@ -29,6 +29,7 @@ public class AppInfoModal extends JDialog {
     private final AppStoreInstalledPage installedPage;
     private final AppStoreViewManager avm;
     private final JButton downloadButton;
+    private final InstallActionListener ail;
 
     public AppInfoModal(final AppInfo i, final AppStoreInstalledPage installedPage, final AppStoreViewManager avm) {
         super((JFrame) null, i.getName(), true);
@@ -86,14 +87,8 @@ public class AppInfoModal extends JDialog {
 
         final JDialog thisInstance = this;
 
-        downloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                installedPage.queueAppForInstallation(i);
-                thisInstance.setVisible(false);
-                avm.switchToPage(installedPage);
-            }
-        });
+        ail = new InstallActionListener(installedPage,i,avm);
+        downloadButton.addActionListener(ail);
 
         JPanel actionBar = new JPanel();
         actionBar.setOpaque(false);
@@ -116,9 +111,15 @@ public class AppInfoModal extends JDialog {
         if (installedAlready) {
             downloadButton.setEnabled(false);
             downloadButton.setText("Installed");
-            //downloadButton.removeActionListener(downloadButton.getActionListeners()[0]);
             downloadButton.updateUI();
             downloadButton.invalidate();
+        }
+    }
+
+    void setUpdateAllowed(boolean canUpdate) {
+        if (canUpdate) {
+            downloadButton.setText("Update");
+            ail.setModeToUpdate(true);
         }
     }
 }

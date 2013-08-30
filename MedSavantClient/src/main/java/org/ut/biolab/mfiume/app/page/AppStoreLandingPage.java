@@ -13,8 +13,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.AppInfo;
+import org.ut.biolab.mfiume.app.AppInstallUtils;
 import org.ut.biolab.mfiume.app.AppStorePage;
 import org.ut.biolab.mfiume.app.AppStoreViewManager;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
@@ -64,7 +66,14 @@ public class AppStoreLandingPage implements AppStorePage {
 
         for (AppInfo i : info) {
             boolean installedAlready = installRegistry.contains(i);
-            AppInfoFlowView infoBox = new AppInfoFlowView(i,avm,installedPage,installedAlready);
+            boolean canUpdate = false;
+            if (installedAlready) {
+                AppInfo installedApp = AppInstallUtils.getAppWithName(installer,i.getName());
+                if (new AppDescriptor.AppVersion(i.getVersion()).isNewerThan(new AppDescriptor.AppVersion(installedApp.getVersion()))) {
+                    canUpdate = true;
+                }
+            }
+            AppInfoFlowView infoBox = new AppInfoFlowView(i,avm,installedPage,installedAlready,canUpdate);
             flowView.add(infoBox);
         }
 
@@ -104,6 +113,4 @@ public class AppStoreLandingPage implements AppStorePage {
     public ImageIcon getIcon() {
         return new ImageIcon(getClass().getResource(iconroot + "icon_shop_selected.png"));
     }
-
-
 }

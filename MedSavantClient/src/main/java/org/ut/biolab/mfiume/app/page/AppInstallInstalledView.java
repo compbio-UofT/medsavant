@@ -51,22 +51,7 @@ class AppInstallInstalledView extends JPanel {
         b.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean success = installer.uninstallApp(appInfo);
-                        if (success) {
-                            installPage.addRecentlyUninstalledApp(appInfo);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    installPage.updateInstalledList();
-                                }
-                            });
-                        }
-                    }
-                });
-                t.start();
+                installPage.queueAppWithNameForUninstallation(appInfo.getName());
             }
         });
 
