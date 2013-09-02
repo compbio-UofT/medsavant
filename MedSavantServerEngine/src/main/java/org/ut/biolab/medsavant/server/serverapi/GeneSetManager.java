@@ -29,10 +29,13 @@ import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -60,6 +63,14 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         queryManager = QueryManagerFactory.getQueryManager();
     }
 
+    @Override
+    public void addGene(Gene gene) throws RemoteException {
+        try {
+            entityManager.persist(gene);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting gene " + gene.getName());
+        }
+    }
 
     /**
      * Get a list of all available gene sets.
@@ -70,9 +81,22 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet[] getGeneSets(String sessID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from GeneSet");
+        Query query = queryManager.createQuery("Select g.genome, g.type, count(g.name) from Gene g group by g.genome, g.type");
+
+        List<GeneSet> results = new ArrayList<GeneSet>();
+        List<ResultRow> rows = query.executeForRows();
+        for (ResultRow row : rows) {
+            String genome = (String) row.getObject(0);
+            String type = (String) row.getObject(1);
+            int size = (Integer) row.getObject(2);
+            GeneSet geneSet = new GeneSet(genome, type, size);
+            results.add(geneSet);
+        }
+
+        return results.toArray(new GeneSet[0]);
+        /*Query query = queryManager.createQuery("Select g from GeneSet");
         List<GeneSet> result = query.execute();
-        return result.toArray(new GeneSet[0]);
+        return result.toArray(new GeneSet[0]);*/
 
     }
 

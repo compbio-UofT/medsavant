@@ -25,12 +25,14 @@ public class SearcheableGene {
 
     private String name;
     private String chrom;
+    private String genome;
+    private String type;
     private int start;
     private int end;
     private int codingStart;
     private int codingEnd;
-    private int exonStart;
-    private int exonEnd;
+    private String exonStart;
+    private String exonEnd;
     private String transcript;
     private Gene gene;
 
@@ -76,14 +78,25 @@ public class SearcheableGene {
     }
 
     @Field("exon_start")
-    public void setExonStart(int exonStart) {
-        this.exonStart = exonStart;
+    public void setExonStart(String exonStart) {
+        this.exonEnd = exonStart;
     }
 
     @Field("exon_end")
-    public void setExonEnd(int exonEnd) {
+    public void setExonEnd(String exonEnd) {
         this.exonEnd = exonEnd;
     }
+
+    @Field("genome")
+    public void setGenome(String genome) {
+        this.genome = genome;
+    }
+
+    @Field("type")
+    public void setType(String type) {
+        this.type = type;
+    }
+
 
     public String getName() {
         return gene.getName();
@@ -113,12 +126,20 @@ public class SearcheableGene {
         return gene.getTranscript();
     }
 
-    public int getExonStart() {
+    public String getExonStart() {
         return gene.getExonStart();
     }
 
-    public int getExonEnd() {
+    public String getExonEnd() {
         return gene.getExonEnd();
+    }
+
+    public String getGenome() {
+        return gene.getGenome();
+    }
+
+    public String getType() {
+        return gene.getType();
     }
 
     public Gene getGene() {

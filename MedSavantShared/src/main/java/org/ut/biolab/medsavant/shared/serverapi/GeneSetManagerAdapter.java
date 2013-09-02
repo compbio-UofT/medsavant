@@ -58,4 +58,6 @@ public interface GeneSetManagerAdapter extends Remote {
      * Get all blocks associated with the given gene.  Not currently presented to the user in any fashion.
      */
     public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException, SessionExpiredException;
+
+    void addGene(Gene gene) throws RemoteException;
 }
