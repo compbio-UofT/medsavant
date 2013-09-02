@@ -574,7 +574,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                                 createNewProject();
                             } catch (Exception e) {
                                 DialogUtils.displayException("Error", "Error trying to create project", e);
-                                LOG.error(e);
+                                LOG.error("Error trying to create project : ", e);
                             }
                             return null;
                         }

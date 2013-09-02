@@ -81,7 +81,7 @@ public class ProjectController extends Controller<ProjectEvent> {
                 }
             }
         });
-
+/*
         try {
             currentVariantTableSchema = MedSavantClient.CustomTablesManager.getCustomTableSchema(
                     LoginController.getInstance().getSessionID(),
@@ -95,7 +95,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             e.printStackTrace();
         } catch (SessionExpiredException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 
@@ -216,12 +216,12 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentVariantTable() throws SQLException, RemoteException {
-       /* try {
+        try {
             currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
-        }*/
+        }
     }
 
     public String getCurrentPatientTableName() throws RemoteException, SQLException {
