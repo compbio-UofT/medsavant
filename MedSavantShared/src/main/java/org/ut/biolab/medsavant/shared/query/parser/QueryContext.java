@@ -35,7 +35,7 @@ public class QueryContext {
 
     private Map<String, String> aggregates;
 
-    private Map<String, Map<String, String>> updateFields;
+    private Map<String, Map<String, Object>> updateFields;
 
     public Map<String, Object> getParameters() {
         return parameters;
@@ -82,11 +82,11 @@ public class QueryContext {
         this.aggregates = aggregates;
     }
 
-    public Map<String, Map<String, String>> getUpdateFields() {
+    public Map<String, Map<String, Object>> getUpdateFields() {
         return updateFields;
     }
 
-    public void setUpdateFields(Map<String, Map<String, String>> updateFields) {
+    public void setUpdateFields(Map<String, Map<String, Object>> updateFields) {
         this.updateFields = updateFields;
     }
 }

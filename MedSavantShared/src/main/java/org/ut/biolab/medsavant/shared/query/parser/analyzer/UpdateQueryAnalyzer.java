@@ -3,12 +3,14 @@ package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.params.CommonParams;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.AAbstractSchemaName;
 import org.ut.biolab.medsavant.shared.query.parser.node.AUpdateField;
 import org.ut.biolab.medsavant.shared.query.parser.node.AUpdateStatement;
 import org.ut.biolab.medsavant.shared.query.parser.node.AWhereClause;
+import org.ut.biolab.medsavant.shared.query.parser.util.ParserUtil;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -53,12 +55,12 @@ public class UpdateQueryAnalyzer extends DepthFirstAdapter {
         String property = epa.getProperty();
 
         //get new value
-        String value = node.getNewValue().toString();
+        Object value = ParserUtil.getValueToken(node.getNewValue().toString(), context);
 
         //populate map needed for update
-        Map<String, String> currentFieldUpdateInfo = new HashMap<String, String>();
-        currentFieldUpdateInfo.put(property, value);
-        context.getUpdateFields().put("set", currentFieldUpdateInfo);
+        Map<String, Object> currentFieldUpdateInfo = new HashMap<String, Object>();
+        currentFieldUpdateInfo.put("set", value);
+        context.getUpdateFields().put(property, currentFieldUpdateInfo);
 
         LOG.debug(String.format("Adding update info for %s New value of %s is %s.", node.getPathExpression(), property, value));
     }
@@ -78,6 +80,8 @@ public class UpdateQueryAnalyzer extends DepthFirstAdapter {
     }
 
     public SolrQuery getSolrQuery() {
-        return solrQuery;
+        String statement = solrQuery.get(CommonParams.Q);
+        solrQuery.setQuery(ParserUtil.addEntityField(statement, context.getCoreName()));
+        return ParserUtil.addDefaultQueryParameters(solrQuery);
     }
 }

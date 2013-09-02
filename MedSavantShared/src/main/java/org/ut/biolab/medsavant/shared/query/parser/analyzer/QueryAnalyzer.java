@@ -63,7 +63,7 @@ public class QueryAnalyzer extends DepthFirstAdapter {
 
     @Override
     public void caseAUpdStatement(AUpdStatement node) {
-        context.setUpdateFields(new HashMap<String, Map<String, String>>());
+        context.setUpdateFields(new HashMap<String, Map<String, Object>>());
         UpdateQueryAnalyzer updateQueryAnalyzer = new UpdateQueryAnalyzer(context);
         node.apply(updateQueryAnalyzer);
 
