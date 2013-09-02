@@ -69,4 +69,16 @@ public class PersistenceUtil {
     public static void initializePooledConnectio(ConnectionPool pool) throws SQLException {
         engine.initializePooledConnection(pool);
     }
+
+    public static String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws SQLException, RemoteException, SessionExpiredException {
+        return engine.createVariantTable(sessID, projID, refID, updID, annIDs, staging, sub);
+    }
+
+    public static String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
+        return engine.getVariantTableName(sid, projectid, refid, published, sub);
+    }
+
+    public static Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
+        return engine.getVariantTableInfo(sid, projectid, refid, published);
+    }
 }

@@ -1,5 +1,8 @@
 package org.ut.biolab.medsavant.server.db.util.ice;
 
+import com.healthmarketscience.sqlbuilder.OrderObject;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
@@ -11,13 +14,20 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.ConnectionPool;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.util.PersistenceEngine;
+import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.UserManager;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -456,6 +466,96 @@ public class ICEPersistenceEngine implements PersistenceEngine {
             if (c != null) {
                 c.close();
             }
+        }
+    }
+
+    @Override
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SessionExpiredException, SQLException {
+        // Create basic fields.
+        String tableName = DBSettings.getVariantTableName(projID, refID, updID);
+        if (sub) {
+            tableName += "_subset";
+        }
+        TableSchema variantSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
+        for (CustomField f: ProjectManager.getInstance().getCustomVariantFields(sessID, projID, refID, updID)) {
+            variantSchema.addColumn(f);
+        }
+
+        String s = "";
+        for (DbColumn c : variantSchema.getColumns()) {
+            s += c.getColumnNameSQL() + " ";
+        }
+        LOG.info("Creating variant table " + tableName + " with fields " + s);
+
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+
+        try {
+            for (int ann: annIDs) {
+                AnnotationFormat annFmt = AnnotationManager.getInstance().getAnnotationFormat(sessID, ann);
+                for (CustomField f: annFmt.getCustomFields()) {
+                    variantSchema.addColumn(f);
+                }
+            }
+            String updateString;
+            if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
+
+                updateString = variantSchema.getCreateQuery() + " ENGINE=INFINIDB;";
+            } else {
+                updateString = variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
+            }
+            //System.out.println(updateString);
+            conn.executeUpdate(updateString);
+        } finally {
+            conn.close();
+        }
+        return tableName;
+    }
+
+    @Override
+    public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
+
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn((sub ? MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME : MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
+        if (published) {
+            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
+        }
+        query.addOrdering(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), OrderObject.Dir.DESCENDING);
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
+        if (rs.next()) {
+            return rs.getString(1);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(
+                table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME),
+                table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME),
+                table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
+        if (published) {
+            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
+        }
+        query.addOrdering(table.getDBColumn(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), OrderObject.Dir.DESCENDING);
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
+        if (rs.next()) {
+            return new Object[]{rs.getString(1), rs.getString(2), rs.getFloat(3)};
+        } else {
+            return null;
         }
     }
 

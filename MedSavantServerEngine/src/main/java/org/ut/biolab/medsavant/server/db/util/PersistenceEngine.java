@@ -40,4 +40,10 @@ public interface PersistenceEngine {
     public void testConnection(String sessID) throws SQLException, SessionExpiredException;
 
     public void initializePooledConnection(ConnectionPool pool) throws SQLException;
+
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SessionExpiredException, SQLException;
+
+    public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException;
+
+    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException;
 }

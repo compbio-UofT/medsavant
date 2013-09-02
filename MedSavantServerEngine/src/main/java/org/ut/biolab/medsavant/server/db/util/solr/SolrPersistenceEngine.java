@@ -116,4 +116,19 @@ public class SolrPersistenceEngine implements PersistenceEngine {
     public void initializePooledConnection(ConnectionPool pool) {
         //nothing for now
     }
+
+    @Override
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) {
+        return "Variant";
+    }
+
+    @Override
+    public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) {
+        return "Variant";
+    }
+
+    @Override
+    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) {
+        return new Object[] { "Variant", "Variant" , 1};
+    }
 }
