@@ -84,7 +84,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public boolean tryLoginUser(String username, String encryptedPassword) {
+    public boolean tryLoginUser(String username, String encryptedPassword) throws RemoteException {
         Query query = queryManager.createQuery("Select u from User u where u.name = :name and u.password = :password");
         query.setParameter("name", username);
         query.setParameter("password", encryptedPassword);

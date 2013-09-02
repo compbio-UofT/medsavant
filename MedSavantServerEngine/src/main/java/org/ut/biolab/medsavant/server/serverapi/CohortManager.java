@@ -72,7 +72,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     @Override
     public List<SimplePatient> getIndividualsInCohort(String sid, int projectId, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select p from Patient p where p.cohort_id := cohortId and p.project_id := projectId");
+        Query query = queryManager.createQuery("Select p from Patient p where p.id = :cohortId and p.project_id = :projectId");
         query.setParameter("cohortId", cohortId);
         query.setParameter("projectId", projectId);
 
@@ -101,7 +101,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < cohortResults.size(); i++) {
-            int cohortId = (Integer) cohortResults.get(0).getObject("cohort_id");
+            int cohortId = (Integer) cohortResults.get(0).getObject("id");
             sb.append(cohortId);
             if (i != cohortResults.size() - 1) {
                 sb.append(",");
@@ -122,14 +122,14 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     @Override
     public List<String> getIndividualFieldFromCohort(String sessID, int cohortId, String columnName) throws SQLException, RemoteException, SessionExpiredException {
-        String statement = String.format("Select c.%s from Cohort c where c.cohort_id= :cohortId", columnName);
+        String statement = String.format("Select c.%s from Cohort c where c.id= :cohortId", columnName);
         Query query = queryManager.createQuery(statement);
         query.setParameter("cohortId", cohortId);
         List<ResultRow> resultRows = query.executeForRows();
 
         List<String> result = ListUtils.EMPTY_LIST;
         for (ResultRow resultRow : resultRows) {
-            result = ListUtils.union(result, (List<String>) resultRow.getObject("cohort_id"));
+            result = ListUtils.union(result, (List<String>) resultRow.getObject("id"));
         }
 
         return result;
@@ -139,7 +139,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     @Override
     public void addPatientsToCohort(String sessID, int[] patientIDs, int cohortID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select c from Cohort c where c.cohort_id = :cohortId");
+        Query query = queryManager.createQuery("Select c from Cohort c where c.id = :cohortId");
         query.setParameter("cohortId", cohortID);
         List<Cohort> cohorts = query.execute();
         if (cohorts.size() > 0) {
@@ -158,7 +158,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     @Override
     public void removePatientsFromCohort(String sessID, int[] patIDs, int cohID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select c from Cohort c where c.cohort_id= :cohortId");
+        Query query = queryManager.createQuery("Select c from Cohort c where c.id= :cohortId");
         query.setParameter("cohortId", cohID);
 
         List<Cohort> cohorts = query.execute();
@@ -200,7 +200,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     public void removeCohort(String sid, int cohortId) throws SQLException, SessionExpiredException {
 
         //remove patient references
-        Query query = queryManager.createQuery("Select p from Patient p where p.cohort_id= :cohortId");
+        Query query = queryManager.createQuery("Select p from Patient p where p.id= :cohortId");
         query.setParameter("cohortId", cohortId);
         List<Patient> patients = query.execute();
         for (Patient patient : patients) {
@@ -213,7 +213,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         }
 
         //delete
-        Query deleteQuery = queryManager.createQuery("Delete from Cohort c where c.cohort_id= :cohortId");
+        Query deleteQuery = queryManager.createQuery("Delete from Cohort c where c.id= :cohortId");
         deleteQuery.setParameter("cohortId", cohortId);
         deleteQuery.executeDelete();
     }
@@ -227,12 +227,12 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     @Override
     public int[] getCohortIDs(String sid, int projectId) throws SQLException, SessionExpiredException {
-        Query query = queryManager.createQuery("Select c.cohort_id from Cohort c where c.project_id= :projectId");
+        Query query = queryManager.createQuery("Select c.id from Cohort c where c.project_id= :projectId");
         query.setParameter("projectId",projectId);
         List<ResultRow> resultRowList = query.executeForRows();
         int[] cohortIds = new int[resultRowList.size()];
         for (int i = 0; i < resultRowList.size(); i++) {
-            cohortIds[i] = (Integer) resultRowList.get(0).getObject("cohort_id");
+            cohortIds[i] = (Integer) resultRowList.get(0).getObject("id");
         }
 
         return cohortIds;
@@ -262,7 +262,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     private int generateId() {
-        Query query = queryManager.createQuery("Select c.cohort_id,max(c.cohort_id) from Cohort c");
+        Query query = queryManager.createQuery("Select c.id,max(c.id) from Cohort c");
         List<ResultRow> results = query.executeForRows();
 
         int newId;

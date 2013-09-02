@@ -177,12 +177,10 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public CustomField[] getCustomPatientFields(String sessID, int projID) throws SQLException, SessionExpiredException {
         String entityName = Entity.PATIENT;
-        List<CustomField> basicFields = Arrays.asList(BasicPatientColumns.REQUIRED_PATIENT_FIELDS);
 
         Query query = queryManager.createQuery("Select c from CustomColumn c where c.entity_name = :entityName");
         query.setParameter("entityName", entityName);
         List<CustomField> customFields = query.execute();
-        customFields = ListUtils.union(customFields, basicFields);
         return customFields.toArray(new CustomField[0]);
     }
 
@@ -327,8 +325,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         List<CustomField> newFields = new ArrayList<CustomField>();
 
         //delete old fields
-        Query query = queryManager.createQuery("Delete from CustomColumn c where c.project_id = :projectId");
+        Query query = queryManager.createQuery("Delete from CustomColumn c where c.project_id = :projectId and c.entity_name = :entityName");
         query.setParameter("projectId", projID);
+        query.setParameter("entityName", CustomColumnType.PATIENT);
         query.executeDelete();
 
         List<CustomColumn> customColumnList = new ArrayList<CustomColumn>();
@@ -468,8 +467,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public String getFamilyIDOfPatient(String sessID, int projID, int patID) throws SQLException, RemoteException, SessionExpiredException {
         Query query = queryManager.createQuery("Select p from Patient p where p.project_id = :projectId and p.patient_id = :patientId");
-        query.setParameter("project_id", projID);
-        query.setParameter("patient_id", patID);
+        query.setParameter("projectId", projID);
+        query.setParameter("patientId", patID);
         Patient p = query.getFirst();
 
         return p.getFamilyId();
