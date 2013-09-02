@@ -73,7 +73,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
     public void caseAComparisonExpression(AComparisonExpression node) {
 
         TComparisonOperator tComparisonOperator = node.getComparisonOperator();
-        String value = getValueToken(node.getComparisonExpressionRightOperand().toString().trim());
+        Object value = ParserUtil.getValueToken(node.getComparisonExpressionRightOperand().toString().trim(), context);
         if (ParserUtil.equal(tComparisonOperator.toString())) {
             node.getComparisonExpressionRightOperand().apply(this);
         } else if (ParserUtil.greaterThan(tComparisonOperator.toString())) {
@@ -87,7 +87,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
     public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
         value = node.toString().replace("'", "");
 
-        query.append(getValueToken(value));
+        query.append(ParserUtil.getValueToken(value, context));
 
         super.outAMathComparisonExpressionRightOperand(node);
     }
@@ -152,7 +152,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
         super.outARightBracketProd(node);
     }
 
-    private String getValueToken(String value ) {
+    private String getValueToken(String value) {
         String parsedValue = null;
 
         if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {

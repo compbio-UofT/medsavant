@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.shared.query.parser.util;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.params.CommonParams;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
+import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.util.Entity;
 
 /**
@@ -10,7 +11,7 @@ import org.ut.biolab.medsavant.shared.util.Entity;
  */
 public class ParserUtil {
 
-    private String addEntityField(String query, String entity) {
+    public static String addEntityField(String query, String entity) {
         String entityClassName = FieldMappings.getClassName(entity);
         String finalQuery;
         if (query == null) {
@@ -31,6 +32,27 @@ public class ParserUtil {
 
         return solrQuery;
     }
+
+    public static Object getValueToken(String value, QueryContext context) {
+        Object parsedValue = null;
+
+        if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {
+            parsedValue = context.getParameters().get(parseNamedParameter(value));
+        } else {
+            parsedValue = value;
+        }
+
+        return parsedValue;
+    }
+
+    public static boolean isNamedParamter(String parameter) {
+        return  parameter.startsWith(":") ? true : false;
+    }
+
+    public static String parseNamedParameter(String nameParameter) {
+        return nameParameter.substring(1).trim();
+    }
+
 
     public static boolean greaterThan(String token) {
         token = token.trim();

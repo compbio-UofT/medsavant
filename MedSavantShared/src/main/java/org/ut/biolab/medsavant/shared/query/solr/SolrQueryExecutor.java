@@ -82,14 +82,14 @@ public class SolrQueryExecutor implements QueryExecutor {
 
     @Override
     public <T> T getFirst(Query query) {
-        query.setLimit(0);
+        query.setLimit(1);
         List<T> resultList = query.execute();
         return (T) getFirstElement(resultList);
     }
 
     @Override
     public ResultRow getFirstRow(Query query) {
-        query.setLimit(0);
+        query.setLimit(1);
         List<ResultRow> resultRowList = query.executeForRows();
         return (ResultRow) getFirstElement(resultRowList);
     }
@@ -129,7 +129,7 @@ public class SolrQueryExecutor implements QueryExecutor {
             AbstractSolrService solrService = SolrServiceRegistry.getService(entityName);
             SolrDocumentList documentsToUpdate = solrService.search(solrQuery);
 
-            SolrInputDocument updatedDocument = abstractSolrQuery.getUpdateFields();
+            SolrInputDocument updatedDocument = abstractSolrQuery.getSolrDocumentForUpdate();
             for (SolrDocument solrDocument : documentsToUpdate) {
                 String uuid = String.valueOf(solrDocument.getFieldValue(UNIQUE_KEY_FIELD));
                 updatedDocument.setField(UNIQUE_KEY_FIELD, uuid);

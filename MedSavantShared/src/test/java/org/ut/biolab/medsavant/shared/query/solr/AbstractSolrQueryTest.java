@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.shared.query.solr;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
@@ -138,4 +139,47 @@ public class AbstractSolrQueryTest {
 
         List<VariantComment> comments =  query.execute();
     }
+
+    @Test
+    public void testUpdate() throws QueryException {
+        Query updateQuery = queryManager.createQuery("Update Project p set p.reference_id = :referenceId, " +
+                "p.reference_name = :referenceName, p.update_id = :updateId, p.annotation_ids = :annotationIds " +
+                "where p.project_id = :projectId");
+        updateQuery.setParameter("projectId", 1);
+        updateQuery.setParameter("referenceId", 3);
+        updateQuery.setParameter("referenceName", "hg19");
+        updateQuery.setParameter("updateId", 2);
+        updateQuery.setParameter("annotationIds", new Integer[] { 1, 2, 3, 4});
+        updateQuery.executeUpdate();
+    }
+
+    @Test
+    public void testAddProject() throws InitializationException {
+
+        //construct a project
+        String projectName = "test_project_name";
+        int[] annotationIds = new int[] { 1, 2, 3};
+        ProjectDetails projectDetails = new ProjectDetails(1, 1, 1, true, projectName, "test_ref_name", annotationIds);
+        entityManager.persist(projectDetails);
+
+        //retrieve it
+        Query query = queryManager.createQuery("Select p from Project p where p.name = :projectName");
+        query.setParameter("projectName", projectName);
+        ProjectDetails retrievedProjectDetails = query.getFirst();
+
+        //compare
+        Assert.assertEquals("Objects not equal", retrievedProjectDetails, projectDetails);
+
+    }
+
+    public void testRetrieveProject() {
+
+        String projectName = "test_project_name";
+        Query query = queryManager.createQuery("Select p from Project p where p.name = :projectName");
+        query.setParameter("projectName", projectName);
+        ProjectDetails retrievedProjectDetails = query.getFirst();
+        Assert.assertEquals(projectName, retrievedProjectDetails.getProjectName());
+    }
+
+
 }
