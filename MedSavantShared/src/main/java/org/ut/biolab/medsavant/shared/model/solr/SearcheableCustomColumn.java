@@ -83,7 +83,7 @@ public class SearcheableCustomColumn {
         return customColumn.getPosition();
     }
 
-    public boolean isFilterable() {
+    public boolean getFilterable() {
         return customColumn.isFilterable();
     }
 

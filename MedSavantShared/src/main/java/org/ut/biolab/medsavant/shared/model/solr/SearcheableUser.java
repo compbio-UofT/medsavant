@@ -11,10 +11,6 @@ public class SearcheableUser {
 
     private User user;
 
-    private String name;
-    private String password;
-    private UserLevel level;
-
     public SearcheableUser() {
         this.user = new User();
     }
@@ -34,8 +30,8 @@ public class SearcheableUser {
     }
 
     @Field("level")
-    public void setLevel(UserLevel level) {
-        user.setLevel(level);
+    public void setLevel(String level) {
+        user.setLevel(UserLevel.translate(level));
     }
 
     public User getUser() {
@@ -43,14 +39,14 @@ public class SearcheableUser {
     }
 
     public String getName() {
-        return name;
+        return user.getName();
     }
 
     public UserLevel getLevel() {
-        return level;
+        return user.getLevel();
     }
 
     public String getPassword() {
-        return password;
+        return user.getPassword();
     }
 }

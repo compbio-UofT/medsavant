@@ -93,7 +93,7 @@ public class FieldMappings {
         put("ns", "INFO_NS");
         put("sb", "INFO_SB");
         put("somatic", "INFO_SOMATIC");
-        put("validated", "INFO_vALIDATED");
+        put("validated", "INFO_VALIDATED");
     }}
     );
 
