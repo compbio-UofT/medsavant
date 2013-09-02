@@ -59,6 +59,9 @@ public abstract class AbstractSolrService<T> {
     /** The Solr server instance used. */
     protected HttpSolrServer server;
 
+    /** Control index commit */
+    private static boolean autocommit = false;   //Let Solr do the commits for better performance.
+
     public void initialize() throws InitializationException {
         try {
             this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
@@ -174,7 +177,7 @@ public abstract class AbstractSolrService<T> {
     public int index(T entity) {
         try {
             this.server.add(getSolrInputDocument(entity));
-            this.server.commit();
+            autocommit();
             return 0;
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
@@ -193,7 +196,7 @@ public abstract class AbstractSolrService<T> {
     public int index(List<T> entities) {
         try {
             this.server.add(getSolrInputDocuments(entities));
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -211,7 +214,7 @@ public abstract class AbstractSolrService<T> {
     public int index(SolrInputDocument solrInputDocument) {
         try {
             this.server.add(solrInputDocument);
-            this.server.commit();
+            autocommit();
         } catch (SolrServerException e) {
             LOG.error("Cannot connect to server");
         } catch (IOException e) {
@@ -259,7 +262,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(SolrQuery solrQuery) {
         try {
             this.server.deleteByQuery(solrQuery.getQuery());
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -274,7 +277,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(List<String> ids) {
         try {
             this.server.deleteById(ids);
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -289,7 +292,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(String id) {
         try {
             this.server.deleteById(id);
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -436,4 +439,17 @@ public abstract class AbstractSolrService<T> {
         return documents;
     }
 
+    private void autocommit() throws IOException, SolrServerException {
+        if (autocommit) {
+            this.server.commit();
+        }
+    }
+
+    public static boolean isAutocommit() {
+        return autocommit;
+    }
+
+    public static void setAutocommit(boolean autocommit) {
+        AbstractSolrService.autocommit = autocommit;
+    }
 }
