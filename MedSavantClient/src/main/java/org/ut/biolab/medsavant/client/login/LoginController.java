@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.client.project.ProjectWizard;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.CryptoUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
@@ -120,11 +121,11 @@ public class LoginController extends Controller<LoginEvent> {
         //init registry
         try {
 
-            if (!MedSavantClient.UserManager.tryLoginUser(userName, dbname)) {
-                throw new Exception("Failed to login " + userName);
-            }
-
             MedSavantClient.initializeRegistry(serverAddress, serverPort);
+
+            if (!MedSavantClient.UserManager.tryLoginUser(un, CryptoUtils.encrypt(pw))) {
+                throw new Exception("Failed to login " + un);
+            }
 
             this.serverAddress = serverAddress;
             this.dbname = dbname;
