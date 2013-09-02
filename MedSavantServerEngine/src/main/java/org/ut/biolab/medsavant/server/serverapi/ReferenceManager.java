@@ -116,6 +116,12 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
             entityManager.persist(reference);
 
+            int contigId = 0;
+            for (Chromosome chromosome : chroms) {
+                chromosome.setContigId(contigId++);
+                chromosome.setReferenceId(referenceId);
+            }
+
             entityManager.persistAll(Arrays.asList(chroms));
         } catch (InitializationException e) {
             LOG.error("Error persisting reference");

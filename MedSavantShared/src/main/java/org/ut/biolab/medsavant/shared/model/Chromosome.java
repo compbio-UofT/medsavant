@@ -27,11 +27,23 @@ public class Chromosome implements Serializable {
     private final int centromerePos;
     private final String name;
     private final int length;
+    private int referenceId;
+    private int contigId;
+
+    public Chromosome(int centromerePos, String name, int length, int referenceId, int contigId) {
+        this.centromerePos = centromerePos;
+        this.name = name;
+        this.length = length;
+        this.referenceId = referenceId;
+        this.contigId = contigId;
+    }
 
     public Chromosome(String name, int centromerePos, int length) {
         this.name = name;
         this.length = length;
         this.centromerePos = centromerePos;
+        contigId = 0;
+        referenceId = 0;
     }
 
     public int getCentromerePos() {
@@ -46,12 +58,28 @@ public class Chromosome implements Serializable {
         return name;
     }
 
+    public int getReferenceId() {
+        return referenceId;
+    }
+
+    public int getContigId() {
+        return contigId;
+    }
+
     public String getShortname() {
         return generateShortName(getName());
     }
 
     private String generateShortName(String name){
         return name.toLowerCase().replace("chr","").replace("contig", "").toUpperCase();
+    }
+
+    public void setReferenceId(int referenceId) {
+        this.referenceId = referenceId;
+    }
+
+    public void setContigId(int contigId) {
+        this.contigId = contigId;
     }
 
     public static Chromosome[] getHG17Chromosomes(){

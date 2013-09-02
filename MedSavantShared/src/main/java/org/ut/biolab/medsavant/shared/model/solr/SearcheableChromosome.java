@@ -28,11 +28,23 @@ public class SearcheableChromosome {
     private int centromerePos;
     private String name;
     private int length;
+    private int contigId;
+    private int referenceId;
 
     public SearcheableChromosome() { }
 
     public SearcheableChromosome(Chromosome chromosome) {
         this.chromosome = chromosome;
+    }
+
+    @Field("contig_id")
+    public void setContigId(int contigId) {
+        this.contigId = contigId;
+    }
+
+    @Field("reference_id")
+    public void setReferenceId(int referenceId) {
+        this.referenceId = referenceId;
     }
 
     @Field("centromere_pos")
@@ -67,5 +79,11 @@ public class SearcheableChromosome {
         return chromosome.getLength();
     }
 
+    public int getContigId() {
+        return chromosome.getContigId();
+    }
 
+    public int getReferenceId() {
+        return chromosome.getReferenceId();
+    }
 }
