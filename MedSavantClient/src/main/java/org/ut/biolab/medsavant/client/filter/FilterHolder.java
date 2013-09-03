@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.client.ontology.OntologyFilter;
 import org.ut.biolab.medsavant.client.ontology.OntologyFilterView;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;

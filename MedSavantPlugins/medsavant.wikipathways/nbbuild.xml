@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="medsavant.wikipathways" default="default" basedir=".">
+    <description>Builds, tests, and runs the project savant.data.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
+
+    There exist several targets which are by default empty and which can be
+    used for execution of your tasks. These targets are usually executed
+    before and after some main targets. They are:
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported
+    nbproject/build-impl.xml file.
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are:
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="savant.data-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on
+    the compile target as the regular run target does. Again, for a list of available
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file.
+
+    -->
+    <target name="-pre-jar">
+        <copy file="plugin.xml" todir="${build.classes.dir}">
+        </copy>
+    </target>
+
+    <target name="-post-jar">
+        <jar jarfile="${dist.jar}-all">
+            <zipfileset src="${dist.jar}" excludes="META-INF/*" />
+            <zipfileset src="lib/axis-ant.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/axis.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-anim.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-awt-util.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-bridge.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-codec.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-css.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-dom.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-ext.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-extension.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-gui-util.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-gvt.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-parser.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-rasterizer.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-script.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-slideshow.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-squiggle.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-svg-dom.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-svggen.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-svgpp.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-swing.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-transcoder.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-ttf2svg.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-util.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik-xml.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/batik.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/commons-discovery-0.2.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/commons-logging-1.0.4.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/derby.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/jaxrpc.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/jdom.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/js.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/log4j-1.2.8.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.bridgedb.bio.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.bridgedb.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.bridgedb.rdb.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.bridgedb.webservice.bridgerest.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/pathvisio.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/pdf-transcoder.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/resources.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/saaj.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/wikipathways-client.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/wikipathways.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/wsdl4j-1.5.1.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/xalan-2.6.0.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/xerces_2_5_0.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/xml-apis-ext.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/xml-apis.jar" excludes="META-INF/*" />
+        </jar>
+        <delete dir="${dist.dir}/lib"/>
+        <move file="${dist.jar}-all" tofile="${dist.jar}"/>
+    </target>
+
+</project>

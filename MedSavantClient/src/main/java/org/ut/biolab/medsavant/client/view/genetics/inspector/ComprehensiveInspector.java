@@ -23,6 +23,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.api.MedSavantGeneInspectorApp;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantInspectorApp;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
@@ -62,10 +68,12 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private CollapsibleInspector geneCollapsibleInspector;
     private OntologySubInspector ontologySubInspector;
     private GeneManiaSubInspector geneManiaInspector;
+    private MedSavantVariantInspectorApp[] appVariantInspectors;
     private SocialVariantSubInspector socialSubInspector;
     private OtherIndividualsVariantSubInspector otherIndividualsVariantSubInspector;
     private OtherIndividualsGeneSubInspector otherIndividualsDetailedSubInspector;
     private List<Listener<Object>> selectionListeners = new LinkedList<Listener<Object>>();
+    private MedSavantGeneInspectorApp[] appGeneInspectors;
 
     public void addSelectionListener(Listener<Object> selectionListener) {
         selectionListeners.add(selectionListener);
@@ -87,6 +95,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             boolean createOntologySubInspector,
             boolean createGeneManiaInspector,
             boolean createOtherIndividualsInspector,
+            boolean createAppVariantInspectors,
+            boolean createAppGeneInspectors,
             SplitScreenPanel splitScreenPanel) {
 
 
@@ -117,7 +127,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         if (createSimpleVariantInspector) {
             simpleVariantInspector = new SimpleVariantSubInspector();
             variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
-
         }
 
         if (createDetailedVariantInspector) {
@@ -135,6 +144,14 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             otherIndividualsVariantSubInspector.setVariantSelectionListener(this);
             variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);
         }
+
+        if (createAppVariantInspectors) {
+            loadVariantInspectorApps();
+            for (MedSavantVariantInspectorApp app : appVariantInspectors) {
+                variantCollapsibleInspector.addSubInspector(app.getSubInspector());
+            }
+        }
+
         // Gene
         if (createGeneSubInspector) {
             geneSubInspector = new GeneSubInspector();
@@ -158,10 +175,43 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             geneManiaInspector.setGeneListener(this);
         }
 
+        if (createAppGeneInspectors) {
+            loadGeneInspectorApps();
+            for (MedSavantGeneInspectorApp app : appGeneInspectors) {
+                geneCollapsibleInspector.addSubInspector(app.getSubInspector());
+            }
+        }
+
         // Assemble everything
         addTabPanel(ComprehensiveInspector.InspectorEnum.VARIANT, variantCollapsibleInspector);
         addTabPanel(ComprehensiveInspector.InspectorEnum.GENE, geneCollapsibleInspector);
 
+    }
+
+    private void loadVariantInspectorApps() {
+        List<MedSavantVariantInspectorApp> results = new LinkedList<MedSavantVariantInspectorApp>();
+
+        for (AppDescriptor ad : AppController.getInstance().getDescriptors()) {
+            MedSavantApp ap = AppController.getInstance().getPlugin(ad.getID());
+            if (ap instanceof MedSavantVariantInspectorApp) {
+                results.add((MedSavantVariantInspectorApp) ap);
+            }
+        }
+
+        this.appVariantInspectors = results.toArray(new MedSavantVariantInspectorApp[results.size()]);
+    }
+
+    private void loadGeneInspectorApps() {
+        List<MedSavantGeneInspectorApp> results = new LinkedList<MedSavantGeneInspectorApp>();
+
+        for (AppDescriptor ad : AppController.getInstance().getDescriptors()) {
+            MedSavantApp ap = AppController.getInstance().getPlugin(ad.getID());
+            if (ap instanceof MedSavantGeneInspectorApp) {
+                results.add((MedSavantGeneInspectorApp) ap);
+            }
+        }
+
+        this.appGeneInspectors = results.toArray(new MedSavantGeneInspectorApp[results.size()]);
     }
 
     public CollapsibleInspector getVariantInspector() {
@@ -211,6 +261,13 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                         if (instance.socialSubInspector != null) {
                             instance.socialSubInspector.handleEvent(r);
                         }
+
+                        if (appVariantInspectors != null) {
+                            for (MedSavantVariantInspectorApp app : appVariantInspectors) {
+                                app.setVariantRecord(r);
+                            }
+                        }
+
                     } while (currentVariantRecord != r);
                     return null;
                 }
@@ -248,8 +305,15 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 if (geneManiaInspector != null) {
                     geneManiaInspector.handleEvent(gene);
                 }
+
                 if (otherIndividualsDetailedSubInspector != null) {
                     otherIndividualsDetailedSubInspector.handleEvent(gene);
+                }
+
+                if (appGeneInspectors != null) {
+                    for (MedSavantGeneInspectorApp app : appGeneInspectors) {
+                        app.setGene(gene);
+                    }
                 }
 
                 return null;
@@ -334,7 +398,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             };
             eventHandlerThread.execute();
         }
-        //run this in a separate thread.        
+        //run this in a separate thread.
         /*if (event instanceof Gene) {
          setGene((Gene) event);
          } else if (event instanceof SimpleVariant) {
@@ -361,6 +425,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             boolean createOntologySubInspector,
             boolean createGeneManiaInspector,
             boolean createOtherIndividualsInspector,
+            boolean createVariantAppInspectors,
+            boolean createAppGeneInspectors,
             SplitScreenPanel splitScreenPanel) {
 
         setTabPlacement(JTabbedPane.TOP);
@@ -375,6 +441,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 createOntologySubInspector,
                 createGeneManiaInspector,
                 createOtherIndividualsInspector,
+                createVariantAppInspectors,
+                createAppGeneInspectors,
                 splitScreenPanel);
 
         if (createSimpleVariantInspector) {
@@ -384,12 +452,12 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 public void stateChanged(ChangeEvent ce) {
                     int selectedIndex = getSelectedIndex();
                     if (getTitleAt(selectedIndex).equals("Gene")) {
-                        if(simpleVariantInspector.getSelectedGene() !=null){
+                        if (simpleVariantInspector.getSelectedGene() != null) {
                             setGene(simpleVariantInspector.getSelectedGene());
                         }
 
                     } else if (getTitleAt(selectedIndex).equals("Variant")) {
-                        if(simpleVariantInspector.getSimpleVariant() != null){
+                        if (simpleVariantInspector.getSimpleVariant() != null) {
                             setSimpleVariant(simpleVariantInspector.getSimpleVariant());
                         }
                     }

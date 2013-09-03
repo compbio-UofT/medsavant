@@ -46,12 +46,12 @@ public class GeneticsTablePage extends SubSectionView{
 
     private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
     private Thread viewPreparationThread;
-    private JPanel view;    
+    private JPanel view;
     private JPanel outerTablePanel;
     private TablePanel tablePanel;
     private Component[] settingComponents;
-    private PeekingPanel detailView;        
-    
+    private PeekingPanel detailView;
+
     //SplitScreenAdapter(JPanel panel, SplitScreenAdapter.Location location){
     @Override
     public void clearSelection(){
@@ -59,7 +59,7 @@ public class GeneticsTablePage extends SubSectionView{
             tablePanel.clearSelection();
         }
     }
-    
+
     public GeneticsTablePage(SectionView parent) {
         super(parent, "Spreadsheet");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
@@ -95,25 +95,25 @@ public class GeneticsTablePage extends SubSectionView{
         }
         return settingComponents;
     }
-    
-    
+
+
     /**
      * Splits the main table view into an upper and lower section.
      * The upper section contains the main table pane, and the lower section
-     * contains the given JPanel.     
-     */    
+     * contains the given JPanel.
+     */
     /*
     @Override
     public void splitScreen(JPanel p){
         split = true;
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, p);
-        splitPane.setResizeWeight(1);        
+        splitPane.setResizeWeight(1);
         outerTablePanel.removeAll();
         outerTablePanel.add(splitPane);
         outerTablePanel.revalidate();
         outerTablePanel.repaint();
     }
-    
+
     @Override
     public void unsplitScreen(){
         split = false;
@@ -122,7 +122,7 @@ public class GeneticsTablePage extends SubSectionView{
         outerTablePanel.revalidate();
         outerTablePanel.repaint();
     }
-    
+
     @Override
     public boolean isSplit(){
         return split;
@@ -147,17 +147,17 @@ public class GeneticsTablePage extends SubSectionView{
 
                             tablePanel = new TablePanel(pageName);
                             SplitScreenPanel ssp = new SplitScreenPanel(tablePanel);
-                            
-                            final ComprehensiveInspector inspectorPanel = 
-                                    new ComprehensiveInspector(true, true, true, true, true, true, true, ssp);
-                            
+
+                            final ComprehensiveInspector inspectorPanel =
+                                    new ComprehensiveInspector(true, true, true, true, true, true, true, true, true, ssp);
+
                             inspectorPanel.addSelectionListener(new Listener<Object>(){
                                 @Override
                                 public void handleEvent(Object event) {
                                     clearSelection();
-                                }                                
+                                }
                             });
-                                                        
+
                             TablePanel.addVariantSelectionChangedListener(new Listener<VariantRecord>() {
                                 @Override
                                 public void handleEvent(final VariantRecord r) {
@@ -171,7 +171,7 @@ public class GeneticsTablePage extends SubSectionView{
                             tmpView.add(detailView, BorderLayout.EAST);
                             //outerTablePanel = new JPanel();
                             //outerTablePanel.setLayout(new BoxLayout(outerTablePanel, BoxLayout.Y_AXIS));
-                            
+
                             //outerTablePanel.add(tablePanel);
                             //tmpView.add(outerTablePanel, BorderLayout.CENTER);
                             tmpView.add(ssp, BorderLayout.CENTER);
@@ -184,7 +184,7 @@ public class GeneticsTablePage extends SubSectionView{
                                     view.updateUI();
                                 }
                             });
-                                                        
+
                         } catch (Exception ex) {
                             LOG.error(ex);
                             System.out.println("Caught spreadsheet loading error: "+ex);
@@ -193,7 +193,7 @@ public class GeneticsTablePage extends SubSectionView{
                             WaitPanel p = new WaitPanel("Error loading Spreadsheet");
                             p.setComplete();
                             view.add(p);
-                            
+
                         }
                     }
                 };

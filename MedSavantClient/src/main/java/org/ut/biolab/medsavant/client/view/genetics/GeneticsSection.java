@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.variant.ExportVCFWizard;
@@ -59,9 +59,9 @@ public class GeneticsSection extends SectionView {
 
         SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
 
-        PluginController pc = PluginController.getInstance();
+        AppController pc = AppController.getInstance();
         //pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        //List<AppDescriptor> knownPlugins = pc.getDescriptorsOfType(AppDescriptor.Category.VARIANT);       
+        //List<AppDescriptor> knownPlugins = pc.getDescriptorsOfType(AppDescriptor.Category.VARIANT);
 
         //SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
 

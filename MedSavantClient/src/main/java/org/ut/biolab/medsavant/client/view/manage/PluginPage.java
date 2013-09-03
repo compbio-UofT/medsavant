@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.PluginEvent;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class PluginPage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(PluginPage.class);
-    private static PluginController controller = PluginController.getInstance();
+    private static AppController controller = AppController.getInstance();
 
     private MedSavantVariantSectionApp plugin;
     private final JPanel view;
