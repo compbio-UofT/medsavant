@@ -14,7 +14,7 @@ import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
@@ -204,19 +204,19 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         }
     }
 
-    private MedSavantVariantSearchApp[] loadSearchApps() {        
+    private MedSavantVariantSearchApp[] loadSearchApps() {
         List<MedSavantVariantSearchApp> results = new LinkedList<MedSavantVariantSearchApp>();
         int counter = 0;
-        
-        for(AppDescriptor ad : PluginController.getInstance().getDescriptors()){
-            MedSavantApp ap = PluginController.getInstance().getPlugin(ad.getID());
+
+        for(AppDescriptor ad : AppController.getInstance().getDescriptors()){
+            MedSavantApp ap = AppController.getInstance().getPlugin(ad.getID());
             if(ap instanceof MedSavantVariantSearchApp){
                 results.add((MedSavantVariantSearchApp)ap);
                 counter++;
-            }            
+            }
         }
-        
-        return results.toArray(new MedSavantVariantSearchApp[counter]);        
+
+        return results.toArray(new MedSavantVariantSearchApp[counter]);
     }
 
     public static class DatabaseFieldStruct {

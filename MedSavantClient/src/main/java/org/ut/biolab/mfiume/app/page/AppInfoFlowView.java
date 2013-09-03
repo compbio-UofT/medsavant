@@ -106,8 +106,6 @@ class AppInfoFlowView extends JPanel {
         jAppStore.wrapComponentWithLineBorder(this);
 
         this.updateUI();
-
-        System.out.println("Getting info flow view for " + i.getName() + " installed " + installedAlready);
     }
 
     public static JButton getSoftButton(String string) {

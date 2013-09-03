@@ -38,7 +38,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         private final int bugfixVersion;
 
         public AppVersion(String version) {
-            String[] s = version.split("\\.", 0);            
+            String[] s = version.split("\\.", 0);
             try {
                 majorVersion = Integer.parseInt(s[0]);
                 minorVersion = Integer.parseInt(s[1]);
@@ -165,7 +165,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
             }
         }
     };
-    
+
     final String className;
     final String id;
     final String version;
@@ -250,12 +250,12 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                     switch (reader.next()) {
                         case XMLStreamConstants.START_ELEMENT:
                             switch (readElement()) {
-                                case PLUGIN:                                    
+                                case PLUGIN:
                                     className = readAttribute(PluginXMLAttribute.CLASS);
                                     id = readAttribute(PluginXMLAttribute.ID);
-                                    version = readAttribute(PluginXMLAttribute.VERSION);                                                                        
+                                    version = readAttribute(PluginXMLAttribute.VERSION);
                                     //category can be specified as an attribute or <property>.
-                                    category = readAttribute(PluginXMLAttribute.CATEGORY);                                     
+                                    category = readAttribute(PluginXMLAttribute.CATEGORY);
                                     break;
                                 case ATTRIBUTE:
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
@@ -281,23 +281,23 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                             currentElement = "sdk-version";
                                         }
                                     }
-                                    
+
                                     if ("category".equals(readAttribute(PluginXMLAttribute.NAME))) {
-                                        category = readAttribute(PluginXMLAttribute.VALUE);                                        
+                                        category = readAttribute(PluginXMLAttribute.VALUE);
                                         if (category == null) {
                                             currentElement = "category";
                                         }
                                     }
-                                     
+
                                     break;
                             }
                             break;
-                            
+
                         case XMLStreamConstants.CHARACTERS:
                             if (reader.isWhiteSpace()) {
                                 break;
                             } else if (currentElement != null) {
-                                currentText += reader.getText().trim().replace("\t", "");                                
+                                currentText += reader.getText().trim().replace("\t", "");
                             }
                             break;
 
@@ -323,13 +323,13 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                             break;
                     }
                 } while (reader != null);
-                
+
                 if (className != null && id != null && name != null) {
                     return new AppDescriptor(className, id, version, name, sdkVersion, category, f);
                 }
             }
         } catch (Exception x) {
-            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);            
+            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
         }
         throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
     }
@@ -346,5 +346,5 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
     private static String readAttribute(PluginXMLAttribute attr) {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
-    }    
+    }
 }

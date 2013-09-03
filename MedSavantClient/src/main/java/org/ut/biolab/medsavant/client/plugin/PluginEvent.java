@@ -55,6 +55,6 @@ public class PluginEvent {
      * Plugin which was being loaded.  Will be null if the plugin did not successfully load.
      */
     public MedSavantApp getPlugin() {
-        return PluginController.getInstance().getPlugin(pluginID);
+        return AppController.getInstance().getPlugin(pluginID);
     }
 }

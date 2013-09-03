@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.client.api.Listener;
 public class PluginBrowser extends HierarchicalTable {
 
     private ProgramTableModel tableModel;
-    private PluginController pluginController = PluginController.getInstance();
+    private AppController pluginController = AppController.getInstance();
 
     public PluginBrowser() {
         tableModel = new ProgramTableModel();

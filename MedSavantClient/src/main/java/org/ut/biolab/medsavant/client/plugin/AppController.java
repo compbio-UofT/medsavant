@@ -44,12 +44,12 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
  *
  * @author mfiume, tarkvara
  */
-public class PluginController extends Controller {
+public class AppController extends Controller {
 
-    private static final Log LOG = LogFactory.getLog(PluginController.class);
-    private static final String UNINSTALL_FILENAME = ".uninstall_plugins";
+    private static final Log LOG = LogFactory.getLog(AppController.class);
+    private static final String UNINSTALL_FILENAME = ".uninstall_apps";
 
-    private static PluginController instance;
+    private static AppController instance;
 
     private File uninstallFile;
     private List<String> pluginsToRemove = new ArrayList<String>();
@@ -60,9 +60,9 @@ public class PluginController extends Controller {
     private PluginIndex repositoryIndex = null;
 
     /** SINGLETON **/
-    public static synchronized PluginController getInstance() {
+    public static synchronized AppController getInstance() {
         if (instance == null) {
-            instance = new PluginController();
+            instance = new AppController();
         }
         return instance;
     }
@@ -70,7 +70,7 @@ public class PluginController extends Controller {
     /**
      * Private constructor.  Should only be called by getInstance().
      */
-    private PluginController() {
+    private AppController() {
         try {
             uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
 
@@ -97,7 +97,6 @@ public class PluginController extends Controller {
         });
         for (File f: files) {
             try {
-                LOG.info("Loading plugin at " + f.getAbsolutePath());
                 addPlugin(f);
             } catch (PluginVersionException x) {
                 LOG.warn(String.format("No compatible plugins found in %s.", f));
@@ -177,17 +176,6 @@ public class PluginController extends Controller {
         return result;
     }
 
-    public List<AppDescriptor> getDescriptorsOfType(AppDescriptor.Category t) {
-        List<AppDescriptor> result = new ArrayList<AppDescriptor>();
-        for (AppDescriptor desc: knownPlugins.values()) {
-            if (desc.getCategory() == t) {
-                result.add(desc);
-            }
-        }
-        Collections.sort(result);
-        return result;
-    }
-
     /**
      * @deprecated
      */
@@ -222,7 +210,7 @@ public class PluginController extends Controller {
                         out.write("This file indicates that the GeneMANIA data has finished downloading.");
                         out.close();
                     } catch (IOException ex) {
-                        Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(AppController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }

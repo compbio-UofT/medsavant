@@ -75,7 +75,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
@@ -108,8 +108,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         Point parentOff = getPositionRelativeTo(root, comp.getParent());
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
-    private final jAppStore appStore;
     private int textFieldAdminColumns = 20;
+    private jAppStore appStore;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
         if (src != null && dst != null) {
@@ -127,10 +127,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         Point src = getPositionRelativeTo(view, srcComponent);
         Point dst = getPositionRelativeTo(view, dstComponent);
         translationAnimation(src, dst, img, notificationMsg);
-    }
-
-    public void showAppStore() {
-        appStore.showStore();
     }
 
     public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg) {
@@ -270,7 +266,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             customizeForMac();
         }
 
-        PluginController pc = PluginController.getInstance();
+        AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
         JMenuBar menu = new JMenuBar();
@@ -295,19 +291,14 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         });
         fileMenu.add(dbManagementItem);
 
-        final MedSavantAppFetcher maf = new MedSavantAppFetcher();
-        final MedSavantAppInstaller mai = new MedSavantAppInstaller();
-        appStore = new jAppStore("MedSavant App Store", maf, mai);
 
         JMenuItem appItem = new JMenuItem("App Store");
         appItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                //if (LoginController.getInstance().isLoggedIn()) {
-                    showAppStore();
-                //} else {
-                //    DialogUtils.displayMessage("You must login to access the App Store.");
-                //}
+
+
+                showAppStore();
             }
         });
         fileMenu.add(appItem);
@@ -379,7 +370,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
     }
 
-
     public void switchToSessionView() {
         if (!LoginController.getInstance().isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) {
             return;
@@ -442,11 +432,11 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
             /*controller.unregister();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-            System.exit(0);*/
+             try {
+             Thread.sleep(100);
+             } catch (InterruptedException ex) {
+             }
+             System.exit(0);*/
         }
         System.out.print("NOT QUITTING!");
     }
@@ -545,5 +535,17 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         for (String s : propn) {
             UIManager.put(s, o);
         }
+    }
+
+    void showAppStore() {
+
+        if (appStore == null) {
+            final MedSavantAppFetcher maf = new MedSavantAppFetcher();
+            final MedSavantAppInstaller mai = new MedSavantAppInstaller();
+
+            appStore = new jAppStore("MedSavant App Store", maf, mai);
+        }
+        appStore.showStore();
+
     }
 }

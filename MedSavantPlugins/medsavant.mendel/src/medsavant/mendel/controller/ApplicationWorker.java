@@ -168,7 +168,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 retriever);
 
         final SplitScreenPanel ssp = new SplitScreenPanel(stp);
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, ssp);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, true, true, ssp);
 
         vip.addSelectionListener(new Listener<Object>(){
             @Override

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -41,7 +41,7 @@ public class MedSavantAppInstaller implements AppInstaller {
             System.out.println("Downloaded " + downloadedFile.getAbsolutePath());
             System.out.println("Installing from " + downloadedFile.getAbsolutePath());
 
-            PluginController.getInstance().installPlugin(downloadedFile);
+            AppController.getInstance().installPlugin(downloadedFile);
 
             System.out.println("Plugin installed to  " + DirectorySettings.getPluginsDirectory().getAbsolutePath());
 
@@ -57,14 +57,14 @@ public class MedSavantAppInstaller implements AppInstaller {
     private void updateRegistry() {
         installedApps = new HashSet<AppInfo>();
 
-        List<AppDescriptor> descriptors = PluginController.getInstance().getDescriptors();
+        List<AppDescriptor> descriptors = AppController.getInstance().getDescriptors();
         //public AppInfo(String name, String version, String category, String compatibleWith, String description, String author, String web, URL downloadURL) {
 
         for (AppDescriptor pd : descriptors) {
             String name = pd.getName();
             String version = pd.getVersion();
             String category = pd.getCategory().toString();
-            String sdkVersion = pd.getSDKVersion();            
+            String sdkVersion = pd.getSDKVersion();
             AppInfo ai = new AppInfo(name, version, category, sdkVersion, null, null, null, null, null, null);
             ai.setID(pd.getID());
             installedApps.add(ai);
@@ -80,7 +80,7 @@ public class MedSavantAppInstaller implements AppInstaller {
     @Override
     public boolean uninstallApp(AppInfo appInfo) {
         System.out.println("Uninstalling app " + appInfo.toString());
-        return PluginController.getInstance().queuePluginForRemoval(appInfo.getID());
+        return AppController.getInstance().queuePluginForRemoval(appInfo.getID());
     }
 
     @Override
