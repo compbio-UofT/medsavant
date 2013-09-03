@@ -164,6 +164,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         } catch (Exception ex) {
             LOG.error(ex);
+            ex.printStackTrace();
             DialogUtils.displayException("Error", "There was an error performing your search", ex);
         }
 
@@ -190,7 +191,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         c = ConditionUtils.TRUE_CONDITION;
                     }
 
-                    LOG.debug(c.toString());
+                    LOG.info(c.toString());
 
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
@@ -210,7 +211,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         }
                     });
                 } catch (Exception ex) {
-                    LOG.error(ex);
+                    LOG.info(ex);
+                    ex.printStackTrace();
                     DialogUtils.displayException("Error", "There was an error performing your search", ex);
                 }
             }

@@ -51,6 +51,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.plaf.ColorUIResource;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 
@@ -282,7 +283,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
         });
-        fileMenu.add(pluginsItem);
+        //fileMenu.add(pluginsItem);
 
         JMenuItem dbManagementItem = new JMenuItem("Database Management");
         dbManagementItem.addActionListener(new ActionListener() {
