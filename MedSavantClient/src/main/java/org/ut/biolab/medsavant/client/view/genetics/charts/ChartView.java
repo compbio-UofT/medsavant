@@ -73,11 +73,11 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
 
         chartChooser1 = new JComboBox() {
             @Override
-            public void addItem(Object anObject) {
-                int size = ((DefaultComboBoxModel)dataModel).getSize();
+            public void addItem(Object anObject) {                
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
                 Object obj;
                 boolean added = false;
-                for (int i=0; i<size; i++) {
+                for (int i = 0; i < size; i++) {
                     obj = dataModel.getElementAt(i);
                     int compare = anObject.toString().compareToIgnoreCase(obj.toString());
                     if (compare <= 0) { // if anObject less than or equal obj
@@ -94,11 +94,12 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         toolbar.add(chartChooser1);
 
         chartChooser1.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!init) return;
-                String alias = (String)chartChooser1.getSelectedItem();
+                if (!init) {
+                    return;
+                }
+                String alias = (String) chartChooser1.getSelectedItem();
                 ChartMapGenerator cmg = mapGenerators.get(alias);
                 if (alias.equals(CHROM.getAlias())) {
                     bSort.setEnabled(false);
@@ -111,8 +112,9 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
                     sc.setIsSortedKaryotypically(false);
                 }
                 sc.setChartMapGenerator(cmg);
+                sc.setChartName(alias);
                 //updateScatterAxes();
-                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
+                sc.setScatterChartMapGenerator(mapGenerators.get((String) chartChooser2.getSelectedItem()));
                 bLogX.setEnabled(cmg.isNumeric());
 
                 sc.setUpdateRequired(true);
@@ -140,10 +142,10 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         chartChooser2 = new JComboBox() {
             @Override
             public void addItem(Object anObject) {
-                int size = ((DefaultComboBoxModel)dataModel).getSize();
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
                 Object obj;
                 boolean added = false;
-                for (int i=0; i<size; i++) {
+                for (int i = 0; i < size; i++) {
                     obj = dataModel.getElementAt(i);
                     int compare = anObject.toString().compareToIgnoreCase(obj.toString());
                     if (compare <= 0) { // if anObject less than or equal obj
@@ -161,29 +163,30 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         toolbar.add(chartChooser2);
 
         chartChooser2.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!init) return;
+                if (!init) {
+                    return;
+                }
                 //updateScatterAxes();
-                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
+                sc.setScatterChartMapGenerator(mapGenerators.get((String) chartChooser2.getSelectedItem()));
 
                 sc.setUpdateRequired(true);
                 sc.updateIfRequired();
                 /*String alias = (String) chartChooser2.getSelectedItem();
-                ChartMapGenerator cmg = mapGenerators.get(alias);
-                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
-                    bSort.setEnabled(false);
-                    sc.setIsSortedKaryotypically(true);
-                } else if (cmg.isNumeric()) {
-                    bSort.setEnabled(false);
-                    sc.setIsSortedKaryotypically(false);
-                } else {
-                    bSort.setEnabled(true);
-                    sc.setIsSortedKaryotypically(false);
-                }
-                sc.setChartMapGenerator(cmg);
-                bLogX.setEnabled(cmg.isNumeric());*/
+                 ChartMapGenerator cmg = mapGenerators.get(alias);
+                 if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
+                 bSort.setEnabled(false);
+                 sc.setIsSortedKaryotypically(true);
+                 } else if (cmg.isNumeric()) {
+                 bSort.setEnabled(false);
+                 sc.setIsSortedKaryotypically(false);
+                 } else {
+                 bSort.setEnabled(true);
+                 sc.setIsSortedKaryotypically(false);
+                 }
+                 sc.setChartMapGenerator(cmg);
+                 bLogX.setEnabled(cmg.isNumeric());*/
             }
         });
 
@@ -224,10 +227,14 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         add(h1, BorderLayout.CENTER);
     }
 
+    private void addCMG(String key, ChartMapGenerator cmg) {
+        mapGenerators.put(key, cmg);
+        chartChooser1.addItem(key);
+        chartChooser2.addItem(key);
+    }
+
     private void addCMG(ChartMapGenerator cmg) {
-        mapGenerators.put(cmg.getName(), cmg);
-        chartChooser1.addItem(cmg.getName());
-        chartChooser2.addItem(cmg.getName());
+        addCMG(cmg.getName(), cmg);
     }
 
     private void addCMGs() throws RemoteException, SQLException {
@@ -236,24 +243,28 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         for (AnnotationFormat af : afs) {
             for (CustomField field : af.getCustomFields()) {
                 ColumnType type = field.getColumnType();
-                if (field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) &&
-                        !(field.getColumnName().equals(FILE_ID.getColumnName())) ||
-                            field.getColumnName().equals(UPLOAD_ID.getColumnName()) ||
-                            field.getColumnName().equals(DBSNP_ID.getColumnName()) ||
-                            field.getColumnName().equals(VARIANT_ID.getColumnName())) {
-                    addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
+                if (field.isFilterable()
+                        && (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))
+                        && !(field.getColumnName().equals(FILE_ID.getColumnName()))
+                        || field.getColumnName().equals(UPLOAD_ID.getColumnName())
+                        || field.getColumnName().equals(DBSNP_ID.getColumnName())
+                        || field.getColumnName().equals(VARIANT_ID.getColumnName())) {
+
+                    String program = af.getProgram();
+                    program = (program.equals("VCF Conditions") || program.equals("Standard Variant Conditions")) ? "" : " - " + program;
+                    String name = field.getAlias() + program;
+                    addCMG(name, VariantFieldChartMapGenerator.createVariantChart(field));
                 }
             }
         }
         for (CustomField field : ProjectController.getInstance().getCurrentPatientFormat()) {
             ColumnType type = field.getColumnType();
-            if (field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) &&
-                        !(field.getColumnName().equals(PATIENT_ID.getColumnName()) ||
-                            field.getColumnName().equals(FAMILY_ID.getColumnName()) ||
-                            field.getColumnName().equals(IDBIOMOM.getColumnName()) ||
-                            field.getColumnName().equals(IDBIODAD.getColumnName()))) {
+            if (field.isFilterable()
+                    && (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))
+                    && !(field.getColumnName().equals(PATIENT_ID.getColumnName())
+                    || field.getColumnName().equals(FAMILY_ID.getColumnName())
+                    || field.getColumnName().equals(IDBIOMOM.getColumnName())
+                    || field.getColumnName().equals(IDBIODAD.getColumnName()))) {
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
@@ -344,7 +355,6 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         }
     }
 
-
     public void setIsSorted(boolean b) {
         if (bSort.isEnabled()) {
             sc.setIsSorted(b);
@@ -352,34 +362,35 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
     }
 
     public void setIsLogScale(boolean b, ChartAxis axis) {
-        if ((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
+        if ((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) {
+            return;
+        }
         sc.setIsLogScale(b, axis);
         bLogY.setSelected(sc.isLogScaleY());
         bLogX.setSelected(sc.isLogScaleX());
     }
 
     /*public void setIsLogScaleY(boolean b) {
-        if (bLogY.isEnabled()) {
-            sc.setIsLogScaleY(!sc.isLogScaleY());
-            bLogY.setSelected(sc.isLogScaleY());
-            if (sc.isLogScaleY()) {
-                sc.setIsLogScaleX(false);
-                bLogX.setSelected(false);
-            }
-        }
-    }
+     if (bLogY.isEnabled()) {
+     sc.setIsLogScaleY(!sc.isLogScaleY());
+     bLogY.setSelected(sc.isLogScaleY());
+     if (sc.isLogScaleY()) {
+     sc.setIsLogScaleX(false);
+     bLogX.setSelected(false);
+     }
+     }
+     }
 
-    public void setIsLogScaleX(boolean b) {
-        if (bLogX.isEnabled()) {
-            sc.setIsLogScaleX(!sc.isLogScaleX());
-            bLogX.setSelected(sc.isLogScaleX());
-            if (sc.isLogScaleX()) {
-                sc.setIsLogScaleY(false);
-                bLogY.setSelected(false);
-            }
-        }
-    }*/
-
+     public void setIsLogScaleX(boolean b) {
+     if (bLogX.isEnabled()) {
+     sc.setIsLogScaleX(!sc.isLogScaleX());
+     bLogX.setSelected(sc.isLogScaleX());
+     if (sc.isLogScaleX()) {
+     sc.setIsLogScaleY(false);
+     bLogY.setSelected(false);
+     }
+     }
+     }*/
     public void updateIfRequired() {
         if (sc != null) {
             sc.updateIfRequired();

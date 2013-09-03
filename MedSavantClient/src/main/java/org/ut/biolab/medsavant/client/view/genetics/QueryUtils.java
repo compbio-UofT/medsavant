@@ -121,6 +121,13 @@ public class QueryUtils {
         qvc.replaceFirstLevelItem(alias, StringConditionEncoder.encodeConditions(selections), desc);
     }
 
+    public static void addNumericQuery(String alias, double low, double high){
+        QueryViewController qvc = SearchBar.getInstance().getQueryViewController();        
+        String encodedConditions = NumericConditionEncoder.encodeConditions(low, high);
+        String desc = NumericConditionEncoder.getDescription(new double[]{low, high});
+        qvc.replaceFirstLevelItem(alias, encodedConditions, desc);        
+    }
+    
     public static void addQueryOnPatients(int[] patientIds) {
         List<String> patientIdStrings = new ArrayList<String>(patientIds.length);
         for (int patientId : patientIds) {
