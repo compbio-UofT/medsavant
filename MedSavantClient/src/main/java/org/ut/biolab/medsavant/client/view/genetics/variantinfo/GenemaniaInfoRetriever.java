@@ -97,9 +97,9 @@ public class GenemaniaInfoRetriever {
     private static Map<Long, Integer> sequenceNumbers;
     private CytoscapeUtils cytoscapeUtils;
     private RelatedGenesEngineResponseDto response;
-    //private static String GM_URL = "http://localhost/gmdata.zip";  //for debugging.
+    private static String GM_URL = "http://localhost/gmdata.zip";  //for debugging.
     
-    private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
+    //private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
 
@@ -128,6 +128,10 @@ public class GenemaniaInfoRetriever {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("This file indicates that the GeneMANIA data has finished downloading.");
             out.close();
+            if(!data.delete()){
+                LOG.error("Couldn't delete GeneMANIA .zip: "+data.getAbsolutePath());
+            }
+            
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(GenemaniaInfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }

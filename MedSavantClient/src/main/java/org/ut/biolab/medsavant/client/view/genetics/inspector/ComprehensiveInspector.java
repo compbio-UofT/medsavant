@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.client.view.genetics.inspector;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -38,7 +39,6 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsGeneSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsVariantSubInspector;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  *
@@ -412,6 +412,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     private void addTabPanel(ComprehensiveInspector.InspectorEnum i, Inspector inspector) {
         inspectorsToTabIndexMap.put(i, this.getTabCount());
-        addTab(inspector.getName(), null, ViewUtil.getClearBorderlessScrollPane(inspector.getContent()), inspector.getName());
+        JScrollPane jsp =  ViewUtil.getClearBorderlessScrollPane(inspector.getContent());
+        jsp.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        addTab(inspector.getName(), null, jsp, inspector.getName());
     }
 }

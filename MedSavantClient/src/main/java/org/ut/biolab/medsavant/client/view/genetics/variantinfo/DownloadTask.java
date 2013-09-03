@@ -178,14 +178,8 @@ public abstract class DownloadTask extends SwingWorker {
             int op=-1;
             while ((bytesRead = inputStream.read(buffer)) != -1 && !isCancelled()) {
                 outputStream.write(buffer, 0, bytesRead);
-                totalBytesRead += bytesRead;               
-                try{
-                    int desiredKBPS = 3000;
-                    long sleepTime = Math.round(BUFFER_SIZE*1000 / (desiredKBPS << 10));
-                    Thread.sleep(sleepTime);
-                }catch(InterruptedException e){
-                    
-                }
+                totalBytesRead += bytesRead;           
+                
                 //x1000 to force more frequent updates of status message.
                 percentCompleted = (int) (totalBytesRead * 1000 / filesize);
 
