@@ -102,7 +102,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         });
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(DialogUtils.getFrontWindow());
     }
 

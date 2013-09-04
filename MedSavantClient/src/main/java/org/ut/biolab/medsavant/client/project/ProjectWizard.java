@@ -99,9 +99,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         this.customFields = fields;
         this.projectDetails = details;
         PAGENAME_CREATE = "Modify";
-        manager = MedSavantClient.ProjectManager;
-
-        setupWizard();
+        manager = MedSavantClient.ProjectManager;           
+        setupWizard();                
     }
 
     /*
@@ -163,7 +162,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         });
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(null);
     }
 

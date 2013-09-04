@@ -95,7 +95,7 @@ public class OntologyWizard extends WizardDialog {
         });
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(DialogUtils.getFrontWindow());
     }
 
