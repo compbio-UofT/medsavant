@@ -166,8 +166,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         }
     };
 
-    final String className;
-    final String id;
+    final String className;    
     final String version;
     final String name;
     final String sdkVersion;
@@ -175,9 +174,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     final Category category;
     private static XMLStreamReader reader;
 
-    private AppDescriptor(String className, String id, String version, String name, String sdkVersion, String category, File file) {
+    private AppDescriptor(String className,  String version, String name, String sdkVersion, String category, File file) {
         this.className = className;
-        this.id = id;
+       
         this.version = version;
         this.name = name;
         this.sdkVersion = sdkVersion;
@@ -187,7 +186,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
     @Override
     public String toString() {
-        return id + "-" + version;
+        return name + "-" + version;
     }
 
     public String getClassName() {
@@ -195,7 +194,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     }
 
     public String getID() {
-        return id;
+        return getName();
     }
 
     public String getVersion() {
@@ -220,7 +219,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
     @Override
     public int compareTo(AppDescriptor t) {
-        return (id + version).compareTo(t.id + t.version);
+        return (name + version).compareTo(t.name + t.version);
     }
 
     /**
@@ -251,22 +250,24 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                         case XMLStreamConstants.START_ELEMENT:
                             switch (readElement()) {
                                 case PLUGIN:
-                                    className = readAttribute(PluginXMLAttribute.CLASS);
-                                    id = readAttribute(PluginXMLAttribute.ID);
-                                    version = readAttribute(PluginXMLAttribute.VERSION);
+                                    className = readAttribute(PluginXMLAttribute.CLASS);                                
+                                    
                                     //category can be specified as an attribute or <property>.
                                     category = readAttribute(PluginXMLAttribute.CATEGORY);
                                     break;
+                                    
                                 case ATTRIBUTE:
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
                                         sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
                                     }
                                     break;
+                                    
                                 case PARAMETER:
                                     if ("name".equals(readAttribute(PluginXMLAttribute.ID))) {
                                         name = readAttribute(PluginXMLAttribute.VALUE);
                                     }
                                     break;
+                                    
                                 case PROPERTY:
                                     if ("name".equals(readAttribute(PluginXMLAttribute.NAME))) {
                                         name = readAttribute(PluginXMLAttribute.VALUE);
@@ -275,6 +276,13 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                         }
                                     }
 
+                                    if ("version".equals(readAttribute(PluginXMLAttribute.NAME))) {
+                                        version = readAttribute(PluginXMLAttribute.VALUE);
+                                        if (version == null) {
+                                            currentElement = "version";
+                                        }
+                                    }
+                                    
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.NAME))) {
                                         sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
                                         if (sdkVersion == null) {
@@ -310,6 +318,8 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                         sdkVersion = currentText;
                                     }else if(currentElement.equals("category")){
                                         category = currentText;
+                                    }else if(currentElement.equals("version")){
+                                        version = currentText;
                                     }
                                 }
                                 currentText = "";
@@ -323,9 +333,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                             break;
                     }
                 } while (reader != null);
-
-                if (className != null && id != null && name != null) {
-                    return new AppDescriptor(className, id, version, name, sdkVersion, category, f);
+                
+                if (className != null && name != null && version!= null) {
+                    return new AppDescriptor(className, version, name, sdkVersion, category, f);
                 }
             }
         } catch (Exception x) {

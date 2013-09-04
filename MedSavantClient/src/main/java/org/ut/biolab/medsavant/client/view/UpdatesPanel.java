@@ -64,7 +64,7 @@ public class UpdatesPanel extends JPanel {
         setOpaque(false);
 
         ViewUtil.applyVerticalBoxLayout(this);
-        JButton button = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_NOTIFY));
+        final JButton button = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_NOTIFY));
 
         //numNotifications = new JLabel("0");
 
@@ -84,6 +84,22 @@ public class UpdatesPanel extends JPanel {
             }
         });
 
+        button.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                button.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
         new PeriodicChecker(UPDATE_INTERVAL) {
             @Override
             public void actionPerformed(ActionEvent ae) {

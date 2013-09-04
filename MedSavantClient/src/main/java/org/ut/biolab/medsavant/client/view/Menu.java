@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.client.view;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -109,7 +111,7 @@ public class Menu extends JPanel {
         NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
         JPanel appStorePanel = ViewUtil.getClearPanel();
-        JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
+        final JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
         ViewUtil.applyHorizontalBoxLayout(appStorePanel);
         appStorePanel.add(ViewUtil.subTextComponent(appStoreButton, "App Store"));
 
@@ -121,6 +123,24 @@ public class Menu extends JPanel {
             }
 
         });
+        
+        
+        appStoreButton.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                appStoreButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                appStoreButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
 
         int componentpadding = 10;
         primaryMenu.add(Box.createHorizontalStrut(componentpadding));
@@ -368,6 +388,24 @@ public class Menu extends JPanel {
                 MedSavantFrame.getInstance().requestClose();
             }
         });
+        
+        
+        userButton.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                userButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                userButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
 
         //loginMenu.add(ViewUtil.getSmallSeparator());
 
