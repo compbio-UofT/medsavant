@@ -129,7 +129,8 @@ public class TermAnalyzer extends DepthFirstAdapter {
         String start = node.getA().toString().trim();
         String end = node.getB().toString().trim();
 
-        query.append("[" + start + " TO " + end + "]");
+        query.append("[" + ParserUtil.getValueToken(start, context) + " TO "
+                + ParserUtil.getValueToken(end, context) + "]");
     }
 
     public boolean isNamedParamter(String parameter) {
