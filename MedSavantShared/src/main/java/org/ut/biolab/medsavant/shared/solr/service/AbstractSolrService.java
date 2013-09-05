@@ -15,10 +15,16 @@
  */
 package org.ut.biolab.medsavant.shared.solr.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
@@ -43,6 +49,8 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -52,8 +60,10 @@ public abstract class AbstractSolrService<T> {
 
     private static final Log LOG = LogFactory.getLog(AbstractSolrService.class);
 
-    private static final String SOLR_HOST = "http://localhost:8983/solr/";
-
+    private static final String SOLR_SCHEME = "http";
+    private static final String SOLR_HOST = "localhost";
+    private static final int SOLR_PORT = 8983;
+    private static final String SOLR_URL = SOLR_SCHEME + "://" + SOLR_HOST + ":" + SOLR_PORT + "/solr/";
     private static final SolrInputDocumentDecorator decorator = new EntityDecorator();
 
     /** The Solr server instance used. */
@@ -64,7 +74,7 @@ public abstract class AbstractSolrService<T> {
 
     public void initialize() throws InitializationException {
         try {
-            this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
+            this.server = new HttpSolrServer(SOLR_URL + this.getName() + "/");
         } catch (RuntimeException ex) {
             LOG.error("Invalid URL specified for the Solr server: {}",ex);
         }
@@ -115,7 +125,7 @@ public abstract class AbstractSolrService<T> {
     }
 
     public void queryAndWriteToFile(SolrQuery query, File file) {
-        HttpGet request = new HttpGet(SOLR_HOST + "select" + "?" + query);
+        HttpGet request = new HttpGet(SOLR_URL + getName() + "/select" + "?" + query);
         try {
             HttpResponse httpResponse = server.getHttpClient().execute(request);
             FileOutputStream fileOutputStream = new FileOutputStream(file,false);
@@ -229,29 +239,35 @@ public abstract class AbstractSolrService<T> {
      * @param file
      * @return
      */
-    public int index(String file, String separator, String escape) {
+    public int index(String file, String separator, String escape, Class solrClass, String[] fieldNames) throws URISyntaxException {
 
         String oldBaseURL = server.getBaseURL();
 
         try {
             SolrQuery query = new SolrQuery();
             query.add(CommonParams.STREAM_FILE, file);
-            query.add("separator", separator);
-            query.add("escape", escape);
+            query.add("literal.entity", solrClass.getName());
+            query.set("separator", "\t");
+            query.set("escape", "\\");
+            query.set("encapsulator", "\"");
+            query.set("header", "false");
+            query.set("literal.entity", solrClass.getName());
+            query.set("fieldnames", StringUtils.join(fieldNames, ","));
 
+            URIBuilder builder = new URIBuilder().setScheme(SOLR_SCHEME).setHost(SOLR_HOST).setPort(SOLR_PORT).
+                    setPath("/solr/" + getName() + "/update/csv").setQuery(query.toString());
+            URI uri = builder.build();
+            HttpClient client = server.getHttpClient();
 
-            server.setBaseURL(oldBaseURL + "/csv");
-
-            server.query(query);
-
-            server.setBaseURL(oldBaseURL);
-        } catch (SolrServerException e) {
+            HttpResponse response = client.execute(new HttpPost(uri));
+            EntityUtils.consume(response.getEntity());
+        } catch (ClientProtocolException e) {
+            LOG.error("Error uploading from document");
+        } catch (IOException e) {
             LOG.error("Error uploading from document");
         } finally {
             server.setBaseURL(oldBaseURL);
         }
-
-
         return 0;
     }
 

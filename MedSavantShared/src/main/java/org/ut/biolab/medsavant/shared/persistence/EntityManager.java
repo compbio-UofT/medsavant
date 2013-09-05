@@ -17,6 +17,7 @@ package org.ut.biolab.medsavant.shared.persistence;
 
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -43,5 +44,14 @@ public interface EntityManager {
      * @param tsvFile       The TSV file containing the entities
      * @param clazz         The class of the entities
      */
-    public void persist(String tsvFile, Class clazz) throws InitializationException;
+    public void persist(String tsvFile, Class clazz) throws InitializationException, URISyntaxException;
+
+    /**
+     * Persist a number of entity fields stored as files.
+     * @param tsvFile       The TSV file containing the entities
+     * @param clazz         The class of the entities
+     * @param fields        The fields which are imported.
+     * @throws InitializationException
+     */
+    public void persist(String tsvFile, Class clazz, String[] fields) throws InitializationException, URISyntaxException;
 }

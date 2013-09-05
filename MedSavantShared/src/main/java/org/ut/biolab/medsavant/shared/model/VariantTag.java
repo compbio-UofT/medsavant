@@ -28,10 +28,27 @@ public class VariantTag {
 
     public String key;
     public String value;
+    private int uploadId;
+
+    public VariantTag() {}
 
     public VariantTag(String key, String value) {
         this.key = key;
         this.value = value;
+    }
+
+    public VariantTag(String key, String value, int uploadId) {
+        this.key = key;
+        this.value = value;
+        this.uploadId = uploadId;
+    }
+
+    public int getUploadId() {
+        return uploadId;
+    }
+
+    public void setUploadId(int uploadId) {
+        this.uploadId = uploadId;
     }
 
     @Override

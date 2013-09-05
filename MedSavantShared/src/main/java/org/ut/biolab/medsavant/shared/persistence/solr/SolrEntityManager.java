@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.shared.solr.service.AbstractSolrService;
 import org.ut.biolab.medsavant.shared.solr.service.SolrServiceRegistry;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,16 +43,28 @@ public class SolrEntityManager implements EntityManager {
 
     @Override
     public <T> void persistAll(List<T> entities) throws InitializationException {
-        AbstractSolrService solrService = SolrServiceRegistry.getService(entities.get(0).getClass());
-        solrService.index(mapToSolrEntities(entities));
+        if (entities.size() > 0 ) {
+            AbstractSolrService solrService = SolrServiceRegistry.getService(entities.get(0).getClass());
+            solrService.index(mapToSolrEntities(entities));
+        }
     }
 
     @Override
-    public void persist(String tsvFile, Class clazz) throws InitializationException {
+    public void persist(String tsvFile, Class clazz) throws InitializationException, URISyntaxException {
         AbstractSolrService solrService = SolrServiceRegistry.getService(clazz);
         String tab = ClientUtils.escapeQueryChars("\t");
         String backslash = ClientUtils.escapeQueryChars("\"");
-        solrService.index(tsvFile, tab, backslash);
+        Class solrClass = FieldMappings.getSolrClass(clazz);
+        solrService.index(tsvFile, tab, backslash, solrClass, null);
+    }
+
+    @Override
+    public void persist(String tsvFile, Class clazz, String[] fields) throws InitializationException, URISyntaxException {
+        AbstractSolrService solrService = SolrServiceRegistry.getService(clazz);
+        String tab = ClientUtils.escapeQueryChars("\t");
+        String backslash = ClientUtils.escapeQueryChars("\"");
+        Class solrClass = FieldMappings.getSolrClass(clazz);
+        solrService.index(tsvFile, tab, backslash, solrClass,fields);
     }
 
     /**
@@ -62,6 +75,8 @@ public class SolrEntityManager implements EntityManager {
     private Object mapToSolEntity(Object entity) {
         if (entity instanceof VariantRecord) {
             return new SearcheableVariant((VariantRecord)entity);
+        } else if (entity instanceof VariantTag) {
+            return new SearcheableVariantTag((VariantTag) entity);
         } else if (entity instanceof SimpleVariantFile) {
             return new SearcheableVariantFile((SimpleVariantFile) entity);
         } else if (entity instanceof VariantComment) {

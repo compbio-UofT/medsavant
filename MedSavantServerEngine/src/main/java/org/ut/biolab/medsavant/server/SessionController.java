@@ -57,7 +57,8 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
         int newSessionIdNumber = ++lastSessionId;
         String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
 
-        PersistenceUtil.registerCredentials(sessionId, user, password, dbName);
+        ConnectionController.registerCredentials(sessionId, user, password, dbName);
+        //PersistenceUtil.registerCredentials(sessionId, user, password, dbName);
         System.out.println("Registered session " + sessionId + " for " + user);
         LOG.info("Registered session " + sessionId + " for " + user);
         return sessionId;
@@ -73,14 +74,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
 
     @Override
     public void testConnection(String sessID) throws RemoteException, SQLException, SessionExpiredException {
-        Connection conn = null;
-        try {
-            conn = ConnectionController.connectPooled(sessID);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+        PersistenceUtil.testConnection(sessID);
     }
 
     public String getUserForSession(String sid) {

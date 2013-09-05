@@ -17,6 +17,7 @@ package org.ut.biolab.medsavant.shared.model.solr;
 
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
+import org.ut.biolab.medsavant.shared.solr.service.VariantData;
 import org.ut.biolab.medsavant.shared.util.Entity;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
@@ -71,6 +72,14 @@ public class FieldMappings {
          className = ENTITY_CLASS_NAMES.get(entityName);
         }
         return className;
+    }
+
+    public static Class getSolrClass(Class clazz) {
+        Class solrClass = clazz;
+        if (CLASS_MAPPINGS.containsKey(clazz)) {
+            solrClass = CLASS_MAPPINGS.get(clazz);
+        }
+        return solrClass;
     }
 
     //FIXME move to a property file maybe
@@ -138,6 +147,36 @@ public class FieldMappings {
                 put(Entity.REFERENCE, SearcheableReference.class.getName());
                 put(Entity.GENERAL_LOG, SearcheableGeneralLog.class.getName());
                 put(Entity.CUSTOM_COLUMN, SearcheableCustomColumn.class.getName());
+            }}
+    );
+
+    private static final Map<Class, Class> CLASS_MAPPINGS = Collections.unmodifiableMap(
+            new HashMap<Class, Class> () {{
+                put(Annotation.class, SearcheableAnnotation.class);
+                put(AnnotatedColumn.class, SearcheableAnnotatedColumn.class);
+                put(AnnotationFormat.class, SearcheableAnnotationFormat.class);
+                put(AnnotationLog.class, SearcheableAnnotationLog.class);
+                put(VariantData.class, SearcheableVariant.class);
+                put(VariantRecord.class, SearcheableVariant.class);
+                put(SimpleVariantFile.class, SearcheableVariantFile.class);
+                put(VariantTag.class, SearcheableVariantTag.class);
+                put(VariantComment.class, SearcheableVariantComment.class);
+                put(Chromosome.class, SearcheableChromosome.class);
+                put(Gene.class, SearcheableGene.class);
+                put(GeneSet.class, SearcheableGeneSet.class);
+                put(Cohort.class, SearcheableCohort.class);
+                put(Patient.class, SearcheablePatient.class);
+                put(Ontology.class, SearcheableOntology.class);
+                put(OntologyTerm.class, SearcheableOntologyTerm.class);
+                put(RegionSet.class, SearcheableRegionSet.class);
+                put(GenomicRegion.class, SearcheableGenomicRegion.class);
+                put(Reference.class, SearcheableReference.class);
+                put(ProjectDetails.class, SearcheableProjectDetails.class);
+                put(User.class, SearcheableUser.class);
+                put(Setting.class, SearcheableSetting.class);
+                put(Reference.class, SearcheableReference.class);
+                put(GeneralLog.class, SearcheableGeneralLog.class);
+                put(CustomColumn.class, SearcheableCustomColumn.class);
             }}
     );
 

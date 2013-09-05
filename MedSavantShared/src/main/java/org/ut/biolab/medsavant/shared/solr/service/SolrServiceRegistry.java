@@ -19,6 +19,7 @@ import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.Entity;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -145,8 +146,8 @@ public class SolrServiceRegistry {
             return getProjectDetailsService();
         } else if (Cohort.class.getName().equals(clazz.getName())) {
             return getCohortService();
-        } else if (VariantData.class.getName().equals(clazz.getName())) {
-            return getVariantCommentService();
+        } else if (VariantRecord.class.getName().equals(clazz.getName()) || VariantData.class.getName().equals(clazz.getName())) {
+            return getVariantService();
         } else if (SimpleVariantFile.class.getName().equals(clazz.getName())) {
             return getVariantFileService();
         } else if (Chromosome.class.getName().equals(clazz.getName())) {
@@ -283,7 +284,7 @@ public class SolrServiceRegistry {
     public static AbstractSolrService getOntologyTermService() throws InitializationException {
         if (ontologyTermService == null) {
             ontologyTermService = new OntologyTermSolrService();
-            ontologyService.initialize();
+            ontologyTermService.initialize();
         }
         return ontologyTermService;
     }
