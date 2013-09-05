@@ -73,7 +73,7 @@ public class VariantManagerUtils {
         return typeNameSQL.equals(varchar);
     }
 
-    private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
+    public static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
 
          LOG.info("Cleaning file " + inputFile.getAbsolutePath() + " for table " + tableName);
 
@@ -185,7 +185,7 @@ public class VariantManagerUtils {
 
                 try {
                     entityManager.persist(currentOutputPath, VariantRecord.class);
-                } catch (InitializationException e) {
+                } catch (Exception e) {
                     LOG.error("Error persisting data from file " + currentOutputPath);
                 }
 
@@ -202,7 +202,7 @@ public class VariantManagerUtils {
             bw.close();
             try {
                 entityManager.persist(currentOutputPath, VariantRecord.class);
-            } catch (InitializationException e) {
+            } catch (Exception e) {
                 LOG.error("Error persisting data from file " + currentOutputPath);
             }
             LOG.info("Closing and uploading last partial file " + currentOutputPath);
@@ -219,7 +219,6 @@ public class VariantManagerUtils {
         c.setAutoCommit(true);
 
         c.close();
-
         /*if (VariantManager.REMOVE_TMP_FILES) {
             boolean deleted = file.delete();
             LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
@@ -233,12 +232,12 @@ public class VariantManagerUtils {
         String statement;
 
         if (complete) {
-            statement = "Select v from Variant v";
+            statement = "Select v ";
         } else {
             statement = "Select v.upload_id, v.file_id, v.variant_id, v.dna_id, v.chrom, v.position, v.dbsnp_id, " +
-                    "v.ref, v.alt, v.qual, v.filter, v.variant_type, v.zygosity, v.gt, v.custom_info";
+                    "v.ref, v.alt, v.qual, v.filter, v.variant_type, v.zygosity, v.gt, v.custom_info ";
         }
-        statement += "from Variant";
+        statement += "from Variant v";
 
         LOG.info("Dumping variants to file " + file.getAbsolutePath() + ". Variant filtering conditions " + conditions );
         Query query = queryManager.createQuery(statement);

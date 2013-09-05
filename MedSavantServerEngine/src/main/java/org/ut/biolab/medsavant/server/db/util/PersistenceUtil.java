@@ -3,9 +3,11 @@ package org.ut.biolab.medsavant.server.db.util;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import org.ut.biolab.medsavant.server.db.ConnectionPool;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -80,5 +82,13 @@ public class PersistenceUtil {
 
     public static Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException {
         return engine.getVariantTableInfo(sid, projectid, refid, published);
+    }
+
+    public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws Exception {
+        return engine.doImport(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags);
+    }
+
+    public static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
+        engine.annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles,workingDir );
     }
 }

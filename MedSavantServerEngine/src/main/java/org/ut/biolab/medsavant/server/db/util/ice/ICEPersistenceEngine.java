@@ -17,6 +17,8 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.util.PersistenceEngine;
+import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
+import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.UserManager;
@@ -25,10 +27,13 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -556,6 +561,57 @@ public class ICEPersistenceEngine implements PersistenceEngine {
             return new Object[]{rs.getString(1), rs.getString(2), rs.getFloat(3)};
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws Exception {
+
+        return ImportUpdateManager.doImport(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags, true);
+    }
+
+    @Override
+    public void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
+        LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
+
+        ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
+
+        //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
+        String tableName = ProjectManager.getInstance().createVariantTable(
+                sessionID,
+                projectID,
+                referenceID,
+                updateID,
+                annotationIDs,
+                true);
+
+        String tableNameSubset = ProjectManager.getInstance().createVariantTable(
+                sessionID,
+                projectID,
+                referenceID,
+                updateID,
+                annotationIDs,
+                false,
+                true);
+
+        boolean needsToUnlock = ImportUpdateManager.acquireLock(sessionID);
+
+        try {
+            //get annotation information
+            Annotation[] annotations = ImportUpdateManager.getAnnotationsFromIDs(annotationIDs, sessionID);
+
+            File[] splitTSVFiles = ImportUpdateManager.splitFilesByDNAAndFileID(tsvFiles, ImportUpdateManager.createSubdir(workingDir, "split"));
+            File[] annotatedTSVFiles = ImportUpdateManager.annotateTSVFiles(sessionID, splitTSVFiles, annotations, customFields, ImportUpdateManager.createSubdir(workingDir, "annotate"));
+            ImportUpdateManager.uploadTSVFiles(sessionID, annotatedTSVFiles, tableName, tableNameSubset, ImportUpdateManager.createSubdir(workingDir, "subset"));
+            ImportUpdateManager.registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
+            ImportUpdateManager.dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
+            ImportUpdateManager.setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
+
+        } catch (Exception e) {
+            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
+            throw e;
+        } finally {
+            ImportUpdateManager.releaseLock(sessionID, needsToUnlock);
         }
     }
 

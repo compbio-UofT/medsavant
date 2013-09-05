@@ -3,9 +3,11 @@ package org.ut.biolab.medsavant.server.db.util;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import org.ut.biolab.medsavant.server.db.ConnectionPool;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
@@ -46,4 +48,8 @@ public interface PersistenceEngine {
     public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException;
 
     public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException, SessionExpiredException;
+
+    public int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws Exception;
+
+    public void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception;
 }
