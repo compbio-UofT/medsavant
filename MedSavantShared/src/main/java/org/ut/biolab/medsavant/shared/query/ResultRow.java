@@ -35,6 +35,30 @@ public class ResultRow {
         this.results = results;
     }
 
+    public int getInt(String key) throws QueryException {
+        return getObjectOfClass(key, Integer.class);
+    }
+
+    public long getLong(String key) throws QueryException {
+        return getObjectOfClass(key, Long.class);
+    }
+
+    public boolean getBoolean(String key) throws QueryException {
+        return getObjectOfClass(key, Boolean.class);
+    }
+
+    public String getString(String key) throws QueryException {
+        return getObjectOfClass(key, String.class);
+    }
+
+    public float getFloat(String key) throws QueryException {
+        return getObjectOfClass(key, Float.class);
+    }
+
+    public double getDouble(String key) throws QueryException {
+        return getObjectOfClass(key, Double.class);
+    }
+
     public Object getObject(String key) {
         return results.get(key);
     }
@@ -60,5 +84,16 @@ public class ResultRow {
         return "ResultRow{" +
                 "results=" + results +
                 '}';
+    }
+
+    private <T> T getObjectOfClass(String key, Class<T> clazz) throws QueryException {
+        try {
+            Object value = results.get(key);
+            return value != null ? clazz.cast(value) : clazz.newInstance();
+        } catch (InstantiationException e) {
+            throw new QueryException("Could not retrieve value of type " + clazz.getName());
+        } catch (IllegalAccessException e) {
+            throw new QueryException("Could not retrieve value of type " + clazz.getName());
+        }
     }
 }
