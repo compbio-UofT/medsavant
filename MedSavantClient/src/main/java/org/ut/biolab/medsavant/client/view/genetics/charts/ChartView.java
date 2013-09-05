@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.query.QueryException;
 
 /**
  *
@@ -54,7 +55,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
     private JCheckBox bOriginal;
     private JPanel bottomToolbar;
 
-    public ChartView(String pageName) throws RemoteException, SQLException {
+    public ChartView(String pageName) throws RemoteException, SQLException, QueryException {
         this.pageName = pageName;
         mapGenerators = new HashMap<String, ChartMapGenerator>();
 
@@ -207,7 +208,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         this.add(toolbar, BorderLayout.NORTH);
     }
 
-    private void initCards() throws RemoteException, SQLException {
+    private void initCards() throws RemoteException, SQLException, QueryException {
         initAllCard();
         addCMGs();
     }
@@ -230,7 +231,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
         chartChooser2.addItem(cmg.getName());
     }
 
-    private void addCMGs() throws RemoteException, SQLException {
+    private void addCMGs() throws RemoteException, SQLException, QueryException {
 
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for (AnnotationFormat af : afs) {
