@@ -53,6 +53,9 @@ public class ShardedDatabaseSetupHelper {
         ShardedSessionManager.closeSession(session);
     }
 
+    /**
+     * Removes database shards.
+     */
     public void removeDatabase() {
         Session session = ShardedSessionManager.openSession();
 
