@@ -218,4 +218,43 @@ public class WriteTest extends AbstractShardTest {
 
         ShardedSessionManager.closeSession(session);
     }
+
+    @Test
+    public void showTables() {
+        Session session = ShardedSessionManager.openSession();
+
+        List<String> tables = DBUtil.getTables(ShardConfigurationUtil.getConnectionUrlForShard(0), ShardedSessionManager.getConfig(0).getShardUser(), ShardedSessionManager
+                .getConfig(0).getShardPassword());
+
+        for (String s : tables) {
+            System.out.println(s);
+        }
+
+        ShardedSessionManager.closeSession(session);
+    }
+
+    @Test
+    public void createDropTable() {
+        final String createQuery = "CREATE TABLE test (id int)";
+        final String dropQuery = "DROP TABLE test";
+
+        System.out.println("Tables before:");
+        showTables();
+
+        System.out.println("Creating tables...");
+        Session session = ShardedSessionManager.openSession();
+        ShardedConnectionController.executeUpdateOnShard(0, createQuery);
+        ShardedSessionManager.closeSession(session);
+
+        System.out.println("Tables after creating:");
+        showTables();
+
+        System.out.println("Dropping tables...");
+        session = ShardedSessionManager.openSession();
+        ShardedConnectionController.executeUpdateOnShard(0, dropQuery);
+        ShardedSessionManager.closeSession(session);
+
+        System.out.println("Tables after dropping:");
+        showTables();
+    }
 }
