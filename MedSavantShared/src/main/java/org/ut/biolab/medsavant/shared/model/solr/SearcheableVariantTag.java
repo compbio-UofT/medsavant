@@ -10,10 +10,17 @@ public class SearcheableVariantTag {
 
     VariantTag tag;
 
-    public SearcheableVariantTag() { }
+    public SearcheableVariantTag() {
+        tag = new VariantTag();
+    }
 
     public SearcheableVariantTag(VariantTag tag) {
         this.tag = tag;
+    }
+
+    @Field("upload_id")
+    public void setUploadId(int uploadId) {
+        this.tag.setUploadId(uploadId);
     }
 
     @Field("key")
@@ -28,6 +35,10 @@ public class SearcheableVariantTag {
 
     public VariantTag getTag() {
         return tag;
+    }
+
+    public int getUploadId() {
+        return tag.getUploadId();
     }
 
     public String getKey() {
