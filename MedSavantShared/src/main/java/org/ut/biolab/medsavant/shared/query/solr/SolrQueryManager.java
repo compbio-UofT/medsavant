@@ -48,6 +48,7 @@ public class SolrQueryManager implements QueryManager {
         SolrQuery solrQuery = abstractSolrQuery.getSolrQuery();
 
         solrQuery.add(CommonParams.WT, "csv");
+        solrQuery.add("csv.header", "false");
         String entityName = abstractSolrQuery.getEntity();
 
         AbstractSolrService solrService = null;
