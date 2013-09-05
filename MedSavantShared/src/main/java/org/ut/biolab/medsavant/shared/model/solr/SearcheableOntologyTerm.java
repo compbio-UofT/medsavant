@@ -66,7 +66,7 @@ public class SearcheableOntologyTerm {
         this.name = name;
     }
 
-    @Field("id")
+    @Field("ontology_id")
     public void setId(String id) {
         this.id = id;
     }

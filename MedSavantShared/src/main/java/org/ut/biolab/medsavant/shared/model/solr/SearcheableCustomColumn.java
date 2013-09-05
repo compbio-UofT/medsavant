@@ -12,7 +12,9 @@ public class SearcheableCustomColumn {
 
     private CustomColumn customColumn;
 
-    public SearcheableCustomColumn() { }
+    public SearcheableCustomColumn() {
+        customColumn = new CustomColumn();
+    }
 
     public SearcheableCustomColumn(CustomColumn customColumn) {
         this.customColumn = customColumn;
@@ -29,8 +31,8 @@ public class SearcheableCustomColumn {
     }
 
     @Field("upload_id")
-    public void setUploadId(int uploadId) {
-        this.customColumn.setUploadId(uploadId);
+    public void setUploadId(long uploadId) {
+        this.customColumn.setUploadId((int) uploadId);
     }
 
     @Field("position")
@@ -50,7 +52,7 @@ public class SearcheableCustomColumn {
 
     @Field("type")
     public void setType(String type) {
-        this.customColumn.setType(ColumnType.valueOf(type));
+        this.customColumn.setType(ColumnType.fromString(type));
     }
     @Field("filterable")
     public void setFilterable(boolean filterable) {
