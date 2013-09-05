@@ -51,8 +51,8 @@ import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
  */
 public class ShardedConnectionController {
 
-    private static final String CREATE_DB_QUERY = "CREATE DATABASE ";
-    private static final String DROP_DB_QUERY = "DROP DATABASE ";
+    private static final String CREATE_DB_QUERY = "CREATE DATABASE IF NOT EXISTS ";
+    private static final String DROP_DB_QUERY = "DROP DATABASE IF EXISTS ";
 
     /**
      * Executes a query on a single shard, blocking call.
