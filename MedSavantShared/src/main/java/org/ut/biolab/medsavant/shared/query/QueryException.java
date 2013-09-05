@@ -23,9 +23,12 @@ public class QueryException extends Exception {
 
     private Query query;
 
+    public QueryException(String message) {
+        super(message);
+    }
+
     public QueryException(String message, Query query, Throwable throwable) {
         super(message, throwable);
-
         this.query = query;
     }
 
