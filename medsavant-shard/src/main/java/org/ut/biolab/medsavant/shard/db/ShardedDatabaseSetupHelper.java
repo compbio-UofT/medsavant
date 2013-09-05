@@ -63,4 +63,17 @@ public class ShardedDatabaseSetupHelper {
 
         ShardedSessionManager.closeSession(session);
     }
+
+    /**
+     * Creates variant tables on shards.
+     * 
+     * @param query
+     */
+    public void createVariantTables(String query) {
+        Session session = ShardedSessionManager.openSession();
+
+        ShardedConnectionController.executeUpdateOnAllShards(query, false);
+
+        ShardedSessionManager.closeSession(session);
+    }
 }
