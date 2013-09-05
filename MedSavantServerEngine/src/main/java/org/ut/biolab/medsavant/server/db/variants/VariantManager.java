@@ -38,10 +38,8 @@ import org.ut.biolab.medsavant.shared.model.*;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.*;
 import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.query.QueryManager;
-import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
-import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.*;
@@ -224,7 +222,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, SessionExpiredException, IOException, Exception {
-        //FIXME update this to contain abstract code
+
         LOG.info("Importing variants already stored on server in dir " + dirContainingVCFs.getAbsolutePath());
 
         if (!dirContainingVCFs.exists()) {
@@ -816,26 +814,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException, SessionExpiredException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sid);
         try {
-            TableSchema variantTagTable = MedSavantDatabase.VariantTagTableSchema;
-
-            conn.setAutoCommit(false);
-
+            List<VariantTag> tags = new ArrayList<VariantTag>();
             //add tags
             for (int i = 0; i < variantTags.length && !Thread.currentThread().isInterrupted(); i++) {
-                InsertQuery query = variantTagTable.insert(VariantTagColumns.UPLOAD_ID, uploadID,
-                        VariantTagColumns.TAGKEY, variantTags[i][0],
-                        VariantTagColumns.TAGVALUE, variantTags[i][1]);
-                conn.createStatement().executeUpdate(query.toString());
+                tags.add(new VariantTag(variantTags[i][0], variantTags[i][1], uploadID));
             }
-            if (Thread.currentThread().isInterrupted()) {
-                conn.rollback();
-            } else {
-                conn.commit();
-            }
-        } finally {
-            conn.close();
+            entityManager.persistAll(tags);
+        } catch (InitializationException e) {
+            LOG.error("Error adding tags for upload id : " + uploadID, e);
         }
     }
 
@@ -844,73 +831,56 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public List<String> getDistinctTagNames(String sessID) throws SQLException, SessionExpiredException {
+    public List<String> getDistinctTagNames(String sessID) throws SQLException, SessionExpiredException, QueryException {
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, MedSavantDatabase.VariantTagTableSchema.distinct().select(VariantTagColumns.TAGKEY).toString());
+        Query query = queryManager.createQuery("Select t.key from VariantTag t group by t.name");
+        List<ResultRow> rows = query.executeForRows();
 
         List<String> tagNames = new ArrayList<String>();
-        while (rs.next()) {
-            tagNames.add(rs.getString(1));
+        for (ResultRow row : rows) {
+            tagNames.add(row.getString("key"));
         }
-
         return tagNames;
     }
 
     @Override
-    public List<String> getValuesForTagName(String sessID, String tagName) throws SQLException, SessionExpiredException {
+    public List<String> getValuesForTagName(String sessID, String tagName) throws SQLException, SessionExpiredException, QueryException {
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, MedSavantDatabase.VariantTagTableSchema.distinct().where(VariantTagColumns.TAGKEY, tagName).select(VariantTagColumns.TAGVALUE).toString());
+        Query query = queryManager.createQuery("Select t.value from VariantTag t where t.key = :key");
+        query.setParameter("key", tagName);
+        List<ResultRow> rows = query.executeForRows();
 
         List<String> tagValues = new ArrayList<String>();
-        while (rs.next()) {
-            tagValues.add(rs.getString(1));
+        for (ResultRow row : rows) {
+            tagValues.add(row.getString("value"));
         }
-
         return tagValues;
 
     }
 
     @Override
-    public List<Integer> getUploadIDsMatchingVariantTags(String sessID, String[][] variantTags) throws SQLException, SessionExpiredException {
-        //ToDo after adding tags
-        TableSchema table = MedSavantDatabase.VariantTagTableSchema;
+    public List<Integer> getUploadIDsMatchingVariantTags(String sessID, String[][] variantTags) throws SQLException, SessionExpiredException, QueryException {
 
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addColumns(table.getDBColumn(VariantTagColumns.UPLOAD_ID));
-
-        Condition[] orConditions = new Condition[variantTags.length];
-
-        Set<String> seenConditions = new HashSet<String>();
-        int duplicates = 0;
-
+        //construct query conditions
+        StringBuilder statement = new StringBuilder("Select t.upload_id from Variant tag");
         for (int i = 0; i < variantTags.length; i++) {
-
-            String strRepresentation = variantTags[i][0] + ":" + variantTags[i][1];
-
-            if (seenConditions.contains(strRepresentation)) {
-                duplicates++;
+            if (i == 0) {
+                statement.append(" where ");
             } else {
-
-                orConditions[i] = ComboCondition.and(new Condition[]{
-                            BinaryCondition.equalTo(table.getDBColumn(VariantTagColumns.TAGKEY), variantTags[i][0]),
-                            BinaryCondition.equalTo(table.getDBColumn(VariantTagColumns.TAGVALUE), variantTags[i][1])});
-                seenConditions.add(strRepresentation);
+                statement.append(" or ");
             }
+            statement.append("( t.key = " + variantTags[i][0] + " and t.value = " + variantTags[i][1] + ")");
         }
 
-        q.addCondition(ComboCondition.or(orConditions));
-        q.addGroupings(table.getDBColumn(VariantTagColumns.UPLOAD_ID));
-        q.addHaving(BinaryCondition.equalTo(FunctionCall.countAll(), variantTags.length - duplicates));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        List<Integer> results = new ArrayList<Integer>();
-        while (rs.next()) {
-            results.add(rs.getInt(1));
+        //execute and parse results
+        Query query = queryManager.createQuery(statement.toString());
+        LOG.info(query.toString());
+        List<ResultRow> rows = query.executeForRows();
+        List<Integer> uploadIds = new ArrayList<Integer>();
+        for (ResultRow row : rows) {
+            uploadIds.add(row.getInt("upload_id"));
         }
-
-        return results;
+        return uploadIds;
     }
 
     @Override
@@ -927,12 +897,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String[]> getTagsForUpload(String sessID, int uplID) throws SQLException, RemoteException, SessionExpiredException {
 
-        //ToDo after adding tags
-        ResultSet rs = ConnectionController.executeQuery(sessID, MedSavantDatabase.VariantTagTableSchema.where(VariantTagColumns.UPLOAD_ID, uplID).select(VariantTagColumns.TAGKEY, VariantTagColumns.TAGVALUE).toString());
+        Query query = queryManager.createQuery("Select t from VariantTag t where t.upload_id = :uploadId");
+        query.setParameter("uploadId", uplID);
 
         List<String[]> result = new ArrayList<String[]>();
-        while (rs.next()) {
-            result.add(new String[]{rs.getString(1), rs.getString(2)});
+        List<VariantTag> variantTags = query.execute();
+        for (VariantTag tag : variantTags) {
+            result.add(new String[] {tag.getKey(), tag.getValue()});
         }
         return result;
     }
@@ -1056,7 +1027,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     public void removeEntryFromFileTable(String sessID, int uploadID, int fileID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Delete from VariantFile v. where v.upload_id = :uploadId AND v.file_id = :fileId");
+        Query query = queryManager.createQuery("Delete from VariantFile v where v.upload_id = :uploadId AND v.file_id = :fileId");
         query.setParameter("uploadId", uploadID);
         query.setParameter("fileId", fileID);
 
@@ -1177,9 +1148,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return statement;
     }
 
+    public static boolean getREMOVE_WORKING_DIR() {
+        return REMOVE_WORKING_DIR;
+    }
+
     /*
-     * Hacky and ugly, needs to be refactored.
-     */
+         * Hacky and ugly, needs to be refactored.
+         */
     private Object[] convertResultRowToObjectArray(VariantRecord variantRecord) {
 
         Object[] result = new Object[31];
