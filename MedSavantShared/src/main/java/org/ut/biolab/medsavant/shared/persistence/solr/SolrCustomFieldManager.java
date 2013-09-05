@@ -15,12 +15,16 @@
  */
 package org.ut.biolab.medsavant.shared.persistence.solr;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
@@ -40,6 +44,8 @@ import java.util.Map;
  */
 public class SolrCustomFieldManager implements CustomFieldManager {
 
+    private static final Log LOG = LogFactory.getLog(SolrCustomFieldManager.class);
+
     public HttpClient httpClient = new DefaultHttpClient();
 
     @Override
@@ -57,7 +63,11 @@ public class SolrCustomFieldManager implements CustomFieldManager {
         request.setEntity(entity);
         request.addHeader("Content-Type", "application/json");
 
-        httpClient.execute(request);
+        LOG.info("Adding custom field " + customField);
+
+        HttpResponse response = httpClient.execute(request);
+
+        EntityUtils.consumeQuietly(response.getEntity());
     }
 
     @Override
