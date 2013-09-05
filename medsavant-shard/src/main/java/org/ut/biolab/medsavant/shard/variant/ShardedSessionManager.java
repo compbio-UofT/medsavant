@@ -138,6 +138,17 @@ public class ShardedSessionManager {
     }
 
     /**
+     * Exposes shard-specific configuration.
+     * 
+     * @param shardId
+     *            id of the shard
+     * @return configuration of the given shard
+     */
+    public static ShardConfiguration getConfig(int shardId) {
+        return (shardId < 0 || shardId >= shardConfigs.size()) ? null : shardConfigs.get(shardId);
+    }
+
+    /**
      * Retrieves the table currently used in the mapping.
      * 
      * @return
