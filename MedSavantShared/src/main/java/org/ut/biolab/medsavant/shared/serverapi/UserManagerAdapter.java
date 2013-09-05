@@ -32,7 +32,7 @@ public interface UserManagerAdapter extends Remote {
 
     public String[] getUserNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
     public boolean userExists(String sessID, String userName) throws SQLException, RemoteException, SessionExpiredException;
-    public boolean tryLoginUser(String username, String encryptedPassword);
+    public boolean tryLoginUser(String username, String encryptedPassword) throws RemoteException;
     public void addUser(String sessID, String name, char[] pass, UserLevel level) throws SQLException, RemoteException, SessionExpiredException;
     public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, RemoteException, SessionExpiredException;
     public UserLevel getUserLevel(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;

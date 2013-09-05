@@ -94,6 +94,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     @Override
     public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
         Query query = queryManager.createQuery("Select l from AnnotationLog l where l.user= :user order by l.timestamp");
+        query.setParameter("user", SERVER_UNAME);
         query.setStart(start);
         query.setLimit(limit);
         List<AnnotationLog> annotationLogList = query.execute();

@@ -39,10 +39,7 @@ import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.persistence.solr.SolrCustomFieldManager;
-import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.query.QueryManager;
-import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
-import org.ut.biolab.medsavant.shared.query.ResultRow;
+import org.ut.biolab.medsavant.shared.query.*;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
@@ -341,14 +338,14 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int getNewestUpdateID(String sid, int projectId, int referenceId, boolean published) throws SQLException, SessionExpiredException {
+    public int getNewestUpdateID(String sid, int projectId, int referenceId, boolean published) throws SQLException, SessionExpiredException, QueryException {
         Query query = queryManager.createQuery("Select max(v.update_id) from Variant v " +
                 "where v.project_id = :projectId and v.reference_id = :referenceId and v.published = :published");
         query.setParameter("projectId", projectId);
         query.setParameter("referenceId", referenceId);
         query.setParameter("published", published);
         ResultRow result = query.getFirstRow();
-        return (Integer) result.getObject("max");
+        return (result != null ) ? result.getInt("max") : 0;
     }
 
     public void publishVariantTable(PooledConnection conn, int projID, int refID, int updID) throws SQLException, SessionExpiredException {

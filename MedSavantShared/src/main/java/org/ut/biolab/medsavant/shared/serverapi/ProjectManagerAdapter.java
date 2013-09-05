@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.ut.biolab.medsavant.shared.query.QueryException;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.xml.sax.SAXException;
 
@@ -54,7 +55,7 @@ public interface ProjectManagerAdapter extends Remote {
     public void renameProject(String sessID, int projID, String newName) throws SQLException, RemoteException, SessionExpiredException;
     public void setCustomVariantFields(String sessID, int projID, int refID, int updateID, CustomField[] fields) throws SQLException, IOException, SessionExpiredException, InitializationException, URISyntaxException;
     public CustomField[] getCustomVariantFields(String sessID,  int projID, int refID, int updateId) throws SQLException, RemoteException, SessionExpiredException;
-    public int getNewestUpdateID(String sessID,  int projID, int refID, boolean published) throws SQLException, RemoteException, SessionExpiredException;
+    public int getNewestUpdateID(String sessID,  int projID, int refID, boolean published) throws SQLException, RemoteException, SessionExpiredException, QueryException;
     public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, RemoteException, SessionExpiredException;
     public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException;
 

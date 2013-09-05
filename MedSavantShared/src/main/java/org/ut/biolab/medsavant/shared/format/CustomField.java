@@ -57,6 +57,10 @@ public class CustomField extends ColumnDef implements Serializable {
         this.description = description;
     }
 
+    public CustomField() {
+        super();
+    }
+
     public String getAlias() {
         return alias;
     }

@@ -141,7 +141,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public String[] getGenesForTerm(String sessID, OntologyTerm term, String refID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select t.genes from OntologyTerm t where t.id= :id");
+        Query query = queryManager.createQuery("Select t.genes from OntologyTerm t where t.ontology_id= :id");
         query.setParameter("id", term.getID());
 
         return (String[]) query.getFirstRow().getObject("genes");
@@ -166,7 +166,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             }
         }
 
-        String statement = String.format("Select t from OntologyTerm t where t.id IN (%s)", sb.toString());
+        String statement = String.format("Select t from OntologyTerm t where t.ontology_id IN (%s)", sb.toString());
         Query query = queryManager.createQuery(statement);
         List<OntologyTerm> results = query.execute();
 

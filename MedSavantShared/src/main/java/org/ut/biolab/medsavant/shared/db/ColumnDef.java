@@ -53,6 +53,16 @@ public class ColumnDef implements Serializable {
         defaultValue = dflt;
     }
 
+    public ColumnDef() {
+        //To change body of created methods use File | Settings | File Templates.
+        length = 0;
+        defaultValue = "";
+
+        primaryKey = false;
+        nonNull = false;
+        autoIncrement = false;
+    }
+
 
     public int getColumnLength() {
         return length;

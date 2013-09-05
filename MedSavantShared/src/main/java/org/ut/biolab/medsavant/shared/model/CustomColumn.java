@@ -14,6 +14,10 @@ public class CustomColumn extends CustomField {
     private int position;
     private CustomColumnType entity;
 
+    public CustomColumn() {
+        super();
+    }
+
     public CustomColumn(CustomField customField, ProjectDetails projectDetails, CustomColumnType entity, int position) {
         super(customField.getColumnName(),
                 customField.getTypeString(),
