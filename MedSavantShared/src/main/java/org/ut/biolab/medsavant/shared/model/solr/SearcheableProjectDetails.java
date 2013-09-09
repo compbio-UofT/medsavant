@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.shared.model.solr;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 
@@ -28,7 +29,9 @@ public class SearcheableProjectDetails {
     /**
      * Default constructor. Called by the Document Object Binder
      */
-    public SearcheableProjectDetails() {}
+    public SearcheableProjectDetails() {
+        projectDetails = new ProjectDetails();
+    }
 
     /**
      * Initialize the class and set the ProjectDetails instance.
@@ -77,8 +80,8 @@ public class SearcheableProjectDetails {
     }
 
     @Field("annotation_ids")
-    public void setAnnotationIDs(int[] annotationIDs) {
-        projectDetails.setAnnotationIDs(annotationIDs);
+    public void setAnnotationIDs(Integer[] annotationIDs) {
+        projectDetails.setAnnotationIDs(ArrayUtils.toPrimitive(annotationIDs));
     }
 
     public int getProjectID() {
@@ -105,7 +108,7 @@ public class SearcheableProjectDetails {
         return projectDetails.getReferenceName();
     }
 
-    public int[] getAnnotationIDs() {
-        return projectDetails.getAnnotationIDs();
+    public Integer[] getAnnotationIDs() {
+        return ArrayUtils.toObject(projectDetails.getAnnotationIDs());
     }
 }

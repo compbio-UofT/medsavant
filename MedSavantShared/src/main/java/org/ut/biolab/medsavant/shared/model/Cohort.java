@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,12 @@ public class Cohort implements Serializable, Comparable {
     private String name;
     private List<Integer> patientIds;
 
+    public Cohort() {
+        patientIds = new ArrayList<Integer>();
+    };
+
     public Cohort(int id, String name){
+        patientIds = new ArrayList<Integer>();
         this.id = id;
         this.name = name;
     }

@@ -21,7 +21,7 @@ import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.*;
 import org.ut.biolab.medsavant.shared.query.parser.util.ParserUtil;
 
-import java.util.Map;
+import java.util.Locale;
 
 /**
  * Analyzer which collects a term and term value from a WHERE clause.
@@ -73,7 +73,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
     public void caseAComparisonExpression(AComparisonExpression node) {
 
         TComparisonOperator tComparisonOperator = node.getComparisonOperator();
-        String value = getValueToken(node.getComparisonExpressionRightOperand().toString().trim());
+        Object value = ParserUtil.getValueToken(node.getComparisonExpressionRightOperand().toString().trim(), context);
         if (ParserUtil.equal(tComparisonOperator.toString())) {
             node.getComparisonExpressionRightOperand().apply(this);
         } else if (ParserUtil.greaterThan(tComparisonOperator.toString())) {
@@ -87,7 +87,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
     public void inAMathComparisonExpressionRightOperand(AMathComparisonExpressionRightOperand node) {
         value = node.toString().replace("'", "");
 
-        query.append(getValueToken(value));
+        query.append(ParserUtil.getValueToken(value, context));
 
         super.outAMathComparisonExpressionRightOperand(node);
     }
@@ -100,7 +100,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalExpression conditionalExpression = node.getConditionalExpression();
             conditionalExpression.apply(this);
 
-            query.append(spacedString(or.toString()));
+            query.append(spacedString(or.toString().toUpperCase(Locale.ROOT)));
 
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
@@ -116,7 +116,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
             PConditionalTerm conditionalTerm = node.getConditionalTerm();
             conditionalTerm.apply(this);
 
-            query.append(spacedString(and.toString()));
+            query.append(spacedString(and.toString().toUpperCase(Locale.ROOT)));
 
             PConditionalFactor conditionalFactor = node.getConditionalFactor();
             conditionalFactor.apply(this);
@@ -129,7 +129,8 @@ public class TermAnalyzer extends DepthFirstAdapter {
         String start = node.getA().toString().trim();
         String end = node.getB().toString().trim();
 
-        query.append("[" + start + " TO " + end + "]");
+        query.append("[" + ParserUtil.getValueToken(start, context) + " TO "
+                + ParserUtil.getValueToken(end, context) + "]");
     }
 
     public boolean isNamedParamter(String parameter) {
@@ -152,7 +153,7 @@ public class TermAnalyzer extends DepthFirstAdapter {
         super.outARightBracketProd(node);
     }
 
-    private String getValueToken(String value ) {
+    private String getValueToken(String value) {
         String parsedValue = null;
 
         if (isNamedParamter(value) && context.getParameters().containsKey(parseNamedParameter(value))) {

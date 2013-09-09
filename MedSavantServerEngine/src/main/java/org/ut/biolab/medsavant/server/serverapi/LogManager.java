@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.Entity;
 
 import java.rmi.RemoteException;
 import java.sql.Date;
@@ -93,6 +94,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     @Override
     public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
         Query query = queryManager.createQuery("Select l from AnnotationLog l where l.user= :user order by l.timestamp");
+        query.setParameter("user", SERVER_UNAME);
         query.setStart(start);
         query.setLimit(limit);
         List<AnnotationLog> annotationLogList = query.execute();
@@ -102,23 +104,21 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
 
     @Override
     public int getAnnotationLogSize(String sid) throws SQLException, SessionExpiredException {
-        return getLogSize(sid,MedSavantDatabase.VariantpendingupdateTableSchema, null);
+        return getLogSize(sid,Entity.ANNOTATION_LOG, null);
     }
 
     @Override
     public int getServerLogSize(String sid) throws SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        return getLogSize(sid,table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
+        return getLogSize(sid,Entity.GENERAL_LOG, BinaryConditionMS.equalTo("user", SERVER_UNAME));
     }
 
     @Override
     public int getClientLogSize(String sid) throws SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        return getLogSize(sid,table, BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
+        return getLogSize(sid, Entity.GENERAL_LOG, BinaryCondition.notEqualTo("user", SERVER_UNAME));
     }
 
-    private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException, SessionExpiredException {
-        StringBuilder statement =  new StringBuilder(String.format("Select l from %s l", table.getTableName()));
+    private static int getLogSize(String sid, String entity, Condition c) throws SQLException, SessionExpiredException {
+        StringBuilder statement =  new StringBuilder(String.format("Select l from %s l", entity));
         if (c != null) {
             statement.append(c);
         }

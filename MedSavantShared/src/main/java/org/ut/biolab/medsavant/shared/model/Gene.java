@@ -15,16 +15,15 @@
  */
 package org.ut.biolab.medsavant.shared.model;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * All the information contained in a single record from a gene-set.  In it's current incarnation, these correspond to transcripts
@@ -36,13 +35,15 @@ public class Gene implements Serializable, Comparable<Gene> {
 
     private final String name;
     private final String chrom;
+    private String genome;
+    private String type;
     private final int start;
     private final int end;
     private final int codingStart;
     private final int codingEnd;
     private final String transcript;
-    private final int exonStart;
-    private final int exonEnd;
+    private final String exonStart;
+    private final String exonEnd;
     private final int geneSetId;
 
     public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript) {
@@ -53,12 +54,12 @@ public class Gene implements Serializable, Comparable<Gene> {
         this.codingStart = codingStart;
         this.codingEnd = codingEnd;
         this.transcript = transcript;
-        this.exonStart = -1;
-        this.exonEnd = -1;
+        this.exonStart = "";
+        this.exonEnd = "";
         this.geneSetId = -1;
     }
 
-    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, int exonStart, int exonEnd) {
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, String exonStart, String exonEnd) {
         this.name = name;
         this.chrom = chrom;
         this.start = start;
@@ -71,7 +72,7 @@ public class Gene implements Serializable, Comparable<Gene> {
         this.geneSetId = -1;
     }
 
-    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, int exonStart, int exonEnd, int geneSetId) {
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript, String exonStart, String exonEnd, int geneSetId) {
         this.name = name;
         this.chrom = chrom;
         this.start = start;
@@ -93,7 +94,7 @@ public class Gene implements Serializable, Comparable<Gene> {
      * @param end end position within <code>chrom</code>
      */
     public Gene(String name, String chrom, int start, int end) {
-        this(name, chrom, start, end, -1, -1, null,0,0);
+        this(name, chrom, start, end, -1, -1, null,"","");
     }
 
     public String getName() {
@@ -124,12 +125,28 @@ public class Gene implements Serializable, Comparable<Gene> {
         return transcript;
     }
 
-    public int getExonStart() {
+    public String getExonStart() {
         return exonStart;
     }
 
-    public int getExonEnd() {
+    public String getExonEnd() {
         return exonEnd;
+    }
+
+    public String getGenome() {
+        return genome;
+    }
+
+    public void setGenome(String genome) {
+        this.genome = genome;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getDescription() throws MalformedURLException, IOException{

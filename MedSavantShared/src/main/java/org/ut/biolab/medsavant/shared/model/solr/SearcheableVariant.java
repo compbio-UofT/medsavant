@@ -63,12 +63,12 @@ public class SearcheableVariant {
         variantRecord.setChrom(chrom);
     }
 
-    @Field("pos")
-    public void setPosition(Float position) {
-        variantRecord.setPosition(Long.valueOf(position.longValue()));
+    @Field("position")
+    public void setPosition(Integer position) {
+        variantRecord.setPosition(Long.valueOf(position));
     }
 
-    @Field("id")
+    @Field("dbsnp_id")
     public void setDbSNPID(String[] dbSNPID) {
         variantRecord.setDbSNPID(StringUtils.join(dbSNPID, ","));
     }
@@ -91,6 +91,11 @@ public class SearcheableVariant {
     @Field("filter")
     public void setFilter(String[] filter) {
         variantRecord.setFilter(StringUtils.join(filter, ","));
+    }
+
+    @Field("variant_type")
+    public void setVariantType(String variantType) {
+        variantRecord.setType(VariantRecord.VariantType.valueOf(variantType));
     }
 
     @Field("zygosity")

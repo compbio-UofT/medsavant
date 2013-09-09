@@ -15,24 +15,24 @@
  */
 package org.ut.biolab.medsavant.client.login;
 
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
-import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.project.ProjectChooser;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.project.ProjectWizard;
-import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.CryptoUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.UserLevel;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 
 /**
  *
@@ -117,9 +117,15 @@ public class LoginController extends Controller<LoginEvent> {
 
     public synchronized void login(String un, String pw, String dbname, String serverAddress, String serverPort) {
 
+
         //init registry
         try {
+
             MedSavantClient.initializeRegistry(serverAddress, serverPort);
+
+            if (!MedSavantClient.UserManager.tryLoginUser(un, CryptoUtils.encrypt(pw))) {
+                throw new Exception("Failed to login " + un);
+            }
 
             this.serverAddress = serverAddress;
             this.dbname = dbname;

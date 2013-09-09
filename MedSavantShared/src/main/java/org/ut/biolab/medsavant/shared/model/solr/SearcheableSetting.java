@@ -4,7 +4,7 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.Setting;
 
 /**
- *
+ *  Adapter class for mapping settings.
  */
 public class SearcheableSetting {
 

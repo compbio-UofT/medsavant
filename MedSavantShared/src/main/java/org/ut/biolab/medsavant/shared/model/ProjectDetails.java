@@ -74,7 +74,7 @@ public class ProjectDetails implements Serializable {
     }
 
     public int getNumAnnotations() {
-        return annotationIDs.length;
+        return (annotationIDs != null) ? annotationIDs.length : 0;
     }
 
     public void setProjectID(int projectID) {

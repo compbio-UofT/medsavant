@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Adapter class for mapping Solr documents to AnnotationLog objects.
+ * Adapter class for mapping Solr documents to VariantFile objects.
  */
 public class SearcheableVariantFile {
 

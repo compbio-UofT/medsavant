@@ -70,15 +70,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException, SessionExpiredException {
-        ResultSet rs = ConnectionController.executeQuery(sid, "SHOW COLUMNS IN " + tableName);
-
-        while (rs.next()) {
-            if (rs.getString(1).equals(fieldName)) {
-                return true;
-            }
-        }
-
-        return false;
+        return PersistenceUtil.fieldExists(sid, tableName, fieldName);
     }
 
     public static String getColumnTypeString(String s) {
@@ -107,46 +99,17 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     public DbTable importTable(String sessionId, String tablename) throws SQLException, SessionExpiredException {
-
-        DbSpec spec = new DbSpec();
-        DbSchema schema = spec.addDefaultSchema();
-
-        DbTable table = schema.addTable(tablename);
-
-        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
-
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        int numberOfColumns = rsMetaData.getColumnCount();
-
-        while (rs.next()) {
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
-        }
-
-        return table;
+        return PersistenceUtil.importTable(sessionId, tablename);
     }
 
     @Override
     public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, SessionExpiredException {
 
-        DbSpec spec = new DbSpec();
-        DbSchema schema = spec.addDefaultSchema();
-
-        DbTable table = schema.addTable(tablename);
-        TableSchema ts = new TableSchema(table);
-
-        LOG.info(String.format("Executing %s on %s...", "DESCRIBE " + tablename, sessionId));
-        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
-
-        while (rs.next()) {
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
-            ts.addColumn(rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
-        }
-
-        return ts;
+        return PersistenceUtil.importTableSchema(sessionId, tablename);
     }
 
     public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
-        ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName + ";");
+        PersistenceUtil.dropTable(sessID, tableName);
     }
 
     public static boolean tableExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
@@ -160,9 +123,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     @Override
     public int getNumRecordsInTable(String sessID, String tablename) throws SQLException, SessionExpiredException {
-        ResultSet rs = ConnectionController.executeQuery(sessID, "SELECT COUNT(*) FROM `" + tablename + "`");
-        rs.next();
-        return rs.getInt(1);
+        Query query = queryManager.createQuery(String.format("Select e from %s e", tablename));
+        return (int) query.count();
     }
 
     /**

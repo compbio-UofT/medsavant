@@ -16,29 +16,26 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.UpdateQuery;
-import java.rmi.RemoteException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.SessionController;
-
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.persistence.EntityManager;
+import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.query.Query;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.util.Entity;
 import org.ut.biolab.medsavant.shared.util.SQLUtils;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 
 /**
  *
@@ -46,7 +43,11 @@ import org.ut.biolab.medsavant.shared.util.SQLUtils;
  */
 public class AnnotationLogManager {
 
+    private static final Log LOG = LogFactory.getLog(AnnotationLogManager.class);
+
     private static AnnotationLogManager instance;
+    private static EntityManager entityManager = EntityManagerFactory.getEntityManager();
+    private static QueryManager queryManager = QueryManagerFactory.getQueryManager();
 
     public static synchronized AnnotationLogManager getInstance() {
         if (instance == null) {
@@ -61,56 +62,43 @@ public class AnnotationLogManager {
 
     public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
 
+        String projectName = ProjectManager.getInstance().getProjectName(sid, projectId);
+        String referenceName = ReferenceManager.getInstance().getReferenceName(sid,referenceId);
         String user = SessionController.getInstance().getUserForSession(sid);
-
         Timestamp sqlDate = SQLUtils.getCurrentTimestamp();
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
-        InsertQuery query = new InsertQuery(table.getTable());
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId);
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), AnnotationLog.actionToInt(action));
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER), user);
+        int updateId = DBUtils.generateId("upload_id", Entity.ANNOTATION_LOG);
+        AnnotationLog annotationLog = new AnnotationLog(projectName, referenceName, action, status,sqlDate,user, updateId);
 
-        Connection c = ConnectionController.connectPooled(sid);
-        PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-        stmt.execute();
-
-        ResultSet rs = stmt.getGeneratedKeys();
-        rs.next();
-        c.close();
-        return rs.getInt(1);
+        try {
+            entityManager.persist(annotationLog);
+        } catch (InitializationException e) {
+            LOG.error("Error adding annotation log entry");
+        }
+        return updateId;
     }
 
     public void removeAnnotationLogEntry(String sid,int updateId) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
-        DeleteQuery query = new DeleteQuery(table.getTable());
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
-
-        ConnectionController.executeUpdate(sid,  query.toString());
+        Query query = queryManager.createQuery("Delete from AnnotationLog l where l.upload_id = :updateId");
+        query.setParameter("updateId", updateId);
+        query.executeDelete();
     }
 
     public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
-        UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
-
-        ConnectionController.executeUpdate(sid,  query.toString());
+        Query query = queryManager.createQuery("Update AnnotationLog l set l.status = :status where l.upload_id = :updateId");
+        query.setParameter("status", status);
+        query.setParameter("updateId", updateId);
+        query.executeUpdate();
     }
 
     public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
-        UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
-        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
-
-        ConnectionController.executeUpdate(sid,  query.toString());
+        Query query = queryManager.createQuery("Update AnnotationLog l set l.status = :status, l.timestamp = :timestamp where l.upload_id = :updateId");
+        query.setParameter("status", status);
+        query.setParameter("timestamp", sqlDate);
+        query.setParameter("updateId", updateId);
+        query.executeUpdate();
     }
 }

@@ -16,44 +16,35 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import com.healthmarketscience.sqlbuilder.*;
-import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.db.MedSavantDatabaseExtras;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
-
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientFormatTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
-import org.ut.biolab.medsavant.server.db.util.CustomTables;
-import org.ut.biolab.medsavant.server.db.util.DBSettings;
-import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.shared.model.Patient;
-import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.shared.model.solr.SearcheablePatient;
+import org.ut.biolab.medsavant.shared.model.*;
+import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
-import org.ut.biolab.medsavant.shared.query.*;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrCustomFieldManager;
 import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.query.QueryManager;
+import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.util.Entity;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.*;
 
 
 /**
@@ -65,12 +56,15 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     private static PatientManager instance;
     private static QueryManager queryManager;
     private static EntityManager entityManager;
+    private static CustomFieldManager customFieldManager;
+    private static final String DNA_ID_SEPARATOR = ",";
 
     private static final Log LOG = LogFactory.getLog(PatientManager.class);
 
     private PatientManager() throws RemoteException, SessionExpiredException {
         queryManager = QueryManagerFactory.getQueryManager();
         entityManager = EntityManagerFactory.getEntityManager();
+        customFieldManager = new SolrCustomFieldManager();
     }
 
     public static synchronized PatientManager getInstance() throws RemoteException, SessionExpiredException {
@@ -160,23 +154,12 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getPatientFieldAliases(String sid, int projectId) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.PatientformatTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-        query.addOrdering(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
+        //ToDo maybe add ordering to them?
+        CustomField[] patientFields = getPatientFields(sid, projectId);
         List<String> result = new ArrayList<String>();
 
-        for (CustomField af: REQUIRED_PATIENT_FIELDS) {
+        for (CustomField af: patientFields) {
             result.add(af.getAlias());
-        }
-
-        while (rs.next()) {
-            result.add(rs.getString(1));
         }
         return result;
     }
@@ -193,91 +176,39 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public CustomField[] getCustomPatientFields(String sessID, int projID) throws SQLException, SessionExpiredException {
+        String entityName = Entity.PATIENT;
 
-        TableSchema table = MedSavantDatabase.PatientformatTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(
-                table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME),
-                table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
-                table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE),
-                table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS),
-                table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addOrdering(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        List<CustomField> result = new ArrayList<CustomField>();
-        while (rs.next()) {
-            result.add(new CustomField(
-                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME),
-                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
-                    rs.getBoolean(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE),
-                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS),
-                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION)));
-        }
-        return result.toArray(new CustomField[0]);
+        Query query = queryManager.createQuery("Select c from CustomColumn c where c.entity_name = :entityName");
+        query.setParameter("entityName", entityName);
+        List<CustomField> customFields = query.execute();
+        return customFields.toArray(new CustomField[0]);
     }
 
     @Override
     public String getPatientTableName(String sid, int projectId) throws SQLException, SessionExpiredException {
-
-       /* return "Patient";*/
-        TableSchema table = MedSavantDatabase.PatienttablemapTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        rs.next();
-        return rs.getString(1);
+        return "Patient";
     }
 
 
     @Override
-    public void createPatientTable(String sessID, int projID, CustomField[] fields) throws SQLException, SessionExpiredException {
+    public void createPatientTable(String sessID, int projID, CustomField[] fields) throws SQLException, SessionExpiredException, RemoteException {
 
-        // Create basic fields.
-        String tableName = DBSettings.createPatientTableName(projID);
-        TableSchema patientSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicPatientColumns.class);
-        for (CustomField field: fields) {
-            patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength());
+        List<CustomField> customColumnList = new ArrayList<CustomField>();
+        ProjectDetails project =  ProjectManager.getInstance().getProjectDetails(sessID, projID)[0];
+        int i = 0;
+        for (CustomField customField : fields) {
+            customColumnList.add(new CustomColumn(customField, project, CustomColumnType.PATIENT,i++));
         }
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
-            conn.executeUpdate(patientSchema.getCreateQuery() + " ENGINE=MyISAM;");
-
-
-            //add to tablemap
-            TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
-            InsertQuery query1 = new InsertQuery(patientMapTable.getTable());
-            query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
-            query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME), tableName);
-            conn.executeUpdate(query1.toString());
-
-            //populate format patientFormatTable
-            TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
-            conn.setAutoCommit(false);
-            for (int i = 0; i < fields.length; i++) {
-                CustomField a = fields[i];
-                InsertQuery query2 = new InsertQuery(patientFormatTable.getTable());
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i);
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), a.getColumnName());
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), a.getTypeString());
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (a.isFilterable() ? "1" : "0"));
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), a.getAlias());
-                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), a.getDescription());
-                conn.createStatement().executeUpdate(query2.toString());
-            }
-            conn.commit();
-        } finally {
-            conn.setAutoCommit(true);
-            conn.close();
+            entityManager.persistAll(customColumnList);
+            customFieldManager.addCustomFields(customColumnList);
+        } catch (InitializationException e) {
+            LOG.error("Error adding custom fields for patient");
+        } catch (IOException e) {
+            LOG.error("Error adding custom fields for patient");
+        } catch (URISyntaxException e) {
+            LOG.error("Error adding custom fields for patient");
         }
     }
 
@@ -294,16 +225,6 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void addPatient(String sid, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-
-        InsertQuery query = new InsertQuery(table.getTable());
-        for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
-            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getTypeString(), 100), values.get(i));
-        }
-
-        ConnectionController.executeUpdate(sid,  query.toString());
-
         Patient patient = mapToPatient(cols, values, projectId);
         patient.setPatientId(generateId());
         try {
@@ -316,31 +237,20 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projID, String columnName) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sessID,projID);
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
-
-        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
-        DbColumn testColumn = table.getDBColumn(columnName);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.setIsDistinct(true);
-        q.addColumns(currentDNAID, testColumn);
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
+        String statement = String.format("Select p.dna_ids,p.%s from Patient p where p.project_id = :projectId", columnName);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", projID);
+        List<ResultRow> resultRowList = query.executeForRows();
 
         Map<Object, List<String>> map = new HashMap<Object, List<String>>();
-        while (rs.next()) {
-            Object o = rs.getObject(columnName);
-            if (o == null) o = "";
-            if (map.get(o) == null) map.put(o, new ArrayList<String>());
-            String dnaIdsString = rs.getString(DNA_IDS.getColumnName());
-            if (dnaIdsString == null) continue;
-            String[] dnaIds = dnaIdsString.split(",");
-            for (String id : dnaIds) {
-                if (!map.get(o).contains(id)) {
-                    map.get(o).add(id);
+        for (ResultRow row : resultRowList) {
+            Object columnValue = row.getObject(columnName);
+            if (columnValue == null) columnValue = "";
+            if (map.get(columnValue) == null) map.put(columnValue, new ArrayList<String>());
+            List<String> dnaIds = (List<String>) row.getObject("dna_ids");
+            for (String dnaId : dnaIds) {
+                if (!map.get(columnValue).contains(dnaId)) {
+                    map.get(columnValue).add(dnaId);
                 }
             }
         }
@@ -350,75 +260,55 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getDNAIDsWithValuesInRange(String sessID, int projID, String columnName, Range r) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sessID,projID);
+        String statement = String.format("Select p.dna_ids, p.%s from Patient p where p.project_id = :projectId and" +
+                "p.%s between :rangeMin and :rangeMax", columnName, columnName);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", projID);
+        query.setParameter("rangeMin",r.getMin());
+        query.setParameter("rangeMax",r.getMax());
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
-        DbColumn testColumn = table.getDBColumn(columnName);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.setIsDistinct(true);
-        q.addColumns(currentDNAID);
-        q.addCondition(BinaryCondition.greaterThan(testColumn, r.getMin(), true));
-        q.addCondition(BinaryCondition.lessThan(testColumn, r.getMax(), true));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        List<String> result = new ArrayList<String>();
-        while (rs.next()) {
-            String s = rs.getString(1);
-            String[] dnaIDs;
-            if (s == null) {
-                dnaIDs = new String[]{"null"};
-            } else {
-                dnaIDs = s.split(",");
-            }
-            for (String id : dnaIDs) {
-                if (!result.contains(id)) {
-                    result.add(id);
-                }
-            }
+        List<String> dnaIds = new ArrayList<String>();
+        List<ResultRow> resultRowList = query.executeForRows();
+        for (ResultRow row : resultRowList) {
+            List<String> currentDnaIds = (List<String>) row.getObject("dna_ids");
+            dnaIds = ListUtils.union(dnaIds, currentDnaIds);
         }
-        return result;
+
+        return dnaIds;
     }
 
     @Override
     public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnName, boolean allowInexactMatch) throws SQLException, SessionExpiredException {
 
-        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
-        DbColumn testColumn = table.getDBColumn(columnName);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.setIsDistinct(true);
-        q.addColumns(currentDNAID);
-
-        Condition[] conditions = new Condition[list.size()];
-        for (int i = 0; i < list.size(); i++) {
+        StringBuffer conditions = new StringBuffer();
+        for (int i = 0 ; i < list.size(); i++) {
+            if (i > 0) {
+                conditions.append(" or ");
+            }
             String val = list.get(i);
             if (val.length() == 0) {
-                // Users are humans (not computer programmers), so we treat empty strings as equivalent to null.
-                conditions[i] = ComboCondition.or(BinaryCondition.equalTo(testColumn, ""), UnaryCondition.isNull(testColumn));
+                conditions.append("p." + columnName + " IS NULL");
             } else {
                 if (allowInexactMatch) {
-                    conditions[i] = BinaryConditionMS.like(testColumn, "%" + val + "%");
+                    conditions.append("p." + columnName + " LIKE " + val);
                 } else {
-                    conditions[i] = BinaryConditionMS.equalTo(testColumn, val);
+                    conditions.append("p." + columnName + " = " + val);
                 }
             }
         }
-        q.addCondition(ComboCondition.or(conditions));
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
+        String statement = "Select p.%s, p.dna_ids from Patient p";
+        statement = conditions.toString().equals("") ? statement : statement + " where " + conditions ;
+        Query query = queryManager.createQuery(statement);
+
 
         List<String> result = new ArrayList<String>();
-        while (rs.next()) {
-            String current = rs.getString(1);
+        List<ResultRow> resultRowList = query.executeForRows();
+        for (ResultRow row : resultRowList) {
+            List<String> current = (List<String>) row.getObject(columnName);
             if (current == null) continue;
-            String[] dnaIDs = current.split(",");
-            for (String id : dnaIDs) {
+            String[] dnaIds = current.toArray(new String[0]);
+            for (String id : dnaIds) {
                 if (!result.contains(id)) {
                     result.add(id);
                 }
@@ -428,85 +318,39 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void updateFields(String sessID, int projID, CustomField[] newFields) throws SQLException, RemoteException, SessionExpiredException {
+    public void updateFields(String sessID, int projID, CustomField[] customFields) throws SQLException, RemoteException, SessionExpiredException {
+        //Todo add calls to Schema API?
+        //get old fields
+        List<CustomField> oldFields = Arrays.asList(PatientManager.getInstance().getCustomPatientFields(sessID, projID));
+        List<CustomField> newFields = new ArrayList<CustomField>();
 
-        List<CustomField> currentFields = Arrays.asList(getCustomPatientFields(sessID, projID));
-        List<CustomField> fields = Arrays.asList(newFields);
+        //delete old fields
+        Query query = queryManager.createQuery("Delete from CustomColumn c where c.project_id = :projectId and c.entity_name = :entityName");
+        query.setParameter("projectId", projID);
+        query.setParameter("entityName", CustomColumnType.PATIENT);
+        query.executeDelete();
 
-        String tablename = getPatientTableName(sessID, projID);
-        //TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(tablename);
-        TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
-
-        Connection c = ConnectionController.connectPooled(sessID);
-        c.setAutoCommit(false);
-
-        //remove unused fields
-        for (CustomField f : currentFields) {
-            if (!fields.contains(f)) {
-                DeleteQuery q = new DeleteQuery(patientFormatTable.getTable());
-                q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-                q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName()));
-                c.createStatement().execute(q.toString());
-
-                String q1 = "ALTER TABLE `" + tablename + "` DROP COLUMN `" + f.getColumnName() + "`";
-                c.createStatement().execute(q1);
-            }
-        }
-
-        //modify old fields, add new fields
-        int tempPos = 5002;
-        for (CustomField f : fields) {
-            if (currentFields.contains(f)) {
-                UpdateQuery q = new UpdateQuery(patientFormatTable.getTable());
-                q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
-                q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
-                q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
-                q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-                q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName()));
-                c.createStatement().executeUpdate(q.toString());
-            } else {
-                InsertQuery q = new InsertQuery(patientFormatTable.getTable());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), tempPos++);
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getTypeString());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
-                c.createStatement().executeUpdate(q.toString());
-
-                String q1 = "ALTER TABLE `" + tablename + "` ADD " + f.generateSchema().replaceAll(",", "");
-                c.createStatement().execute(q1);
-            }
-        }
-
-        c.commit();
-        c.setAutoCommit(true);
-
-        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID,tablename, true);
-        List<DbColumn> columns = patientTable.getColumns();
-        c.setAutoCommit(false);
+        List<CustomColumn> customColumnList = new ArrayList<CustomColumn>();
+        ProjectDetails project =  ProjectManager.getInstance().getProjectDetails(sessID, projID)[0];
         int i = 0;
-        for (DbColumn col : columns) {
-            boolean isDefault = false;
-            for (CustomField a: BasicPatientColumns.REQUIRED_PATIENT_FIELDS) {
-                if (col.getColumnNameSQL().equals(a.getColumnName())) {
-                    isDefault = true;
-                }
+        for (CustomField customField : customFields) {
+            if (!oldFields.contains(customField)) {
+                newFields.add(customField);
             }
-            if (isDefault) continue;
-
-            UpdateQuery q = new UpdateQuery(patientFormatTable.getTable());
-            q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i++);
-            q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-            q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), col.getColumnNameSQL()));
-            c.createStatement().executeUpdate(q.toString());
-
+            customColumnList.add(new CustomColumn(customField, project, CustomColumnType.PATIENT,i++));
         }
 
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
+        //persist current fields
+        try {
+            entityManager.persistAll(customColumnList);
+            customFieldManager.addCustomFields(newFields);
+        } catch (InitializationException e) {
+            LOG.error("Error updating patient fields");
+        } catch (IOException e) {
+            LOG.error("Error adding custom fields to the patient table");
+        } catch (URISyntaxException e) {
+            LOG.error("Error adding custom fields to the patient table");
+        }
     }
 
     /*
@@ -515,22 +359,25 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Object> getValuesFromField(String sid, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(columnNameB));
-        Condition[] conditions = new Condition[values.size()];
+        //build conditions
+        StringBuffer conditions = new StringBuffer();
         for (int i = 0; i < values.size(); i++) {
-            conditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(columnNameA), values.get(i));
+            if (i > 0) {
+                conditions.append(" or ");
+            }
+            conditions.append("p." + columnNameA + " = " + values.get(i));
         }
-        query.addCondition(ComboCondition.or(conditions));
 
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        //build query
+        String statement = String.format("Select p.%s from Patient p where p.project_id = :projectId and " + conditions.toString(), columnNameB);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", projectId);
 
+        //result
         List<Object> result = new ArrayList<Object>();
-        while (rs.next()) {
-            result.add(rs.getObject(1));
+        List<ResultRow> resultRowList = query.executeForRows();
+        for (ResultRow row : resultRowList) {
+            result.add(row.getObject(columnNameB));
         }
 
         return result;
@@ -554,25 +401,25 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public List<String> getValuesFromDNAIDs(String sessID, int projID, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException {
-
-        String tablename = getPatientTableName(sessID, projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(columnNameB));
-        Condition[] conditions = new Condition[ids.size()];
+        //build conditions
+        StringBuffer conditions = new StringBuffer();
         for (int i = 0; i < ids.size(); i++) {
-            conditions[i] = BinaryCondition.like(table.getDBColumn(DNA_IDS), "%" + ids.get(i) + "%");
+            if (i > 0) {
+                conditions.append(" or ");
+            }
+            conditions.append("p.dna_ids = " + ids.get(i));
         }
-        query.addCondition(ComboCondition.or(conditions));
 
+        //build query
+        String statement = String.format("Select p.%s from Patient p where p.project_id = :projectId and " + conditions.toString(), columnNameB);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("projectId", projID);
 
-        String s = query.toString();
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
+        //process result
         List<String> result = new ArrayList<String>();
-        while (rs.next()) {
-            result.add(rs.getString(1));
+        List<ResultRow> resultRowList = query.executeForRows();
+        for (ResultRow row : resultRowList) {
+            result.add(String.valueOf(row.getObject(columnNameB)));
         }
 
         return result;
@@ -619,45 +466,26 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public String getFamilyIDOfPatient(String sessID, int projID, int patID) throws SQLException, RemoteException, SessionExpiredException {
-        String tablename = getPatientTableName(sessID,projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
+        Query query = queryManager.createQuery("Select p from Patient p where p.project_id = :projectId and p.patient_id = :patientId");
+        query.setParameter("projectId", projID);
+        query.setParameter("patientId", patID);
+        Patient p = query.getFirst();
 
-        SelectQuery q1 = new SelectQuery();
-        q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(FAMILY_ID));
-        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(PATIENT_ID), patID));
-
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
-
-        if (!rs1.next()) {
-            return null;
-        }
-
-        return rs1.getString(1);
+        return p.getFamilyId();
     }
 
     @Override
     public List<String> getFamilyIDs(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tableName = getPatientTableName(sessID,projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
+        Query query = queryManager.createQuery("Select p.family_id from Patient p where p.project_id = :projectId");
+        query.setParameter("projectId", projID);
 
-        SelectQuery q1 = new SelectQuery();
-        q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(FAMILY_ID));
-
-        q1.setIsDistinct(true);
-
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
-
-        List<String> ids = new ArrayList<String>();
-        while (rs1.next()) {
-            ids.add(rs1.getString(1));
+        List<String> results = new ArrayList<String>();
+        List<ResultRow> resultRowList = query.executeForRows();
+        for (ResultRow row : resultRowList) {
+            results.add(String.valueOf(row.getObject("family_id")));
         }
-
-        ids.remove(null);
-
-        return ids;
+        return results;
     }
 
 
@@ -665,26 +493,19 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Map<String,String> getDNAIDsForFamily(String sessID, int projID, String famID) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sessID, projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-        SelectQuery q1 = new SelectQuery();
-        q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(HOSPITAL_ID));
-        q1.addColumns(table.getDBColumn(DNA_IDS));
-        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
-
-
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
+        Query query = queryManager.createQuery("Select p.patient_id,p.hospital_id, p.dna_ids from Patient p where p.project_id = :projectId and p.family_id = :familyId");
+        query.setParameter("projectId", projID);
+        query.setParameter("familyId", famID);
 
         Map<String,String> patientIDToDNAIDMap = new HashMap<String,String>();
+        List<Patient> patients = query.execute();
 
-        //List<String> ids = new ArrayList<String>();
-        while (rs1.next()) {
-            String patientID = rs1.getString(1);
-            String DNAIDString = rs1.getString(2);
-            if (DNAIDString != null && !DNAIDString.isEmpty()) {
-                patientIDToDNAIDMap.put(patientID, DNAIDString);
+        for (Patient p : patients) {
+            String patientId = p.getHospitalId();
+            List<String> dnaIds = p.getDnaIds();
+
+            if (dnaIds != null && !dnaIds.isEmpty()) {
+                patientIDToDNAIDMap.put(patientId, StringUtils.join(dnaIds.iterator(),DNA_ID_SEPARATOR));
             }
         }
 
@@ -714,50 +535,35 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public List<String> getDNAIDsForHPOID(String sessID, int projID, String id) throws SQLException, RemoteException, SessionExpiredException {
-
         //TODO: make a prepared statement
-        String query = "SELECT dna_ids FROM " + getPatientTableName(sessID, projID)  + " WHERE " + MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO + "='" + id + "';";
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query);
+        String statement = String.format("Select p.dna_ids from Patient p where p.%s = :value", MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
+        Query query = queryManager.createQuery(statement);
+        query.setParameter("value", id);
 
         List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
+        List<Patient> patients = query.execute();
+        for (Patient patient : patients) {
+            results.add(StringUtils.join(patient.getDnaIds().iterator(), DNA_ID_SEPARATOR));  //I'm pretty sure this needs to be joined
         }
-
         return results;
     }
 
     @Override
     public boolean hasOptionalField(String sessID, int pid, String fieldName) throws SQLException, SessionExpiredException {
+        //Todo
         String tableName = getPatientTableName(sessID, pid);
         return DBUtils.fieldExists(sessID, tableName, MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
     }
 
     @Override
     public String getReadAlignmentPathForDNAID(String sessID, int projID, String dnaID) throws SQLException, RemoteException, SessionExpiredException {
+        Query query = queryManager.createQuery("Select p.bam_url from Patient p where p.project_id = :projectId and :dnaId member of p.dna_ids");
+        query.setParameter("dnaId", dnaID);
+        query.setParameter("projectId", projID);
 
-        String tablename = getPatientTableName(sessID, projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addColumns(table.getDBColumn(BAM_URL));
-        q.addCondition(BinaryCondition.like(table.getDBColumn(DNA_IDS), dnaID));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
-
-        String bamURL = null;
-
-        //List<String> ids = new ArrayList<String>();
-        while (rs.next()) {
-            bamURL = rs.getString(1);
-            if ("".equals(bamURL)) {
-                bamURL = null;
-            }
-        }
-
-        return bamURL;
+        List<String> results = new ArrayList<String>();
+        Patient patient = query.getFirst();
+        return patient.getBamUrl().toString();
     }
 
     private int generateId() {

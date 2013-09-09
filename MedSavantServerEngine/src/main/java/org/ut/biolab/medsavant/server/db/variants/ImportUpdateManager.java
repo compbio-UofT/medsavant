@@ -1,31 +1,25 @@
 package org.ut.biolab.medsavant.server.db.variants;
 
-import com.healthmarketscience.sqlbuilder.Condition;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.log.EmailLogger;
+import org.ut.biolab.medsavant.server.db.util.PersistenceUtil;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
-import org.ut.biolab.medsavant.server.vcf.SolrVCFUploader;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 
 /**
  *
@@ -38,12 +32,7 @@ public class ImportUpdateManager {
     /**
      * IMPORT FILES INTO AN EXISTING TABLE
      */
-    public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
-
-        return doImportSolr(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags);
-    }
-
-    public static int doImportICE(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
+    public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags, boolean mergeWithExistingVariants) throws IOException, SQLException, Exception {
         //FIXME This is the separation point
         boolean needsToUnlock = acquireLock(sessionID);
 
@@ -55,9 +44,15 @@ public class ImportUpdateManager {
             LOG.info("Working directory is " + workingDirectory.getAbsolutePath());
 
             // prepare for annotation
+            File[] allTSVFiles;
             File[] importedTSVFiles = doConvertVCFToTSV(vcfFiles, updateID, includeHomozygousReferenceCalls, createSubdir(workingDirectory, "converted"));
-            File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), false);
-            File[] allTSVFiles = ArrayUtils.addAll(importedTSVFiles, existingTableAsTSV);
+
+            if (mergeWithExistingVariants) {
+                File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), false);
+                allTSVFiles = ArrayUtils.addAll(importedTSVFiles, existingTableAsTSV);
+            } else {
+                allTSVFiles = importedTSVFiles;
+            }
 
             // annotate
             annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, allTSVFiles, createSubdir(workingDirectory, "annotate_upload"));
@@ -84,44 +79,13 @@ public class ImportUpdateManager {
             releaseLock(sessionID, needsToUnlock);
         }
     }
-
-    public static int doImportSolr(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
-
-        try {
-            LOG.info("Starting import");
-
-            SolrVCFUploader solrVCFUploader = new SolrVCFUploader();
-
-            //ToDo add log
-            int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.ADD_VARIANTS);
-
-            long variantsIndexed = 0;
-            int fileId = 0;
-            for (File inputFile : vcfFiles) {
-                fileId++;
-                variantsIndexed += solrVCFUploader.processAndIndex(inputFile, fileId, updateID);
-            }
-
-            LOG.info("Indexed " + variantsIndexed + " variants");
-
-
-
-            // Todo prepare for annotation
-
-            // Todo annotate
-
-            // Todo add variant files to Solr
-            // do some accounting
-            addVariantFilesToDatabase(sessionID, updateID, vcfFiles);
-            // Todo add tags
-
-            LOG.info("Finished import");
-
-            return updateID;
-        } catch (Exception e) {
-            throw e;
-        }
+     /**
+     * IMPORT FILES INTO AN EXISTING TABLE
+     */
+    public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
+        return PersistenceUtil.doImport(sessionID, projectID, referenceID, publishUponCompletion, vcfFiles, includeHomozygousReferenceCalls, tags);
     }
+
     /**
      * UPDATE AN EXISTING TABLE
      */
@@ -166,50 +130,8 @@ public class ImportUpdateManager {
      * Annotation with the given annotation / custom field sets
      */
     private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
-
-        LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
-
-        ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
-
-        //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
-        String tableName = ProjectManager.getInstance().createVariantTable(
-                sessionID,
-                projectID,
-                referenceID,
-                updateID,
-                annotationIDs,
-                true);
-
-        String tableNameSubset = ProjectManager.getInstance().createVariantTable(
-                sessionID,
-                projectID,
-                referenceID,
-                updateID,
-                annotationIDs,
-                false,
-                true);
-
-        boolean needsToUnlock = acquireLock(sessionID);
-
-        try {
-            //get annotation information
-            Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
-
-            File[] splitTSVFiles = splitFilesByDNAAndFileID(tsvFiles, createSubdir(workingDir, "split"));
-            File[] annotatedTSVFiles = annotateTSVFiles(sessionID, splitTSVFiles, annotations, customFields, createSubdir(workingDir, "annotate"));
-            uploadTSVFiles(sessionID, annotatedTSVFiles, tableName, tableNameSubset, createSubdir(workingDir, "subset"));
-            registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
-            dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
-            setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-
-        } catch (Exception e) {
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
-            throw e;
-        } finally {
-            releaseLock(sessionID, needsToUnlock);
-        }
+        PersistenceUtil.annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles, workingDir);
     }
-
 
     /**
      * PUBLICATION AND STATUS
@@ -219,7 +141,7 @@ public class ImportUpdateManager {
         VariantManager.getInstance().publishVariants(sessionID, projectID);
     }
 
-    private static void setAnnotationStatus(String sessionID, int updateID, AnnotationLog.Status status) throws SQLException, SessionExpiredException {
+    public static void setAnnotationStatus(String sessionID, int updateID, AnnotationLog.Status status) throws SQLException, SessionExpiredException {
         AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, status);
     }
 
@@ -228,13 +150,15 @@ public class ImportUpdateManager {
      * TABLE MANAGEMENT
      */
 
-    private static void registerTable(String sessionID, int projectID, int referenceID, int updateID, String tableName, String tableNameSub, int[] annotationIDs) throws RemoteException, SQLException, SessionExpiredException {
+    //FIXME move logic to SQL implementation backend
+    public static void registerTable(String sessionID, int projectID, int referenceID, int updateID, String tableName, String tableNameSub, int[] annotationIDs) throws RemoteException, SQLException, SessionExpiredException {
          //add entries to tablemap
         ProjectManager.getInstance().addTableToMap(sessionID, projectID, referenceID, updateID, false, tableName, annotationIDs, tableNameSub);
 
     }
 
-    private static void dropTablesPriorToUpdateID(String sessionID, int projectID, int referenceID, int updateID) throws RemoteException, SQLException, SessionExpiredException {
+    //FIXME move logic to SQL implementation backend
+    public static void dropTablesPriorToUpdateID(String sessionID, int projectID, int referenceID, int updateID) throws RemoteException, SQLException, SessionExpiredException {
         int minId = -1;
         int maxId = updateID - 1;
         ProjectManager.getInstance().removeTables(sessionID, projectID, referenceID, minId, maxId);
@@ -281,14 +205,14 @@ public class ImportUpdateManager {
     /**
      * LOCK MANAGEMENT
      */
-    private static void releaseLock(String sessionID, boolean needsToUnlock) {
+    public static void releaseLock(String sessionID, boolean needsToUnlock) {
         LOG.info("Releasing session lock");
         if (needsToUnlock) {
             ConnectionController.unregisterBackgroundUsageOfSession(sessionID);
         }
     }
 
-    private static boolean acquireLock(String sessionID) {
+    public static boolean acquireLock(String sessionID) {
         LOG.info("Acquiring session lock");
         return ConnectionController.registerBackgroundUsageOfSession(sessionID);
     }
@@ -301,7 +225,7 @@ public class ImportUpdateManager {
         return outfile;
     }
 
-    private static File createSubdir(File parent, String child) throws IOException, InterruptedException {
+    public static File createSubdir(File parent, String child) throws IOException, InterruptedException {
 
         File dir = new File(parent, child);
         dir.mkdirs();
@@ -313,7 +237,7 @@ public class ImportUpdateManager {
         return dir;
     }
 
-    private static File[] splitFilesByDNAAndFileID(File[] tsvFiles, File workingDir) throws FileNotFoundException, IOException {
+    public static File[] splitFilesByDNAAndFileID(File[] tsvFiles, File workingDir) throws FileNotFoundException, IOException {
 
         LOG.info("Splitting " + tsvFiles.length + " files by DNA and FileID, working directory is " + workingDir.getAbsolutePath());
 
@@ -328,7 +252,7 @@ public class ImportUpdateManager {
         return splitTSVFiles;
     }
 
-    private static Annotation[] getAnnotationsFromIDs(int[] annotIDs, String sessID) throws RemoteException, SQLException, SessionExpiredException {
+    public static Annotation[] getAnnotationsFromIDs(int[] annotIDs, String sessID) throws RemoteException, SQLException, SessionExpiredException {
         int numAnnotations = annotIDs.length;
         Annotation[] annotations = new Annotation[numAnnotations];
         for (int i = 0; i < numAnnotations; i++) {
@@ -338,31 +262,21 @@ public class ImportUpdateManager {
         return annotations;
     }
 
-    private static File[] annotateTSVFiles(String sessionID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, File createSubdir) throws Exception {
+    public static File[] annotateTSVFiles(String sessionID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, File createSubdir) throws Exception {
         return VariantManagerUtils.annotateTSVFiles(sessionID, tsvFiles, annotations, customFields);
     }
 
-    private static void uploadTSVFiles(String sessionID, File[] annotatedTSVFiles, String tableName, String tableNameSub, File workingDir) throws SQLException, IOException, SessionExpiredException {
-
+    public static void uploadTSVFiles(String sessionID, File[] annotatedTSVFiles, String tableName, String tableNameSub, File workingDir) throws SQLException, IOException, SessionExpiredException {
         // upload all the TSV files to the table
         for (File f : annotatedTSVFiles) {
             LOG.info("Uploading " + f.getAbsolutePath() + "...");
             VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, f, tableName);
         }
-
-        //create sub table dump from the complete table
-        LOG.info("Dumping variants to file for sub table");
-        File subDump = new File(workingDir, tableName + "sub.tsv");
-        VariantManagerUtils.variantTableToTSVFile(sessionID, tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(VariantManager.getInstance().getNumFilteredVariantsHelper(new Condition[][]{})));
-
-        //upload to sub table
-        LOG.info("Loading into subset table: " + tableNameSub);
-        VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, subDump, tableNameSub);
     }
 
     private static void addVariantFilesToDatabase(String sessionID, int updateID, File[] vcfFiles) throws SQLException, SessionExpiredException {
         for (int i = 0; i < vcfFiles.length; i++) {
-            VariantManager.addEntryToFileTable(sessionID, updateID, i+1, vcfFiles[i].getAbsolutePath());
+            VariantManager.addEntryToFileTable(sessionID, updateID, i, vcfFiles[i].getAbsolutePath());
         }
     }
 

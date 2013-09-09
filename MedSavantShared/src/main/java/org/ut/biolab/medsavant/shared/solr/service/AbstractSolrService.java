@@ -15,10 +15,17 @@
  */
 package org.ut.biolab.medsavant.shared.solr.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -29,15 +36,21 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.SimpleSolrQuery;
 import org.ut.biolab.medsavant.shared.solr.decorator.EntityDecorator;
-import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.solr.decorator.SolrInputDocumentDecorator;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -47,18 +60,21 @@ public abstract class AbstractSolrService<T> {
 
     private static final Log LOG = LogFactory.getLog(AbstractSolrService.class);
 
-    private static final String SOLR_HOST = "http://localhost:8983/solr/";
-
+    private static final String SOLR_SCHEME = "http";
+    private static final String SOLR_HOST = "localhost";
+    private static final int SOLR_PORT = 8983;
+    private static final String SOLR_URL = SOLR_SCHEME + "://" + SOLR_HOST + ":" + SOLR_PORT + "/solr/";
     private static final SolrInputDocumentDecorator decorator = new EntityDecorator();
 
     /** The Solr server instance used. */
-    protected SolrServer server;
+    protected HttpSolrServer server;
+
+    /** Control index commit */
+    private static boolean autocommit = false;   //Let Solr do the commits for better performance.
 
     public void initialize() throws InitializationException {
-
         try {
-            this.server = new HttpSolrServer(SOLR_HOST + this.getName() + "/");
-
+            this.server = new HttpSolrServer(SOLR_URL + this.getName() + "/");
         } catch (RuntimeException ex) {
             LOG.error("Invalid URL specified for the Solr server: {}",ex);
         }
@@ -106,6 +122,17 @@ public abstract class AbstractSolrService<T> {
         }
 
         return getDocumentList(result);
+    }
+
+    public void queryAndWriteToFile(SolrQuery query, File file) {
+        HttpGet request = new HttpGet(SOLR_URL + getName() + "/select" + "?" + query);
+        try {
+            HttpResponse httpResponse = server.getHttpClient().execute(request);
+            FileOutputStream fileOutputStream = new FileOutputStream(file,false);
+            IOUtils.copyStream(httpResponse.getEntity().getContent(), fileOutputStream);
+        } catch (IOException e) {
+            LOG.error("Error executing query");
+        }
     }
 
     public SolrDocumentList search(SolrQuery solrQuery, Map<String, String> aggregates) {
@@ -160,7 +187,7 @@ public abstract class AbstractSolrService<T> {
     public int index(T entity) {
         try {
             this.server.add(getSolrInputDocument(entity));
-            this.server.commit();
+            autocommit();
             return 0;
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
@@ -179,13 +206,68 @@ public abstract class AbstractSolrService<T> {
     public int index(List<T> entities) {
         try {
             this.server.add(getSolrInputDocuments(entities));
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
-            LOG.error("Cannot index variant comment");
+            LOG.error("Cannot execute query");
         }
 
+        return 0;
+    }
+
+    /**
+     * Index a SolrInputDocument. Can be also used for updates.
+     * @param solrInputDocument
+     * @return
+     */
+    public int index(SolrInputDocument solrInputDocument) {
+        try {
+            this.server.add(solrInputDocument);
+            autocommit();
+        } catch (SolrServerException e) {
+            LOG.error("Cannot connect to server");
+        } catch (IOException e) {
+            LOG.error("Cannot ");
+        }
+
+        return 0;
+    }
+
+    /**
+     * Index data from a certain file on the same filesystem.
+     * @param file
+     * @return
+     */
+    public int index(String file, String separator, String escape, Class solrClass, String[] fieldNames) throws URISyntaxException {
+
+        String oldBaseURL = server.getBaseURL();
+
+        try {
+            SolrQuery query = new SolrQuery();
+            query.add(CommonParams.STREAM_FILE, file);
+            query.add("literal.entity", solrClass.getName());
+            query.set("separator", "\t");
+            query.set("escape", "\\");
+            query.set("encapsulator", "\"");
+            query.set("header", "false");
+            query.set("literal.entity", solrClass.getName());
+            query.set("fieldnames", StringUtils.join(fieldNames, ","));
+
+            URIBuilder builder = new URIBuilder().setScheme(SOLR_SCHEME).setHost(SOLR_HOST).setPort(SOLR_PORT).
+                    setPath("/solr/" + getName() + "/update/csv").setQuery(query.toString());
+            URI uri = builder.build();
+            HttpClient client = server.getHttpClient();
+
+            HttpResponse response = client.execute(new HttpPost(uri));
+            EntityUtils.consume(response.getEntity());
+        } catch (ClientProtocolException e) {
+            LOG.error("Error uploading from document");
+        } catch (IOException e) {
+            LOG.error("Error uploading from document");
+        } finally {
+            server.setBaseURL(oldBaseURL);
+        }
         return 0;
     }
 
@@ -196,7 +278,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(SolrQuery solrQuery) {
         try {
             this.server.deleteByQuery(solrQuery.getQuery());
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -211,7 +293,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(List<String> ids) {
         try {
             this.server.deleteById(ids);
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -226,7 +308,7 @@ public abstract class AbstractSolrService<T> {
     public void delete(String id) {
         try {
             this.server.deleteById(id);
-            this.server.commit();
+            autocommit();
         } catch (IOException e) {
             LOG.error("Cannot connect to server");
         } catch (SolrServerException e) {
@@ -373,4 +455,17 @@ public abstract class AbstractSolrService<T> {
         return documents;
     }
 
+    private void autocommit() throws IOException, SolrServerException {
+        if (autocommit) {
+            this.server.commit();
+        }
+    }
+
+    public static boolean isAutocommit() {
+        return autocommit;
+    }
+
+    public static void setAutocommit(boolean autocommit) {
+        AbstractSolrService.autocommit = autocommit;
+    }
 }

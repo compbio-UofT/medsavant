@@ -17,9 +17,9 @@ package org.ut.biolab.medsavant.shared.solr.service;
 
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.*;
-import org.ut.biolab.medsavant.shared.model.solr.*;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.Entity;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -69,11 +69,15 @@ public class SolrServiceRegistry {
 
     private static AbstractSolrService annotationColumnService;
 
+    private static AbstractSolrService customColumnService;
+
+    private static AbstractSolrService variantTagService;
+
     /**
-     * Get the appropriate solr service based on the entity string.
+     * Get the appropriate org.ut.biolab.medsavant.persistence.query.solr.solr service based on the entity string.
      *
      * @param entityName The entity name.
-     * @return An instance of a solr service.
+     * @return An instance of a org.ut.biolab.medsavant.persistence.query.solr.solr service.
      */
     public static AbstractSolrService getService(String entityName) throws InitializationException {
 
@@ -119,6 +123,10 @@ public class SolrServiceRegistry {
             return getAnnotationFormatService();
         } else if (Entity.ANNOTATION_COLUMN.equals(entityName)) {
             return getAnnotationColumnService();
+        } else if (Entity.CUSTOM_COLUMN.equals(entityName)) {
+            return getCustomColumnService();
+        } else if (Entity.VARIANT_TAG.equals(entityName)) {
+            return getVariantTagService();
         }
 
         return null;
@@ -138,8 +146,8 @@ public class SolrServiceRegistry {
             return getProjectDetailsService();
         } else if (Cohort.class.getName().equals(clazz.getName())) {
             return getCohortService();
-        } else if (VariantData.class.getName().equals(clazz.getName())) {
-            return getVariantCommentService();
+        } else if (VariantRecord.class.getName().equals(clazz.getName()) || VariantData.class.getName().equals(clazz.getName())) {
+            return getVariantService();
         } else if (SimpleVariantFile.class.getName().equals(clazz.getName())) {
             return getVariantFileService();
         } else if (Chromosome.class.getName().equals(clazz.getName())) {
@@ -168,6 +176,10 @@ public class SolrServiceRegistry {
             return getAnnotationFormatService();
         } else if (AnnotatedColumn.class.getName().equals(clazz.getName())) {
             return getAnnotationColumnService();
+        } else if (CustomColumn.class.getName().equals(clazz.getName())) {
+            return getCustomColumnService();
+        } else if (VariantTag.class.getName().equals(clazz.getName())) {
+            return getVariantTagService();
         }
 
         return null;
@@ -272,7 +284,7 @@ public class SolrServiceRegistry {
     public static AbstractSolrService getOntologyTermService() throws InitializationException {
         if (ontologyTermService == null) {
             ontologyTermService = new OntologyTermSolrService();
-            ontologyService.initialize();
+            ontologyTermService.initialize();
         }
         return ontologyTermService;
     }
@@ -339,5 +351,21 @@ public class SolrServiceRegistry {
             annotationColumnService.initialize();
         }
         return annotationColumnService;
+    }
+
+    public static AbstractSolrService getCustomColumnService() throws InitializationException {
+        if (customColumnService == null) {
+            customColumnService = new CustomColumnSolrService();
+            customColumnService.initialize();
+        }
+        return customColumnService;
+    }
+
+    public static AbstractSolrService getVariantTagService() throws InitializationException {
+        if (variantTagService == null) {
+            variantTagService = new VariantTagService();
+            variantTagService.initialize();
+        }
+        return variantTagService;
     }
 }

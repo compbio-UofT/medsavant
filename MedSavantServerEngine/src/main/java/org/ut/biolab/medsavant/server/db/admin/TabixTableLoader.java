@@ -16,24 +16,23 @@
 
 package org.ut.biolab.medsavant.server.db.admin;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import net.sf.samtools.util.BlockCompressedInputStream;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.serverapi.GeneSetManager;
+import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -59,9 +58,6 @@ public class TabixTableLoader {
         try {
             input = new BlockCompressedInputStream(NetworkUtils.getSeekableStreamForURI(uri));
 
-            conn = ConnectionController.connectPooled(sessID);
-            conn.setAutoCommit(false);
-
             InsertQuery query = new InsertQuery(table);
             query.addColumn(table.findColumn("genome"), genome);
             query.addColumn(table.findColumn("type"), type);
@@ -73,32 +69,28 @@ public class TabixTableLoader {
                 }
             }
             query.addPreparedColumnCollection(dataCols);
-            PreparedStatement prep = conn.prepareStatement(query.toString());
-            //System.out.println(query.toString());
-
             boolean trace = true;
             while ((line = IOUtils.readLine(input)) != null) {
                 if (line.charAt(0) != '#') {
                     String[] fields = line.split("\t");
-                    prep.clearParameters();
-                    int j = 0;
-                    for (int i = 0; i < colNames.length; i++) {
-                        if (colNames[i] != null) {
-                            prep.setObject(++j, fields[i]);
-                            if (trace) {
-                            //    System.out.println(j + ": " + colNames[i] + " = " + fields[i]);
-                            }
-                        }
-                    }
-                    prep.executeUpdate();
-                    trace = false;
+                    String transcript = fields[1];
+                    String chrom = fields[2];
+                    int start = Integer.parseInt(fields[4]);
+                    int end = Integer.parseInt(fields[5]);
+                    int codingStart = Integer.parseInt(fields[6]);
+                    int codingEnd = Integer.parseInt(fields[7]);
+                    String exonStarts = fields[9];
+                    String exonEnds = fields[10];
+                    String name = fields[12];
+                    Gene gene = new Gene(name, chrom, start, end, codingStart, codingEnd, transcript, exonStarts, exonEnds);
+                    gene.setGenome(genome);
+                    gene.setType(type);
+
+                    GeneSetManager.getInstance().addGene(gene);
                 }
                 lineNum++;
             }
         } catch (IOException x) {
-            throw x;
-        } catch (SQLException x) {
-            System.out.println("Error at Tabix line " + lineNum);
             throw x;
         } finally {
             if (conn != null) {

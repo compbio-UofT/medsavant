@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.shared.query.QueryException;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
@@ -81,7 +82,7 @@ public class ProjectController extends Controller<ProjectEvent> {
                 }
             }
         });
-
+/*
         try {
             currentVariantTableSchema = MedSavantClient.CustomTablesManager.getCustomTableSchema(
                     LoginController.getInstance().getSessionID(),
@@ -95,7 +96,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             e.printStackTrace();
         } catch (SessionExpiredException e) {
             e.printStackTrace();
-        }
+        }*/
 
     }
 
@@ -216,12 +217,12 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentVariantTable() throws SQLException, RemoteException {
-       /* try {
+        try {
             currentVariantTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentVariantTableName());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
-        }*/
+        }
     }
 
     public String getCurrentPatientTableName() throws RemoteException, SQLException {
@@ -262,7 +263,7 @@ public class ProjectController extends Controller<ProjectEvent> {
         }
         return annotIDs;
     }
-    public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
+    public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException, QueryException {
         if (currentAnnotationFormats == null) {
             try {
                 int[] annotIDs = getAnnotationIDs(this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());

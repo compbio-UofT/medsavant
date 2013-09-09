@@ -50,4 +50,18 @@ public enum UserLevel {
                 return "Unknown";
         }
     }
+
+    public static UserLevel translate(String level) {
+        if (level.equals("Administrator")) {
+            return UserLevel.ADMIN;
+        } else if (level.equals("User")) {
+            return UserLevel.USER;
+        } else if (level.equals("Guest")) {
+            return UserLevel.GUEST;
+        } else if (level.equals("None")) {
+            return UserLevel.NONE;
+        } else {
+            return null;
+        }
+    }
 }

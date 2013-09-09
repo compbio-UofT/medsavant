@@ -19,6 +19,8 @@ public class SearcheableAnnotation {
     private String dataPath;
     private AnnotationFormat.AnnotationType type;
     private boolean isEndInclusive = false;
+    private boolean hasAlt;
+    private boolean hasRef;
 
     public SearcheableAnnotation() { }
 
@@ -66,8 +68,18 @@ public class SearcheableAnnotation {
         isEndInclusive = endInclusive;
     }
 
+    @Field("has_alt")
+    public void setHasAlt(boolean hasAlt) {
+        this.hasAlt = hasAlt;
+    }
+
+    @Field("has_ref")
+    public void setHasRef(boolean hasRef) {
+        this.hasRef = hasRef;
+    }
+
     public Annotation getAnnotation() {
-        this.annotation = new Annotation(id, program, version, referenceID, referenceName,dataPath,type, isEndInclusive);
+        this.annotation = new Annotation(id, program, version, referenceID, referenceName,dataPath,type, isEndInclusive, hasRef, hasAlt);
         return annotation;
     }
 
@@ -101,5 +113,13 @@ public class SearcheableAnnotation {
 
     public boolean isEndInclusive() {
         return isEndInclusive;
+    }
+
+    public boolean isHasAlt() {
+        return hasAlt;
+    }
+
+    public boolean isHasRef() {
+        return hasRef;
     }
 }

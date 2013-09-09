@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.shared.model;
 public class User {
 
     private String name;
+    private String password;
     private UserLevel level;
 
     public User() {};
@@ -13,6 +14,12 @@ public class User {
     public User(String name, UserLevel leve) {
         this.name = name;
         this.level = leve;
+    }
+
+    public User(String name, String password, UserLevel level) {
+        this.name = name;
+        this.password = password;
+        this.level = level;
     }
 
     public String getName() {
@@ -29,5 +36,13 @@ public class User {
 
     public void setLevel(UserLevel level) {
         this.level = level;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

@@ -27,6 +27,10 @@ public class SearcheableCohort {
 
     private Cohort cohort;
 
+    public SearcheableCohort() {
+        this.cohort = new Cohort();
+    }
+
     public SearcheableCohort(Cohort cohort) {
         this.cohort = cohort;
     }

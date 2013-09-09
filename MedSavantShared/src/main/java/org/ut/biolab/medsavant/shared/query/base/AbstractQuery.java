@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.shared.query.base;
 
 import org.ut.biolab.medsavant.shared.query.Query;
-import org.ut.biolab.medsavant.shared.query.QueryException;
 import org.ut.biolab.medsavant.shared.query.QueryExecutor;
 import org.ut.biolab.medsavant.shared.query.ResultRow;
 
@@ -70,8 +69,23 @@ public abstract class AbstractQuery implements Query {
     }
 
     @Override
+    public <T> T getFirst() {
+        return executor.getFirst(this);
+    }
+
+    @Override
+    public ResultRow getFirstRow() {
+        return executor.getFirstRow(this);
+    }
+
+    @Override
     public void executeDelete() {
         executor.executeDelete(this);
+    }
+
+    @Override
+    public void executeUpdate() {
+        executor.executeUpdate(this);
     }
 
     @Override

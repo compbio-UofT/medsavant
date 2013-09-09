@@ -9,6 +9,7 @@ public class Entity {
 
     public static final String USER = "user";
     public static final String VARIANT = "variant";
+    public static final String VARIANT_TAG = "variant_tag";
     public static final String COMMENT = "comment";
     public static final String ANNOTATION = "annotation";
     public static final String ANNOTATION_LOG = "annotation_log";
@@ -28,7 +29,7 @@ public class Entity {
     public static final String REFERENCE = "reference";
     public static final String REGION_SET = "region_set";
     public static final String SETTING = "setting";
-
+    public static final String CUSTOM_COLUMN = "custom_column";
     public static final String MEDSAVANT = "medsavant";
 
     public static final String ENTITY_DISCRIMINANT_FIELD = "entity";

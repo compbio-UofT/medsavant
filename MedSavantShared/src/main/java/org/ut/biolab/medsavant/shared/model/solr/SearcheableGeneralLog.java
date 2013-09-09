@@ -37,14 +37,9 @@ public class SearcheableGeneralLog {
 
     public SearcheableGeneralLog(GeneralLog log) {
         this.log = log;
-        this.addUUID();
     }
 
     public SearcheableGeneralLog() {};
-
-    private void addUUID() {
-        this.uuid = UUID.randomUUID();
-    }
 
     @Field("user")
     public void setUser(String user) {
@@ -72,22 +67,18 @@ public class SearcheableGeneralLog {
     }
 
     public String getUser() {
-        return user;
+        return log.getUser();
     }
 
     public String getEvent() {
-        return event;
+        return log.getEvent();
     }
 
     public String getDescription() {
-        return description;
+        return log.getDescription();
     }
 
     public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public UUID getUuid() {
-        return uuid;
+        return log.getTimestamp();
     }
 }

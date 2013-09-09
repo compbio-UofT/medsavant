@@ -37,6 +37,8 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.ut.biolab.medsavant.shared.query.QueryException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 
 /**
@@ -57,7 +59,7 @@ public interface VariantManagerAdapter extends Remote {
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, boolean autoPublish, String email) throws Exception;
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception;
-    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipped) throws SQLException, SessionExpiredException, RemoteException, IOException, InterruptedException;
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipped) throws SQLException, SessionExpiredException, RemoteException, IOException, InterruptedException, InitializationException;
 
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
@@ -78,9 +80,9 @@ public interface VariantManagerAdapter extends Remote {
     public Map<String, Integer> getNumVariantsInFamily(String sessID, int projID, int refID, String famID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
     public void cancelUpload(String sessID,int uploadID, String tableName) throws RemoteException, SessionExpiredException;
     public void addTagsToUpload(String sessID, int uploadID, String[][] variantTags) throws SQLException, RemoteException, SessionExpiredException;
-    public List<String> getDistinctTagNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
-    public List<String> getValuesForTagName(String sessID, String tagName) throws SQLException, RemoteException, SessionExpiredException;
-    public List<Integer> getUploadIDsMatchingVariantTags(String sessID, String[][] variantTags) throws SQLException, RemoteException, SessionExpiredException;
+    public List<String> getDistinctTagNames(String sessID) throws SQLException, RemoteException, SessionExpiredException, QueryException;
+    public List<String> getValuesForTagName(String sessID, String tagName) throws SQLException, RemoteException, SessionExpiredException, QueryException;
+    public List<Integer> getUploadIDsMatchingVariantTags(String sessID, String[][] variantTags) throws SQLException, RemoteException, SessionExpiredException, QueryException;
     public SimpleVariantFile[] getUploadedFiles(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public List<String[]> getTagsForUpload(String sessID, int uploadID) throws SQLException, RemoteException, SessionExpiredException;
     //public Set<StarredVariant> getStarredVariants(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;

@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.shared.query.parser.analyzer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.params.CommonParams;
+import org.ut.biolab.medsavant.shared.model.solr.FieldMappings;
 import org.ut.biolab.medsavant.shared.query.parser.QueryContext;
 import org.ut.biolab.medsavant.shared.query.parser.analysis.DepthFirstAdapter;
 import org.ut.biolab.medsavant.shared.query.parser.node.AAbstractSchemaName;
@@ -64,7 +66,7 @@ public class DeleteQueryAnalyzer extends DepthFirstAdapter {
     public void caseAAbstractSchemaName(AAbstractSchemaName node) {
 
         String coreName = node.toString().trim().toLowerCase(Locale.ROOT);
-        context.setCoreName(coreName);
+        context.setCoreName(FieldMappings.mapToSolrCore(coreName));
     }
 
     public DeleteQueryAnalyzer(QueryContext context) {
@@ -80,6 +82,8 @@ public class DeleteQueryAnalyzer extends DepthFirstAdapter {
     }
 
     public SolrQuery getSolrQuery() {
+        String statement = solrQuery.get(CommonParams.Q);
+        solrQuery.setQuery(ParserUtil.addEntityField(statement, context.getCoreName()));
         return ParserUtil.addDefaultQueryParameters(solrQuery);
     }
 

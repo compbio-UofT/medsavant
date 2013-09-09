@@ -29,9 +29,9 @@ import org.ut.biolab.medsavant.shared.db.ColumnType;
  */
 public class CustomField extends ColumnDef implements Serializable {
 
-    private final boolean filterable;
-    private final String alias;
-    private final String description;
+    private boolean filterable;
+    private String alias;
+    private String description;
 
     /**
      * Construct a new custom field definition.  Extends the basic <code>ColumnDef</code> class by adding a couple of human-friendly
@@ -55,6 +55,10 @@ public class CustomField extends ColumnDef implements Serializable {
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
+    }
+
+    public CustomField() {
+        super();
     }
 
     public String getAlias() {
@@ -158,5 +162,17 @@ public class CustomField extends ColumnDef implements Serializable {
         hash = 89 * hash + (name != null ? name.hashCode() : 0);
         hash = 89 * hash + (description != null ? description.hashCode() : 0);
         return hash;
+    }
+
+    public void setFilterable(boolean filterable) {
+        this.filterable = filterable;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

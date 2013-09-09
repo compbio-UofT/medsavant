@@ -17,31 +17,27 @@ package org.ut.biolab.medsavant.server.serverapi;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.model.AnnotatedColumn;
+import org.ut.biolab.medsavant.shared.persistence.CustomFieldManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
+import org.ut.biolab.medsavant.shared.persistence.solr.SolrCustomFieldManager;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 import org.ut.biolab.medsavant.shared.util.*;
 import org.w3c.dom.Document;
@@ -49,20 +45,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationColumns;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationFormatColumns;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat.AnnotationType;
@@ -70,7 +56,6 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 
@@ -84,10 +69,12 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     private static AnnotationManager instance;
     private static QueryManager queryManager;
     private static EntityManager entityManager;
+    private static CustomFieldManager customFieldManager;
 
     private AnnotationManager() throws RemoteException, SessionExpiredException {
         entityManager = EntityManagerFactory.getEntityManager();
         queryManager = QueryManagerFactory.getQueryManager();
+        customFieldManager = new SolrCustomFieldManager();
     }
 
     public static synchronized AnnotationManager getInstance() throws RemoteException, SessionExpiredException {
@@ -142,37 +129,18 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         return false;
     }
 
-    /*
-     private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException, SessionExpiredException {
-     LOG.info("Installing zip...");
-     File dir = unpackAnnotationZip(zip);
-     LOG.info("... DONE");
 
-
-     }
-     */
     public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc) throws SQLException, SessionExpiredException {
 
-       /* LOG.debug("Adding annotation format for " + colName);
-
-        // remove non-alphanumeric characters from the proposed column name
-        colName = colName.replaceAll("[^A-Za-z0-9]", "");
-
-        InsertQuery query = MedSavantDatabase.AnnotationFormatTableSchema.insert(ANNOTATION_ID, annotID,
-                                                                                 AnnotationFormatColumns.POSITION, pos,
-                                                                                 AnnotationFormatColumns.COLUMN_NAME, colName,
-                                                                                 AnnotationFormatColumns.COLUMN_TYPE, colType,
-                                                                                 AnnotationFormatColumns.FILTERABLE, filterable,
-                                                                                 AnnotationFormatColumns.ALIAS, alias,
-                                                                                 AnnotationFormatColumns.DESCRIPTION, desc);
-
-        Connection c = ConnectionController.connectPooled(sessID);
-        c.createStatement().executeUpdate(query.toString());
-        c.close();*/
         AnnotatedColumn annotatedColumn = new AnnotatedColumn(annotID,pos,colName,colType,filterable,alias,desc);
         try {
             entityManager.persist(annotatedColumn);
+            customFieldManager.addCustomField(annotatedColumn);
         } catch (InitializationException e) {
+            LOG.error("Error persisting annotated column");
+        } catch (IOException e) {
+            LOG.error("Error persisting annotated column");
+        } catch (URISyntaxException e) {
             LOG.error("Error persisting annotated column");
         }
     }
@@ -181,22 +149,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         LOG.debug("Adding annotation...");
 
-        /*TableSchema table = MedSavantDatabase.AnnotationTableSchema;
-        InsertQuery query = MedSavantDatabase.AnnotationTableSchema.insert(PROGRAM, prog, VERSION, vers, REFERENCE_ID, refID,
-                                                                           PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type,
-                                                                           IS_END_INCLUSIVE, endInclusive);
-
-        PooledConnection c = ConnectionController.connectPooled(sessID);
-        PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
-        stmt.execute();
-        ResultSet res = stmt.getGeneratedKeys();
-        res.next();
-
-        int annotid = res.getInt(1);
-
-        c.close();*/
         int annotationId = DBUtils.generateId("id", Entity.ANNOTATION);
-        Annotation annotation = new Annotation(annotationId,prog,vers,refID,null,path,AnnotationType.fromInt(type),endInclusive);
+        Annotation annotation = new Annotation(annotationId,prog,vers,refID,null,path,AnnotationType.fromInt(type),endInclusive, hasRef, hasAlt);
         try {
             entityManager.persist(annotation);
         } catch (InitializationException e) {
@@ -206,7 +160,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     private static AnnotationFormat parseFormat(File tabixFile, File xmlFormatFile) throws SAXException, ParserConfigurationException, IOException {
-        //this doesn't need changing
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(xmlFormatFile);
@@ -259,35 +212,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public Annotation getAnnotation(String sid, int annotation_id) throws SQLException, SessionExpiredException {
 
-        /*TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(annTable.getTable());
-        query.addAllColumns();
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                annTable.getTable(),
-                refTable.getTable(),
-                BinaryConditionMS.equalTo(
-                annTable.getDBColumn(REFERENCE_ID),
-                refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-        query.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(ANNOTATION_ID), annotation_id));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        rs.next();
-        Annotation result = new Annotation(
-                rs.getInt(ANNOTATION_ID.getColumnName()),
-                rs.getString(PROGRAM.getColumnName()),
-                rs.getString(VERSION.getColumnName()),
-                rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
-                rs.getString(PATH.getColumnName()),
-                AnnotationType.fromInt(rs.getInt(TYPE.getColumnName())),
-                rs.getBoolean(IS_END_INCLUSIVE.getColumnName()));
-
-        return result;*/
         Query query = queryManager.createQuery("Select a from Annotation a where a.id= :annotationId");
         query.setParameter("annotationId", annotation_id);
         List<Annotation> annotationList = query.execute();
@@ -299,35 +223,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public Annotation[] getAnnotations(String sid) throws SQLException, SessionExpiredException {
 
-        /*TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(annTable.getTable());
-        query.addAllColumns();
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                annTable.getTable(),
-                refTable.getTable(),
-                BinaryConditionMS.equalTo(
-                annTable.getDBColumn(REFERENCE_ID),
-                refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        List<Annotation> result = new ArrayList<Annotation>();
-
-        while (rs.next()) {
-            result.add(new Annotation(
-                    rs.getInt(ANNOTATION_ID.getColumnName()),
-                    rs.getString(PROGRAM.getColumnName()),
-                    rs.getString(VERSION.getColumnName()),
-                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                    rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
-                    rs.getString(PATH.getColumnName()),
-                    AnnotationType.fromInt(rs.getInt(TYPE.getColumnName())),
-                    rs.getBoolean(IS_END_INCLUSIVE.getColumnName())));
-        }*/
         Query query = queryManager.createQuery("Select a from Annotation a");
         List<Annotation> result = query.execute();
         return result.toArray(new Annotation[0]);
@@ -339,77 +234,44 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, SessionExpiredException {
 
-        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS));
-        query.addCondition(ComboCondition.and(
-                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID),
-                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID),
-                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true)));
-        query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
+        Query query = queryManager.createQuery("Select a.id from Annotation a where " +
+                "a.project_id = :projectId AND a.reference_id = :referenceId AND a.published = :published");
+        query.setParameter("projectId", projID);
+        query.setParameter("referenceId", refID);
+        query.setParameter("published", true);
 
+        List<ResultRow> resultRowList = query.executeForRows();
 
-        String a = query.toString();
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-
-        rs.next();
-        String annotationString = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS);
-
-        if (annotationString == null || annotationString.isEmpty()) {
-            return new int[0];
+        int annotations = resultRowList.size();
+        int[] annotationIds = new int[annotations];
+        for (int i = 0 ; i < annotations; i++) {
+            annotationIds[i] = (Integer) resultRowList.get(i).getObject("id");
         }
 
-        String[] split = annotationString.split(",");
-        int[] result = new int[split.length];
-        for (int i = 0; i < split.length; i++) {
-            result[i] = Integer.parseInt(split[i]);
-        }
-
-        return result;
+        return annotationIds;
     }
 
     @Override
     public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException {
 
-        TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
-        SelectQuery query1 = new SelectQuery();
-        query1.addFromTable(annTable.getTable());
-        query1.addAllColumns();
-        query1.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(ANNOTATION_ID), annotID));
+        Query query = queryManager.createQuery("Select a from Annotation a where a.id = :annotationId");
+        query.setParameter("annotationId", annotID);
 
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, query1.toString());
+        Annotation annotation = query.getFirst();
 
-        rs1.next();
+        query = queryManager.createQuery("Select a from AnnotatedColumn a where a.annotationd_id = :annotationId");
+        List<AnnotatedColumn> annotatedColumnList = query.execute();
 
-        String program = rs1.getString(PROGRAM.getColumnName());
-        String version = rs1.getString(VERSION.getColumnName());
-        String referenceName = ReferenceManager.getInstance().getReferenceName(sessID, rs1.getInt(REFERENCE_ID.getColumnName()));
-        String path = rs1.getString(PATH.getColumnName());
-        boolean hasRef = rs1.getBoolean(HAS_REF.getColumnName());
-        boolean hasAlt = rs1.getBoolean(HAS_ALT.getColumnName());
-        boolean isEndInclusive = rs1.getBoolean(IS_END_INCLUSIVE.getColumnName());
-        AnnotationType type = AnnotationType.fromInt(rs1.getInt(TYPE.getColumnName()));
+        return new AnnotationFormat(annotation.getProgram(),
+                annotation.getVersion(),
+                annotation.getReferenceName(),
+                annotation.getDataPath(),
+                true,
+                true,
+                annotation.getAnnotationType(),
+                annotation.isEndInclusive(),
+                annotatedColumnList.toArray(new AnnotatedColumn[0]));
 
-        TableSchema annFormatTable = MedSavantDatabase.AnnotationFormatTableSchema;
-        SelectQuery query2 = new SelectQuery();
-        query2.addFromTable(annFormatTable.getTable());
-        query2.addAllColumns();
-        query2.addCondition(BinaryConditionMS.equalTo(annFormatTable.getDBColumn(AnnotationFormatColumns.ANNOTATION_ID), annotID));
-        query2.addOrdering(annFormatTable.getDBColumn(AnnotationFormatColumns.POSITION), Dir.ASCENDING);
-
-        ResultSet rs2 = ConnectionController.executeQuery(sessID, query2.toString());
-
-        List<CustomField> fields = new ArrayList<CustomField>();
-        while (rs2.next()) {
-            fields.add(new CustomField(
-                    rs2.getString(AnnotationFormatColumns.COLUMN_NAME.getColumnName()),
-                    rs2.getString(AnnotationFormatColumns.COLUMN_TYPE.getColumnName()),
-                    rs2.getBoolean(AnnotationFormatColumns.FILTERABLE.getColumnName()),
-                    rs2.getString(AnnotationFormatColumns.ALIAS.getColumnName()),
-                    rs2.getString(AnnotationFormatColumns.DESCRIPTION.getColumnName())));
-        }
-        return new AnnotationFormat(program, version, referenceName, path, hasRef, hasAlt, type, isEndInclusive, fields.toArray(new CustomField[0]));
     }
     /**
      * HELPER FUNCTIONS
@@ -469,8 +331,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return
      */
     private static File getDirectoryForAnnotation(String programName, String programVersion, String reference) {
-
-
         return new File(localDirectory.getAbsolutePath() + "/" + reference + "/" + programName + "/" + programVersion);
     }
 
@@ -530,23 +390,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      */
     private boolean checkIfAnnotationIsInstalled(String sessID, AnnotationDownloadInformation info) throws RemoteException, SQLException, SessionExpiredException {
 
-        /*TableSchema table = MedSavantDatabase.AnnotationTableSchema;
-        SelectQuery query1 = new SelectQuery();
-        query1.addFromTable(table.getTable());
-        query1.addAllColumns();
-        query1.addCondition(ComboCondition.and(
-                BinaryConditionMS.equalTo(table.getDBColumn(PROGRAM), info.getProgramName()),
-                BinaryConditionMS.equalTo(table.getDBColumn(VERSION), info.getProgramVersion()),
-                BinaryConditionMS.equalTo(
-                table.getDBColumn(REFERENCE_ID),
-                ReferenceManager.getInstance().getReferenceID(sessID, info.getReference()))));
-
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, query1.toString());
-
-        // true if there is a match and false otherwise
-        return rs1.next();*/
         int referenceId = ReferenceManager.getInstance().getReferenceID(sessID, info.getReference());
-        Query query = queryManager.createQuery("Select a from Annotation where a.reference_id= :referenceId" +
+        Query query = queryManager.createQuery("Select a from Annotation a where a.reference_id= :referenceId" +
                 "and a.program= :program and a.version= :version");
         query.setParameter("referenceId", referenceId);
         query.setParameter("program", info.getProgramName());
@@ -560,22 +405,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public void uninstallAnnotation(String sessionID, Annotation an) throws RemoteException, SQLException, SessionExpiredException {
         int annotationID = an.getID();
-
-        /*TableSchema table = MedSavantDatabase.AnnotationTableSchema;
-
-        DeleteQuery query1 = new DeleteQuery(table.getTable());
-        query1.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ANNOTATION_ID), annotationID));
-        ConnectionController.executeUpdate(sessionID, query1.toString());
-
-
-        TableSchema table2 = MedSavantDatabase.AnnotationFormatTableSchema;
-
-        DeleteQuery query2 = new DeleteQuery(table2.getTable());
-        query2.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ANNOTATION_ID), annotationID));
-        ConnectionController.executeUpdate(sessionID, query2.toString());
-
-        System.out.println(query1);
-        System.out.println(query2)*/;
 
         Query query = queryManager.createQuery("Delete from Annotation a where a.id= :annotationId");
         query.setParameter("annotationId", annotationID);
@@ -637,17 +466,10 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 AnnotationType.toInt(format.getType()),
                 format.isEndInclusive());
 
-        //populate
-        Connection conn = ConnectionController.connectPooled(sessionID);
-        conn.setAutoCommit(false);
-
         int i = 0;
         for (CustomField a : format.getCustomFields()) {
             addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
         }
-        conn.commit();
-        conn.setAutoCommit(true);
-        conn.close();
 
         LOG.info("Installed to " + dir.getAbsolutePath());
     }

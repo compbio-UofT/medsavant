@@ -25,8 +25,8 @@ import java.io.Serializable;
  * @author tarkvara
  */
 public class ColumnDef implements Serializable {
-    protected final String name;
-    protected final ColumnType type;
+    protected String name;
+    protected ColumnType type;
     protected final int length;
     protected final String defaultValue;
     protected final boolean autoIncrement;
@@ -53,6 +53,16 @@ public class ColumnDef implements Serializable {
         defaultValue = dflt;
     }
 
+    public ColumnDef() {
+        //To change body of created methods use File | Settings | File Templates.
+        length = 0;
+        defaultValue = "";
+
+        primaryKey = false;
+        nonNull = false;
+        autoIncrement = false;
+    }
+
 
     public int getColumnLength() {
         return length;
@@ -64,5 +74,13 @@ public class ColumnDef implements Serializable {
 
     public ColumnType getColumnType() {
         return type;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(ColumnType type) {
+        this.type = type;
     }
 }
