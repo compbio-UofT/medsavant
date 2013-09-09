@@ -49,41 +49,41 @@ public class AggregateGroupUtils {
      */
     public static List<Object> collide(List<Object> results, Map<Integer, SupportedAggregations> ags, List<Integer> keyIndices) {
         // use LinkedHashMap to preserve ordering
-        LinkedHashMap<List<Comparable<Object>>, List<BigDecimal>> res = new LinkedHashMap<List<Comparable<Object>>, List<BigDecimal>>();
+        LinkedHashMap<List<Comparable<Object>>, List<Object>> res = new LinkedHashMap<List<Comparable<Object>>, List<Object>>();
 
         Object[] tuple = new Object[0];
         for (Object r : results) {
             List<Comparable<Object>> keys = new ArrayList<Comparable<Object>>();
-            List<BigDecimal> values = new ArrayList<BigDecimal>();
-            tuple = (Object[]) r;
+            List<Object> values = new ArrayList<Object>();
+            tuple = (r instanceof Object[]) ? (Object[]) r : new Object[] { (Object) r };
             for (int i = 0; i < tuple.length; i++) {
                 if (keyIndices.contains(i)) {
                     keys.add((Comparable<Object>) tuple[i]);
                 } else {
-                    values.add(new BigDecimal(((Number) (tuple)[i]).toString()));
+                    values.add((tuple[i] instanceof String) ? (String) tuple[i] : new BigDecimal(((Number) (tuple)[i]).toString()));
                 }
             }
 
             // handle multiple aggregate functions
-            List<BigDecimal> v = null;
+            List<Object> v = null;
             if (res.containsKey(keys)) {
                 v = res.get(keys);
                 for (Entry<Integer, SupportedAggregations> ag : ags.entrySet()) {
                     switch (ag.getValue()) {
                     case MAX:
-                        v.set(ag.getKey(), v.get(ag.getKey()).max(values.get(ag.getKey())));
+                        v.set(ag.getKey(), ((BigDecimal) v.get(ag.getKey())).max((BigDecimal) values.get(ag.getKey())));
                         break;
                     case MIN:
-                        v.set(ag.getKey(), v.get(ag.getKey()).min(values.get(ag.getKey())));
+                        v.set(ag.getKey(), ((BigDecimal) v.get(ag.getKey())).min((BigDecimal) values.get(ag.getKey())));
                         break;
                     case SUM:
-                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        v.set(ag.getKey(), ((BigDecimal) v.get(ag.getKey())).add((BigDecimal) values.get(ag.getKey())));
                         break;
                     case COUNT:
-                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        v.set(ag.getKey(), ((BigDecimal) v.get(ag.getKey())).add((BigDecimal) values.get(ag.getKey())));
                         break;
                     case DISTINCT_COUNT:
-                        v.set(ag.getKey(), v.get(ag.getKey()).add(values.get(ag.getKey())));
+                        v.set(ag.getKey(), ((BigDecimal) v.get(ag.getKey())).add((BigDecimal) values.get(ag.getKey())));
                         break;
                     case NONE:
                         // no aggregation, keep data from an arbitrary shard
@@ -100,7 +100,7 @@ public class AggregateGroupUtils {
         }
 
         List<Object> out = new ArrayList<Object>();
-        for (Entry<List<Comparable<Object>>, List<BigDecimal>> e : res.entrySet()) {
+        for (Entry<List<Comparable<Object>>, List<Object>> e : res.entrySet()) {
             // construct tuples from keys and values
             Object[] wrap = new Object[tuple.length];
             int usedValues = 0;
@@ -141,8 +141,10 @@ public class AggregateGroupUtils {
                 res.put(i, SupportedAggregations.MIN);
             } else if (selections[i].toLowerCase().contains(" sum(")) {
                 res.put(i, SupportedAggregations.SUM);
-            } else if (selections[i].toLowerCase().contains(" distinct count(")) {
+            } else if (selections[i].toLowerCase().contains("count(") && selections[i].toLowerCase().contains("distinct")) {
                 res.put(i, SupportedAggregations.DISTINCT_COUNT);
+            } else if (selections[i].toLowerCase().contains(" distinct")) {
+                res.put(i, SupportedAggregations.NONE);
             }
         }
 
