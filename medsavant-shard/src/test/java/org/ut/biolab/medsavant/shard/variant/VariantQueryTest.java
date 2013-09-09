@@ -137,6 +137,23 @@ public class VariantQueryTest extends AbstractShardTest {
     }
 
     @Test
+    public void testDistinct() {
+        Session session = ShardedSessionManager.openSession();
+
+        Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class)).setFetchSize(10).setMaxResults(10)
+                .setProjection(Projections.sqlGroupProjection("dna_id as value", "value", new String[] { "value" }, new Type[] { new StringType() }));
+        // .setProjection(Projections.distinct(Projections.property("dna_id")));
+
+        List<Object[]> os = c.list();
+        for (Object[] o : os) {
+            for (Object x : o)
+                System.out.println(x.toString());
+        }
+
+        ShardedSessionManager.closeSession(session);
+    }
+
+    @Test
     public void testArithmeticWithGroupBy() {
         Session session = ShardedSessionManager.openSession();
         Criteria c = ((ShardedCriteriaImpl) session.createCriteria(Variant.class))
@@ -180,12 +197,10 @@ public class VariantQueryTest extends AbstractShardTest {
     public void testCountDistinct() {
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
-        List<Object> os = c.list();
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("dna_id as value", "value", new String[] { "value" },
+                new Type[] { new StringType() }));
 
-        for (Object o : os) {
-            System.out.println(o.toString());
-        }
+        System.out.println(c.list().size());
 
         ShardedSessionManager.closeSession(s);
     }

@@ -39,7 +39,7 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.testng.annotations.Test;
-import org.ut.biolab.medsavant.shard.db.DBUtil;
+import org.ut.biolab.medsavant.shard.db.NonShardDBUtils;
 import org.ut.biolab.medsavant.shard.nonshard.ShardConfigurationUtil;
 import org.ut.biolab.medsavant.shard.nonshard.ShardedConnectionController;
 
@@ -209,7 +209,7 @@ public class WriteTest extends AbstractShardTest {
     public void showDatabases() {
         Session session = ShardedSessionManager.openSession();
 
-        List<String> dbs = DBUtil.getDatabases(ShardConfigurationUtil.getServerForShard(0), ShardedSessionManager.getConfig(0).getShardUser(), ShardedSessionManager.getConfig(0)
+        List<String> dbs = NonShardDBUtils.getDatabases(ShardConfigurationUtil.getServerForShard(0), ShardedSessionManager.getConfig(0).getShardUser(), ShardedSessionManager.getConfig(0)
                 .getShardPassword());
 
         for (String s : dbs) {
@@ -223,7 +223,7 @@ public class WriteTest extends AbstractShardTest {
     public void showTables() {
         Session session = ShardedSessionManager.openSession();
 
-        List<String> tables = DBUtil.getTables(ShardConfigurationUtil.getConnectionUrlForShard(0), ShardedSessionManager.getConfig(0).getShardUser(), ShardedSessionManager
+        List<String> tables = NonShardDBUtils.getTables(ShardConfigurationUtil.getConnectionUrlForShard(0), ShardedSessionManager.getConfig(0).getShardUser(), ShardedSessionManager
                 .getConfig(0).getShardPassword());
 
         for (String s : tables) {
