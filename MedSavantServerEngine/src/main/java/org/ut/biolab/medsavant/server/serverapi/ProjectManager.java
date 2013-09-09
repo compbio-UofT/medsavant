@@ -154,6 +154,9 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             while (rs.next()) {
                 String tableName = rs.getString(1);
                 DBUtils.dropTable(sessID, tableName);
+                
+                // remove tables from shards
+                helper.dropVariantTables(tableName);
             }
 
             DeleteQuery query2 = new DeleteQuery(table.getTable());
