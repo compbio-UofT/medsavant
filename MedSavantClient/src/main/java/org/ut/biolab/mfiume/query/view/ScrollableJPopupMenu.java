@@ -148,8 +148,7 @@ public class ScrollableJPopupMenu extends JPopupMenu {
     protected void processMouseWheelEvent(MouseWheelEvent e) {        
         if (getComponent(0) == previousItem) { // i.e., scroll arrows are visible
             int amt = e.getUnitsToScroll() > 0 ? 1 : -1;
-            firstItemIndex += amt;            
-            System.out.println("Scrolling!");
+            firstItemIndex += amt;                        
         
             refresh();
         }

@@ -18,12 +18,10 @@ package org.ut.biolab.medsavant.client.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 
-import org.ut.biolab.medsavant.client.view.Menu.SectionButton;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -36,12 +34,16 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class ViewController {
 
     private Menu menu;
-    private JPanel contentContainer;
-    private PersistencePanel persistencePanel;
-    private PeekingPanel peekingPanel;
     private SectionView currentSection;
     private SubSectionView currentSubsection;
     private static ViewController instance;
+    private JPanel contentContainer;
+    private PersistencePanel persistencePanel;
+    private PeekingPanel peekingPanel;
+
+    public SubSectionView getCurrentSubSectionView(){
+        return currentSubsection;
+    }
 
     private ViewController(JPanel p) {
         // create the banner
@@ -72,6 +74,7 @@ public class ViewController {
 
         menu = new Menu(contentContainer);
         p.add(menu, BorderLayout.NORTH);
+
         p.add(menu.getSecondaryMenu(), BorderLayout.WEST);
 
         JPanel h2 = ViewUtil.getClearPanel();
@@ -119,7 +122,7 @@ public class ViewController {
         currentSection = parent;
     }
 
-    void selectFirstItem() {
+    public void selectFirstItem() {
         // Fake a click on the first section button.
         ((JToggleButton) menu.primaryMenuButtons.getElements().nextElement()).doClick();
     }
@@ -132,7 +135,7 @@ public class ViewController {
         menu.clearMenu();
     }
 
-    public void addSection(SectionView section) {       
+    public void addSection(SectionView section) {
         menu.addSection(section);
     }
 
@@ -156,10 +159,10 @@ public class ViewController {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
-            this.setBorder(
-                    BorderFactory.createCompoundBorder(
-                    ViewUtil.getRightLineBorder(),
-                    ViewUtil.getBigBorder()));
+            this.setBorder(ViewUtil.getBigBorder());
+                    //BorderFactory.createCompoundBorder(
+                    //ViewUtil.getRightLineBorder(),
+                    //ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 

@@ -20,16 +20,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 import javax.swing.*;
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.model.Notification;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -50,11 +48,13 @@ public class UpdatesPanel extends JPanel {
     private static final int UPDATE_INTERVAL = 1000 * 60; //one minute
     private static final Color ALERT_COLOUR = new Color(200, 0, 0);
     private static final int ICON_WIDTH = 17;
-    private static final Dimension MENU_ICON_SIZE = new Dimension(260, 80);
+    //private static final Dimension MENU_ICON_SIZE = new Dimension(260, 90);
+    private static final Dimension MENU_ICON_SIZE = new Dimension(290, 90);
     private Notification[] notifications;
     private JPopupMenu popup;
     //private final JLabel numNotifications;
     private final JPanel buttonContainer;
+    private static boolean serverChecks = true;
 
     public UpdatesPanel() {
         //setOpaque(false);
@@ -64,7 +64,7 @@ public class UpdatesPanel extends JPanel {
         setOpaque(false);
 
         ViewUtil.applyVerticalBoxLayout(this);
-        JButton button = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_NOTIFY));
+        final JButton button = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_NOTIFY));
 
         //numNotifications = new JLabel("0");
 
@@ -84,40 +84,73 @@ public class UpdatesPanel extends JPanel {
             }
         });
 
+        button.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                button.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
         new PeriodicChecker(UPDATE_INTERVAL) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                if (LoginController.getInstance().isLoggedIn()) {
-
-                    new MedSavantWorker<Notification[]>("Notifications") {
-                        @Override
-                        protected void showProgress(double fraction) {
-                        }
-
-                        @Override
-                        protected void showSuccess(Notification[] result) {
-                            setNotifications(result);
-                        }
-
-                        @Override
-                        protected void showFailure(Throwable ex) {
-                            LOG.error("Unable to get notifications.", ex);
-                            setNotifications(null);
-                        }
-
-                        @Override
-                        protected Notification[] doInBackground() throws Exception {
-                            return MedSavantClient.NotificationManager.getNotifications(LoginController.getInstance().getSessionID(), LoginController.getInstance().getUserName());
-                        }
-                    }.execute();
+                update();
+                if (!serverChecks) {
+                    stop();
                 }
             }
         };
-
         setNotifications(new Notification[0]);
     }
 
+    public void update() {
+        if (LoginController.getInstance().isLoggedIn()) {
+            new MedSavantWorker<Notification[]>("Notifications") {
+                @Override
+                protected void showProgress(double fraction) {
+                }
+
+                @Override
+                protected void showSuccess(Notification[] result) {
+                    setNotifications(result);
+                }
+
+                @Override
+                protected void showFailure(Throwable ex) {
+                    if (serverChecks) {
+                        LOG.error("Unable to get notifications.", ex);
+                        setNotifications(null);
+                    }
+                }
+
+                @Override
+                protected Notification[] doInBackground() throws Exception {
+                    if (serverChecks) {
+                        return MedSavantClient.NotificationManager.getNotifications(LoginController.getInstance().getSessionID(), LoginController.getInstance().getUserName());
+                    }
+                    return null;
+                }
+            }.execute();
+        }
+    }
+
+    /**
+     * Aborts checking the server for notifications from ALL update panels. Used
+     * during the shutdown of MedSavant subsequent to auto-publishing (e.g.
+     * variant import, removal, etc.)
+     */
+    public static void stopServerChecks() {
+        serverChecks = false;
+    }
     /*
      @Override
      public void paintComponent(Graphics g) {
@@ -135,11 +168,11 @@ public class UpdatesPanel extends JPanel {
      ClientMiscUtils.drawCentred(g2, Integer.toString(notifications.length), new Rectangle2D.Double(0.0, 0.0, ICON_WIDTH, ICON_WIDTH));
      }
      */
+
     private void showPopup(final int start) {
         popup = new JPopupMenu();
         popup.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-
-        boolean headerAdded = false;
+        
         if (notifications == null) {
             popup.add(new NotificationIcon(null, null));
         } else {
@@ -179,12 +212,11 @@ public class UpdatesPanel extends JPanel {
                     header.add(nextButton);
                 }
                 popup.add(createSeparator());
-                popup.add(header);
-                headerAdded = true;
+                popup.add(header);                
             }
         }
 
-        //int offset = -Math.min(5, notifications.length - start) * (MENU_ICON_SIZE.height + 2) -3 - (headerAdded ? 16 : 0);
+        //int offset = -Math.min(5, notifications.length - start) * (MENU_ICON_SIZE.height + 2) -3 - (headerAdded ? 16 : 0);        
         popup.show(this, 0, this.getPreferredSize().height);
     }
 
@@ -194,6 +226,15 @@ public class UpdatesPanel extends JPanel {
         sep.setBackground(Color.WHITE);
         sep.setForeground(Color.LIGHT_GRAY);
         return sep;
+    }
+
+    private void removeNotification(Notification n) {
+        if (notifications.length > 1) {
+            ArrayUtils.removeElement(notifications, n);
+            setNotifications(notifications);
+        } else {
+            setNotifications(null);
+        }
     }
 
     private void setNotifications(Notification[] list) {
@@ -235,14 +276,11 @@ public class UpdatesPanel extends JPanel {
                 return;
             }
 
-            add(new JLabel("<HTML><P>" + n.getMessage() + "</P></HTML>"), BorderLayout.CENTER);
+            String message = "<P>" + n.getMessage() + "</P>";
 
             switch (n.getType()) {
                 case PUBLISH:
-
-                    JLabel publishButton = new JLabel("Click to publish or remove");
-                    publishButton.setFont(publishButton.getFont().deriveFont(Font.BOLD));
-                    add(publishButton, BorderLayout.SOUTH);
+                    message = message + "<P><B>Click to publish or remove</B></P>";
                     addMouseListener(new MouseAdapter() {
                         @Override
                         public void mouseReleased(MouseEvent e) {
@@ -253,7 +291,9 @@ public class UpdatesPanel extends JPanel {
                             try {
                                 if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                                     try {
-                                        ProjectController.getInstance().promptToPublish((ProjectDetails) n.getData());
+                                        if (ProjectController.getInstance().promptToPublish((ProjectDetails) n.getData())) {
+                                            removeNotification(n);
+                                        }
                                     } finally {
                                         try {
                                             MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
@@ -271,6 +311,8 @@ public class UpdatesPanel extends JPanel {
                     });
                     break;
             }
+            add(new JLabel("<HTML>" + message + "</HTML>"), BorderLayout.CENTER);
+            
         }
     }
 }

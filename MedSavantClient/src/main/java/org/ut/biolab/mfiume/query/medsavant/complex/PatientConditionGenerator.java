@@ -101,11 +101,11 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public StringSearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         return generateViewFromDatabaseField(item);
     }
 
-    private SearchConditionItemView generateViewFromDatabaseField(SearchConditionItem item) {
+    private StringSearchConditionEditorView generateViewFromDatabaseField(SearchConditionItem item) {
 
         if (columnNameToRemapMap.containsKey(columnName)) {
             return generateStringViewWithPresetValues(item, columnNameToRemapMap.get(columnName).keySet());
@@ -115,7 +115,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         return generateStringViewFromDatabaseField(item);
     }
 
-    private SearchConditionItemView generateStringViewFromDatabaseField(SearchConditionItem item) {
+    private StringSearchConditionEditorView generateStringViewFromDatabaseField(SearchConditionItem item) {
 
         StringConditionValueGenerator valueGenerator;
         String colName = field.getColumnName();
@@ -160,8 +160,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         }
 
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, valueGenerator);
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
     private static final WhichTable whichTable = WhichTable.PATIENT;
 
@@ -213,7 +212,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
         }
     }
 
-    private SearchConditionItemView generateStringViewWithPresetValues(SearchConditionItem item, final Set<String> values) {
+    private StringSearchConditionEditorView generateStringViewWithPresetValues(SearchConditionItem item, final Set<String> values) {
         StringConditionValueGenerator vg = new StringConditionValueGenerator() {
             @Override
             public List<String> getStringValues() {
@@ -221,8 +220,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
             }
         };
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, vg);
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
 
     private List<String> remapValues(List<String> appliedValues, Map<String, String> remap) {

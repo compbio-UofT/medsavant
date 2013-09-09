@@ -15,33 +15,31 @@
  */
 package org.ut.biolab.medsavant.client.view.manage;
 
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.annotation.InstallAnnotationWizard;
 
 import org.ut.biolab.medsavant.client.controller.ExternalAnnotationController;
-import org.ut.biolab.medsavant.client.util.ThreadController;
-import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.model.Annotation;
-import org.ut.biolab.medsavant.client.ontology.OntologyWizard;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
-import org.ut.biolab.medsavant.client.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
@@ -49,6 +47,7 @@ import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import static org.ut.biolab.medsavant.client.view.util.DialogUtils.getFrontWindow;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -56,7 +55,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class AnnotationsPage extends SubSectionView {
-
+    private static final Log LOG = LogFactory.getLog(AnnotationsPage.class);
     private SplitScreenView view;
 
     public AnnotationsPage(SectionView parent) {
@@ -68,11 +67,11 @@ public class AnnotationsPage extends SubSectionView {
         if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<Annotation>("Program") {
-                        @Override
-                        public Annotation[] getData() throws Exception {
-                            return ExternalAnnotationController.getInstance().getExternalAnnotations();
-                        }
-                    },
+                @Override
+                public Annotation[] getData() throws Exception {
+                    return ExternalAnnotationController.getInstance().getExternalAnnotations();
+                }
+            },
                     new ExternalAnnotationDetailedView(),
                     new ExternalAnnotationDetailedListEditor());
         }
@@ -221,20 +220,58 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void deleteItems(List<Object[]> items) {
-            try {
 
-                Annotation an = (Annotation) items.get(0)[0];
+            if (items != null && items.size() > 0) {                
+                final Annotation an = (Annotation) items.get(0)[0];
 
-                int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
+                ProgressDialog dialog = new ProgressDialog("Deleting annotation", "Checking for projects using this annotation...") {
+                    private boolean inUse = false;
 
-                if (response == DialogUtils.YES) {
-                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
-                    DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                    @Override
+                    public void run() throws Exception {
+                        String[] projectNames = ProjectController.getInstance().getProjectNames();
+                        int referenceID = an.getReferenceID();
+                        for (String projectName : projectNames) {
+                            int projectID = ProjectController.getInstance().getProjectID(projectName);
+                            int[] aid = ProjectController.getInstance().getAnnotationIDs(projectID, referenceID);
+                            if (ArrayUtils.contains(aid, an.getID())) {                                
+                                inUse = true;
+                                break;
+                            }
+                        }                        
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                dispose();
+                                if (!inUse) {                                    
+                                    //int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
+                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);                                    
+
+                                    if (response == DialogUtils.YES) {
+                                        try {
+                                            MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
+                                            DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                                        } catch (Exception ex) {
+                                            ClientMiscUtils.reportError("Error uninstalling annotations", ex);
+                                        }
+                                    }
+                                }else{
+                                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance().getRootPane(), "This annotation is being used by other projects and cannot be uninstalled.  Please remove this annotation from these projects first.", "Notice", JOptionPane.PLAIN_MESSAGE);
+                                }                                
+
+                            }
+                        });
+                    }
+                };
+                try{
+                    dialog.showDialog();
+                }catch(Exception e){
+                    LOG.error(e);
                 }
-
-            } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error uninstalling annotations", ex);
+                //dialog.setVisible(true);
+                
             }
+
 
         }
     }

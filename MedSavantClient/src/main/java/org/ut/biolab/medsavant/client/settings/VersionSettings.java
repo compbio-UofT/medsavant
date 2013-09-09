@@ -112,8 +112,6 @@ public class VersionSettings {
 
         doc.getDocumentElement().normalize();
 
-        System.out.println(programVersion + " vs. " + dbVersion);
-
         Map<String, Set<String>> versionMap = new HashMap<String, Set<String>>();
         String nodeName = (isServer ? "server" : "client");
         NodeList nodes = doc.getElementsByTagName(nodeName);

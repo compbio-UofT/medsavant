@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
@@ -47,11 +48,12 @@ public class LoggedInView extends JPanel {
 
     private void init() {
         setLayout(new BorderLayout());
+
         viewController = ViewController.loggedIn(this);
         viewController.clearMenu();
 
         viewController.addSection(new ProjectsSection());
-        viewController.addSection(new ListsSection());
+        //viewController.addSection(new ListsSection());
         viewController.addSection(new GeneticsSection());
 
         if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {

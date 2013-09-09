@@ -55,11 +55,17 @@ public class ImportFilePanel extends JPanel {
     private WaitPanel waitPanel = new WaitPanel("Generating preview");
     private PreviewWorker worker;
 
-    public ImportFilePanel(){
+    public ImportFilePanel(){      
+        this(0);
+    }
+    
+    public ImportFilePanel(int numHeaderLines){        
+        this.numHeaderLines = numHeaderLines;
         initGUI();
         importAccepted = false;
         formatMap = new HashMap<String,FileFormat>();
     }
+      
 
     private void initGUI() {
 
@@ -300,7 +306,7 @@ public class ImportFilePanel extends JPanel {
         }
 
         @Override
-        protected void showFailure(Throwable t) {
+        protected void showFailure(Throwable t) {            
             previewPanel.removeAll();
             previewPanel.add(new JLabel("<html><center><font color=\"#ff0000\">Problem generating preview.<br>Please check that the file is formatted correctly.</font></center></html>", JLabel.CENTER), BorderLayout.CENTER);
             previewPanel.updateUI();

@@ -41,14 +41,23 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import com.sun.corba.se.impl.presentation.rmi.ExceptionHandler;
 import gnu.getopt.Getopt;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.plaf.InsetsUIResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
+import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
 public class MedSavantClient implements MedSavantServerRegistry {
@@ -74,9 +83,62 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static NotificationManagerAdapter NotificationManager;
     public static boolean initialized = false;
     private static MedSavantFrame frame;
+    private static String restartCommand;
+    private static boolean restarting = false;
+
+    
+    /**
+     * Quits MedSavant
+     */
+    public static void quit() {
+        LoginController.getInstance().logout();        
+    }
+
+    
+    /**
+     * Restarts MedSavant
+     * (This function has NOT been tested with Web Start)
+     */
+    public static void restart() {
+        if (!restarting) {
+            restarting = true;
+            try {
+                /*  if (msg != null) {
+                 DialogUtils.displayMessage("MedSavant needs to restart.", msg);
+                 }*/
+                Runtime.getRuntime().exec(restartCommand);
+            } catch (IOException e) { //thrown by exec
+                DialogUtils.displayError("Error restarting MedSavant.  Please restart MedSavant manually.");
+                LOG.error(e);
+            } catch (Exception e) {
+                LOG.error(e);
+            } finally {
+                LoginController.getInstance().logout();
+            }           
+        }
+    }
+
+    public static void setRestartCommand(String[] args) {
+        StringBuilder cmd = new StringBuilder();
+        cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");
+        for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            cmd.append(jvmArg + " ");
+        }
+        cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
+        cmd.append(MedSavantClient.class.getName()).append(" ");
+        for (String arg : args) {
+            cmd.append(arg).append(" ");
+        }
+        restartCommand = cmd.toString();
+        //LOG.debug("Got restartCommand " + restartCommand);
+        //System.out.println("Got resetart Command "+restartCommand);
+    }
 
     static public void main(String args[]) {
-
+        // Avoids "Comparison method violates its general contract" bug.
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+        setRestartCommand(args);
         setExceptionHandler();
 
         verifyJIDE();
@@ -125,6 +187,9 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
+        
+        //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
+       
         //required for FORGE plugin
         //NativeInterface.runEventPump();
     }
@@ -151,7 +216,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
-
         AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
         CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
         LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
@@ -175,11 +239,49 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setLAF() {
         try {
 
+           // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
+            //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
+            //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.            
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                LOG.debug("Installed LAF: " + info.getName() + " class: " + info.getClassName());
+            }
+            LOG.debug("System LAF is: " + UIManager.getSystemLookAndFeelClassName());
+            LOG.debug("Cross platform LAF is: " + UIManager.getCrossPlatformLookAndFeelClassName());
+
+            LookAndFeelFactory.addUIDefaultsInitializer(new LookAndFeelFactory.UIDefaultsInitializer() {
+                public void initialize(UIDefaults defaults) {
+                    Map<String, Object> defaultValues = new HashMap<String, Object>();
+                    defaultValues.put("Slider.trackWidth", new Integer(7));
+                    defaultValues.put("Slider.majorTickLength", new Integer(6));
+                    defaultValues.put("Slider.highlight", new ColorUIResource(255, 255, 255));
+                    defaultValues.put("Slider.horizontalThumbIcon", javax.swing.plaf.metal.MetalIconFactory.getHorizontalSliderThumbIcon());
+                    defaultValues.put("Slider.verticalThumbIcon", javax.swing.plaf.metal.MetalIconFactory.getVerticalSliderThumbIcon());
+                    defaultValues.put("Slider.focusInsets", new InsetsUIResource(0, 0, 0, 0));
+
+                    for (Map.Entry<String, Object> e : defaultValues.entrySet()) {
+                        if (defaults.get(e.getKey()) == null) {
+                            LOG.debug("Missing key " + e.getKey() + ", using default value " + e.getValue());
+                            defaults.put(e.getKey(), e.getValue());
+                        } else {
+                            LOG.debug("Found key " + e.getKey() + " with value " + defaults.get(e.getKey()));
+                        }
+                    }
+                }
+            });
 
             if (MiscUtils.WINDOWS) {
                 LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
+            } else {
+                LookAndFeelFactory.installJideExtension();
             }
+
+            LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+
+
+
+
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
             //tooltips
@@ -200,12 +302,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(
                 new Thread.UncaughtExceptionHandler() {
-                    @Override
-                    public void uncaughtException(Thread t, Throwable e) {
-                        LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
-                        e.printStackTrace();
-                    }
-                });
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
+                e.printStackTrace();
+            }
+        });
 
     }
 }

@@ -1,21 +1,20 @@
 package org.ut.biolab.medsavant.client.view.dialog;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import savant.settings.BrowserSettings;
-import savant.util.MiscUtils;
 
 /**
  *
@@ -29,7 +28,23 @@ public class BugReport {
     public static boolean reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t) throws UnsupportedEncodingException {
 
         try {
-            String params =
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new NameValuePair("tool", tool));
+            params.add(new NameValuePair("name", name));
+            params.add(new NameValuePair("email", email));
+            params.add(new NameValuePair("institution", institute));
+            params.add(new NameValuePair("problem", problem));
+            params.add(new NameValuePair("exception", getStackTrace(t)));
+            params.add(new NameValuePair("clientinfo", 
+                    kvp("program-version",version) + 
+                    ", " + 
+                    kvp("java-version", getJDKVersion()) + 
+                    ", " + 
+                    kvp("os", getOS()) + 
+                    ", " + 
+                    kvp("time",(new Date()).toLocaleString())));
+           
+            /*String params =
                       "tool=" + tool
                     + "&name=" + name
                     + "&email=" + email
@@ -37,7 +52,7 @@ public class BugReport {
                     + "&problem=" + problem
                     + "&exception=" + getStackTrace(t)
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
-
+*/            
             postRequest(new URL(bugreportURL),params);
 
         } catch (Exception e) {
@@ -83,7 +98,7 @@ public class BugReport {
         }
     }
 
-    private static void postRequest(URL url, String params) throws IOException {
+    /*private static void postRequest(URL url, String params) throws IOException {
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
@@ -101,6 +116,21 @@ public class BugReport {
         in.close();
 
         connection.disconnect();
+    }*/
+    
+    private static void postRequest(URL url, List<NameValuePair> params) throws IOException{        
+        HttpClient hc = new HttpClient();
+        NameValuePair[] data = new NameValuePair[params.size()];
+        PostMethod post = new PostMethod(url.toString());
+        post.setRequestBody(params.toArray(data));
+        hc.executeMethod(post);        
+        BufferedReader in =  new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
+        String inputLine;
+        while ((inputLine = in.readLine()) != null){
+            System.out.println(inputLine);
+        }
+        in.close();       
+        post.releaseConnection();
     }
 
     public static void main(String[] args) throws UnsupportedEncodingException {
@@ -110,13 +140,27 @@ public class BugReport {
 
     static boolean reportFeedback(String tool, String version, String name, String email, String feedbackStr) {
          try {
-            String params =
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new NameValuePair("tool", tool));
+            params.add(new NameValuePair("name", name));
+            params.add(new NameValuePair("email", email));
+            params.add(new NameValuePair("feedback", feedbackStr));
+            params.add(new NameValuePair("clientinfo", 
+                    kvp("program-version",version) + 
+                    ", " + 
+                    kvp("java-version", getJDKVersion()) + 
+                    ", " + 
+                    kvp("os", getOS()) + 
+                    ", " + 
+                    kvp("time",(new Date()).toLocaleString())));
+            
+/*            String params =
                       "tool=" + tool
                     + "&name=" + name
                     + "&email=" + email
                     + "&feedback=" + feedbackStr
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
-
+*/
             postRequest(new URL(feedbackreportURL),params);
             return true;
 

@@ -26,6 +26,7 @@ import javax.swing.JPanel;
  */
 public abstract class SubInspector {
 
+    public static final String PAGE_NAME = "SubInspector";
     protected CollapsiblePane parent;
 
     public abstract String getName();

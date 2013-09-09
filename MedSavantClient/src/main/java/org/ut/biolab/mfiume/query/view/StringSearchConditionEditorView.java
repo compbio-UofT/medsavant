@@ -49,21 +49,45 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     private JButton selectAll;
     private JScrollPane jsp;
     private boolean makingBatchChanges = false;
+    private boolean isUserSpecifiedTextMatch = false;
 
     public StringSearchConditionEditorView(SearchConditionItem i, final StringConditionValueGenerator vg) {
         super(i);
+        if (vg == null) {
+            isUserSpecifiedTextMatch = true;
+        }
         this.valueGenerator = vg;
     }
 
     private void loadLooseStringMatchViewFromSearchConditionParameters(String encoding) {
         this.removeAll();
+
+        ViewUtil.applyVerticalBoxLayout(this);
+
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+
+        ButtonGroup group = new ButtonGroup();
+
+        JRadioButton isButton = new JRadioButton("is");
+        JRadioButton notNullButton = new JRadioButton("not null");
+        JRadioButton nullButton = new JRadioButton("null");
+
+        p.add(isButton);
+        p.add(notNullButton);
+        p.add(nullButton);
+
+        group.add(isButton);
+        group.add(notNullButton);
+        group.add(nullButton);
+
         final JTextField f = new JTextField();
         PromptSupport.setPrompt("Enter " + item.getName(), f);
         PromptSupport.setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT, f);
         f.setPreferredSize(new Dimension(200, f.getPreferredSize().height));
-        if (encoding != null) {
-            f.setText(encoding);
-        }
+
+
+
         f.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent ce) {
@@ -71,6 +95,51 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                 item.setDescription(f.getText());
             }
         });
+
+        notNullButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                f.setEnabled(false);
+                saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
+                        Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NOTNULL})));
+                item.setDescription("not null");
+            }
+        });
+
+        nullButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                f.setEnabled(false);
+                saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
+                        Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NULL})));
+                item.setDescription("null");
+            }
+        });
+
+        isButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                f.setEnabled(true);
+                saveSearchConditionParameters(f.getText());
+                item.setDescription(f.getText());
+            }
+        });
+
+        if (encoding != null) {
+            if (StringConditionEncoder.encodesNull(encoding)) {
+                nullButton.setSelected(true);
+            } else if (StringConditionEncoder.encodesNotNull(encoding)) {
+                notNullButton.setSelected(true);
+            } else {
+                isButton.setSelected(true);
+                //saveSearchConditionParameters(f.getText());
+                f.setText(encoding);
+            }
+        } else {
+            isButton.setSelected(true);
+        }
+
+        this.add(p);
         this.add(f);
     }
 
@@ -116,7 +185,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     @Override
     public void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException {
 
-        if (valueGenerator == null) {
+        if (isUserSpecifiedTextMatch) {
             loadLooseStringMatchViewFromSearchConditionParameters(encoding);
             return;
         }
@@ -360,8 +429,8 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
     }
 
     private void setDescriptionBasedOnSelections() {
-        List<String> values = getAvailableOptions();
-        List<String> chosenValues = getSelectedOptions();
+        List<String> values = isUserSpecifiedTextMatch ? null : getAvailableOptions();
+        List<String> chosenValues = isUserSpecifiedTextMatch ? null : getSelectedOptions();
 
         String d = StringConditionEncoder.getDescription(chosenValues, values);
         item.setDescription(d);

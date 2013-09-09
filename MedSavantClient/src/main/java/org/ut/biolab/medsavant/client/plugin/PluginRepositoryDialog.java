@@ -115,7 +115,7 @@ public class PluginRepositoryDialog extends JDialog {
             setVisible(false);
             if (dd.getDownloadedFile() != null) {
                 try {
-                    PluginController.getInstance().installPlugin(dd.getDownloadedFile());
+                    AppController.getInstance().installPlugin(dd.getDownloadedFile());
                 } catch (Throwable x) {
                     DialogUtils.displayException("Installation Error", String.format("<html>Unable to install <i>%s</i>: %s.</html>", dd.getDownloadedFile().getName(), x), x);
                 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<shortcuts>
+  <skipIfNotSupported/>
+  <lateShortcutInstall/>
+  <programGroup defaultName="$APP_NAME" location="applications"/>
+  <shortcut
+    name="$APP_NAME $APP_VER"
+    description="Starts $APP_NAME $APP_VER"
+
+    target="$INSTALL_PATH\medsavant.bat"
+    workingDirectory="$INSTALL_PATH"
+    iconFile="$INSTALL_PATH\medsavant.ico"
+
+    programGroup="yes"
+    desktop="yes"
+    startMenu="yes"/>
+  <shortcut
+    name="Documentation"
+    description="Read the MedSavant Documentation online"
+
+    target="http://genomesavant.com/p/medsavant/learn"
+    url="http://genomesavant.com/p/medsavant/learn"
+    iconFile="$INSTALL_PATH\medsavant.ico"
+
+    programGroup="yes"/>
+  <shortcut
+    name="Uninstall $APP_NAME $APP_VER"
+    description="Uninstall $APP_NAME $APP_VER"
+
+    target="javaw"
+    workingDirectory="$INSTALL_PATH\Uninstaller"
+    commandLine="-jar &quot;$INSTALL_PATH\Uninstaller\uninstaller.jar&quot;"
+    iconFile="$INSTALL_PATH\uninstall_medsavant.ico"
+
+    programGroup="yes"/>
+</shortcuts>

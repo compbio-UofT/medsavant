@@ -15,11 +15,11 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
-import com.explodingpixels.macwidgets.MacUtils;
-import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -38,12 +40,11 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.SubSectionView.DockState;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -64,6 +65,16 @@ public class Menu extends JPanel {
     private JPanel previousSectionPanel;
     private Map<SubSectionView, SubSectionButton> map;
     private JButton userButton;
+    private static final Log LOG = LogFactory.getLog(Menu.class);
+    private UpdatesPanel updatesPanel = new UpdatesPanel();
+
+    public void checkForUpdateNotifications(){
+        updatesPanel.update();
+    }
+
+    public JButton getSubSectionButton(SubSectionView ssv) {
+        return map.get(ssv);
+    }
 
     public Menu(JPanel panel) {
 
@@ -79,8 +90,9 @@ public class Menu extends JPanel {
         secondaryMenu.setBackground(ViewUtil.getSecondaryMenuColor());
 
         tertiaryMenu = new JPanel();
-        tertiaryMenu.setBackground(Color.darkGray);
-       // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
+        tertiaryMenu.setBorder(ViewUtil.getBottomLineBorder());
+        tertiaryMenu.setBackground(Color.white);
+        // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
         //tertiaryMenu.setMinimumSize(new Dimension(9999, 30));
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
@@ -96,18 +108,64 @@ public class Menu extends JPanel {
         primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
 
-        UpdatesPanel updatesPanel = new UpdatesPanel();
         NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
+        JPanel appStorePanel = ViewUtil.getClearPanel();
+        final JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
+        ViewUtil.applyHorizontalBoxLayout(appStorePanel);
+        appStorePanel.add(ViewUtil.subTextComponent(appStoreButton, "App Store"));
+
+        appStoreButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MedSavantFrame.getInstance().showAppStore();
+            }
+
+        });
+        
+        
+        appStoreButton.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                appStoreButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                appStoreButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
+
+        int componentpadding = 10;
+        primaryMenu.add(Box.createHorizontalStrut(componentpadding));
         primaryMenu.add(primaryMenuSectionButtonContainer);
         primaryMenu.add(Box.createHorizontalGlue());
 
+        FlowLayout fl = new FlowLayout(FlowLayout.RIGHT,componentpadding,1);
+        JPanel rightSidePanel = ViewUtil.getClearPanel();
+        rightSidePanel.setLayout(fl);
+        rightSidePanel.add(updatesPanel);
+        rightSidePanel.add(n);
+        rightSidePanel.add(appStorePanel);
+        rightSidePanel.add(getLoginMenuItem());
+        primaryMenu.add(rightSidePanel);
+        /*
         primaryMenu.add(updatesPanel);
-        primaryMenu.add(ViewUtil.getLargeSeparator());
+        primaryMenu.add(ViewUtil.getMediumSeparator());
 
         primaryMenu.add(n);
-        primaryMenu.add(ViewUtil.getLargeSeparator());
+        primaryMenu.add(ViewUtil.getMediumSeparator());
+
+        primaryMenu.add(appStorePanel);
+        primaryMenu.add(ViewUtil.getMediumSeparator());
         primaryMenu.add(getLoginMenuItem());
+        */
         add(primaryMenu, BorderLayout.NORTH);
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
@@ -158,6 +216,9 @@ public class Menu extends JPanel {
         clearMenu();
     }
 
+    public void deactivateSubsection(String subsectionName) {
+    }
+
     public JPanel getSecondaryMenu() {
         return secondaryMenu;
     }
@@ -166,8 +227,6 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
-   
-    
     public void addSection(SectionView section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
@@ -224,58 +283,68 @@ public class Menu extends JPanel {
             subSectionViews.get(i).setUpdateRequired(true);
         }
         if (currentView != null) {
-            setContentTo(currentView, true);
+            setContentTo(currentView);
         }
     }
 
     public void switchToSubSection(SubSectionView view) {
-        System.out.println("Switching to subsection " + view.getPageName());
-        map.get(view).subSectionClicked();
+        LOG.debug("Switching to subsection " + view.getPageName());
+        if (view.getDockState() == DockState.UNDOCKED) {
+            view.focusUndockedFrame();
+        } else {
+            map.get(view).subSectionClicked();
+        }
     }
 
-    public void setContentTo(SubSectionView v, boolean update) {
+    /**
+     * Refreshes the given content pane with content from the subsection view.
+     */
+    public void refreshSubSection(JPanel contentPanel, SubSectionView v) {
+        contentPanel.removeAll();
+        contentPanel.add(v.getDockedView(), BorderLayout.CENTER);
+        contentPanel.updateUI();
+        tertiaryMenuPanelVisibilityContainer.removeAll();
+        tertiaryMenuPanelAccessoryContainer.removeAll();
+
+        if (v.getParent().getPersistentPanels() != null && v.getParent().getPersistentPanels().length > 0) {
+            JComponent box = PeekingPanel.getToggleButtonForPanel(ViewController.getInstance().getPersistencePanel(), v.getParent().getPersistentPanels()[0].getName());
+            tertiaryMenuPanelVisibilityContainer.add(box);
+        }
+
+        if (v.getSubSectionMenuComponents() != null) {
+            for (Component c : v.getSubSectionMenuComponents()) {
+                if (c instanceof JToggleButton) {
+                    tertiaryMenuPanelVisibilityContainer.add(c);
+                } else {
+                    tertiaryMenuPanelAccessoryContainer.add(c);
+                }
+            }
+        }
+
+        if (v.getParent().getSectionMenuComponents() != null) {
+            for (Component c : v.getParent().getSectionMenuComponents()) {
+                if (c instanceof JToggleButton) {
+                    tertiaryMenuPanelVisibilityContainer.add(c);
+                } else {
+                    tertiaryMenuPanelAccessoryContainer.add(c);
+                }
+            }
+        }
+
+        v.setUpdateRequired(false);
+        ViewController.getInstance().changeSubSectionTo(v);
+    }
+
+    public void setContentTo(SubSectionView v) {
         if (currentView != v) {
             currentView = v;
-            contentContainer.removeAll();
-            contentContainer.add(v.getView(), BorderLayout.CENTER);
-            contentContainer.updateUI();
-
-            tertiaryMenuPanelVisibilityContainer.removeAll();
-            tertiaryMenuPanelAccessoryContainer.removeAll();
-
-            if (v.getParent().getPersistentPanels() != null && v.getParent().getPersistentPanels().length > 0) {
-                JComponent box = PeekingPanel.getToggleButtonForPanel(ViewController.getInstance().getPersistencePanel(), v.getParent().getPersistentPanels()[0].getName());
-                tertiaryMenuPanelVisibilityContainer.add(box);
-            }
-
-            if (v.getSubSectionMenuComponents() != null) {
-                for (Component c : v.getSubSectionMenuComponents()) {
-                    if (c instanceof JToggleButton) {
-                        tertiaryMenuPanelVisibilityContainer.add(c);
-                    } else {
-                        tertiaryMenuPanelAccessoryContainer.add(c);
-                    }
-                }
-            }
-
-            if (v.getParent().getSectionMenuComponents() != null) {
-                for (Component c : v.getParent().getSectionMenuComponents()) {
-                    if (c instanceof JToggleButton) {
-                        tertiaryMenuPanelVisibilityContainer.add(c);
-                    } else {
-                        tertiaryMenuPanelAccessoryContainer.add(c);
-                    }
-                }
-            }
-
-            v.setUpdateRequired(false);
-            ViewController.getInstance().changeSubSectionTo(v);
+            refreshSubSection(contentContainer, currentView);
         }
     }
 
     public void refreshSelection() {
         if (currentView != null) {
-            setContentTo(currentView, true);
+            refreshSubSection(contentContainer, currentView);
         }
     }
 
@@ -309,37 +378,34 @@ public class Menu extends JPanel {
         ViewUtil.applyHorizontalBoxLayout(loginMenu);
 
         userButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER));
-        loginMenu.add(ViewUtil.subTextComponent(userButton, LoginController.getInstance().getUserName()));
+        loginMenu.add(ViewUtil.subTextComponent(userButton, "Log Out"));//LoginController.getInstance().getUserName()));
 
         final JPopupMenu m = new JPopupMenu();
-
-        /*JMenuItem chpass = new JMenuItem("Change Password");
-         chpass.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         LoginController.getInstance().logout();
-         }
-         });
-         m.add(chpass);*/
-
-
-        JMenuItem logout = new JMenuItem("Log Out");
-        logout.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                LoginController.getInstance().logout();
-
-            }
-        });
-        m.add(logout);
 
         userButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                m.show(userButton, 0, userButton.getHeight());
+                MedSavantFrame.getInstance().requestClose();
             }
         });
+        
+        
+        userButton.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                super.mouseEntered(me); 
+                userButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+                super.mouseExited(me); 
+                userButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+            
+        });
+        
 
         //loginMenu.add(ViewUtil.getSmallSeparator());
 
@@ -348,7 +414,7 @@ public class Menu extends JPanel {
 
     public void updateLoginStatus() {
         if (LoginController.getInstance().isLoggedIn()) {
-            userButton.setToolTipText("Signed in since: " + new SimpleDateFormat().format((new Date())));
+            userButton.setToolTipText("Logged in as " + LoginController.getInstance().getUserName() + " since: " + new SimpleDateFormat().format((new Date())));
         } else {
             userButton.setToolTipText(null);
         }
@@ -406,7 +472,7 @@ public class Menu extends JPanel {
 
         public void subSectionClicked() {
             group.setSelected(getModel(), true);
-            setContentTo(view, false);
+            setContentTo(view);
         }
     }
 }

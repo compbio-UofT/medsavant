@@ -32,6 +32,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.AlphaImageIcon;
 
@@ -156,11 +157,11 @@ public final class ViewUtil {
             @Override
             public void paintComponent(Graphics g) {
 
-                //Color top = Color.darkGray;
-                //Color bottom = Color.black;
+                Color top = new Color(220,220,220);
+                Color bottom = new Color(220,220,220);
 
-                Color top = new Color(227, 227, 227);
-                Color bottom = new Color(179, 179, 179);
+                //Color top = new Color(227, 227, 227);
+                //Color bottom = new Color(179, 179, 179);
 
                 GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
@@ -275,7 +276,8 @@ public final class ViewUtil {
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(41, 46, 53);
+        return new Color(20,20,20);
+        //return new Color(41, 46, 53);
     }
 
     public static Color getLightColor() {
@@ -287,7 +289,7 @@ public final class ViewUtil {
     }
 
     public static Color getBGColor() {
-        return new Color(237, 237, 237);
+        return new Color(255, 255, 255);
     }
 
     public static Color getMenuColor() {
@@ -529,12 +531,14 @@ public final class ViewUtil {
         return b;
     }
 
-    public static void makeSmall(JComponent c) {
+    public static JComponent makeSmall(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "small");
+        return c;
     }
 
-    public static void makeMini(JComponent c) {
+    public static JComponent makeMini(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "mini");
+        return c;
     }
 
     public static JToggleButton getMenuToggleButton(String title) { //, int num) {
@@ -563,6 +567,7 @@ public final class ViewUtil {
         return button;
     }
 
+
     public static JButton getIconButton(ImageIcon icon) {
 
         final JButton button = new JButton(icon);
@@ -577,13 +582,14 @@ public final class ViewUtil {
     public static JToggleButton getTogglableIconButton(ImageIcon icon) {
 
         final ImageIcon selectedIcon = icon;
-        final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        //final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        final ImageIcon unselectedIcon = new ImageIcon(GrayFilter.createDisabledImage(icon.getImage()));
 
         final JToggleButton button = new JToggleButton(icon);
         button.setFocusable(false);
         button.setContentAreaFilled(false);
         button.setBorder(null);
-        ViewUtil.makeSmall(button);
+        //ViewUtil.makeSmall(button);
 
         final Runnable setSelected = new Runnable() {
             @Override
@@ -709,6 +715,39 @@ public final class ViewUtil {
         return p;
     }
 
+    public static JProgressBar getIndeterminateProgressBar() {
+        JProgressBar b = new JProgressBar();
+        b.setIndeterminate(true);
+        if (ClientMiscUtils.MAC) {
+            b.putClientProperty("JProgressBar.style", "circular");
+        }
+        return b;
+    }
+
+    public static void setFontSize(JLabel label, int i) {
+        Font f = label.getFont();
+        Font newFont = new Font(f.getFamily(),f.getStyle(),i);
+        label.setFont(newFont);
+    }
+
+    public static Component horizontallyAlignComponents(Component[] component) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        for (Component c : component) {
+            p.add(c);
+        }
+        p.add(Box.createHorizontalGlue());
+        return p;
+    }
+
+    public static void shortenLabelToLength(JLabel label, int length) {
+        String text = label.getText();
+        if (text.length() > length) {
+            label.setText(ViewUtil.ellipsize(text, length));
+            label.setToolTipText(text);
+        }
+    }
+
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
@@ -766,6 +805,10 @@ public final class ViewUtil {
     }
 
     public static String numToString(int num) {
+        return NumberFormat.getInstance().format(num);
+    }
+
+    public static String numToString(long num){
         return NumberFormat.getInstance().format(num);
     }
 

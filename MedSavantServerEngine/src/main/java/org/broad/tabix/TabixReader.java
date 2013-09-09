@@ -82,6 +82,10 @@ public class TabixReader {
 		return (u < v) ^ (u < 0) ^ (v < 0);
 	}
 
+        public void cleanup() throws IOException {
+            mFp.close();
+        }
+
 	/**
 	 * The constructor
 	 *

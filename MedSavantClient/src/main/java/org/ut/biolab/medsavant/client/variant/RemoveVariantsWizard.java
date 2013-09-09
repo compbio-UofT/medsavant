@@ -13,12 +13,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.variant;
 
-import com.jidesoft.dialog.AbstractDialogPage;
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -40,6 +36,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.ProjectWorker;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -47,8 +44,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author Andrew
  */
 public class RemoveVariantsWizard extends WizardDialog {
-    private static final Log LOG = LogFactory.getLog(RemoveVariantsWizard.class);
 
+    private static final Log LOG = LogFactory.getLog(RemoveVariantsWizard.class);
     private final int projectID;
     private final int referenceID;
     private final List<SimpleVariantFile> files;
@@ -72,7 +69,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         setPageList(model);
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(getParent());
     }
 
@@ -80,7 +77,6 @@ public class RemoveVariantsWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage("Remove Variants") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -107,39 +103,16 @@ public class RemoveVariantsWizard extends WizardDialog {
         //setup page
         return new DefaultWizardPage("Remove & Publish Variants") {
             private final JLabel progressLabel = new JLabel("You are now ready to remove variants.");
-            private final JProgressBar progressBar = new JProgressBar();
             private final JButton workButton = new JButton("Remove Files");
-            /*private final JButton publishButton = new JButton("Publish Variants");
-            private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after removal");
-            private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
-            private final JProgressBar publishProgressBar = new JProgressBar();*/
 
             {
-                addComponent(progressLabel);
-                addComponent(progressBar);
+                addComponent(progressLabel);                
                 addComponent(ViewUtil.alignRight(workButton));
 
                 final JComponent j = new JLabel("<html>You may continue. The removal process will continue in the<br>background and you will be notified upon completion.</html>");
                 addComponent(j);
                 j.setVisible(false);
 
-                /*addComponent(autoPublishVariants);
-                JLabel l = new JLabel("WARNING:");
-                l.setForeground(Color.red);
-                l.setFont(l.getFont().deriveFont(Font.BOLD));
-                addComponent(l);
-                addText("All users logged into the system will be logged out\nat the time of publishing.");
-
-                addComponent(publishProgressLabel);
-                addComponent(publishProgressBar);
-                addComponent(ViewUtil.alignRight(publishButton));
-
-                publishButton.setVisible(false);
-                publishProgressLabel.setVisible(false);
-                publishProgressBar.setVisible(false);*/
-
-                final boolean ap = autoPublish.isSelected();
-                final String email = emailField.getText();
 
                 workButton.addActionListener(new ActionListener() {
                     @Override
@@ -147,14 +120,17 @@ public class RemoveVariantsWizard extends WizardDialog {
                         j.setVisible(true);
                         fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
                         fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                        progressBar.setIndeterminate(true);
-                        new UpdateWorker("Removing variants", RemoveVariantsWizard.this, progressLabel, progressBar, workButton) {
+                        // progressBar.setIndeterminate(true);
+
+                        new ProjectWorker<Void>("Removing variants", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                             @Override
-                            protected Void doInBackground() throws Exception {
-                                updateID = MedSavantClient.VariantManager.removeVariants(LoginController.getInstance().getSessionID(), projectID, referenceID, files, ap, email);
+                            protected Void backgroundTask() throws Exception {
+                                MedSavantClient.VariantManager.removeVariants(LoginController.getSessionID(), projectID, referenceID, files, false, emailField.getText());
                                 return null;
                             }
                         }.execute();
+
+                        toFront();
                     }
                 });
 
@@ -172,7 +148,6 @@ public class RemoveVariantsWizard extends WizardDialog {
     private AbstractWizardPage getCompletePage() {
 
         final CompletionWizardPage page = new CompletionWizardPage("Complete") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -186,7 +161,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         return page;
     }
 
-   private AbstractWizardPage getNotificationsPage() {
+    private AbstractWizardPage getNotificationsPage() {
         final DefaultWizardPage page = new DefaultWizardPage("Notifications") {
             @Override
             public void setupWizardButtons() {
@@ -212,5 +187,4 @@ public class RemoveVariantsWizard extends WizardDialog {
 
         return page;
     }
-
 }

@@ -25,11 +25,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.api.MedSavantSectionPlugin;
-import org.ut.biolab.medsavant.client.plugin.PluginController;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.PluginEvent;
-import org.ut.biolab.medsavant.client.plugin.MedSavantPlugin;
-import org.ut.biolab.medsavant.client.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -42,18 +42,18 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class PluginPage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(PluginPage.class);
-    private static PluginController controller = PluginController.getInstance();
+    private static AppController controller = AppController.getInstance();
 
-    private MedSavantSectionPlugin plugin;
+    private MedSavantVariantSectionApp plugin;
     private final JPanel view;
 
-    public PluginPage(SectionView parent, PluginDescriptor desc) {
+    public PluginPage(SectionView parent, AppDescriptor desc) {
         super(parent, desc.getName());
         view = new JPanel();
         view.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        plugin = (MedSavantSectionPlugin)controller.getPlugin(desc.getID());
+        plugin = (MedSavantVariantSectionApp)controller.getPlugin(desc.getID());
         if (plugin != null) {
             plugin.init(view);
         } else {
@@ -71,9 +71,9 @@ public class PluginPage extends SubSectionView {
                     switch (event.getType()) {
                         case LOADED:
                             view.removeAll();
-                            MedSavantPlugin plug = event.getPlugin();
-                            if (plug instanceof MedSavantSectionPlugin) {
-                                plugin = (MedSavantSectionPlugin)plug;
+                            MedSavantApp plug = event.getPlugin();
+                            if (plug instanceof MedSavantVariantSectionApp) {
+                                plugin = (MedSavantVariantSectionApp)plug;
                                 plugin.init(view);
                             }
                             break;
@@ -96,14 +96,14 @@ public class PluginPage extends SubSectionView {
     public void viewDidLoad() {
         super.viewDidLoad();
         if (plugin != null) {
-            ((MedSavantSectionPlugin)plugin).viewDidLoad();
+            ((MedSavantVariantSectionApp)plugin).viewDidLoad();
         }
     }
 
     @Override
     public void viewDidUnload() {
         if (plugin != null) {
-            ((MedSavantSectionPlugin)plugin).viewDidUnload();
+            ((MedSavantVariantSectionApp)plugin).viewDidUnload();
         }
         super.viewDidUnload();
     }

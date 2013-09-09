@@ -592,4 +592,8 @@ public class MiscUtils {
         boolean b = f.delete();
         LOG.info("Deleting " + f.getAbsolutePath() + "... " + (b ? "SUCCESS" : "FAILED"));
     }
+
+    public static String pluralize(int num, String singular, String plural) {
+        return num == 1 ? singular : plural;
+    }
 }

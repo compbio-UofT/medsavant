@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 /**

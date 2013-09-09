@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.util;
 
 import java.util.ArrayList;
@@ -28,10 +27,9 @@ import org.apache.commons.logging.LogFactory;
  * @author Andrew
  */
 public class ThreadController {
+
     private static final Log LOG = LogFactory.getLog(ThreadController.class);
-
     private static ThreadController instance;
-
     private Map<String, List<MedSavantWorker>> workers = new HashMap<String, List<MedSavantWorker>>();
 
     public static ThreadController getInstance() {
@@ -67,6 +65,22 @@ public class ThreadController {
             this.workers.put(page, null);
             for (MedSavantWorker worker : list) {
                 worker.cancel(true);
+            }
+        }
+    }
+    
+    /**
+     * Cancels ALL MedSavantWorker threads, except for the one passed as an
+     * argument.  (argument can be null if caller is not a MedSavantWorker)  
+     */
+    public synchronized void cancelAllWorkers(MedSavantWorker except){        
+        for(List<MedSavantWorker> pageWorkers : this.workers.values()){
+            if(pageWorkers != null){
+                for(MedSavantWorker worker : pageWorkers){
+                    if(worker != except){
+                        worker.cancel(true);
+                    }
+                }
             }
         }
     }
