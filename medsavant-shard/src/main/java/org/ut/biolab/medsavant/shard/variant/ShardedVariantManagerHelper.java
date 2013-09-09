@@ -52,6 +52,7 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
+import org.ut.biolab.medsavant.shard.db.ShardedDBUtilsHelper;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -79,6 +80,8 @@ public class ShardedVariantManagerHelper implements Serializable {
     private static final String[] BOOLEAN_FIELDS = new String[] { "db", "h2", "somatic", "validated" };
     private static final String[] STRING_FIELDS = new String[] { "dna_id", "chrom", "dbsnp_id", "ref", "alt", "filter", "variant_type", "zygosity", "gt", "custom_info", "aa",
             "cigar" };
+
+    private ShardedDBUtilsHelper helper = new ShardedDBUtilsHelper();
 
     private boolean equalsAny(String pattern, String[] match) {
         for (String s : match) {
@@ -124,34 +127,6 @@ public class ShardedVariantManagerHelper implements Serializable {
     private String getWhereClause(SelectQuery q) {
         // replace original table identifiers with Hibernate references
         return q.getWhereClause().toString().replaceAll("t[0-9]+.", "this_.");
-    }
-
-    private Range getExtremeValuesForColumn(Session s, String colName) {
-        Object oMin = s.createCriteria(Variant.class).setProjection(Projections.min(colName)).list().get(0);
-        Object oMax = s.createCriteria(Variant.class).setProjection(Projections.max(colName)).list().get(0);
-
-        double min;
-        if (oMin instanceof Integer) {
-            min = (double) (Integer) oMin;
-        } else if (oMin instanceof Float) {
-            min = (double) (Float) oMin;
-        } else if (oMin instanceof Double) {
-            min = (Double) oMin;
-        } else {
-            throw new ClassCastException("Min is not double");
-        }
-        double max;
-        if (oMax instanceof Integer) {
-            max = (double) (Integer) oMax;
-        } else if (oMax instanceof Float) {
-            max = (double) (Float) oMax;
-        } else if (oMax instanceof Double) {
-            max = (Double) oMax;
-        } else {
-            throw new ClassCastException("Max is not double");
-        }
-
-        return new Range(min, max);
     }
 
     private boolean setupMapping(String table) {
@@ -248,7 +223,7 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Session s = ShardedSessionManager.openSession();
 
-        Range range = getExtremeValuesForColumn(s, column.getColumnName());
+        Range range = helper.getExtremeValuesForColumn(column.getColumnName());
         double binSize = MiscUtils.generateBins(column, range, logBins);
 
         String round;
@@ -360,13 +335,13 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         double binSizeX = 0;
         if (!columnXCategorical) {
-            Range rangeX = getExtremeValuesForColumn(s, columnnameX);
+            Range rangeX = helper.getExtremeValuesForColumn(columnnameX);
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
 
         double binSizeY = 0;
         if (!columnYCategorical) {
-            Range rangeY = getExtremeValuesForColumn(s, columnnameY);
+            Range rangeY = helper.getExtremeValuesForColumn(columnnameY);
             binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
         }
 
@@ -500,9 +475,10 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.countDistinct("dna_id"));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("dna_id as value", "value", new String[] { "value" },
+                new Type[] { new StringType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        Integer res = (Integer) c.list().get(0);
+        Integer res = (Integer) c.list().size();
 
         ShardedSessionManager.closeSession(s);
 

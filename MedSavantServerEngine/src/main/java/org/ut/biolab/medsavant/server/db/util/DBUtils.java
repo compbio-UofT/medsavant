@@ -19,36 +19,50 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import com.healthmarketscience.sqlbuilder.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.shard.db.ShardedDBUtilsHelper;
+import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.model.Range;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.FunctionCall;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.ut.biolab.medsavant.shared.db.ColumnType;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
-import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.server.SessionController;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
- *
+ * 
  * @author mfiume
  */
 public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUtilsAdapter {
 
+    private static final long serialVersionUID = 6878390750229753420L;
     private static final Log LOG = LogFactory.getLog(DBUtils.class);
     private static DBUtils instance;
+    private static DBUtilsHelper unshardedHelper;
+    private static ShardedDBUtilsHelper shardedHelper;
+    private static String variantTablePrefix;
 
     public static synchronized DBUtils getInstance() throws RemoteException {
         if (instance == null) {
@@ -58,6 +72,13 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     private DBUtils() throws RemoteException {
+        variantTablePrefix = DBSettings.getVariantTableName(0, 0, 0).split("0")[0];
+        unshardedHelper = new DBUtilsHelper();
+        shardedHelper = new ShardedDBUtilsHelper();
+    }
+
+    private static boolean isVariantsTable(String tableName) {
+        return tableName.startsWith(variantTablePrefix);
     }
 
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException, SessionExpiredException {
@@ -137,7 +158,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
-        ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName + ";");
+        if (isVariantsTable(tableName)) {
+            shardedHelper.dropTable(tableName);
+        } else {
+            unshardedHelper.dropTable(sessID, tableName);
+        }
     }
 
     public static boolean tableExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
@@ -151,17 +176,16 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     @Override
     public int getNumRecordsInTable(String sessID, String tablename) throws SQLException, SessionExpiredException {
-        ResultSet rs = ConnectionController.executeQuery(sessID, "SELECT COUNT(*) FROM `" + tablename + "`");
-        rs.next();
-        return rs.getInt(1);
+        return (isVariantsTable(tablename)) ? shardedHelper.getNumRecordsInTable() : unshardedHelper.getNumRecordsInTable(sessID, tablename);
     }
 
     /**
      * The message for a MySQL CommunicationsException contains a lot of junk
      * (including a full stack-trace), but hidden inside is a useful message.
      * Extract it.
-     *
-     * @param x the exception to be parsed.
+     * 
+     * @param x
+     *            the exception to be parsed.
      * @return text found on line starting with "MESSAGE: "
      */
     public static String extractMySQLMessage(CommunicationsException x) {
@@ -174,7 +198,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             int endPos = msg.indexOf('\n', startPos);
             return msg.substring(startPos, endPos);
         }
-        // Couldn' find our magic string.  Return the whole thing.
+        // Couldn' find our magic string. Return the whole thing.
         return msg;
     }
 
@@ -201,7 +225,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException,
+            SessionExpiredException {
         return getDistinctValuesForColumn(sessID, tableName, colName, false, cacheing);
     }
 
@@ -209,7 +234,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing)
+            throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
@@ -226,30 +252,58 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
 
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(colName));
-
         makeProgress(sessID, "Querying database...", 0.2);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cacheing ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
 
         Set<String> set = new HashSet<String>();
-        while (rs.next()) {
-            makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
-            String val = rs.getString(1);
-            if (val == null) {
-                // We treat nulls and empty strings as being interchangeable.
-                set.add("");
-            } else {
-                if (explodeCommaSeparatedValues) {
-                    String[] vals = val.split(",");
-                    for (int i = 0; i < vals.length; i++) {
-                        vals[i] = vals[i].trim();
-                    }
-                    set.addAll(Arrays.asList(vals));
+        if (isVariantsTable(table.getTableName())) {
+            List<Object> temp = shardedHelper.getDistinctValuesForColumn(colName, (cacheing ? DistinctValuesCache.CACHE_LIMIT : -1));
+
+            for (Object o : temp) {
+                makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
+                String val = o.toString();
+
+                if (val == null) {
+                    // We treat nulls and empty strings as being
+                    // interchangeable.
+                    set.add("");
                 } else {
-                    set.add(val);
+                    if (explodeCommaSeparatedValues) {
+                        String[] vals = val.split(",");
+                        for (int i = 0; i < vals.length; i++) {
+                            vals[i] = vals[i].trim();
+                        }
+                        set.addAll(Arrays.asList(vals));
+                    } else {
+                        set.add(val);
+                    }
+                }
+            }
+        } else {
+            SelectQuery query = new SelectQuery();
+            query.addFromTable(table.getTable());
+            query.setIsDistinct(true);
+            query.addColumns(table.getDBColumn(colName));
+
+            ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cacheing ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
+
+            while (rs.next()) {
+                makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
+                String val = rs.getString(1);
+
+                if (val == null) {
+                    // We treat nulls and empty strings as being
+                    // interchangeable.
+                    set.add("");
+                } else {
+                    if (explodeCommaSeparatedValues) {
+                        String[] vals = val.split(",");
+                        for (int i = 0; i < vals.length; i++) {
+                            vals[i] = vals[i].trim();
+                        }
+                        set.addAll(Arrays.asList(vals));
+                    } else {
+                        set.add(val);
+                    }
                 }
             }
         }
@@ -294,14 +348,12 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(colName)));
 
         makeProgress(sessID, "Querying database...", 0.2);
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
-        rs.next();
 
-        double min = rs.getDouble(1);
-        double max = rs.getDouble(2);
-        Range result = new Range(min, max);
+        Range result = (isVariantsTable(table.getTableName())) ? shardedHelper.getExtremeValuesForColumn(colName) : unshardedHelper.getExtremeValuesForColumn(sessID, query);
+
         makeProgress(sessID, "Saving cached values...", 0.9);
-        DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(min, max));
+        DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(result.getMin(), result.getMax()));
+
         return result;
     }
 

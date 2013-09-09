@@ -38,7 +38,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 import org.hibernate.shards.cfg.ShardConfiguration;
-import org.ut.biolab.medsavant.shard.db.DBUtil;
+import org.ut.biolab.medsavant.shard.db.NonShardDBUtils;
 
 /**
  * Thread executing a query on a shard.
@@ -184,11 +184,11 @@ public class ShardQueryExecutor implements Callable<Object> {
      */
     private void connect(boolean connectToDB) {
         try {
-            Class.forName(DBUtil.JDBC_DRIVER);
+            Class.forName(NonShardDBUtils.JDBC_DRIVER);
             conn = DriverManager.getConnection(connectToDB ? config.getShardUrl() : ShardConfigurationUtil.getServerForShard(config.getShardId()), config.getShardUser(),
                     config.getShardPassword());
         } catch (ClassNotFoundException e) {
-            System.err.println("Driver not loaded: " + DBUtil.JDBC_DRIVER);
+            System.err.println("Driver not loaded: " + NonShardDBUtils.JDBC_DRIVER);
         } catch (SQLException e) {
             System.err.println("Error connecting to shard: " + config.getShardUrl());
         }
