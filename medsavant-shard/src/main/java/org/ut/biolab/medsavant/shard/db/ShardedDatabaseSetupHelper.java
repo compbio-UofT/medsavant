@@ -76,4 +76,20 @@ public class ShardedDatabaseSetupHelper {
 
         ShardedSessionManager.closeSession(session);
     }
+
+    /**
+     * Removes variant tables from shards.
+     * 
+     * @param query
+     *            drop table query
+     */
+    public void dropVariantTables(String tableName) {
+        final String query = "DROP TABLE IF EXISTS " + tableName;
+
+        Session session = ShardedSessionManager.openSession();
+
+        ShardedConnectionController.executeUpdateOnAllShards(query, true);
+
+        ShardedSessionManager.closeSession(session);
+    }
 }

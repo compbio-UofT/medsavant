@@ -40,7 +40,6 @@ import org.hibernate.shards.criteria.ShardedCriteriaImpl;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
-import org.ut.biolab.medsavant.shard.nonshard.ShardedConnectionController;
 import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
 import org.ut.biolab.medsavant.shard.variant.Variant;
 import org.ut.biolab.medsavant.shared.model.Range;
@@ -130,21 +129,5 @@ public class ShardedDBUtilsHelper {
         ShardedSessionManager.closeSession(s);
 
         return res;
-    }
-
-    /**
-     * Removes variant tables from shards.
-     * 
-     * @param query
-     *            drop table query
-     */
-    public void dropTable(String table) {
-        final String query = "DROP TABLE IF EXISTS " + table;
-
-        Session session = ShardedSessionManager.openSession();
-
-        ShardedConnectionController.executeUpdateOnAllShards(query, true);
-
-        ShardedSessionManager.closeSession(session);
     }
 }

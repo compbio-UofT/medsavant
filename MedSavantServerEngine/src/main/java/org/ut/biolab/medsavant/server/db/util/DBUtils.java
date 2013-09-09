@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shard.db.ShardedDBUtilsHelper;
+import org.ut.biolab.medsavant.shard.db.ShardedDatabaseSetupHelper;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.Range;
@@ -62,6 +63,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     private static DBUtils instance;
     private static DBUtilsHelper unshardedHelper;
     private static ShardedDBUtilsHelper shardedHelper;
+    private static ShardedDatabaseSetupHelper setupHelper;
     private static String variantTablePrefix;
 
     public static synchronized DBUtils getInstance() throws RemoteException {
@@ -75,6 +77,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         variantTablePrefix = DBSettings.getVariantTableName(0, 0, 0).split("0")[0];
         unshardedHelper = new DBUtilsHelper();
         shardedHelper = new ShardedDBUtilsHelper();
+        setupHelper = new ShardedDatabaseSetupHelper();
     }
 
     private static boolean isVariantsTable(String tableName) {
@@ -159,9 +162,10 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
         if (isVariantsTable(tableName)) {
-            shardedHelper.dropTable(tableName);
+            setupHelper.dropVariantTables(tableName);
         } else {
-            unshardedHelper.dropTable(sessID, tableName);
+            final String query = "DROP TABLE IF EXISTS " + tableName + ";";
+            ConnectionController.executeUpdate(sessID, query);
         }
     }
 

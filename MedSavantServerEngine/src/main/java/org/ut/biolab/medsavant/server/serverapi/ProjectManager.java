@@ -159,6 +159,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             DeleteQuery query2 = new DeleteQuery(table.getTable());
             query2.addCondition(ComboCondition.and(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID),
                     BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID)));
+            System.out.println("removeReferenceForProject: " + query2.toString());
             conn.executeUpdate(query2.toString());
         } finally {
             conn.close();
@@ -270,6 +271,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDString);
         }
 
+        System.out.println("addTableToMap: " + query.toString());
         ConnectionController.executeUpdate(sessID, query.toString());
     }
 
@@ -296,6 +298,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
+        System.out.println("getVariantTableName: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
@@ -319,6 +322,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
+        System.out.println("getVariantTableInfo: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
@@ -357,6 +361,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumn(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), name);
 
         Connection c = ConnectionController.connectPooled(sessID);
+        System.out.println("addProject: " + query.toString());
         PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
 
         stmt.execute();
@@ -380,6 +385,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumns(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), projectName));
 
+        System.out.println("removeProject: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
@@ -400,6 +406,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         // remove from project table
         DeleteQuery q1 = new DeleteQuery(projectTable.getTable());
         q1.addCondition(BinaryConditionMS.equalTo(projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        System.out.println("delete: " + q1.toString());
         c.createStatement().execute(q1.toString());
 
         // remove patient table
@@ -408,6 +415,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         q2.addColumns(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME));
         q2.addCondition(BinaryConditionMS.equalTo(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
 
+        System.out.println("delete: " + q2.toString());
         ResultSet rs1 = ConnectionController.executeQuery(sid, q2.toString());
 
         rs1.next();
@@ -417,11 +425,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         // remove from patient format table
         DeleteQuery q3 = new DeleteQuery(patientFormatTable.getTable());
         q3.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        System.out.println("delete: " + q3.toString());
         c.createStatement().execute(q3.toString());
 
         // remove from patient tablemap
         DeleteQuery q4 = new DeleteQuery(patientMapTable.getTable());
         q4.addCondition(BinaryConditionMS.equalTo(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        System.out.println("delete: " + q4.toString());
         c.createStatement().execute(q4.toString());
 
         // remove variant tables
@@ -430,16 +440,22 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         q5.addColumns(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
         q5.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
 
+        System.out.println("removeProject: " + q5.toString());
         ResultSet rs2 = ConnectionController.executeQuery(sid, q5.toString());
 
         while (rs2.next()) {
             String variantTableName = rs2.getString(1);
+            System.out.println(variantTableName);
             c.createStatement().execute("DROP TABLE IF EXISTS " + variantTableName);
+
+            // remove table on shards
+            helper.dropVariantTables(variantTableName);
         }
 
         // remove from variant tablemap
         DeleteQuery q6 = new DeleteQuery(variantMapTable.getTable());
         q6.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        System.out.println("delete: " + q6.toString());
         c.createStatement().execute(q6.toString());
 
         // remove cohort entries
@@ -468,6 +484,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                                                                                                                                                  // published
                                                                                                                                                  // table
 
+        System.out.println("setAnnotations: " + query.toString());
         ConnectionController.executeUpdate(sessID, query.toString());
     }
 
@@ -489,6 +506,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
         query.addOrdering(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
+        System.out.println("getProjectDetails: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Integer> refs = new ArrayList<Integer>();
@@ -558,6 +576,8 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
+
+            System.out.println("setCustomVariantFields: " + insertQuery.toString());
             c.createStatement().execute(insertQuery.toString());
         }
         c.commit();
@@ -579,6 +599,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
         query.addOrdering(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
 
+        System.out.println("getCustomVariantFields: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<CustomField> result = new ArrayList<CustomField>();
@@ -604,6 +625,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
+        System.out.println("getNewestUpdateId: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
@@ -619,6 +641,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID));
 
+        System.out.println("publishVariantTable: " + query.toString());
         conn.executeUpdate(query.toString());
     }
 
@@ -647,6 +670,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID),
                         projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
 
+        System.out.println("getUnpublishedChanges: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
@@ -692,6 +716,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
+        System.out.println("getReferenceNamesForProject: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<String> references = new ArrayList<String>();
@@ -715,6 +740,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
+        System.out.println("getReferenceIdsForProject: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Integer> references = new ArrayList<Integer>();
@@ -740,6 +766,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(ComboCondition.and(BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true),
                 BinaryCondition.greaterThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMin, true)));
 
+        System.out.println("removeTables: " + query.toString());
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -756,6 +783,8 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
                 dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
                 dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
+
+                System.out.println("removeTables: " + dq1.toString());
                 conn.executeUpdate(dq1.toString());
 
                 // remove from variant format

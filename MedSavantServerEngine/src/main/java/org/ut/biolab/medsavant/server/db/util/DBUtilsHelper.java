@@ -80,18 +80,4 @@ public class DBUtilsHelper {
 
         return new Range(min, max);
     }
-
-    /**
-     * Drops table.
-     * 
-     * @param sessID
-     *            session ID
-     * @param table
-     *            table to drop
-     */
-    public void dropTable(String sessID, String table) throws SQLException, SessionExpiredException {
-        final String query = "DROP TABLE IF EXISTS " + table + ";";
-
-        ConnectionController.executeUpdate(sessID, query);
-    }
 }
