@@ -37,7 +37,9 @@ public interface AnnotationManagerAdapter extends Remote {
     public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException;
 
-    public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) throws RemoteException, SessionExpiredException;
-    public void uninstallAnnotation(String sessID, Annotation an) throws RemoteException, SQLException, SessionExpiredException;
+    public boolean installAnnotationForProject(String sessionID, int currentProjectID, int transferID) throws RemoteException, SessionExpiredException, SQLException;
+    public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) throws RemoteException, SessionExpiredException, SQLException;
+    public void uninstallAnnotation(String sessID, int annotationID) throws RemoteException, SQLException, SessionExpiredException;
+
 
 }
