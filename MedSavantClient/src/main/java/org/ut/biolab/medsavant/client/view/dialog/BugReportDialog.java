@@ -17,7 +17,7 @@ import savant.settings.BrowserSettings;
  */
 public class BugReportDialog extends javax.swing.JDialog {
 
-    private Exception exception;
+    private Throwable exception;
     private String toolName = "MedSavant";
     private String toolVersion = VersionSettings.getVersionString();
 
@@ -41,9 +41,6 @@ public class BugReportDialog extends javax.swing.JDialog {
         }
         this.setResizable(false);
         this.setLocationRelativeTo(parent);
-    }
-
-    public void setException(Exception e) {
         this.exception = e;
     }
 
@@ -223,7 +220,7 @@ public class BugReportDialog extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                BugReportDialog dialog = new BugReportDialog(new javax.swing.JFrame());
+                BugReportDialog dialog = new BugReportDialog(new javax.swing.JFrame(), new Exception("Fake exception"));
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

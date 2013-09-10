@@ -71,6 +71,7 @@ public class InstallAnnotationWizard extends WizardDialog {
     private JLabel chooseTitleLabel;
     private JPanel repoChoosePanel;
     private PathField fileChoosePanel;
+    private JLabel progressLabel;
     private boolean fromRepository;
     private boolean hasAnnotations = false;
     private AnnotationDownloadInformation annotationToInstall;
@@ -306,8 +307,10 @@ public class InstallAnnotationWizard extends WizardDialog {
             private JProgressBar progressBar;
             private JButton startButton;
 
+
             {
-                addText("You are now ready to install this annotation.");
+                progressLabel = new JLabel("You are now ready to install this annotation.");
+                addComponent(progressLabel);
                 //addText("Installing annotation...");
 
                 progressBar = new JProgressBar();
@@ -336,6 +339,8 @@ public class InstallAnnotationWizard extends WizardDialog {
 
                             @Override
                             protected void showSuccess(Void result) {
+
+                                progressLabel.setText("Done");
 
                                 if (success) {
                                     ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Annotation has been successfully installed.\n\nYou can apply this annotation to a project by\nediting project settings.");
@@ -383,10 +388,13 @@ public class InstallAnnotationWizard extends WizardDialog {
     private boolean create() throws SQLException, IOException, InterruptedException {
         try {
             if (fromRepository) {
+                progressLabel.setText("Installing annotation...");
                 return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
             } else {
+                progressLabel.setText("Uploading file to server...");
                 File annotationFile = new File(fileChoosePanel.getPath());
                 int transferID = ClientNetworkUtils.copyFileToServer(annotationFile);
+                progressLabel.setText("Installing annotation...");
                 return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), transferID);
             }
         } catch (SessionExpiredException ex) {

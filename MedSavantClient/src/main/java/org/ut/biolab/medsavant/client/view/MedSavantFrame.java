@@ -53,6 +53,8 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.ColorUIResource;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -88,6 +90,7 @@ import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
  */
 public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
+    private static Log LOG = LogFactory.getLog(MedSavantFrame.class);
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
@@ -427,7 +430,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void requestClose() {
-        System.out.print("Asking to quit...");
+        LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
@@ -438,7 +441,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
              }
              System.exit(0);*/
         }
-        System.out.print("NOT QUITTING!");
+        LOG.info("Refusing to quit");
     }
 
     @Override
