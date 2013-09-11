@@ -116,17 +116,19 @@
             <zipfileset src="lib/org.bridgedb.jar" excludes="META-INF/*" />
             <zipfileset src="lib/org.bridgedb.rdb.jar" excludes="META-INF/*" />
             <zipfileset src="lib/org.bridgedb.webservice.bridgerest.jar" excludes="META-INF/*" />
-            <zipfileset src="lib/pathvisio.jar" excludes="META-INF/*" />
             <zipfileset src="lib/pdf-transcoder.jar" excludes="META-INF/*" />
             <zipfileset src="lib/resources.jar" excludes="META-INF/*" />
             <zipfileset src="lib/saaj.jar" excludes="META-INF/*" />
-            <zipfileset src="lib/wikipathways-client.jar" excludes="META-INF/*" />
-            <zipfileset src="lib/wikipathways.jar" excludes="META-INF/*" />
             <zipfileset src="lib/wsdl4j-1.5.1.jar" excludes="META-INF/*" />
             <zipfileset src="lib/xalan-2.6.0.jar" excludes="META-INF/*" />
             <zipfileset src="lib/xerces_2_5_0.jar" excludes="META-INF/*" />
             <zipfileset src="lib/xml-apis-ext.jar" excludes="META-INF/*" />
             <zipfileset src="lib/xml-apis.jar" excludes="META-INF/*" />
+
+            <zipfileset src="lib/org.pathvisio.wpclient.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.wikipathways.client.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/org.pathvisio.core.jar" excludes="META-INF/*" />
+            <zipfileset src="lib/pathvisio.jar" excludes="META-INF/*" />
         </jar>
         <delete dir="${dist.dir}/lib"/>
         <move file="${dist.jar}-all" tofile="${dist.jar}"/>

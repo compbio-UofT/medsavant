@@ -10,6 +10,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -471,7 +473,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     @Override
                     public JPopupMenu generatePopup() {
                         final SearchConditionGroupItem groupItem = (SearchConditionGroupItem) item;
-                        JPopupMenu m = new JPopupMenu();
+                        final JPopupMenu m = new JPopupMenu();
 
                         if (!item.getParent().isFirstItem(item)) {
                             if (item.getRelation() == QueryRelation.AND) {
@@ -498,6 +500,18 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                                 m.add(b);
                             }
                         }
+
+                        m.addFocusListener(new FocusListener() {
+
+                            @Override
+                            public void focusGained(FocusEvent fe) {
+                            }
+
+                            @Override
+                            public void focusLost(FocusEvent fe) {
+                                m.setVisible(false);
+                            }
+                        });
 
                         JMenuItem delgroup = new JMenuItem("Delete");
                         delgroup.addActionListener(new ActionListener() {

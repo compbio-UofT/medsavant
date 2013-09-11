@@ -40,9 +40,10 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import org.bridgedb.bio.Organism;
-import org.pathvisio.wikipathways.WikiPathwaysClient;
 import org.pathvisio.wikipathways.webservice.WSPathwayInfo;
 import org.pathvisio.wikipathways.webservice.WSSearchResult;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.wikipathways.client.WikiPathwaysClient;
 
 
 /**
@@ -58,7 +59,7 @@ public class PathwaysBrowser extends JPanel{
     //private SVGViewer svgPanel;
     private Viewer svgPanel;
     private Loader loader;
-    
+
     private static final String ALL_ORGANISMS = "All Organisms";
     private static final String SELECT_ORGANISM = "Select an organism to display pathways:";
     private static final String SELECT_PATHWAY = "Select a pathway to display:";
@@ -70,7 +71,7 @@ public class PathwaysBrowser extends JPanel{
     private location loc = location.ORGANISMS;
 
     private boolean used = false;
-    
+
     public PathwaysBrowser(WikiPathwaysClient client, Viewer svgPanel, Loader loader) {
 
         this.wpclient = client;
@@ -152,16 +153,21 @@ public class PathwaysBrowser extends JPanel{
         };
         thread.start();
 
-        
+
     }
 
-    private void listOrganisms(){    
+    private void listOrganisms(){
         startLoad();
         Thread thread = new Thread() {
             public void run() {
                 String[] organisms = new String[0];
                 try {
                     organisms = wpclient.listOrganisms();
+
+                    for (String row : organisms) {
+                        System.out.println(row);
+                    }
+
                     table.setModel(new OrganismTableModel(organisms, false));
                     loc = location.ORGANISMS;
                     messageLabel.setText(SELECT_ORGANISM);
@@ -188,8 +194,8 @@ public class PathwaysBrowser extends JPanel{
                     table.setModel(new PathwayTableModel(pathways, true));
                     loc = location.PATHWAYS;
                     messageLabel.setText(SELECT_PATHWAY);
-                } catch (RemoteException ex) {
-                    //DialogUtils.displayException("WikiPathways Error", "Unable to process request.", ex);
+                } catch (Exception ex) {
+                    DialogUtils.displayException("WikiPathways Error", "Unable to process request.", ex);
                 }
                 endLoad();
             }
@@ -206,7 +212,7 @@ public class PathwaysBrowser extends JPanel{
                 try {
 
                     //TODO: parallelize data retrieval!
-                    
+
                     //TODO: this path should be retreived from medsavant!!!
                     String dirString = System.getProperty("user.home") + System.getProperty("file.separator") + "medsavant";
                     File dir = new File(dirString);
@@ -214,7 +220,7 @@ public class PathwaysBrowser extends JPanel{
                         dir.mkdirs();
                     }
 
-                    //get svg              
+                    //get svg
                     String filename = dirString + System.getProperty("file.separator") + pathwayID + ".svg";
                     //String filename = SettingsController.getTempDirectory() + System.getProperty("file.separator") + pathwayID + ".svg";
                     byte[] svgByte = wpclient.getPathwayAs("svg", pathwayID, 0);
@@ -237,7 +243,7 @@ public class PathwaysBrowser extends JPanel{
                     setVisible(false);
                     svgPanel.setVisible(true);
                     loader.setVisible(false);
-                                        
+
                 } catch (RemoteException ex) {
                     JOptionPane.showMessageDialog(instance, "The pathway '" + pathwayID + "' could not be found.", "Error", JOptionPane.ERROR_MESSAGE);
                     loader.setVisible(false);
@@ -248,10 +254,10 @@ public class PathwaysBrowser extends JPanel{
                     Logger.getLogger(PathwaysBrowser.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex){
                     Logger.getLogger(PathwaysBrowser.class.getName()).log(Level.SEVERE, null, ex);
-                }                
+                }
             }
         };
-        thread.start();     
+        thread.start();
     }
 
     private void startLoad(){
@@ -271,7 +277,9 @@ public class PathwaysBrowser extends JPanel{
         private String[] headers = {"Latin Name", "English Name"};
 
         OrganismTableModel(String[] names, boolean hasParent){
-            if(hasParent) this.names.add(null);
+            if(hasParent) {
+                this.names.add(null);
+            }
             this.names.add(ALL_ORGANISMS);
             this.names.addAll(Arrays.asList(names));
         }
@@ -293,9 +301,16 @@ public class PathwaysBrowser extends JPanel{
                 case 0:
                     return s == null ? ".." : s;
                 case 1:
-                    if(s == null) return "..";
-                    else if (s.equals(ALL_ORGANISMS)) return "";
-                    else return Organism.fromLatinName(s).shortName();
+                    if(s == null) {
+                        return "..";
+                    }
+                    else if (s.equals(ALL_ORGANISMS)) {
+                        return "";
+                    }
+                    else {
+                        Organism o = Organism.fromLatinName(s);
+                        return o == null ? "<Unknown>" : o.shortName();
+                    }
             }
             return null;
         }
@@ -346,7 +361,7 @@ public class PathwaysBrowser extends JPanel{
             }
             return null;
         }
-        
+
         @Override
         public String getColumnName(int column) {
             return headers[column];
