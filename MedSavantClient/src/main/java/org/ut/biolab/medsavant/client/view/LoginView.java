@@ -179,9 +179,9 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         loginOnEnter(portField);
         loginOnEnter(dbnameField);
 
-        sizeField(addressField);
-        sizeField(portField);
-        sizeField(dbnameField);
+        sizeConnectionField(addressField);
+        sizeConnectionField(portField);
+        sizeConnectionField(dbnameField);
 
         updateConnectionStringOnChange(addressField);
         updateConnectionStringOnChange(dbnameField);
@@ -374,6 +374,14 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         }
 
         return true;
+    }
+
+    private void sizeConnectionField(JTextField f) {
+        f.setColumns(20);
+        Dimension d = new Dimension(200, f.getPreferredSize().height);
+        f.setMinimumSize(d);
+        f.setPreferredSize(d);
+        f.setMaximumSize(d);
     }
 
     private void sizeField(JTextField f) {

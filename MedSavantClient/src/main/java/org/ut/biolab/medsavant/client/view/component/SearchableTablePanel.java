@@ -76,7 +76,7 @@ public class SearchableTablePanel extends JPanel {
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
     private static int KEY_PRESS_TIMER_INTERVAL = 200; //should be greater than key repeat rate
-    private static final int KEY_PRESS_TIMER_INTERVAL_LONG = 1000; //should be greater than key initial delay.       
+    private static final int KEY_PRESS_TIMER_INTERVAL_LONG = 1000; //should be greater than key initial delay.
     private static final int KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_RUNS = 5;
     private static final int KEY_PRESS_INTERVAL_EPSILON = 5;
     private static final int KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_PADDING = 20;
@@ -147,7 +147,7 @@ public class SearchableTablePanel extends JPanel {
 
                     // Even index, selected or not selected
                     if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
-                        //comp.setBackground(new Color(178, 225, 92));
+                        comp.setBackground(new Color(178, 225, 92));
                     } else if (isCellSelected(row, col)) {
                         //comp.setBackground(new Color(75, 149, 229));
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
@@ -718,7 +718,7 @@ public class SearchableTablePanel extends JPanel {
                 }
 
                 if (deltaSame > KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_RUNS) {
-                    //If this is the first time we've detected an interval, or if the detected interval 
+                    //If this is the first time we've detected an interval, or if the detected interval
                     //is getting close to the current (padded) interval, then change the current interval to
                     //the detected one + padding.
                     if (first || (delta - KEY_PRESS_TIMER_INTERVAL) > (KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_PADDING / 2.0f)) {
@@ -750,12 +750,12 @@ public class SearchableTablePanel extends JPanel {
                 }
 
             }
-            //In Linux, holding a keydown fires pairs of keyPressed and keyReleased events 
-            //continually, so we cannot rely on 'keyReleased'.  
+            //In Linux, holding a keydown fires pairs of keyPressed and keyReleased events
+            //continually, so we cannot rely on 'keyReleased'.
                 /*@Override
              public void keyReleased(KeyEvent ke) {
-             super.keyReleased(ke); //To change body of generated methods, choose Tools | Templates.                   
-             keydown = false;                                     
+             super.keyReleased(ke); //To change body of generated methods, choose Tools | Templates.
+             keydown = false;
              }*/
         });
         getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -814,19 +814,19 @@ public class SearchableTablePanel extends JPanel {
         public synchronized void start(String msg) {
             super.start();
             //this.startTime = System.currentTimeMillis();
-            //System.out.println(this.hashCode()+" "+msg+" started at "+startTime+" delaySetting="+this.getInitialDelay());            
+            //System.out.println(this.hashCode()+" "+msg+" started at "+startTime+" delaySetting="+this.getInitialDelay());
         }
 
         public synchronized void stop(String msg) {
             //long stopped = System.currentTimeMillis();
             super.stop();
-            //System.out.println(this.hashCode()+" "+msg+" stopped at "+stopped+" timeRunning was="+(stopped-startTime)+" delaySetting="+this.getInitialDelay());            
+            //System.out.println(this.hashCode()+" "+msg+" stopped at "+stopped+" timeRunning was="+(stopped-startTime)+" delaySetting="+this.getInitialDelay());
         }
 
         public synchronized void restart(String msg) {
             //long restarted = System.currentTimeMillis();
             super.restart();
-            //System.out.println(this.hashCode()+" "+msg+" restarted at "+restarted+" timeRunning was="+(restarted-startTime)+" delaySetting="+this.getDelay());            
+            //System.out.println(this.hashCode()+" "+msg+" restarted at "+restarted+" timeRunning was="+(restarted-startTime)+" delaySetting="+this.getDelay());
         }
     }
 

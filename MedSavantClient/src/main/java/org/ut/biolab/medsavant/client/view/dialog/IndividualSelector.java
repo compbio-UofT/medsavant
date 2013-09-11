@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
@@ -68,11 +69,10 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         String.class, // hospital
         String.class, // mom id
         String.class, // dad id
-        Integer.class, // gender
-        Integer.class, // affected
+        String.class, // gender
+        String.class, // affected
         String.class, // dna ids
         String.class}; // phenotypes
-
     private static final int[] HIDDEN_COLUMNS = new int[]{
         0, // patient
         3, // mom
@@ -97,9 +97,6 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         refresh();
     }
 
-    private final static int INDEX_OF_HOSPITAL_ID = 2;
-    private final static int INDEX_OF_DNA_ID = 7;
-
     public Set<String> getHospitalIDsOfSelectedIndividuals() {
         return selectedHospitalIDs;
     }
@@ -107,9 +104,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     private Set<String> getDNAIDsOfSelectedIndividuals() {
         Set<String> ids = new HashSet<String>();
         for (int i : selectedRows) {
-           String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_ID];
-           //String dnaID = (String) stp.getTable().getModel().getValueAt(i, INDEX_OF_DNA_ID);
-           ids.add(dnaID);
+            String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_IDS];
+            ids.add(dnaID);
         }
         return ids;
     }
@@ -387,8 +383,6 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         refreshSelectionIndicator();
     }
 
-
-
     public void setSelectedIndividuals(Set<String> s) {
         selectedRows.removeAll(selectedRows);
         selectedHospitalIDs = s;
@@ -465,6 +459,23 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         private void setIndividuals() throws SQLException, RemoteException {
             try {
                 individuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+
+                for (Object[] row : individuals) {
+                    row[INDEX_OF_GENDER] = ClientMiscUtils.genderToString((Integer) row[INDEX_OF_GENDER]);
+
+                    String s;
+                    Object o = row[INDEX_OF_AFFECTED];
+                    if (o instanceof Boolean) {
+                        Boolean b = (Boolean) o;
+                        s = b ? "Yes" : "No";
+                    } else {
+                        s = "Unknown";
+                    }
+                    row[INDEX_OF_AFFECTED] = s;
+                    /*Boolean b = (Boolean) row[INDEX_OF_AFFECTED];
+                    String s = b ? "Yes" : "No";
+                    row[INDEX_OF_AFFECTED] = s;*/
+                }
 
             } catch (SessionExpiredException e) {
                 MedSavantExceptionHandler.handleSessionExpiredException(e);
