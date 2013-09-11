@@ -31,6 +31,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -768,7 +770,7 @@ public final class ViewUtil {
 
                 final HudWindow hud = new HudWindow(title);
 
-                hud.getJDialog().setModal(true);
+
 
                 JLabel l = new JLabel();
                 String labelText = String.format("<html><div WIDTH=%d>%s</div><html>", width, helpText);
@@ -794,6 +796,18 @@ public final class ViewUtil {
 
                 hud.getJDialog().setLocationRelativeTo(helpButton);
                 hud.getJDialog().setVisible(true);
+
+                hud.getJDialog().setModal(true);
+                hud.getJDialog().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent fe) {
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent fe) {
+                        hud.getJDialog().dispose();
+                    }
+                });
             }
         });
         return helpButton;
