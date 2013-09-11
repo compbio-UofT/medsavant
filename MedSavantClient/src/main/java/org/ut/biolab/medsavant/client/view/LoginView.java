@@ -311,6 +311,8 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         connectingToLabel = new JLabel();
 
         //p.add(ViewUtil.alignLeft(connectionSettingsButton));
+        p.add(ViewUtil.centerHorizontally(ViewUtil.getHelpButton("How to log in", "You can login to a MedSavant server using connection settings and credentials supplied by your administrator.<br/><br/>To edit the connection settings, click the pencil icon.")));
+        p.add(Box.createVerticalStrut(3));
         p.add(ViewUtil.centerHorizontally(ViewUtil.horizontallyAlignComponents(new Component[]{connectingToLabel,Box.createHorizontalStrut(4),connectionSettingsButton})));
         p.add(Box.createVerticalStrut(3));
         p.add(ViewUtil.centerHorizontally(connectionSettings));
