@@ -62,8 +62,23 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         AFFECTED.getAlias(),
         DNA_IDS.getAlias(),
         PHENOTYPES.getAlias()};
-    private static final Class[] COLUMN_CLASSES = new Class[]{Integer.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, String.class, String.class};
-    private static final int[] HIDDEN_COLUMNS = new int[]{0, 3, 4, 6};
+    private static final Class[] COLUMN_CLASSES = new Class[]{
+        Integer.class, // patient
+        String.class, // family
+        String.class, // hospital
+        String.class, // mom id
+        String.class, // dad id
+        Integer.class, // gender
+        Integer.class, // affected
+        String.class, // dna ids
+        String.class}; // phenotypes
+
+    private static final int[] HIDDEN_COLUMNS = new int[]{
+        0, // patient
+        3, // mom
+        4, // dad
+        7 // dna
+    };
     private SearchableTablePanel stp;
     private JLabel numselections;
     private IndividualsReceiver retriever;

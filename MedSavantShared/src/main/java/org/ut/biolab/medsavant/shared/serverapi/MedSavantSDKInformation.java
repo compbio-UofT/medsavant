@@ -5,18 +5,18 @@
 package org.ut.biolab.medsavant.shared.serverapi;
 
 /**
- * 
+ *
  * @author mfiume
  */
-public class MedSavantProgramInformation {
+public class MedSavantSDKInformation {
 
     // version to user if the version could not be found
     private static final String UNDEFINED_VERSION = "";
 
-    public static String getVersion() {
+    public static String getSDKVersion() {
         String version = UNDEFINED_VERSION;
 
-        Package aPackage = MedSavantProgramInformation.class.getPackage();
+        Package aPackage = MedSavantSDKInformation.class.getPackage();
         if (aPackage != null) {
             version = aPackage.getImplementationVersion();
             if (version == null) {
@@ -28,5 +28,9 @@ public class MedSavantProgramInformation {
         }
 
         return version;
+    }
+
+    public static boolean isAppCompatible(String appSDKVersion) {
+        return getSDKVersion().equals(appSDKVersion); // TODO: support backwards compatibility
     }
 }

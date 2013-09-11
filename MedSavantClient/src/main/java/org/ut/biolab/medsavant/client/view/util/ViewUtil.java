@@ -730,7 +730,7 @@ public final class ViewUtil {
         label.setFont(newFont);
     }
 
-    public static Component horizontallyAlignComponents(Component[] component) {
+    public static JComponent horizontallyAlignComponents(Component[] component) {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
         for (Component c : component) {

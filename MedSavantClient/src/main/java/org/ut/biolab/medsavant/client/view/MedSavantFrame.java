@@ -62,7 +62,7 @@ import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
@@ -99,7 +99,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
     private JPanel sessionView;
-    private NewLoginView loginView;
+    private LoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
 
@@ -416,7 +416,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (loginView != null) {
             LoginController.getInstance().removeListener(loginView);
         }
-        loginView = new NewLoginView();
+        loginView = new LoginView();
         LoginController.getInstance().addListener(loginView);
         view.add(loginView, LOGIN_CARD_NAME);
 
@@ -511,7 +511,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantProgramInformation.getVersion()
+                            + MedSavantSDKInformation.getSDKVersion()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });

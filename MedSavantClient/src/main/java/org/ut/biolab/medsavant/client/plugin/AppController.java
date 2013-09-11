@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 
 
 /**
@@ -370,9 +371,9 @@ public class AppController extends Controller {
                     pluginErrors.remove(desc.getID());
                 }
             } else {
-                LOG.debug(String.format("Found incompatible %s (SDK version %s) in %s.", desc, desc.getSDKVersion(), f.getName()));
-                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + ")");
-                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + ")");
+                LOG.info(String.format("Found incompatible %s (SDK version %s) in %s.", desc, desc.getSDKVersion(), f.getName()));
+                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
+                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
             }
         }
         return desc;

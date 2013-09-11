@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 /**
  * Plugin description read from the plugin.xml file.
  *
@@ -166,7 +167,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         }
     };
 
-    final String className;    
+    final String className;
     final String version;
     final String name;
     final String sdkVersion;
@@ -176,7 +177,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
     private AppDescriptor(String className,  String version, String name, String sdkVersion, String category, File file) {
         this.className = className;
-       
+
         this.version = version;
         this.name = name;
         this.sdkVersion = sdkVersion;
@@ -223,12 +224,12 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     }
 
     /**
-     * Here's where we do our SDK compatibility check. Update this code whenever
-     * the API changes.
+     * Here's where we do our SDK compatibility check.
      */
     public boolean isCompatible() {
-        return sdkVersion.equals("1.0.0");
+        return MedSavantSDKInformation.isAppCompatible(this.getSDKVersion());
     }
+
 
     public static AppDescriptor fromFile(File f) throws PluginVersionException {
         try {
@@ -250,24 +251,24 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                         case XMLStreamConstants.START_ELEMENT:
                             switch (readElement()) {
                                 case PLUGIN:
-                                    className = readAttribute(PluginXMLAttribute.CLASS);                                
-                                    
+                                    className = readAttribute(PluginXMLAttribute.CLASS);
+
                                     //category can be specified as an attribute or <property>.
                                     category = readAttribute(PluginXMLAttribute.CATEGORY);
                                     break;
-                                    
+
                                 case ATTRIBUTE:
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
                                         sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
                                     }
                                     break;
-                                    
+
                                 case PARAMETER:
                                     if ("name".equals(readAttribute(PluginXMLAttribute.ID))) {
                                         name = readAttribute(PluginXMLAttribute.VALUE);
                                     }
                                     break;
-                                    
+
                                 case PROPERTY:
                                     if ("name".equals(readAttribute(PluginXMLAttribute.NAME))) {
                                         name = readAttribute(PluginXMLAttribute.VALUE);
@@ -282,7 +283,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                                             currentElement = "version";
                                         }
                                     }
-                                    
+
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.NAME))) {
                                         sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
                                         if (sdkVersion == null) {
@@ -333,8 +334,10 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
                             break;
                     }
                 } while (reader != null);
-                
-                if (className != null && name != null && version!= null) {
+
+                System.out.println(className + " " + name + " " + version);
+
+                if (className != null && name != null && version != null) {
                     return new AppDescriptor(className, version, name, sdkVersion, category, f);
                 }
             }
