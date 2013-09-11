@@ -129,14 +129,6 @@ public class ShardedVariantManagerHelper implements Serializable {
         return q.getWhereClause().toString().replaceAll("t[0-9]+.", "this_.");
     }
 
-    private boolean setupMapping(String table) {
-        if (!ShardedSessionManager.getTable().equals(table)) {
-            ShardedSessionManager.setTable(table);
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Counts the variants according to a given filter.
      * 
@@ -149,7 +141,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return number of variants satisfying a given filter
      */
     public Integer getNumFilteredVariants(String sessID, SelectQuery q, TableSchema table) {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -180,7 +172,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return list of variants
      */
     public List<Object[]> getVariants(String sessID, SelectQuery q, TableSchema table, int start, int limit, String[] orderByCols) {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session session = ShardedSessionManager.openSession();
         Criteria c = session.createCriteria(Variant.class).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
@@ -219,11 +211,11 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
             throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
-        Range range = helper.getExtremeValuesForColumn(column.getColumnName());
+        Range range = helper.getExtremeValuesForColumn(table.getTableName(), column.getColumnName());
         double binSize = MiscUtils.generateBins(column, range, logBins);
 
         String round;
@@ -275,7 +267,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, TableSchema table, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -326,7 +318,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, boolean columnXCategorical,
             boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException, SessionExpiredException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -335,13 +327,13 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         double binSizeX = 0;
         if (!columnXCategorical) {
-            Range rangeX = helper.getExtremeValuesForColumn(columnnameX);
+            Range rangeX = helper.getExtremeValuesForColumn(table.getTableName(), columnnameX);
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
 
         double binSizeY = 0;
         if (!columnYCategorical) {
-            Range rangeY = helper.getExtremeValuesForColumn(columnnameY);
+            Range rangeY = helper.getExtremeValuesForColumn(table.getTableName(), columnnameY);
             binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
         }
 
@@ -424,7 +416,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, TableSchema table, String colName, int binsize, float multiplier) throws SQLException,
             SessionExpiredException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -471,7 +463,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return patient count
      */
     public int getPatientCountWithVariantsInRange(String sid, SelectQuery q, TableSchema table) throws SQLException, SessionExpiredException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -499,7 +491,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return map of results
      */
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, TableSchema table, int limit, Map<String, List<String>> results) {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -536,7 +528,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @throws SQLException
      */
     public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, TableSchema table, Map<String, Integer> dnaIDsToCountMap) {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -575,7 +567,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, TableSchema table, int patientHeatMapThreshold, float multiplier, boolean useThreshold,
             Map<String, Integer> map) throws SQLException, SessionExpiredException {
-        setupMapping(table.getTableName());
+        ShardedSessionManager.setTable(table.getTableName());
 
         Session s = ShardedSessionManager.openSession();
 

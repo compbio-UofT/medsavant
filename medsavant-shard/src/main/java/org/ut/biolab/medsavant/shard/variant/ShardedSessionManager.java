@@ -162,10 +162,15 @@ public class ShardedSessionManager {
      * 
      * @param table
      *            name of the new table
+     * @return true if the table was changed, false otherwise
      */
-    public static synchronized void setTable(String table) {
-        VariantMappingGenerator.getInstance().setTable(table);
-        buildConfig();
+    public static synchronized boolean setTable(String table) {
+        if (!getTable().equals(table)) {
+            VariantMappingGenerator.getInstance().setTable(table);
+            buildConfig();
+            return true;
+        }
+        return false;
     }
 
     /**

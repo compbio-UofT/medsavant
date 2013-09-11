@@ -55,9 +55,13 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves number of variants.
      * 
+     * @param tableName
+     *            name of the table of variants
      * @return variant count
      */
-    public int getNumRecordsInTable() {
+    public int getNumRecordsInTable(String tableName) {
+        ShardedSessionManager.setTable(tableName);
+
         Session s = ShardedSessionManager.openSession();
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
@@ -71,11 +75,15 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves extreme values for a given column.
      * 
+     * @param tableName
+     *            name of the table of variants
      * @param colName
      *            column name
      * @return min and max values for the given column
      */
-    public Range getExtremeValuesForColumn(String colName) {
+    public Range getExtremeValuesForColumn(String tableName, String colName) {
+        ShardedSessionManager.setTable(tableName);
+
         Session s = ShardedSessionManager.openSession();
 
         Object oMin = s.createCriteria(Variant.class).setProjection(Projections.min(colName)).list().get(0);
@@ -110,13 +118,17 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves distinct values for a column.
      * 
+     * @param tableName
+     *            name of the table of variants
      * @param colName
      *            column name
      * @param limit
      *            limit for results, <0 if no limit needed
      * @return list of distinct values
      */
-    public List<Object> getDistinctValuesForColumn(String colName, int limit) {
+    public List<Object> getDistinctValuesForColumn(String tableName, String colName, int limit) {
+        ShardedSessionManager.setTable(tableName);
+
         Session s = ShardedSessionManager.openSession();
 
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection(colName + " as value", "value", new String[] { "value" },

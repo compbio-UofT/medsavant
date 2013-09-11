@@ -180,7 +180,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     @Override
     public int getNumRecordsInTable(String sessID, String tablename) throws SQLException, SessionExpiredException {
-        return (isVariantsTable(tablename)) ? shardedHelper.getNumRecordsInTable() : unshardedHelper.getNumRecordsInTable(sessID, tablename);
+        return (isVariantsTable(tablename)) ? shardedHelper.getNumRecordsInTable(tablename) : unshardedHelper.getNumRecordsInTable(sessID, tablename);
     }
 
     /**
@@ -260,7 +260,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         Set<String> set = new HashSet<String>();
         if (isVariantsTable(table.getTableName())) {
-            List<Object> temp = shardedHelper.getDistinctValuesForColumn(colName, (cacheing ? DistinctValuesCache.CACHE_LIMIT : -1));
+            List<Object> temp = shardedHelper.getDistinctValuesForColumn(table.getTableName(), colName, (cacheing ? DistinctValuesCache.CACHE_LIMIT : -1));
 
             for (Object o : temp) {
                 makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
@@ -353,7 +353,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         makeProgress(sessID, "Querying database...", 0.2);
 
-        Range result = (isVariantsTable(table.getTableName())) ? shardedHelper.getExtremeValuesForColumn(colName) : unshardedHelper.getExtremeValuesForColumn(sessID, query);
+        Range result = (isVariantsTable(table.getTableName())) ? shardedHelper.getExtremeValuesForColumn(table.getTableName(), colName) : unshardedHelper
+                .getExtremeValuesForColumn(sessID, query);
 
         makeProgress(sessID, "Saving cached values...", 0.9);
         DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(result.getMin(), result.getMax()));
