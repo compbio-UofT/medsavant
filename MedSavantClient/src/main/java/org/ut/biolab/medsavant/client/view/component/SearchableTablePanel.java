@@ -144,7 +144,7 @@ public class SearchableTablePanel extends JPanel {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
                 synchronized (SearchableTablePanel.this) {
                     JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
-
+                    
                     // Even index, selected or not selected
                     if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
                         comp.setBackground(new Color(178, 225, 92));

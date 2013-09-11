@@ -82,30 +82,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private JButton applyButton;
     private final JLabel warningText;
 
-    private JButton getHelpButton() {
-        final JButton helpButton = new JButton("?");
-        ViewUtil.makeSmall(helpButton);
-        helpButton.setFocusable(false);
-        if (MiscUtils.MAC) {
-            helpButton.putClientProperty("JButton.buttonType", "help");
-            helpButton.setText("");
-        }
-        helpButton.setToolTipText("<html>Type a search condition into the search box, e.g. \"Chromosome\".<br>"
-                + "Press Enter / Return to accept the selected condition name.<br>"
-                + "You\'ll then be prompted to specify parameters for this condition</html>");
 
-        helpButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                // programmatically show tooltip
-                ToolTipManager.sharedInstance().mouseMoved(
-                        new MouseEvent(helpButton, 0, 0, 0,
-                        10, 10, // X-Y of the mouse for the tool tip
-                        0, false));
-            }
-        });
-        return helpButton;
-    }
 
     public QueryViewController(SearchConditionGroupItem model, ConditionViewGenerator c) {
         this.rootGroup = model;
@@ -438,7 +415,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         p.setLayout(new MigLayout("wrap 1, hidemode 1"));
 
         this.removeAll();
-        p.add(getHelpButton(), "center");
+        p.add(ViewUtil.getHelpButton("How to search","Type a search condition into the search box, e.g. \"Chromosome\". "
+                + "Press Enter / Return to accept the selected condition name. "
+                + "You\'ll then be prompted to specify parameters for this condition."), "center");
         for (JComponent c : cs) {
             p.add(c, "left");
         }

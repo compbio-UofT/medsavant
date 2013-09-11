@@ -108,7 +108,12 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             }
         };
 
-        variantCollapsibleInspector.setMessage("No variant selected");
+        String VARIANT_HELP_TITLE = "How to use the Variant Inspector";
+        String VARIANT_HELP_TEXT = "The Variant Inspector shows detailed information about the variant selected from the Spreadsheet.";
+        String GENE_HELP_TITLE = "How to use the Gene Inspector";
+        String GENE_HELP_TEXT = "The Gene Inspector shows detailed information about the gene intersecting the variant selected from the Spreadsheet. If multiple genes intersect a variant, you can change which gene is being inspected via the Variant Inspector.";
+
+        variantCollapsibleInspector.setMessage("No variant selected",VARIANT_HELP_TITLE,VARIANT_HELP_TEXT);
         variantCollapsibleInspector.switchToMessage();
 
 
@@ -120,8 +125,9 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             }
         };
 
-        geneCollapsibleInspector.setMessage("No gene selected");
+        geneCollapsibleInspector.setMessage("No gene selected",GENE_HELP_TITLE,GENE_HELP_TEXT);
 
+        variantCollapsibleInspector.addComponent(ViewUtil.getHelpButton(VARIANT_HELP_TITLE, VARIANT_HELP_TEXT));
 
         // Variant
         if (createSimpleVariantInspector) {
@@ -151,6 +157,9 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 variantCollapsibleInspector.addSubInspector(app.getSubInspector());
             }
         }
+
+         geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
+
 
         // Gene
         if (createGeneSubInspector) {
