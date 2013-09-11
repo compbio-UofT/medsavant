@@ -963,9 +963,9 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long secondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
-        File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
-        BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
-        System.out.println("Writing to log file: " + logFile.getAbsolutePath());
+        //File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
+        //BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
+        //System.out.println("Writing to log file: " + logFile.getAbsolutePath());
 
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
@@ -1041,7 +1041,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
                 ++criteriaNumber;
 
-                bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
+                //bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
 
                 System.out.println("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
                 System.out.println(criterion);
@@ -1055,9 +1055,9 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
-                bw.write("# threshold is " + frequencyThreshold + "\n");
-                bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
-                bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
+                //bw.write("# threshold is " + frequencyThreshold + "\n");
+                //bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
+                //bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
                 //LOG.info("Threshold is " + frequencyThreshold);
                 //LOG.info("Threshold type is " + criterion.getFrequencyType());
 
@@ -1089,7 +1089,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                     }
                 }
 
-                bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
+                //bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
 
                 System.out.println("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
 
@@ -1099,12 +1099,12 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
                 System.out.println(numSeenBefore + " of these were already excluded previously");
 
-                bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
+                //bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
 
-                bw.write("# here are the excluded variants\n");
-                for (MendelVariant v : excludedVariantsFromThisStep) {
-                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
-                }
+                //bw.write("# here are the excluded variants\n");
+                //for (MendelVariant v : excludedVariantsFromThisStep) {
+                //    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
+                //}
 
             }
 
@@ -1215,11 +1215,11 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
          */
 
 
-        bw.flush();
-        bw.close();
+        //bw.flush();
+        //bw.close();
 
         //Process p = Runtime.getRuntime().exec("open " + logFile.getAbsolutePath());
-        System.out.println("Done. Log file: " + logFile.getAbsolutePath());
+        //System.out.println("Done. Log file: " + logFile.getAbsolutePath());
 
         return variantToSampleMap;
     }
