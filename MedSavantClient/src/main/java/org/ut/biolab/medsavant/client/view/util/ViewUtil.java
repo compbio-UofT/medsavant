@@ -768,46 +768,55 @@ public final class ViewUtil {
 
                 int width = 300;
 
-                final HudWindow hud = new HudWindow(title);
-
-
 
                 JLabel l = new JLabel();
                 String labelText = String.format("<html><div WIDTH=%d>%s</div><html>", width, helpText);
                 l.setText(labelText);
-                l.setForeground(Color.white);
+
                 l.setOpaque(false);
 
-                JTextArea a = new JTextArea();
-                a.setText(helpText);
-                a.setForeground(Color.white);
-                a.setEditable(false);
-                a.setWrapStyleWord(true);
-                a.setOpaque(false);
+                final JDialog d;
+                JComponent contentPane = null;
 
+                if (!ClientMiscUtils.LINUX) {
+                    final HudWindow hud = new HudWindow(title);
 
-                hud.getContentPane().setBorder(ViewUtil.getMediumBorder());
-                hud.getContentPane().setLayout(new BorderLayout());
-                hud.getContentPane().add(l, BorderLayout.CENTER);
+                    contentPane = hud.getContentPane();
 
-                hud.getJDialog().setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    d = hud.getJDialog();
 
-                hud.getJDialog().pack();
+                    l.setForeground(Color.white);
 
-                hud.getJDialog().setLocationRelativeTo(helpButton);
-                hud.getJDialog().setVisible(true);
+                } else {
+                    d = new JDialog(MedSavantFrame.getInstance(), title, true);
+                    contentPane = d.getRootPane();
+                    d.setResizable(false);
+                }
 
-                hud.getJDialog().setModal(true);
-                hud.getJDialog().addFocusListener(new FocusListener() {
+                contentPane.setBorder(ViewUtil.getMediumBorder());
+                contentPane.setLayout(new BorderLayout());
+                contentPane.add(l, BorderLayout.CENTER);
+
+                d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+                d.pack();
+
+                d.setLocationRelativeTo(helpButton);
+                d.setVisible(true);
+
+                d.setModal(true);
+                d.addFocusListener(new FocusListener() {
                     @Override
                     public void focusGained(FocusEvent fe) {
                     }
 
                     @Override
                     public void focusLost(FocusEvent fe) {
-                        hud.getJDialog().dispose();
+                        d.dispose();
                     }
                 });
+
+
             }
         });
         return helpButton;
