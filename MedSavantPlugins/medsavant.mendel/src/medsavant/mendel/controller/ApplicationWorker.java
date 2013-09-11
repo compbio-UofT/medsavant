@@ -194,28 +194,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         });
 
-        /*
-        stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-
-                if (e.getValueIsAdjusting()) {
-                    return;
-                }
-                if(stp.getTable().getSelectedRow() != -1){
-
-
-                int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
-
-                SimpleFamilyMattersVariant fmv = variants.get(index);
-                //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
-
-                SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
-                vip.setSimpleVariant(v);
-                }
-            }
-        });*/
-
         JDialog f = new JDialog();
         f.setTitle("Mendel Results");
 
@@ -1000,39 +978,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             Map<MendelGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
             System.out.println("Size of gene map is " + geneToSampleMap.keySet().size());
 
-            /*
-             // some manual reporting / debugging
-             HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-             HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-             for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-             for (SimpleFamilyMattersGene g : v.getGenes()) {
-             Set<String> fgCount = new HashSet<String>();
-             Set<String> bgCount = new HashSet<String>();
-             if (geneToFGCountMap.containsKey(g)) {
-             fgCount = geneToFGCountMap.get(g);
-             }
-             if (geneToBGCountMap.containsKey(g)) {
-             bgCount = geneToBGCountMap.get(g);
-             }
-             for (SimplePatient p : variantToSampleMap.get(v)) {
-             if (p.dnaID.startsWith("MS_HCS")) {
-             fgCount.add(p.dnaID);
-             } else {
-             bgCount.add(p.dnaID);
-             }
-             }
-             geneToFGCountMap.put(g, fgCount);
-             geneToBGCountMap.put(g, bgCount);
-             }
-             }
-
-
-             bw.write("here's the gene analysis at " + stepNumber + "\n");
-             for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-             bw.write("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
-             }
-             */
-
             Set<MendelVariant> allExcludedVariants = new HashSet<MendelVariant>();
 
             int criteriaNumber = 0;
@@ -1179,47 +1124,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             }
 
         }
-
-
-        /* some manual reporting / debugging
-         geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-         geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-         for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-         for (SimpleFamilyMattersGene g : v.getGenes()) {
-         Set<String> fgCount = new HashSet<String>();
-         Set<String> bgCount = new HashSet<String>();
-         if (geneToFGCountMap.containsKey(g)) {
-         fgCount = geneToFGCountMap.get(g);
-         }
-         if (geneToBGCountMap.containsKey(g)) {
-         bgCount = geneToBGCountMap.get(g);
-         }
-         for (SimplePatient p : variantToSampleMap.get(v)) {
-         if (p.dnaID.startsWith("MS_HCS")) {
-         fgCount.add(p.dnaID);
-         } else {
-         bgCount.add(p.dnaID);
-         }
-         }
-         geneToFGCountMap.put(g, fgCount);
-         geneToBGCountMap.put(g, bgCount);
-         }
-         }*
-
-         System.out.println("GENE ANALYSIS: ");
-         for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-         if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
-         System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
-         }
-         }
-         */
-
-
-        //bw.flush();
-        //bw.close();
-
-        //Process p = Runtime.getRuntime().exec("open " + logFile.getAbsolutePath());
-        //System.out.println("Done. Log file: " + logFile.getAbsolutePath());
 
         return variantToSampleMap;
     }
