@@ -778,33 +778,34 @@ public final class ViewUtil {
                 final JDialog d;
                 JComponent contentPane = null;
 
-                if (!ClientMiscUtils.LINUX) {
-                    final HudWindow hud = new HudWindow(title);
-
-                    contentPane = hud.getContentPane();
-
-                    d = hud.getJDialog();
-
-                    l.setForeground(Color.white);
-
-                } else {
-                    d = new JDialog(MedSavantFrame.getInstance(), title, true);
+                if (ClientMiscUtils.LINUX) {
+                    d = new JDialog(MedSavantFrame.getInstance(), title, false);
                     contentPane = d.getRootPane();
                     d.setResizable(false);
+                    d.setUndecorated(true);
+                } else {
+                    final HudWindow hud = new HudWindow(title);
+                    contentPane = hud.getContentPane();
+                    d = hud.getJDialog();
+                    l.setForeground(Color.white);
                 }
 
                 contentPane.setBorder(ViewUtil.getMediumBorder());
                 contentPane.setLayout(new BorderLayout());
                 contentPane.add(l, BorderLayout.CENTER);
 
+                if (ClientMiscUtils.LINUX) {
+                    JLabel titleLabel = new JLabel(title);
+                    titleLabel.setFont(getMediumTitleFont());
+                    contentPane.add(titleLabel, BorderLayout.NORTH);
+                }
+
                 d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
                 d.pack();
 
                 d.setLocationRelativeTo(helpButton);
-                d.setVisible(true);
 
-                d.setModal(true);
                 d.addFocusListener(new FocusListener() {
                     @Override
                     public void focusGained(FocusEvent fe) {
@@ -816,6 +817,7 @@ public final class ViewUtil {
                     }
                 });
 
+                d.setVisible(true);
 
             }
         });
