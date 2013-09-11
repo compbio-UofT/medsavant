@@ -161,11 +161,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
+        final String query = "DROP TABLE IF EXISTS " + tableName + ";";
+        ConnectionController.executeUpdate(sessID, query);
+
         if (isVariantsTable(tableName)) {
             setupHelper.dropVariantTables(tableName);
-        } else {
-            final String query = "DROP TABLE IF EXISTS " + tableName + ";";
-            ConnectionController.executeUpdate(sessID, query);
         }
     }
 

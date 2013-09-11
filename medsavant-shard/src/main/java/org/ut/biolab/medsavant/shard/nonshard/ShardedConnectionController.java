@@ -166,14 +166,15 @@ public class ShardedConnectionController {
 
     /**
      * Executes a query on all shards without waiting for the results.
-     * Non-blocking call.
      * 
      * @param query
      *            query to execute
      * @param shardIdAsParam
      *            true if shard ID should be inserted into the query
+     * @param block
+     *            true if a blocking call should be made, false otherwise
      */
-    public static void executeQueryWithoutResultOnAllShards(String query, boolean shardIdAsParam) {
+    public static void executeQueryWithoutResultOnAllShards(String query, boolean shardIdAsParam, boolean block) {
         int shardNo = ShardedSessionManager.getShardNo();
         ExecutorService executor = Executors.newFixedThreadPool(shardNo);
 
@@ -184,6 +185,36 @@ public class ShardedConnectionController {
         }
 
         executor.shutdown();
+
+        if (block) {
+            while (!executor.isTerminated()) {
+                // wait until everything is done
+            }
+        }
+    }
+
+    /**
+     * Executes a query on all shards in sequence. Blocking call.
+     * 
+     * @param query
+     *            query to execute
+     * @param shardIdAsParam
+     *            true if shard ID should be inserted into the query
+     */
+    public static void executeQueryWithoutResultOnAllShardsInSequence(String query, boolean shardIdAsParam) {
+        int shardNo = ShardedSessionManager.getShardNo();
+        for (int i = 0; i < shardNo; i++) {
+            ShardConfiguration config = ShardedSessionManager.getConfig(i);
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<Object> worker = new ShardQueryExecutor(config, shardIdAsParam ? instantiateQuery(query, i) : query, QueryType.SELECT_WITHOUT_RESULT);
+            executor.submit(worker);
+
+            executor.shutdown();
+            while (!executor.isTerminated()) {
+                // wait until everything is done
+            }
+        }
     }
 
     /**

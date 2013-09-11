@@ -21,7 +21,7 @@ import org.hibernate.shards.ShardId;
  * Selector of shards based on position of variants.
  * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
- *
+ * 
  */
 public class PositionShardSelector implements ShardSelector<Long> {
 
@@ -39,6 +39,5 @@ public class PositionShardSelector implements ShardSelector<Long> {
     public ShardId getShard(Long data) {
         return new ShardId(divide(data, deliminer));
     }
-
 
 }

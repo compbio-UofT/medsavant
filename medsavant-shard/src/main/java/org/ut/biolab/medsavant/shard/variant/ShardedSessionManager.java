@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.shard.strategy.PositionShardStrategyFactory;
  */
 public class ShardedSessionManager {
     // TODO: check whether this is true
-    private static final long MAX_VARIANT_POSITION = 250000000;
+    public static final long MAX_VARIANT_POSITION = 250000000;
     private static final String RESOURCE_PREFIX = "hibernate";
     private static final String RESOURCE_SUFFIX = ".cfg.xml";
     private static final Integer VIRTUAL_SHARD_NO = 32;
@@ -64,11 +64,11 @@ public class ShardedSessionManager {
                 try {
                     Configuration c = new Configuration().configure(RESOURCE_PREFIX + shardNo + RESOURCE_SUFFIX);
                     shardConfigs.add(new ConfigurationToShardConfigurationAdapter(c));
+                    shardNo++;
                 } catch (HibernateException ex) {
                     // loaded all resources
                     loadedAll = true;
                 }
-                shardNo++;
             }
 
             // prepare shard utils

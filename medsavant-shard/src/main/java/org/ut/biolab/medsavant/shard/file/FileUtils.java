@@ -28,7 +28,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.db;
+package org.ut.biolab.medsavant.shard.file;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -146,5 +146,16 @@ public class FileUtils {
         }
 
         return file.renameTo(file2);
+    }
+
+    /**
+     * Generates a shard-specific file name.
+     * 
+     * @param file
+     *            file to use
+     * @return parametrized file name
+     */
+    public static String getParametrizedFilePath(File file) {
+        return file.getAbsolutePath().replaceAll("\\\\", "/") + "%d";
     }
 }
