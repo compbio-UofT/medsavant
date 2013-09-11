@@ -31,6 +31,7 @@
 package org.ut.biolab.medsavant.shard.db;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -97,7 +98,7 @@ public class ShardedDBUtilsHelper {
         } else if (oMin instanceof Double) {
             min = (Double) oMin;
         } else {
-            throw new ClassCastException("Min is not double");
+            min = 0;
         }
         double max;
         if (oMax instanceof Integer) {
@@ -107,7 +108,7 @@ public class ShardedDBUtilsHelper {
         } else if (oMax instanceof Double) {
             max = (Double) oMax;
         } else {
-            throw new ClassCastException("Max is not double");
+            max = 0;
         }
 
         ShardedSessionManager.closeSession(s);
@@ -140,6 +141,6 @@ public class ShardedDBUtilsHelper {
 
         ShardedSessionManager.closeSession(s);
 
-        return res;
+        return (res.size() == 1 && (res.get(0) == null || ((res.get(0) instanceof Object[]) && (((Object[]) res.get(0))[0] == null)))) ? new ArrayList<Object>() : res;
     }
 }

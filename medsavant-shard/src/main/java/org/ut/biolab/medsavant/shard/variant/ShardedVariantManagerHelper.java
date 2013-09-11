@@ -147,7 +147,8 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        Integer res = ((BigDecimal) c.list().get(0)).intValue();
+        Object tmp = c.list().get(0);
+        Integer res = (tmp == null) ? null : ((BigDecimal) tmp).intValue();
 
         ShardedSessionManager.closeSession(s);
 
@@ -184,7 +185,10 @@ public class ShardedVariantManagerHelper implements Serializable {
         List<Object[]> res = new ArrayList<Object[]>();
         Iterator<Variant> iterator = variantList.iterator();
         while (iterator.hasNext()) {
-            res.add(getAttributeValues((Variant) iterator.next()));
+            Object v = iterator.next();
+            if (v != null) {
+                res.add(getAttributeValues((Variant) v));
+            }
         }
 
         ShardedSessionManager.closeSession(session);
@@ -234,15 +238,17 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Map<Range, Long> results = new TreeMap<Range, Long>();
         for (Object[] o : os) {
-            Integer binNo = (int) (((Integer) o[1]) * multiplier);
-            Long count = ((BigDecimal) o[0]).longValue();
-            Range r;
-            if (logBins) {
-                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
-            } else {
-                r = new Range(binNo * binSize, (binNo + 1) * binSize);
+            if (o != null) {
+                Integer binNo = (int) (((Integer) o[1]) * multiplier);
+                Long count = ((BigDecimal) o[0]).longValue();
+                Range r;
+                if (logBins) {
+                    r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
+                } else {
+                    r = new Range(binNo * binSize, (binNo + 1) * binSize);
+                }
+                results.put(r, count);
             }
-            results.put(r, count);
         }
 
         ShardedSessionManager.closeSession(s);
@@ -279,8 +285,10 @@ public class ShardedVariantManagerHelper implements Serializable {
         Map<String, Integer> res = new HashMap<String, Integer>();
         if (os != null) {
             for (Object[] o : os) {
-                String key = (o[1] == null) ? "" : (String) o[1];
-                res.put(key, (int) (((BigDecimal) o[0]).intValue() * multiplier));
+                if (o != null) {
+                    String key = (o[1] == null) ? "" : (String) o[1];
+                    res.put(key, (int) (((BigDecimal) o[0]).intValue() * multiplier));
+                }
             }
         }
 
@@ -360,26 +368,28 @@ public class ShardedVariantManagerHelper implements Serializable {
         List<String> xRanges = new ArrayList<String>();
         List<String> yRanges = new ArrayList<String>();
         for (Object[] o : os) {
-            String xs = null;
-            if (columnXCategorical) {
-                xs = (String) o[1];
-            } else {
-                xs = MiscUtils.doubleToString(((Integer) o[1]) * binSizeX, 2) + " - " + MiscUtils.doubleToString(((Integer) o[1]) * binSizeX + binSizeX, 2);
-            }
-            String ys = null;
-            if (columnYCategorical) {
-                ys = (String) o[2];
-            } else {
-                ys = MiscUtils.doubleToString(((Integer) o[2]) * binSizeY, 2) + " - " + MiscUtils.doubleToString(((Integer) o[2]) * binSizeY + binSizeY, 2);
-            }
+            if (o != null) {
+                String xs = null;
+                if (columnXCategorical) {
+                    xs = (String) o[1];
+                } else {
+                    xs = MiscUtils.doubleToString(((Integer) o[1]) * binSizeX, 2) + " - " + MiscUtils.doubleToString(((Integer) o[1]) * binSizeX + binSizeX, 2);
+                }
+                String ys = null;
+                if (columnYCategorical) {
+                    ys = (String) o[2];
+                } else {
+                    ys = MiscUtils.doubleToString(((Integer) o[2]) * binSizeY, 2) + " - " + MiscUtils.doubleToString(((Integer) o[2]) * binSizeY + binSizeY, 2);
+                }
 
-            ScatterChartEntry entry = new ScatterChartEntry(xs, ys, (int) (((BigDecimal) o[0]).intValue() * multiplier));
-            entries.add(entry);
-            if (!xRanges.contains(entry.getXRange())) {
-                xRanges.add(entry.getXRange());
-            }
-            if (!yRanges.contains(entry.getYRange())) {
-                yRanges.add(entry.getYRange());
+                ScatterChartEntry entry = new ScatterChartEntry(xs, ys, (int) (((BigDecimal) o[0]).intValue() * multiplier));
+                entries.add(entry);
+                if (!xRanges.contains(entry.getXRange())) {
+                    xRanges.add(entry.getXRange());
+                }
+                if (!yRanges.contains(entry.getYRange())) {
+                    yRanges.add(entry.getYRange());
+                }
             }
         }
 
@@ -429,21 +439,23 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         for (Object[] o : os) {
-            String chrom = o[1].toString();
+            if (o != null) {
+                String chrom = o[1].toString();
 
-            Map<Range, Integer> chromMap;
-            if (!results.containsKey(chrom)) {
-                chromMap = new HashMap<Range, Integer>();
-            } else {
-                chromMap = results.get(chrom);
+                Map<Range, Integer> chromMap;
+                if (!results.containsKey(chrom)) {
+                    chromMap = new HashMap<Range, Integer>();
+                } else {
+                    chromMap = results.get(chrom);
+                }
+
+                int binNo = (Integer) o[2];
+                Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
+                int count = (int) (((BigDecimal) o[0]).intValue() * multiplier);
+                chromMap.put(binRange, count);
+
+                results.put(chrom, chromMap);
             }
-
-            int binNo = (Integer) o[2];
-            Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
-            int count = (int) (((BigDecimal) o[0]).intValue() * multiplier);
-            chromMap.put(binRange, count);
-
-            results.put(chrom, chromMap);
         }
 
         ShardedSessionManager.closeSession(s);
@@ -470,7 +482,8 @@ public class ShardedVariantManagerHelper implements Serializable {
         Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("dna_id as value", "value", new String[] { "value" },
                 new Type[] { new StringType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        Integer res = (Integer) c.list().size();
+        List<Object> tmp = c.list();
+        Integer res = (tmp.size() == 1 && (tmp.get(0) == null || ((tmp.get(0) instanceof Object[]) && (((Object[]) tmp.get(0))[0] == null)))) ? 0 : (Integer) c.list().size();
 
         ShardedSessionManager.closeSession(s);
 
@@ -504,7 +517,9 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
-            results.get((String) o[0]).add((String) o[1] + ":" + ((Long) o[2] - 100) + "-" + ((Long) o[2] + 100));
+            if (o != null) {
+                results.get((String) o[0]).add((String) o[1] + ":" + ((Long) o[2] - 100) + "-" + ((Long) o[2] + 100));
+            }
         }
 
         ShardedSessionManager.closeSession(s);
@@ -538,7 +553,9 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
-            dnaIDsToCountMap.put((String) o[1], ((BigDecimal) o[0]).intValue());
+            if (o != null) {
+                dnaIDsToCountMap.put((String) o[1], ((BigDecimal) o[0]).intValue());
+            }
         }
 
         ShardedSessionManager.closeSession(s);
@@ -577,9 +594,11 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         List<Object[]> os = c.list();
         for (Object[] o : os) {
-            int value = (int) (((BigDecimal) o[0]).intValue() * multiplier);
-            if (!useThreshold || value >= patientHeatMapThreshold) {
-                map.put((String) o[1], value);
+            if (o != null) {
+                int value = (int) (((BigDecimal) o[0]).intValue() * multiplier);
+                if (!useThreshold || value >= patientHeatMapThreshold) {
+                    map.put((String) o[1], value);
+                }
             }
         }
 
