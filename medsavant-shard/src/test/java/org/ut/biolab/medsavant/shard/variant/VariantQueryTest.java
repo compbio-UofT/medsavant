@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
@@ -43,6 +44,10 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.testng.annotations.Test;
+import org.ut.biolab.medsavant.shard.common.EntityStyle;
+import org.ut.biolab.medsavant.shard.mapping.ClassField;
+import org.ut.biolab.medsavant.shard.mapping.EntityGenerator;
+import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 
 /**
@@ -250,4 +255,43 @@ public class VariantQueryTest extends AbstractShardTest {
 
         ShardedSessionManager.closeSession(s);
     }
+
+    @Test
+    public void testCriteriaOnDynamicallyGeneratedClasses() {
+        EntityGenerator e = VariantEntityGenerator.getInstance();
+        e.compile();
+
+        Session session = ShardedSessionManager.openSession();
+
+        // show the original class
+        Criteria crit = session.createCriteria(ShardedSessionManager.getClassInMapping()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
+        List<Object> variantList = crit.list();
+
+        Iterator<Object> iterator = variantList.iterator();
+        while (iterator.hasNext()) {
+            Object o = iterator.next();
+            System.out.println(ReflectionToStringBuilder.toString(o, EntityStyle.getInstance()));
+        }
+
+        ShardedSessionManager.closeSession(session);
+
+        // modify class and try again
+        e.addField(new ClassField("private", "String", "aa", "\"\""));
+        e.compile();
+        ShardedSessionManager.setClassInMapping();
+
+        session = ShardedSessionManager.openSession();
+
+        crit = session.createCriteria(ShardedSessionManager.getClassInMapping()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
+        variantList = crit.list();
+
+        iterator = variantList.iterator();
+        while (iterator.hasNext()) {
+            Object o = iterator.next();
+            System.out.println(ReflectionToStringBuilder.toString(o, EntityStyle.getInstance()));
+        }
+
+        ShardedSessionManager.closeSession(session);
+    }
+
 }

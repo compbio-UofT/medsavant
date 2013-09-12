@@ -30,13 +30,24 @@
  */
 package org.ut.biolab.medsavant.shard.variant;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.testng.annotations.Test;
 import org.ut.biolab.medsavant.shard.common.MetaEntity;
+import org.ut.biolab.medsavant.shard.mapping.ClassField;
+import org.ut.biolab.medsavant.shard.mapping.EntityGenerator;
+import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 
 /**
@@ -89,4 +100,61 @@ public class VariantMappingTest extends AbstractShardTest {
 
         ShardedSessionManager.closeSession(session);
     }
+
+    @Test
+    public void testCompilation() {
+        // Prepare source somehow.
+        String source = "package org.ut.biolab.medsavant.shard.variant; public class Test { static { System.out.println(\"hello\"); } public Test() { System.out.println(\"world\"); } }";
+
+        try {
+            // Save source in .java file.
+            File root = new File("/tmp"); // On Windows running on C:\, this is
+                                          // C:\java.
+            File sourceFile = new File(root, "org/ut/biolab/medsavant/shard/variant/Test.java");
+            sourceFile.getParentFile().mkdirs();
+
+            new FileWriter(sourceFile).append(source).close();
+
+            // Compile source file.
+            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            compiler.run(null, null, null, sourceFile.getPath());
+
+            // Load and instantiate compiled class.
+            URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { root.toURI().toURL() });
+            Class<?> cls = Class.forName("org.ut.biolab.medsavant.shard.variant.Test", true, classLoader); // Should
+            // print "hello".
+            Object instance = cls.newInstance(); // Should print "world".
+            System.out.println(instance); // Should print "test.Test@hashcode".
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testVariantEntityGenerator() {
+        EntityGenerator v = VariantEntityGenerator.getInstance();
+        v.compile();
+
+        System.out.println(v.getSource());
+    }
+
+    @Test
+    public void testGenerateNewField() {
+        EntityGenerator v = VariantEntityGenerator.getInstance();
+        v.addField(new ClassField("private", "String", "aa", "\"\""));
+        v.compile();
+
+        System.out.println(v.getSource());
+    }
+
 }
