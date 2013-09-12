@@ -137,7 +137,7 @@ public class SearchBar extends JPanel {
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
-        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
+        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLEAR_ON_TOOLBAR));
         newLabel.setToolTipText("Clear current search");
 
         JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
@@ -228,9 +228,9 @@ public class SearchBar extends JPanel {
         loadLabel.addMouseListener(new MouseListener() {
             SavedFiltersPanel savedFiltersPanel;
             @Override
-            public void mouseClicked(MouseEvent me) {                                
-                fileChooser.setFileFilter(filenameFilter);        
-        
+            public void mouseClicked(MouseEvent me) {
+                fileChooser.setFileFilter(filenameFilter);
+
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
 
@@ -309,7 +309,7 @@ public class SearchBar extends JPanel {
             }
 
             @Override
-            public void mouseClicked(MouseEvent me) {                                
+            public void mouseClicked(MouseEvent me) {
                 fileChooser.setFileFilter(filenameFilter);
 
                 if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {

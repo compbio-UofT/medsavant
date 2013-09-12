@@ -501,18 +501,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                             }
                         }
 
-                        m.addFocusListener(new FocusListener() {
-
-                            @Override
-                            public void focusGained(FocusEvent fe) {
-                            }
-
-                            @Override
-                            public void focusLost(FocusEvent fe) {
-                                m.setVisible(false);
-                            }
-                        });
-
                         JMenuItem delgroup = new JMenuItem("Delete");
                         delgroup.addActionListener(new ActionListener() {
                             @Override

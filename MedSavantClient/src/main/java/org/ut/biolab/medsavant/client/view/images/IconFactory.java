@@ -90,6 +90,7 @@ public class IconFactory {
         NETWORK,
         CHART_SMALL,
         CONFIGURE,
+        CLEAR_ON_TOOLBAR,
         HISTORY_ON_TOOLBAR,
         SAVE_ON_TOOLBAR,
         ACTION_ON_TOOLBAR,
@@ -180,6 +181,8 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_remove.png");
             case HISTORY_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_history.png");
+            case CLEAR_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_clear.png");
             case SAVE_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_save.png");
             case LOAD_ON_TOOLBAR:
