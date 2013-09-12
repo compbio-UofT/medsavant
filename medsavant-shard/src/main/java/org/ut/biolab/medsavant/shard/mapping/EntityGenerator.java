@@ -28,42 +28,70 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.file;
+package org.ut.biolab.medsavant.shard.mapping;
 
-import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import java.util.List;
 
 /**
- * Utils for manipulation of TSV files.
- * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class TSVUtils {
-    private static final String DELIMINER1 = "\"\t\"";
-    private static final String DELIMINER2 = "\t";
+public interface EntityGenerator {
 
-    private static String extractColumnFromLine(String line, int column, String deliminer) {
-        String[] pieces = line.split(deliminer);
-        return (column >= pieces.length) ? "" : pieces[column];
-    }
+    /**
+     * Generates content for a .java file for the given entity.
+     * 
+     * @return java source
+     */
+    String getSource();
 
-    public static String getChrom(String line) {
-        return extractColumnFromLine(line, BasicVariantColumns.INDEX_OF_CHROM, DELIMINER1);
-    }
+    /**
+     * Compiles and loads a class.
+     * 
+     * @return class representing the entity
+     */
+    Class<?> getCompiled();
 
-    public static Long getPos(String line) {
-        Long pos = null;
-        try {
-            pos = Long.valueOf(extractColumnFromLine(line, BasicVariantColumns.INDEX_OF_POSITION, DELIMINER1));
-        } catch (NumberFormatException e) {
-            // NaN, ignore
-            try {
-                pos = Long.valueOf(extractColumnFromLine(line, BasicVariantColumns.INDEX_OF_POSITION, DELIMINER2));
-            } catch (NumberFormatException e2) {
-                // NaN, ignore
-            }
-        }
+    /**
+     * Compiles a class.
+     */
+    void compile();
 
-        return pos;
-    }
+    /**
+     * Generates the name of the class to use.
+     * 
+     * @return class name
+     */
+    String getClassName();
+
+    /**
+     * Generates the package for the class.
+     * 
+     * @return package name
+     */
+    String getPackage();
+
+    /**
+     * Retrieves fields in the generated class.
+     * 
+     * @return list of fields
+     */
+    List<ClassField> getFields();
+
+    /**
+     * Changes the fields being generated for the class including get/set
+     * methods.
+     * 
+     * @param fields
+     *            fields
+     */
+    void setFields(List<ClassField> fields);
+
+    /**
+     * Generates a new field including get/set methods.
+     * 
+     * @param field
+     *            field to generate
+     */
+    void addField(ClassField field);
 }

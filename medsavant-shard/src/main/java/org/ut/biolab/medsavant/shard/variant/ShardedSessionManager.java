@@ -33,6 +33,9 @@ import org.hibernate.shards.ShardedConfiguration;
 import org.hibernate.shards.cfg.ConfigurationToShardConfigurationAdapter;
 import org.hibernate.shards.cfg.ShardConfiguration;
 import org.hibernate.shards.strategy.ShardStrategyFactory;
+import org.ut.biolab.medsavant.shard.mapping.ClassField;
+import org.ut.biolab.medsavant.shard.mapping.MappingProperty;
+import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 import org.ut.biolab.medsavant.shard.strategy.PositionShardStrategyFactory;
 
@@ -53,6 +56,7 @@ public class ShardedSessionManager {
     private static ShardStrategyFactory shardStrategyFactory;
     private static Configuration config;
     private static List<ShardConfiguration> shardConfigs;
+    private static Class<?> classInMapping;
 
     static {
         try {
@@ -73,7 +77,7 @@ public class ShardedSessionManager {
 
             // prepare shard utils
             shardStrategyFactory = buildShardStrategyFactory();
-            buildConfig();
+            setClassInMapping();
         } catch (Throwable ex) {
             ex.printStackTrace();
             sessionFactory = null;
@@ -149,6 +153,44 @@ public class ShardedSessionManager {
     }
 
     /**
+     * Retrieves the currently mapped class.
+     * 
+     * @return mapped class
+     */
+    public static Class<?> getClassInMapping() {
+        return VariantEntityGenerator.getInstance().getCompiled();
+    }
+
+    /**
+     * Updates the configuration with a mapping pointing to the current class.
+     * 
+     * @return true if the mapping was changed, false otherwise
+     */
+    public static synchronized boolean setClassInMapping() {
+        if (classInMapping == null || !getClassInMapping().equals(classInMapping)) {
+            classInMapping = VariantEntityGenerator.getInstance().getCompiled();
+            VariantMappingGenerator.getInstance().setClassName(VariantEntityGenerator.getInstance().getPackage(), VariantEntityGenerator.getInstance().getClassName());
+
+            List<MappingProperty> properties = new ArrayList<MappingProperty>();
+            for (ClassField f : VariantEntityGenerator.getInstance().getFields()) {
+                MappingProperty p = new MappingProperty(f.getName(), f.getName(), f.getType().toLowerCase(), f.getName().toLowerCase().equals("position") ? true : false);
+                if (p.isId()) {
+                    VariantMappingGenerator.getInstance().setId(p);
+                } else {
+                    properties.add(p);
+                }
+            }
+            VariantMappingGenerator.getInstance().setProperties(properties);
+
+            buildConfig();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Retrieves the table currently used in the mapping.
      * 
      * @return
@@ -190,5 +232,4 @@ public class ShardedSessionManager {
     public static void closeSession(Session session) {
         session.close();
     }
-
 }

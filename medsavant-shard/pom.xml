@@ -39,6 +39,11 @@
       <version>3.8.0.GA</version>
     </dependency>
     <dependency>
+      <groupId>org.jodd</groupId>
+      <artifactId>jodd-core</artifactId>
+      <version>3.4.5</version>
+    </dependency>
+    <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
       <version>6.8.5</version>

@@ -101,9 +101,7 @@ public class FileUtils {
      */
     public static void deleteFile(String fileName) {
         File file = new File(fileName);
-        if (file.exists() && file.delete()) {
-            System.out.println(fileName + " is deleted!");
-        } else {
+        if (!(file.exists() && file.delete())) {
             System.err.println("File " + fileName + " could not be deleted.");
         }
     }

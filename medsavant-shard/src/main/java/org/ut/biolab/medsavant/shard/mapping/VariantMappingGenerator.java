@@ -142,4 +142,12 @@ public class VariantMappingGenerator implements MappingProvider {
         return s.toString();
     }
 
+    public MappingProperty getId() {
+        return id;
+    }
+
+    public void setId(MappingProperty id) {
+        this.id = id;
+    }
+
 }
