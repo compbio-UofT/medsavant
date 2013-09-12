@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -17,7 +18,9 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -44,12 +47,15 @@ public class PillView extends JPanel {
     private final JPanel leftPanel;
     private final JPanel middlePanel;
     private final JPanel rightPanel;
-    private PopupGenerator popupGenerator;
+    private PopupGenerator editPopupGenerator;
     private boolean isActivated;
     private boolean isSelected;
     private JLabel textLabel;
     private JLabel expandButton;
     private JLabel editButton;
+    private JLabel infoButton;
+    private String info;
+    private final Component infoButtonPadding;
 
     public PillView() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -74,10 +80,10 @@ public class PillView extends JPanel {
         this.add(rightPanel);
 
         setIsDisclosureVisible(true);
-        
-        int w = SearchBar.getInstance().getWidth() - 2*hpad;           
+
+        int w = SearchBar.getInstance().getWidth() - 2 * hpad;
         this.setMaximumSize(new Dimension(w, MAXIMUM_HEIGHT));
-        
+
         final PillView instance = this;
 
         this.addMouseListener(new MouseAdapter() {
@@ -86,23 +92,37 @@ public class PillView extends JPanel {
                 if (me.getButton() == me.BUTTON1) {
                     //do nothing?
                 } else if (me.getButton() == me.BUTTON2) {
-                    showPopup();
+                    showEditPopup();
                 } else if (me.getButton() == me.BUTTON3) {
-                    showPopup();
+                    showEditPopup();
                 }
             }
         });
+
+        ImageIcon icinfo = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INFO);
+        infoButton = ViewUtil.createIconButton(icinfo);
+        infoButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showInfoPopup();
+            }
+        });
+        infoButton.setVisible(false);
+
+        infoButtonPadding = Box.createHorizontalStrut(2);
+        infoButtonPadding.setVisible(infoButton.isVisible());
+
 
         ImageIcon ic = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE);
         editButton = ViewUtil.createIconButton(ic);
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                showPopup();
+                showEditPopup();
             }
         });
 
-        this.setRightPanel(editButton);
+        this.setRightPanel(ViewUtil.horizontallyAlignComponents(new Component[]{infoButton,infoButtonPadding, editButton}));
     }
 
     public PillView(boolean expandable) {
@@ -132,11 +152,22 @@ public class PillView extends JPanel {
         this.isActivated = b;
     }
 
-    public void showPopup() {
+    public void setInfo(String info) {
+        this.infoButton.setVisible(true);
+        this.infoButtonPadding.setVisible(infoButton.isVisible());
+        this.info = info;
+    }
 
-        if (popupGenerator != null) {
+    public void showInfoPopup() {
+        JDialog d = ViewUtil.getHUD(this.infoButton, this.textLabel.getText(), info);
+        d.setVisible(true);
+    }
+
+    public void showEditPopup() {
+
+        if (editPopupGenerator != null) {
             if (this.isDisclosureVisible) {
-                final JPopupMenu m = popupGenerator.generatePopup();
+                final JPopupMenu m = editPopupGenerator.generatePopup();
                 final PillView instance = this;
                 m.addPopupMenuListener(new PopupMenuListener() {
                     @Override
@@ -286,7 +317,7 @@ public class PillView extends JPanel {
         textLabel = new JLabel(text);
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
-     
+
         this.middlePanel.add(textLabel);
 
         updateUI();
@@ -326,7 +357,7 @@ public class PillView extends JPanel {
         }
     }
 
-    public void setPopupGenerator(PopupGenerator pg) {
-        this.popupGenerator = pg;
+    public void setEditPopupGenerator(PopupGenerator pg) {
+        this.editPopupGenerator = pg;
     }
 }

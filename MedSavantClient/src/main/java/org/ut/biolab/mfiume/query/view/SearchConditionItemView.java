@@ -54,7 +54,7 @@ public class SearchConditionItemView extends PillView {
             }
         });
 
-        this.setPopupGenerator(new PopupGenerator() {
+        this.setEditPopupGenerator(new PopupGenerator() {
             @Override
             public JPopupMenu generatePopup() {
                 final JPopupMenu m = new JPopupMenu();
@@ -97,7 +97,7 @@ public class SearchConditionItemView extends PillView {
                             editor.loadViewFromExistingSearchConditionParameters();
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
-                                public void run() {                           
+                                public void run() {
                                     conditionsEditor.removeAll();
 
                                     JPanel p = ViewUtil.getClearPanel();
@@ -117,7 +117,7 @@ public class SearchConditionItemView extends PillView {
                 };
                 t.start();
 
-                if (item.getParent().getItems().size() > 0) {  
+                if (item.getParent().getItems().size() > 0) {
                     m.add(new JMenuItem(new AbstractAction("Convert to group") {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
@@ -165,6 +165,9 @@ public class SearchConditionItemView extends PillView {
 
         this.setActivated(item.getSearchConditionEncoding() != null);
 
+        if (item.getExplanation() != null) {
+            setInfo(item.getExplanation());
+        }
 
         String name = item.getName(); // e.g. "frequency - thousand genomes"
 
@@ -180,5 +183,7 @@ public class SearchConditionItemView extends PillView {
                 + "<b>" + name + "</b>"
                 + (item.getDescription() != null ? " is " + item.getDescription() + "" : " is <i>unset</i>") + "</html>");
     }
+
+
 
 }

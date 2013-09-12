@@ -55,8 +55,9 @@ public class WikiPathwaysSearchConditionEditor extends SearchConditionEditorView
         return pathwaysTab.getCondition();
     }
 
-    void setPathway(String pathway) {
+    void setPathway(String pathway, String explanation) {
         this.item.setSearchConditionEncoding(pathway);
+        this.item.setExplanation(explanation);
         this.item.setDescription(pathway);
     }
 }

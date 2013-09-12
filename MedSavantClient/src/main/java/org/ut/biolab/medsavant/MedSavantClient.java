@@ -309,6 +309,5 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 DialogUtils.displayException("Error", e.getLocalizedMessage(), e);
             }
         });
-
     }
 }

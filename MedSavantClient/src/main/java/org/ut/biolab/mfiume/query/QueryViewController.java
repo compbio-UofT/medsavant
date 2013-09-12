@@ -469,7 +469,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 pv.setExpandListener(toggleGroupExpand);
 
-                pv.setPopupGenerator(new PopupGenerator() {
+                pv.setEditPopupGenerator(new PopupGenerator() {
                     @Override
                     public JPopupMenu generatePopup() {
                         final SearchConditionGroupItem groupItem = (SearchConditionGroupItem) item;
@@ -635,7 +635,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
-                view.showPopup();
+                view.showEditPopup();
 
                 m.setVisible(false);
                 field.setText("");

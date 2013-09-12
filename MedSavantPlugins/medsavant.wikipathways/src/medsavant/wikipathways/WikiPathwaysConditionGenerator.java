@@ -61,7 +61,7 @@ public class WikiPathwaysConditionGenerator implements ComprehensiveConditionGen
         return editor;
     }
 
-    public void setPathway(String pathway) {
-        editor.setPathway(pathway);
+    public void setPathway(String pathway, String explanation) {
+        editor.setPathway(pathway, explanation);
     }
 }

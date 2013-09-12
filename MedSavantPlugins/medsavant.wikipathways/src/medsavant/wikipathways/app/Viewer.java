@@ -51,6 +51,7 @@ import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.GVTTreeRendererAdapter;
 import org.apache.batik.swing.gvt.GVTTreeRendererEvent;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -58,18 +59,17 @@ import org.xml.sax.SAXException;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
-
+import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 
 /**
  *
  * @author AndrewBrook
  */
 public class Viewer extends JPanel {
-    private static final Logger LOG = Logger.getLogger(Viewer.class.getName());
 
+    private static final Logger LOG = Logger.getLogger(Viewer.class.getName());
     private Loader loader;
     private PathwaysBrowser browser;
-
     private JScrollPane scrollPane;
     private JScrollPane infoScroll;
     private JPanel infoPanel;
@@ -89,18 +89,14 @@ public class Viewer extends JPanel {
     private ArrayList<DataNode> dataNodes = new ArrayList<DataNode>();
     private ArrayList<Rectangle> recs = new ArrayList<Rectangle>();
     private String version;
-
     private Gene jumpGene;
     private String jumpPathway;
     private String linkOutUrl;
-
     private Point start;
     private int initialVerticalScroll = 0;
     private int initialHorizontalScroll = 0;
-
     private boolean hasPathway = false;
     private String pathwayString;
-
     List<Gene> genes;
     DbColumn positionCol;
     DbColumn chromCol;
@@ -119,10 +115,10 @@ public class Viewer extends JPanel {
 
         //scrollPane
         scrollPane = new JScrollPane();
-        scrollPane.setMinimumSize(new Dimension(200,50));
-        scrollPane.setPreferredSize(new Dimension(10000,10000));
+        scrollPane.setMinimumSize(new Dimension(200, 50));
+        scrollPane.setPreferredSize(new Dimension(10000, 10000));
         scrollPane.getViewport().setBackground(Color.white);
-        this.add(scrollPane,BorderLayout.CENTER);
+        this.add(scrollPane, BorderLayout.CENTER);
 
         //svgCanvas
         svgCanvas = new ExtendedJSVGCanvas();
@@ -133,14 +129,14 @@ public class Viewer extends JPanel {
         treeScroll = new JScrollPane();
         treeScroll.getViewport().setLayout(new FlowLayout(FlowLayout.LEFT));
         treeScroll.getViewport().setBackground(Color.white);
-        treeScroll.setMinimumSize(new Dimension(200,200));
+        treeScroll.setMinimumSize(new Dimension(200, 200));
 
         //infoScroll
         infoScroll = new JScrollPane();
         infoScroll.setBackground(Color.white);
         infoScroll.getViewport().setBackground(Color.white);
-        infoScroll.setMaximumSize(new Dimension(100,100));
-        infoScroll.setPreferredSize(new Dimension(100,100));
+        infoScroll.setMaximumSize(new Dimension(100, 100));
+        infoScroll.setPreferredSize(new Dimension(100, 100));
 
         //infoPanel
         infoPanel = new JPanel();
@@ -156,26 +152,26 @@ public class Viewer extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
 
-        Border buttonBorder = BorderFactory.createEmptyBorder(3,5,0,5);
+        Border buttonBorder = BorderFactory.createEmptyBorder(3, 5, 0, 5);
 
         //jumpLocationButton
         /*jumpLocationButton = new JLabel("<HTML><B>Jump to Gene Location</B></HTML>");
-        jumpLocationButton.setForeground(Color.BLUE);
-        jumpLocationButton.setBackground(Color.WHITE);
-        jumpLocationButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        jumpLocationButton.setMaximumSize(new Dimension(25, 200));
-        jumpLocationButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder,buttonBorder));
-        jumpLocationButton.setVisible(false);
-        jumpLocationButton.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                jumpToGene();
-            }
-            public void mousePressed(MouseEvent e) {}
-            public void mouseReleased(MouseEvent e) {}
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
-        });
-        infoPanel.add(jumpLocationButton, gbc);*/
+         jumpLocationButton.setForeground(Color.BLUE);
+         jumpLocationButton.setBackground(Color.WHITE);
+         jumpLocationButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+         jumpLocationButton.setMaximumSize(new Dimension(25, 200));
+         jumpLocationButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder,buttonBorder));
+         jumpLocationButton.setVisible(false);
+         jumpLocationButton.addMouseListener(new MouseListener() {
+         public void mouseClicked(MouseEvent e) {
+         jumpToGene();
+         }
+         public void mousePressed(MouseEvent e) {}
+         public void mouseReleased(MouseEvent e) {}
+         public void mouseEntered(MouseEvent e) {}
+         public void mouseExited(MouseEvent e) {}
+         });
+         infoPanel.add(jumpLocationButton, gbc);*/
 
         //jumpPathwayButton
         jumpPathwayButton = new JLabel("<HTML><B>Jump to Pathway</B></HTML>");
@@ -183,7 +179,7 @@ public class Viewer extends JPanel {
         jumpPathwayButton.setBackground(Color.WHITE);
         jumpPathwayButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         jumpPathwayButton.setMaximumSize(new Dimension(25, 200));
-        jumpPathwayButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder,buttonBorder));
+        jumpPathwayButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder, buttonBorder));
         jumpPathwayButton.setVisible(false);
         jumpPathwayButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -200,7 +196,7 @@ public class Viewer extends JPanel {
         linkOutButton.setBackground(Color.WHITE);
         linkOutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         linkOutButton.setMaximumSize(new Dimension(25, 200));
-        linkOutButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder,buttonBorder));
+        linkOutButton.setBorder(BorderFactory.createCompoundBorder(buttonBorder, buttonBorder));
         linkOutButton.setVisible(false);
         linkOutButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -214,8 +210,8 @@ public class Viewer extends JPanel {
         //infoLabel
         infoLabel = new JLabel();
         infoLabel.setBackground(Color.white);
-        Border paddingBorder = BorderFactory.createEmptyBorder(5,5,5,5);
-        infoLabel.setBorder(BorderFactory.createCompoundBorder(paddingBorder,paddingBorder));
+        Border paddingBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+        infoLabel.setBorder(BorderFactory.createCompoundBorder(paddingBorder, paddingBorder));
         gbc.gridy = 3;
         infoPanel.add(infoLabel, gbc);
 
@@ -232,12 +228,12 @@ public class Viewer extends JPanel {
 
         rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
-        rightPanel.add(treeScroll,BorderLayout.NORTH);
-        rightPanel.add(infoScroll,BorderLayout.CENTER);
-        rightPanel.setMinimumSize(new Dimension(350,350));
-        rightPanel.setPreferredSize(new Dimension(350,350));
-        rightPanel.setMaximumSize(new Dimension(350,350));
-        this.add(rightPanel,BorderLayout.EAST);
+        rightPanel.add(treeScroll, BorderLayout.NORTH);
+        rightPanel.add(infoScroll, BorderLayout.CENTER);
+        rightPanel.setMinimumSize(new Dimension(350, 350));
+        rightPanel.setPreferredSize(new Dimension(350, 350));
+        rightPanel.setMaximumSize(new Dimension(350, 350));
+        this.add(rightPanel, BorderLayout.EAST);
 
         svgCanvas.addGVTTreeRendererListener(new GVTTreeRendererAdapter() {
             @Override
@@ -251,6 +247,7 @@ public class Viewer extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 tryClick(e.getPoint());
             }
+
             @Override
             public void mousePressed(MouseEvent e) {
                 start = e.getLocationOnScreen();
@@ -262,13 +259,14 @@ public class Viewer extends JPanel {
         svgCanvas.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                int x = (int)(e.getLocationOnScreen().getX() - start.getX());
-                int y = (int)(e.getLocationOnScreen().getY() - start.getY());
+                int x = (int) (e.getLocationOnScreen().getX() - start.getX());
+                int y = (int) (e.getLocationOnScreen().getY() - start.getY());
                 int newVert = Math.max(Math.min(scrollPane.getVerticalScrollBar().getMaximum(), initialVerticalScroll - y), 0);
                 int newHor = Math.max(Math.min(scrollPane.getHorizontalScrollBar().getMaximum(), initialHorizontalScroll - x), 0);
                 scrollPane.getVerticalScrollBar().setValue(newVert);
                 scrollPane.getHorizontalScrollBar().setValue(newHor);
             }
+
             @Override
             public void mouseMoved(MouseEvent e) {
                 svgCanvas.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -277,7 +275,7 @@ public class Viewer extends JPanel {
     }
 
     //must always be set
-    public void setBrowser(PathwaysBrowser browser){
+    public void setBrowser(PathwaysBrowser browser) {
         this.browser = browser;
     }
 
@@ -299,26 +297,41 @@ public class Viewer extends JPanel {
 
         hasPathway = true;
 
-         WikiPathwaysConditionGenerator.getInstance().setPathway(pathway);
+        String gString = "";
 
         genes = new ArrayList<Gene>();
-        for(DataNode n : dataNodes){
-            if(n.hasGene()){
+
+
+
+        List<String> geneNames = new ArrayList<String>();
+
+        for (DataNode n : dataNodes) {
+            if (n.hasGene()) {
                 genes.add(n.getGene());
+                geneNames.add(n.getGene().getName());
             }
         }
+
+
+        String explanation = "WikiPathways searches for variants in genes whose gene products occur in the selected pathway.<br/><br/>"
+                + "Pathway " + pathway + " maps to the following genes <i>" + ViewUtil.ellipsizeListAfter(geneNames,20) + "</i>";
+
+        WikiPathwaysConditionGenerator.getInstance().setPathway(pathway, explanation);
+
     }
 
-    public void applyFilter(){
+    public void applyFilter() {
 
-        if(!hasPathway) return;
+        if (!hasPathway) {
+            return;
+        }
 
         loader.setVisible(true);
         loader.setMessage("Applying Filter");
 
         genes = new ArrayList<Gene>();
-        for(DataNode n : dataNodes){
-            if(n.hasGene()){
+        for (DataNode n : dataNodes) {
+            if (n.hasGene()) {
                 genes.add(n.getGene());
             }
         }
@@ -340,7 +353,7 @@ public class Viewer extends JPanel {
     public Condition getCondition() {
         Condition[] results = new Condition[genes.size()];
         int i = 0;
-        for(Gene g : genes){
+        for (Gene g : genes) {
             Condition[] current = new Condition[2];
             current[0] = BinaryCondition.equalTo(chromCol, "chr" + g.getChromosome());
             current[1] = new RangeCondition(positionCol, Math.min(g.getStart(), g.getEnd()), Math.max(g.getStart(), g.getEnd()));
@@ -349,7 +362,7 @@ public class Viewer extends JPanel {
         return ComboCondition.or(results);
     }
 
-    private void getGeneInfo(){
+    private void getGeneInfo() {
 
         loader.setMessage("Getting gene information");
 
@@ -357,14 +370,16 @@ public class Viewer extends JPanel {
 
         //determine url
         String urlString = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gene&id=";
-        for(DataNode n : dataNodes){
+        for (DataNode n : dataNodes) {
             String db = n.getAttribute("Xref", "Database");
             String id = n.getAttribute("Xref", "ID");
-            if(db == null || id == null) continue;
-            if(db.equals("Entrez Gene")){
+            if (db == null || id == null) {
+                continue;
+            }
+            if (db.equals("Entrez Gene")) {
                 urlString += id + ",";
                 entrezNodes.add(n);
-            } else if (db.equals("Ensembl") || db.equals("Ensembl Human")){
+            } else if (db.equals("Ensembl") || db.equals("Ensembl Human")) {
 
 
                 //FIXME: this is a massive hack...is there a better way?
@@ -375,24 +390,24 @@ public class Viewer extends JPanel {
                 String ensemblUrlString = "http://www.ensembl.org/Gene/Summary?g=" + id;
                 String rangeString = "";
 
-                while(!success && retries > 0){
+                while (!success && retries > 0) {
                     try {
                         URL url = new URL(ensemblUrlString);
-                        HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection();
+                        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
                         httpConnection.setInstanceFollowRedirects(false);
                         httpConnection.connect();
                         int responseCode = httpConnection.getResponseCode();
                         String header = httpConnection.getHeaderField("Location");
-                        if(header.contains(";r=")){
+                        if (header.contains(";r=")) {
                             success = true;
-                            rangeString = header.substring(header.indexOf(";r=")+3);
-                            if(rangeString.contains(";")){
+                            rangeString = header.substring(header.indexOf(";r=") + 3);
+                            if (rangeString.contains(";")) {
                                 rangeString = rangeString.substring(0, rangeString.indexOf(";"));
                             }
                         } else {
-                            if(header.startsWith("http://")){
+                            if (header.startsWith("http://")) {
                                 ensemblUrlString = header;
-                            } else if (header.startsWith("/")){
+                            } else if (header.startsWith("/")) {
                                 ensemblUrlString = url.getProtocol() + "://" + url.getHost() + header;
                             } else {
                                 retries = 0;
@@ -402,16 +417,16 @@ public class Viewer extends JPanel {
 
                     } catch (MalformedURLException ex) {
                         LOG.log(Level.SEVERE, null, ex);
-                    } catch (IOException ex){
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     retries--;
                 }
 
-                if(success){
+                if (success) {
                     String chrom = rangeString.substring(0, rangeString.indexOf(":"));
-                    String startRange = rangeString.substring(rangeString.indexOf(":")+1, rangeString.indexOf("-"));
-                    String endRange = rangeString.substring(rangeString.indexOf("-")+1, rangeString.length());
+                    String startRange = rangeString.substring(rangeString.indexOf(":") + 1, rangeString.indexOf("-"));
+                    String endRange = rangeString.substring(rangeString.indexOf("-") + 1, rangeString.length());
                     n.setEnsemblGeneInfo(id, chrom, startRange, endRange);
                 }
 
@@ -421,7 +436,9 @@ public class Viewer extends JPanel {
             }
         }
         urlString += "&retmode=xml";
-        if(entrezNodes.isEmpty()) return;
+        if (entrezNodes.isEmpty()) {
+            return;
+        }
 
         //get xml string
         BufferedReader reader;
@@ -430,7 +447,7 @@ public class Viewer extends JPanel {
             reader = new BufferedReader(new InputStreamReader(new URL(urlString).openStream()));
             String line = reader.readLine();
             while (line != null) {
-                if(!line.startsWith("<?xml") && !line.startsWith("<!DOCTYPE")){
+                if (!line.startsWith("<?xml") && !line.startsWith("<!DOCTYPE")) {
                     xmlString += line;
                 }
                 line = reader.readLine();
@@ -439,7 +456,7 @@ public class Viewer extends JPanel {
             //todo
             return;
         } catch (IOException e) {
-             //todo
+            //todo
             return;
         }
 
@@ -460,8 +477,8 @@ public class Viewer extends JPanel {
 
         //TODO: can we really make assumptions about ordering of xml?
         NodeList docSumList = root.getElementsByTagName("DocSum");
-        for(int i = 0; i < docSumList.getLength(); i++){
-            entrezNodes.get(i).setEntrezGeneInfo((Element)docSumList.item(i));
+        for (int i = 0; i < docSumList.getLength(); i++) {
+            entrezNodes.get(i).setEntrezGeneInfo((Element) docSumList.item(i));
         }
 
     }
@@ -495,11 +512,11 @@ public class Viewer extends JPanel {
         pathway = nodes.item(0);
 
         version = ((Element) pathway).getAttribute("xmlns");
-        if(version == null || version.equals("")){
+        if (version == null || version.equals("")) {
             version = "unknown";
-        } else if (version.indexOf("2008") != -1){
+        } else if (version.indexOf("2008") != -1) {
             version = "2008";
-        } else if (version.indexOf("2010") != -1){
+        } else if (version.indexOf("2010") != -1) {
             version = "2010";
         } else {
             version = "unknown";
@@ -508,7 +525,7 @@ public class Viewer extends JPanel {
         //comments = ((Element) pathway).getElementsByTagName("Comment");
         dataNodes.clear();
         NodeList dataNodeList = ((Element) pathway).getElementsByTagName("DataNode");
-        for(int i = 0; i < dataNodeList.getLength(); i++){
+        for (int i = 0; i < dataNodeList.getLength(); i++) {
             dataNodes.add(new DataNode((Element) (dataNodeList.item(i))));
         }
         //lines = ((Element) pathway).getElementsByTagName("Line");
@@ -517,16 +534,16 @@ public class Viewer extends JPanel {
     private void generateLinks() {
 
         double scale = 1.0;
-        if(version.equals("2008")){
+        if (version.equals("2008")) {
             scale = 0.0667;
         }
 
         recs.clear();
 
-        for(int i = 0; i < dataNodes.size(); i++){
+        for (int i = 0; i < dataNodes.size(); i++) {
 
             DataNode node = dataNodes.get(i);
-            if(!node.hasSubNode("Graphics")){
+            if (!node.hasSubNode("Graphics")) {
                 recs.add(null);
                 continue;
             }
@@ -535,8 +552,8 @@ public class Viewer extends JPanel {
             float centerY = Float.valueOf(node.getAttribute("Graphics", "CenterY"));
             float width = Float.valueOf(node.getAttribute("Graphics", "Width"));
             float height = Float.valueOf(node.getAttribute("Graphics", "Height"));
-            recs.add(new Rectangle((int) (scale *(centerX - width / 2.0)),
-                    (int) (scale *(centerY - height / 2.0)),
+            recs.add(new Rectangle((int) (scale * (centerX - width / 2.0)),
+                    (int) (scale * (centerY - height / 2.0)),
                     (int) (scale * width),
                     (int) (scale * height)));
         }
@@ -544,11 +561,13 @@ public class Viewer extends JPanel {
 
     private void tryClick(Point p) {
         int i = searchShapes(p);
-        if (i == -1) return;
+        if (i == -1) {
+            return;
+        }
         fillInfo(dataNodes.get(i));
     }
 
-    private void clearInfo(){
+    private void clearInfo() {
         //jumpLocationButton.setVisible(false);
         jumpPathwayButton.setVisible(false);
         linkOutButton.setVisible(false);
@@ -556,17 +575,17 @@ public class Viewer extends JPanel {
         rightPanel.revalidate();
     }
 
-    private void fillInfo(DataNode dataNode){
+    private void fillInfo(DataNode dataNode) {
 
         /*if(dataNode.hasGene()){
-            jumpLocationButton.setVisible(true);
-            jumpGene = dataNode.getGene();
-        } else {
-            jumpLocationButton.setVisible(false);
-            jumpGene = null;
-        }*/
+         jumpLocationButton.setVisible(true);
+         jumpGene = dataNode.getGene();
+         } else {
+         jumpLocationButton.setVisible(false);
+         jumpGene = null;
+         }*/
 
-        if(dataNode.hasWikiPathway()){
+        if (dataNode.hasWikiPathway()) {
             jumpPathwayButton.setVisible(true);
             jumpPathway = dataNode.getWikiPathway();
         } else {
@@ -581,26 +600,26 @@ public class Viewer extends JPanel {
         rightPanel.revalidate();
     }
 
-    private void createTree(){
+    private void createTree() {
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("dataTree");
 
         Map<String, ArrayList<DataNode>> treeMap = new HashMap<String, ArrayList<DataNode>>();
-        for(DataNode n : dataNodes){
+        for (DataNode n : dataNodes) {
             String type = n.getType();
-            if(treeMap.get(type) == null){
+            if (treeMap.get(type) == null) {
                 treeMap.put(type, new ArrayList<DataNode>());
             }
             treeMap.get(type).add(n);
         }
         Iterator it = treeMap.keySet().iterator();
-        while(it.hasNext()){
-            String key = (String)it.next();
+        while (it.hasNext()) {
+            String key = (String) it.next();
             ArrayList<DataNode> list = treeMap.get(key);
             Collections.sort(list);
 
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(key);
-            for(DataNode n : list){
+            for (DataNode n : list) {
                 node.add(new DefaultMutableTreeNode(n));
             }
             root.add(node);
@@ -614,12 +633,14 @@ public class Viewer extends JPanel {
             public void mousePressed(MouseEvent e) {
                 int selRow = dataTree.getRowForLocation(e.getX(), e.getY());
                 TreePath selPath = dataTree.getPathForLocation(e.getX(), e.getY());
-                if(selRow != -1) {
-                    if(e.getClickCount() == 2) {
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode)selPath.getLastPathComponent();
-                        if (node == null) return;
+                if (selRow != -1) {
+                    if (e.getClickCount() == 2) {
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath.getLastPathComponent();
+                        if (node == null) {
+                            return;
+                        }
                         if (node.isLeaf()) {
-                            DataNode dataNode = (DataNode)node.getUserObject();
+                            DataNode dataNode = (DataNode) node.getUserObject();
                             fillInfo(dataNode);
                             treeScroll.getVerticalScrollBar().setValue(treeScroll.getVerticalScrollBar().getMinimum());
                         }
@@ -632,14 +653,16 @@ public class Viewer extends JPanel {
         treeScroll.getViewport().removeAll();
         treeScroll.getViewport().add(dataTree);
 
-       // rightPanel.setDividerLocation(0.5);
+        // rightPanel.setDividerLocation(0.5);
     }
 
-    private void jumpToGene(){
-        if(jumpGene == null) return;
+    private void jumpToGene() {
+        if (jumpGene == null) {
+            return;
+        }
         int startGene = jumpGene.getStart();
         int endGene = jumpGene.getEnd();
-        if(startGene > endGene){
+        if (startGene > endGene) {
             int temp = startGene;
             startGene = endGene;
             endGene = temp;
@@ -652,16 +675,20 @@ public class Viewer extends JPanel {
         //}
     }
 
-    private void jumpToPathway(){
-        if(jumpPathway == null) return;
+    private void jumpToPathway() {
+        if (jumpPathway == null) {
+            return;
+        }
         browser.loadPathway(jumpPathway);
     }
 
-    private void linkOut(){
+    private void linkOut() {
 
-        if(linkOutUrl == null) return;
+        if (linkOutUrl == null) {
+            return;
+        }
 
-        if(!java.awt.Desktop.isDesktopSupported()){
+        if (!java.awt.Desktop.isDesktopSupported()) {
             JOptionPane.showMessageDialog(this, "<HTML>This operation is not supported by your computer.<BR>Web page: " + linkOutUrl + "</HTML>");
             return;
         }
@@ -670,8 +697,7 @@ public class Viewer extends JPanel {
         try {
             java.net.URI uri = new java.net.URI(linkOutUrl);
             desktop.browse(uri);
-        }
-        catch ( Exception e ) {
+        } catch (Exception e) {
             //TODO: something
         }
     }

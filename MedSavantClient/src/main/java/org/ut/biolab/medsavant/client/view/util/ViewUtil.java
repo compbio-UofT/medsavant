@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.client.view.util;
 
 import com.explodingpixels.macwidgets.HudWindow;
-import java.awt.*;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -27,6 +26,17 @@ import javax.swing.border.MatteBorder;
 import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -34,6 +44,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -58,6 +69,28 @@ public final class ViewUtil {
     public static JComponent clear(JComponent c) {
         c.setOpaque(false);
         return c;
+    }
+
+    public static String ellipsizeListAfter(List<String> objects, int threshold) {
+
+        int counter = 0;
+        String gString = "";
+
+        for (Object o : objects) {
+            counter++;
+            if (counter <= threshold) {
+                gString += o == null ? "<null>" : o.toString() + " ";
+            }
+        }
+
+        gString = gString.trim();
+        gString = gString.replaceAll(" ", ", ");
+
+        if (counter > threshold) {
+            gString = gString + " and " + (counter - threshold) + " more...";
+        }
+
+        return gString;
     }
 
     public static JButton createHyperLinkButton(String string) {
@@ -749,6 +782,66 @@ public final class ViewUtil {
         }
     }
 
+    public static JDialog getHUD(Component parent, String title, String text) {
+        return getHUD(parent, title, text, false);
+    }
+
+    public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon) {
+        int width = 300;
+
+        JLabel l = new JLabel();
+        String labelText = String.format("<html><div WIDTH=%d>%s</div><html>", width, text);
+        l.setText(labelText);
+
+        l.setOpaque(false);
+
+        final JDialog d;
+        JComponent contentPane = null;
+
+        if (ClientMiscUtils.LINUX) {
+            d = new JDialog(MedSavantFrame.getInstance(), title, false);
+            contentPane = d.getRootPane();
+            d.setResizable(false);
+            d.setUndecorated(true);
+        } else {
+            final HudWindow hud = new HudWindow(title);
+            contentPane = hud.getContentPane();
+            d = hud.getJDialog();
+            l.setForeground(Color.white);
+            if (hideCloseIcon) {
+                hud.hideCloseButton();
+            }
+        }
+
+        contentPane.setBorder(ViewUtil.getMediumBorder());
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(l, BorderLayout.CENTER);
+
+        if (ClientMiscUtils.LINUX) {
+            JLabel titleLabel = new JLabel(title);
+            titleLabel.setFont(getMediumTitleFont());
+            contentPane.add(titleLabel, BorderLayout.NORTH);
+        }
+
+        d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        d.pack();
+
+        d.setLocationRelativeTo(parent);
+
+        d.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent fe) {
+            }
+
+            @Override
+            public void focusLost(FocusEvent fe) {
+                d.setVisible(false);
+            }
+        });
+        return d;
+    }
+
     public static JButton getHelpButton(final String title, final String helpText) {
 
         final JButton helpButton = new JButton("?");
@@ -765,60 +858,8 @@ public final class ViewUtil {
         helpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                int width = 300;
-
-
-                JLabel l = new JLabel();
-                String labelText = String.format("<html><div WIDTH=%d>%s</div><html>", width, helpText);
-                l.setText(labelText);
-
-                l.setOpaque(false);
-
-                final JDialog d;
-                JComponent contentPane = null;
-
-                if (ClientMiscUtils.LINUX) {
-                    d = new JDialog(MedSavantFrame.getInstance(), title, false);
-                    contentPane = d.getRootPane();
-                    d.setResizable(false);
-                    d.setUndecorated(true);
-                } else {
-                    final HudWindow hud = new HudWindow(title);
-                    contentPane = hud.getContentPane();
-                    d = hud.getJDialog();
-                    l.setForeground(Color.white);
-                }
-
-                contentPane.setBorder(ViewUtil.getMediumBorder());
-                contentPane.setLayout(new BorderLayout());
-                contentPane.add(l, BorderLayout.CENTER);
-
-                if (ClientMiscUtils.LINUX) {
-                    JLabel titleLabel = new JLabel(title);
-                    titleLabel.setFont(getMediumTitleFont());
-                    contentPane.add(titleLabel, BorderLayout.NORTH);
-                }
-
-                d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-                d.pack();
-
-                d.setLocationRelativeTo(helpButton);
-
-                d.addFocusListener(new FocusListener() {
-                    @Override
-                    public void focusGained(FocusEvent fe) {
-                    }
-
-                    @Override
-                    public void focusLost(FocusEvent fe) {
-                        d.dispose();
-                    }
-                });
-
+                JDialog d = getHUD(helpButton, title, helpText);
                 d.setVisible(true);
-
             }
         });
         return helpButton;
