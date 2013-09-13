@@ -40,9 +40,12 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.shards.criteria.ShardedCriteriaImpl;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
+import org.ut.biolab.medsavant.shard.mapping.SchemaMappingUtils;
+import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
+import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
-import org.ut.biolab.medsavant.shard.variant.Variant;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.Range;
 
 /**
@@ -56,16 +59,16 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves number of variants.
      * 
-     * @param tableName
-     *            name of the table of variants
+     * @param table
+     *            table schema for variants
      * @return variant count
      */
-    public int getNumRecordsInTable(String tableName) {
-        ShardedSessionManager.setTable(tableName);
+    public int getNumRecordsInTable(TableSchema table) {
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
+        Criteria c = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(Projections.count(VariantMapping.getIdColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
         ShardedSessionManager.closeSession(s);
@@ -76,19 +79,19 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves extreme values for a given column.
      * 
-     * @param tableName
-     *            name of the table of variants
+     * @param table
+     *            table schema for variants
      * @param colName
      *            column name
      * @return min and max values for the given column
      */
-    public Range getExtremeValuesForColumn(String tableName, String colName) {
-        ShardedSessionManager.setTable(tableName);
+    public Range getExtremeValuesForColumn(TableSchema table, String colName) {
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Object oMin = s.createCriteria(Variant.class).setProjection(Projections.min(colName)).list().get(0);
-        Object oMax = s.createCriteria(Variant.class).setProjection(Projections.max(colName)).list().get(0);
+        Object oMin = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(Projections.min(colName)).list().get(0);
+        Object oMax = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(Projections.max(colName)).list().get(0);
 
         double min;
         if (oMin instanceof Integer) {
@@ -119,28 +122,38 @@ public class ShardedDBUtilsHelper {
     /**
      * Retrieves distinct values for a column.
      * 
-     * @param tableName
-     *            name of the table of variants
+     * @param table
+     *            table schema for variants
      * @param colName
      *            column name
      * @param limit
      *            limit for results, <0 if no limit needed
      * @return list of distinct values
      */
-    public List<Object> getDistinctValuesForColumn(String tableName, String colName, int limit) {
-        ShardedSessionManager.setTable(tableName);
+    public List<Object> getDistinctValuesForColumn(TableSchema table, String colName, int limit) {
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection(colName + " as value", "value", new String[] { "value" },
-                new Type[] { new StringType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection(colName
+                + " as value", "value", new String[] { "value" }, new Type[] { new StringType() }));
         if (limit >= 0) {
             c.setFetchSize(limit).setMaxResults(limit);
         }
-        List<Object> res = c.list();
+        List<Object[]> tmp = c.list();
+
+        List<Object> res = new ArrayList<Object>();
+        for (Object[] o : tmp) {
+            res.add(o[0]);
+        }
 
         ShardedSessionManager.closeSession(s);
 
-        return (res.size() == 1 && (res.get(0) == null || ((res.get(0) instanceof Object[]) && (((Object[]) res.get(0))[0] == null)))) ? new ArrayList<Object>() : res;
+        if (res.size() == 1 && (res.get(0) == null || ((res.get(0) instanceof Object[]) && (((Object[]) res.get(0))[0] == null)))) {
+            System.out.println("this case");
+            res = new ArrayList<Object>();
+        }
+
+        return res;
     }
 }

@@ -1301,6 +1301,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map)
             throws SQLException, SessionExpiredException {
 
+        System.out.println(dnaIDs.toString());
         // generate conditions from dna ids
         Condition dnaCondition = new InCondition(table.getDBColumn(DNA_ID), dnaIDs);
 

@@ -56,7 +56,7 @@ public class ShardedSessionManager {
     private static ShardStrategyFactory shardStrategyFactory;
     private static Configuration config;
     private static List<ShardConfiguration> shardConfigs;
-    private static Class<?> classInMapping;
+    private static String classInMapping;
 
     static {
         try {
@@ -97,7 +97,12 @@ public class ShardedSessionManager {
         return virtualShardMap;
     }
 
-    private static void buildConfig() {
+    /**
+     * Rebuilds shards configuration.
+     * 
+     * Necessary to run after changing class/table.
+     */
+    public static synchronized void buildConfig() {
         // initialize config
         config = new Configuration();
         config.configure(RESOURCE_PREFIX + "0" + RESOURCE_SUFFIX);
@@ -153,22 +158,16 @@ public class ShardedSessionManager {
     }
 
     /**
-     * Retrieves the currently mapped class.
-     * 
-     * @return mapped class
-     */
-    public static Class<?> getClassInMapping() {
-        return VariantEntityGenerator.getInstance().getCompiled();
-    }
-
-    /**
      * Updates the configuration with a mapping pointing to the current class.
      * 
      * @return true if the mapping was changed, false otherwise
      */
     public static synchronized boolean setClassInMapping() {
-        if (classInMapping == null || !getClassInMapping().equals(classInMapping)) {
-            classInMapping = VariantEntityGenerator.getInstance().getCompiled();
+        if (classInMapping == null) {
+            VariantEntityGenerator.getInstance().compile();
+        }
+        if (!VariantEntityGenerator.getInstance().getClassName().equals(classInMapping)) {
+            classInMapping = VariantEntityGenerator.getInstance().getClassName();
             VariantMappingGenerator.getInstance().setClassName(VariantEntityGenerator.getInstance().getPackage(), VariantEntityGenerator.getInstance().getClassName());
 
             List<MappingProperty> properties = new ArrayList<MappingProperty>();
@@ -182,8 +181,7 @@ public class ShardedSessionManager {
             }
             VariantMappingGenerator.getInstance().setProperties(properties);
 
-            buildConfig();
-
+            // buildConfig();
             return true;
         } else {
             return false;
@@ -209,7 +207,7 @@ public class ShardedSessionManager {
     public static synchronized boolean setTable(String table) {
         if (!getTable().equals(table)) {
             VariantMappingGenerator.getInstance().setTable(table);
-            buildConfig();
+            // buildConfig();
             return true;
         }
         return false;

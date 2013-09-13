@@ -53,7 +53,9 @@ import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
 import org.ut.biolab.medsavant.shard.db.ShardedDBUtilsHelper;
-import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
+import org.ut.biolab.medsavant.shard.mapping.SchemaMappingUtils;
+import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
+import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
@@ -108,7 +110,7 @@ public class ShardedVariantManagerHelper implements Serializable {
         return res;
     }
 
-    private Object[] getAttributeValues(Variant v) {
+    private Object[] getAttributeValues(Object v) {
         // use reflection to get the list
         String atts = ReflectionToStringBuilder.toString(v, EntityStyle.getInstance());
 
@@ -141,11 +143,11 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return number of variants satisfying a given filter
      */
     public Integer getNumFilteredVariants(String sessID, SelectQuery q, TableSchema table) {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
-
-        Criteria c = s.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
+        Criteria c = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         Object tmp = c.list().get(0);
         Integer res = (tmp == null) ? null : ((BigDecimal) tmp).intValue();
@@ -173,21 +175,21 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return list of variants
      */
     public List<Object[]> getVariants(String sessID, SelectQuery q, TableSchema table, int start, int limit, String[] orderByCols) {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session session = ShardedSessionManager.openSession();
-        Criteria c = session.createCriteria(Variant.class).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
+        Criteria c = session.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setFetchSize(limit).setMaxResults(limit).setFirstResult(start);
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
-        List<Variant> variantList = c.list();
+        List<Object> variantList = c.list();
 
         // convert to rows the editor expects
-        int numberColumns = VariantMapping.getColumnCount();
+        int numberColumns = SchemaMappingUtils.getColumnsInMapping(VariantMappingGenerator.getInstance()).size();
         List<Object[]> res = new ArrayList<Object[]>();
-        Iterator<Variant> iterator = variantList.iterator();
+        Iterator<Object> iterator = variantList.iterator();
         while (iterator.hasNext()) {
             Object v = iterator.next();
             if (v != null) {
-                res.add(getAttributeValues((Variant) v));
+                res.add(getAttributeValues(v));
             }
         }
 
@@ -215,11 +217,11 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, SelectQuery q, TableSchema table, CustomField column, float multiplier, boolean logBins)
             throws SQLException, SessionExpiredException, RemoteException, InterruptedException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Range range = helper.getExtremeValuesForColumn(table.getTableName(), column.getColumnName());
+        Range range = helper.getExtremeValuesForColumn(table, column.getColumnName());
         double binSize = MiscUtils.generateBins(column, range, logBins);
 
         String round;
@@ -231,8 +233,8 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         // execute query
         // add order by value ASC if needed
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + round + "as value",
-                "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new IntegerType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection(
+                "count('variant_id') as pos, " + round + "as value", "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
@@ -273,12 +275,12 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, SelectQuery q, TableSchema table, String colName, float multiplier) throws SQLException,
             SessionExpiredException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + colName + " as value",
-                "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new StringType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection(
+                "count('variant_id') as pos, " + colName + " as value", "value", new String[] { "pos", "value" }, new Type[] { new IntegerType(), new StringType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
@@ -326,7 +328,7 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, SelectQuery q, TableSchema table, String columnnameX, String columnnameY, boolean columnXCategorical,
             boolean columnYCategorical, boolean sortKaryotypically, float multiplier) throws RemoteException, InterruptedException, SQLException, SessionExpiredException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
@@ -335,13 +337,13 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         double binSizeX = 0;
         if (!columnXCategorical) {
-            Range rangeX = helper.getExtremeValuesForColumn(table.getTableName(), columnnameX);
+            Range rangeX = helper.getExtremeValuesForColumn(table, columnnameX);
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
 
         double binSizeY = 0;
         if (!columnYCategorical) {
-            Range rangeY = helper.getExtremeValuesForColumn(table.getTableName(), columnnameY);
+            Range rangeY = helper.getExtremeValuesForColumn(table, columnnameY);
             binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
         }
 
@@ -358,9 +360,9 @@ public class ShardedVariantManagerHelper implements Serializable {
 
         // execute query
         // add order by value ASC if needed
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, " + m + " as value1, " + n
-                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(),
-                columnXCategorical ? new StringType() : new IntegerType(), columnYCategorical ? new StringType() : new IntegerType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection(
+                "count('variant_id') as pos, " + m + " as value1, " + n + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] {
+                        new IntegerType(), columnXCategorical ? new StringType() : new IntegerType(), columnYCategorical ? new StringType() : new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
@@ -426,14 +428,15 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, SelectQuery q, TableSchema table, String colName, int binsize, float multiplier) throws SQLException,
             SessionExpiredException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
         String round = "ROUND(" + colName + "/" + binsize + ",0)";
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("count('variant_id') as pos, chrom as value1, " + round
-                + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] { new IntegerType(), new StringType(), new IntegerType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection(
+                "count('variant_id') as pos, chrom as value1, " + round + " as value2", "value1, value2", new String[] { "pos", "value1", "value2" }, new Type[] {
+                        new IntegerType(), new StringType(), new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object[]> os = c.list();
 
@@ -475,12 +478,12 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return patient count
      */
     public int getPatientCountWithVariantsInRange(String sid, SelectQuery q, TableSchema table) throws SQLException, SessionExpiredException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlGroupProjection("dna_id as value", "value", new String[] { "value" },
-                new Type[] { new StringType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlGroupProjection("dna_id as value",
+                "value", new String[] { "value" }, new Type[] { new StringType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
         List<Object> tmp = c.list();
         Integer res = (tmp.size() == 1 && (tmp.get(0) == null || ((tmp.get(0) instanceof Object[]) && (((Object[]) tmp.get(0))[0] == null)))) ? 0 : (Integer) c.list().size();
@@ -504,12 +507,13 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @return map of results
      */
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, SelectQuery query, TableSchema table, int limit, Map<String, List<String>> results) {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setProjection(Projections.sqlProjection("dna_id as dna_id, chrom as chrom, position as position",
-                new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new StringType(), new IntegerType() }));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setProjection(Projections.sqlProjection(
+                "dna_id as dna_id, chrom as chrom, position as position", new String[] { "dna_id", "chrom", "position" }, new Type[] { new StringType(), new StringType(),
+                        new IntegerType() }));
         c.add(Restrictions.sqlRestriction(getWhereClause(query)));
         if (limit != -1) {
             c.setMaxResults(limit).setFetchSize(limit);
@@ -543,12 +547,12 @@ public class ShardedVariantManagerHelper implements Serializable {
      * @throws SQLException
      */
     public Map<String, Integer> getNumVariantsInFamily(String sessID, SelectQuery q, TableSchema table, Map<String, Integer> dnaIDsToCountMap) {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
-                Projections.groupProperty("dna_id"));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setAggregateGroupByProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()), Projections.groupProperty("dna_id"));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
 
         List<Object[]> os = c.list();
@@ -584,12 +588,12 @@ public class ShardedVariantManagerHelper implements Serializable {
      */
     public Map<String, Integer> getDNAIDHeatMap(String sessID, SelectQuery q, TableSchema table, int patientHeatMapThreshold, float multiplier, boolean useThreshold,
             Map<String, Integer> map) throws SQLException, SessionExpiredException {
-        ShardedSessionManager.setTable(table.getTableName());
+        SchemaMappingUtils.setUpTableAndClass(table, VariantMappingGenerator.getInstance());
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(Variant.class)).setAggregateGroupByProjection(Projections.count(VariantMapping.getIdColumn()),
-                Projections.groupProperty("dna_id"));
+        Criteria c = ((ShardedCriteriaImpl) s.createCriteria(VariantEntityGenerator.getInstance().getCompiled())).setAggregateGroupByProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()), Projections.groupProperty("dna_id"));
         c.add(Restrictions.sqlRestriction(getWhereClause(q)));
 
         List<Object[]> os = c.list();

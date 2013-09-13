@@ -264,7 +264,7 @@ public class VariantQueryTest extends AbstractShardTest {
         Session session = ShardedSessionManager.openSession();
 
         // show the original class
-        Criteria crit = session.createCriteria(ShardedSessionManager.getClassInMapping()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
+        Criteria crit = session.createCriteria(e.getCompiled()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
         List<Object> variantList = crit.list();
 
         Iterator<Object> iterator = variantList.iterator();
@@ -282,7 +282,7 @@ public class VariantQueryTest extends AbstractShardTest {
 
         session = ShardedSessionManager.openSession();
 
-        crit = session.createCriteria(ShardedSessionManager.getClassInMapping()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
+        crit = session.createCriteria(e.getCompiled()).setFetchSize(2).setMaxResults(2).setFirstResult(6);
         variantList = crit.list();
 
         iterator = variantList.iterator();
