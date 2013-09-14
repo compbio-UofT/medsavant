@@ -260,6 +260,8 @@ public class VariantQueryTest extends AbstractShardTest {
     public void testCriteriaOnDynamicallyGeneratedClasses() {
         EntityGenerator e = VariantEntityGenerator.getInstance();
         e.compile();
+        ShardedSessionManager.setClassInMapping();
+        ShardedSessionManager.buildConfig();
 
         Session session = ShardedSessionManager.openSession();
 
@@ -279,6 +281,7 @@ public class VariantQueryTest extends AbstractShardTest {
         e.addField(new ClassField("private", "String", "aa", "\"\""));
         e.compile();
         ShardedSessionManager.setClassInMapping();
+        ShardedSessionManager.buildConfig();
 
         session = ShardedSessionManager.openSession();
 
