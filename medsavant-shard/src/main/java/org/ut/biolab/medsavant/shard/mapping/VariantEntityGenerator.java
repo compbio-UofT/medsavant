@@ -45,7 +45,7 @@ import jodd.io.FileUtil;
 import jodd.util.ClassLoaderUtil;
 
 import org.ut.biolab.medsavant.shard.file.FileUtils;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 /**
  * Generator of variant entities.
@@ -199,7 +199,7 @@ public class VariantEntityGenerator implements EntityGenerator {
             setClassName(CLASS_NAME_BASE + Math.abs(generator.nextInt()));
 
             // save source in .java file.
-            File root = new File(MiscUtils.getTemporaryDirectory());
+            File root = DirectorySettings.getTmpDirectory();
             File sourceFile = new File(root, pack.replace(".", "/") + "/" + className + ".java");
             sourceFile.getParentFile().mkdirs();
 
