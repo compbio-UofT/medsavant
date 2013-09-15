@@ -56,12 +56,12 @@ import org.ut.biolab.medsavant.shared.util.MiscUtils;
 public class ShardedVariantManagerUtilsHelper {
 
     /**
-     * Exports variant table on each shard to a local TSV file.
+     * Exports variant table on each shard to a local file.
      * 
      * @param exportQuery
      *            parametrized query to run
      */
-    public void exportVariantTablesToTSVFiles(String exportQuery) {
+    public void exportVariantTablesToFiles(String exportQuery) {
         Session session = ShardedSessionManager.openSession();
 
         ShardedConnectionController.executeQueryWithoutResultOnAllShards(exportQuery, true, true);
@@ -70,14 +70,14 @@ public class ShardedVariantManagerUtilsHelper {
     }
 
     /**
-     * Exports variant table on each shard to a single shared TSV file.
+     * Exports variant table on each shard to a single shared file.
      * 
      * @param file
      *            file
      * @param exportQuery
      *            query to run
      */
-    public void exportVariantTablesToSingleTSVFile(File file, String exportQuery) {
+    public void exportVariantTablesToSingleFile(File file, String exportQuery) {
         Session session = ShardedSessionManager.openSession();
 
         int shardNo = ShardedSessionManager.getShardNo();

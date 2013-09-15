@@ -51,7 +51,9 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shard.file.FileUtils;
 import org.ut.biolab.medsavant.shard.variant.ShardedVariantManagerHelper;
+import org.ut.biolab.medsavant.shard.variant.ShardedVariantManagerUtilsHelper;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -108,6 +110,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final double LOAD_TABLE_FRACTION = 0.15; // Happens twice
     private static VariantManager instance;
     private static ShardedVariantManagerHelper helper;
+    private static ShardedVariantManagerUtilsHelper utilsHelper;
     // public static boolean REMOVE_TMP_FILES = false;
     static boolean REMOVE_WORKING_DIR = true;
 
@@ -118,6 +121,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         if (instance == null) {
             instance = new VariantManager();
             helper = new ShardedVariantManagerHelper();
+            utilsHelper = new ShardedVariantManagerUtilsHelper();
         }
         return instance;
     }
@@ -427,7 +431,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         if (orderedByPosition) {
             query.addOrderings(table.getDBColumn(POSITION));
         }
-        String intoString = "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" " + "FIELDS TERMINATED BY '"
+        String intoString = "INTO OUTFILE \"" + FileUtils.getParametrizedFilePath(file) + "\" " + "FIELDS TERMINATED BY '"
                 + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' " + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' " + "ESCAPED BY '"
                 + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'" // +
                                                                                       // " LINES TERMINATED BY '\\r\\n' ";
@@ -435,7 +439,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String queryString = query.toString().replace("FROM", intoString + "FROM");
 
         LOG.info(queryString);
-        ConnectionController.executeQuery(sessID, queryString);
+        // ConnectionController.executeQuery(sessID, queryString);
+
+        // export variants from shards - note: this relies on the sharding
+        // strategy based on position, otherwise the data in VCF file won't be
+        // in the correct order
+        utilsHelper.exportVariantTablesToSingleFile(file, queryString);
 
         LOG.info("Done exporting variants to " + file.getAbsolutePath());
         LOG.info("Export took " + ((System.currentTimeMillis() - start) / 1000) + " seconds");

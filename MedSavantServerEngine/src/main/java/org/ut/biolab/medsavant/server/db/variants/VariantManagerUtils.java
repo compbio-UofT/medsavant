@@ -189,7 +189,7 @@ public class VariantManagerUtils {
 
         // export
         LOG.info(query);
-        shardedHelper.exportVariantTablesToSingleTSVFile(file, query);
+        shardedHelper.exportVariantTablesToSingleFile(file, query);
     }
 
     public static void removeTemp(String filename) {
