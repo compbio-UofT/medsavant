@@ -16,8 +16,6 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
-import org.ut.biolab.medsavant.shared.model.Reference;
-import org.ut.biolab.medsavant.shared.model.Chromosome;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,27 +25,29 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ChromosomeTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.model.Chromosome;
+import org.ut.biolab.medsavant.shared.model.Reference;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
+import com.healthmarketscience.sqlbuilder.InsertQuery;
+import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 /**
- *
+ * 
  * @author mfiume
  */
 public class ReferenceManager extends MedSavantServerUnicastRemoteObject implements ReferenceManagerAdapter, GeneSetColumns {
@@ -61,7 +61,9 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         return instance;
     }
 
-    public ReferenceManager() throws RemoteException, SessionExpiredException {super();}
+    public ReferenceManager() throws RemoteException, SessionExpiredException {
+        super();
+    }
 
     @Override
     public Reference[] getReferences(String sessID) throws SQLException, SessionExpiredException {
@@ -69,17 +71,13 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(
-                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
+        query.addColumns(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
 
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Reference> results = new ArrayList<Reference>();
         while (rs.next()) {
-            results.add(new Reference(
-                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                    rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME)));
+            results.add(new Reference(rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME)));
         }
 
         return results.toArray(new Reference[0]);
@@ -142,7 +140,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
         Connection c = ConnectionController.connectPooled(sessID);
 
-        //add reference
+        // add reference
         InsertQuery query1 = new InsertQuery(referenceTable.getTable());
         query1.addColumn(referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), refName);
         query1.addColumn(referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_URL), url);
@@ -155,7 +153,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
         int refID = rs.getInt(1);
 
-        //add contigs
+        // add contigs
         c.setAutoCommit(false);
         for (int i = 0; i < chroms.length; i++) {
             Chromosome chrom = chroms[i];
@@ -177,13 +175,13 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public boolean removeReference(String sessID, int refID) throws SQLException, SessionExpiredException {
 
-         TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
-         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
-         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
+        TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
+        TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
 
-         PooledConnection conn = ConnectionController.connectPooled(sessID);
-         try {
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        try {
             SelectQuery q1 = new SelectQuery();
             q1.addFromTable(annotationTable.getTable());
             q1.addAllColumns();
@@ -209,34 +207,35 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
             DeleteQuery q4 = new DeleteQuery(chromTable.getTable());
             q4.addCondition(BinaryConditionMS.equalTo(chromTable.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
             conn.executeUpdate(q4.toString());
-         } finally {
-             conn.close();
-         }
-
-         return true;
-    }
-
-/*    @Override
-    public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException, SessionExpiredException {
-
-        ResultSet rs = ConnectionController.executeQuery(sid,
-                "SELECT *"
-                + " FROM " + ReferenceTableSchema.TABLE_NAME
-                + " WHERE " + ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN"
-                + " (SELECT " + VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID + " FROM " + VariantTablemapTableSchema.TABLE_NAME
-                + " WHERE " + VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID + "=" + projectid + ")");
-
-        HashMap<Integer,String> result = new HashMap<Integer,String>();
-
-        while (rs.next()) {
-            result.put(rs.getInt(1), rs.getString(2));
+        } finally {
+            conn.close();
         }
 
-        return result;
-    }*/
+        return true;
+    }
+
+    /*
+     * @Override public Map<Integer, String>
+     * getReferencesWithoutTablesInProject(String sid,int projectid) throws
+     * SQLException, SessionExpiredException {
+     * 
+     * ResultSet rs = ConnectionController.executeQuery(sid, "SELECT *" +
+     * " FROM " + ReferenceTableSchema.TABLE_NAME + " WHERE " +
+     * ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN" + " (SELECT "
+     * + VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID + " FROM " +
+     * VariantTablemapTableSchema.TABLE_NAME + " WHERE " +
+     * VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID + "=" + projectid +
+     * ")");
+     * 
+     * HashMap<Integer,String> result = new HashMap<Integer,String>();
+     * 
+     * while (rs.next()) { result.put(rs.getInt(1), rs.getString(2)); }
+     * 
+     * return result; }
+     */
 
     @Override
-    public String getReferenceUrl(String sid,int referenceid) throws SQLException, SessionExpiredException {
+    public String getReferenceUrl(String sid, int referenceid) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -262,11 +261,9 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Chromosome> result = new ArrayList<Chromosome>();
-        while(rs.next()) {
-            result.add(new Chromosome(
-                    rs.getString(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_NAME),
-                    rs.getInt(ChromosomeTableSchema.COLUMNNAME_OF_CENTROMERE_POS),
-                    rs.getInt(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_LENGTH)));
+        while (rs.next()) {
+            result.add(new Chromosome(rs.getString(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_NAME), rs.getInt(ChromosomeTableSchema.COLUMNNAME_OF_CENTROMERE_POS), rs
+                    .getInt(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_LENGTH)));
         }
         return result.toArray(new Chromosome[0]);
     }
