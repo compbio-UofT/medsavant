@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
  * {@link org.hibernate.Criteria}s
  * 
  * @author Maulik Shah
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  */
 public class ExitOperationsCriteriaCollector implements ExitOperationsCollector {
 

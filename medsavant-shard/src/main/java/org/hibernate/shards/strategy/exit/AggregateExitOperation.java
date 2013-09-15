@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * Exit operation for aggregate functions except for count distinct.
  * 
  * @author Maulik Shah
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  */
 public class AggregateExitOperation implements ProjectionExitOperation {
 

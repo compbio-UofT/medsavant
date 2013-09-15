@@ -52,6 +52,7 @@ import org.hibernate.transform.ResultTransformer;
  * Concrete implementation of the {@link ShardedCriteria} interface.
  * 
  * @author maxr@google.com (Max Ross)
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  */
 public class ShardedCriteriaImpl implements ShardedCriteria {
 

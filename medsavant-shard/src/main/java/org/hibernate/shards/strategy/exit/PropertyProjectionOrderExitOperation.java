@@ -26,10 +26,11 @@ import org.hibernate.shards.criteria.InMemoryOrderBy;
 import org.hibernate.shards.util.Preconditions;
 
 /**
- * @author "Aviad Lichtenstadt"
+ * A special Order exit operation for cases of property projection in this case
+ * we just go over the array.
  * 
- *         A special Order exit operation for cases of property projection in
- *         this case we just go over the array
+ * @author "Aviad Lichtenstadt"
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  */
 public class PropertyProjectionOrderExitOperation implements ExitOperation {
 

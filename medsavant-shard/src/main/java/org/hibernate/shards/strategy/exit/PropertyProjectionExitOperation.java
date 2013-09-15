@@ -24,6 +24,7 @@ import org.hibernate.criterion.PropertyProjection;
 
 /**
  * @author "Aviad Lichtenstadt"
+ * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
 public class PropertyProjectionExitOperation {
