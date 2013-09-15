@@ -42,7 +42,6 @@ import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.ut.biolab.medsavant.shard.mapping.SchemaMappingUtils;
 import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
-import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
 import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -68,7 +67,8 @@ public class ShardedDBUtilsHelper {
 
         Session s = ShardedSessionManager.openSession();
 
-        Criteria c = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(Projections.count(VariantMapping.getIdColumn()));
+        Criteria c = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
         ShardedSessionManager.closeSession(s);
@@ -150,7 +150,6 @@ public class ShardedDBUtilsHelper {
         ShardedSessionManager.closeSession(s);
 
         if (res.size() == 1 && (res.get(0) == null || ((res.get(0) instanceof Object[]) && (((Object[]) res.get(0))[0] == null)))) {
-            System.out.println("this case");
             res = new ArrayList<Object>();
         }
 

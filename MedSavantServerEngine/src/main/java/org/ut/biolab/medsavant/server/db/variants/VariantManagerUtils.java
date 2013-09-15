@@ -342,9 +342,6 @@ public class VariantManagerUtils {
 
     public static void addCustomVCFFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
 
-        // System.out.println("Adding custom VCF fields infile=" + infile +
-        // " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
-
         String[] infoFields = new String[customFields.length];
         Class[] infoClasses = new Class[customFields.length];
         for (int i = 0; i < customFields.length; i++) {
@@ -386,7 +383,6 @@ public class VariantManagerUtils {
 
     public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException {
 
-        System.out.println("generate subset");
         long length = inFile.length();
         int step;
         if (length <= MIN_SUBSET_SIZE) {
@@ -395,8 +391,6 @@ public class VariantManagerUtils {
             long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
             step = (int) Math.ceil((double) length / (double) targetSize);
         }
-
-        System.out.println("length: " + length + "  step: " + step);
 
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile));

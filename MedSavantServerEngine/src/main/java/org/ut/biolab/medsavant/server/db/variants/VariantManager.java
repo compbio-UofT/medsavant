@@ -1090,8 +1090,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantID));
 
-        // System.out.println(q.toString());
-
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<VariantComment> result = new ArrayList<VariantComment>();
@@ -1309,8 +1307,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map)
             throws SQLException, SessionExpiredException {
-
-        System.out.println(dnaIDs.toString());
         // generate conditions from dna ids
         Condition dnaCondition = new InCondition(table.getDBColumn(DNA_ID), dnaIDs);
 

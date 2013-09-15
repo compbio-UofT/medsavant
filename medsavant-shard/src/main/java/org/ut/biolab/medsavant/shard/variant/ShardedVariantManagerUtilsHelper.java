@@ -131,10 +131,8 @@ public class ShardedVariantManagerUtilsHelper {
 
         String line;
         int currentShard;
-        System.out.println(file.getPath());
         while ((line = br.readLine()) != null) {
             // determine shard
-//            System.out.println(TSVUtils.getPos(line) + ": " + line);
             currentShard = sel.getShard(TSVUtils.getPos(line)).getId();
 
             lineNumbers.set(currentShard, lineNumbers.get(currentShard) + 1);
@@ -159,7 +157,8 @@ public class ShardedVariantManagerUtilsHelper {
                 }
 
                 String query = "LOAD DATA LOCAL INFILE '" + currentOutputPaths.get(currentShard).replaceAll("\\\\", "/") + "' " + "INTO TABLE " + tableName + " "
-                        + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(fieldDeliminer) + "' ENCLOSED BY '" + enclosedBy + "' " + "ESCAPED BY '" + StringEscapeUtils.escapeJava(escapeSequence) + "' "
+                        + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(fieldDeliminer) + "' ENCLOSED BY '" + enclosedBy + "' " + "ESCAPED BY '"
+                        + StringEscapeUtils.escapeJava(escapeSequence) + "' "
                         // + " LINES TERMINATED BY '\\r\\n'";
                         + ";";
 

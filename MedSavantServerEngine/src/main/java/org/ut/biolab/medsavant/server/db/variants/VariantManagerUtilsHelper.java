@@ -134,7 +134,6 @@ public class VariantManagerUtilsHelper {
                 // LOG.info(query);
                 Statement s = c.createStatement();
                 s.setQueryTimeout(30 * 60); // 30 minutes
-                System.out.println(query);
                 s.execute(query);
 
                 /*
@@ -161,7 +160,6 @@ public class VariantManagerUtilsHelper {
             // LOG.info(query);
             Statement s = c.createStatement();
             s.setQueryTimeout(60 * 60); // 1 hour
-            System.out.println(query);
             s.execute(query);
 
             /*
