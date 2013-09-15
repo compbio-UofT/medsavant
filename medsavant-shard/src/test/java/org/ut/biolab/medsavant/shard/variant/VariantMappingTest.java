@@ -44,11 +44,11 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.testng.annotations.Test;
-import org.ut.biolab.medsavant.shard.common.MetaEntity;
 import org.ut.biolab.medsavant.shard.mapping.ClassField;
 import org.ut.biolab.medsavant.shard.mapping.EntityGenerator;
+import org.ut.biolab.medsavant.shard.mapping.SchemaMappingUtils;
 import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
-import org.ut.biolab.medsavant.shard.mapping.VariantMapping;
+import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
 
 /**
  * Tests to verify mapping is working.
@@ -60,22 +60,21 @@ public class VariantMappingTest extends AbstractShardTest {
 
     @Test
     public void testAttributes() {
-        MetaEntity<Variant> m = new MetaEntity<Variant>(Variant.class);
-        for (String s : m.getAttributeNames()) {
-            System.out.println(s);
+        for (ClassField s : VariantEntityGenerator.getInstance().getFields()) {
+            System.out.println(s.getName());
         }
     }
 
     @Test
     public void testColumns() {
-        for (String s : VariantMapping.getColumnNames()) {
+        for (String s : SchemaMappingUtils.getColumnsInMapping(VariantMappingGenerator.getInstance())) {
             System.out.println(s);
         }
     }
 
     @Test
     public void testId() {
-        System.out.println(VariantMapping.getIdColumn());
+        System.out.println(VariantMappingGenerator.getInstance().getId().getColumn());
     }
 
     @Test
@@ -83,7 +82,8 @@ public class VariantMappingTest extends AbstractShardTest {
         Session session = ShardedSessionManager.openSession();
 
         String table = ShardedSessionManager.getTable();
-        Criteria c = session.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
+        Criteria c = session.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
         System.out.println("Table/count: " + table + " - " + res);
 
@@ -91,10 +91,11 @@ public class VariantMappingTest extends AbstractShardTest {
 
         table = table + "_sub";
         ShardedSessionManager.setTable(table);
+        ShardedSessionManager.buildConfig();
 
         session = ShardedSessionManager.openSession();
 
-        c = session.createCriteria(Variant.class).setProjection(Projections.count(VariantMapping.getIdColumn()));
+        c = session.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
         res = ((BigDecimal) c.list().get(0)).intValue();
         System.out.println("Table/count: " + table + " - " + res);
 
