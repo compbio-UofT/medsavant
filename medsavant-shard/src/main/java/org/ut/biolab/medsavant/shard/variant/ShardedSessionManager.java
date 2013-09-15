@@ -78,6 +78,7 @@ public class ShardedSessionManager {
             // prepare shard utils
             shardStrategyFactory = buildShardStrategyFactory();
             setClassInMapping();
+            buildConfig();
         } catch (Throwable ex) {
             ex.printStackTrace();
             sessionFactory = null;
