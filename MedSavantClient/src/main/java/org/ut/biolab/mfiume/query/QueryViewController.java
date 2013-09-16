@@ -60,7 +60,7 @@ import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
 import org.ut.biolab.mfiume.query.medsavant.complex.ConditionUtils;
 import org.ut.biolab.mfiume.query.view.PillView;
-import org.ut.biolab.mfiume.query.view.PopupGenerator;
+import org.ut.biolab.mfiume.query.view.ConditionPopupGenerator;
 import org.ut.biolab.mfiume.query.view.ScrollableJPopupMenu;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 import org.w3c.dom.Element;
@@ -488,7 +488,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 pv.setExpandListener(toggleGroupExpand);
 
-                pv.setPopupGenerator(new PopupGenerator() {
+                
+                pv.setPopupGenerator(new ConditionPopupGenerator() {
                     @Override
                     public JPopupMenu generatePopup() {
                         final SearchConditionGroupItem groupItem = (SearchConditionGroupItem) item;
@@ -642,7 +643,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
-                view.showPopup();
+                view.showDialog();
 
                 m.setVisible(false);
                 field.setText("");

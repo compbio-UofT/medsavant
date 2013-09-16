@@ -4,19 +4,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -54,10 +52,13 @@ public class SearchConditionItemView extends PillView {
             }
         });
 
-        this.setPopupGenerator(new PopupGenerator() {
+        this.setDialogGenerator(new ConditionEditorDialogGenerator() {
             @Override
-            public JPopupMenu generatePopup() {
-                final JPopupMenu m = new JPopupMenu();
+            public JDialog generateDialog() {
+                final JPanel mainPanel = new JPanel();
+                final JDialog dialog = new JDialog(MedSavantFrame.getInstance());
+
+                mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
                 final JPanel conditionsEditor = ViewUtil.getClearPanel();
                 ViewUtil.applyVerticalBoxLayout(conditionsEditor);
@@ -71,24 +72,9 @@ public class SearchConditionItemView extends PillView {
                 conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("please wait...")));
                 conditionsEditor.add(ViewUtil.centerHorizontally(waitForConditions));
 
-                JPanel closePanel = ViewUtil.getClearPanel();
-                closePanel.setLayout(new BoxLayout(closePanel, BoxLayout.X_AXIS));
-                closePanel.add(Box.createHorizontalGlue());
-                JButton closeButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLOSE));
-                closeButton.setToolTipText("Close condition editor");
-                closePanel.add(closeButton);
-                closePanel.add(Box.createHorizontalStrut(5));
-                closeButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        m.setVisible(false);
-                    }
-                });
 
-                m.add(closePanel);
-
-                m.add(conditionsEditor);
-                m.add(new JSeparator());
+                mainPanel.add(conditionsEditor);
+                mainPanel.add(new JSeparator());
 
                 Thread t = new Thread() {
                     @Override
@@ -97,16 +83,18 @@ public class SearchConditionItemView extends PillView {
                             editor.loadViewFromExistingSearchConditionParameters();
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
-                                public void run() {                           
+                                public void run() {
                                     conditionsEditor.removeAll();
 
                                     JPanel p = ViewUtil.getClearPanel();
                                     p.setBorder(ViewUtil.getMediumBorder());
+                                    p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
                                     p.add(editor);
                                     conditionsEditor.add(p);
-                                    m.pack();
-                                    m.invalidate();
-                                    m.updateUI();
+                                    dialog.pack();
+                                    dialog.invalidate();
+                                    mainPanel.updateUI();
+
                                 }
                             });
                         } catch (Exception ex) {
@@ -117,44 +105,64 @@ public class SearchConditionItemView extends PillView {
                 };
                 t.start();
 
-                if (item.getParent().getItems().size() > 0) {  
-                    m.add(new JMenuItem(new AbstractAction("Convert to group") {
+                JPanel horizButtonPanel = new JPanel();
+                horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));
+                if (item.getParent().getItems().size() > 0) {
+                    JButton button = new JButton("Convert to group");
+                    button.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             item.getParent().createGroupFromItem(item);
+                            dialog.dispose();
                         }
-                    }));
-                }
+                    });
+                    horizButtonPanel.add(button);
+                   
+                }                                
 
                 if (!item.getParent().isFirstItem(item)) {
                     if (item.getRelation() == QueryRelation.OR) {
-                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to \"and\"") {
+                        JButton toggle = new JButton("Change to \"and\"");
+                        toggle.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 item.setRelation(QueryRelation.AND);
+                                dialog.dispose();
                             }
                         });
-                        m.add(toggle);
+                        
+                        horizButtonPanel.add(toggle);
                     } else {
-                        JMenuItem toggle = new JMenuItem(new AbstractAction("Change to \"or\"") {
+                        JButton toggle = new JButton("Change to \"or\"");
+                        toggle.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 item.setRelation(QueryRelation.OR);
+                                dialog.dispose();
                             }
                         });
-                        m.add(toggle);
+                       
+                        horizButtonPanel.add(toggle);
                     }
                 }
-                JMenuItem delete = new JMenuItem(new AbstractAction("Remove condition") {
+                JButton delete = new JButton("Remove condition");
+                delete.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         item.getParent().removeItem(item);
+                        dialog.dispose();
                     }
                 });
-                m.add(delete);
-
-
-                return m;
+               
+                
+                horizButtonPanel.add(delete);
+                mainPanel.add(horizButtonPanel);
+                dialog.setModal(true);
+                dialog.setContentPane(mainPanel);
+                dialog.pack();
+                dialog.setLocationRelativeTo(MedSavantFrame.getInstance());
+                
+                return dialog;
             }
         });
 
@@ -171,7 +179,7 @@ public class SearchConditionItemView extends PillView {
         int index = name.indexOf("-");
         if (index != -1) {
             // remove the program name, e.g. frequency
-            name = name.substring(0,index);
+            name = name.substring(0, index);
         }
 
         this.setText(
@@ -180,5 +188,4 @@ public class SearchConditionItemView extends PillView {
                 + "<b>" + name + "</b>"
                 + (item.getDescription() != null ? " is " + item.getDescription() + "" : " is <i>unset</i>") + "</html>");
     }
-
 }

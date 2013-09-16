@@ -42,6 +42,12 @@ import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ALT_IDS;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.DEF;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ID;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.NAME;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ONTOLOGY;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.PARENTS;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
@@ -134,8 +140,10 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             double prog = 0.2;
-            makeProgress(sessID, "Executing query...", prog);
-            ResultSet rs = conn.executePreparedQuery(ontologySchema.where(ONTOLOGY, ont.toString()).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString());
+            makeProgress(sessID, "Executing query...", prog);                        
+            String q  = ontologySchema.where(ONTOLOGY, ont.toString()).whereNotNull(GENES).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString();
+            LOG.info("Getting all ontology terms: "+q);
+            ResultSet rs = conn.executePreparedQuery(q);
             while (rs.next()) {
                 prog = 0.5 + prog * 0.5;    // Just for fun, to converge on 1.0
                 makeProgress(sessID, "Retrieving ontology terms...", prog);

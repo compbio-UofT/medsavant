@@ -98,16 +98,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private JPanel sessionView;
     private NewLoginView loginView;
     private String currentCard;
-    private boolean queuedForExit = false;
-
-    private static Point getPositionRelativeTo(Component root, Component comp) {
-        if (comp.equals(root)) {
-            return new Point(0, 0);
-        }
-        Point pos = comp.getLocation();
-        Point parentOff = getPositionRelativeTo(root, comp.getParent());
-        return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
-    }
+    private boolean queuedForExit = false;  
     private int textFieldAdminColumns = 20;
     private jAppStore appStore;
 
@@ -124,8 +115,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg) {
-        Point src = getPositionRelativeTo(view, srcComponent);
-        Point dst = getPositionRelativeTo(view, dstComponent);
+        Point src = ViewUtil.getPositionRelativeTo(view, srcComponent);
+        Point dst = ViewUtil.getPositionRelativeTo(view, dstComponent);
         translationAnimation(src, dst, img, notificationMsg);
     }
 

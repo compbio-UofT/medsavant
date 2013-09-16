@@ -3,24 +3,38 @@ package org.ut.biolab.mfiume.query.view;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -41,7 +55,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
     private final StringConditionValueGenerator valueGenerator;
     private QuickListFilterField field;
-    private final int FIELD_WIDTH = 200;
+    private final int FIELD_WIDTH = 600;
     private FilterableCheckBoxList filterableList;
     private List<String> values;
     private boolean cacheOn = true;
@@ -66,12 +80,11 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
-
+        p.add(new JLabel("Filtering variants where " + item.getName() + ": "));
         ButtonGroup group = new ButtonGroup();
-
-        JRadioButton isButton = new JRadioButton("is");
-        JRadioButton notNullButton = new JRadioButton("not null");
-        JRadioButton nullButton = new JRadioButton("null");
+        JRadioButton isButton = new JRadioButton("is any of the following:");
+        JRadioButton notNullButton = new JRadioButton("is not null");
+        JRadioButton nullButton = new JRadioButton("is null");
 
         p.add(isButton);
         p.add(notNullButton);
@@ -166,6 +179,37 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         }
     }
 
+    protected class ListCellRendererWithTotals implements ListCellRenderer {
+
+        private ListCellRenderer defaultListCellRenderer;
+        private JLabel totalCount;
+
+        public ListCellRendererWithTotals(ListCellRenderer defaultListCellRenderer) {
+            super();
+            this.defaultListCellRenderer = defaultListCellRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component c = defaultListCellRenderer.getListCellRendererComponent(jlist, value, index, isSelected, cellHasFocus);
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+            p.add(c);
+            p.add(Box.createHorizontalGlue());
+            totalCount = getNumberInCategory((String) value);
+            p.add(totalCount);
+            return p;
+        }
+
+        public boolean isMouseXOverLabel(Point p) {
+            Point l = totalCount.getLocation();
+            if (p.x >= l.x && p.x <= (l.x + totalCount.getWidth())) {                
+                return true;                
+            }
+            return false;
+        }
+    }
+
     private void hideListFields() {
         field.setVisible(false);
         selectAll.setVisible(false);
@@ -204,9 +248,9 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             return;
         }
 
-        final JRadioButton isNull = new JRadioButton("null");
-        final JRadioButton isNotNull = new JRadioButton("not null");
-        final JRadioButton is = new JRadioButton("is");
+        final JRadioButton isNull = new JRadioButton("is null");
+        final JRadioButton isNotNull = new JRadioButton("is not null");
+        final JRadioButton is = new JRadioButton("is any of the following:");
         ButtonGroup group = new ButtonGroup();
 
         is.addActionListener(new ActionListener() {
@@ -224,7 +268,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                     setAllSelected(false, false);
                     saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
                             Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NULL})));
-                    item.setDescription("null");
+                    item.setDescription("is null");
                     //hideListFields();
                 }
             }
@@ -237,7 +281,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                     setAllSelected(false, false);
                     saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
                             Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NOTNULL})));
-                    item.setDescription("not null");
+                    item.setDescription("is not null");
                     //hideListFields();
                 }
             }
@@ -256,11 +300,26 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         group.add(is);
 
         JPanel controlButtons = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(controlButtons);
+        controlButtons.setLayout(new BoxLayout(controlButtons, BoxLayout.X_AXIS));
+        //ViewUtil.applyHorizontalBoxLayout(controlButtons);
+
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
+        labelPanel.add(Box.createHorizontalGlue());
+        labelPanel.add(new JLabel("Filtering variants where " + item.getName() + ": "));
+        labelPanel.add(Box.createHorizontalGlue());
+        p.add(labelPanel);
+
+        controlButtons.add(Box.createHorizontalGlue());
         controlButtons.add(isNull);
         controlButtons.add(isNotNull);
         controlButtons.add(is);
+        controlButtons.add(Box.createHorizontalGlue());
 
+        p.add(controlButtons);
 
         AbstractListModel model = new SimpleListModel(values);
 
@@ -282,7 +341,46 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             public boolean isCheckBoxEnabled(int index) {
                 return true;
             }
+
+            @Override
+            public ListCellRenderer getCellRenderer() {
+                final ListCellRenderer defaultListCellRenderer = super.getCellRenderer(); //To change body of generated methods, choose Tools | Templates.
+                return (new ListCellRendererWithTotals(defaultListCellRenderer));
+            }
         };
+
+
+        //Generate popup tooltips
+        filterableList.addMouseMotionListener(new MouseMotionAdapter() {
+            private JPopupMenu menu;
+            private int lastIndex = -1;
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int index = filterableList.locationToIndex(e.getPoint());
+                if (index > -1) {
+                    Rectangle bounds = filterableList.getCellBounds(index, index);
+                    ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
+                    Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
+                    renderComp.setBounds(bounds);                    
+                    /*
+                     Point local = new Point(e.getPoint());
+                     local.x -= bounds.x;
+                     local.y -= bounds.y;
+                     */
+                    if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
+                        if(index != lastIndex){
+                            menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
+                            menu.show(e.getComponent(), e.getX(), e.getY());
+                        }else if(menu != null && !menu.isVisible()){
+                            menu.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+                lastIndex = index;
+            }
+        });
+
         filterableList.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         if (model.getSize() > 0) {
             filterableList.setPrototypeCellValue(model.getElementAt(0));    // Makes it much faster to determine the view's preferred size.
@@ -343,8 +441,8 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(3, 15, 3, 15);
-
-        add(controlButtons, gbc);
+        add(p, gbc);
+        //add(controlButtons, gbc);
         add(field, gbc);
 
         gbc.weighty = 1.0;
@@ -405,6 +503,16 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         }
     }
 
+    protected JPopupMenu getPopupMenu(String itemHoveredOver) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(itemHoveredOver));
+        return menu;
+    }
+
+    protected JLabel getNumberInCategory(String category) {
+        return new JLabel("");
+    }
+
     private void saveSearchConditionParameters() {
         saveSearchConditionParameters(StringConditionEncoder.encodeConditions(getSelectedOptions()));
     }
@@ -414,7 +522,6 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         int n = filterableList.getCheckBoxListSelectionModel().getModel().getSize();
         for (int i = 0; i < n; i++) {
             values.add(filterableList.getCheckBoxListSelectionModel().getModel().getElementAt(i).toString());
-            //System.out.println(values.get(i));
         }
         return values;
     }

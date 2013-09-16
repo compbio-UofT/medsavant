@@ -18,6 +18,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -44,7 +45,8 @@ public class PillView extends JPanel {
     private final JPanel leftPanel;
     private final JPanel middlePanel;
     private final JPanel rightPanel;
-    private PopupGenerator popupGenerator;
+    private ConditionEditorDialogGenerator dialogGenerator;
+    private ConditionPopupGenerator popupGenerator;
     private boolean isActivated;
     private boolean isSelected;
     private JLabel textLabel;
@@ -74,10 +76,10 @@ public class PillView extends JPanel {
         this.add(rightPanel);
 
         setIsDisclosureVisible(true);
-        
-        int w = SearchBar.getInstance().getWidth() - 2*hpad;           
+
+        int w = SearchBar.getInstance().getWidth() - 2 * hpad;
         this.setMaximumSize(new Dimension(w, MAXIMUM_HEIGHT));
-        
+
         final PillView instance = this;
 
         this.addMouseListener(new MouseAdapter() {
@@ -86,9 +88,9 @@ public class PillView extends JPanel {
                 if (me.getButton() == me.BUTTON1) {
                     //do nothing?
                 } else if (me.getButton() == me.BUTTON2) {
-                    showPopup();
+                    showDialog();
                 } else if (me.getButton() == me.BUTTON3) {
-                    showPopup();
+                    showDialog();
                 }
             }
         });
@@ -98,7 +100,11 @@ public class PillView extends JPanel {
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                showPopup();
+                if (dialogGenerator != null) {
+                    showDialog();
+                } else if (popupGenerator != null) {
+                    showPopup();
+                }
             }
         });
 
@@ -116,16 +122,6 @@ public class PillView extends JPanel {
                 updateUI();
             }
         });
-
-
-        /*expandButton = ViewUtil.getIconButton(ic);
-
-         expandButton.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent ae) {
-         toggleExpandButton(!expandState);
-         updateUI();
-         }
-         });*/
     }
 
     public void setActivated(boolean b) {
@@ -133,52 +129,59 @@ public class PillView extends JPanel {
     }
 
     public void showPopup() {
+        if (this.isDisclosureVisible) {
+            final JPopupMenu m = popupGenerator.generatePopup();
+            final PillView instance = this;
+            m.addPopupMenuListener(new PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
+                    setSelected(true);
 
-        if (popupGenerator != null) {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {
+                    setSelected(false);
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent pme) {
+                    setSelected(false);
+                }
+            });
+                                    
+            m.show(this, ViewUtil.getPositionRelativeTo(instance, editButton).x, this.getHeight());
+
+            final JComponent pillInstance = this;
+            this.addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent ce) {
+                }
+
+                @Override
+                public void componentMoved(ComponentEvent ce) {
+                    if (m.isVisible()) {
+                        m.show(pillInstance, editButton.getX(), pillInstance.getHeight());
+                    }
+                }
+
+                @Override
+                public void componentShown(ComponentEvent ce) {
+                }
+
+                @Override
+                public void componentHidden(ComponentEvent ce) {
+                }
+            });
+
+        }
+    }
+
+    public void showDialog() {
+        if (dialogGenerator != null) {
             if (this.isDisclosureVisible) {
-                final JPopupMenu m = popupGenerator.generatePopup();
-                final PillView instance = this;
-                m.addPopupMenuListener(new PopupMenuListener() {
-                    @Override
-                    public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
-                        setSelected(true);
-
-                    }
-
-                    @Override
-                    public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {
-                        setSelected(false);
-                    }
-
-                    @Override
-                    public void popupMenuCanceled(PopupMenuEvent pme) {
-                        setSelected(false);
-                    }
-                });
-                m.show(this, 0, this.getHeight());
-
-                final JComponent pillInstance = this;
-                this.addComponentListener(new ComponentListener() {
-                    @Override
-                    public void componentResized(ComponentEvent ce) {
-                    }
-
-                    @Override
-                    public void componentMoved(ComponentEvent ce) {
-                        if (m.isVisible()) {
-                            m.show(pillInstance, 0, pillInstance.getHeight());
-                        }
-                    }
-
-                    @Override
-                    public void componentShown(ComponentEvent ce) {
-                    }
-
-                    @Override
-                    public void componentHidden(ComponentEvent ce) {
-                    }
-                });
-
+                JDialog jd = dialogGenerator.generateDialog();
+                jd.setVisible(true);               
             }
         }
     }
@@ -286,7 +289,7 @@ public class PillView extends JPanel {
         textLabel = new JLabel(text);
         textLabel.setFont(new Font(textLabel.getFont().getFamily(), Font.PLAIN, 13));
         textLabel.setOpaque(false);
-     
+
         this.middlePanel.add(textLabel);
 
         updateUI();
@@ -326,7 +329,11 @@ public class PillView extends JPanel {
         }
     }
 
-    public void setPopupGenerator(PopupGenerator pg) {
-        this.popupGenerator = pg;
+    public void setDialogGenerator(ConditionEditorDialogGenerator pg) {
+        this.dialogGenerator = pg;
+    }
+    
+    public void setPopupGenerator(ConditionPopupGenerator cpg){
+        this.popupGenerator = cpg;
     }
 }
