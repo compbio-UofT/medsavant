@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.server.serverapi;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,7 +73,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     @Override
     public List<SimplePatient> getIndividualsInCohort(String sid, int projectId, int cohortId) throws SQLException, RemoteException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select p from Patient p where p.id = :cohortId and p.project_id = :projectId");
+        Query query = queryManager.createQuery("Select p from Patient p where p.cohort_id = :cohortId and p.project_id = :projectId");
         query.setParameter("cohortId", cohortId);
         query.setParameter("projectId", projectId);
 
@@ -141,18 +142,15 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
         Query query = queryManager.createQuery("Select c from Cohort c where c.id = :cohortId");
         query.setParameter("cohortId", cohortID);
-        List<Cohort> cohorts = query.execute();
-        if (cohorts.size() > 0) {
-            Cohort cohort = cohorts.get(0);
-            List<Integer> newPatientIds = ListUtils.union(Arrays.asList(patientIDs), cohort.getPatientIds());
-            cohort.setPatientIds(newPatientIds);
-            try {
-                entityManager.persist(cohort);
-            } catch (InitializationException e) {
-                LOG.error("Failed to persist cohort");
-            }
-        }
+        Cohort cohort = query.getFirst();
 
+        try {
+            cohort.getPatientIds().addAll(Arrays.asList(ArrayUtils.toObject(patientIDs)));
+            entityManager.persist(cohort);
+            addCohortToPatients(cohort.getPatientIds(), cohortID);
+        } catch (InitializationException e) {
+            LOG.error("Failed to persist cohort");
+        }
     }
 
     @Override
@@ -160,18 +158,15 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
         Query query = queryManager.createQuery("Select c from Cohort c where c.id= :cohortId");
         query.setParameter("cohortId", cohID);
+        Cohort c = query.getFirst();
+        for (int id : patIDs) {
+            c.removePatientId(id);
+        }
 
-        List<Cohort> cohorts = query.execute();
-        if (cohorts.size() > 0 ) {
-            Cohort c = cohorts.get(0);
-            for (int id : patIDs) {
-                c.removePatientId(id);
-            }
-            try {
-                entityManager.persist(c);
-            } catch (InitializationException e) {
-                LOG.error("Error persisting cohort");
-            }
+        try {
+            entityManager.persist(c);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting cohort");
         }
 
     }
@@ -259,6 +254,18 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     public int getNumVariantsInCohort(String sessID, int projID, int refID, int cohortID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException, SessionExpiredException {
         List<String> dnaIDs = getDNAIDsForCohort(sessID, cohortID);
         return VariantManager.getInstance().getVariantCountForDNAIDs(sessID, projID, refID, conditions, dnaIDs);
+    }
+
+    private void addCohortToPatients(List<Integer> patientIds, int cohortId) throws InitializationException {
+
+        String statement = "Select p from Patient p where p.patient_id in ( " + StringUtils.join(patientIds, ",") + ")";
+        Query query = queryManager.createQuery(statement);
+        List<Patient> patients = query.execute();
+
+        for (Patient patient : patients) {
+            patient.getCohortIds().add(cohortId);
+        }
+        entityManager.persistAll(patients);
     }
 
     private int generateId() {

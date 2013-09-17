@@ -215,7 +215,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         projectDetails.setProjectID(projectId);
         projectDetails.setProjectName(name);
         try {
-            entityManager.persist(projectDetails);
+            entityManager.persist(projectDetails, true);
         } catch (InitializationException e) {
             LOG.error("Error persisting project");
         }
@@ -313,8 +313,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         List<CustomField> customColumnList = new ArrayList<CustomField>();
         ProjectDetails project =  ProjectManager.getInstance().getProjectDetails(sid, projectId)[0];
         int i = 0;
+        CustomColumn current;
         for (CustomField customField : fields) {
-            customColumnList.add(new CustomColumn(customField, project, CustomColumnType.VARIANT,i));
+            current = new CustomColumn(customField, project, CustomColumnType.VARIANT,i);
+            current.setReferenceId(referenceId);
+            current.setUploadId(updateId);
+            customColumnList.add(current);
+
             i++;
         }
 
@@ -326,11 +331,12 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public CustomField[] getCustomVariantFields(String sid, int projectId, int referenceId, int updateId) throws SQLException, SessionExpiredException {
         Query query = queryManager.createQuery("Select c from CustomColumn c where c.entity_name = :entityName and " +
-                "c.project_id = :projectId and c.reference_id = :referenceId and c.update_id = :updateId");
+                "c.project_id = :projectId and c.reference_id = :referenceId and c.upload_id = :updateId");
         query.setParameter("entityName", CustomColumnType.VARIANT.name());
         query.setParameter("projectId", projectId);
         query.setParameter("referenceId", referenceId);
         query.setParameter("updateId", updateId);
+        query.setLimit(100);
 
         List<CustomColumn> results = query.execute();
 
@@ -351,7 +357,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     public void publishVariantTable(PooledConnection conn, int projID, int refID, int updID) throws SQLException, SessionExpiredException {
 
         Query query = queryManager.createQuery("Update Project p set p.published = :published " +
-                "where p.project_id := projectId and p.reference_id = :referenceId and p.update_id = :updateId");
+                "where p.project_id = :projectId and p.reference_id = :referenceId and p.update_id = :updateId");
         query.setParameter("published", true);
         query.setParameter("projectId", projID);
         query.setParameter("referenceId", refID);
@@ -387,7 +393,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select p from Project where p.project_id = :projectId");
+        Query query = queryManager.createQuery("Select p from Project p where p.project_id = :projectId");
         query.setParameter("projectId", projID);
 
         List<ProjectDetails> projectDetailsList = query.execute();

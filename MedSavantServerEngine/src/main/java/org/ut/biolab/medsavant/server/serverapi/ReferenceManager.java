@@ -78,7 +78,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
 
         String[] names = new String[resultRowList.size()];
         for (int i = 0; i < resultRowList.size(); i++) {
-            names[i] = (String) resultRowList.get(0).getObject("name");
+            names[i] = (String) resultRowList.get(i).getObject("name");
         }
 
         return names;
@@ -114,7 +114,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
             referenceId = DBUtils.generateId("id", Entity.REFERENCE);
             Reference reference = new Reference(referenceId, refName, url);
 
-            entityManager.persist(reference);
+            entityManager.persist(reference, true);
 
             int contigId = 0;
             for (Chromosome chromosome : chroms) {

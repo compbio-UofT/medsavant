@@ -260,14 +260,15 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         line = line.substring(genesStart + 2, line.length() - 1);
                         String[] genes = line.split(", ");
                         current = terms.get(term);
-                        current.setGenes(genes);
+                        if (current != null) {
+                            current.setGenes(genes);
+                        }
                     }
                 }
             }
         }
 
         populateTable(name, terms);
-
     }
 
     private void populateOMIMTables(String sessID, String name, URL oboData, URL omimToHPOData) throws IOException, SQLException, SessionExpiredException {
@@ -276,8 +277,6 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         try {
             populateTable(name, terms);
 
-            PreparedStatement updStmt = connection.prepareStatement("UPDATE ontology SET genes=? WHERE id=?");
-            PreparedStatement hpoSelStmt = connection.prepareStatement("SELECT genes FROM ontology where ontology='HPO' AND (id=? OR INSTR(alt_ids, ?))");
             Map<String, String[]> hpoGeneCache = new HashMap<String, String[]>();
 
             // OMIM mapping file is ordered by OMIM number, with one HPO term on each line.
@@ -293,7 +292,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         String newTerm = "MIM:" + fields[1];
                         if (!newTerm.equals(omimTerm)) {
                             if (omimGenes != null) {
-                                connection.executePreparedUpdate(updStmt, omimGenes, omimTerm);
+                                updateGenesToTerm(omimGenes.split("|"), omimTerm);
                                 omimGenes = null;
                             }
                             omimTerm = newTerm;
@@ -302,15 +301,8 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         String hpoTerm = fields[4];
                         String[] hpoGenes = hpoGeneCache.get(hpoTerm);
                         if (hpoGenes == null) {
-                            ResultSet rs = connection.executePreparedQuery(hpoSelStmt, hpoTerm, hpoTerm);
-                            if (rs.next()) {
-                                String geneString = rs.getString(1);     // pipe-delimited list of genes
-                                if (geneString != null) {
-                                    hpoGenes = geneString.split("\\|");
-                                } else {
-                                    hpoGenes = new String[0];
-                                }
-                            } else {
+                            hpoGenes = getGenes(OntologyType.HPO, hpoTerm);
+                            if (hpoGenes == null) {
                                 hpoGenes = new String[0];
                                 LOG.info("Unable to find HPO term " + hpoTerm + " for " + omimTerm);
                             }
@@ -330,11 +322,38 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 }
             }
             if (omimGenes != null) {
-                connection.executePreparedUpdate(updStmt, omimGenes, omimTerm);
+                updateGenesToTerm(omimGenes.split("|"), omimTerm);
             }
         } finally {
             if (connection != null) { connection.close(); }
         }
+    }
+
+    private void updateGenesToTerm(String[] genes, String termId) {
+        OntologyTerm term = getTermForName(termId);
+        if (term != null) {
+            term.setGenes(genes);
+        }
+        try {
+            entityManager.persist(term);
+        } catch (InitializationException e) {
+            LOG.error("Error updating term " + termId + " with genes " + genes);
+        }
+    }
+
+    //todo add alts
+    private String[] getGenes(OntologyType type, String termId) {
+        Query query = queryManager.createQuery("Select o from OntologyTerm o where o.type = :type and ( o.id = :termId or :termId member of o.alt_ids)");
+        query.setParameter("type", type);
+        query.setParameter("termId", termId);
+        OntologyTerm term = query.getFirst();
+        return (term != null) ? term.getGenes() : new String[0];
+    }
+
+    private OntologyTerm getTermForName(String termId) {
+        Query query = queryManager.createQuery("Select o from OntologyTerm o where o.id = :termId");
+        query.setParameter("termId", termId );
+        return query.getFirst();
     }
 
     private void populateTable(String name, Map<String, OntologyTerm> terms) throws SQLException {

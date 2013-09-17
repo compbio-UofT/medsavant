@@ -16,30 +16,27 @@
 
 package org.ut.biolab.medsavant.server.serverapi;
 
-import java.rmi.RemoteException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.persistence.EntityManager;
 import org.ut.biolab.medsavant.shared.persistence.EntityManagerFactory;
 import org.ut.biolab.medsavant.shared.query.Query;
 import org.ut.biolab.medsavant.shared.query.QueryManager;
 import org.ut.biolab.medsavant.shared.query.QueryManagerFactory;
+import org.ut.biolab.medsavant.shared.query.ResultRow;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
+
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -66,6 +63,27 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         queryManager = QueryManagerFactory.getQueryManager();
     }
 
+    @Override
+    public void addGene(Gene gene) throws RemoteException {
+        try {
+            entityManager.persist(gene);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting gene " + gene.getName());
+        }
+    }
+    @Override
+    public void addGeneSet(GeneSet geneSet) throws RemoteException {
+        try {
+            entityManager.persist(geneSet);
+        } catch (InitializationException e) {
+            LOG.error("Error persisting gene set " + geneSet.getReference());
+        }
+    }
+
+    @Override
+    public void addGenes(List<Gene> genes) throws RemoteException, InitializationException {
+        entityManager.persistAll(genes);
+    }
 
     /**
      * Get a list of all available gene sets.
@@ -76,9 +94,22 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet[] getGeneSets(String sessID) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from GeneSet");
+        Query query = queryManager.createQuery("Select g.genome, g.type, count(g.name) from Gene g group by g.genome, g.type");
+
+        List<GeneSet> results = new ArrayList<GeneSet>();
+        List<ResultRow> rows = query.executeForRows();
+        for (ResultRow row : rows) {
+            String genome = (String) row.getObject(0);
+            String type = (String) row.getObject(1);
+            int size = (Integer) row.getObject(2);
+            GeneSet geneSet = new GeneSet(genome, type, size);
+            results.add(geneSet);
+        }
+
+        return results.toArray(new GeneSet[0]);
+        /*Query query = queryManager.createQuery("Select g from GeneSet");
         List<GeneSet> result = query.execute();
-        return result.toArray(new GeneSet[0]);
+        return result.toArray(new GeneSet[0]);*/
 
     }
 
@@ -92,7 +123,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public GeneSet getGeneSet(String sessID, String refName) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from GeneSet where g.genome= :refName");
+        Query query = queryManager.createQuery("Select g from GeneSet g where g.genome= :refName");
         query.setParameter("refName",refName);
         List<GeneSet> result = query.execute();
 
@@ -106,7 +137,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Gene[] getGenes(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        Query query = queryManager.createQuery("Select g from Gene g where g.reference = :reference and g.type= :type");
         query.setParameter("reference", geneSet.getReference());
         query.setParameter("type", geneSet.getType());
         List<Gene> result = query.execute();
@@ -116,7 +147,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 
-        Query query = queryManager.createQuery("Select g from Gene where g.reference = :reference and g.type= :type");
+        Query query = queryManager.createQuery("Select g from Gene g where g.reference = :reference and g.type= :type");
         query.setParameter("reference", geneSet.getReference());
         query.setParameter("type", geneSet.getType());
         List<Gene> result = query.execute();

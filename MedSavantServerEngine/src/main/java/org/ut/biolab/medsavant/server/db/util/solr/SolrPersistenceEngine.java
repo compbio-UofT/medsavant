@@ -43,6 +43,8 @@ public class SolrPersistenceEngine implements PersistenceEngine {
 
     private static QueryManager queryManager = QueryManagerFactory.getQueryManager();
 
+    private static final String INFO_FIELD_PREFIX = "info_";
+
     @Override
     public boolean fieldExists(String sid, String tableName, String fieldName) {
         return false;
@@ -139,7 +141,10 @@ public class SolrPersistenceEngine implements PersistenceEngine {
             fieldNames.add(field.getColumnName());
         }
         for (CustomField field : customFields) {
-            fieldNames.add(field.getColumnName());
+            String newFieldName = INFO_FIELD_PREFIX + field.getColumnName();
+            if (!fieldNames.contains(newFieldName)) {
+                fieldNames.add(newFieldName);
+            }
         }
         return fieldNames;
     }
@@ -272,8 +277,8 @@ public class SolrPersistenceEngine implements PersistenceEngine {
                 } catch (Exception e) {
                     LOG.error("Error persisting data from file " + currentOutputPath);
                 } finally {
-                    boolean deleted = new File(currentOutputPath).delete();
-                    LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                    /*boolean deleted = new File(currentOutputPath).delete();
+                    LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));*/
                 }
                 stateOpen = false;
             }
@@ -288,8 +293,8 @@ public class SolrPersistenceEngine implements PersistenceEngine {
             } catch (Exception e) {
                 LOG.error("Error persisting data from file " + currentOutputPath);
             } finally {
-                boolean deleted = new File(currentOutputPath).delete();
-                LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+               /* boolean deleted = new File(currentOutputPath).delete();
+                LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));*/
             }
         }
         LOG.info("Imported " + lineNumber + " lines of variants in total");

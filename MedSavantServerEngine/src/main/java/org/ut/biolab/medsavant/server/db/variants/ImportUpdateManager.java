@@ -66,9 +66,9 @@ public class ImportUpdateManager {
                 publishLatestUpdate(sessionID, projectID);
             }
 
-            if (VariantManager.REMOVE_WORKING_DIR) {
+            /*if (VariantManager.REMOVE_WORKING_DIR) {
                 MiscUtils.deleteDirectory(workingDirectory);
-            }
+            }*/
 
             LOG.info("Finished import");
 

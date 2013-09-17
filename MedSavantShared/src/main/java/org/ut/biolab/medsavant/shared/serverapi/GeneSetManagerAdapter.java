@@ -18,11 +18,13 @@ package org.ut.biolab.medsavant.shared.serverapi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.ut.biolab.medsavant.shared.model.Block;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.solr.exception.InitializationException;
 
 
 /**
@@ -60,4 +62,8 @@ public interface GeneSetManagerAdapter extends Remote {
     public Block[] getBlocks(String sessID, Gene gene) throws SQLException, RemoteException, SessionExpiredException;
 
     void addGene(Gene gene) throws RemoteException;
+
+    void addGeneSet(GeneSet geneSet) throws RemoteException, InitializationException;
+
+    void addGenes(List<Gene> genes) throws RemoteException, InitializationException;
 }

@@ -22,6 +22,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.ut.biolab.medsavant.server.serverapi.GeneSetManager;
 import org.ut.biolab.medsavant.shared.model.Gene;
+import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -70,6 +71,7 @@ public class TabixTableLoader {
             }
             query.addPreparedColumnCollection(dataCols);
             boolean trace = true;
+
             while ((line = IOUtils.readLine(input)) != null) {
                 if (line.charAt(0) != '#') {
                     String[] fields = line.split("\t");
@@ -90,6 +92,8 @@ public class TabixTableLoader {
                 }
                 lineNum++;
             }
+            GeneSet geneSet = new GeneSet(genome, type, lineNum);
+            GeneSetManager.getInstance().addGeneSet(geneSet);
         } catch (IOException x) {
             throw x;
         } finally {

@@ -89,8 +89,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                     resultRow.getObject("hospital_id"),
                     resultRow.getObject("mother_id"),
                     resultRow.getObject("father_id"),
-                    Integer.parseInt((String) resultRow.getObject("gender")),
-                    Integer.parseInt((String) resultRow.getObject("affected")),
+                    resultRow.getObject("gender"),
+                    resultRow.getObject("affected"),
                     resultRow.getObject("dna_ids"),
                     resultRow.getObject("bam_url"),
                     resultRow.getObject("phenotypes")
@@ -557,13 +557,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public String getReadAlignmentPathForDNAID(String sessID, int projID, String dnaID) throws SQLException, RemoteException, SessionExpiredException {
-        Query query = queryManager.createQuery("Select p.bam_url from Patient p where p.project_id = :projectId and :dnaId member of p.dna_ids");
+        Query query = queryManager.createQuery("Select p.bam_url from Patient p where p.project_id = :projectId and p.dna_ids = :dnaId");
         query.setParameter("dnaId", dnaID);
         query.setParameter("projectId", projID);
 
         List<String> results = new ArrayList<String>();
         Patient patient = query.getFirst();
-        return patient.getBamUrl().toString();
+
+        return (patient == null) ? null : patient.getBamUrl().toString();
     }
 
     private int generateId() {
