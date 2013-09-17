@@ -97,7 +97,6 @@ public class SearcheableVariantFile {
         return variantFile.getUser();
     }
 
-
     public UUID getUuid() {
         return uuid;
     }

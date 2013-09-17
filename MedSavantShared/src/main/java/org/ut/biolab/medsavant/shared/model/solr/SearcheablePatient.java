@@ -19,11 +19,12 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.Patient;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Adapter class for mapping Solr documents to Patient objects.
  */
-public class SearcheablePatient {
+public class SearcheablePatient extends SearcheableMedsavantEntity {
 
     private Patient patient;
 
@@ -147,4 +148,13 @@ public class SearcheablePatient {
         return patient.getCohortIds();
     }
 
+    @Override
+    public void setUUID(String uuid) {
+        patient.setUuid(UUID.fromString(uuid));
+    }
+
+    @Override
+    public UUID getUUID() {
+        return patient.getUuid();
+    }
 }

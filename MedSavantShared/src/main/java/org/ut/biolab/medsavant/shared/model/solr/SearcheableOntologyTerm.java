@@ -19,10 +19,12 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 
+import java.util.UUID;
+
 /**
  * Adapter class for mapping Solr documents to OntologyTerm objects.
  */
-public class SearcheableOntologyTerm {
+public class SearcheableOntologyTerm extends SearcheableMedsavantEntity {
 
     private OntologyType ontology;
     private String id;
@@ -107,5 +109,15 @@ public class SearcheableOntologyTerm {
 
     public String[] getGenes() {
         return genes;
+    }
+
+    @Override
+    public void setUUID(String uuid) {
+        term.setUuid(UUID.fromString(uuid));
+    }
+
+    @Override
+    public UUID getUUID() {
+        return term.getUuid();
     }
 }

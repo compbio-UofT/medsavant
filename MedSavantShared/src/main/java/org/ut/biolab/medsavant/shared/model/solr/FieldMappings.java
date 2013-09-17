@@ -110,6 +110,7 @@ public class FieldMappings {
         new HashMap<String, String> () {{
             put("regionset", "region_set");
             put("genomicregion", "genomic_region");
+            put("geneset", "gene_set");
             put("variantfile", "variant_file");
             put("varianttag", "variant_tag");
             put("ontologyterm", "ontology_term");

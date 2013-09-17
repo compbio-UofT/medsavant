@@ -63,9 +63,9 @@ public class SearcheableVariant {
         variantRecord.setChrom(chrom);
     }
 
-    @Field("position")
-    public void setPosition(Integer position) {
-        variantRecord.setPosition(Long.valueOf(position));
+    @Field("pos")
+    public void setPosition(Float position) {
+        variantRecord.setPosition(position.longValue());
     }
 
     @Field("dbsnp_id")
@@ -139,7 +139,7 @@ public class SearcheableVariant {
 
     @Field("info_BQ")
     public void setBaseQuality(String[] baseQuality) {
-        variantRecord.setBaseQuality(Integer.valueOf(baseQuality[0]));
+        variantRecord.setBaseQuality(Double.valueOf(baseQuality[0]).intValue());
     }
 
     @Field("info_CIGAR")

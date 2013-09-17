@@ -38,8 +38,8 @@ public class SearcheableChromosome {
     }
 
     @Field("contig_id")
-    public void setContigId(int contigId) {
-        this.contigId = contigId;
+    public void setContigId(String contigId) {
+        this.contigId = Integer.parseInt(contigId);
     }
 
     @Field("reference_id")
@@ -63,7 +63,7 @@ public class SearcheableChromosome {
     }
 
     public Chromosome getChromosome() {
-        this.chromosome = new Chromosome(name,centromerePos,length);
+        this.chromosome = new Chromosome(centromerePos, name, length, referenceId, contigId);
         return chromosome;
     }
 

@@ -19,12 +19,14 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.UUID;
 
 /**
  * Adapter class for mapping Solr documents to Ontology objects.
  */
-public class SearcheableOntology {
+public class SearcheableOntology extends SearcheableMedsavantEntity {
 
     private OntologyType type;
     private String name;
@@ -40,8 +42,8 @@ public class SearcheableOntology {
     }
 
     @Field("type")
-    public void setType(OntologyType type) {
-        this.type = type;
+    public void setType(String type) {
+        this.type = OntologyType.valueOf(type);
     }
 
     @Field("name")
@@ -50,13 +52,13 @@ public class SearcheableOntology {
     }
 
     @Field("obo_url")
-    public void setOboURL(URL oboURL) {
-        this.oboURL = oboURL;
+    public void setOboURL(String oboURL) throws MalformedURLException {
+        this.oboURL = new URL(oboURL);
     }
 
     @Field("mapping_url")
-    public void setMappingURL(URL mappingURL) {
-        this.mappingURL = mappingURL;
+    public void setMappingURL(String mappingURL) throws MalformedURLException {
+        this.mappingURL = new URL(mappingURL);
     }
 
     public OntologyType getType() {
@@ -78,5 +80,15 @@ public class SearcheableOntology {
     public Ontology getOntology() {
         this.ontology = new Ontology(type, name,oboURL,mappingURL);
         return this.ontology;
+    }
+
+    @Override
+    public void setUUID(String uuid) {
+        this.ontology.setUuid(UUID.fromString(uuid));
+    }
+
+    @Override
+    public UUID getUUID() {
+        return ontology.getUuid();
     }
 }

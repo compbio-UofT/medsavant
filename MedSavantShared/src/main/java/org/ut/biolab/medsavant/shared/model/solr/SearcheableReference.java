@@ -3,6 +3,8 @@ package org.ut.biolab.medsavant.shared.model.solr;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.Reference;
 
+import java.util.List;
+
 /**
  * Adapter class for mapping Solr documents to Reference objects.
  */
@@ -10,16 +12,8 @@ public class SearcheableReference {
 
     private Reference reference;
 
-    private int id;
-    private String name;
-    private String url;
-
-    public SearcheableReference() {  };
-
-    public SearcheableReference(int id, String name, String url) {
-        this.id = id;
-        this.name = name;
-        this.url = url;
+    public SearcheableReference() {
+        reference = new Reference();
     }
 
     public SearcheableReference(Reference reference) {
@@ -28,21 +22,25 @@ public class SearcheableReference {
 
     @Field("id")
     public void setId(int id) {
-        this.id = id;
+        this.reference.setId(id);
     }
 
     @Field("name")
     public void setName(String name) {
-        this.name = name;
+        this.reference.setName(name);
     }
 
     @Field("url")
     public void setURL(String url) {
-        this.url = url;
+        this.reference.setUrl(url);
+    }
+
+    @Field("chromosome_ids")
+    public void setChromosomeIds(List<String> chromosomeIds) {
+        this.reference.setChromosomeIds(chromosomeIds);
     }
 
     public Reference getReference() {
-        this.reference = new Reference(id,name, url);
         return reference;
     }
 
@@ -55,6 +53,10 @@ public class SearcheableReference {
     }
 
     public String getURL() {
-        return url;
+        return reference.getUrl();
+    }
+
+    public List<String> getChromosomeIds() {
+        return reference.getChromosomeIds();
     }
 }

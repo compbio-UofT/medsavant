@@ -19,11 +19,12 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Adapter class for mapping Solr documents to Cohort objects.
  */
-public class SearcheableCohort {
+public class SearcheableCohort extends SearcheableMedsavantEntity {
 
     private Cohort cohort;
 
@@ -79,4 +80,13 @@ public class SearcheableCohort {
         return this.cohort.getProjectId();
     }
 
+    @Override
+    public void setUUID(String uuid) {
+        cohort.setUuid(UUID.fromString(uuid));
+    }
+
+    @Override
+    public UUID getUUID() {
+        return cohort.getUuid();
+    }
 }
