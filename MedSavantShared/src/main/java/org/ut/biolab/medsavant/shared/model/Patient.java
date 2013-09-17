@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Also called individual in the GUI
  */
-public class Patient {
+public class Patient extends MedsavantEntity {
 
     private int patientId;
     private String familyId;

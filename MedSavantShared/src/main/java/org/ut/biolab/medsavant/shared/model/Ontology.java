@@ -25,7 +25,7 @@ import java.net.URL;
  *
  * @author tarkvara
  */
-public class Ontology implements Serializable {
+public class Ontology extends MedsavantEntity implements Serializable {
     private final OntologyType type;
     private final String name;
     private final URL oboURL;

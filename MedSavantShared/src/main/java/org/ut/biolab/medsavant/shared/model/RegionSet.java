@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Andrew
  */
-public class RegionSet implements Serializable {
+public class RegionSet extends MedsavantEntity implements Serializable {
 
     private final int id;
     private final String name;

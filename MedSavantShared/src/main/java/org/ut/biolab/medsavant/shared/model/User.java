@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.shared.model;
 /**
  *  Models users.
  */
-public class User {
+public class User extends MedsavantEntity {
 
     private String name;
     private String password;

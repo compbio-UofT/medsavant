@@ -28,15 +28,17 @@ import java.util.List;
  *
  * @author tarkvara
  */
-public class OntologyTerm implements Serializable {
-    private final OntologyType ontology;
-    private final String id;
-    private final String name;
-    private final String def;
-    private final String[] altIDs;
-    private final String[] parentIDs;
+public class OntologyTerm extends MedsavantEntity implements Serializable {
+    private OntologyType ontology;
+    private String id;
+    private String name;
+    private String def;
+    private String[] altIDs;
+    private String[] parentIDs;
 
     private String[] genes;
+
+    public OntologyTerm() {};
 
     public OntologyTerm(OntologyType ontology, String id, String name, String def, String[] altIDs, String[] parentIDs) {
         this.ontology = ontology;
@@ -113,6 +115,34 @@ public class OntologyTerm implements Serializable {
 
     public String[] getParentIDs() {
         return parentIDs;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setOntology(OntologyType ontology) {
+        this.ontology = ontology;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDef(String def) {
+        this.def = def;
+    }
+
+    public void setAltIDs(String[] altIDs) {
+        this.altIDs = altIDs;
+    }
+
+    public void setParentIDs(String[] parentIDs) {
+        this.parentIDs = parentIDs;
     }
 
     public OntologyTerm[] getChildren(OntologyTerm[] allTerms) {

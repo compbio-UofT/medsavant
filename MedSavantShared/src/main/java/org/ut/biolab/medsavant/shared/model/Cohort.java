@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Andrew
  */
-public class Cohort implements Serializable, Comparable {
+public class Cohort extends MedsavantEntity implements Serializable, Comparable {
 
     private int id;
     private int projectId;

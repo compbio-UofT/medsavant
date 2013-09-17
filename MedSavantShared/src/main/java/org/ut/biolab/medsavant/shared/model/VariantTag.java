@@ -20,7 +20,7 @@ package org.ut.biolab.medsavant.shared.model;
  *
  * @author mfiume
  */
-public class VariantTag {
+public class VariantTag extends MedsavantEntity {
 
     // A few default tag-keys.
     public static final String UPLOAD_DATE = "Upload Date";

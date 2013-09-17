@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.shared.model;
 /**
  * Model a simple key-value Setting.
  */
-public class Setting {
+public class Setting extends MedsavantEntity {
 
     private String key;
     private String value;

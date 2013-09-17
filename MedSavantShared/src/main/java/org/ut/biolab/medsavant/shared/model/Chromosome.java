@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * @author mfiume
  */
-public class Chromosome implements Serializable {
+public class Chromosome extends MedsavantEntity implements Serializable {
     private final int centromerePos;
     private final String name;
     private final int length;

@@ -17,22 +17,30 @@
 package org.ut.biolab.medsavant.shared.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  *
  * @author Andrew
  */
-public class Reference implements Serializable {
+public class Reference extends MedsavantEntity implements Serializable {
 
-    private final int id;
-    private final String name;
-    private final String url;
+    private int id;
+    private String name;
+    private String url;
+    private List<String> chromosomeIds;
+
+    public Reference() {
+        chromosomeIds = new ArrayList<String>();
+    }
 
     public Reference(int id, String name){
         this.id = id;
         this.name = name;
         this.url = "";
+        chromosomeIds = new ArrayList<String>();
     }
 
     public Reference(int id, String name, String url){
@@ -56,5 +64,29 @@ public class Reference implements Serializable {
 
     public String getUrl() {
         return url;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setChromosomeIds(List<String> chromosomeIds) {
+        this.chromosomeIds = chromosomeIds;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public List<String> getChromosomeIds() {
+        return chromosomeIds;
     }
 }

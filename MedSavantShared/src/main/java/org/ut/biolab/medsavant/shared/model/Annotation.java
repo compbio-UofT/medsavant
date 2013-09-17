@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.shared.format.AnnotationFormat.AnnotationType;
 /**
  * @author mfiume
  */
-public class Annotation implements Serializable {
+public class Annotation extends MedsavantEntity implements Serializable {
 
     private final int id;
     private final String program;

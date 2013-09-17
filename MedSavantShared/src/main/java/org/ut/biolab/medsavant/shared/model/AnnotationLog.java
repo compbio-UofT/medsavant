@@ -13,7 +13,7 @@ import java.sql.Timestamp;
  *
  * @author Andrew
  */
-public class AnnotationLog implements Serializable {
+public class AnnotationLog extends MedsavantEntity implements Serializable {
 
     public static enum Action {ADD_VARIANTS, UPDATE_TABLE, REMOVE_VARIANTS};
     public static enum Status {STARTED, ERROR, PENDING, PUBLISHED};

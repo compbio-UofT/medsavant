@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author Andrew
  */
-public class SimpleVariantFile implements Serializable {
+public class SimpleVariantFile extends MedsavantEntity implements Serializable {
 
     private int uploadId;
     private int fileId;

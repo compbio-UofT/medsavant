@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * @author tarkvara
  */
-public class GeneSet implements Serializable {
+public class GeneSet extends MedsavantEntity implements Serializable {
     /** The associated genome (e.g. hg18) */
     private final String genome;
 

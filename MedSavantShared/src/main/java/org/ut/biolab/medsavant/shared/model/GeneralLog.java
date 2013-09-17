@@ -11,7 +11,7 @@ import java.sql.Timestamp;
  *
  * @author Andrew
  */
-public class GeneralLog implements Serializable {
+public class GeneralLog extends MedsavantEntity implements Serializable {
 
     private String user;
     private String event;

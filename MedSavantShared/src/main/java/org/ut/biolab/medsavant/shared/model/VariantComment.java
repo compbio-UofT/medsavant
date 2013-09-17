@@ -11,7 +11,7 @@ import java.sql.Timestamp;
  *
  * @author Andrew
  */
-public class VariantComment implements Serializable {
+public class VariantComment extends MedsavantEntity implements Serializable {
 
     private int uploadId;
     private int fileId;

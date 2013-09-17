@@ -26,7 +26,7 @@ import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
  *
  * @author mfiume
  */
-public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
+public class GenomicRegion extends MedsavantEntity implements Serializable, Comparable<GenomicRegion> {
 
     private int genomeId;
     private final int id;

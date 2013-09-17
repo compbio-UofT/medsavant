@@ -31,7 +31,7 @@ import java.net.URL;
  *
  * @author tarkvara
  */
-public class Gene implements Serializable, Comparable<Gene> {
+public class Gene extends MedsavantEntity implements Serializable, Comparable<Gene> {
 
     private final String name;
     private final String chrom;

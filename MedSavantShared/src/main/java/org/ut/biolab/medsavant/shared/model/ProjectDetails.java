@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * @author Andrew
  */
-public class ProjectDetails implements Serializable {
+public class ProjectDetails extends MedsavantEntity implements Serializable {
 
     private int projectID;
     private int referenceID;
