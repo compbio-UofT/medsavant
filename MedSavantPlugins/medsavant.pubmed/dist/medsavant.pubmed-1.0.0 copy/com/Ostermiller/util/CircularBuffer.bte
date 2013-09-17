@@ -1,0 +1,124 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Circular Buffers<%/bte.tpl%>
+<%bte.tpl name=description%>Implements the circular buffer producer/consumer model for streams or Objects.<%/bte.tpl%>
+<%bte.tpl name=keywords%>buffer, buffer, circular, cirular, object, objects, buffers, inputstream, outputstream, pipedinputstream, pipedoutputstream, producer, producers, consumer, consumers, thread, threads, overflow, overflows<%/bte.tpl%>
+<%bte.tpl name=content%>
+
+<p><a href="#circularobjectbuffer">CircularObjectBuffer</a> | <a href="#circularcharbuffer">CircularCharBuffer</a> | <a href="#circularbytebuffer">CircularByteBuffer</a></p>
+
+<p>The com.Ostermiller.util package contains three flavors of circular buffer.  Each type 
+is presented here along with a simple example.  For a more complex example that uses 
+threads and blocks input, please see the 
+<a href="http://ostermiller.org/utils/CircularBufferTests.java.html">unit test</a>
+for these classes.</p>
+
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Create the buffer.
+</span><span class=identifier>CircularObjectBuffer cob </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>CircularObjectBuffer</span><span class=separator>();
+
+</span><span class=comment>// Fill the buffer.
+</span><span class=identifier>cob</span><span class=separator>.</span><span class=identifier>write</span><span class=separator>(</span><span class=literal>&quot;Hello World!\n&quot;</span><span class=separator>);
+
+</span><span class=comment>// Empty the buffer.
+</span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>print</span><span class=separator>((</span><span class=identifier>String</span><span class=separator>)(</span><span class=identifier>cob</span><span class=separator>.</span><span class=identifier>read</span><span class=separator>()));</span></pre>
+This example only works because "Hello World" is one object.  If you try to write more objects than the size of 
+the buffer, the buffer will block until space is available.
+In this single thread example, that will appear to cause a program hang.  You can 
+get around this by making the buffer infinite size or emptying the buffer in another thread.
+</div>
+
+<h2><a name="circularobjectbuffer">Circular Object Buffer</a></h2>
+
+<p>Implements the circular buffer producer/consumer model for Objects.
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CircularObjectBuffer.java/0">Version History</a> |
+<a href="CircularObjectBuffer.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CircularObjectBuffer.html">Documentation</a>]</p>
+
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Create the buffer.
+</span><span class=identifier>CircularCharBuffer ccb </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>CircularCharBuffer</span><span class=separator>();
+
+</span><span class=comment>// Fill the buffer.
+</span><span class=identifier>ccb</span><span class=separator>.</span><span class=identifier>getWriter</span><span class=separator>().</span><span class=identifier>write</span><span class=separator>(</span><span class=literal>&quot;Hello World!\n&quot;</span><span class=separator>);
+</span><span class=identifier>ccb</span><span class=separator>.</span><span class=identifier>getWriter</span><span class=separator>().</span><span class=identifier>close</span><span class=separator>();
+
+</span><span class=comment>// Empty the buffer.
+</span><span class=reservedWord>int </span><span class=identifier>c</span><span class=separator>;
+</span><span class=reservedWord>while </span><span class=separator>((</span><span class=identifier>c </span><span class=operator>= </span><span class=identifier>ccb</span><span class=separator>.</span><span class=identifier>getReader</span><span class=separator>().</span><span class=identifier>read</span><span class=separator>()) </span><span class=operator>!= -</span><span class=literal>1</span><span class=separator>){
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>print</span><span class=separator>((</span><span class=reservedWord>char</span><span class=separator>)</span><span class=identifier>c</span><span class=separator>);
+}</span></pre>
+This example only works because "Hello World" is short.  If you try to write more data than the size of 
+the buffer, the buffer will block until space is available.
+In this single thread example, that will appear to cause a program hang.  You can 
+get around this by making the buffer infinite size or emptying the buffer in another thread.
+</div>
+
+<h2><a name="circularcharbuffer">Circular Character Buffer</a></h2>
+
+<p>Implements the circular buffer producer/consumer model for characters. 
+Filling and emptying the buffer is done with standard Java Readers and Writers.</p>
+
+<p>Using this class is a simpler alternative to using a PipedReader
+and a PipedWriter. PipedReaders and PipedWriters don't support the
+mark operation, don't allow you to control buffer sizes that they use,
+and have a more complicated API that requires a instantiating two
+classes and connecting them.</p>
+ 
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CircularCharBuffer.java/0">Version History</a> |
+<a href="CircularCharBuffer.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CircularCharBuffer.html">Documentation</a>]</p>
+
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Create the buffer.
+</span><span class=identifier>CircularByteBuffer cbb </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>CircularByteBuffer</span><span class=separator>();
+
+</span><span class=comment>// Fill the buffer.
+</span><span class=identifier>cbb</span><span class=separator>.</span><span class=identifier>getOutputStream</span><span class=separator>().</span><span class=identifier>write</span><span class=separator>(
+    </span><span class=reservedWord>new byte</span><span class=separator>[]{
+        </span><span class=literal>'H'</span><span class=separator>,</span><span class=literal>'e'</span><span class=separator>,</span><span class=literal>'l'</span><span class=separator>,</span><span class=literal>'l'</span><span class=separator>,</span><span class=literal>'o'</span><span class=separator>,</span><span class=literal>' '</span><span class=separator>,
+        </span><span class=literal>'W'</span><span class=separator>,</span><span class=literal>'o'</span><span class=separator>,</span><span class=literal>'r'</span><span class=separator>,</span><span class=literal>'l'</span><span class=separator>,</span><span class=literal>'d'</span><span class=separator>,</span><span class=literal>'!'</span><span class=separator>,</span><span class=literal>'\n'
+    </span><span class=separator>}
+);
+</span><span class=identifier>cbb</span><span class=separator>.</span><span class=identifier>getOutputStream</span><span class=separator>().</span><span class=identifier>close</span><span class=separator>();
+
+</span><span class=comment>// Empty the buffer.
+</span><span class=reservedWord>int </span><span class=identifier>c</span><span class=separator>;
+</span><span class=reservedWord>while </span><span class=separator>((</span><span class=identifier>c </span><span class=operator>= </span><span class=identifier>cbb</span><span class=separator>.</span><span class=identifier>getInputStream</span><span class=separator>().</span><span class=identifier>read</span><span class=separator>()) </span><span class=operator>!= -</span><span class=literal>1</span><span class=separator>){
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>print</span><span class=separator>((</span><span class=reservedWord>char</span><span class=separator>)</span><span class=identifier>c</span><span class=separator>);
+}</span></pre>
+This example only works because "Hello World" is short.  If you try to write more data than the size of 
+the buffer, the buffer will block until space is available.
+In this single thread example, that will appear to cause a program hang.  You can 
+get around this by making the buffer infinite size or emptying the buffer in another thread.
+</div>
+
+<h2><a name="circularbytebuffer">Circular Byte Buffer</a></h2>
+
+<p>Implements the circular buffer producer/consumer model for bytes.
+Filling and emptying the buffer is done with standard Java InputStreams and OutputStreams.</p>
+
+<p>Using this class is a simpler alternative to using a PipedInputStream
+and a PipedOutputStream. PipedInputStreams and PipedOutputStreams don't support the
+mark operation, don't allow you to control buffer sizes that they use,
+and have a more complicated API that requires a instantiating two
+classes and connecting them.</p>
+ 
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CircularByteBuffer.java/0">Version History</a> |
+<a href="CircularByteBuffer.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CircularByteBuffer.html">Documentation</a>]</p>
+
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>
