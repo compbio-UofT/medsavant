@@ -40,6 +40,20 @@ public interface EntityManager {
     public <T> void persistAll(List<T> entities) throws InitializationException;
 
     /**
+     * Persist an entity into the data store.
+     * @param entity        The entity
+     * @param commit        The autocommit value.
+     */
+    public void persist(Object entity, boolean commit) throws InitializationException;
+
+    /**
+     * Persist a list of entities to the data store.
+     * @param entities      List of entities.
+     * @param commit        The autocommit value.
+     */
+    public <T> void persistAll(List<T> entities, boolean commit) throws InitializationException;
+
+    /**
      * Persist entities stored as files.
      * @param tsvFile       The TSV file containing the entities
      * @param clazz         The class of the entities

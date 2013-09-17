@@ -50,6 +50,23 @@ public class SolrEntityManager implements EntityManager {
     }
 
     @Override
+    public void persist(Object entity, boolean commit) throws InitializationException {
+        boolean oldAutocommitSetting = AbstractSolrService.isAutocommit();
+        AbstractSolrService.setAutocommit(commit);
+        this.persist(entity);
+        AbstractSolrService.setAutocommit(oldAutocommitSetting);
+    }
+
+    @Override
+    public <T> void persistAll(List<T> entities, boolean commit) throws InitializationException {
+
+        boolean oldAutocommitSetting = AbstractSolrService.isAutocommit();
+        AbstractSolrService.setAutocommit(commit);
+        this.persistAll(entities);
+        AbstractSolrService.setAutocommit(oldAutocommitSetting);
+    }
+
+    @Override
     public void persist(String tsvFile, Class clazz) throws InitializationException, URISyntaxException {
         AbstractSolrService solrService = SolrServiceRegistry.getService(clazz);
         String tab = ClientUtils.escapeQueryChars("\t");
