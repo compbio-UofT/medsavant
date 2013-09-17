@@ -1169,8 +1169,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         result[8] = variantRecord.getAlt();
         result[9] = variantRecord.getQual();
         result[10] = variantRecord.getFilter();
-        result[11] = variantRecord.getVariantType(variantRecord.getRef(), variantRecord.getAlt()).toString();
-        result[12] = variantRecord.getZygosity().toString();
+        result[11] = String.valueOf(variantRecord.getVariantType(variantRecord.getRef(), String.valueOf(variantRecord.getAlt())));
+        result[12] = String.valueOf(variantRecord.getZygosity());
         result[13] = variantRecord.getGenotype();
         result[14] = variantRecord.getCustomInfo();
         result[15] = variantRecord.getAncestralAllele();
