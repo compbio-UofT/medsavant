@@ -44,7 +44,7 @@ public abstract class AbstractQuery implements Query {
     /**
      * The maximum number of results that can be returned.
      */
-    protected int limit = 10;
+    protected int limit = 100;
 
     /**
      * The map holding the query parameter values
