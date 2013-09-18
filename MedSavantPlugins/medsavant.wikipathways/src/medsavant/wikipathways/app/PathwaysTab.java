@@ -28,7 +28,7 @@ import java.net.URL;
 import javax.swing.*;
 
 import org.bridgedb.bio.Organism;
-import org.pathvisio.wikipathways.WikiPathwaysClient;
+import org.wikipathways.client.WikiPathwaysClient;
 
 
 

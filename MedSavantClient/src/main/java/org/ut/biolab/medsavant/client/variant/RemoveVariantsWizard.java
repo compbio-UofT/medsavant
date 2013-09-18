@@ -124,7 +124,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                         new ProjectWorker<Void>("Removing variants", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                             @Override
-                            protected Void backgroundTask() throws Exception {
+                            protected Void runInBackground() throws Exception {
                                 MedSavantClient.VariantManager.removeVariants(LoginController.getSessionID(), projectID, referenceID, files, false, emailField.getText());
                                 return null;
                             }

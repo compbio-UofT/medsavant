@@ -45,6 +45,7 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIDefaults;
@@ -86,15 +87,15 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static String restartCommand;
     private static boolean restarting = false;
 
-    
+
     /**
      * Quits MedSavant
      */
     public static void quit() {
-        LoginController.getInstance().logout();        
+        LoginController.getInstance().logout();
     }
 
-    
+
     /**
      * Restarts MedSavant
      * (This function has NOT been tested with Web Start)
@@ -114,7 +115,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 LOG.error(e);
             } finally {
                 LoginController.getInstance().logout();
-            }           
+            }
         }
     }
 
@@ -187,9 +188,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
-        
         //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
-       
+
         //required for FORGE plugin
         //NativeInterface.runEventPump();
     }
@@ -241,7 +241,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
            // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
             //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
-            //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.            
+            //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
             for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -306,8 +306,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
             public void uncaughtException(Thread t, Throwable e) {
                 LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
                 e.printStackTrace();
+                DialogUtils.displayException("Error", e.getLocalizedMessage(), e);
             }
         });
-
     }
 }

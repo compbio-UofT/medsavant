@@ -65,6 +65,7 @@ public class IconFactory {
         EDIT,
         GEAR,
         IMPORT,
+        INFO,
         EXPORT,
         FILTER,
         RESULTS,
@@ -89,6 +90,7 @@ public class IconFactory {
         NETWORK,
         CHART_SMALL,
         CONFIGURE,
+        CLEAR_ON_TOOLBAR,
         HISTORY_ON_TOOLBAR,
         SAVE_ON_TOOLBAR,
         ACTION_ON_TOOLBAR,
@@ -179,6 +181,8 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_remove.png");
             case HISTORY_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_history.png");
+            case CLEAR_ON_TOOLBAR:
+                return getIcon(iconroot + "mac_clear.png");
             case SAVE_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_save.png");
             case LOAD_ON_TOOLBAR:
@@ -191,10 +195,12 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_edit.png");
             case GEAR:
                 return getIcon(iconroot + "mac_gear.png");
-                case NETWORK:
+            case NETWORK:
                 return getIcon(iconroot + "mac_link.png");
             case IMPORT:
                 return getIcon(iconroot + "import.png");
+            case INFO:
+                return getIcon(iconroot + "info_circle.png");
             case EXPORT:
                 return getIcon(iconroot + "export.png");
             case RESULTS:

@@ -20,10 +20,10 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume
+ * This class is deprecated and replaced with VisibleMedSavantWorker in org.ut.biolab.medsavant.client.util.notification
  */
+@Deprecated
 public class NotificationsPanel extends JPanel {
-
     private static final Log LOG = LogFactory.getLog(NotificationsPanel.class);
     private final String name;
     private int notificationCount;

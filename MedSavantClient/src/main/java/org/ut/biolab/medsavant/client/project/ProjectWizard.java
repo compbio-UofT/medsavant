@@ -530,7 +530,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
                 new ProjectWorker<Void>("Modifying project", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                     @Override
-                    protected Void backgroundTask() throws Exception {
+                    protected Void runInBackground() throws Exception {
                         LOG.info("Requesting modification from server");
                         modifyProject(true, true, true, this);
                         LOG.info("Modification complete");

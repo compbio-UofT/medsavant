@@ -221,7 +221,7 @@ public class AnnotationsPage extends SubSectionView {
         @Override
         public void deleteItems(List<Object[]> items) {
 
-            if (items != null && items.size() > 0) {                
+            if (items != null && items.size() > 0) {
                 final Annotation an = (Annotation) items.get(0)[0];
 
                 ProgressDialog dialog = new ProgressDialog("Deleting annotation", "Checking for projects using this annotation...") {
@@ -234,22 +234,22 @@ public class AnnotationsPage extends SubSectionView {
                         for (String projectName : projectNames) {
                             int projectID = ProjectController.getInstance().getProjectID(projectName);
                             int[] aid = ProjectController.getInstance().getAnnotationIDs(projectID, referenceID);
-                            if (ArrayUtils.contains(aid, an.getID())) {                                
+                            if (ArrayUtils.contains(aid, an.getID())) {
                                 inUse = true;
                                 break;
                             }
-                        }                        
+                        }
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 dispose();
-                                if (!inUse) {                                    
+                                if (!inUse) {
                                     //int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
-                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);                                    
+                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
                                     if (response == DialogUtils.YES) {
                                         try {
-                                            MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an);
+                                            MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an.getID());
                                             DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
                                         } catch (Exception ex) {
                                             ClientMiscUtils.reportError("Error uninstalling annotations", ex);
@@ -257,7 +257,7 @@ public class AnnotationsPage extends SubSectionView {
                                     }
                                 }else{
                                     JOptionPane.showMessageDialog(MedSavantFrame.getInstance().getRootPane(), "This annotation is being used by other projects and cannot be uninstalled.  Please remove this annotation from these projects first.", "Notice", JOptionPane.PLAIN_MESSAGE);
-                                }                                
+                                }
 
                             }
                         });
@@ -269,7 +269,7 @@ public class AnnotationsPage extends SubSectionView {
                     LOG.error(e);
                 }
                 //dialog.setVisible(true);
-                
+
             }
 
 

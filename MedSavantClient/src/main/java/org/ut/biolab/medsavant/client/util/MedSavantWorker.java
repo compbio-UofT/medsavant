@@ -88,8 +88,10 @@ public abstract class MedSavantWorker<T> { //extends SwingWorker<T, Object> {
     public boolean isCancelled(){        
         return swingWorker.isCancelled();
     }
-    
-    
+   
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue){
+        swingWorker.firePropertyChange(propertyName, oldValue, newValue);
+    }
     
     public void addPropertyChangeListener(PropertyChangeListener pcl){
         swingWorker.addPropertyChangeListener(pcl);        

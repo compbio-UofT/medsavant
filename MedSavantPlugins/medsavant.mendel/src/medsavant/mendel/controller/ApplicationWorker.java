@@ -194,28 +194,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         });
 
-        /*
-        stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-
-                if (e.getValueIsAdjusting()) {
-                    return;
-                }
-                if(stp.getTable().getSelectedRow() != -1){
-
-
-                int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
-
-                SimpleFamilyMattersVariant fmv = variants.get(index);
-                //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
-
-                SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
-                vip.setSimpleVariant(v);
-                }
-            }
-        });*/
-
         JDialog f = new JDialog();
         f.setTitle("Mendel Results");
 
@@ -963,9 +941,9 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long secondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
-        File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
-        BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
-        System.out.println("Writing to log file: " + logFile.getAbsolutePath());
+        //File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
+        //BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
+        //System.out.println("Writing to log file: " + logFile.getAbsolutePath());
 
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
@@ -1000,39 +978,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             Map<MendelGene, SimplePatientSet> geneToSampleMap = getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
             System.out.println("Size of gene map is " + geneToSampleMap.keySet().size());
 
-            /*
-             // some manual reporting / debugging
-             HashMap<SimpleFamilyMattersGene, Set<String>> geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-             HashMap<SimpleFamilyMattersGene, Set<String>> geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-             for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-             for (SimpleFamilyMattersGene g : v.getGenes()) {
-             Set<String> fgCount = new HashSet<String>();
-             Set<String> bgCount = new HashSet<String>();
-             if (geneToFGCountMap.containsKey(g)) {
-             fgCount = geneToFGCountMap.get(g);
-             }
-             if (geneToBGCountMap.containsKey(g)) {
-             bgCount = geneToBGCountMap.get(g);
-             }
-             for (SimplePatient p : variantToSampleMap.get(v)) {
-             if (p.dnaID.startsWith("MS_HCS")) {
-             fgCount.add(p.dnaID);
-             } else {
-             bgCount.add(p.dnaID);
-             }
-             }
-             geneToFGCountMap.put(g, fgCount);
-             geneToBGCountMap.put(g, bgCount);
-             }
-             }
-
-
-             bw.write("here's the gene analysis at " + stepNumber + "\n");
-             for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-             bw.write("\tstep " + stepNumber + "\t"  + g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size() + "\n");
-             }
-             */
-
             Set<MendelVariant> allExcludedVariants = new HashSet<MendelVariant>();
 
             int criteriaNumber = 0;
@@ -1041,7 +986,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
                 ++criteriaNumber;
 
-                bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
+                //bw.write("# executing criteria " + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "\n");
 
                 System.out.println("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
                 System.out.println(criterion);
@@ -1055,9 +1000,9 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
 
-                bw.write("# threshold is " + frequencyThreshold + "\n");
-                bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
-                bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
+                //bw.write("# threshold is " + frequencyThreshold + "\n");
+                //bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
+                //bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
                 //LOG.info("Threshold is " + frequencyThreshold);
                 //LOG.info("Threshold type is " + criterion.getFrequencyType());
 
@@ -1089,7 +1034,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                     }
                 }
 
-                bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
+                //bw.write("# excluding " + excludedVariantsFromThisStep.size() + " variants from this step\n");
 
                 System.out.println("Excluding " + excludedVariantsFromThisStep.size() + " variants from this step");
 
@@ -1099,12 +1044,12 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
                 System.out.println(numSeenBefore + " of these were already excluded previously");
 
-                bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
+                //bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
 
-                bw.write("# here are the excluded variants\n");
-                for (MendelVariant v : excludedVariantsFromThisStep) {
-                    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
-                }
+                //bw.write("# here are the excluded variants\n");
+                //for (MendelVariant v : excludedVariantsFromThisStep) {
+                //    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
+                //}
 
             }
 
@@ -1179,47 +1124,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             }
 
         }
-
-
-        /* some manual reporting / debugging
-         geneToBGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-         geneToFGCountMap = new HashMap<SimpleFamilyMattersGene, Set<String>>();
-         for (SimpleFamilyMattersVariant v : variantToSampleMap.keySet()) {
-         for (SimpleFamilyMattersGene g : v.getGenes()) {
-         Set<String> fgCount = new HashSet<String>();
-         Set<String> bgCount = new HashSet<String>();
-         if (geneToFGCountMap.containsKey(g)) {
-         fgCount = geneToFGCountMap.get(g);
-         }
-         if (geneToBGCountMap.containsKey(g)) {
-         bgCount = geneToBGCountMap.get(g);
-         }
-         for (SimplePatient p : variantToSampleMap.get(v)) {
-         if (p.dnaID.startsWith("MS_HCS")) {
-         fgCount.add(p.dnaID);
-         } else {
-         bgCount.add(p.dnaID);
-         }
-         }
-         geneToFGCountMap.put(g, fgCount);
-         geneToBGCountMap.put(g, bgCount);
-         }
-         }*
-
-         System.out.println("GENE ANALYSIS: ");
-         for (SimpleFamilyMattersGene g : geneToFGCountMap.keySet()) {
-         if (g.name.equals("NOTCH2") || (geneToFGCountMap.get(g).size() >= 5)) { //&& geneToBGCountMap.get(g).size() < 42)) {
-         System.out.println(g.name + "\t" + geneToFGCountMap.get(g).size() + "\t" + geneToBGCountMap.get(g).size());
-         }
-         }
-         */
-
-
-        bw.flush();
-        bw.close();
-
-        //Process p = Runtime.getRuntime().exec("open " + logFile.getAbsolutePath());
-        System.out.println("Done. Log file: " + logFile.getAbsolutePath());
 
         return variantToSampleMap;
     }

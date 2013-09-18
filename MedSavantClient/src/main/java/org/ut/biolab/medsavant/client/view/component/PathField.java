@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
+import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 
 /**
  *
@@ -26,6 +28,10 @@ public class PathField extends JPanel {
      public PathField(final int JFileChooserDialogType) {
          this(JFileChooserDialogType,false);
      }
+
+    public void setFileFilter(FileFilter filter) {
+        fc.setFileFilter(filter);
+    }
 
     public PathField(final int JFileChooserDialogType, boolean directoriesOnly) {
 
@@ -74,5 +80,11 @@ public class PathField extends JPanel {
 
     public JFileChooser getFileChooser() {
         return this.fc;
+    }
+
+    public void setFileFilters(ExtensionFileFilter[] filters) {
+       for (ExtensionFileFilter f : filters) {
+           fc.addChoosableFileFilter(f);
+       }
     }
 }

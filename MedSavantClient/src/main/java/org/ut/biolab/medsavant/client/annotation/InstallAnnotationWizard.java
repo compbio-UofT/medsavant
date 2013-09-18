@@ -32,6 +32,7 @@ import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
 import java.awt.BorderLayout;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
@@ -43,14 +44,17 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.PathField;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 
 /**
  *
@@ -66,7 +70,8 @@ public class InstallAnnotationWizard extends WizardDialog {
     private JPanel chooseContainer;
     private JLabel chooseTitleLabel;
     private JPanel repoChoosePanel;
-    private JPanel fileChoosePanel;
+    private PathField fileChoosePanel;
+    private JLabel progressLabel;
     private boolean fromRepository;
     private boolean hasAnnotations = false;
     private AnnotationDownloadInformation annotationToInstall;
@@ -115,9 +120,23 @@ public class InstallAnnotationWizard extends WizardDialog {
             if (this.fromRepository) {
                 chooseTitleLabel.setText("Choose annotation from repository:");
                 this.chooseContainer.add(this.repoChoosePanel, BorderLayout.CENTER);
+
+                JButton fromFile = new JButton("Install from file");
+                fromFile.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        chooseContainer.removeAll();
+                        chooseTitleLabel.setText("Choose annotation from file:");
+                        chooseContainer.add(fileChoosePanel, BorderLayout.CENTER);
+                        fromRepository = false;
+                        chooseContainer.updateUI();
+                    }
+                });
+                this.chooseContainer.add(ViewUtil.alignLeft(fromFile), BorderLayout.SOUTH);
+
             } else {
                 chooseTitleLabel.setText("Choose annotation from file:");
-                this.chooseContainer.add(this.fileChoosePanel, BorderLayout.CENTER);
+                chooseContainer.add(fileChoosePanel, BorderLayout.CENTER);
             }
         }
 
@@ -174,6 +193,7 @@ public class InstallAnnotationWizard extends WizardDialog {
                 chooseTitleLabel = new JLabel();
                 repoChoosePanel = populateRepositoryPanel();
                 fileChoosePanel = new PathField(JFileChooser.OPEN_DIALOG);
+                fileChoosePanel.setFileFilters(ExtensionFileFilter.createFilters(new String[] { "gz","zip"}));
 
                 addComponent(chooseTitleLabel);
                 addComponent(chooseContainer);
@@ -182,13 +202,13 @@ public class InstallAnnotationWizard extends WizardDialog {
             }
 
             @Override
-            public void setupWizardButtons() {                
-                if(hasAnnotations){
+            public void setupWizardButtons() {
+                if (hasAnnotations) {
                     fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                     fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                     fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
                     fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                }else{
+                } else {
                     fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
                     fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                     fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.FINISH);
@@ -211,9 +231,9 @@ public class InstallAnnotationWizard extends WizardDialog {
         p.setLayout(new BorderLayout());
 
         try {
-            List<AnnotationDownloadInformation> annotationsAvailable = AnnotationDownloadInformation.getDownloadableAnnotations(MedSavantProgramInformation.getVersion());
+            List<AnnotationDownloadInformation> annotationsAvailable = AnnotationDownloadInformation.getDownloadableAnnotations(MedSavantSDKInformation.getSDKVersion());
 
-               if (annotationsAvailable == null) {
+            if (annotationsAvailable == null) {
                 p.add(new JLabel("No annotations are available for this version"), BorderLayout.NORTH);
                 hasAnnotations = false;
                 return p;
@@ -287,9 +307,11 @@ public class InstallAnnotationWizard extends WizardDialog {
             private JProgressBar progressBar;
             private JButton startButton;
 
+
             {
-                //addText("You are now ready to install this annotation.");
-                addText("Installing annotation...");
+                progressLabel = new JLabel("You are now ready to install this annotation.");
+                addComponent(progressLabel);
+                //addText("Installing annotation...");
 
                 progressBar = new JProgressBar();
 
@@ -317,6 +339,8 @@ public class InstallAnnotationWizard extends WizardDialog {
 
                             @Override
                             protected void showSuccess(Void result) {
+
+                                progressLabel.setText("Done");
 
                                 if (success) {
                                     ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Annotation has been successfully installed.\n\nYou can apply this annotation to a project by\nediting project settings.");
@@ -361,9 +385,18 @@ public class InstallAnnotationWizard extends WizardDialog {
         };
     }
 
-    private boolean create() throws SQLException, IOException {
+    private boolean create() throws SQLException, IOException, InterruptedException {
         try {
-            return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+            if (fromRepository) {
+                progressLabel.setText("Installing annotation...");
+                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+            } else {
+                progressLabel.setText("Uploading file to server...");
+                File annotationFile = new File(fileChoosePanel.getPath());
+                int transferID = ClientNetworkUtils.copyFileToServer(annotationFile);
+                progressLabel.setText("Installing annotation...");
+                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), transferID);
+            }
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return false; // will not matter

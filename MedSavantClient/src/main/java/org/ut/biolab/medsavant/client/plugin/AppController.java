@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +38,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 
 
 /**
@@ -133,7 +135,9 @@ public class AppController extends Controller {
                 if (errorStr != null) {
                     // The following dialog will only report plugins which we can tell are faulty before calling loadPlugin(), typically
                     // by checking the version in plugin.xml.
-                    DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
+  //                  System.out.println("Showing dialog");
+//                    JOptionPane.showMessageDialog(null, String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr),"Plugins Not Loaded", JOptionPane.ERROR_MESSAGE);
+                   DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
                 }
             }
         }
@@ -370,9 +374,9 @@ public class AppController extends Controller {
                     pluginErrors.remove(desc.getID());
                 }
             } else {
-                LOG.debug(String.format("Found incompatible %s (SDK version %s) in %s.", desc, desc.getSDKVersion(), f.getName()));
-                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + ")");
-                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + ")");
+                LOG.info(String.format("Found incompatible %s (SDK version %s) in %s.", desc, desc.getSDKVersion(), f.getName()));
+                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
+                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
             }
         }
         return desc;

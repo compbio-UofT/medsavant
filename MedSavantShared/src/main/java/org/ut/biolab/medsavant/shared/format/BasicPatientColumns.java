@@ -25,6 +25,17 @@ import org.ut.biolab.medsavant.shared.db.ColumnType;
  */
 public interface BasicPatientColumns {
 
+    public static int INDEX_OF_PATIENT_ID = 0;
+    public static int INDEX_OF_FAMILY_ID = 1;
+    public static int INDEX_OF_HOSPITAL_ID = 2;
+    public static int INDEX_OF_IDBIOMOM = 3;
+    public static int INDEX_OF_IDBIODAD = 4;
+    public static int INDEX_OF_GENDER = 5;
+    public static int INDEX_OF_AFFECTED = 6;
+    public static int INDEX_OF_DNA_IDS = 7;
+    public static int INDEX_OF_BAM_URL = 8;
+    public static int INDEX_OF_PHENOTYPES = 9;
+
     public static final CustomField PATIENT_ID = new CustomField("patient_id", ColumnType.INTEGER, 11, true, true, true, null, true, "Individual ID", "");
     public static final CustomField FAMILY_ID = new CustomField("family_id", ColumnType.VARCHAR, 100, false, false, false, null, true, "Family ID", "");
     public static final CustomField HOSPITAL_ID = new CustomField("hospital_id", ColumnType.VARCHAR, 100, false, true, false, null, true, "Hospital ID", "");
@@ -39,4 +50,5 @@ public interface BasicPatientColumns {
     public static CustomField[] REQUIRED_PATIENT_FIELDS = new CustomField[] {
         PATIENT_ID, FAMILY_ID, HOSPITAL_ID, IDBIOMOM, IDBIODAD, GENDER, AFFECTED, DNA_IDS, BAM_URL, PHENOTYPES
     };
+
 }

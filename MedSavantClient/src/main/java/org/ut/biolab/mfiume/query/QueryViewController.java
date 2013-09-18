@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.text.ParseException;
 
-import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,10 +31,11 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
+import javax.swing.border.Border;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -55,7 +55,6 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem.SearchConditionListener;
 import org.ut.biolab.mfiume.query.medsavant.complex.ConditionUtils;
@@ -74,6 +73,9 @@ import org.w3c.dom.NodeList;
 public class QueryViewController extends JPanel implements SearchConditionListener {
 
     private static Log LOG = LogFactory.getLog(QueryViewController.class);
+    //Width of the bottom (i.e. root group) search text box.
+    
+    private static final int BOTTOM_SEARCH_TEXTFIELD_WIDTH = 270; 
     private final SearchConditionGroupItem rootGroup;
     private final HashMap<SearchConditionItem, SearchConditionItemView> itemToViewMap;
     private Map<SearchConditionGroupItem, Boolean> expandedItemsMap = new HashMap<SearchConditionGroupItem, Boolean>();
@@ -81,31 +83,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     private boolean didChangeSinceLastApply;
     private JButton applyButton;
     private final JLabel warningText;
-
-    private JButton getHelpButton() {
-        final JButton helpButton = new JButton("?");
-        ViewUtil.makeSmall(helpButton);
-        helpButton.setFocusable(false);
-        if (MiscUtils.MAC) {
-            helpButton.putClientProperty("JButton.buttonType", "help");
-            helpButton.setText("");
-        }
-        helpButton.setToolTipText("<html>Type a search condition into the search box, e.g. \"Chromosome\".<br>"
-                + "Press Enter / Return to accept the selected condition name.<br>"
-                + "You\'ll then be prompted to specify parameters for this condition</html>");
-
-        helpButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                // programmatically show tooltip
-                ToolTipManager.sharedInstance().mouseMoved(
-                        new MouseEvent(helpButton, 0, 0, 0,
-                        10, 10, // X-Y of the mouse for the tool tip
-                        0, false));
-            }
-        });
-        return helpButton;
-    }
 
     public QueryViewController(SearchConditionGroupItem model, ConditionViewGenerator c) {
         this.rootGroup = model;
@@ -129,20 +106,20 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
 
     /**
-     * Re-executes the current query with the given genomic region restrictions, and returns
-     * the results.  Note the search bar is not changed.
-     * gr and alt should have a one-to-one correspondence, where the alt for
-     * the ith genomic region is in alt[i].
+     * Re-executes the current query with the given genomic region restrictions,
+     * and returns the results. Note the search bar is not changed. gr and alt
+     * should have a one-to-one correspondence, where the alt for the ith
+     * genomic region is in alt[i].
      */
     public List<Object[]> restrictToRegion(List<GenomicRegion> gr, List<String> alt, int limit) {
         try {
             long st = System.currentTimeMillis();
             Condition r;
-            if(rootGroup.getItems().size() > 0){
+            if (rootGroup.getItems().size() > 0) {
                 r = getSQLConditionsFrom(rootGroup);
                 SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
                 r = ComboCondition.and(r, getSQLConditionsFrom(rg));
-            }else{
+            } else {
                 SearchConditionGroupItem rg = QueryUtils.getRegionGroup(gr.get(0), alt.get(0), false);
                 r = getSQLConditionsFrom(rg);
             }
@@ -171,7 +148,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         return null;
     }
 
-    public List<Object[]> restrictToRegion(GenomicRegion gr, String alt, int limit){
+    public List<Object[]> restrictToRegion(GenomicRegion gr, String alt, int limit) {
         List<GenomicRegion> grl = new ArrayList<GenomicRegion>(1);
         List<String> al = new ArrayList<String>(1);
         grl.add(gr);
@@ -438,14 +415,18 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         p.setLayout(new MigLayout("wrap 1, hidemode 1"));
 
         this.removeAll();
-        p.add(getHelpButton(), "center");
+        p.add(ViewUtil.getHelpButton("How to search", "Type a search condition into the search box, e.g. \"Chromosome\". "
+                + "Press Enter / Return to accept the selected condition name. "
+                + "You\'ll then be prompted to specify parameters for this condition."), "center");
         for (JComponent c : cs) {
             p.add(c, "left");
         }
         p.add(warningText, "center");
         p.add(applyButton, "center");
 
-        this.add(ViewUtil.getClearBorderlessScrollPane(p), BorderLayout.CENTER);
+        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(p);
+        jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.add(jsp, BorderLayout.CENTER);
 
         this.invalidate();
         this.updateUI();
@@ -460,7 +441,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
     }
 
     private List<JComponent> getComponentsFromQueryModel(SearchConditionGroupItem g) {
+        return getComponentsFromQueryModel(g, 0);
+    }
+
+    private List<JComponent> getComponentsFromQueryModel(SearchConditionGroupItem g, int depth) {
         List<JComponent> components = new ArrayList<JComponent>();
+        int w = 0;
         for (final SearchConditionItem item : g.getItems()) {
             if (item instanceof SearchConditionGroupItem) {
                 String addition = "";
@@ -471,9 +457,12 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 final JPanel p = ViewUtil.getClearPanel();
                 MigLayout ml = new MigLayout("wrap 1, hidemode 1, insets 2");
                 p.setLayout(ml);
-                p.setBorder(ViewUtil.getThickLeftLineBorder());
+                Border border = ViewUtil.getThickLeftLineBorder();
+                p.setBorder(border);
 
                 final PillView pv = new PillView(true);
+                pv.indent(depth);
+
                 pv.setActivated(true);
 
                 final ActionListener toggleGroupExpand = new ActionListener() {
@@ -481,19 +470,18 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     public void actionPerformed(ActionEvent ae) {
                         expandedItemsMap.put((SearchConditionGroupItem) item, !p.isVisible());
                         p.setVisible(!p.isVisible());
-                        //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
                         pv.setText(getGroupTitle((SearchConditionGroupItem) item));
                     }
                 };
 
                 pv.setExpandListener(toggleGroupExpand);
 
-                
+
                 pv.setPopupGenerator(new ConditionPopupGenerator() {
                     @Override
                     public JPopupMenu generatePopup() {
                         final SearchConditionGroupItem groupItem = (SearchConditionGroupItem) item;
-                        JPopupMenu m = new JPopupMenu();
+                        final JPopupMenu m = new JPopupMenu();
 
                         if (!item.getParent().isFirstItem(item)) {
                             if (item.getRelation() == QueryRelation.AND) {
@@ -503,7 +491,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                                     public void actionPerformed(ActionEvent ae) {
                                         item.setRelation(QueryRelation.OR);
                                         pv.setText(getGroupTitle(groupItem));
-                                        //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
                                     }
                                 });
                                 m.add(b);
@@ -513,7 +500,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                                     @Override
                                     public void actionPerformed(ActionEvent ae) {
                                         item.setRelation(QueryRelation.AND);
-                                        //pv.setText((item.getParent().isFirstItem(item) ? "" : item.getRelation().toString()) + " " + g.getItems().size() + " grouped condition(s)");
                                         pv.setText(getGroupTitle(groupItem));
                                     }
                                 });
@@ -548,23 +534,30 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     pv.expand();
                 }
 
-
                 components.add(pv);
-                for (JComponent c : getComponentsFromQueryModel((SearchConditionGroupItem) item)) {
+                for (JComponent c : getComponentsFromQueryModel((SearchConditionGroupItem) item, depth + 1)) {
                     p.add(c, "left");
                 }
                 components.add(p);
 
+                w = pv.getMaximumSize().width;
             } else {
-
-                itemToViewMap.get(item).refresh();
-                components.add(itemToViewMap.get(item));
+                SearchConditionItemView sciv = itemToViewMap.get(item);
+                ((PillView) sciv).indent(depth);                
+                w = sciv.getMaximumSize().width;
+                sciv.refresh();
+                components.add(sciv);
             }
         }
 
-        components.add(getInputFieldForGroup(g));
+        if(w == 0){
+            w = BOTTOM_SEARCH_TEXTFIELD_WIDTH;
+        }
+        JComponent c = getInputFieldForGroup(g, w);
+        components.add(c);
         return components;
     }
+    private int c = 0;
 
     @Override
     public void searchConditionsOrderChanged(SearchConditionItem m) {
@@ -587,11 +580,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         addItemToGroup(sci, view, parent);
     }
 
-    // Commented out during git merge.
-/*    public void generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
-     SearchConditionItem item = new SearchConditionItem(fieldName, parent);
-     generateItemViewAndAddToGroup(item, parent);
-     */
     public SearchConditionItemView generateItemViewAndAddToGroup(String fieldName, SearchConditionGroupItem parent) {
         SearchConditionItem item = new SearchConditionItem(fieldName, parent);
         SearchConditionItemView view = conditionViewGenerator.generateViewForItem(item);
@@ -612,7 +600,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         return this.rootGroup;
     }
 
-    private JComponent getInputFieldForGroup(final SearchConditionGroupItem g) {
+    private JComponent getInputFieldForGroup(final SearchConditionGroupItem g, int width) {
 
         final QueryViewController instance = this;
 
@@ -628,7 +616,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         PromptSupport.setPrompt("Type search condition", field);
         PromptSupport.setFocusBehavior(FocusBehavior.SHOW_PROMPT, field);
 
-        final Dimension focusedDim = new Dimension(270, field.getPreferredSize().height);
+        final Dimension focusedDim = new Dimension(width, field.getPreferredSize().height);
         field.setPreferredSize(focusedDim);
 
         field.addKeyListener(new KeyListener() {

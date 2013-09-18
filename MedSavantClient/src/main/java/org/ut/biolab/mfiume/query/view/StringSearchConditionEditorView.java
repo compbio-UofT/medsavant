@@ -22,7 +22,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -32,9 +31,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -203,8 +200,8 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
         public boolean isMouseXOverLabel(Point p) {
             Point l = totalCount.getLocation();
-            if (p.x >= l.x && p.x <= (l.x + totalCount.getWidth())) {                
-                return true;                
+            if (p.x >= l.x && p.x <= (l.x + totalCount.getWidth())) {
+                return true;
             }
             return false;
         }
@@ -233,8 +230,6 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             loadLooseStringMatchViewFromSearchConditionParameters(encoding);
             return;
         }
-
-        System.out.println("Loading view from existing condition parameters " + item.getName());
 
         if (!cacheOn || values == null) {
             values = valueGenerator.getStringValues();
@@ -362,17 +357,17 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                     Rectangle bounds = filterableList.getCellBounds(index, index);
                     ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
                     Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
-                    renderComp.setBounds(bounds);                    
+                    renderComp.setBounds(bounds);
                     /*
                      Point local = new Point(e.getPoint());
                      local.x -= bounds.x;
                      local.y -= bounds.y;
                      */
                     if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
-                        if(index != lastIndex){
+                        if (index != lastIndex) {
                             menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
                             menu.show(e.getComponent(), e.getX(), e.getY());
-                        }else if(menu != null && !menu.isVisible()){
+                        } else if (menu != null && !menu.isVisible()) {
                             menu.show(e.getComponent(), e.getX(), e.getY());
                         }
                     }

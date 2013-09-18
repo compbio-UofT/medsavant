@@ -117,8 +117,21 @@ public class SearchConditionItemView extends PillView {
                         }
                     });
                     horizButtonPanel.add(button);
-                   
-                }                                
+
+                    if (item.getParent().getParent() != null) {
+                        button = new JButton("Ungroup");
+                        button.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent ae) {
+                                item.getParent().moveItemToGroup(item, item.getParent().getParent());
+                                dialog.dispose();                                
+                            }
+                        });
+                        horizButtonPanel.add(button);
+                    }
+
+                }
+
 
                 if (!item.getParent().isFirstItem(item)) {
                     if (item.getRelation() == QueryRelation.OR) {
@@ -130,7 +143,7 @@ public class SearchConditionItemView extends PillView {
                                 dialog.dispose();
                             }
                         });
-                        
+
                         horizButtonPanel.add(toggle);
                     } else {
                         JButton toggle = new JButton("Change to \"or\"");
@@ -141,7 +154,7 @@ public class SearchConditionItemView extends PillView {
                                 dialog.dispose();
                             }
                         });
-                       
+
                         horizButtonPanel.add(toggle);
                     }
                 }
@@ -153,15 +166,15 @@ public class SearchConditionItemView extends PillView {
                         dialog.dispose();
                     }
                 });
-               
-                
+
+
                 horizButtonPanel.add(delete);
                 mainPanel.add(horizButtonPanel);
                 dialog.setModal(true);
                 dialog.setContentPane(mainPanel);
                 dialog.pack();
                 dialog.setLocationRelativeTo(MedSavantFrame.getInstance());
-                
+
                 return dialog;
             }
         });
@@ -171,8 +184,12 @@ public class SearchConditionItemView extends PillView {
 
     public final void refresh() {
 
+
         this.setActivated(item.getSearchConditionEncoding() != null);
 
+        if (item.getExplanation() != null) {
+            setInfo(item.getExplanation());
+        }
 
         String name = item.getName(); // e.g. "frequency - thousand genomes"
 

@@ -3,18 +3,26 @@ package org.ut.biolab.medsavant.client.app;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.AppInfo;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -36,6 +44,17 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         "description"
     };
     private List<AppInfo> appInfo;
+
+
+    /*private boolean isCompatibleWithThisVersion(AppInfo ai) {
+        try {
+            String sdkVersion = MedSavantSDKInformation.getSDKVersion();
+            return sdkVersion.equals(ai.getCompatibleWith()); // TODO: allow loose match for backwards compatibility
+        } catch (Exception ex) {
+            Logger.getLogger(MedSavantAppFetcher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }*/
 
     private enum XMLElement {
 
@@ -167,10 +186,10 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
 
         List<AppInfo> results = new LinkedList<AppInfo>();
 
-        //search names first - those hits will be listed first. 
+        //search names first - those hits will be listed first.
         for (AppInfo ai : appInfo) {
             if (ai.getName().contains(search)) {
-                results.add(ai);
+                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) { results.add(ai); }
             }
         }
 
@@ -178,9 +197,10 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         for (AppInfo ai : appInfo) {
             if (ai.getDescription().contains(search) || ai.getShortDescription().contains(search)
                     || ai.getNewInVersion().contains(search)) {
-                results.add(ai);
+                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) { results.add(ai); }
             }
         }
+
 
         return results;
     }

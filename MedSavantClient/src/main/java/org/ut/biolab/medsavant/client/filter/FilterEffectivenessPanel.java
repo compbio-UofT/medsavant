@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -69,8 +70,8 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        this.setPreferredSize(new Dimension(250, 80));
-        this.setMaximumSize(new Dimension(250, 80));
+        this.setPreferredSize(new Dimension(280, 80));
+        this.setMaximumSize(new Dimension(280, 80));
 
         setLayout(new GridBagLayout());
 
@@ -128,7 +129,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         l.setForeground(foregroundColor);
         ViewUtil.makeSmall(l);
         infoPanel.add(ViewUtil.centerHorizontally(l));
-        infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
+        infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());        
 
         panel.add(infoPanel, BorderLayout.NORTH);
 

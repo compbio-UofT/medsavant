@@ -49,7 +49,6 @@ import org.genemania.type.CombiningMethod;
 import org.genemania.util.NullProgressReporter;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.Notification;
 import org.xml.sax.SAXException;
 
 /**
@@ -144,29 +143,20 @@ public class GenemaniaInfoRetriever {
         }
 
         @Override
-        public void doneDownload() {
+        protected Void runInBackground() {
+            super.runInBackground();
             if (isCancelled()) {
-                return;
+                return null;
             }
-
-            notification.setStatusMessage("Extracting GeneMANIA files...");
-            notification.setIndeterminate(true);
-
-            new SwingWorker() {
-                @Override
-                public Void doInBackground() {
-                    GenemaniaInfoRetriever.extractGM(getDestPath());
-                    return null;
-                }
-
-                @Override
-                protected void done() {
-                    MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
-                    notification.setStatusMessage("Done.");
-                    notification.setStatus(Notification.JobStatus.FINISHED);
-                    setDownloadState(DownloadTask.DownloadState.FINISHED);
-                }
-            }.execute();
+            setStatusMessage("Extracting GeneMANIA files...");
+            GenemaniaInfoRetriever.extractGM(getDestPath());
+            return null;
+        }
+        
+        @Override
+        public void jobDone() {
+                super.jobDone();
+               MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
         }
     }
 
@@ -176,51 +166,6 @@ public class GenemaniaInfoRetriever {
             geneManiaDownloadTask = new GeneManiaDownloadTask(GM_URL, dstPath, "Downloading GeneMANIA...");
         }
         return geneManiaDownloadTask;
-    }
-
-    /**
-     * Handles the downloading of GeneMANIA as a job. A notification is
-     * displayed when the download is complete.
-     *
-     * @param onFinish If not null, this runnable will be run when the download
-     * and extraction is complete.
-     * @throws IOException
-     * @deprecated use getGeneManiaDownloadTask() instead.
-     */
-    public static DownloadTask downloadGeneMania(final Runnable onFinish) throws IOException {
-        String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-
-        DownloadTask downloadTask = new DownloadTask(GM_URL, dstPath, "Downloading GeneMANIA...") {
-            @Override
-            public void doneDownload() {
-                if (isCancelled()) {
-                    return;
-                }
-
-                notification.setStatusMessage("Extracting GeneMANIA files...");
-                notification.setIndeterminate(true);
-
-                new SwingWorker() {
-                    @Override
-                    public Void doInBackground() {
-                        GenemaniaInfoRetriever.extractGM(getDestPath());
-                        return null;
-                    }
-
-                    @Override
-                    protected void done() {
-                        MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
-                        notification.setStatusMessage("GeneMANIA is ready.");
-                        notification.setStatus(Notification.JobStatus.FINISHED);
-                        if (onFinish != null) {
-                            onFinish.run();
-                        }
-                    }
-                }.execute();
-            }
-        };
-        downloadTask.execute();
-        return downloadTask;
     }
 
     public GenemaniaInfoRetriever() throws IOException {

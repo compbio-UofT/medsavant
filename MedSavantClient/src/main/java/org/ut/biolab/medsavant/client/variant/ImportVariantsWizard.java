@@ -450,7 +450,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             private int fileIndex = 0;
 
                             @Override
-                            protected Void backgroundTask() throws Exception {
+                            protected Void runInBackground() throws Exception {
                                 String email = emailField.getText();
                                 if (email.isEmpty()) {
                                     email = null;
@@ -463,19 +463,19 @@ public class ImportVariantsWizard extends WizardDialog {
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file : variantFiles) {
                                         LOG.info("Created input stream for file");
-                                        notification.setStatusMessage("Uploading " + file.getName());
+                                        setStatusMessage("Uploading " + file.getName());
                                         //progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
                                         fileIndex++;
                                     }
-                                    notification.setStatusMessage("Importing variants");
+                                    setStatusMessage("Importing variants");
                                     inUploading = false;
                                     setIndeterminate(true);
                                     manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, false);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
-                                    notification.setStatusMessage("Importing variants");
+                                    setStatusMessage("Importing variants");
                                     manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, false);
                                     LOG.info("Done importing");
                                 }
@@ -496,7 +496,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 } else {
                                     prog = fract * 100.0;
                                 }
-                                notification.setProgress(prog / 100.0);
+                                setProgress(prog / 100.0);
                             }
 
                             @Override
@@ -513,7 +513,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                     }
                                 }
                                 if (stat != null) {
-                                    notification.setStatusMessage(stat.message);
+                                    setStatusMessage(stat.message);
                                 }
                                 return stat;
                             }

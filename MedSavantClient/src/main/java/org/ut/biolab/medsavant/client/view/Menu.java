@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.util.notification.NotificationButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,7 +52,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class Menu extends JPanel {
-
+    private static final String JOBS_BUTTON_TITLE = "Jobs";
+    private static final ImageIcon JOBS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_SERVER);
+    
     private SubSectionView currentView;
     private final JPanel contentContainer;
     List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
@@ -68,6 +71,8 @@ public class Menu extends JPanel {
     private static final Log LOG = LogFactory.getLog(Menu.class);
     private UpdatesPanel updatesPanel = new UpdatesPanel();
 
+    private NotificationButton notificationButton;
+    
     public void checkForUpdateNotifications(){
         updatesPanel.update();
     }
@@ -76,12 +81,17 @@ public class Menu extends JPanel {
         return map.get(ssv);
     }
 
+    public NotificationButton getJobNotificationButton(){
+        return notificationButton;
+    }
+    
     public Menu(JPanel panel) {
 
         resetMap();
 
         setLayout(new BorderLayout());
-
+        notificationButton = new NotificationButton(JOBS_BUTTON_TITLE, JOBS_BUTTON_ICON);
+        
         primaryMenuButtons = new ButtonGroup();
 
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
@@ -108,8 +118,10 @@ public class Menu extends JPanel {
         primaryMenuSectionButtonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(primaryMenuSectionButtonContainer);
 
-        NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
+        //NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
+        
+        
         JPanel appStorePanel = ViewUtil.getClearPanel();
         final JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
         ViewUtil.applyHorizontalBoxLayout(appStorePanel);
@@ -150,8 +162,8 @@ public class Menu extends JPanel {
         FlowLayout fl = new FlowLayout(FlowLayout.RIGHT,componentpadding,1);
         JPanel rightSidePanel = ViewUtil.getClearPanel();
         rightSidePanel.setLayout(fl);
-        rightSidePanel.add(updatesPanel);
-        rightSidePanel.add(n);
+        rightSidePanel.add(updatesPanel);        
+        rightSidePanel.add(notificationButton);        
         rightSidePanel.add(appStorePanel);
         rightSidePanel.add(getLoginMenuItem());
         primaryMenu.add(rightSidePanel);

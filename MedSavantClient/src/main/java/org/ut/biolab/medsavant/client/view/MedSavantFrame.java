@@ -35,15 +35,17 @@ import com.apple.eawt.QuitResponse;
 import com.explodingpixels.macwidgets.MacUtils;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Point;
+import java.net.URI;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -51,16 +53,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
-import javax.swing.plaf.ColorUIResource;
-import net.miginfocom.swing.MigLayout;
-import org.ut.biolab.medsavant.MedSavantClient;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
@@ -68,7 +69,6 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation;
 import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Position;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -77,10 +77,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
-import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
-import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 
 /**
  *
@@ -88,6 +85,7 @@ import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
  */
 public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
+    private static Log LOG = LogFactory.getLog(MedSavantFrame.class);
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
@@ -96,11 +94,39 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
     private JPanel sessionView;
-    private NewLoginView loginView;
+    private LoginView loginView;
     private String currentCard;
-    private boolean queuedForExit = false;  
+    private boolean queuedForExit = false;
     private int textFieldAdminColumns = 20;
     private jAppStore appStore;
+    private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
+    
+    private static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
+
+    //Adds a new function under the 'Debug' menu. The debug menu is not shown if 
+    //it is empty
+    public static void addDebugFunction(String name, Runnable r) {
+        debugFunctions.put(name, r);
+    }
+
+    public static JMenu getDebugMenu() {
+        if (debugFunctions.size() < 1) {
+            return null;
+        }
+        JMenu menu = new JMenu("Debug");
+        for (final Map.Entry<String, Runnable> e : debugFunctions.entrySet()) {
+            JMenuItem debugItem = new JMenuItem(e.getKey());
+            debugItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    e.getValue().run();
+                }
+            });
+            menu.add(debugItem);
+        }
+
+        return menu;
+    }
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
         if (src != null && dst != null) {
@@ -325,14 +351,72 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         JMenu helpMenu = new JMenu("Help");
 
-        JMenuItem feedbackItem = new JMenuItem("Feedback");
+        JMenuItem feedbackItem = new JMenuItem("Send Feedback");
         feedbackItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                JDialog d = new FeedbackDialog(MedSavantFrame.getInstance(), true);
-                d.setVisible(true);
+                try {
+                    URI uri = URI.create(FEEDBACK_URI);
+                    Desktop.getDesktop().mail(uri);
+                } catch (Exception ex) {
+                }
+                //JDialog d = new FeedbackDialog(MedSavantFrame.getInstance(), true);
+                //d.setVisible(true);
             }
         });
+
+        System.out.println("Adding debug function");
+        addDebugFunction("Test Job", new Runnable() {           
+            @Override
+            public void run() {
+                VisibleMedSavantWorker worker = new VisibleMedSavantWorker<Void>("page", "Test"){
+
+                    @Override
+                    protected Void runInBackground() throws Exception {
+                        System.out.println("Sleeping for 5s");
+                        Thread.sleep(5000);
+                        System.out.println("Done sleeping."); 
+                        return null;
+                    }
+
+                    @Override
+                    protected void showResults() {
+                        System.out.println("Showing results.");                        
+                    }
+
+                    @Override
+                    protected void cancelJob() {
+                        System.out.println("Job was cancelled.");
+                    }
+
+                    @Override
+                    protected void closeJob() {
+                        System.out.println("Job was closed.");
+                    }
+
+                    @Override
+                    protected void showFailure(Throwable ex) {
+                        System.out.println("Showing failure via super method.");                        
+                        super.showFailure(ex); //To change body of generated methods, choose Tools | Templates.
+                    }
+                    
+                    
+                    
+                };                
+                worker.showResultsOnFinish(true);
+                worker.execute();
+                
+                
+            }
+        });
+
+        JMenu debugMenu = getDebugMenu();
+        if (debugMenu != null) {
+            System.out.println("Adding debugMenu");
+            menu.add(debugMenu);
+        }
+
+
         helpMenu.add(feedbackItem);
         menu.add(helpMenu);
 
@@ -404,7 +488,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (loginView != null) {
             LoginController.getInstance().removeListener(loginView);
         }
-        loginView = new NewLoginView();
+        loginView = new LoginView();
         LoginController.getInstance().addListener(loginView);
         view.add(loginView, LOGIN_CARD_NAME);
 
@@ -418,7 +502,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void requestClose() {
-        System.out.print("Asking to quit...");
+        LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
@@ -429,7 +513,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
              }
              System.exit(0);*/
         }
-        System.out.print("NOT QUITTING!");
+        LOG.info("Refusing to quit");
     }
 
     @Override
@@ -457,37 +541,37 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 
             batchApplyProperty(new String[]{
-                        "Button.font",
-                        "ToggleButton.font",
-                        "RadioButton.font",
-                        "CheckBox.font",
-                        "ColorChooser.font",
-                        "ComboBox.font",
-                        "Label.font",
-                        "List.font",
-                        "MenuBar.font",
-                        "MenuItem.font",
-                        "RadioButtonMenuItem.font",
-                        "CheckBoxMenuItem.font",
-                        "Menu.font",
-                        "PopupMenu.font",
-                        "OptionPane.font",
-                        "Panel.font",
-                        "ProgressBar.font",
-                        "ScrollPane.font",
-                        "Viewport.font",
-                        "TabbedPane.font",
-                        "Table.font",
-                        "TableHeader.font",
-                        "TextField.font",
-                        "PasswordField.font",
-                        "TextArea.font",
-                        "TextPane.font",
-                        "EditorPane.font",
-                        "TitledBorder.font",
-                        "ToolBar.font",
-                        "ToolTip.font",
-                        "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
+                "Button.font",
+                "ToggleButton.font",
+                "RadioButton.font",
+                "CheckBox.font",
+                "ColorChooser.font",
+                "ComboBox.font",
+                "Label.font",
+                "List.font",
+                "MenuBar.font",
+                "MenuItem.font",
+                "RadioButtonMenuItem.font",
+                "CheckBoxMenuItem.font",
+                "Menu.font",
+                "PopupMenu.font",
+                "OptionPane.font",
+                "Panel.font",
+                "ProgressBar.font",
+                "ScrollPane.font",
+                "Viewport.font",
+                "TabbedPane.font",
+                "Table.font",
+                "TableHeader.font",
+                "TextField.font",
+                "PasswordField.font",
+                "TextArea.font",
+                "TextPane.font",
+                "EditorPane.font",
+                "TitledBorder.font",
+                "ToolBar.font",
+                "ToolTip.font",
+                "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
@@ -499,7 +583,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantProgramInformation.getVersion()
+                            + MedSavantSDKInformation.getSDKVersion()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });

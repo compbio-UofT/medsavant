@@ -35,15 +35,15 @@ public class BugReport {
             params.add(new NameValuePair("institution", institute));
             params.add(new NameValuePair("problem", problem));
             params.add(new NameValuePair("exception", getStackTrace(t)));
-            params.add(new NameValuePair("clientinfo", 
-                    kvp("program-version",version) + 
-                    ", " + 
-                    kvp("java-version", getJDKVersion()) + 
-                    ", " + 
-                    kvp("os", getOS()) + 
-                    ", " + 
+            params.add(new NameValuePair("clientinfo",
+                    kvp("program-version",version) +
+                    ", " +
+                    kvp("java-version", getJDKVersion()) +
+                    ", " +
+                    kvp("os", getOS()) +
+                    ", " +
                     kvp("time",(new Date()).toLocaleString())));
-           
+
             /*String params =
                       "tool=" + tool
                     + "&name=" + name
@@ -52,7 +52,7 @@ public class BugReport {
                     + "&problem=" + problem
                     + "&exception=" + getStackTrace(t)
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
-*/            
+*/
             postRequest(new URL(bugreportURL),params);
 
         } catch (Exception e) {
@@ -117,24 +117,24 @@ public class BugReport {
 
         connection.disconnect();
     }*/
-    
-    private static void postRequest(URL url, List<NameValuePair> params) throws IOException{        
+
+    private static void postRequest(URL url, List<NameValuePair> params) throws IOException{
         HttpClient hc = new HttpClient();
         NameValuePair[] data = new NameValuePair[params.size()];
         PostMethod post = new PostMethod(url.toString());
         post.setRequestBody(params.toArray(data));
-        hc.executeMethod(post);        
+        hc.executeMethod(post);
         BufferedReader in =  new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
         String inputLine;
         while ((inputLine = in.readLine()) != null){
             System.out.println(inputLine);
         }
-        in.close();       
+        in.close();
         post.releaseConnection();
     }
 
     public static void main(String[] args) throws UnsupportedEncodingException {
-        BugReport.reportBug("MedSavant",VersionSettings.getVersionString(), "Marc Fiume 4", "mfiume@cs.toronto.edu", "UofT", "My description of the problem", new Exception("msg"));
+        BugReport.reportBug("MedSavant",VersionSettings.getVersionString(), "Marc Fiume", "mfiume@cs.toronto.edu", "UofT", "Testing bug reporting", new Exception("msg"));
         System.out.println("Bug reported");
     }
 
@@ -145,15 +145,15 @@ public class BugReport {
             params.add(new NameValuePair("name", name));
             params.add(new NameValuePair("email", email));
             params.add(new NameValuePair("feedback", feedbackStr));
-            params.add(new NameValuePair("clientinfo", 
-                    kvp("program-version",version) + 
-                    ", " + 
-                    kvp("java-version", getJDKVersion()) + 
-                    ", " + 
-                    kvp("os", getOS()) + 
-                    ", " + 
+            params.add(new NameValuePair("clientinfo",
+                    kvp("program-version",version) +
+                    ", " +
+                    kvp("java-version", getJDKVersion()) +
+                    ", " +
+                    kvp("os", getOS()) +
+                    ", " +
                     kvp("time",(new Date()).toLocaleString())));
-            
+
 /*            String params =
                       "tool=" + tool
                     + "&name=" + name

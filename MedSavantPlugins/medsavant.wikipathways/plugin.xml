@@ -1,9 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="medsavant.wikipathways" version="1.0.0" class="medsavant.wikipathways.WikiPathwaysApp">
+<plugin class="medsavant.wikipathways.WikiPathwaysApp">
     <properties>
-        <property name="sdk-version" value="1.0.0"/>
-        <property name="name" value="Wiki Pathways" />
+        <property name="version" value="1.0.0"/>
+        <property name="sdk-version" value="1.1-SNAPSHOT"/>
+        <property name="name" value="WikiPathways" />
         <property name="category" value="SEARCH" />
         <property name="author" value="University of Toronto" />
         <property name="webpage" value="http://www.genomesavant.com" />

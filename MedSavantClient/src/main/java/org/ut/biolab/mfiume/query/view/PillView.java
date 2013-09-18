@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -22,6 +23,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
@@ -38,9 +40,10 @@ public class PillView extends JPanel {
     public final static Color[] COLOR_SCHEME_INACTIVE = new Color[]{new Color(241, 215, 215), new Color(233, 139, 139), new Color(233, 49, 49), new Color(239, 97, 97)};
     public final static Color[] COLOR_SCHEME_ACTIVE = new Color[]{new Color(222, 231, 241), new Color(166, 190, 236), new Color(49, 121, 233), new Color(97, 155, 239)}; // 0 is background, 1 is border
     private final static int MAXIMUM_HEIGHT = 100; //*maximum* height, in pixels.
-    int backoff = 1;
-    int vpad = 2;
-    int hpad = 7;
+    private final static int LEFT_BORDER_OFFSET = 10;
+    public static final int BACKOFF = 1;
+    public static final int VPAD = 2;
+    public static final int HPAD = 7;
     private boolean isDisclosureVisible;
     private final JPanel leftPanel;
     private final JPanel middlePanel;
@@ -52,10 +55,25 @@ public class PillView extends JPanel {
     private JLabel textLabel;
     private JLabel expandButton;
     private JLabel editButton;
+    private JLabel infoButton;
+    private String info;
+    private final Component infoButtonPadding;
+
+    public static int getAllowedWidth(int depth) {
+        int w = SearchBar.getInstance().getWidth() - 2 * HPAD;
+        for (int i = 0; i < depth; ++i) {
+            w -= (HPAD + BACKOFF);
+        }
+        return w;
+    }
+
+    public final void indent(int depth) {
+        this.setMaximumSize(new Dimension(getAllowedWidth(depth), MAXIMUM_HEIGHT));
+    }
 
     public PillView() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.setBorder(BorderFactory.createEmptyBorder(vpad, hpad, vpad, hpad));
+        this.setBorder(BorderFactory.createEmptyBorder(VPAD, HPAD, VPAD, HPAD));
         this.setOpaque(false);
 
         this.leftPanel = new JPanel();
@@ -64,6 +82,7 @@ public class PillView extends JPanel {
 
         leftPanel.setOpaque(false);
         middlePanel.setOpaque(false);
+        middlePanel.setBorder(new EmptyBorder(0, LEFT_BORDER_OFFSET, 0, 0));
         rightPanel.setOpaque(false);
 
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
@@ -77,8 +96,9 @@ public class PillView extends JPanel {
 
         setIsDisclosureVisible(true);
 
-        int w = SearchBar.getInstance().getWidth() - 2 * hpad;
-        this.setMaximumSize(new Dimension(w, MAXIMUM_HEIGHT));
+        indent(0);
+        //setMaximumWidth(SearchBar.getInstance().getWidth() - 2 * HPAD);
+
 
         final PillView instance = this;
 
@@ -95,6 +115,20 @@ public class PillView extends JPanel {
             }
         });
 
+        ImageIcon icinfo = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INFO);
+        infoButton = ViewUtil.createIconButton(icinfo);
+        infoButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showInfoPopup();
+            }
+        });
+        infoButton.setVisible(false);
+
+        infoButtonPadding = Box.createHorizontalStrut(2);
+        infoButtonPadding.setVisible(infoButton.isVisible());
+
+
         ImageIcon ic = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE);
         editButton = ViewUtil.createIconButton(ic);
         editButton.addMouseListener(new MouseAdapter() {
@@ -108,7 +142,7 @@ public class PillView extends JPanel {
             }
         });
 
-        this.setRightPanel(editButton);
+        this.setRightPanel(ViewUtil.horizontallyAlignComponents(new Component[]{infoButton, infoButtonPadding, editButton}));
     }
 
     public PillView(boolean expandable) {
@@ -128,7 +162,19 @@ public class PillView extends JPanel {
         this.isActivated = b;
     }
 
+    public void setInfo(String info) {
+        this.infoButton.setVisible(true);
+        this.infoButtonPadding.setVisible(infoButton.isVisible());
+        this.info = info;
+    }
+
+    public void showInfoPopup() {
+        JDialog d = ViewUtil.getHUD(this.infoButton, this.textLabel.getText(), info);
+        d.setVisible(true);
+    }
+
     public void showPopup() {
+
         if (this.isDisclosureVisible) {
             final JPopupMenu m = popupGenerator.generatePopup();
             final PillView instance = this;
@@ -149,7 +195,7 @@ public class PillView extends JPanel {
                     setSelected(false);
                 }
             });
-                                    
+
             m.show(this, ViewUtil.getPositionRelativeTo(instance, editButton).x, this.getHeight());
 
             final JComponent pillInstance = this;
@@ -181,7 +227,8 @@ public class PillView extends JPanel {
         if (dialogGenerator != null) {
             if (this.isDisclosureVisible) {
                 JDialog jd = dialogGenerator.generateDialog();
-                jd.setVisible(true);               
+                jd.setVisible(true);
+                jd.requestFocus();
             }
         }
     }
@@ -224,7 +271,7 @@ public class PillView extends JPanel {
         }
         g2.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), bend, bend);
         g2.setColor(currentColorSheme[1]);
-        RoundRectangle2D rec2 = new RoundRectangle2D.Double(0, 0, this.getWidth() - backoff, this.getHeight() - backoff, bend, bend);
+        RoundRectangle2D rec2 = new RoundRectangle2D.Double(0, 0, this.getWidth() - BACKOFF, this.getHeight() - BACKOFF, bend, bend);
         g2.draw(rec2);
         g2.clip(rec2);
 
@@ -332,8 +379,8 @@ public class PillView extends JPanel {
     public void setDialogGenerator(ConditionEditorDialogGenerator pg) {
         this.dialogGenerator = pg;
     }
-    
-    public void setPopupGenerator(ConditionPopupGenerator cpg){
+
+    public void setPopupGenerator(ConditionPopupGenerator cpg) {
         this.popupGenerator = cpg;
     }
 }
