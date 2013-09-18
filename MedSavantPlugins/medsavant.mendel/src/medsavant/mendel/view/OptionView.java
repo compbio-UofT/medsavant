@@ -1046,7 +1046,7 @@ public class OptionView {
                             }
                         } catch (InterruptedException ex) {
                         } finally {
-                            NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
+                            //NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                         }
 
                         j.setStatus(Notification.JobStatus.FINISHED);

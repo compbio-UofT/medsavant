@@ -122,7 +122,7 @@ public class PillView extends JPanel {
             }
         });
 
-        this.setRightPanel(ViewUtil.horizontallyAlignComponents(new Component[]{infoButton,infoButtonPadding, editButton}));
+        this.setRightPanel(ViewUtil.flowAlignComponents(new Component[]{infoButton,infoButtonPadding, editButton}));
     }
 
     public PillView(boolean expandable) {

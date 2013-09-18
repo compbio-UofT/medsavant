@@ -123,7 +123,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     //int textFieldAdminColumns = 20;
     private void initView() {
 
-        ImagePanel logo = new ImagePanel(IconFactory.getInstance().getIcon("/org/ut/biolab/medsavant/client/view/images/icon/" + "medsavantlogo.png").getImage(), 107, 90);
+        ImagePanel logo = new ImagePanel(IconFactory.getInstance().getIcon("/org/ut/biolab/medsavant/client/view/images/icon/" + "medsavantlogo.png").getImage(), 128, 128);
 
         MigLayout ml = new MigLayout("wrap 1");
 
