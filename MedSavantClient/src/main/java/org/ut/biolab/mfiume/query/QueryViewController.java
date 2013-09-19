@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -407,11 +408,10 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         List<JComponent> cs;
 
         cs = getComponentsFromQueryModel(rootGroup);
-        this.setLayout(new BorderLayout());
-
+        this.setLayout(new BorderLayout());        
 
         JPanel p = ViewUtil.getClearPanel();
-        p.setBorder(ViewUtil.getBottomLineBorder());
+      //  p.setBorder(ViewUtil.getBottomLineBorder());
         p.setLayout(new MigLayout("wrap 1, hidemode 1"));
 
         this.removeAll();
@@ -424,7 +424,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         p.add(warningText, "center");
         p.add(applyButton, "center");
 
-        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(p);
+        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(p);        
         jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(jsp, BorderLayout.CENTER);
 
@@ -631,12 +631,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
-                
-                
+                m.setVisible(false);                
+                field.setText("");                
                 view.showDialog(getLocationOnScreen());
-
-                m.setVisible(false);
-                field.setText("");
             }
 
             private void refreshPopup() {

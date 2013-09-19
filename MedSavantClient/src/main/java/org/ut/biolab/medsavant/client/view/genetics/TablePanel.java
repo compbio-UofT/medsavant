@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLayeredPane;
@@ -125,7 +126,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     public TablePanel(String page) {
-
+        
         pageName = page;
         setLayout(new GridBagLayout());
 
@@ -151,7 +152,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, gbc, JLayeredPane.MODAL_LAYER);
-
 
     }
 

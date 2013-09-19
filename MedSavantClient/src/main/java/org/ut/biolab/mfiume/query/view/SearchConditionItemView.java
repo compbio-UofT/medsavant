@@ -1,5 +1,6 @@
 package org.ut.biolab.mfiume.query.view;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
@@ -11,7 +12,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
@@ -60,7 +60,7 @@ public class SearchConditionItemView extends PillView {
 
                 mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-                final JPanel conditionsEditor = ViewUtil.getClearPanel();
+                final JPanel conditionsEditor = ViewUtil.getClearPanel();                
                 ViewUtil.applyVerticalBoxLayout(conditionsEditor);
                 JProgressBar waitForConditions = new JProgressBar();
                 waitForConditions.setIndeterminate(true);
@@ -73,9 +73,8 @@ public class SearchConditionItemView extends PillView {
                 conditionsEditor.add(ViewUtil.centerHorizontally(waitForConditions));
 
 
-                mainPanel.add(conditionsEditor);
-                mainPanel.add(new JSeparator());
-
+                mainPanel.add(conditionsEditor);               
+                
                 Thread t = new Thread() {
                     @Override
                     public void run() {
@@ -84,13 +83,8 @@ public class SearchConditionItemView extends PillView {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
-                                    conditionsEditor.removeAll();
-
-                                    JPanel p = ViewUtil.getClearPanel();
-                                    p.setBorder(ViewUtil.getMediumBorder());
-                                    p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-                                    p.add(editor);
-                                    conditionsEditor.add(p);
+                                    conditionsEditor.removeAll();                                   
+                                    conditionsEditor.add(editor);
                                     dialog.pack();
                                     dialog.invalidate();
                                     mainPanel.updateUI();
@@ -169,12 +163,13 @@ public class SearchConditionItemView extends PillView {
 
 
                 horizButtonPanel.add(delete);
+                horizButtonPanel.setMaximumSize(new Dimension(horizButtonPanel.getMaximumSize().width, 22));
                 mainPanel.add(horizButtonPanel);
+                
                 dialog.setModal(true);
                 dialog.setContentPane(mainPanel);
                 dialog.pack();
-                dialog.setLocationRelativeTo(MedSavantFrame.getInstance());
-
+                dialog.setLocationRelativeTo(MedSavantFrame.getInstance());                
                 return dialog;
             }
         });
@@ -183,7 +178,6 @@ public class SearchConditionItemView extends PillView {
     }
 
     public final void refresh() {
-
 
         this.setActivated(item.getSearchConditionEncoding() != null);
 

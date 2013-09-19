@@ -57,6 +57,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
     public FilterEffectivenessPanel() {
         this(Color.black);
+     
     }
 
     public FilterEffectivenessPanel(Color foregroundColor) {
@@ -81,7 +82,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
         panel = ViewUtil.getClearPanel();
         panel.setLayout(new BorderLayout());
-        panel.setBorder(ViewUtil.getMediumBorder());
+        panel.setBorder(ViewUtil.getMediumBorder());        
         //panel.setPreferredSize(waitPanel.getPreferredSize());
         add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 

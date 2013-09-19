@@ -147,11 +147,7 @@ public class SearchBar extends JPanel {
         actionLabel.setToolTipText("Actions");
 
 
-        historyPanel = new FilterHistoryPanel();
-        //historyPanel.setVisible(false);
-
-
-        //savedFiltersPanel.setVisible(false);
+        historyPanel = new FilterHistoryPanel();       
 
         final Dimension dialogDimensions = new Dimension(400, 400);
 
@@ -237,16 +233,6 @@ public class SearchBar extends JPanel {
                 }
 
 
-                /* if (savedFiltersPanel != null) {
-                 dSave.remove(savedFiltersPanel);
-                 }
-                 savedFiltersPanel = new SavedFiltersPanel();
-                 savedFiltersPanel.setMinimumSize(dialogDimensions);
-                 savedFiltersPanel.setPreferredSize(dialogDimensions);
-                 dSave.add(savedFiltersPanel);
-                 dSave.pack();
-                 dSave.setLocationRelativeTo(MedSavantFrame.getInstance());
-                 dSave.setVisible(true);*/
 
             }
 
@@ -268,35 +254,7 @@ public class SearchBar extends JPanel {
         });
 
         saveLabel.addMouseListener(new MouseListener() {
-            /*
-             private boolean validateName(String name) {
-             File[] existingFilterSets = DirectorySettings.getFiltersDirectory().listFiles();
-             for (File f : existingFilterSets) {
-             if (f.getName().equals(name)) {
-             return DialogUtils.askYesNo("Replace Filter Set", "<html>A filter set named <i>%s</i> already exists.<br>Do you want to overwrite it?</html>", name) == DialogUtils.YES;
-             }
-             }
-             return true;
-             }
-
-             private void saveFilterSet(String name) throws Exception {
-
-             File file = new File(DirectorySettings.getFiltersDirectory(), name);
-
-             BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
-             out.write("<filters>\n");
-             for (QueryPanel sub : GeneticsFilterPage.getSearchBar().queryPanels) {
-             out.write("\t<set>\n");
-             for (FilterHolder item : sub.getFilterHolders()) {
-             if (item.hasFilterView()) {
-             out.write(item.getFilterView().saveState().generateXML() + "\n");
-             }
-             }
-             out.write("\t</set>\n");
-             }
-             out.write("</filters>\n");
-             out.close();
-             }*/
+         
             private void saveFile(File file) {
                 getQueryViewController().saveConditions(file);
                 JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Search conditions saved to " + file.getPath());
@@ -319,29 +277,7 @@ public class SearchBar extends JPanel {
                     } else {
                         saveFile(file);
                     }
-                }
-                /*
-                 if (FilterController.getInstance().hasFiltersApplied()) {
-                 String name = "Untitled";
-                 do {
-                 name = DialogUtils.displayInputMessage("Save Search", "Provide a name for this set of search conditions:", name);
-                 if (name == null) {
-                 return;     // User cancelled input dialog.
-                 }
-                 // If there's no extension, add ".xml".
-                 if (name.indexOf('.') < 0) {
-                 name += ".xml";
-                 }
-                 } while (!validateName(name));
-                 try {
-                 saveFilterSet(name);
-                 } catch (Exception ex) {
-                 ClientMiscUtils.reportError("Unable to save filter set: %s", ex);
-                 }
-                 } else {
-                 DialogUtils.displayError("Can't save search", "No filters are applied.");
-                 }
-                 */
+                }             
             }
 
             @Override
@@ -420,6 +356,7 @@ public class SearchBar extends JPanel {
         add(effectivenessPanel, BorderLayout.NORTH);
         add(instead, BorderLayout.CENTER);
         add(ViewUtil.centerHorizontally(bottomBar), BorderLayout.SOUTH);
+        
     }
 
     /**
@@ -442,10 +379,10 @@ public class SearchBar extends JPanel {
         final SearchConditionGroupItem entireQueryModel = new SearchConditionGroupItem(null);
         queryViewController = new QueryViewController(entireQueryModel, MedSavantConditionViewGenerator.getInstance());
 
-        JPanel p = new JPanel();
+        JPanel p = new JPanel();        
         p.setFocusable(true);
         p.setOpaque(false);
-        p.setLayout(new BorderLayout());
+        p.setLayout(new BorderLayout());        
         p.add(queryViewController, BorderLayout.CENTER);
         return p;
     }

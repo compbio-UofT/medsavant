@@ -233,8 +233,7 @@ public class PillView extends JPanel {
     public void showDialog(Point p) {
         if (dialogGenerator != null) {
             if (this.isDisclosureVisible) {     
-                JDialog jd = dialogGenerator.generateDialog();  
-                jd.setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+                JDialog jd = dialogGenerator.generateDialog();                  
                 jd.pack();
                 int y = p.y + this.getHeight() + 2;                
                 int frameHeight = MedSavantFrame.getInstance().getHeight();                                

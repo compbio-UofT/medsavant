@@ -1,6 +1,8 @@
 package org.ut.biolab.mfiume.query.view;
 
+import java.awt.Dimension;
 import java.io.Serializable;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 
@@ -13,10 +15,15 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
     protected final SearchConditionItem item;
 
     public SearchConditionEditorView(SearchConditionItem i) {
-        this.setOpaque(false);
+        this.setOpaque(false);        
         this.item = i;
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
+    protected Dimension getDialogDimension(){
+        return null;
+    }
+     
     public void saveSearchConditionParameters(String encoding) {
         item.setSearchConditionEncoding(encoding);
     }
@@ -32,4 +39,8 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
         }
     }
 
+    /*
+    public Dimension getDialogSize(){ //todo 
+        
+    } */
 }

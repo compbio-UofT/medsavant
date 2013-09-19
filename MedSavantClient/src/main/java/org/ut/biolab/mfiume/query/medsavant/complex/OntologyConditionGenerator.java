@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.medsavant.complex;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -54,7 +55,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
     private List<String> acceptableValues;
     private final OntologyType ontology;
     
-
+    private static final Dimension DEFAULT_DIMENSIONS = new Dimension(600,384);
     private class OntologySearchConditionEditorView extends StringSearchConditionEditorView {
 
         private Map<String, JPopupMenu> popupMap;
@@ -65,8 +66,8 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
 
         public OntologySearchConditionEditorView(SearchConditionItem i, StringConditionValueGenerator vg) {
             super(i, vg);
+            setPreferredSize(DEFAULT_DIMENSIONS);
         }
-
         
         private synchronized void refreshMaps() {
             if (refresher != null) {

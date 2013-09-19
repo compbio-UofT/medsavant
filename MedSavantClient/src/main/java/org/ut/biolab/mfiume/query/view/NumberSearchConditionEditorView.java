@@ -1,16 +1,14 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -60,10 +58,8 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             return;
         }
 
-
+        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
 
         final DecimalRangeSlider slider = new DecimalRangeSlider();
 
@@ -83,18 +79,31 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
 
         JPanel fromToContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(fromToContainer);
+        fromToContainer.add(Box.createHorizontalGlue());
         fromToContainer.add(fromBox);
         fromToContainer.add(new JLabel(" - "));
         fromToContainer.add(toBox);
+        fromToContainer.add(Box.createHorizontalGlue());
 
         JPanel minMaxContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(minMaxContainer);
-        minMaxContainer.add(fromLabel);
-        minMaxContainer.add(slider);
-        minMaxContainer.add(toLabel);
+        minMaxContainer.setLayout(new BoxLayout(minMaxContainer, BoxLayout.X_AXIS));
+
+        JPanel sliderContainer = ViewUtil.getClearPanel();
+        sliderContainer.setLayout(new BoxLayout(sliderContainer, BoxLayout.Y_AXIS));
+        sliderContainer.add(slider);
+
+        JPanel labelContainer = ViewUtil.getClearPanel();
+        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.X_AXIS));
+        labelContainer.add(fromLabel);
+        labelContainer.add(Box.createHorizontalGlue());
+        labelContainer.add(toLabel);
+        sliderContainer.add(labelContainer);
+        minMaxContainer.add(Box.createHorizontalGlue());
+        minMaxContainer.add(sliderContainer);
+        minMaxContainer.add(Box.createHorizontalGlue());
+
 
         add(fromToContainer);
-        //container.add(rangeContainer);
         add(minMaxContainer);
         add(Box.createVerticalBox());
 
@@ -157,27 +166,26 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             }
         });
 
-        JButton selectAll = ViewUtil.getSoftButton("Select All");
+        //JButton selectAll = ViewUtil.getSoftButton("Select All");
 
-        selectAll.setFocusable(
-                false);
-        selectAll.addActionListener(
-                new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                slider.setLowValue((int) Math.floor(extremeValues[0]));
-                slider.setHighValue((int) Math.floor(extremeValues[1]));
-                fromBox.setText(ViewUtil.numToString(extremeValues[0]));
-                toBox.setText(ViewUtil.numToString(extremeValues[1]));
-            }
-        });
+        /*
+         selectAll.setFocusable(
+         false);
+         selectAll.addActionListener(
+         new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+         slider.setLowValue((int) Math.floor(extremeValues[0]));
+         slider.setHighValue((int) Math.floor(extremeValues[1]));
+         fromBox.setText(ViewUtil.numToString(extremeValues[0]));
+         toBox.setText(ViewUtil.numToString(extremeValues[1]));
+         }
+         });*/
 
         JPanel bottomContainer = new JPanel();
 
         bottomContainer.setLayout(
                 new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
-
-        bottomContainer.add(selectAll);
 
         bottomContainer.add(Box.createHorizontalGlue());
 
@@ -186,8 +194,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         setExtremeValues(slider, fromLabel, toLabel, fromBox, toBox,
                 0, new Range(extremeValues[0], extremeValues[1]));
 
-        if (encoding
-                != null) {
+        if (encoding != null) {
             double[] d = NumericConditionEncoder.unencodeConditions(encoding);
             setSelectedValues(slider, fromBox, toBox, new Range(d[0], d[1]));
         }
