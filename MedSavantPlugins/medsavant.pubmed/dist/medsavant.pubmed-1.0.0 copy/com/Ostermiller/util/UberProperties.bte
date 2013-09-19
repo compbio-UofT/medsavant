@@ -1,0 +1,45 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Uber Properties<%/bte.tpl%>
+<%bte.tpl name=description%>A replacement for the java.utils.Properties class with enhancements.<%/bte.tpl%>
+<%bte.tpl name=keywords%>properties, properties, uberproperties, uber properties, property, property, uber, uber, replacement, token, tokens<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// create the properties
+</span><span class=identifier>UberProperties props </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>UberProperties</span><span class=separator>();
+
+</span><span class=comment>// File in which changes will be stored
+// relative to the users home directory
+</span><span class=identifier>String</span><span class=separator>[] </span><span class=identifier>userFile </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>String</span><span class=separator>[]{
+	</span><span class=literal>&quot;.java&quot;</span><span class=separator>,</span><span class=literal>&quot;uberpropertiestest.properties&quot;
+</span><span class=separator>};
+
+</span><span class=comment>// This file must exist for this example to work
+// this file should contain default values.
+// In this case, it would be best to have the following line:
+// lastDate=This example was just run for the first time.
+</span><span class=identifier>String systemResource </span><span class=operator>= </span><span class=literal>&quot;uberpropertiestest.properties&quot;</span><span class=separator>;
+
+</span><span class=comment>// load the properties
+</span><span class=identifier>props</span><span class=separator>.</span><span class=identifier>load</span><span class=separator>(</span><span class=identifier>userFile</span><span class=separator>, </span><span class=identifier>systemResource</span><span class=separator>);
+
+</span><span class=comment>// Display the date for the last time this example was run.
+</span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>( </span><span class=identifier>props</span><span class=separator>.</span><span class=identifier>getProperty</span><span class=separator>(</span><span class=literal>&quot;lastDate&quot;</span><span class=separator>));
+
+</span><span class=comment>// set the date
+</span><span class=identifier>props</span><span class=separator>.</span><span class=identifier>setProperty</span><span class=separator>(</span><span class=literal>&quot;lastDate&quot;</span><span class=separator>, </span><span class=reservedWord>new </span><span class=identifier>Date</span><span class=separator>().</span><span class=identifier>toString</span><span class=separator>());
+
+</span><span class=comment>// resave the properties so the date will be printed next time
+</span><span class=identifier>props</span><span class=separator>.</span><span class=identifier>save</span><span class=separator>(</span><span class=identifier>userFile</span><span class=separator>);</span></pre>
+</div>
+
+<p>A replacement for the java.utils.Properties class.  This version can read and
+write properties files that are in the same format but it can handle multiple 
+properties with the same name and makes comments from the files available.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/UberProperties.java/0">Version History</a> | 
+<a href="UberProperties.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/UberProperties.html">Documentation</a>]</p>
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

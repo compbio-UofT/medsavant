@@ -133,7 +133,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         JPanel loginForm = getLoginForm();
 
         container.add(ViewUtil.centerHorizontally(logo));
-        container.add(Box.createRigidArea(new Dimension(10,10)));
+        container.add(Box.createRigidArea(new Dimension(3,3)));
         container.add(loginForm);
 
 

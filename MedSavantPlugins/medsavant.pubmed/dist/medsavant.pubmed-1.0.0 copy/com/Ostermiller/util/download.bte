@@ -1,0 +1,56 @@
+<%bte.doc super="page.bte" %>
+<%bte.tpl name=pageTitle%>Download com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=firstLine%>Download com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=description%>Download open source (GPL) Java utilities for common tasks such as CSV, Base64, MD5, String manipulation.<%/bte.tpl%>
+<%bte.tpl name=keywords%>download, jar, util, util, util, utils, utils, utils, utilities, utilities, base64, base64, base64, md5, md5, md5, significant, figures, encode, encoding, decode, decoding, password, username, dialog, string, string tokenizer, tokenizer, stringtokenizer, stringtokenizer,  programming, text, cgi, csv, csv, browser, random, password, generate, generator, pass, launcher, browser control, launch, web browser, open url, url, comma, separated, value, values, java, java, open source, gpl, javadoc<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class="install"><h3>Installation</h3>
+<p>The utilities are pre-compiled and ready to use. Simply use one of the following to
+add utils.jar to your classpath:
+<ul>
+<li>Put utils.jar in the Java extensions directory.</li>
+<li>Set your CLASSPATH environment variable to include utils.jar.</li>
+<li>Specify utils.jar in the command line classpath when you compile and run your programs.</li>
+<li>Extract utils.jar to a folder already in your classpath.</li>
+<li>Include the contents of utils.jar in your program's jar file.</li>
+<li>Reference utils.jar from the manifest file in your program's jar file.</li>
+</ul>
+You can extract the contents of utils.jar either with the jar tool that comes with Java or by 
+renaming utils.jar to utils.zip and using any zip file extractor.</p>
+<p>If you have a Unix compatible system and you want to have easy access to the Base64, LineEnds, MD5Sum, RandPass, and Tabs
+command line programs that come in these utilities, run this <a href="install.sh">install shell script.</a></p>
+</div>
+
+<div class=download>
+<table><tr><th>
+file
+</th><th>
+size
+</th><th>
+description
+</th></tr>
+<tr><td>
+<a name="download" href="ostermillerutils_1_04_00.jar">utils.jar</a>
+</td><td>
+420k
+</td><td>
+The latest version of the com.Ostermiller.util utilities including source code.
+</td></tr></table>
+</div>
+<div class=utillist>
+
+<div class=history>
+<h2>Version History</h2>
+<p>The current version of utils.jar is <b>1.04.00</b>. 
+The major version number will remain unchanged until backward compatibility is severely broken (hopefully never).  The middle number will be incremented whenever new utilities are added.  The final number is reserved for bug fix releases.</p>
+<ul>
+<li>Version 1.04.00 - SizeLimitInputStream class; Concatenation Streams classes; Updated all scanner definitions to work with JFlex 1.4; CGIParser catches IllegalArgementException thrown by URLDecoder; New unit tests for several classes; Unit tests standalone programs with no output on success.</li>
+<li>Version 1.03.00 - Labeled CSV class; new Iterator and Enumeration classes; NameValuePair class for CGI; CGI parameter order preserved; CGI character set bug fixed.</li>
+<li>Version 1.02.27 - Fixed a possible ArrayOutOfBoundsException in the MD5 libraries.</li>
+<li><a href="history.html">Older Changes...</a></li>
+</ul>
+</div>
+<br clear=all>
+<%/bte.tpl%>
+<%bte.tpl name=linkdownload%><b>Download</b><%/bte.tpl%>
+<%/bte.doc%>

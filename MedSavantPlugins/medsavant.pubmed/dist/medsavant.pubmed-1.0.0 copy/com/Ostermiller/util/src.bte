@@ -1,0 +1,29 @@
+<%bte.doc output=false%>
+<%bte.tpl name=page%><!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<%bte.grp onNoResolve=ok %><title><%bte.inc name="title"%></title><%/bte.grp%>
+<meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
+<base href="http://ostermiller.org/utils/">
+<%bte.grp onNoResolve=ok %><link rel="stylesheet" media="screen" title="Syntax Highlighting" href="<%bte.inc name="styleSheet"%>" type="text/css"><%/bte.grp%>
+</head>
+<body>
+<div style="border: thin black ridge;padding:1cm;">
+<h1>
+<a href="http://ostermiller.org/utils/">com.Ostermiller.util Java Utilities</a>
+</h1>
+<h2>
+Source code for <a href="http://ostermiller.org/utils/<%bte.inc name="fileName"%>.html"><%bte.inc name="fileName"%>.<%bte.inc name="fileExtension"%></a>
+</h2> 
+<small>(<a href="http://ostermiller.org/utils/doc/com/Ostermiller/util/<%bte.inc name="fileName"%>.html">JavaDoc</a>)</small>
+<small>(<a href="http://ostermiller.org/utils/<%bte.inc name="fileName"%>.html">Information and Download</a>)</small>
+<p align=right><a href="source.html">Browse all com.Ostermiller.util source code</a></p></div>
+<%bte.inc name="highlightedDocument"%>
+<div style="border: thin black ridge;padding:1cm;">
+Syntax Highlighting created using the 
+<a href="http://ostermiller.org/syntax/">com.Ostermiller.Syntax</a> package.
+</div>
+</body>
+</html>
+<%/bte.tpl%>
+<%/bte.doc%>

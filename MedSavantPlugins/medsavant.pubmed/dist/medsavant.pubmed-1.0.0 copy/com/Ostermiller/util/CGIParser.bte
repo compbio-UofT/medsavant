@@ -1,0 +1,53 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>CGI Query String Parser<%/bte.tpl%>
+<%bte.tpl name=description%>Java libraries to to parse the query data supplied by HTTP GET or POST requests.<%/bte.tpl%>
+<%bte.tpl name=keywords%>cgi, cgi, cgi, common, gateway, interface, query, query, data, string, string, strings, name, names, value, values, pair, pairs, parse, parser, parses, parsing, token, tokenize, tokenizes, tokenizer, tokenizing, split, splits, urlencode, urlencodes, urlencoded, urldecode, urldecodes, encoded, url, url, get, get, post, post, servlet, servlets, http, http, http, protocol, protocal<%/bte.tpl%>
+<%bte.tpl name=content%>
+
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=reservedWord>public void </span><span class=identifier>doGet </span><span class=separator>(</span><span class=identifier>HttpServletRequest request</span><span class=separator>, </span><span class=identifier>HttpServletResponse response</span><span class=separator>)
+    </span><span class=reservedWord>throws </span><span class=identifier>ServletException</span><span class=separator>, </span><span class=identifier>IOException </span><span class=separator>{ 
+    </span><span class=identifier>doPostGet</span><span class=separator>(
+        </span><span class=identifier>request</span><span class=separator>, 
+        </span><span class=identifier>response</span><span class=separator>, 
+        </span><span class=reservedWord>new </span><span class=identifier>CGIParser</span><span class=separator>(
+            </span><span class=identifier>request</span><span class=separator>.</span><span class=identifier>getQueryString</span><span class=separator>(),
+            </span><span class=comment>// Use the same character set
+            // used in response.setContentType
+            </span><span class=literal>&quot;UTF-8&quot;
+        </span><span class=separator>)
+    );
+}
+
+</span><span class=reservedWord>public void </span><span class=identifier>doPost</span><span class=separator>(</span><span class=identifier>HttpServletRequest request</span><span class=separator>, </span><span class=identifier>HttpServletResponse response</span><span class=separator>)
+    </span><span class=reservedWord>throws </span><span class=identifier>ServletException</span><span class=separator>, </span><span class=identifier>IOException </span><span class=separator>{
+    </span><span class=identifier>doPostGet</span><span class=separator>(
+        </span><span class=identifier>request</span><span class=separator>, 
+        </span><span class=identifier>response</span><span class=separator>, 
+        </span><span class=reservedWord>new </span><span class=identifier>CGIParser</span><span class=separator>(
+            </span><span class=identifier>request</span><span class=separator>.</span><span class=identifier>getReader</span><span class=separator>(),
+            </span><span class=comment>// Use the same character set
+            // used in response.setContentType
+            </span><span class=literal>&quot;UTF-8&quot;
+        </span><span class=separator>)
+    );
+}
+
+</span><span class=reservedWord>private void </span><span class=identifier>doPostGet</span><span class=separator>(</span><span class=identifier>HttpServletRequest request</span><span class=separator>, </span><span class=identifier>HttpServletResponse response</span><span class=separator>, </span><span class=identifier>CGIParser params</span><span class=separator>)
+    </span><span class=reservedWord>throws </span><span class=identifier>ServletException</span><span class=separator>, </span><span class=identifier>IOException </span><span class=separator>{
+    ...
+}</span></pre>
+If using this class in servlets, you would request the parameters from the params object rather than from the request.
+</div>
+
+<p>The servlet implementation that I am using does not parse the CGI name value pairs correctly for either POST or GET requests when there is a large amount of query data.  Luckily, you can parse the query data yourself.  I have written a class to do so.  Its methods for retrieving the name value pairs are identical to the three methods in the http request of the servlet.  The class can be created from the string of the GET request or the stream of the POST request.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CGIParser.java/0">Version History</a> |
+<a href="CGIParser.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CGIParser.html">Documentation</a>]</p>
+
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

@@ -1,0 +1,66 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Basic Iterators and Enumerations<%/bte.tpl%>
+<%bte.tpl name=description%>Java libraries to provide basic iterator and enumerations: convert between iterators and enumerations and convert an array to an iterator or enumeration..<%/bte.tpl%>
+<%bte.tpl name=keywords%>iterator, enumerator, enumeration, iterators, enumerators, enumerations, enumerate, array, convert, conversion, IteratorEnumeration, EnumerationIterator, ArrayIterator, ArrayEnumeration<%/bte.tpl%>
+<%bte.tpl name=content%>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=identifier>Enumeration e </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>IteratorEnumeration</span><span class=separator>(
+    </span><span class=identifier>collection</span><span class=separator>.</span><span class=identifier>iterator</span><span class=separator>()
+);</span></pre>
+</div>
+
+<h2>Convert an Iterator to an Enumeration: IteratorEnumeration</h2>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/IteratorEnumeration.java/0">Version History</a> |
+<a href="IteratorEnumeration.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/IteratorEnumeration.html">Documentation</a>]</p>
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=identifier>Iterator i </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>EnumerationIterator</span><span class=separator>(
+    </span><span class=identifier>vector</span><span class=separator>.</span><span class=identifier>elements</span><span class=separator>()
+);</span></pre>
+</div>
+
+<h2>Convert an Enumeration to an Iterator: EnumerationIterator</h2>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/EnumerationIterator.java/0">Version History</a> |
+<a href="EnumerationIterator.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/EnumerationIterator.html">Documentation</a>]</p>
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=identifier>Enumeration e </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>ArrayEnumeration</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>String</span><span class=separator>[]{</span><span class=literal>&quot;one&quot;</span><span class=separator>,</span><span class=literal>&quot;two&quot;</span><span class=separator>,</span><span class=literal>&quot;three&quot;</span><span class=separator>}
+);</span></pre>
+</div>
+
+<h2>Convert an array to an Enumeration: ArrayEnumeration</h2>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/ArrayEnumeration.java/0">Version History</a> |
+<a href="ArrayEnumeration.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ArrayEnumeration.html">Documentation</a>]</p>
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=identifier>Iterator i </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>ArrayIterator</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>String</span><span class=separator>[]{</span><span class=literal>&quot;one&quot;</span><span class=separator>,</span><span class=literal>&quot;two&quot;</span><span class=separator>,</span><span class=literal>&quot;three&quot;</span><span class=separator>}
+);</span></pre>
+</div>
+
+<h2>Convert an array to an Iterator: ArrayIterator</h2>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/ArrayIterator.java/0">Version History</a> |
+<a href="ArrayIterator.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ArrayIterator.html">Documentation</a>]</p>
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>
