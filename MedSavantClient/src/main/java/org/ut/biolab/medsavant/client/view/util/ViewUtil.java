@@ -794,14 +794,7 @@ public final class ViewUtil {
     }
 
     public static double parseDoubleFromFormattedString(String s) {
-        NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
-        try {
-            Number number = format.parse(s);
-            double d = number.doubleValue();
-            return d;
-        } catch (Exception w) {
-            return 0;
-        }
+        return org.apache.commons.lang3.math.NumberUtils.toDouble(s);
     }
 
     public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon) {
