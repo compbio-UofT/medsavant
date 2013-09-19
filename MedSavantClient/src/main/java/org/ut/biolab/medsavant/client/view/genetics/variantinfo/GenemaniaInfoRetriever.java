@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.SwingWorker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -77,7 +76,6 @@ public class GenemaniaInfoRetriever {
         }
     }
     private List<String> genes;
-    
     private static final int DEFAULT_GENE_LIMIT = 50;
     private static final CombiningMethod DEFAULT_COMBINING_METHOD = CombiningMethod.AVERAGE;
     private static final String[] DEFAULT_NETWORKS = {"Genetic interactions", "Shared protein domains", "Other", "Pathway", "Physical interactions", "Co-localization", "Predicted", "Co-expression"};
@@ -95,17 +93,15 @@ public class GenemaniaInfoRetriever {
     private SearchOptions options;
     private static Map<Long, Integer> sequenceNumbers;
     private CytoscapeUtils cytoscapeUtils;
-    private RelatedGenesEngineResponseDto response;
-    private static String GM_URL = "http://localhost/gmdata.zip";  //for debugging.
-    
-    //private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
+    private RelatedGenesEngineResponseDto response;    
+    private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
 
     static {
         sequenceNumbers = new HashMap<Long, Integer>();
     }
-    
+
     public static void extractGM(String pathToGMData) {
         String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
         try {
@@ -123,14 +119,14 @@ public class GenemaniaInfoRetriever {
                         new FileOutputStream(directoryPath + File.separator + entry.getName()));
             }
             zipData.close();
-            FileWriter fstream = new FileWriter(DirectorySettings.getGeneManiaDirectory()+File.separator+DirectorySettings.GENEMANIA_CHECK_FILE);
+            FileWriter fstream = new FileWriter(DirectorySettings.getGeneManiaDirectory() + File.separator + DirectorySettings.GENEMANIA_CHECK_FILE);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("This file indicates that the GeneMANIA data has finished downloading.");
             out.close();
-            if(!data.delete()){
-                LOG.error("Couldn't delete GeneMANIA .zip: "+data.getAbsolutePath());
+            if (!data.delete()) {
+                LOG.error("Couldn't delete GeneMANIA .zip: " + data.getAbsolutePath());
             }
-            
+
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(GenemaniaInfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -152,11 +148,11 @@ public class GenemaniaInfoRetriever {
             GenemaniaInfoRetriever.extractGM(getDestPath());
             return null;
         }
-        
+
         @Override
         public void jobDone() {
-                super.jobDone();
-               MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
+            super.jobDone();
+            MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
         }
     }
 
@@ -400,7 +396,7 @@ public class GenemaniaInfoRetriever {
     }
 
     private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException {
-        
+
         RelatedGenesEngineRequestDto request = createRequest();
         response = runQuery(request);
 
