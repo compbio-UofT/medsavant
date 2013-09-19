@@ -103,6 +103,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             public void mouseReleased(MouseEvent e) {
                 fromBox.setText(ViewUtil.numToString(slider.getLow()));
                 toBox.setText(ViewUtil.numToString(slider.getHigh()));
+                encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1]);
             }
         });
 
@@ -130,7 +131,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             public void caretUpdate(CaretEvent ce) {
                 if (!isAdjustingSlider) {
                     try {
-                        encodeValue(new Double(fromBox.getText()), new Double(toBox.getText()), extremeValues[0], extremeValues[1]);
+                        encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1]);
                     } catch (Exception e) {
                     }
                 }
@@ -243,5 +244,9 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         toBox.setText(ViewUtil.numToString(selectedValues.getMax()));
 
         slider.updateUI();
+    }
+
+    public static void main(String[] args) {
+        Double.parseDouble("1,456,094");
     }
 }

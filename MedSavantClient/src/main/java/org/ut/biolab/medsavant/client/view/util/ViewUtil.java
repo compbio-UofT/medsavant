@@ -45,6 +45,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -59,7 +60,7 @@ import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
  */
 public final class ViewUtil {
 
-     public static Point getPositionRelativeTo(Component root, Component comp) {
+    public static Point getPositionRelativeTo(Component root, Component comp) {
         if (comp.equals(root)) {
             return new Point(0, 0);
         }
@@ -67,7 +68,7 @@ public final class ViewUtil {
         Point parentOff = getPositionRelativeTo(root, comp.getParent());
         return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
     }
-     
+
     public static JPanel getClearPanel() {
         return (JPanel) clear(new JPanel());
     }
@@ -790,6 +791,10 @@ public final class ViewUtil {
 
     public static JDialog getHUD(Component parent, String title, String text) {
         return getHUD(parent, title, text, false);
+    }
+
+    public static double parseDoubleFromFormattedString(String s) {
+        return org.apache.commons.lang3.math.NumberUtils.toDouble(s);
     }
 
     public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon) {
