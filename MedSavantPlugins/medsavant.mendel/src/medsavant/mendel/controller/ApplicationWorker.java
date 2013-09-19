@@ -10,7 +10,6 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -32,8 +31,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -46,13 +43,13 @@ import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.Notification;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import medsavant.mendel.view.OptionView.IncludeExcludeStep;
 import medsavant.mendel.view.OptionView.InheritanceStep;
 import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
 import medsavant.mendel.view.OptionView.ZygosityStep;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -69,7 +66,8 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
     //private JProgressBar progressBar;
     //private JFrame frame;
     //private JLabel label;
-    private Notification jobModel;
+    //private Notification jobModel;
+    private VisibleMedSavantWorker parentWorker;
     private Locks.DialogLock completionLock;
     private final InheritanceStep inheritanceStep;
     private final ZygosityStep zygosityStep;
@@ -82,17 +80,17 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         this.inFile = inFile;
     }
 
-    public void setUIComponents(Notification m) {
-        this.jobModel = m;
+    public void setUIComponents(VisibleMedSavantWorker parentWorker) {
+        this.parentWorker = parentWorker;
     }
 
     public void setLabelText(String t) {
-        this.jobModel.setStatusMessage(t);
+        parentWorker.setStatusMessage(t);
     }
 
     @Override
     protected void showProgress(double fract) {
-        this.jobModel.setProgress(fract);
+        parentWorker.setProgress(fract);
     }
 
     @Override

@@ -631,7 +631,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
-                view.showDialog();
+                
+                
+                view.showDialog(getLocationOnScreen());
 
                 m.setVisible(false);
                 field.setText("");

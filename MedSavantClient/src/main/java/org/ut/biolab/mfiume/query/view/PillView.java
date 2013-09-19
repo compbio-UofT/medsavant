@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -27,6 +28,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.img.ImagePanel;
@@ -44,6 +46,8 @@ public class PillView extends JPanel {
     public static final int BACKOFF = 1;
     public static final int VPAD = 2;
     public static final int HPAD = 7;
+    private static final int DIALOG_HEIGHT = 384;
+    private static final int DIALOG_WIDTH = 512;
     private boolean isDisclosureVisible;
     private final JPanel leftPanel;
     private final JPanel middlePanel;
@@ -102,18 +106,20 @@ public class PillView extends JPanel {
 
         final PillView instance = this;
 
+        /*
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
                 if (me.getButton() == me.BUTTON1) {
                     //do nothing?
                 } else if (me.getButton() == me.BUTTON2) {
-                    showDialog();
+                    showDialog(instance.getLocationOnScreen());
                 } else if (me.getButton() == me.BUTTON3) {
-                    showDialog();
+                    showDialog(instance.getLocationonScreen());
                 }
             }
         });
+        */ 
 
         ImageIcon icinfo = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INFO);
         infoButton = ViewUtil.createIconButton(icinfo);
@@ -135,7 +141,7 @@ public class PillView extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (dialogGenerator != null) {
-                    showDialog();
+                    showDialog(instance.getLocationOnScreen());
                 } else if (popupGenerator != null) {
                     showPopup();
                 }
@@ -222,13 +228,22 @@ public class PillView extends JPanel {
 
         }
     }
-
-    public void showDialog() {
+    
+   
+    public void showDialog(Point p) {
         if (dialogGenerator != null) {
-            if (this.isDisclosureVisible) {
-                JDialog jd = dialogGenerator.generateDialog();
+            if (this.isDisclosureVisible) {     
+                JDialog jd = dialogGenerator.generateDialog();  
+                jd.setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+                jd.pack();
+                int y = p.y + this.getHeight() + 2;                
+                int frameHeight = MedSavantFrame.getInstance().getHeight();                                
+                if((y + DIALOG_HEIGHT) > ( frameHeight)){
+                    y = frameHeight - DIALOG_HEIGHT - 10;
+                }                
+                jd.setLocation(new Point(p.x, y));
                 jd.setVisible(true);
-                jd.requestFocus();
+                jd.requestFocus();                
             }
         }
     }

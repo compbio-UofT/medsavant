@@ -359,63 +359,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                     URI uri = URI.create(FEEDBACK_URI);
                     Desktop.getDesktop().mail(uri);
                 } catch (Exception ex) {
-                }
-                //JDialog d = new FeedbackDialog(MedSavantFrame.getInstance(), true);
-                //d.setVisible(true);
+                }                
             }
         });
-
-        System.out.println("Adding debug function");
-        addDebugFunction("Test Job", new Runnable() {           
-            @Override
-            public void run() {
-                VisibleMedSavantWorker worker = new VisibleMedSavantWorker<Void>("page", "Test"){
-
-                    @Override
-                    protected Void runInBackground() throws Exception {
-                        System.out.println("Sleeping for 5s");
-                        Thread.sleep(5000);
-                        System.out.println("Done sleeping."); 
-                        return null;
-                    }
-
-                    @Override
-                    protected void showResults() {
-                        System.out.println("Showing results.");                        
-                    }
-
-                    @Override
-                    protected void cancelJob() {
-                        System.out.println("Job was cancelled.");
-                    }
-
-                    @Override
-                    protected void closeJob() {
-                        System.out.println("Job was closed.");
-                    }
-
-                    @Override
-                    protected void showFailure(Throwable ex) {
-                        System.out.println("Showing failure via super method.");                        
-                        super.showFailure(ex); //To change body of generated methods, choose Tools | Templates.
-                    }
-                    
-                    
-                    
-                };                
-                worker.showResultsOnFinish(true);
-                worker.execute();
-                
-                
-            }
-        });
-
-        JMenu debugMenu = getDebugMenu();
-        if (debugMenu != null) {
-            System.out.println("Adding debugMenu");
-            menu.add(debugMenu);
-        }
-
+       
 
         helpMenu.add(feedbackItem);
         menu.add(helpMenu);

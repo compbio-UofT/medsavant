@@ -1,7 +1,6 @@
 package medsavant.mendel.view;
 
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
-import org.ut.biolab.medsavant.client.view.Notification;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.Component;
@@ -52,6 +51,7 @@ import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
 import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -980,52 +980,36 @@ public class OptionView {
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                new MedSavantWorker<Object>(OptionView.class.getCanonicalName()) {
+                new VisibleMedSavantWorker<Object>(OptionView.class.getCanonicalName(), "Mendel #"+jobNumber++) {
                     MedSavantWorker currentWorker;
-                    private int notificationID;
+                    Locks.DialogLock dialogLock;
                     @Override
-                    protected void showProgress(double fract) {
+                    protected void showResults() {
+                        dialogLock.getResultsDialog().setTitle(this.getTitle());
+                        dialogLock.getResultsDialog().setVisible(true);
                     }
 
                     @Override
-                    protected void showSuccess(Object result) {
-                    }
-
+                    protected void jobDone() {
+                        super.jobDone(); 
+                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
+                        if (result == DialogUtils.YES) {
+                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                            dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
+                            dialogLock.getResultsDialog().setVisible(true);
+                        }
+                    }                   
+                    
                     @Override
-                    protected Object doInBackground() throws Exception {
-
-                        jobNumber++;
+                    protected Object runInBackground() throws Exception {
+                        
 
                         final Locks.FileResultLock fileLock = new Locks.FileResultLock();
-                        final Locks.DialogLock dialogLock = new Locks.DialogLock();
+                        dialogLock = new Locks.DialogLock();                       
 
-                        Notification j = new Notification("Mendel #" + jobNumber) {
-                            @Override
-                            public void showResults() {
-                                dialogLock.getResultsDialog().setTitle(this.getTitle());
-                                dialogLock.getResultsDialog().setVisible(true);
-                            }
-
-                            @Override
-                            public void cancelJob() {
-                                if (currentWorker != null) {
-                                    currentWorker.cancel(true);
-                                }
-                            }
-
-                            @Override
-                            public void closeJob(){
-                                NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
-                            }
-                        };
-
-                        notificationID = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).addNotification(j.getView());
-                        //AnalyticsJobsPanel.getInstance().addJob(j);
-
-                        j.setStatus(Notification.JobStatus.RUNNING);
-
+                        
                         // File retriever
-                        currentWorker = getRetrieverWorker(j, fileLock);
+                        currentWorker = getRetrieverWorker(this, fileLock);
                         currentWorker.execute();
                         try {
                             synchronized (fileLock) {
@@ -1037,7 +1021,7 @@ public class OptionView {
                         System.out.println("Running algorithm on file " + fileLock.getFile().getAbsolutePath());
 
                         // Algorithm Runner
-                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, zygosityStep, inheritanceStep, j, dialogLock);
+                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, zygosityStep, inheritanceStep, this, dialogLock);
                         currentWorker.execute();
 
                         try {
@@ -1048,32 +1032,26 @@ public class OptionView {
                         } finally {
                             //NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                         }
-
-                        j.setStatus(Notification.JobStatus.FINISHED);
-                        j.setStatusMessage("Complete");
-
-                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
-                        if (result == DialogUtils.YES) {
-                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                            dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
-                            dialogLock.getResultsDialog().setVisible(true);
-                        }
-
+                      
                         return null;
                     }
+                    
+                    
+
+                   
                 }.execute();
 
                 DialogUtils.displayMessage("Mendel Submitted");
             }
 
-            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, Notification j, Locks.DialogLock genericLock) {
+            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, VisibleMedSavantWorker j, Locks.DialogLock genericLock) {
                 ApplicationWorker w = new ApplicationWorker(steps, zygosityStep, model, file);
                 w.setUIComponents(j);
                 w.setCompletionLock(genericLock);
                 return w;
             }
 
-            private MedSavantWorker getRetrieverWorker(final Notification m, final Locks.FileResultLock fileLock) {
+            private MedSavantWorker getRetrieverWorker(final VisibleMedSavantWorker m, final Locks.FileResultLock fileLock) {
                 return new MedSavantWorker<File>(OptionView.class.getCanonicalName()) {
                     @Override
                     protected void showProgress(double fract) {
@@ -1092,7 +1070,7 @@ public class OptionView {
                     @Override
                     protected File doInBackground() throws Exception {
 
-                        m.setStatusMessage("Retrieving Variants");
+                        m.setStatusMessage("Retrieving Variants...");
 
                         String session = LoginController.getInstance().getSessionID();
                         int refID = ReferenceController.getInstance().getCurrentReferenceID();
