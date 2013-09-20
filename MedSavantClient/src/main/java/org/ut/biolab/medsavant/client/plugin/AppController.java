@@ -40,7 +40,6 @@ import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 
-
 /**
  * Plugin controller ported over from Savant.
  *
@@ -50,9 +49,7 @@ public class AppController extends Controller {
 
     private static final Log LOG = LogFactory.getLog(AppController.class);
     private static final String UNINSTALL_FILENAME = ".uninstall_apps";
-
     private static AppController instance;
-
     private File uninstallFile;
     private List<String> pluginsToRemove = new ArrayList<String>();
     private Map<String, AppDescriptor> knownPlugins = new HashMap<String, AppDescriptor>();
@@ -61,7 +58,9 @@ public class AppController extends Controller {
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
 
-    /** SINGLETON **/
+    /**
+     * SINGLETON *
+     */
     public static synchronized AppController getInstance() {
         if (instance == null) {
             instance = new AppController();
@@ -70,7 +69,7 @@ public class AppController extends Controller {
     }
 
     /**
-     * Private constructor.  Should only be called by getInstance().
+     * Private constructor. Should only be called by getInstance().
      */
     private AppController() {
         try {
@@ -97,7 +96,7 @@ public class AppController extends Controller {
                 return name.toLowerCase().endsWith(".jar");
             }
         });
-        for (File f: files) {
+        for (File f : files) {
             try {
                 addPlugin(f);
             } catch (PluginVersionException x) {
@@ -108,7 +107,7 @@ public class AppController extends Controller {
         // Check to see if we have any outdated plugins.
         if (pluginErrors.size() > 0) {
             List<String> updated = new ArrayList<String>();
-            for (String s: pluginErrors.keySet()) {
+            for (String s : pluginErrors.keySet()) {
                 // Plugin is invalid, and we don't have a newer version.
                 if (checkForPluginUpdate(s)) {
                     updated.add(s);
@@ -116,13 +115,13 @@ public class AppController extends Controller {
             }
             if (updated.size() > 0) {
                 DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.getVersionString(), ClientMiscUtils.join(updated, ", ")));
-                for (String s: updated) {
+                for (String s : updated) {
                     pluginErrors.remove(s);
                 }
             }
             if (pluginErrors.size() > 0) {
                 StringBuilder errorStr = null;
-                for (String s: pluginErrors.keySet()) {
+                for (String s : pluginErrors.keySet()) {
                     if (errorStr == null) {
                         errorStr = new StringBuilder();
                     } else {
@@ -135,15 +134,15 @@ public class AppController extends Controller {
                 if (errorStr != null) {
                     // The following dialog will only report plugins which we can tell are faulty before calling loadPlugin(), typically
                     // by checking the version in plugin.xml.
-  //                  System.out.println("Showing dialog");
+                    //                  System.out.println("Showing dialog");
 //                    JOptionPane.showMessageDialog(null, String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr),"Plugins Not Loaded", JOptionPane.ERROR_MESSAGE);
-                   DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
+                    DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
                 }
             }
         }
 
         Set<URL> jarURLs = new HashSet<URL>();
-        for (AppDescriptor desc: knownPlugins.values()) {
+        for (AppDescriptor desc : knownPlugins.values()) {
             try {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     jarURLs.add(desc.getFile().toURI().toURL());
@@ -154,7 +153,7 @@ public class AppController extends Controller {
         if (jarURLs.size() > 0) {
             pluginLoader = new PluginLoader(jarURLs.toArray(new URL[0]), getClass().getClassLoader());
 
-            for (final AppDescriptor desc: knownPlugins.values()) {
+            for (final AppDescriptor desc : knownPlugins.values()) {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     new Thread("PluginLoader-" + desc) {
                         @Override
@@ -185,7 +184,6 @@ public class AppController extends Controller {
      */
     public void getGeneManiaData() {
         Runnable r = new Runnable() {
-
             @Override
             public void run() {
                 String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
@@ -193,7 +191,9 @@ public class AppController extends Controller {
                     URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
                     System.out.println("Downloding GeneMania data from " + pathToGMData.toString());
                     try {
-                        if (true) { throw new IOException("Temporarily preventing gm data from downloading. Because it's so large it should only be downloaded once and on demand"); }
+                        if (true) {
+                            throw new IOException("Temporarily preventing gm data from downloading. Because it's so large it should only be downloaded once and on demand");
+                        }
                         File data = RemoteFileCache.getCacheFile(pathToGMData);
                         System.out.println("data is" + data.getAbsolutePath());
                         ZipFile zipData = new ZipFile(data.getAbsolutePath());
@@ -201,15 +201,15 @@ public class AppController extends Controller {
                         while (entries.hasMoreElements()) {
                             ZipEntry entry = (ZipEntry) entries.nextElement();
                             if (entry.isDirectory()) {
-                                (new File(directoryPath +"/"+entry.getName())).mkdirs();
+                                (new File(directoryPath + "/" + entry.getName())).mkdirs();
                                 continue;
                             }
                             //System.err.println("Extracting file: " + entry.getName());
                             copyInputStream(zipData.getInputStream(entry),
-                                    new BufferedOutputStream(new FileOutputStream(directoryPath + "/"+entry.getName())));
+                                    new BufferedOutputStream(new FileOutputStream(directoryPath + "/" + entry.getName())));
                         }
                         zipData.close();
-                        FileWriter fstream = new FileWriter(directoryPath+ "/done.txt");
+                        FileWriter fstream = new FileWriter(directoryPath + "/done.txt");
                         BufferedWriter out = new BufferedWriter(fstream);
                         out.write("This file indicates that the GeneMANIA data has finished downloading.");
                         out.close();
@@ -239,6 +239,18 @@ public class AppController extends Controller {
 
     public MedSavantApp getPlugin(String id) {
         return loadedPlugins.get(id);
+    }
+
+    public List<MedSavantApp> getPluginsOfClass(Class c) {
+        List<MedSavantApp> results = new ArrayList<MedSavantApp>();
+        for (AppDescriptor ad : this.getDescriptors()) {
+            MedSavantApp appInstance = getPlugin(ad.getID());
+            if (c.isInstance(appInstance)) {
+                results.add(appInstance);
+            }
+        }
+        LOG.info(results.size() + " apps of class " + c.getSimpleName());
+        return results;
     }
 
     public boolean queuePluginForRemoval(String id) {
@@ -342,11 +354,10 @@ public class AppController extends Controller {
         }
     }
 
-
     private void loadPlugin(AppDescriptor desc) throws Throwable {
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
-        MedSavantApp plugin = (MedSavantApp)pluginClass.newInstance();
+        MedSavantApp plugin = (MedSavantApp) pluginClass.newInstance();
         plugin.setDescriptor(desc);
         loadedPlugins.put(desc.getID(), plugin);
         LOG.debug(String.format("Firing LOADED event to %s listeners.", listeners.size()));
@@ -354,7 +365,7 @@ public class AppController extends Controller {
     }
 
     /**
-     * Try to add a plugin from the given file.  It is inserted into our internal
+     * Try to add a plugin from the given file. It is inserted into our internal
      * data structures, but not yet loaded.
      */
     public AppDescriptor addPlugin(File f) throws PluginVersionException {
@@ -384,6 +395,7 @@ public class AppController extends Controller {
 
     /**
      * Copy the given file to the plugins directory, add it, and load it.
+     *
      * @param selectedFile
      */
     public void installPlugin(File selectedFile) throws Throwable {
@@ -396,7 +408,7 @@ public class AppController extends Controller {
         if (desc != null) {
             LOG.info("Loading plugin...");
             if (pluginLoader == null) {
-                pluginLoader = new PluginLoader(new URL[] { pluginFile.toURI().toURL() }, getClass().getClassLoader());
+                pluginLoader = new PluginLoader(new URL[]{pluginFile.toURI().toURL()}, getClass().getClassLoader());
             }
             pluginLoader.addJar(pluginFile);
             loadPlugin(desc);
@@ -421,10 +433,12 @@ public class AppController extends Controller {
             LOG.error(String.format("Update for %s not loaded.", id));
         }
         return false;
+
+
     }
 
-
     class PluginLoader extends URLClassLoader {
+
         PluginLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }

@@ -1,10 +1,10 @@
-package medsavant.mendel.controller;
+package medsavant.mendelclinic.controller;
 
-import medsavant.mendel.model.Locks;
-import medsavant.mendel.view.OptionView;
-import medsavant.mendel.view.MendelPanel;
-import medsavant.mendel.model.MendelVariant;
-import medsavant.mendel.model.MendelGene;
+import medsavant.mendelclinic.model.Locks;
+import medsavant.mendelclinic.view.OptionView;
+import medsavant.mendelclinic.view.MendelPanel;
+import medsavant.mendelclinic.model.MendelVariant;
+import medsavant.mendelclinic.model.MendelGene;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.BorderLayout;
@@ -45,11 +45,12 @@ import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import medsavant.mendel.view.OptionView.IncludeExcludeStep;
-import medsavant.mendel.view.OptionView.InheritanceStep;
-import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
-import medsavant.mendel.view.OptionView.ZygosityStep;
+import medsavant.mendelclinic.view.OptionView.IncludeExcludeStep;
+import medsavant.mendelclinic.view.OptionView.InheritanceStep;
+import medsavant.mendelclinic.view.OptionView.InheritanceStep.InheritanceModel;
+import medsavant.mendelclinic.view.OptionView.ZygosityStep;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -102,20 +103,27 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
         Class[] columnClasses = new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, String.class};
 
+        System.out.println(result.keySet().size() + " variants in result set");
+
         final List<MendelVariant> variants = new ArrayList<MendelVariant>(result.keySet());
 
-        //LOG.info(variants.size() + " variants to be shown");
+        System.out.println(variants.size() + " variants to be shown");
+        //for (MendelVariant v : variants) {
+        //    System.out.println(v);
+        //}
 
         DataRetriever<Object[]> retriever = new DataRetriever<Object[]>() {
             @Override
             public List<Object[]> retrieve(int start, int limit) throws Exception {
 
-                //LOG.info("Showing " + limit + " results starting from " + start);
+                System.out.println("Showing " + limit + " results starting from " + start + " of " + variants.size());
                 List<Object[]> rows = new ArrayList<Object[]>();
 
                 for (int i = 0; i < limit && (i + start) < variants.size(); i++) {
 
                     MendelVariant v = variants.get(i + start);
+
+                    //System.out.println("\t" + (i + start) + ". " + v);
 
                     String geneStr = "";
                     for (MendelGene g : v.getGenes()) {
@@ -123,17 +131,16 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                     }
                     if (v.getGenes().size() > 0) {
                         geneStr = geneStr.substring(0, geneStr.length() - 2);
-
-                        rows.add(new Object[]{
-                            v.chr,
-                            v.pos,
-                            v.ref,
-                            v.alt,
-                            v.type,
-                            result.get(v).toString(),//.replaceAll("\"", ""),//.replaceFirst("\[", "").replaceFirst("\]", ""),
-                            geneStr});
                     }
 
+                    rows.add(new Object[]{
+                                v.chr,
+                                v.pos,
+                                v.ref,
+                                v.alt,
+                                v.type,
+                                result.get(v).toString(),//.replaceAll("\"", ""),//.replaceFirst("\[", "").replaceFirst("\]", ""),
+                                geneStr});
 
                 }
 
@@ -168,40 +175,35 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         final SplitScreenPanel ssp = new SplitScreenPanel(stp);
         final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, true, true, ssp);
 
-        vip.addSelectionListener(new Listener<Object>(){
+        vip.addSelectionListener(new Listener<Object>() {
             @Override
             public void handleEvent(Object event) {
                 stp.getTable().clearSelection();
             }
         });
 
-        stp.scrollSafeSelectAction(new Runnable(){
+        stp.scrollSafeSelectAction(new Runnable() {
             @Override
             public void run() {
-                if(stp.getTable().getSelectedRow() != -1){
+                if (stp.getTable().getSelectedRow() != -1) {
 
-                int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());//e.getLastIndex());
+                    int index = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRow());
 
-                MendelVariant fmv = variants.get(index);
-                //LOG.info("Selected " + stp.getTable().getSelectedRow() + " real row is " + index + " " + fmv);
+                    MendelVariant fmv = variants.get(index);
 
-                SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
-                vip.setSimpleVariant(v);
+                    SimpleVariant v = new SimpleVariant(fmv.chr, fmv.pos, fmv.ref, fmv.alt, fmv.type);
+                    vip.setSimpleVariant(v);
                 }
             }
-
         });
 
-        JDialog f = new JDialog();
-        f.setTitle("Mendel Results");
-
-        //LOG.info("Showing table of results");
+        JDialog f = new JDialog(MedSavantFrame.getInstance(),"Mendel Results");
+        f.setLocationRelativeTo(MedSavantFrame.getInstance());
 
         JPanel aligned = new JPanel();
         aligned.setLayout(new BorderLayout());
         aligned.setBorder(null);
         aligned.setPreferredSize(new Dimension(450, 999));
-        aligned.setBackground(Color.white);
         aligned.add(vip, BorderLayout.CENTER);
 
         JPanel p = new JPanel();
@@ -365,63 +367,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         return genes;
     }
 
-    /*private TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> associateGenesAndVariants(TreeSet<SimpleFamilyMattersVariant> variants, TreeSet<SimpleFamilyMattersGene> genes) {
-
-     TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>> genesToVariantsMap;
-     Comparator startComparator = new VariantGeneComparator(true);
-     Comparator endComparator = new VariantGeneComparator(false);
-     int zeroIndex = variants.size();
-     genesToVariantsMap = new TreeMap<SimpleFamilyMattersGene, Set<SimpleFamilyMattersVariant>>();
-     // make a list, which we can binary search on
-     List<SimpleFamilyMattersVariant> sortedVariants = new ArrayList<SimpleFamilyMattersVariant>(variants);
-
-     for (SimpleFamilyMattersGene g : genes) {
-     int s = Collections.binarySearch(sortedVariants, g, startComparator);
-     int e = Collections.binarySearch(sortedVariants, g, endComparator);
-
-     if (s == zeroIndex) {
-     s = 0;
-     }
-     if (e == zeroIndex) {
-     e = 0;
-     }
-
-     if (s < 0) {
-     s = s * -1;
-     }
-     if (e < 0) {
-     e = e * -1;
-     }
-
-     if (s > variants.size()) {
-     continue;
-     }
-     if (e > variants.size()) {
-     e = variants.size();
-     }
-
-     Set<SimpleFamilyMattersVariant> variantsMappingToGene = new HashSet<SimpleFamilyMattersVariant>();
-
-     for (int i = s; i < e; i++) {
-     SimpleFamilyMattersVariant v = sortedVariants.get(i);
-     v.addGene(g);
-     variantsMappingToGene.add(v);
-     }
-
-     genesToVariantsMap.put(g, variantsMappingToGene);
-
-     // debug
-     if (g.name.equals("NOTCH2")) {
-     LOG.info("NOTCH2 variants:");
-     int i = 1;
-     for (SimpleFamilyMattersVariant v : variantsMappingToGene) {
-     LOG.info("\t" + (i++) + ". " + v);
-     }
-     }
-
-     }
-     return genesToVariantsMap;
-     }*/
     private TreeMap<MendelGene, Set<MendelVariant>> associateGenesAndVariants(TreeSet<MendelVariant> variants, TreeSet<MendelGene> genes) {
 
         //LOG.info("associate Genes And Variants");
@@ -467,17 +412,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             }
             map.put(g, set);
 
-
-            /*
-             Set<SimpleFamilyMattersVariant> set = new HashSet<SimpleFamilyMattersVariant>();
-             for (SimpleFamilyMattersVariant v : variants) {
-             if (intersects(g, v)) {
-             set.add(v);
-             v.addGene(g);
-             }
-             }
-             map.put(g, set);
-             */
         }
 
         long endTime = System.currentTimeMillis();
@@ -522,20 +456,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             return StringUtils.join(toJoin, ", ");
         }
 
-        /*
-         @Override
-         public String toString() {
-         String st = "";
-         for (String s : dnaIDs.keySet()) {
-         st += s + ", ";
-         }
-
-         if (st.endsWith(", ")) {
-         st = st.substring(0, st.length() - 2);
-         }
-         return st;
-         }
-         */
         @Override
         public boolean add(SimplePatient o) {
             if (immutable) {
@@ -936,12 +856,8 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         TreeSet<MendelGene> genes;
 
 
-
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long secondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
-        //File logFile = new File("family-matters-" + secondsSinceEpoch + ".txt");
-        //BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
-        //System.out.println("Writing to log file: " + logFile.getAbsolutePath());
 
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
@@ -961,10 +877,9 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         System.out.println("Number of variants (grouped by position):\t" + variants.size());
         System.out.println("Number of genes:\t" + genes.size());
 
-
-
-
         Set<MendelGene> allExcludedGenes = new HashSet<MendelGene>();
+
+        boolean requiresVariantsToBeGenic = false; // true if there's a gene term
 
         // perform steps in serial
         int stepNumber = 0;
@@ -1010,6 +925,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 if (at == OptionView.IncludeExcludeCriteria.AggregationType.Variant) {
                     excludedVariantsFromThisStep = (Set<MendelVariant>) ((Object) flagObjectsForRemovalByCriterion((Map<Object, Set<SimplePatient>>) ((Object) variantToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
                 } else {
+
                     Set<MendelGene> includedGenesFromThisStep = (Set<MendelGene>) ((Object) flagObjectsForKeepsByCriterion((Map<Object, Set<SimplePatient>>) ((Object) geneToSampleMap), frequencyThreshold, criterion.getFrequencyType(), setOfDNAIDs));
 
                     HashSet<MendelVariant> keptVariantsFromThisStep = new HashSet<MendelVariant>();
@@ -1022,6 +938,8 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                         if (!keptVariantsFromThisStep.contains(v)) {
                             excludedVariantsFromThisStep.add(v);
                         }
+
+                        requiresVariantsToBeGenic = true;
                     }
 
                     // queue excluded genes for removal in next steps
@@ -1120,8 +1038,21 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             } else if (model == InheritanceModel.COMPOUND_HETEROZYGOTE) {
                 filterForCompoundHeterozygote(variantToSampleMap, genesToVariantsMap, families);
             }
-
         }
+
+        if (requiresVariantsToBeGenic) {
+            List<MendelVariant> toRemove = new ArrayList<MendelVariant>();
+            for (MendelVariant v : variantToSampleMap.keySet()) {
+                if (v.getGenes().isEmpty()) {
+                    toRemove.add(v);
+                }
+            }
+            for (MendelVariant v : toRemove) {
+                variantToSampleMap.remove(v);
+            }
+        }
+
+        System.out.println("Got " + variantToSampleMap.keySet().size() + " results in bg");
 
         return variantToSampleMap;
     }

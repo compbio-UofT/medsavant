@@ -100,10 +100,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private int textFieldAdminColumns = 20;
     private jAppStore appStore;
     private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
-    
+
     private static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
 
-    //Adds a new function under the 'Debug' menu. The debug menu is not shown if 
+    //Adds a new function under the 'Debug' menu. The debug menu is not shown if
     //it is empty
     public static void addDebugFunction(String name, Runnable r) {
         debugFunctions.put(name, r);
@@ -286,7 +286,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
-        JMenuBar menu = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
 
         JMenuItem pluginsItem = new JMenuItem("Plugins…");
@@ -347,7 +347,29 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             fileMenu.add(closeItem);
         }
 
-        menu.add(fileMenu);
+        menuBar.add(fileMenu);
+
+        JMenu viewMenu = new JMenu("View");
+
+        JMenuItem togglePrimaryMenu = new JMenuItem("Primary Menu");
+        togglePrimaryMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ViewController.getInstance().getMenu().setPrimaryMenuVisible(!ViewController.getInstance().getMenu().isPrimaryMenuVisible());
+            }
+        });
+        viewMenu.add(togglePrimaryMenu);
+
+        JMenuItem toggleSecondaryMenu = new JMenuItem("Secondary Menu");
+        toggleSecondaryMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ViewController.getInstance().getMenu().setSecondaryMenuVisible(!ViewController.getInstance().getMenu().isSecondaryMenuVisible());
+            }
+        });
+        viewMenu.add(toggleSecondaryMenu);
+
+        menuBar.add(viewMenu);
 
         JMenu helpMenu = new JMenu("Help");
 
@@ -359,15 +381,15 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                     URI uri = URI.create(FEEDBACK_URI);
                     Desktop.getDesktop().mail(uri);
                 } catch (Exception ex) {
-                }                
+                }
             }
         });
-       
+
 
         helpMenu.add(feedbackItem);
-        menu.add(helpMenu);
+        menuBar.add(helpMenu);
 
-        setJMenuBar(menu);
+        setJMenuBar(menuBar);
 
         //bottomBar = new BottomBar();
         //add(bottomBar, BorderLayout.SOUTH);

@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JLabel;

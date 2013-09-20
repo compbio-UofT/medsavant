@@ -1,4 +1,4 @@
-package medsavant.mendel.model;
+package medsavant.mendelclinic.model;
 
 import java.util.HashSet;
 import java.util.Set;

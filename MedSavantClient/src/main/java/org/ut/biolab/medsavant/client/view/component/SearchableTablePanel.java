@@ -144,7 +144,7 @@ public class SearchableTablePanel extends JPanel {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
                 synchronized (SearchableTablePanel.this) {
                     JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
-                    
+
                     // Even index, selected or not selected
                     if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
                         comp.setBackground(new Color(178, 225, 92));
@@ -418,7 +418,8 @@ public class SearchableTablePanel extends JPanel {
                 setTotalRowCount(retriever.getTotalNum());
                 pageNum = 1;
             }
-            return retriever.retrieve((pageNum - 1) * getRowsPerPage(), getRowsPerPage());
+            List<Object[]> results = retriever.retrieve((pageNum - 1) * getRowsPerPage(), getRowsPerPage());
+            return results;
         }
 
         @Override
@@ -428,6 +429,8 @@ public class SearchableTablePanel extends JPanel {
 
         @Override
         protected void showSuccess(List<Object[]> result) {
+
+
             applyData(result);
             retriever.retrievalComplete();
         }

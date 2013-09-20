@@ -1,4 +1,4 @@
-package medsavant.mendel.model;
+package medsavant.mendelclinic.model;
 
 import java.io.File;
 import javax.swing.JDialog;

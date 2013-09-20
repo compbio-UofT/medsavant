@@ -54,6 +54,7 @@ public class IconFactory {
         SECTION_TABLE,
         SECTION_SEARCH,
         SECTION_DATA,
+        SECTION_CLINIC,
         MENU_NOTIFY,
         TRASH,
         DELETE,
@@ -139,6 +140,8 @@ public class IconFactory {
                 return getIcon(iconroot + "linkout.png");
             case FILTER:
                 return getIcon(iconroot + "filter.png");
+            case SECTION_CLINIC:
+                return getIcon(iconroot + "menu-clinic.png");
             case SECTION_ADMIN:
                 return getIcon(iconroot + "menu-tune.png");
             case SECTION_OTHER:

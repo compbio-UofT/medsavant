@@ -21,8 +21,6 @@ import javax.swing.JPanel;
 
 
 /**
- * Plugin which displays its contents in a JPanel managed by the Savant user-interface.
- * The canonical example is our own data table plugin.
  *
  * @author mfiume
  */

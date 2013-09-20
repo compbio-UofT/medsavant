@@ -1,4 +1,4 @@
-package medsavant.mendel.model;
+package medsavant.mendelclinic.model;
 
 import org.broad.igv.feature.genome.Genome;
 

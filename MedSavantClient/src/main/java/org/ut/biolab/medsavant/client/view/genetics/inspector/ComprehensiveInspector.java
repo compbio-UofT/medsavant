@@ -440,7 +440,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         setTabPlacement(JTabbedPane.TOP);
         setBorder(ViewUtil.getBigBorder());
-        setBackground(ViewUtil.getTertiaryMenuColor());
 
         createSubInspectors(
                 createSimpleVariantInspector,

@@ -52,9 +52,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class Menu extends JPanel {
+
     private static final String JOBS_BUTTON_TITLE = "Jobs";
     private static final ImageIcon JOBS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_SERVER);
-    
     private SubSectionView currentView;
     private final JPanel contentContainer;
     List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
@@ -70,10 +70,9 @@ public class Menu extends JPanel {
     private JButton userButton;
     private static final Log LOG = LogFactory.getLog(Menu.class);
     private UpdatesPanel updatesPanel = new UpdatesPanel();
-
     private NotificationButton notificationButton;
-    
-    public void checkForUpdateNotifications(){
+
+    public void checkForUpdateNotifications() {
         updatesPanel.update();
     }
 
@@ -81,17 +80,17 @@ public class Menu extends JPanel {
         return map.get(ssv);
     }
 
-    public NotificationButton getJobNotificationButton(){
+    public NotificationButton getJobNotificationButton() {
         return notificationButton;
     }
-    
+
     public Menu(JPanel panel) {
 
         resetMap();
 
         setLayout(new BorderLayout());
         notificationButton = new NotificationButton(JOBS_BUTTON_TITLE, JOBS_BUTTON_ICON);
-        
+
         primaryMenuButtons = new ButtonGroup();
 
         primaryMenu = ViewUtil.getPrimaryBannerPanel();
@@ -101,7 +100,7 @@ public class Menu extends JPanel {
 
         tertiaryMenu = new JPanel();
         tertiaryMenu.setBorder(ViewUtil.getBottomLineBorder());
-        tertiaryMenu.setBackground(Color.white);
+        tertiaryMenu.setBackground(ViewUtil.getTertiaryMenuColor());
         // tertiaryMenu.setBorder(ViewUtil.getMediumBorder());
         ViewUtil.applyHorizontalBoxLayout(tertiaryMenu);
         //tertiaryMenu.setMinimumSize(new Dimension(9999, 30));
@@ -120,70 +119,66 @@ public class Menu extends JPanel {
 
         //NotificationsPanel n = NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME);
 
-        
-        
+
+
         JPanel appStorePanel = ViewUtil.getClearPanel();
         final JButton appStoreButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_STORE));
         ViewUtil.applyHorizontalBoxLayout(appStorePanel);
         appStorePanel.add(ViewUtil.subTextComponent(appStoreButton, "App Store"));
 
         appStoreButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 MedSavantFrame.getInstance().showAppStore();
             }
-
         });
-        
-        
-        appStoreButton.addMouseListener(new MouseAdapter(){
 
+
+        appStoreButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent me) {
-                super.mouseEntered(me); 
+                super.mouseEntered(me);
                 appStoreButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                super.mouseExited(me); 
+                super.mouseExited(me);
                 appStoreButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-            
         });
-        
+
 
         int componentpadding = 10;
         primaryMenu.add(Box.createHorizontalStrut(componentpadding));
         primaryMenu.add(primaryMenuSectionButtonContainer);
         primaryMenu.add(Box.createHorizontalGlue());
 
-        FlowLayout fl = new FlowLayout(FlowLayout.RIGHT,componentpadding,1);
+        FlowLayout fl = new FlowLayout(FlowLayout.RIGHT, componentpadding, 1);
         JPanel rightSidePanel = ViewUtil.getClearPanel();
         rightSidePanel.setLayout(fl);
-        rightSidePanel.add(updatesPanel);        
-        rightSidePanel.add(notificationButton);        
+        rightSidePanel.add(updatesPanel);
+        rightSidePanel.add(notificationButton);
         rightSidePanel.add(appStorePanel);
         rightSidePanel.add(getLoginMenuItem());
         primaryMenu.add(rightSidePanel);
         /*
-        primaryMenu.add(updatesPanel);
-        primaryMenu.add(ViewUtil.getMediumSeparator());
+         primaryMenu.add(updatesPanel);
+         primaryMenu.add(ViewUtil.getMediumSeparator());
 
-        primaryMenu.add(n);
-        primaryMenu.add(ViewUtil.getMediumSeparator());
+         primaryMenu.add(n);
+         primaryMenu.add(ViewUtil.getMediumSeparator());
 
-        primaryMenu.add(appStorePanel);
-        primaryMenu.add(ViewUtil.getMediumSeparator());
-        primaryMenu.add(getLoginMenuItem());
-        */
+         primaryMenu.add(appStorePanel);
+         primaryMenu.add(ViewUtil.getMediumSeparator());
+         primaryMenu.add(getLoginMenuItem());
+         */
         add(primaryMenu, BorderLayout.NORTH);
 
         secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
         //secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
 
-        secondaryMenu.setPreferredSize(new Dimension(150, 100));
+        secondaryMenu.setPreferredSize(new Dimension(120, 100));
 
         contentContainer = panel;
 
@@ -228,6 +223,22 @@ public class Menu extends JPanel {
         clearMenu();
     }
 
+    public void setPrimaryMenuVisible(boolean isVisible) {
+        primaryMenu.setVisible(isVisible);
+    }
+
+    public boolean isPrimaryMenuVisible() {
+        return primaryMenu.isVisible();
+    }
+
+    public void setSecondaryMenuVisible(boolean isVisible) {
+        secondaryMenu.setVisible(isVisible);
+    }
+
+    public boolean isSecondaryMenuVisible() {
+        return secondaryMenu.isVisible();
+    }
+
     public void deactivateSubsection(String subsectionName) {
     }
 
@@ -239,14 +250,11 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
-    public void addSection(SectionView section) {
+    public void addSection(final SectionView section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
         sectionPanel.setVisible(false);
-
-        //HoverButton sectionButton = new SectionButton(section, sectionPanel);
-        //sectionButton.setSelectedColor(ViewUtil.getSecondaryMenuColor());
 
         final JToggleButton sectionButton = ViewUtil.getTogglableIconButton(section.getIcon());
         sectionButton.setName(section.getName());
@@ -259,8 +267,20 @@ public class Menu extends JPanel {
                     previousSectionPanel.setVisible(false);
                 }
                 // Act as if we clicked the first sub-section button.
+
                 ((SubSectionButton) sectionPanel.getComponent(0)).subSectionClicked();
+
+                // hack to determine if there are more than 1 subsections in this section
+                int counter = 0;
+                for (Component c : sectionPanel.getComponents()) {
+                    if (c instanceof SubSectionButton) {
+                        counter++;
+                    }
+                }
+                boolean isSideMenuVisible = counter > 1;
+
                 sectionPanel.setVisible(true);
+                secondaryMenu.setVisible(isSideMenuVisible);
 
                 previousSectionPanel = sectionPanel;
                 primaryMenu.invalidate();
@@ -400,24 +420,22 @@ public class Menu extends JPanel {
                 MedSavantFrame.getInstance().requestClose();
             }
         });
-        
-        
-        userButton.addMouseListener(new MouseAdapter(){
 
+
+        userButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent me) {
-                super.mouseEntered(me); 
+                super.mouseEntered(me);
                 userButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                super.mouseExited(me); 
+                super.mouseExited(me);
                 userButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-            
         });
-        
+
 
         //loginMenu.add(ViewUtil.getSmallSeparator());
 

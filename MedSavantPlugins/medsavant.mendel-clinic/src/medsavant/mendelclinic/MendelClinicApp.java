@@ -13,34 +13,36 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
-package medsavant.mendel;
+package medsavant.mendelclinic;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
-import medsavant.mendel.view.MendelPanel;
+import medsavant.mendelclinic.view.MendelPanel;
+import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class MendelApp extends MedSavantVariantSectionApp {
+public class MendelClinicApp extends MedSavantClinicApp {
+
     private MendelPanel fmp;
-    /**
-     * Create the user-interface which appears within the panel.
-     *
-     * @param panel provided by MedSavant
-     */
+
     @Override
-    public void init(JPanel panel) {
-        panel.setLayout(new BorderLayout());
-        fmp = new MendelPanel();
-        panel.add(fmp.getView(),BorderLayout.CENTER);
+    public JPanel getContent() {
+        if (fmp == null) {
+            fmp = new MendelPanel();
+        }
+        return fmp.getView();
     }
 
     /**
@@ -53,12 +55,21 @@ public class MendelApp extends MedSavantVariantSectionApp {
 
     @Override
     public void viewDidLoad() {
-        //do something
         fmp.refresh();
     }
 
     @Override
     public void viewDidUnload() {
-        //do something
+    }
+
+    private static final String iconroot = "/medsavant/mendelclinic/icon/";
+
+    @Override
+    public ImageIcon getIcon() {
+        return getIcon(iconroot + "mendel-icon.png");
+    }
+
+    public ImageIcon getIcon(String resourcePath) {
+        return new ImageIcon(getClass().getResource(resourcePath));
     }
 }

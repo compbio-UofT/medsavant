@@ -1,4 +1,4 @@
-package medsavant.mendel.view;
+package medsavant.mendelclinic.view;
 
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import au.com.bytecode.opencsv.CSVReader;
@@ -34,8 +34,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import medsavant.mendel.controller.ApplicationWorker;
-import medsavant.mendel.model.Locks;
+import medsavant.mendelclinic.controller.ApplicationWorker;
+import medsavant.mendelclinic.model.Locks;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
-import medsavant.mendel.view.OptionView.InheritanceStep.InheritanceModel;
+import medsavant.mendelclinic.view.OptionView.InheritanceStep.InheritanceModel;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -991,23 +991,23 @@ public class OptionView {
 
                     @Override
                     protected void jobDone() {
-                        super.jobDone(); 
+                        super.jobDone();
                         int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
                         if (result == DialogUtils.YES) {
                             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                             dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
                             dialogLock.getResultsDialog().setVisible(true);
                         }
-                    }                   
-                    
+                    }
+
                     @Override
                     protected Object runInBackground() throws Exception {
-                        
+
 
                         final Locks.FileResultLock fileLock = new Locks.FileResultLock();
-                        dialogLock = new Locks.DialogLock();                       
+                        dialogLock = new Locks.DialogLock();
 
-                        
+
                         // File retriever
                         currentWorker = getRetrieverWorker(this, fileLock);
                         currentWorker.execute();
@@ -1032,16 +1032,10 @@ public class OptionView {
                         } finally {
                             //NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                         }
-                      
+
                         return null;
                     }
-                    
-                    
-
-                   
                 }.execute();
-
-                DialogUtils.displayMessage("Mendel Submitted");
             }
 
             private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, VisibleMedSavantWorker j, Locks.DialogLock genericLock) {

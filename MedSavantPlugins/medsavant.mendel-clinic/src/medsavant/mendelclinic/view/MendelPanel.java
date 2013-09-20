@@ -1,4 +1,4 @@
-package medsavant.mendel.view;
+package medsavant.mendelclinic.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,18 +33,6 @@ public class MendelPanel {
             view = new JPanel();
             view.setLayout(new BorderLayout());
             view.setBackground(Color.white);
-
-            JPanel titlePanel = new JPanel();
-            ViewUtil.applyHorizontalBoxLayout(titlePanel);
-
-            JLabel title = new JLabel("Mendel");
-            title.setOpaque(true);
-            title.setBorder(ViewUtil.getBigBorder());
-            title.setOpaque(false);
-            title.setFont(ViewUtil.getMediumTitleFont());
-            titlePanel.add(title);
-
-            view.add(titlePanel,BorderLayout.NORTH);
 
             JPanel p = ViewUtil.getClearPanel();
             p.setBorder(ViewUtil.getBigBorder());

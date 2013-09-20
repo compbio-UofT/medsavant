@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.variant.ExportVCFWizard;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -67,17 +68,13 @@ public class GeneticsSection extends SectionView {
 
         List<SubSectionView> appSections = new LinkedList<SubSectionView>();
         //for (int i = 0; i < knownPlugins.size(); i++) {
-        int numApps = 0;
-        for (AppDescriptor ad : pc.getDescriptors()) {
-            if (pc.getPlugin(ad.getID()) instanceof MedSavantVariantSectionApp) {
-                try {
-                    appSections.add(new PluginPage(this, ad));
-                    numApps++;
-                    //appSections[i] = new PluginPage(this, knownPlugins.get(i));
-                } catch (Exception e) {
-                    LOG.error(e);
-                }
-            }
+
+        List<MedSavantApp> variantSectionApps = AppController.getInstance().getPluginsOfClass(MedSavantVariantSectionApp.class);
+
+        int numApps = variantSectionApps.size();
+
+        for (MedSavantApp app : variantSectionApps) {
+            appSections.add(new PluginPage(this, (MedSavantVariantSectionApp)app));
         }
 
         SubSectionView[] builtInSections = new SubSectionView[]{new GeneticsTablePage(this),

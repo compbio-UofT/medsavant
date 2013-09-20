@@ -315,13 +315,11 @@ public final class ViewUtil {
     }
 
     public static Color getTertiaryMenuColor() {
-        //return new Color(80, 80, 80);
         return new Color(220, 220, 220);
     }
 
     public static Color getSecondaryMenuColor() {
         return new Color(20, 20, 20);
-        //return new Color(41, 46, 53);
     }
 
     public static Color getLightColor() {
@@ -699,11 +697,16 @@ public final class ViewUtil {
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext) {
+        return subTextComponent(c,subtext,12);
+    }
+
+    public static JComponent subTextComponent(JComponent c, String subtext, int fontSize) {
         int width = c.getPreferredSize().width;
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
         p.add(ViewUtil.centerHorizontally(c));
         JLabel s = new JLabel(subtext);
+        ViewUtil.setFontSize(s, fontSize);
         s.setForeground(Color.darkGray);
         ViewUtil.makeSmall(s);
         p.add(ViewUtil.centerHorizontally(ViewUtil.clear(s)));

@@ -47,17 +47,16 @@ public class PluginPage extends SubSectionView {
     private MedSavantVariantSectionApp plugin;
     private final JPanel view;
 
-    public PluginPage(SectionView parent, AppDescriptor desc) {
-        super(parent, desc.getName());
+    public PluginPage(SectionView parent, final MedSavantVariantSectionApp plugin) {
+        super(parent, plugin.getTitle());
         view = new JPanel();
         view.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        plugin = (MedSavantVariantSectionApp)controller.getPlugin(desc.getID());
         if (plugin != null) {
             plugin.init(view);
         } else {
-            JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
+            JLabel placeholder = new JLabel(plugin.getTitle());
             placeholder.setFont(ViewUtil.getBigTitleFont());
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
@@ -73,7 +72,6 @@ public class PluginPage extends SubSectionView {
                             view.removeAll();
                             MedSavantApp plug = event.getPlugin();
                             if (plug instanceof MedSavantVariantSectionApp) {
-                                plugin = (MedSavantVariantSectionApp)plug;
                                 plugin.init(view);
                             }
                             break;
