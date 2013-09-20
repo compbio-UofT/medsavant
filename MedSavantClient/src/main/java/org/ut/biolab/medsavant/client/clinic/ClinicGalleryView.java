@@ -22,12 +22,12 @@ public class ClinicGalleryView extends GalleryView {
     private final List<GalleryItem> galleryItems;
 
     public ClinicGalleryView() {
-        super("","Clinic");
+        super("","Clinic","Clinic Apps are available on the MedSavant App Store");
 
         galleryItems = initGalleryItems();
 
         setGalleryItems(galleryItems);
-        setMenuHeroPanel(getHeroPanel());
+        //setMenuHeroPanel(getHeroPanel());
     }
 
     private List<GalleryItem> initGalleryItems() {

@@ -29,8 +29,9 @@ public class GalleryView extends JPanel {
     private final JPanel content;
     private final JLabel titleLabel;
     private final JButton menuButton;
+    private final JPanel footer;
 
-    public GalleryView(String title,String backButtonText) {
+    public GalleryView(String title,String backButtonText,String bottomText) {
         this.setLayout(new BorderLayout());
         this.setBackground(Color.white);
         this.title = title;
@@ -67,6 +68,11 @@ public class GalleryView extends JPanel {
 
         this.add(banner, BorderLayout.NORTH);
         this.add(content, BorderLayout.CENTER);
+
+        footer = ViewUtil.centerHorizontally(new JLabel(bottomText));
+        footer.setBorder(ViewUtil.getMediumBorder());
+
+        this.add(footer,BorderLayout.SOUTH);
 
         menuCard = getMenuCard();
 
@@ -127,6 +133,7 @@ public class GalleryView extends JPanel {
     private void setContentTo(JPanel p, String title) {
 
         menuButton.setVisible(p != menuCard);
+        footer.setVisible(p == menuCard);
 
         this.content.removeAll();
         this.content.add(p, BorderLayout.CENTER);
