@@ -697,7 +697,7 @@ public final class ViewUtil {
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext) {
-        return subTextComponent(c,subtext,12);
+        return subTextComponent(c,subtext,14);
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext, int fontSize) {
