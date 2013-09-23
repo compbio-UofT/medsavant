@@ -14,6 +14,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -107,19 +109,19 @@ public class PillView extends JPanel {
         final PillView instance = this;
 
         /*
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                if (me.getButton() == me.BUTTON1) {
-                    //do nothing?
-                } else if (me.getButton() == me.BUTTON2) {
-                    showDialog(instance.getLocationOnScreen());
-                } else if (me.getButton() == me.BUTTON3) {
-                    showDialog(instance.getLocationonScreen());
-                }
-            }
-        });
-        */ 
+         this.addMouseListener(new MouseAdapter() {
+         @Override
+         public void mouseClicked(MouseEvent me) {
+         if (me.getButton() == me.BUTTON1) {
+         //do nothing?
+         } else if (me.getButton() == me.BUTTON2) {
+         showDialog(instance.getLocationOnScreen());
+         } else if (me.getButton() == me.BUTTON3) {
+         showDialog(instance.getLocationonScreen());
+         }
+         }
+         });
+         */
 
         ImageIcon icinfo = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INFO);
         infoButton = ViewUtil.createIconButton(icinfo);
@@ -228,21 +230,38 @@ public class PillView extends JPanel {
 
         }
     }
+      
+    public void showDialog(Point p){
+        showDialog(p, "Editing Condition: ");
+    }
     
-   
-    public void showDialog(Point p) {
+    public void showDialog(Point p, String title) {
         if (dialogGenerator != null) {
-            if (this.isDisclosureVisible) {     
-                JDialog jd = dialogGenerator.generateDialog();                  
+            if (this.isDisclosureVisible) {
+                
+                final JDialog jd = dialogGenerator.generateDialog();     
+                jd.setTitle(title);
+                jd.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
                 jd.pack();
-                int y = p.y + this.getHeight() + 2;                
-                int frameHeight = MedSavantFrame.getInstance().getHeight();                                
-                if((y + DIALOG_HEIGHT) > ( frameHeight)){
+                int y = p.y + this.getHeight() + 2;
+                int frameHeight = MedSavantFrame.getInstance().getHeight();
+                if ((y + DIALOG_HEIGHT) > (frameHeight)) {
                     y = frameHeight - DIALOG_HEIGHT - 10;
-                }                
-                jd.setLocation(new Point(p.x, y));
+                }
+                jd.setLocation(new Point(p.x, y));                                
+                setSelected(true);
+                repaint();
+                jd.addWindowListener(new WindowAdapter() {
+                    
+                    @Override
+                    public void windowClosing(WindowEvent e) {                                
+                        setSelected(false);                        
+                        jd.dispose();
+                        repaint();
+                    }
+                });
                 jd.setVisible(true);
-                jd.requestFocus();                
+                jd.requestFocus();
             }
         }
     }

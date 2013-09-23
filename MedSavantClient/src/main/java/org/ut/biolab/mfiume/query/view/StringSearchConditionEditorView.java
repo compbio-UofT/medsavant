@@ -240,8 +240,13 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
         this.removeAll();
 
-        if (values == null || values.isEmpty()) {
-            this.add(new JLabel("This field is not populated"));
+        if (values == null || values.isEmpty()) {          
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+            p.add(Box.createHorizontalGlue());
+            p.add(new JLabel("This field is not populated"));
+            p.add(Box.createHorizontalGlue());
+            this.add(p);
             return;
         }
 

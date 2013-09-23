@@ -54,7 +54,12 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         this.removeAll();
 
         if (extremeValues == null || (extremeValues[0] == 0 && extremeValues[1] == 0)) {
-            this.add(new JLabel("This field is not populated"));
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+            p.add(Box.createHorizontalGlue());
+            p.add(new JLabel("This field is not populated"));
+            p.add(Box.createHorizontalGlue());
+            this.add(p);
             return;
         }
 

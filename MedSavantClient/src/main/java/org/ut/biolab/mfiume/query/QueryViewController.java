@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -632,7 +631,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
                 m.setVisible(false);                
-                field.setText("");                
+                field.setText("");                                            
                 view.showDialog(getLocationOnScreen());
             }
 

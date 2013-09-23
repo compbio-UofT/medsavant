@@ -1,6 +1,7 @@
 package org.ut.biolab.mfiume.query.view;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
@@ -29,6 +30,12 @@ public class SearchConditionItemView extends PillView {
     private final SearchConditionItem item;
     private final SearchConditionEditorView editor;
 
+    @Override
+    public void showDialog(Point p) {
+        showDialog(p, "Editing Condition: "+item.getName()); 
+    }
+
+    
     public SearchConditionItemView(SearchConditionItem i, final SearchConditionEditorView editor) {
         this.item = i;
         this.editor = editor;
