@@ -35,6 +35,8 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.logging.Log;
@@ -190,9 +192,24 @@ public class InstallAnnotationWizard extends WizardDialog {
                 chooseContainer = ViewUtil.getClearPanel();
                 chooseContainer.setLayout(new BorderLayout());
                 chooseTitleLabel = new JLabel();
-                repoChoosePanel = populateRepositoryPanel();
+                repoChoosePanel = populateRepositoryPanel(this);
                 fileChoosePanel = new PathField(JFileChooser.OPEN_DIALOG);
                 fileChoosePanel.setFileFilters(ExtensionFileFilter.createFilters(new String[]{"gz", "zip"}));
+
+
+                fileChoosePanel.getTextField().addCaretListener(new CaretListener() {
+
+                    @Override
+                    public void caretUpdate(CaretEvent ce) {
+
+                        if (!fileChoosePanel.getTextField().getText().isEmpty()) {
+                            fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                        } else {
+                            fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                        }
+                    }
+
+                });
 
                 addComponent(chooseTitleLabel);
                 addComponent(chooseContainer);
@@ -205,8 +222,7 @@ public class InstallAnnotationWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
+                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
         };
     }
@@ -219,7 +235,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         return ref + "_" + prog + "_" + ver;
     }
 
-    private JPanel populateRepositoryPanel() {
+    private JPanel populateRepositoryPanel(DefaultWizardPage page) {
         JPanel p = ViewUtil.getClearPanel();
         p.setLayout(new BorderLayout());
 
@@ -256,6 +272,10 @@ public class InstallAnnotationWizard extends WizardDialog {
             p.add(ViewUtil.getClearBorderedScrollPane(stp), BorderLayout.CENTER);
 
             stp.addRowSelectionInterval(0, 0);
+
+            if (!annotationsAvailable.isEmpty()) {
+                page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
 
         } catch (Exception ex) {
             p.add(ViewUtil.getErrorLabel("Problem fetching available annotations"));
