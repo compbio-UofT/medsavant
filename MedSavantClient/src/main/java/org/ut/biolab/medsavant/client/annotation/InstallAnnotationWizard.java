@@ -73,7 +73,6 @@ public class InstallAnnotationWizard extends WizardDialog {
     private PathField fileChoosePanel;
     private JLabel progressLabel;
     private boolean fromRepository;
-    private boolean hasAnnotations = false;
     private AnnotationDownloadInformation annotationToInstall;
     private HashMap<String, AnnotationDownloadInformation> annotationKeyToURLMap;
 
@@ -188,12 +187,12 @@ public class InstallAnnotationWizard extends WizardDialog {
 
         return new DefaultWizardPage(PAGENAME_CHOOSE) {
             {
-                chooseContainer = new JPanel();
+                chooseContainer = ViewUtil.getClearPanel();
                 chooseContainer.setLayout(new BorderLayout());
                 chooseTitleLabel = new JLabel();
                 repoChoosePanel = populateRepositoryPanel();
                 fileChoosePanel = new PathField(JFileChooser.OPEN_DIALOG);
-                fileChoosePanel.setFileFilters(ExtensionFileFilter.createFilters(new String[] { "gz","zip"}));
+                fileChoosePanel.setFileFilters(ExtensionFileFilter.createFilters(new String[]{"gz", "zip"}));
 
                 addComponent(chooseTitleLabel);
                 addComponent(chooseContainer);
@@ -203,17 +202,11 @@ public class InstallAnnotationWizard extends WizardDialog {
 
             @Override
             public void setupWizardButtons() {
-                if (hasAnnotations) {
-                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
-                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                } else {
-                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
-                    fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
-                    fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.FINISH);
-                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
-                }
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+
             }
         };
     }
@@ -227,7 +220,7 @@ public class InstallAnnotationWizard extends WizardDialog {
     }
 
     private JPanel populateRepositoryPanel() {
-        JPanel p = new JPanel();
+        JPanel p = ViewUtil.getClearPanel();
         p.setLayout(new BorderLayout());
 
         try {
@@ -235,10 +228,8 @@ public class InstallAnnotationWizard extends WizardDialog {
 
             if (annotationsAvailable == null) {
                 p.add(new JLabel("No annotations are available for this version"), BorderLayout.NORTH);
-                hasAnnotations = false;
                 return p;
             }
-            hasAnnotations = true;
             Object[][] data = new Object[annotationsAvailable.size()][4];
             annotationKeyToURLMap = new HashMap<String, AnnotationDownloadInformation>();
             int i = 0;
@@ -267,6 +258,7 @@ public class InstallAnnotationWizard extends WizardDialog {
             stp.addRowSelectionInterval(0, 0);
 
         } catch (Exception ex) {
+            p.add(ViewUtil.getErrorLabel("Problem fetching available annotations"));
             LOG.error(ex);
         }
         return p;
@@ -306,7 +298,6 @@ public class InstallAnnotationWizard extends WizardDialog {
         return new DefaultWizardPage(PAGENAME_INSTALL) {
             private JProgressBar progressBar;
             private JButton startButton;
-
 
             {
                 progressLabel = new JLabel("You are now ready to install this annotation.");

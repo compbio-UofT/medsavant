@@ -23,7 +23,7 @@ public class RoundedJPanel extends JPanel {
     /** Sets if it has an High Quality view */
     protected boolean highQuality = true;
     /** Double values for Horizontal and Vertical radius of corner arcs */
-    protected Dimension arcs = new Dimension(20, 20);
+    protected Dimension arcs = new Dimension(40, 40);
     /** Distance between shadow border and opaque panel border */
     protected int shadowGap = 5;
     /** The offset of shadow.  */
@@ -65,7 +65,7 @@ public class RoundedJPanel extends JPanel {
         }
 
         //Draws the rounded opaque panel with borders.
-        graphics.setColor(getBackground());
+        graphics.setColor(new Color(230,230,230));
         graphics.fillRoundRect(0, 0, width - shadowGap,
 		height - shadowGap, arcs.width, arcs.height);
         graphics.setColor(Color.white);

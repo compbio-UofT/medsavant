@@ -723,6 +723,12 @@ public final class ViewUtil {
         c.revalidate();
     }
 
+    public static JLabel getErrorLabel(String msg) {
+        JLabel l = new JLabel(msg);
+        l.setForeground(Color.red);
+        return l;
+    }
+
     public static JComponent getComponentOfSameSize(final JComponent c) {
         final JPanel p = new JPanel();
         p.setBackground(Color.red);

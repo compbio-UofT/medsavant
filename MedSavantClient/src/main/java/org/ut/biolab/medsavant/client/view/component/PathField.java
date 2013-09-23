@@ -35,6 +35,8 @@ public class PathField extends JPanel {
 
     public PathField(final int JFileChooserDialogType, boolean directoriesOnly) {
 
+        this.setOpaque(false);
+
         f = new JTextField();
         b = new JButton("...");
         fc = new JFileChooser();
