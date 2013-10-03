@@ -156,8 +156,9 @@ public class SocialVariantSubInspector extends SubInspector implements Listener<
                 kvp.addKey(key);
                 kvp.setValue(key, new StarredVariantCommentPanel(sv));
             }
-
-            existingCommentsPanel.updateUI();
+            existingCommentsPanel.revalidate();
+            existingCommentsPanel.repaint();
+            //existingCommentsPanel.updateUI();
 
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error updating comments: %s", ex);

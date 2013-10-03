@@ -25,11 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -87,6 +84,42 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
+    public boolean installAnnotationForProject(String sessionID, int currentProjectID, int transferID) throws RemoteException, SessionExpiredException, SQLException {
+        try {
+            LOG.info("Insalling annotation transferred from client");
+            NetworkManager netMgr = NetworkManager.getInstance();
+            File annotationFile = netMgr.getFileByTransferID(sessionID, transferID);
+            File installPath = generateInstallationDirectory();
+            LOG.info("Insalling to " + installPath.getAbsolutePath());
+            /* Path p = Paths.get(annotationFile.getAbsolutePath());
+             String fn = p.getFileName().toString();
+             File newDestination = new File(installPath,fn);
+             */
+            File newPath = new File(installPath, "tmp.zip");
+            LOG.info("Copy file to " + installPath.getAbsolutePath());
+            IOUtils.copyFile(annotationFile, newPath); //annotationFile.renameTo(newDestination);
+
+            LOG.info("Unzipping file");
+            unpackAnnotationZip(newPath);
+
+            LOG.info("Touching done file");
+            File doneFile = new File(installPath, "installed.touch");
+            doneFile.createNewFile();
+
+            registerAnnotationWithProject(installPath, sessionID);
+
+            return true;
+        } catch (Exception ex) {
+            LOG.error("Problem installing annotation", ex);
+            ex.printStackTrace();
+        }
+        return false;
+
+
+
+    }
+
+    @Override
     public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) {
 
         LOG.info("Installing annotation " + info);
@@ -97,7 +130,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             if (!checkIfAnnotationIsInstalled(sessID, info)) {
 
                 // is it already downloaded?
-                File installPath = getInstallationDirectory(info.getProgramName(), info.getProgramVersion(), info.getReference());
+                File installPath = generateInstallationDirectory();
                 File doneFile = new File(installPath, "installed.touch");
 
                 LOG.info("Checking for successful installation at " + installPath.getAbsolutePath());
@@ -148,12 +181,12 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         colName = colName.replaceAll("[^A-Za-z0-9]", "");
 
         InsertQuery query = MedSavantDatabase.AnnotationFormatTableSchema.insert(ANNOTATION_ID, annotID,
-                                                                                 AnnotationFormatColumns.POSITION, pos,
-                                                                                 AnnotationFormatColumns.COLUMN_NAME, colName,
-                                                                                 AnnotationFormatColumns.COLUMN_TYPE, colType,
-                                                                                 AnnotationFormatColumns.FILTERABLE, filterable,
-                                                                                 AnnotationFormatColumns.ALIAS, alias,
-                                                                                 AnnotationFormatColumns.DESCRIPTION, desc);
+                AnnotationFormatColumns.POSITION, pos,
+                AnnotationFormatColumns.COLUMN_NAME, colName,
+                AnnotationFormatColumns.COLUMN_TYPE, colType,
+                AnnotationFormatColumns.FILTERABLE, filterable,
+                AnnotationFormatColumns.ALIAS, alias,
+                AnnotationFormatColumns.DESCRIPTION, desc);
 
         Connection c = ConnectionController.connectPooled(sessID);
         c.createStatement().executeUpdate(query.toString());
@@ -166,8 +199,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
         InsertQuery query = MedSavantDatabase.AnnotationTableSchema.insert(PROGRAM, prog, VERSION, vers, REFERENCE_ID, refID,
-                                                                           PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type,
-                                                                           IS_END_INCLUSIVE, endInclusive);
+                PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type,
+                IS_END_INCLUSIVE, endInclusive);
 
         PooledConnection c = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
@@ -418,8 +451,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
     }
 
-
-
     /**
      * Get the prescribed directory for the given annotation
      *
@@ -452,7 +483,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      */
     private static File getTabixFile(File dir) {
         //return new File(dir + "/annotation.gz");
-        return getFileWithExtentionInDir(dir,"gz");
+        return getFileWithExtentionInDir(dir, "gz");
     }
 
     /**
@@ -463,7 +494,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      */
     private static File getTabixIndexFile(File dir) {
         //return new File(dir + "/annotation.tbi");
-        return getFileWithExtentionInDir(dir,"tbi");
+        return getFileWithExtentionInDir(dir, "tbi");
     }
 
     /**
@@ -473,12 +504,11 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return The expected location of the format file
      */
     private static File getFormatFile(File dir) {
-        return getFileWithExtentionInDir(dir,"xml");
+        return getFileWithExtentionInDir(dir, "xml");
     }
 
     private static File getFileWithExtentionInDir(File dir, final String ext) {
         return dir.listFiles(new FilenameFilter() {
-
             @Override
             public boolean accept(File dir, String name) {
                 if (name.endsWith("." + ext)) {
@@ -486,10 +516,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 }
                 return false;
             }
-
         })[0];
     }
-
 
     /**
      * Checks that the annotation is installed
@@ -518,8 +546,9 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public void uninstallAnnotation(String sessionID, Annotation an) throws RemoteException, SQLException, SessionExpiredException {
-        int annotationID = an.getID();
+    public void uninstallAnnotation(String sessionID, int annotationID) throws RemoteException, SQLException, SessionExpiredException {
+
+        File installationPath = getInstallationDirectoryFromID(sessionID, annotationID);
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
 
@@ -537,7 +566,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         System.out.println(query1);
         System.out.println(query2);
 
-        File installationPath = getInstallationDirectory(an.getProgram(), an.getVersion(), an.getReferenceName());
         System.out.println("Deleting path: " + installationPath.getAbsolutePath());
         try {
             Process p = Runtime.getRuntime().exec("chmod -R o+w " + installationPath.getAbsolutePath());
@@ -567,8 +595,18 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         return (path.delete());
     }
 
-    private static File getInstallationDirectory(String programName, String version, String reference) {
-        return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
+    private static File generateInstallationDirectory() {
+        int i = 1;
+        File dir;
+        while (true) {
+            dir = new File(localDirectory.getAbsolutePath(), i + "");
+            if (!dir.exists()) {
+                dir.mkdir();
+                return dir;
+            }
+            i++;
+        }
+        //return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
     }
 
     private static void registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException, SessionExpiredException {
@@ -602,5 +640,37 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         conn.close();
 
         LOG.info("Installed to " + dir.getAbsolutePath());
+    }
+
+    private File getInstallationDirectoryFromID(String sessID, int annotationID) throws SQLException, SessionExpiredException {
+
+        TableSchema table = MedSavantDatabase.AnnotationTableSchema;
+        SelectQuery query1 = new SelectQuery();
+        query1.addFromTable(table.getTable());
+        query1.addColumns(table.getDBColumn(PATH));
+        query1.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ANNOTATION_ID), annotationID));
+
+        LOG.info(query1.toString());
+
+        ResultSet rs1 = ConnectionController.executeQuery(sessID, query1.toString());
+
+        if (rs1.next()) {
+            String path = rs1.getString(1);
+
+            LOG.info("Path to installation directory is " + path);
+
+            File f = new File(path);
+
+            if (!f.isDirectory()) {
+                f = f.getParentFile();
+            }
+            return f;
+        } else {
+            LOG.info("Error getting path to installation directory for annotation with ID " + annotationID);
+
+
+            return null;
+        }
+
     }
 }

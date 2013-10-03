@@ -1,0 +1,96 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Comma Separated Values (CSV)<%/bte.tpl%>
+<%bte.tpl name=description%>Java libraries to read and write files in Comma Separated Value (CSV) format.<%/bte.tpl%>
+<%bte.tpl name=keywords%>csv, csv, csv, comma, separated, value, values, comma, separated, value, values comma separated value, values, java, util, utility, utilities, class, classes, library, libraries, source, code, open source, gpl, write, print, output, input, array, string, read, reader, reading, write, writer, writing, parse, parser, parsing, lex, lexer, lexing, print, printer, printing, handle, handler, handling, seperated, file, files, format, data, file format, data format<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Create the printer
+</span><span class=identifier>CSVPrinter csvp </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>CSVPrinter</span><span class=separator>(
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out
+</span><span class=separator>);
+
+</span><span class=comment>// Write to the printer
+</span><span class=identifier>csvp</span><span class=separator>.</span><span class=identifier>writeln</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>String</span><span class=separator>[]{
+        </span><span class=literal>&quot;hello&quot;</span><span class=separator>,</span><span class=literal>&quot;world&quot;
+    </span><span class=separator>}
+);</span></pre>
+</div>
+
+<h2>Writing CSV files: CSVPrinter</h2>
+<p>This class makes it easy to output CSV.  Given values, it will automatically determine if they need to be quoted and
+escape special characters.  Comments can easily be written and correct line beginnings will be added.</p>
+
+<p>Some applications do not accept CSV input according to the generally accepted standards.  One such application is the Microsoft Excel 
+spreadsheet.  A separate class must be use to write 
+<a href="ExcelCSV.html">Excel CSV</a>.  Both CSVPrinter and ExcelCSVPrinter
+implement the CSVPrint interface.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CSVPrinter.java/0">Version History</a> |
+<a href="CSVPrinter.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CSVPrinter.html">Documentation</a>]</p>
+
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Parse the data
+</span><span class=identifier>String</span><span class=separator>[][] </span><span class=identifier>values </span><span class=operator>= </span><span class=identifier>CSVParser</span><span class=separator>.</span><span class=identifier>parse</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>StringReader</span><span class=separator>(
+        </span><span class=literal>&quot;hello,world\n&quot; </span><span class=operator>+
+        </span><span class=literal>&quot;how,are,you&quot;
+    </span><span class=separator>)
+);
+
+</span><span class=comment>// Display the parsed data
+</span><span class=reservedWord>for </span><span class=separator>(</span><span class=reservedWord>int </span><span class=identifier>i</span><span class=operator>=</span><span class=literal>0</span><span class=separator>; </span><span class=identifier>i</span><span class=operator>&lt;</span><span class=identifier>values</span><span class=separator>.</span><span class=identifier>length</span><span class=separator>; </span><span class=identifier>i</span><span class=operator>++</span><span class=separator>){
+    </span><span class=reservedWord>for </span><span class=separator>(</span><span class=reservedWord>int </span><span class=identifier>j</span><span class=operator>=</span><span class=literal>0</span><span class=separator>; </span><span class=identifier>j</span><span class=operator>&lt;</span><span class=identifier>values</span><span class=separator>[</span><span class=identifier>i</span><span class=separator>].</span><span class=identifier>length</span><span class=separator>; </span><span class=identifier>j</span><span class=operator>++</span><span class=separator>){
+        </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(</span><span class=identifier>values</span><span class=separator>[</span><span class=identifier>i</span><span class=separator>][</span><span class=identifier>j</span><span class=separator>]);
+    }
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(</span><span class=literal>&quot;-----&quot;</span><span class=separator>);
+}</span></pre>
+</div>
+
+<h2><a name="csv_parser">Reading CSV files: CSVParser</a></h2>
+
+<p>Java's StringTokenizer does not make it easy to parse files of comma separated values for two reasons.
+First StringTokenizer doesn't handle empty strings and second it doesn't have a way to easily get
+Strings in quotes that have commas inside them.  This CSV parser takes care of those issues and
+support line numbering, escape characters, and comments.  Each line of values can be returned as an array, or 
+the values can be returned individually with the number of the line from which they came.</p>
+
+<p>Some applications do not output CSV according to the generally accepted standards and this parse may
+not be able to handle it.  One such application is the Microsoft Excel spreadsheet.  A 
+separate class must be use to read 
+<a href="http://ostermiller.org/utils/ExcelCSV.html">Excel CSV</a>.  Both CSVParser and ExcelCSVParser
+implement the CSVParse interface.</p>
+
+<p>If the first line of your CSV file is a row of column headings, consider wrapping this parser in a <a href="LabeledCSVParser.html">Labeled CSV Parser.</a></p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/CSVParser.java/0">Version History</a> |
+<a href="CSVParser.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/CSVParser.html">Documentation</a>]</p>
+
+<h3>CSV Character Sets</h3>
+<p>Several people have asked how to read CSV files that are in other character sets such as
+Chinese or Japanese.  To parse such files, simple use the CSVParser constructor that takes a reader.
+Make sure the reader has been initialized to read the correct character set.  An example that reads
+Simplified Chinese (charset GB2312) CSV values from <a href="CSVCharsetTest.gb2312csv">CSVCharsetTest.gb2312csv</a>
+can be found in <a href="CSVCharsetTest.java">CSVCharsetTest.java</a>.  If you have a Chinese font 
+installed and Java is set up to use it, the example will show a dialog with each of the Chinese 
+words on it.</p>
+
+<br clear=all>
+
+<h3>CSVLexer</h3>
+
+<p>The lexer (CSVLexer) created using <a href="http://www.jflex.de/">JFlex</a> is still available in the download and is
+still supported.  In fact,  CSVParser uses it behind the scenes.  However, CSVParser has a much cleaner, full-featured API
+and its use is recommended.</p>
+
+<p>A CSVLexer <a href="CSVRegressionTest.csv">regression test</a> and the expected
+<a href="CSVRegressionTestResults.txt">results</a> of that test are available.</p>
+<%/bte.tpl%>
+<%/bte.doc%>

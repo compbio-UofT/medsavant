@@ -31,41 +31,52 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 
 /**
- * Given a file (typically the plugin.xml file from our web-site), create an index of plugin versions.
+ * Given a file (typically the plugin.xml file from our web-site), create an
+ * index of plugin versions.
  *
  * @author tarkvara
  */
 public class PluginIndex {
+
     private static final Log LOG = LogFactory.getLog(PluginIndex.class);
     private Map<String, URL> urls;
 
     public PluginIndex(URL url) throws IOException {
         urls = new HashMap<String, URL>();
         try {
-            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(ClientNetworkUtils.openStream(url));
+
+            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(ClientNetworkUtils.openStream(url, ClientNetworkUtils.NONCRITICAL_CONNECT_TIMEOUT, ClientNetworkUtils.NONCRITICAL_READ_TIMEOUT));
+            if (reader.getVersion() == null) {
+                throw new XMLStreamException("Invalid XML at URL " + url);
+            }
             boolean done = false;
             String id = null;
             do {
-                switch (reader.next()) {
-                    case XMLStreamConstants.START_ELEMENT:
-                        String elemName = reader.getLocalName();
-                        if (elemName.equals("leaf")) {
-                            id = reader.getAttributeValue(null, "id");
-                        } else if (elemName.equals("url")) {
-                            if (id != null) {
-                                try {
-                                    urls.put(id, new URL(reader.getElementText()));
-                                } catch (MalformedURLException x) {
-                                    LOG.warn(String.format("Unable to parse \"%s\" as a plugin URL.", reader.getElementText()));
+                if (reader.hasNext()) {
+                    int t = reader.next();
+                    switch (t) {
+                        case XMLStreamConstants.START_ELEMENT:
+                            String elemName = reader.getLocalName();
+                            if (elemName.equals("leaf")) {
+                                id = reader.getAttributeValue(null, "id");
+                            } else if (elemName.equals("url")) {
+                                if (id != null) {
+                                    try {
+                                        urls.put(id, new URL(reader.getElementText()));
+                                    } catch (MalformedURLException x) {
+                                        LOG.warn(String.format("Unable to parse \"%s\" as a plugin URL.", reader.getElementText()));
+                                    }
+                                    id = null;
                                 }
-                                id = null;
                             }
-                        }
-                        break;
-                    case XMLStreamConstants.END_DOCUMENT:
-                        reader.close();
-                        done = true;
-                        break;
+                            break;
+                        case XMLStreamConstants.END_DOCUMENT:
+                            reader.close();
+                            done = true;
+                            break;
+                    }
+                } else {
+                    throw new XMLStreamException("Malformed XML at " + url);
                 }
             } while (!done);
         } catch (XMLStreamException x) {
@@ -77,4 +88,3 @@ public class PluginIndex {
         return urls.get(id);
     }
 }
-

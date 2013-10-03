@@ -61,6 +61,7 @@ public class StringConditionEncoder {
         }
         return s;
     }
+    private static final int MAX_CHARACTERS = 90;
 
     public static String getDescription(List<String> chosenValues, List<String> values) {
 
@@ -69,10 +70,13 @@ public class StringConditionEncoder {
         String s;
         if (chosenValues.isEmpty()) {
             s = "none";
-        } else if (chosenValues.size() == 1) {
+        } else if (chosenValues.size() == 1 && (chosenValues.get(0).length() < MAX_CHARACTERS)) {            
             s = chosenValues.get(0);
-        } else if (chosenValues.size() == 2) {
+        } else if (chosenValues.size() == 2){
             s = "either " + chosenValues.get(0) + " or " + chosenValues.get(1);
+            if(s.length() > MAX_CHARACTERS){
+                s = "any of " + chosenValues.size();
+            }
         } else if (values != null && chosenValues.size() == values.size()) {
             s = "anything";
         } else {

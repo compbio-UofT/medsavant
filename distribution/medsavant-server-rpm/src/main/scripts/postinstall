@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+CONFIG="/etc/sysconfig/medsavant-server"
+
+. $CONFIG
+
+# Create special user and group for running the server
+if ! getent group "$MEDSAVANT_GROUP" > /dev/null 2>&1 ; then
+    groupadd --system "$MEDSAVANT_GROUP"
+fi
+if ! id $MEDSAVANT_USER > /dev/null 2>&1 ; then
+    useradd --system --home /var/lib/medsavant-server/ --no-create-home \
+        -g "$MEDSAVANT_GROUP" --shell /bin/false \
+        "$MEDSAVANT_USER"
+fi
+
+# Set proper rights
+chown $MEDSAVANT_USER:$MEDSAVANT_GROUP /etc/sysconfig/medsavant-server
+chmod 664 /etc/sysconfig/medsavant-server
+
+chown -R $MEDSAVANT_USER:$MEDSAVANT_GROUP /var/lib/medsavant-server/
+chmod -R u=rwX,g=rwX,o=rX /var/lib/medsavant-server/
+
+TMP_DIR="/tmp/medsavant"
+if [ -f "/var/lib/medsavant-server/medsavant.properties" ]; then
+    TMP_DIR=`cat /var/lib/medsavant-server/medsavant.properties | grep tmp-dir | cut -d= -f2`
+fi
+
+mkdir -p $TMP_DIR
+chown -R $MEDSAVANT_USER:$MEDSAVANT_GROUP $TMP_DIR
+chmod -R u=rwX,g=rwX,o=rX $TMP_DIR
+
+# Register the server to start automatically on boot and start it right now
+if [ -x "/etc/init.d/medsavant-server" ]; then
+    /sbin/chkconfig --add medsavant-server >/dev/null
+    /sbin/service medsavant-server start || true
+fi

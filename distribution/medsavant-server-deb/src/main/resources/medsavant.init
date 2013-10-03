@@ -1,0 +1,182 @@
+#!/bin/sh
+#
+# /etc/init.d/medavant -- startup script for the MedSavant Server engine
+#
+### BEGIN INIT INFO
+# Provides:          medsavant-server
+# Required-Start:    $local_fs $remote_fs $network +mysqld-ib
+# Required-Stop:     $local_fs $remote_fs $network
+# Should-Start:      $named
+# Should-Stop:       $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start MedSavant.
+# Description:       Start the MedSavant Server engine.
+### END INIT INFO
+
+set -e
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=medsavant-server
+DESC="MedSavant server engine"
+MEDSAVANT_HOME=/usr/local/medsavant-server-${project.version}
+DEFAULT=/etc/default/$NAME
+LOGFILE=/var/log/$NAME
+
+if [ `id -u` -ne 0 ]; then
+        echo "You need root privileges to run this script"
+        exit 1
+fi
+
+# Make sure Java is started with system locale
+if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG
+fi
+
+. /lib/lsb/init-functions
+
+if [ -r /etc/default/rcS ]; then
+        . /etc/default/rcS
+fi
+
+# The following variables can be overwritten in $DEFAULT
+
+# Run MEDSAVANT as this user ID and group ID
+MEDSAVANT_USER=medsavant
+MEDSAVANT_GROUP=medsavant
+
+# Default Java options
+# Set java.awt.headless=true if JAVA_OPTS is not set so the
+# Xalan XSL transformer can work without X11 display on JDK 1.4+
+# It also looks like the default heap size of 64M is not enough for most cases
+# so the maximum heap size is set to 128M
+if [ -z "$JAVA_OPTS" ]; then
+        JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Xmx4G -XX:MaxPermSize=128M"
+fi
+
+# End of variables that can be overwritten in $DEFAULT
+
+# overwrite settings from default file
+if [ -f "$DEFAULT" ]; then
+        . "$DEFAULT"
+fi
+
+# Define other required variables
+PROC_PID="/var/run/$NAME.pid"
+
+medsavant_start() {
+        # Escape any double quotes in the value of JAVA_OPTS
+        JAVA_OPTS="$(echo $JAVA_OPTS | sed 's/\"/\\\"/g')"
+
+        touch $LOGFILE
+        chown $MEDSAVANT_USER $LOGFILE
+
+        # set -a tells sh to export assigned variables to spawned shells.
+        MEDSAVANT_START="set -a; source \"$DEFAULT\"; \
+                MEDSAVANT_HOME=\"$MEDSAVANT_HOME\"; \
+                JAVA_OPTS=\"$JAVA_OPTS\"; \
+                PROC_PID=\"$PROC_PID\"; \
+                LOGFILE=\"$LOGFILE\"; \
+                LANG=\"$LANG\"; \
+                cd \"$MEDSAVANT_HOME\"; \
+                java $JAVA_OPTS -jar medsavant-server-${project.version}.jar -c /var/lib/medsavant-server/medsavant.properties"
+
+        # Run MedSavant as a daemon
+        set +e
+        touch "$PROC_PID"
+        chown $MEDSAVANT_USER "$PROC_PID"
+        start-stop-daemon --start --user "$MEDSAVANT_USER" --group "$MEDSAVANT_GROUP" --chuid "$MEDSAVANT_USER:$MEDSAVANT_GROUP" \
+                --pidfile "$PROC_PID" --make-pidfile \
+                --background \
+                --chdir "$MEDSAVANT_HOME" \
+                -x `which java` -- $JAVA_OPTS -jar medsavant-server-${project.version}.jar -c /var/lib/medsavant-server/medsavant.properties
+        status="$?"
+        set +a -e
+        return $status
+}
+
+case "$1" in
+  start)
+        log_daemon_msg "Starting $DESC" "$NAME"
+        if start-stop-daemon --test --start --pidfile "$PROC_PID" \
+                --user $MEDSAVANT_USER --exec "`which java`" \
+                >/dev/null; then
+
+                umask 022
+
+                medsavant_start start
+                sleep 5
+
+                if [ -f "$PROC_PID" ]; then
+                        log_end_msg 0
+                else
+                        log_end_msg 1
+                fi
+        else
+                log_progress_msg "(already running)"
+                log_end_msg 0
+        fi
+        ;;
+  stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+
+        set +e
+        if [ -f "$PROC_PID" ]; then
+                start-stop-daemon --stop --pidfile "$PROC_PID" \
+                        --user "$MEDSAVANT_USER" \
+                        --retry=TERM/20/KILL/5 >/dev/null
+                if [ $? -eq 1 ]; then
+                        log_progress_msg "$DESC is not running but pid file exists, cleaning up"
+                elif [ $? -eq 3 ]; then
+                        PID="`cat $PROC_PID`"
+                        log_failure_msg "Failed to stop $NAME (pid $PID)"
+                        exit 1
+                fi
+                rm -f "$PROC_PID"
+        else
+                log_progress_msg "(not running)"
+        fi
+        log_end_msg 0
+        set -e
+        ;;
+   status)
+        set +e
+        start-stop-daemon --test --start --pidfile "$PROC_PID" \
+                --user $MEDSAVANT_USER --exec "`which java`" \
+                >/dev/null 2>&1
+        if [ "$?" = "0" ]; then
+
+                if [ -f "$PROC_PID" ]; then
+                    log_success_msg "$DESC is not running, but pid file exists."
+                        exit 1
+                else
+                    log_success_msg "$DESC is not running."
+                        exit 3
+                fi
+        else
+                log_success_msg "$DESC is running with pid `cat $PROC_PID`"
+        fi
+        set -e
+        ;;
+  restart|force-reload)
+        if [ -f "$PROC_PID" ]; then
+                $0 stop
+                sleep 1
+        fi
+        $0 start
+        ;;
+  try-restart)
+        if start-stop-daemon --test --start --pidfile "$PROC_PID" \
+                --user $MEDSAVANT_USER --exec "`which java`" \
+                >/dev/null; then
+                $0 start
+        fi
+        ;;
+  *)
+        log_success_msg "Usage: $0 {start|stop|restart|try-restart|force-reload|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,24 @@
+<%bte.doc super="page.bte" %>
+<%bte.tpl name=pageTitle%>Contributors to com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=firstLine%>Contributors to  com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=description%>List of people who have made contribution to the open source(GPL) com.Ostermiller.util Java utilities.<%/bte.tpl%>
+<%bte.tpl name=keywords%>contributors, help out, lend a hand, people, contributions, others, util, util, util, utils, utils, utils, utilities, utilities, base64, base64, base64, md5, md5, md5, significant, figures, encode, encoding, decode, decoding, password, username, dialog, string, string tokenizer, tokenizer, stringtokenizer, stringtokenizer,  programming, text, cgi, csv, csv, browser, random, password, generate, generator, pass, launcher, browser control, launch, web browser, open url, url, comma, separated, value, values, java, java, open source, gpl, javadoc<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class=contributors>
+<ul>
+<li>Santeri Paavolainen - <a href="http://www.helsinki.fi/~sjpaavol/programs/md5/">Initial MD5 implementation</a>.</li>
+<li><a href="http://dmoz.org/profiles/wkn.html">Werner</a> - Danish translations.</li>
+<li><a href="http://dmoz.org/profiles/stn77.html">Stephan Natschlaeger</a> - German translations</li>
+<li>Daniel Kuhn - German translations</li>
+<li>Miriam Ferrari Stella - Spanish translations</li>
+<li><a href="http://miniwark.com/">Miniwark</a> - French translations</li>
+<li>Rocco Curcio - Italian translations</li>
+<li>Marcin Drzymala - Polish translations</li>
+<li>Carlo Magnaghi - Fixes to the UberProperties</li>
+<li>Pierre Dittgen - Added changeQuote and changeDelimiter methods to CSVPrint and implementations.</li>
+<li>Allen T. Campbell - Wrote the labeled CSV parser.</li>
+</ul>
+</div>
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

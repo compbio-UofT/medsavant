@@ -505,6 +505,10 @@ public class KeyValuePairPanel extends JPanel {
 
                                 while (fm.stringWidth(text + "…") > avail) {
                                     //causes StringIndexOutOfBoundsException if text is empty.  
+                                    if(text == null || text.length() < 2){
+                                        LOG.info("Text is null or empty in KeyValuePairPanel");
+                                        break;
+                                    }
                                     text = text.substring(0, text.length() - 2);
                                 }
                                 //text = text + "…";

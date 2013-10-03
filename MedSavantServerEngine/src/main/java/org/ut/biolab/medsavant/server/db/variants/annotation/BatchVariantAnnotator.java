@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
@@ -103,8 +106,8 @@ public class BatchVariantAnnotator {
         CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
         CSVWriter recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
 
-        LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
-        LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
+        //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
+        //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
 
         // read the input, line by line
         String[] inputLine;
@@ -136,36 +139,60 @@ public class BatchVariantAnnotator {
             // report whenever we get to the next chromosome
             if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
                 currentChrom = nextInputRecord.chrom;
-                LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
+                //LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
                 previousPosition = -1;
                 previousRef = null;
                 previousAlt = null;
+
             } else {
 
                 /**
-                 * Check that records for a given chromosome are sorted by position, ref, alt
+                 * Check that records for a given chromosome are sorted by
+                 * position, ref, alt
                  */
                 long currentPosition = nextInputRecord.position;
                 String currentRef = nextInputRecord.ref;
                 String currentAlt = nextInputRecord.alt;
 
                 if (currentPosition < previousPosition) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by position, then by ref, then by alt.");
                 }
                 if (currentPosition == previousPosition) {
-                    int refCompare = currentRef.compareTo(previousRef);
+
+                    int refCompare;
+                    if (!isAStandardSingleNucleotide(currentRef)) { // ignore lines where ref is not a single nucleotide
+                        refCompare = 1;
+                    } else {
+                        refCompare = currentRef.compareTo(previousRef);
+                    }
+
                     if (refCompare < 0) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by position, then by ref, then by alt.");
                     } else if (refCompare == 0) {
-                        int altCompare = currentAlt.compareTo(previousAlt);
+
+                        int altCompare;
+                        if (!isAStandardSingleNucleotide(currentAlt)) { // ignore lines where alt is not a single nucleotide
+                            altCompare = 1;
+                        } else {
+                            altCompare = currentAlt.compareTo(previousAlt);
+                        }
+
                         if (altCompare < 0) {
-                            throw new IOException(nextInputRecord.toString() + " out of order. Input variant files must be sorted by position, then by ref, then by alt.");
+                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by position, then by ref, then by alt.");
                         }
                     }
                 }
-                previousPosition = currentPosition;
-                previousRef = currentRef;
-                previousAlt = currentAlt;
+                
+                if(isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)){
+                    previousPosition = currentPosition;
+                    previousRef = currentRef;
+                    previousAlt = currentAlt;
+                }
+                                
+                // previousPosition = currentPosition;
+                // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
+                // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
+                
             }
 
             // perform each annotation, in turn
@@ -186,6 +213,9 @@ public class BatchVariantAnnotator {
         }
 
         // clean up
+        for (AnnotationCursor c : cursors) {
+            c.cleanup();
+        }
         recordReader.close();
         recordWriter.close();
 
@@ -245,7 +275,7 @@ public class BatchVariantAnnotator {
         // open the file
         CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
-        LOG.info("Analyzing annotation file " + file.getAbsolutePath());
+        //LOG.info("Analyzing file to be annotated " + file.getAbsolutePath());
 
         // read the first line
         String[] next = reader.readNext();
@@ -259,6 +289,10 @@ public class BatchVariantAnnotator {
         // clean up and return
         reader.close();
         return result;
+    }
+
+    private boolean isAStandardSingleNucleotide(String base) {
+        return base.equals("A") || base.equals("C") || base.equals("G") || base.equals("T");
     }
 
     /**

@@ -41,6 +41,10 @@ public class ViewController {
     private PersistencePanel persistencePanel;
     private PeekingPanel peekingPanel;
 
+    public SubSectionView getCurrentSubSectionView(){
+        return currentSubsection;
+    }
+
     private ViewController(JPanel p) {
         // create the banner
         //banner = new Banner();
@@ -155,10 +159,10 @@ public class ViewController {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
-            this.setBorder(
-                    BorderFactory.createCompoundBorder(
-                    ViewUtil.getRightLineBorder(),
-                    ViewUtil.getBigBorder()));
+            this.setBorder(ViewUtil.getBigBorder());
+                    //BorderFactory.createCompoundBorder(
+                    //ViewUtil.getRightLineBorder(),
+                    //ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 

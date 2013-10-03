@@ -158,6 +158,7 @@ public class ProjectController extends Controller<ProjectEvent> {
     public String getCurrentProjectName() {
         return currentProjectName;
     }
+        
 
     public String[] getProjectNames() throws SQLException, RemoteException {
         if (manager == null) {
@@ -233,10 +234,21 @@ public class ProjectController extends Controller<ProjectEvent> {
         }
     }
 
+    public int[] getAnnotationIDs(int projectID, int refID) throws SQLException, RemoteException{
+        int[] annotIDs;
+        try{ 
+         annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), projectID, refID);        
+        }catch (SessionExpiredException ex) {
+                MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                return null;
+        }
+        return annotIDs;
+    }
     public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
         if (currentAnnotationFormats == null) {
             try {
-                int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
+                int[] annotIDs = getAnnotationIDs(this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
+                //int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.getInstance().getSessionID(), this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
                 AnnotationFormat[] af = new AnnotationFormat[annotIDs.length+2];
                 af[0] = AnnotationFormat.getDefaultAnnotationFormat();
                 af[1] = AnnotationFormat.getCustomFieldAnnotationFormat(

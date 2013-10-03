@@ -1,43 +1,25 @@
 package org.ut.biolab.mfiume.query.medsavant;
 
 import org.ut.biolab.mfiume.query.medsavant.complex.CohortConditionGenerator;
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.InCondition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.awt.BorderLayout;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.cohort.CohortFilterView;
-import org.ut.biolab.medsavant.client.filter.FilterHolder;
-import org.ut.biolab.medsavant.client.filter.NumericFilterView;
-import org.ut.biolab.medsavant.client.filter.StringListFilterView;
-import org.ut.biolab.medsavant.client.filter.TagFilterView;
+import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
-import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
-import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.mfiume.query.ConditionViewGenerator;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
@@ -47,12 +29,7 @@ import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.TagConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.VariantConditionGenerator;
 import org.ut.biolab.mfiume.query.value.DatabaseConditionGenerator;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
-import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.view.NumberSearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
-import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
  *
@@ -72,6 +49,7 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
     //private Map<String, ComprehensiveConditionGenerator> variantConditionGenerators;
     public static final String PATIENT_CONDITIONS = "Patient Conditions";
     public static final String VARIANT_CONDITIONS = "Variant Conditions";
+    public static final String OTHER_CONDITIONS = "Other Conditions";
 
     private MedSavantConditionViewGenerator() {
         itemToCustomFieldMap = new HashMap<String, DatabaseFieldStruct>();
@@ -131,6 +109,13 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         ComprehensiveConditionGenerator omim = new OntologyConditionGenerator(OntologyType.OMIM);
         conditionGenerators.put(omim.getName(), omim);
 
+        // plugin
+        MedSavantVariantSearchApp[] searchApps = loadSearchApps();
+        for (MedSavantVariantSearchApp searchApp : searchApps) {
+            ComprehensiveConditionGenerator generator = searchApp.getSearchConditionGenerator();
+            conditionGenerators.put(generator.getName(), generator);
+        }
+
         init();
     }
 
@@ -147,10 +132,11 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         String conditionName = item.getName();
 
         if (conditionGenerators.containsKey(conditionName)) {
-            return conditionGenerators.get(conditionName).generateViewFromItem(item);
+            SearchConditionItemView view = new SearchConditionItemView(item,conditionGenerators.get(conditionName).getViewGeneratorForItem(item));
+            return view;
         }
 
-        throw new UnsupportedOperationException("No view for item " + item.getName());
+        throw new UnsupportedOperationException("No view for item " + conditionName);
     }
 
     @Override
@@ -216,6 +202,21 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
                 allowedMap.put(gen.category(), arr);
             }
         }
+    }
+
+    private MedSavantVariantSearchApp[] loadSearchApps() {
+        List<MedSavantVariantSearchApp> results = new LinkedList<MedSavantVariantSearchApp>();
+        int counter = 0;
+
+        for(AppDescriptor ad : AppController.getInstance().getDescriptors()){
+            MedSavantApp ap = AppController.getInstance().getPlugin(ad.getID());
+            if(ap instanceof MedSavantVariantSearchApp){
+                results.add((MedSavantVariantSearchApp)ap);
+                counter++;
+            }
+        }
+
+        return results.toArray(new MedSavantVariantSearchApp[counter]);
     }
 
     public static class DatabaseFieldStruct {

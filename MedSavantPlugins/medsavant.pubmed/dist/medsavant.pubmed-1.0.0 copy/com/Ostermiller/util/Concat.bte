@@ -1,0 +1,52 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Concatenation Streams<%/bte.tpl%>
+<%bte.tpl name=description%>Combine multiple streams of incoming data to create a single stream<%/bte.tpl%>
+<%bte.tpl name=keywords%>concat stream, concatenation stream, concatinputstream, concatreader<%/bte.tpl%>
+<%bte.tpl name=content%>
+<p>Concatenation Streams allow multiple input sources to be combined into a singe source stream.</p>
+
+<h2>ConcatInputStream</h2>
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Pre-pend data to a InputStream &quot;in&quot;
+// giving a new stream.
+</span><span class=identifier>in </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>ConcatInputStream</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>ByteArrayInputStream</span><span class=separator>(
+        </span><span class=reservedWord>new byte</span><span class=separator>[]{
+            </span><span class=literal>3</span><span class=separator>,</span><span class=literal>1</span><span class=separator>,</span><span class=literal>4</span><span class=separator>,</span><span class=literal>1</span><span class=separator>,</span><span class=literal>5</span><span class=separator>,</span><span class=literal>9
+        </span><span class=separator>}
+    ),
+    </span><span class=identifier>in
+</span><span class=separator>);</span></pre>
+</div>
+
+<p>Combines multiple byte stream sources into a single byte stream.<p>
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="ConcatInputStream.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ConcatInputStream.html">Documentation</a>]</p>
+
+<br clear=all>
+<hr>
+
+<h2>ConcatReader</h2>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Pre-pend data to a Reader &quot;in&quot;
+// giving a new reader.
+</span><span class=identifier>in </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>ConcatReader</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>StringReader</span><span class=separator>(
+        </span><span class=literal>&quot;Pre-pending this data.&quot;
+    </span><span class=separator>),
+    </span><span class=identifier>in
+</span><span class=separator>);
+</span></pre>
+</div>
+
+<p>Combines multiple character stream sources into a single character stream.<p>
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="ConcatReader.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ConcatReader.html">Documentation</a>]</p>
+
+<br clear=all>
+
+<%/bte.tpl%>
+<%/bte.doc%>

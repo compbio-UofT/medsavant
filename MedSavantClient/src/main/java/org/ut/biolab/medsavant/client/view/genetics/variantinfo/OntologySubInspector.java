@@ -59,9 +59,8 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
     @Override
     public JPanel getInfoPanel() {
         if (panel == null) {
-            panel = new JPanel();
+            panel = ViewUtil.getClearPanel();
             panel.setLayout(new GridBagLayout());
-            panel.setBackground(Color.WHITE);
 
             JLabel keyLabel = KeyValuePairPanel.getKeyLabel("Terms");
 
@@ -132,7 +131,7 @@ public class OntologySubInspector extends SubInspector implements Listener<Gene>
     private void retrieveTerms(final Gene g) {
         linkButton.setEnabled(false);   // Due to lack of an initially-selected term.
         if (g != null) {
-            new MedSavantWorker<OntologyTerm[]>("Ontology") {
+            new MedSavantWorker<OntologyTerm[]>(PAGE_NAME) {
 
                 @Override
                 protected void showProgress(double fraction) {

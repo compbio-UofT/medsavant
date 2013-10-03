@@ -16,13 +16,12 @@
 package org.ut.biolab.medsavant.client.cohort;
 
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
-import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -75,14 +74,21 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                             MedSavantClient.CohortManager.removeCohort(LoginController.getInstance().getSessionID(), id);
                         } catch (Exception ex) {
                             numCouldntRemove++;
-                            ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": %s", ex);
+                            ClientMiscUtils.reportError("Error removing " + ((Cohort) v[0]).getName() + ": %s", ex);
                         }
                     }
 
                     setVisible(false);
+                    final int cohortsRemoved = items.size() - numCouldntRemove;
                     if (numCouldntRemove != items.size()) {
-                        DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " cohort(s).");
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                DialogUtils.displayMessage("Successfully removed " + (cohortsRemoved) + " cohort(s).");
+                            }
+                        });
                     }
+                    this.dispose();
                 }
             }.setVisible(true);
         }

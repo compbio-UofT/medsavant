@@ -1,0 +1,75 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Excel Comma Separated Values (CSV)<%/bte.tpl%>
+<%bte.tpl name=description%>Java libraries to read and write files in Excel Comma Separated Value (CSV) format.<%/bte.tpl%>
+<%bte.tpl name=keywords%>csv, csv, csv, excel, excel, microsoft excel, excel spreadsheet, spreadsheet, spread sheet, microsoft, comma, separated, value, values, comma, separated, value, values comma separated value, values<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Create the printer
+</span><span class=identifier>ExcelCSVPrinter ecsvp </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>ExcelCSVPrinter</span><span class=separator>(
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out
+</span><span class=separator>);
+
+</span><span class=comment>// Write to the printer
+</span><span class=identifier>ecsvp</span><span class=separator>.</span><span class=identifier>writeln</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>String</span><span class=separator>[]{
+        </span><span class=literal>&quot;hello&quot;</span><span class=separator>,</span><span class=literal>&quot;world&quot;
+    </span><span class=separator>}
+);</span></pre>
+</div>
+
+<h2>Writing Excel CSV files: ExcelCSVPrinter</h2>
+<p>This class makes it easy to output Excel CSV.  Given values, it will automatically determine if they need to be quoted and
+escape special characters.  Comments can easily be written and correct line beginnings will be added.</p>
+
+<p>To write standard CSV files that most applications other than Excel can understand use the 
+<a href="CSV.html">standard CSV</a> format.  Both CSVPrinter and ExcelCSVPrinter
+implement the CSVPrint interface.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/ExcelCSVPrinter.java/0">Version History</a> |
+<a href="ExcelCSVPrinter.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ExcelCSVPrinter.html">Documentation</a>]</p>
+
+<br clear=all>
+<hr>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=comment>// Parse the data
+</span><span class=identifier>String</span><span class=separator>[][] </span><span class=identifier>values </span><span class=operator>= </span><span class=identifier>ExcelCSVParser</span><span class=separator>.</span><span class=identifier>parse</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>StringReader</span><span class=separator>(
+        </span><span class=literal>&quot;hello,world\n&quot; </span><span class=operator>+
+        </span><span class=literal>&quot;how,are,you&quot;
+    </span><span class=separator>)
+);
+
+</span><span class=comment>// Display the parsed data
+</span><span class=reservedWord>for </span><span class=separator>(</span><span class=reservedWord>int </span><span class=identifier>i</span><span class=operator>=</span><span class=literal>0</span><span class=separator>; </span><span class=identifier>i</span><span class=operator>&lt;</span><span class=identifier>values</span><span class=separator>.</span><span class=identifier>length</span><span class=separator>; </span><span class=identifier>i</span><span class=operator>++</span><span class=separator>){
+    </span><span class=reservedWord>for </span><span class=separator>(</span><span class=reservedWord>int </span><span class=identifier>j</span><span class=operator>=</span><span class=literal>0</span><span class=separator>; </span><span class=identifier>j</span><span class=operator>&lt;</span><span class=identifier>values</span><span class=separator>[</span><span class=identifier>i</span><span class=separator>].</span><span class=identifier>length</span><span class=separator>; </span><span class=identifier>j</span><span class=operator>++</span><span class=separator>){
+        </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(</span><span class=identifier>values</span><span class=separator>[</span><span class=identifier>i</span><span class=separator>][</span><span class=identifier>j</span><span class=separator>]);
+    }
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(</span><span class=literal>&quot;-----&quot;</span><span class=separator>);
+}</span></pre>
+</div>
+
+<h2><a name="csv_parser">Reading Excel CSV files: ExcelCSVParser</a></h2>
+
+<p>Microsoft's Excel spreadsheet has on option to export to comma separated value format. 
+However it fails to use the <a href="CSV.html">standard CSV file format</a>.  Excel does
+not use the backslash as an escape character, but instead escapes quote literals with two quotes.
+It also does not quote values that have leading or trailing whitespace.  This special CSV parser
+can read Excel format CSV files.</p>
+
+<p>To read standard CSV files that most applications other than Excel can understand use the 
+<a href="CSV.html">standard CSV</a> format.    Both CSVParser and ExcelCSVParser
+implement the CSVParse interface.</p>
+
+<p>If the first line of your CSV file is a row of column headings, consider wrapping this parser in a <a href="LabeledCSVParser.html">Labeled CSV Parser.</a></p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/ExcelCSVParser.java/0">Version History</a> |
+<a href="ExcelCSVParser.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/ExcelCSVParser.html">Documentation</a>]</p>
+
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

@@ -41,10 +41,6 @@ atlassian-ide-plugin.xml
 
 # Mac files
 .DS_Store
-<<<<<<< HEAD
-MedSavantServerEngine/medsavant.log
-private.xml
-=======
 
 # Other
 *.log.*
@@ -55,8 +51,19 @@ private.xml
 
 # MedSavant custom
 MedSavantServerEngine/medsavant.log
->>>>>>> 9546cd13e0f29c5090a9888d7f46c0b36632b29f
+private.xml
 .medsavant.prop
 
+MedSavantClient/family-matters-*.txt
 
-distribution/medsavant-client-dmg/src/main/app-resources/.DS_Store
+MedSavantPlugins/medsavant.mendel/dist/medsavant.mendel-1.0.0.jar
+
+MedSavantPlugins/out/production/medsavant.mendel/medsavant/mendel/view/OptionView$3$1.class
+
+MedSavantPlugins/medsavant.mendel-clinic/dist/medsavant.mendel-clinic-1.0.0.jar
+
+MedSavantPlugins/medsavant.mendel-clinic/dist/medsavant.mendel-clinic-1.0.0.jar
+
+MedSavantPlugins/medsavant.incidentalome/src/medsavant/incidentalome/icon/icon.png
+
+MedSavantPlugins/medsavant.panel/src/medsavant/panel/icon/icon.png

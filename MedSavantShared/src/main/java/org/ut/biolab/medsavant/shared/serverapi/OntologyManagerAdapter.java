@@ -90,19 +90,20 @@ public interface OntologyManagerAdapter extends Remote {
     Ontology[] getOntologies(String sessID) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;
 
     /**
-     * Get a list of all terms in the given ontology.
+     * Get a list of all terms in the given ontology that are associated with at least one gene.
+     * If limit is given, the number of terms returned is limited to the first 'limit'.
      */
-    OntologyTerm[] getAllTerms(String sessID, OntologyType type) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;
+    OntologyTerm[] getAllTerms(String sessID, OntologyType type) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;    
 
     /**
      * Get the names of all genes corresponding to the given term.
      * @param sessID the login session
      * @param term the term being looked for
-     * @param refName the reference being looked for
+     * @param refName the reference being looked for         
      * @return genes corresponding to <code>term</code>
      */
-    String[] getGenesForTerm(String sessID, OntologyTerm term, String refName) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;
-
+    String[] getGenesForTerm(String sessID, OntologyTerm term, String refName) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;    
+        
     /**
      * Get the names of all genes corresponding to the given terms.  When loading a large number of terms, this can be more efficient
      * than calling <code>getGenesForTerm</code> separately for each term.

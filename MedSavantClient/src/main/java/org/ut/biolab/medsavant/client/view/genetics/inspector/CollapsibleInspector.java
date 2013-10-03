@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.Color;
+import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import org.apache.commons.logging.Log;
@@ -68,13 +70,15 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         cl.show(container, MESSAGEPANEL);
     }
 
-    public void setMessage(String msg) {
+    public void setMessage(String msg, String helpTitle, String helpMessage) {
         JPanel messagePanel = ViewUtil.getClearPanel();//new JPanel();
         messagePanel.setBorder(ViewUtil.getHugeBorder());
         ViewUtil.applyVerticalBoxLayout(messagePanel);
         JLabel h2 = new JLabel(msg);
         messagePanel.add(Box.createVerticalGlue());
         messagePanel.add(ViewUtil.centerHorizontally(h2));
+        messagePanel.add(Box.createVerticalStrut(3));
+        messagePanel.add(ViewUtil.centerHorizontally(ViewUtil.getHelpButton(helpTitle, helpMessage)));
         messagePanel.add(Box.createVerticalGlue());
         setMessage(messagePanel);
     }
@@ -101,6 +105,13 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
          addSubInspector(ipan,false);
      }
 
+     protected void addComponent(Component c) {
+         panesContainer.remove(panesContainer.getComponentCount() - 1);
+         panesContainer.add(c);
+         panesContainer.addExpansion();
+     }
+
+
     protected void addSubInspector(SubInspector ipan, boolean collapsed) {
 
         // remove the previous expansion
@@ -115,7 +126,7 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         }
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
-        
+
         LOG.debug("Adding subinspector...");
         p.add(ipan.getInfoPanel(), BorderLayout.CENTER);
         panesContainer.add(p);

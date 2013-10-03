@@ -66,7 +66,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
     private static final Log LOG = LogFactory.getLog(ProjectWizard.class);
     private static final String PAGENAME_NAME = "Project Name";
-    private static final String PAGENAME_PATIENTS = "Individuals";
+    private static final String PAGENAME_PATIENTS = "Patients";
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
     private static final String PAGENAME_NOTIFICATIONS = "Notifications";
@@ -99,9 +99,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         this.customFields = fields;
         this.projectDetails = details;
         PAGENAME_CREATE = "Modify";
-        manager = MedSavantClient.ProjectManager;
-
-        setupWizard();
+        manager = MedSavantClient.ProjectManager;           
+        setupWizard();                
     }
 
     /*
@@ -163,7 +162,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         });
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(null);
     }
 
@@ -220,7 +219,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         };
 
-        page.addText("Add relevant fields for individuals. ");
+        page.addText("Add relevant fields for patients. ");
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setPreferredSize(new Dimension(300, 250));
@@ -313,7 +312,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         };
 
-        page.addText("Add extra fields to retrieve from VCF files. ");
+        page.addText("Add extra fields to parse from INFO text in VCF files. ");
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setPreferredSize(new Dimension(300, 250));
@@ -527,9 +526,11 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 j.setVisible(true);
                 page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
+                workButton.setEnabled(false);
+
                 new ProjectWorker<Void>("Modifying project", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                     @Override
-                    protected Void backgroundTask() throws Exception {
+                    protected Void runInBackground() throws Exception {
                         LOG.info("Requesting modification from server");
                         modifyProject(true, true, true, this);
                         LOG.info("Modification complete");
@@ -743,7 +744,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 }
 
                 String email = this.emailField.getText();
-                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();                                
+                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();
                 boolean autoPublishWhenComplete = false;
                 updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }

@@ -1,0 +1,64 @@
+9 field1
+9 field2
+9 field3
+9 field4
+9 field5
+9 field6
+13 
+13 field2
+13 
+13 
+13 field5
+13 
+16 1
+16 to
+16 tre
+16 four
+16 five5
+16 sixsix
+21 !field1
+23 ;field2
+25 #field3
+30 field1
+30 field"2
+30 field 3
+30 field\4
+30 field    5
+30 field'6
+33 
+33 1
+33 to
+33 tre
+33 four
+33 five5
+33 sixsix
+36 field1
+36 field2
+36 field3
+36 field4
+36 field5
+36 field6
+39  field1
+39 field2 
+39     field3
+39 field4   
+39   field5   
+39 field6 
+42 field,1
+42 field2
+stillField2
+46 field"1
+46 field\2
+46 field3
+stillField3
+46 field	4
+46 fieldu5
+46 fielda6
+49 end at the dot.
+49 end at the dot.
+52 
+52 field2
+52 
+52 
+52 field5
+52 

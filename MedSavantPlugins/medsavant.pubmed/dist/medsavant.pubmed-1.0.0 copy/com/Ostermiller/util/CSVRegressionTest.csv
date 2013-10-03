@@ -1,0 +1,53 @@
+! This file is to test for regressions in the csv code.
+! It is meant to be used with the main method of CSVLexer
+! Any line that begins with "!;#' is a comment.
+! \n\r\t\f are escape characters in strings.
+
+# the following line tests that white space around 
+# fields is ignored.
+
+ field1,field2 ,    field3,field4   ,  field5   ,field6
+      
+# the following line tests some empty fields
+# again, there should be six fields here
+,field2,, ,field5,
+ 
+# test fields of various lengths:
+1,to,tre,four,five5,sixsix
+ 
+# test that a comment char must be at the beginning of the line
+# to count as a comment
+!comment
+ !field1
+;comment
+ ;field2
+#comment
+ #field3
+
+# test fields with weird characters including quotes backslashes and 
+# whitespace.  I would not recommend putting quotes or backslashes
+# inside unquoted fields, but they should work.
+field1, field"2, field 3, field\4, field    5, field'6
+
+# test quoted fields of various lengths
+"","1","to","tre","four","five5","sixsix"
+
+# test spaces around quoted fields
+ "field1","field2" ,    "field3","field4"   ,  "field5"   ,"field6" 
+
+# test spaces inside quoted fields
+" field1","field2 ","    field3","field4   ","  field5   ","field6 "
+
+# test commas and new lines inside quoted fields
+"field,1","field2
+stillField2"
+
+# test escape characters
+# In the last two, the \u and \a should become u and a respectivly.
+"field\"1", "field\\2", "field3\nstillField3", "field\t4", "field\u5", "field\a6"
+
+# test that after a string is closed, everything beyond it is ignored
+"end at the dot."ignored, "end at the dot." ignored!
+
+# test empty tags at end of file
+,field2,, ,field5,

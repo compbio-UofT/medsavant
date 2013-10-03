@@ -35,7 +35,7 @@ public class RegionPage extends SubSectionView {
 
 
     public RegionPage(SectionView parent) {
-        super(parent, "Region Lists");
+        super(parent, "Gene Lists");
         controller = RegionController.getInstance();
     }
 
@@ -43,7 +43,7 @@ public class RegionPage extends SubSectionView {
     public JPanel getView() {
         if (view == null) {
             view = new SplitScreenView(
-                    new SimpleDetailedListModel("Region List") {
+                    new SimpleDetailedListModel("Gene List") {
                         @Override
                         public RegionSet[] getData() throws Exception {
                             return controller.getRegionSets().toArray(new RegionSet[0]);

@@ -15,31 +15,55 @@
  */
 package org.ut.biolab.medsavant.client.view.component;
 
+import com.jidesoft.grid.AutoFilterTableHeader;
+import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
+import com.jidesoft.grid.FilterableTableModel;
+import com.jidesoft.grid.QuickTableFilterField;
+import com.jidesoft.grid.SortableTable;
+import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
+import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 
-import com.jidesoft.grid.*;
 import java.util.Set;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.ExportTable;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -51,6 +75,12 @@ public class SearchableTablePanel extends JPanel {
     private static final int ROWSPERPAGE_1 = 100;
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
+    private static int KEY_PRESS_TIMER_INTERVAL = 200; //should be greater than key repeat rate
+    private static final int KEY_PRESS_TIMER_INTERVAL_LONG = 1000; //should be greater than key initial delay.
+    private static final int KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_RUNS = 5;
+    private static final int KEY_PRESS_INTERVAL_EPSILON = 5;
+    private static final int KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_PADDING = 20;
+    private static final int[] SCROLLING_KEYS = new int[]{KeyEvent.VK_DOWN, KeyEvent.VK_UP, KeyEvent.VK_PAGE_DOWN, KeyEvent.VK_PAGE_UP, KeyEvent.VK_KP_DOWN, KeyEvent.VK_KP_UP};
     private String pageName;
     private QuickTableFilterField filterField;
     private GenericTableModel model;
@@ -86,6 +116,10 @@ public class SearchableTablePanel extends JPanel {
     private static Color DARK_COLOUR = ViewUtil.getAlternateRowColor();
     private final JPanel bottomPanel;
     private final JButton chooseColumnButton;
+    private long lastTime; //Only used for debugging
+    private boolean waitlong = false;
+    private boolean keydown = false;
+    private SelectionChangedWorker selectionChangedWorker;
 
     public enum TableSelectionType {
 
@@ -95,7 +129,7 @@ public class SearchableTablePanel extends JPanel {
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
-    
+
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
             boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
 
@@ -115,9 +149,9 @@ public class SearchableTablePanel extends JPanel {
                     if (isRowToggled(TableModelWrapperUtils.getActualRowAt(this.getSortableTableModel(), row))) { //this.getActualRowAt(this.getSortedRowAt(row)))) {
                         comp.setBackground(new Color(178, 225, 92));
                     } else if (isCellSelected(row, col)) {
-                        comp.setBackground(new Color(75, 149, 229));
+                        //comp.setBackground(new Color(75, 149, 229));
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
-                        comp.setBackground(SELECTED_COLOUR);
+                        //comp.setBackground(SELECTED_COLOUR);
                     } else if (row % 2 == 0 && !isCellSelected(row, col)) {
                         comp.setBackground(Color.WHITE);
                     } else {
@@ -186,7 +220,9 @@ public class SearchableTablePanel extends JPanel {
             }
         });
         fieldPanel.add(chooseColumnButton);
-
+        
+        JButton helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
+        fieldPanel.add(helpButton);
         exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -382,7 +418,8 @@ public class SearchableTablePanel extends JPanel {
                 setTotalRowCount(retriever.getTotalNum());
                 pageNum = 1;
             }
-            return retriever.retrieve((pageNum - 1) * getRowsPerPage(), getRowsPerPage());
+            List<Object[]> results = retriever.retrieve((pageNum - 1) * getRowsPerPage(), getRowsPerPage());
+            return results;
         }
 
         @Override
@@ -392,6 +429,8 @@ public class SearchableTablePanel extends JPanel {
 
         @Override
         protected void showSuccess(List<Object[]> result) {
+
+
             applyData(result);
             retriever.retrievalComplete();
         }
@@ -632,5 +671,187 @@ public class SearchableTablePanel extends JPanel {
 
     public String getToolTip(int actualRow) {
         return null;
+    }
+
+    /**
+     * The given action will be executed when the selection changes AND a
+     * scrolling key (pg-up, pg-down, arrow keys, num lock arrow keys) is not
+     * being held down. This method should be used as a scroll-safe alternative
+     * to registering a selection listener.
+     *
+     * This makes it safe for the user to scroll through the scroll panel
+     * without repeating the action unnecessarily. The action executes in a new
+     * thread.
+     */
+    public void scrollSafeSelectAction(final Runnable onSelectTask) {
+
+        final KeyTimer keyTimer = new KeyTimer(KEY_PRESS_TIMER_INTERVAL, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                keydown = false;
+                waitlong = false;
+                //printTime("Starting Worker");
+                resetSelectionChangedWorker(onSelectTask);
+
+            }
+        });
+        keyTimer.setRepeats(false);
+
+
+        getTable().addKeyListener(new KeyAdapter() {
+            private long lastDelta = -1;
+            private long lastTime = System.currentTimeMillis();
+            private int deltaSame = 0;
+            private boolean first = true;
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                super.keyPressed(ke);
+
+                if (!ArrayUtils.contains(SCROLLING_KEYS, ke.getKeyCode())) {
+                    //System.out.println("Detected key press that wasn't a scrolling key! (keycode=" + ke.getKeyCode() + ")");
+                    return;
+                }
+
+                long currentTime = System.currentTimeMillis();
+                long delta = currentTime - lastTime;
+
+                if (Math.abs(delta - lastDelta) < KEY_PRESS_INTERVAL_EPSILON) {
+                    deltaSame++;
+                } else {
+                    deltaSame = 0;
+                }
+
+                if (deltaSame > KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_RUNS) {
+                    //If this is the first time we've detected an interval, or if the detected interval
+                    //is getting close to the current (padded) interval, then change the current interval to
+                    //the detected one + padding.
+                    if (first || (delta - KEY_PRESS_TIMER_INTERVAL) > (KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_PADDING / 2.0f)) {
+                        KEY_PRESS_TIMER_INTERVAL = (int) delta + KEY_PRESS_TIMER_INTERVAL_AUTOADJUST_PADDING;
+                        LOG.info("Detected " + deltaSame + " keypresses with delta ~" + delta + ", setting new repeat-interval to " + KEY_PRESS_TIMER_INTERVAL);
+                        first = false;
+                    }
+                    deltaSame = 0;
+                }
+
+                lastDelta = delta;
+                lastTime = currentTime;
+
+                keydown = true;
+                stopSelectionChangedWorker();
+                if (keyTimer.isRunning()) {
+                    keyTimer.stop("keyPressed stop");
+                    if (waitlong) {
+                        waitlong = false;
+                        keyTimer.setInitialDelay(KEY_PRESS_TIMER_INTERVAL_LONG);
+                    } else {
+                        keyTimer.setInitialDelay(KEY_PRESS_TIMER_INTERVAL);
+                    }
+                    keyTimer.restart("keyPressed restart");
+                } else {
+                    waitlong = false;
+                    keyTimer.setInitialDelay(KEY_PRESS_TIMER_INTERVAL_LONG);
+                    keyTimer.start("keyTimer start");
+                }
+
+            }
+            //In Linux, holding a keydown fires pairs of keyPressed and keyReleased events
+            //continually, so we cannot rely on 'keyReleased'.
+                /*@Override
+             public void keyReleased(KeyEvent ke) {
+             super.keyReleased(ke); //To change body of generated methods, choose Tools | Templates.
+             keydown = false;
+             }*/
+        });
+        getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
+
+                if (keydown == false) {
+                    if (!keyTimer.isRunning()) {
+                        waitlong = true;
+                        // printTime("valueChanged, setting waitlong=true: ");
+                        keyTimer.setInitialDelay(KEY_PRESS_TIMER_INTERVAL);
+                        keyTimer.start("valueChanged start");
+                    }
+                }
+            }
+        });
+    }
+
+    private synchronized void stopSelectionChangedWorker() {
+        if (selectionChangedWorker != null && !selectionChangedWorker.isDone() && !selectionChangedWorker.isCancelled()) {
+            try {
+                //cancels all subinspector working threads,including selectionChangedWorker
+                ThreadController.getInstance().cancelWorkers(SubInspector.PAGE_NAME);
+            } catch (Exception ex) {
+                //System.out.println(ex);
+            }
+        }
+    }
+
+    private synchronized void resetSelectionChangedWorker(Runnable task) {
+        stopSelectionChangedWorker();
+        selectionChangedWorker = new SelectionChangedWorker(task);
+        selectionChangedWorker.execute();
+
+    }
+
+    private void printTime(String msg) {
+        long curr = System.currentTimeMillis();
+        long delta = curr - lastTime;
+        System.out.println(msg + " curr: " + curr + " last: " + lastTime + " delta: " + delta);
+        lastTime = curr;
+    }
+
+    //This doesn't need to be a separate class, but it helps with debugging.
+    private class KeyTimer extends Timer {
+
+        private long startTime;
+
+        public KeyTimer(int interval, ActionListener al) {
+            super(interval, al);
+        }
+
+        public synchronized void start(String msg) {
+            super.start();
+            //this.startTime = System.currentTimeMillis();
+            //System.out.println(this.hashCode()+" "+msg+" started at "+startTime+" delaySetting="+this.getInitialDelay());
+        }
+
+        public synchronized void stop(String msg) {
+            //long stopped = System.currentTimeMillis();
+            super.stop();
+            //System.out.println(this.hashCode()+" "+msg+" stopped at "+stopped+" timeRunning was="+(stopped-startTime)+" delaySetting="+this.getInitialDelay());
+        }
+
+        public synchronized void restart(String msg) {
+            //long restarted = System.currentTimeMillis();
+            super.restart();
+            //System.out.println(this.hashCode()+" "+msg+" restarted at "+restarted+" timeRunning was="+(restarted-startTime)+" delaySetting="+this.getDelay());
+        }
+    }
+
+    class SelectionChangedWorker extends MedSavantWorker<Object> {
+
+        Runnable task;
+
+        public SelectionChangedWorker(Runnable task) {
+            super(SubInspector.PAGE_NAME);
+            this.task = task;
+        }
+
+        @Override
+        protected void showSuccess(Object result) {
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            task.run();
+            return null;
+        }
     }
 }

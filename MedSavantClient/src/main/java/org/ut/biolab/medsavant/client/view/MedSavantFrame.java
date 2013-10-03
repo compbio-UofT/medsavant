@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -31,11 +32,16 @@ import com.apple.eawt.Application;
 import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
+import com.explodingpixels.macwidgets.MacUtils;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Point;
+import java.net.URI;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -47,14 +53,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
-import org.ut.biolab.medsavant.MedSavantClient;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantProgramInformation;
+import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
@@ -62,10 +69,15 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation;
 import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Position;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-import org.ut.biolab.medsavant.client.view.dialog.FeedbackDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.mfiume.app.jAppStore;
+import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
+import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
+import org.ut.biolab.medsavant.client.plugin.AppController;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 
 /**
  *
@@ -73,6 +85,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
+    private static Log LOG = LogFactory.getLog(MedSavantFrame.class);
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
@@ -84,163 +97,185 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private LoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
-      
-    
-    private static Point getPositionRelativeTo(Component root, Component comp){
-        if (comp.equals(root)) { return new Point(0,0); }
-        Point pos = comp.getLocation();
-        Point parentOff = getPositionRelativeTo(root, comp.getParent());
-        return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
+    private int textFieldAdminColumns = 20;
+    private jAppStore appStore;
+    private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
+
+    private static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
+
+    //Adds a new function under the 'Debug' menu. The debug menu is not shown if
+    //it is empty
+    public static void addDebugFunction(String name, Runnable r) {
+        debugFunctions.put(name, r);
     }
-       
-    
-    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg){
-        if(src != null && dst != null){
-             view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){                        
+
+    public static JMenu getDebugMenu() {
+        if (debugFunctions.size() < 1) {
+            return null;
+        }
+        JMenu menu = new JMenu("Debug");
+        for (final Map.Entry<String, Runnable> e : debugFunctions.entrySet()) {
+            JMenuItem debugItem = new JMenuItem(e.getKey());
+            debugItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    e.getValue().run();
+                }
+            });
+            menu.add(debugItem);
+        }
+
+        return menu;
+    }
+
+    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
+        if (src != null && dst != null) {
+            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME) {
+                public void done() {
+                    if (notificationMsg != null) {
                         notificationMessage(notificationMsg);
                     }
                 }
             });
-        } 
+        }
     }
-    
-    
-    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg){
-        Point src = getPositionRelativeTo(view, srcComponent);
-        Point dst = getPositionRelativeTo(view, dstComponent);        
-        translationAnimation(src, dst, img, notificationMsg);        
+
+    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg) {
+        Point src = ViewUtil.getPositionRelativeTo(view, srcComponent);
+        Point dst = ViewUtil.getPositionRelativeTo(view, dstComponent);
+        translationAnimation(src, dst, img, notificationMsg);
     }
-    
-    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg){
+
+    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg) {
         translationAnimation(view, dstComponent, img, notificationMsg);
     }
-     
-    public void browserAnimationFromMousePos(final String notificationMsg){
-        
+
+    public void browserAnimationFromMousePos(final String notificationMsg) {
+
         /*Point src = view.getMousePosition();
-        if(src == null){
-            return;
-        }
-        
-        Point dst = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        */
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+         if(src == null){
+         return;
+         }
+
+         Point dst = null;
+         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
+         */
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
-        for(SubSectionView sv : menu.subSectionViews){
-            if(sv.getPageName().equalsIgnoreCase("Browser")){              
-               //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
-               dstComponent = menu.getSubSectionButton(sv);
-               break;
+        for (SubSectionView sv : menu.subSectionViews) {
+            if (sv.getPageName().equalsIgnoreCase("Browser")) {
+                //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
+                dstComponent = menu.getSubSectionButton(sv);
+                break;
             }
-        }              
-        
+        }
+
         animationFromMousePos(dstComponent, img, notificationMsg);
-        if(dstComponent != null){
+        if (dstComponent != null) {
             animationFromMousePos(dstComponent, img, notificationMsg);
         }
-        
+
         /*
-        if(dst != null){
-            //view.cancel();            
-            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){
-                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-                        notificationMessage(notificationMsg);
-                    }
-                }
-            });
-            
-            
-            
-            //view.animate(img.getImage(), src, dst);            
-        }
-        */
+         if(dst != null){
+         //view.cancel();
+         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+         public void done(){
+         if(notificationMsg != null){
+         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+         notificationMessage(notificationMsg);
+         }
+         }
+         });
+
+
+
+         //view.animate(img.getImage(), src, dst);
+         }
+         */
     }
-    
-    public void notificationMessage(String notificationMsg){
+
+    public void notificationMessage(String notificationMsg) {
         view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
     }
-    
+
     /**
-     * Creates a search animation from the current mouse position.  i.e. creates an image
-     * that moves from the current mouse position to the 'Variants' button on the toolbar.
-     * 
-     * Do not call until the previous animation thread is finished.  This 
-     * shouldn't happen as long as the animation time is short. (< 500ms ).  
+     * Creates a search animation from the current mouse position. i.e. creates
+     * an image that moves from the current mouse position to the 'Variants'
+     * button on the toolbar.
+     *
+     * Do not call until the previous animation thread is finished. This
+     * shouldn't happen as long as the animation time is short. (< 500ms ).
      */
-    public void searchAnimationFromMousePos(final String notificationMsg){
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);                                                                                                                                                                                    
+    public void searchAnimationFromMousePos(final String notificationMsg) {
+        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         /*Point src = view.getMousePosition();
-        if(src == null){
-            return;
-        }
-        
-        Point dst = null;
-        */
+         if(src == null){
+         return;
+         }
+
+         Point dst = null;
+         */
         Component dstComponent = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();        
-        while(e.hasMoreElements()){
+        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
+        while (e.hasMoreElements()) {
             AbstractButton b = e.nextElement();
-            if(b.getName().equalsIgnoreCase("Variants")){
+            if (b.getName().equalsIgnoreCase("Variants")) {
                 //dst = getPositionRelativeTo(view, b);
                 dstComponent = b;
             }
         }
         animationFromMousePos(dstComponent, img, notificationMsg);
-        /*                
-        if(dst != null){
-            //view.cancel();
-            
-            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-                public void done(){
-                    if(notificationMsg != null){
-                        notificationMessage(notificationMsg);
-                        //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-                    }
-                }
-            });
-                                    
-        }
-        */
+        /*
+         if(dst != null){
+         //view.cancel();
+
+         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
+         public void done(){
+         if(notificationMsg != null){
+         notificationMessage(notificationMsg);
+         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+         }
+         }
+         });
+
+         }
+         */
     }
-    
-    public void searchAnimationFromMousePos(){
+
+    public void searchAnimationFromMousePos() {
         searchAnimationFromMousePos(null);
     }
-    
-     public static MedSavantFrame getInstance() {
+
+    public static MedSavantFrame getInstance() {
         if (instance == null) {
             instance = new MedSavantFrame();
             LoginController.getInstance().addListener(instance);
         }
         return instance;
     }
-     
+
     private MedSavantFrame() {
         super("MedSavant");
 
         setIconImage(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER).getImage());
 
         setLayout(new BorderLayout());
-        setMinimumSize(new Dimension(500, 500));
+        setMinimumSize(new Dimension(550, 550));
 
-        view = new AnimatablePanel();        
+        view = new AnimatablePanel();
         view.setDoubleBuffered(true);
         //view = new JPanel();
         view.setBackground(new Color(217, 222, 229));
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
         //view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
-                
+
         UIManager.put("ToolTip.background", Color.black);
         UIManager.put("ToolTip.foreground", Color.white);
         UIManager.put("ToolTip.border", ViewUtil.getMediumBorder());
         UIManager.put("ToolTip.font", ViewUtil.detailFontBold);
+        UIManager.put("Table.gridColor", new Color(250, 250, 250));
 
         add(view, BorderLayout.CENTER);
 
@@ -248,7 +283,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             customizeForMac();
         }
 
-        JMenuBar menu = new JMenuBar();
+        AppController pc = AppController.getInstance();
+        pc.loadPlugins(DirectorySettings.getPluginsDirectory());
+
+        JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
 
         JMenuItem pluginsItem = new JMenuItem("Plugins…");
@@ -258,23 +296,45 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
         });
-        fileMenu.add(pluginsItem);
-        
-        // Debug code that adds a 'Restart' function to the File menu.
-        /*
-        JMenuItem restartItem = new JMenuItem("Restart");
-        restartItem.addActionListener(new ActionListener() {
+        //fileMenu.add(pluginsItem);
+
+        JMenuItem dbManagementItem = new JMenuItem("Database Management");
+        dbManagementItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                MedSavantClient.restart();
+                JDialog adminDialog = new AdminDialog();
+                adminDialog.setVisible(true);
             }
         });
-        fileMenu.add(restartItem);
-        */
+        fileMenu.add(dbManagementItem);
 
-        
+
+        JMenuItem appItem = new JMenuItem("App Store");
+        appItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+
+                showAppStore();
+            }
+        });
+        fileMenu.add(appItem);
+
+        // Debug code that adds a 'Restart' function to the File menu.
+        /*
+         JMenuItem restartItem = new JMenuItem("Restart");
+         restartItem.addActionListener(new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+         MedSavantClient.restart();
+         }
+         });
+         fileMenu.add(restartItem);
+         */
+
+
         //fileMenu.add(manageDBItem);
-        
+
 
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");
@@ -287,22 +347,49 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             fileMenu.add(closeItem);
         }
 
-        menu.add(fileMenu);
+        menuBar.add(fileMenu);
+
+        JMenu viewMenu = new JMenu("View");
+
+        JMenuItem togglePrimaryMenu = new JMenuItem("Primary Menu");
+        togglePrimaryMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ViewController.getInstance().getMenu().setPrimaryMenuVisible(!ViewController.getInstance().getMenu().isPrimaryMenuVisible());
+            }
+        });
+        viewMenu.add(togglePrimaryMenu);
+
+        JMenuItem toggleSecondaryMenu = new JMenuItem("Secondary Menu");
+        toggleSecondaryMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ViewController.getInstance().getMenu().setSecondaryMenuVisible(!ViewController.getInstance().getMenu().isSecondaryMenuVisible());
+            }
+        });
+        viewMenu.add(toggleSecondaryMenu);
+
+        menuBar.add(viewMenu);
 
         JMenu helpMenu = new JMenu("Help");
 
-        JMenuItem feedbackItem = new JMenuItem("Feedback");
+        JMenuItem feedbackItem = new JMenuItem("Send Feedback");
         feedbackItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                JDialog d = new FeedbackDialog(MedSavantFrame.getInstance(), true);
-                d.setVisible(true);
+                try {
+                    URI uri = URI.create(FEEDBACK_URI);
+                    Desktop.getDesktop().mail(uri);
+                } catch (Exception ex) {
+                }
             }
         });
-        helpMenu.add(feedbackItem);
-        menu.add(helpMenu);
 
-        setJMenuBar(menu);
+
+        helpMenu.add(feedbackItem);
+        menuBar.add(helpMenu);
+
+        setJMenuBar(menuBar);
 
         //bottomBar = new BottomBar();
         //add(bottomBar, BorderLayout.SOUTH);
@@ -349,7 +436,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 sessionView = new LoggedInView();
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
-                
+
                 ViewController.getInstance().getMenu().updateLoginStatus();
                 //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
@@ -384,15 +471,18 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public void requestClose() {
+        LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
-        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Exit MedSavant?", "Are you sure you want to quit?") == DialogUtils.YES) {
-            controller.unregister();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-            System.exit(0);
+        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
+            controller.logout();
+            /*controller.unregister();
+             try {
+             Thread.sleep(100);
+             } catch (InterruptedException ex) {
+             }
+             System.exit(0);*/
         }
+        LOG.info("Refusing to quit");
     }
 
     @Override
@@ -413,41 +503,44 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private void customizeForMac() {
 
         try {
+            MacUtils.makeWindowLeopardStyle(this.getRootPane());
+            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
+
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
 
             batchApplyProperty(new String[]{
-                        "Button.font",
-                        "ToggleButton.font",
-                        "RadioButton.font",
-                        "CheckBox.font",
-                        "ColorChooser.font",
-                        "ComboBox.font",
-                        "Label.font",
-                        "List.font",
-                        "MenuBar.font",
-                        "MenuItem.font",
-                        "RadioButtonMenuItem.font",
-                        "CheckBoxMenuItem.font",
-                        "Menu.font",
-                        "PopupMenu.font",
-                        "OptionPane.font",
-                        "Panel.font",
-                        "ProgressBar.font",
-                        "ScrollPane.font",
-                        "Viewport.font",
-                        "TabbedPane.font",
-                        "Table.font",
-                        "TableHeader.font",
-                        "TextField.font",
-                        "PasswordField.font",
-                        "TextArea.font",
-                        "TextPane.font",
-                        "EditorPane.font",
-                        "TitledBorder.font",
-                        "ToolBar.font",
-                        "ToolTip.font",
-                        "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
+                "Button.font",
+                "ToggleButton.font",
+                "RadioButton.font",
+                "CheckBox.font",
+                "ColorChooser.font",
+                "ComboBox.font",
+                "Label.font",
+                "List.font",
+                "MenuBar.font",
+                "MenuItem.font",
+                "RadioButtonMenuItem.font",
+                "CheckBoxMenuItem.font",
+                "Menu.font",
+                "PopupMenu.font",
+                "OptionPane.font",
+                "Panel.font",
+                "ProgressBar.font",
+                "ScrollPane.font",
+                "Viewport.font",
+                "TabbedPane.font",
+                "Table.font",
+                "TableHeader.font",
+                "TextField.font",
+                "PasswordField.font",
+                "TextArea.font",
+                "TextPane.font",
+                "EditorPane.font",
+                "TitledBorder.font",
+                "ToolBar.font",
+                "ToolTip.font",
+                "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
@@ -459,7 +552,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantProgramInformation.getVersion()
+                            + MedSavantSDKInformation.getSDKVersion()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });
@@ -472,6 +565,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             macOSXApplication.setQuitHandler(new QuitHandler() {
                 @Override
                 public void handleQuitRequestWith(QuitEvent evt, QuitResponse resp) {
+                    System.out.println("Requesting close...");
                     instance.requestClose();
                     resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
                 }
@@ -485,5 +579,17 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         for (String s : propn) {
             UIManager.put(s, o);
         }
+    }
+
+    void showAppStore() {
+
+        if (appStore == null) {
+            final MedSavantAppFetcher maf = new MedSavantAppFetcher();
+            final MedSavantAppInstaller mai = new MedSavantAppInstaller();
+
+            appStore = new jAppStore("MedSavant App Store", maf, mai);
+        }
+        appStore.showStore();
+
     }
 }
