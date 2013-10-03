@@ -22,7 +22,7 @@ import org.ut.biolab.mfiume.app.jAppStore;
  *
  * @author mfiume
  */
-class AppInfoFlowView extends JPanel {
+class AppInfoFlowView extends RoundedJPanel {
 
     private final AppStoreInstalledPage installedPage;
     private final AppStoreViewManager avm;
@@ -39,7 +39,7 @@ class AppInfoFlowView extends JPanel {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         this.setBackground(Color.white);
-        int border = 10;
+        int border = 20;
         this.setBorder(BorderFactory.createEmptyBorder(border, border, border, border));
 
         // bold
@@ -103,7 +103,9 @@ class AppInfoFlowView extends JPanel {
         this.add(Box.createVerticalStrut(3));
         this.add(getLeftAlignedComponent(authorLabel));
         this.add(actionBar);
-        jAppStore.wrapComponentWithLineBorder(this);
+
+        //jAppStore.wrapComponentWithLineBorder(this);
+        this.setBackground(Color.yellow);
 
         this.updateUI();
     }

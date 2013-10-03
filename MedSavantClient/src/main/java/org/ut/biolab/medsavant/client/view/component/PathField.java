@@ -21,9 +21,9 @@ import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
  */
 public class PathField extends JPanel {
 
-    JTextField f;
-    JButton b;
-    JFileChooser fc;
+    final JTextField f;
+    final JButton b;
+    final JFileChooser fc;
 
      public PathField(final int JFileChooserDialogType) {
          this(JFileChooserDialogType,false);
@@ -33,7 +33,13 @@ public class PathField extends JPanel {
         fc.setFileFilter(filter);
     }
 
+    public JTextField getTextField() {
+        return f;
+    }
+
     public PathField(final int JFileChooserDialogType, boolean directoriesOnly) {
+
+        this.setOpaque(false);
 
         f = new JTextField();
         b = new JButton("...");
