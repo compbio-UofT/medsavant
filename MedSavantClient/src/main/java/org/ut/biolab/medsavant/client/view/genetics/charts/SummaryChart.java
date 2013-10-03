@@ -27,11 +27,9 @@ import java.util.*;
 import javax.swing.*;
 
 import com.jidesoft.chart.Chart;
-import com.jidesoft.chart.ChartColor;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
 import com.jidesoft.chart.PointShape;
-import com.jidesoft.chart.annotation.AutoPositionedLabel;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
@@ -40,15 +38,12 @@ import com.jidesoft.chart.model.DefaultChartModel;
 import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
-import com.jidesoft.chart.render.BarRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.border.EmptyBorder;
+import java.text.NumberFormat;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
@@ -58,6 +53,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.client.filter.FilterController;
+import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -72,7 +68,9 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.mfiume.query.QueryViewController;
 
 /**
  *
@@ -110,10 +108,10 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
     private GridBagConstraints c;
     private WaitPanel waitPanel = new WaitPanel("Getting chart data");
     private boolean isScatter = false;
+    //Most of the time this is mapGenerator.getName(), except when the field
+    //is from a non-standard annotation format (e..g Ensembl)
+    private String chartName;
 
-    //private Stack<ZoomFrame> zoomStack = new Stack<ZoomFrame>();
-    //private String scatterAliasX;
-    //private String scatterAliasY;
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
         setLayout(new GridBagLayout());
@@ -130,6 +128,10 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
     }
 
+    void setChartName(String s) {
+        this.chartName = s;
+    }
+
     public void setIsLogScale(boolean isLogScale, ChartAxis axis) {
         if (!isLogScale) {
             isLogScaleY = false;
@@ -141,15 +143,6 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         updateDataAndDrawChart();
     }
 
-    /*public void setIsLogScaleY(boolean isLogscale) {
-     this.isLogScaleY = isLogscale;
-     updateDataAndDrawChart();
-     }
-
-     public void setIsLogScaleX(boolean isLogscale) {
-     this.isLogScaleX = isLogscale;
-     updateDataAndDrawChart();
-     }*/
     public void setIsSorted(boolean isSorted) {
         this.isSorted = isSorted;
         updateDataAndDrawChart();
@@ -182,13 +175,8 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
     public void setChartMapGenerator(ChartMapGenerator cmg) {
         this.mapGenerator = cmg;
-        //updateDataAndDrawChart();
     }
 
-    /*public void setScatterChart(String aliasX, String aliasY) {
-     this.scatterAliasX = aliasX;
-     this.scatterAliasY = aliasY;
-     }*/
     public void setScatterChartMapGenerator(ChartMapGenerator cmg) {
         mapGeneratorScatter = cmg;
     }
@@ -310,7 +298,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         long max = filteredChartMap.getMax();
         List<ChartCategory> chartCategories;
         if (this.showComparedToOriginal) {
-            chartCategories = chartMaps[1].getCategories();//unfilteredChartMap.getCategories();
+            chartCategories = chartMaps[1].getCategories();
             max = chartMaps[1].getMax();
         } else {
             chartCategories = filteredChartMap.getCategories();
@@ -324,7 +312,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         int catNum = 0;
         int totalCats = filteredChartMap.getEntries().size();
 
-        for (ChartCategory category : chartCategories) {            
+        for (ChartCategory category : chartCategories) {
             range.add(category);
             if (multiColor) {
                 color = ViewUtil.getColor(catNum++, totalCats);
@@ -486,7 +474,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             Color translucentGreen = ViewUtil.getColor(i, models.length);
             ChartStyle style = new ChartStyle(translucentGreen, PointShape.DISC);
             style.setPointSize(10);
-            chart.addModel(models[i], style);//new ChartStyle(ViewUtil.getColor(i, models.length), true, mapGenerator.isNumeric()));
+            chart.addModel(models[i], style);
         }
 
         //add axes
@@ -784,83 +772,39 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
                 ThreadController.getInstance().cancelWorkers(pageName);
 
+                boolean isGender = mapGenerator.getName().equalsIgnoreCase(BasicPatientColumns.GENDER.getAlias());
                 try {
                     List<String> values = new ArrayList<String>();
                     ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel(0));
-
+                    QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
                     for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
                         if (selectionModel.isSelectedIndex(i)) {
-                            values.add(((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name());
+                            String v = ((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name();
+                            values.add(v);
+                            if (mapGenerator.isNumeric() && !isGender) {
+                                double low = 0;
+                                double high = 0;
+
+                                String[] s = v.split(" - ");
+                                if (s.length < 2) {
+                                    LOG.error("Invalid range detected for numeric condition " + mapGenerator.getName() + " val=" + v);
+                                }
+                                NumberFormat format = NumberFormat.getInstance();
+                                low = format.parse(s[0]).doubleValue();
+                                high = format.parse(s[1]).doubleValue();
+
+                                QueryUtils.addNumericQuery(chartName, low, high);
+                            }
                         }
                     }
                     if (values.isEmpty()) {
                         return;
                     }
 
-                    TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
-                    TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
-                    /*                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                    if (!mapGenerator.isNumeric() || isGender) {
+                        QueryUtils.addMultiStringQuery(chartName, values);
+                    }
 
-                     Range r = Range.rangeFromString(values.get(0));
-
-                     if (mapGenerator.getTable() == WhichTable.VARIANT) {
-                     RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
-                     FilterUtils.createAndApplyGenericFixedFilter(
-                     "Charts - Filter by Selection",
-                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                     ComboCondition.and(condition));
-                     } else {
-                     List<String> individuals = MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                     LoginController.getInstance().getSessionID(),
-                     ProjectController.getInstance().getCurrentProjectID(),
-                     mapGenerator.getFilterId(),
-                     r);
-                     Condition[] conditions = new Condition[individuals.size()];
-                     for (int i = 0; i < individuals.size(); i++) {
-                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
-                     }
-                     FilterUtils.createAndApplyGenericFixedFilter(
-                     "Charts - Filter by Selection",
-                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                     ComboCondition.or(conditions));
-                     }
-
-                     } else {
-
-                     if (mapGenerator.getTable() == WhichTable.VARIANT) {
-                     Condition[] conditions = new Condition[values.size()];
-                     for (int i = 0; i < conditions.length; i++) {
-                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
-                     }
-                     FilterUtils.createAndApplyGenericFixedFilter(
-                     "Charts - Filter by Selection",
-                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                     ComboCondition.or(conditions));
-                     } else {
-                     //special case for gender
-                     if (mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
-                     List<String> values1 = new ArrayList<String>();
-                     for (String s : values) {
-                     values1.add(Integer.toString(ClientMiscUtils.stringToGender(s)));
-                     }
-                     values = values1;
-                     }
-
-                     List<String> individuals = MedSavantClient.PatientManager.getDNAIDsForStringList(
-                     LoginController.getInstance().getSessionID(),
-                     patientTable,
-                     values,
-                     mapGenerator.getFilterId());
-                     Condition[] conditions = new Condition[individuals.size()];
-                     for (int i = 0; i < individuals.size(); i++) {
-                     conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
-                     }
-                     FilterUtils.createAndApplyGenericFixedFilter(
-                     "Charts - Filter by Selection",
-                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                     ComboCondition.or(conditions));
-                     }
-                     }*/
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error filtering by selection: %s", ex);
                 }

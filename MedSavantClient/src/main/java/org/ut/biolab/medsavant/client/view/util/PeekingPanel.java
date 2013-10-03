@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
+import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 
@@ -33,7 +34,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-public class PeekingPanel extends JPanel {
+public class PeekingPanel extends JXCollapsiblePane {
 
     private final JComponent panel;
     private boolean isExpanded;
@@ -50,14 +51,20 @@ public class PeekingPanel extends JPanel {
 
         final boolean isVertical = borderLayoutPosition.equals(BorderLayout.EAST) || borderLayoutPosition.equals(BorderLayout.WEST);
 
+        this.setAnimated(false);
+
         if (borderLayoutPosition.equals(BorderLayout.NORTH)) {
             dockedSide = DockedSide.NORTH;
+            this.setDirection(JXCollapsiblePane.Direction.UP);
         } else if (borderLayoutPosition.equals(BorderLayout.SOUTH)) {
             dockedSide = DockedSide.SOUTH;
+            this.setDirection(JXCollapsiblePane.Direction.DOWN);
         } else if (borderLayoutPosition.equals(BorderLayout.EAST)) {
             dockedSide = DockedSide.EAST;
+            this.setDirection(JXCollapsiblePane.Direction.RIGHT);
         } else {
             dockedSide = DockedSide.WEST;
+            this.setDirection(JXCollapsiblePane.Direction.LEFT);
         }
 
         this.setLayout(new BorderLayout());
@@ -119,7 +126,8 @@ public class PeekingPanel extends JPanel {
             this.title.setText(s);
             title.setFont(ViewUtil.getSmallTitleFont());
         }
-        panel.setVisible(isExpanded);
+        //panel.setVisible(isExpanded);
+        this.setCollapsed(!isExpanded);
     }
 
     public void toggleExpanded() {
@@ -173,7 +181,8 @@ public class PeekingPanel extends JPanel {
              //this.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
              this.side = side;
 
-             this.putClientProperty( "JButton.buttonType", "segmented" );
+             this.putClientProperty( "JButton.buttonType", "segmentedTextured" );
+             //this.setForeground(Color.gray);
 
              switch (side) {
                  case EAST:

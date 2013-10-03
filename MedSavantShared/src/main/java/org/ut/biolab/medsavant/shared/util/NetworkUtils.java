@@ -41,9 +41,11 @@ import org.apache.commons.net.ftp.FTPFile;
  */
 public class NetworkUtils {
 
-    private static final Log LOG = LogFactory.getLog(NetworkUtils.class);
-    private static final int CONNECT_TIMEOUT = 30000; // 30s timeout for making connection
-    private static final int READ_TIMEOUT = 30000;    // 30s timeout for reading data
+    private static final Log LOG = LogFactory.getLog(NetworkUtils.class);    
+    public static final int CONNECT_TIMEOUT = 30000; // 30s timeout for making connection
+    public static final int READ_TIMEOUT = 30000;    // 30s timeout for reading data
+    public static final int NONCRITICAL_CONNECT_TIMEOUT = 5000; //For non-critical network i/o, use shorter 5s timeouts.
+    public static final int NONCRITICAL_READ_TIMEOUT = 5000;
     public static final int BUF_SIZE = 8192;         // 8kB buffer
 
     static {
@@ -87,10 +89,19 @@ public class NetworkUtils {
      * @throws IOException
      */
     public static InputStream openStream(URL url, int connectTimeout, int readTimeout) throws IOException {
-        URLConnection conn = url.openConnection();
-        conn.setConnectTimeout(connectTimeout);
-        conn.setReadTimeout(readTimeout);
-        return conn.getInputStream();
+        //URLConnection conn = url.openConnection();
+       // conn.setConnectTimeout(connectTimeout);
+        //conn.setReadTimeout(readTimeout);
+        
+       HttpURLConnection huc = (HttpURLConnection) url.openConnection();
+       HttpURLConnection.setFollowRedirects(false);
+       huc.setConnectTimeout(connectTimeout);
+       huc.setReadTimeout(readTimeout);
+       huc.setRequestMethod("GET");
+       huc.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
+       huc.connect();
+       InputStream input = huc.getInputStream();        
+       return input;
     }
 
     /**
@@ -142,6 +153,8 @@ public class NetworkUtils {
         while ((bytesRead = in.read(buf)) != -1) {
             out.write(buf, 0, bytesRead);
         }
+        in.close();
+        out.close();
 
         return f;
     }

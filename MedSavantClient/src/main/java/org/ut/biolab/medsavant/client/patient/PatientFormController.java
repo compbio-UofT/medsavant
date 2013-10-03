@@ -86,7 +86,7 @@ public class PatientFormController extends FormController{
 
         setConstraint(BasicPatientColumns.GENDER,
                 new EnumConstraint(
-                    new String[][]{{"0", "Male"}, {"1", "Female"}, {"2", "Undisclosed"}},
+                    new String[][]{ {"0", "Undisclosed"}, {"1", "Male"}, {"2", "Female"}},
                     BasicPatientColumns.GENDER.getColumnLength(),
                     "Invalid Gender: please choose either Male, Female, or Undisclosed"));
 

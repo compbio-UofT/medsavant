@@ -15,7 +15,7 @@
  */
 package org.ut.biolab.medsavant.client.view.util;
 
-import java.awt.*;
+import com.explodingpixels.macwidgets.HudWindow;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -26,24 +26,48 @@ import javax.swing.border.MatteBorder;
 import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.List;
+import java.util.Locale;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.client.view.NotificationsPanel;
-import org.ut.biolab.medsavant.client.view.component.AlphaImageIcon;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 /**
  *
  * @author mfiume
  */
 public final class ViewUtil {
+
+    public static Point getPositionRelativeTo(Component root, Component comp) {
+        if (comp.equals(root)) {
+            return new Point(0, 0);
+        }
+        Point pos = comp.getLocation();
+        Point parentOff = getPositionRelativeTo(root, comp.getParent());
+        return new Point(pos.x + parentOff.x, pos.y + parentOff.y);
+    }
 
     public static JPanel getClearPanel() {
         return (JPanel) clear(new JPanel());
@@ -52,6 +76,28 @@ public final class ViewUtil {
     public static JComponent clear(JComponent c) {
         c.setOpaque(false);
         return c;
+    }
+
+    public static String ellipsizeListAfter(List<String> objects, int threshold) {
+
+        int counter = 0;
+        String gString = "";
+
+        for (Object o : objects) {
+            counter++;
+            if (counter <= threshold) {
+                gString += o == null ? "<null>" : o.toString() + " ";
+            }
+        }
+
+        gString = gString.trim();
+        gString = gString.replaceAll(" ", ", ");
+
+        if (counter > threshold) {
+            gString = gString + " and " + (counter - threshold) + " more...";
+        }
+
+        return gString;
     }
 
     public static JButton createHyperLinkButton(String string) {
@@ -156,11 +202,11 @@ public final class ViewUtil {
             @Override
             public void paintComponent(Graphics g) {
 
-                //Color top = Color.darkGray;
-                //Color bottom = Color.black;
+                Color top = new Color(220, 220, 220);
+                Color bottom = new Color(220, 220, 220);
 
-                Color top = new Color(227, 227, 227);
-                Color bottom = new Color(179, 179, 179);
+                //Color top = new Color(227, 227, 227);
+                //Color bottom = new Color(179, 179, 179);
 
                 GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
@@ -240,9 +286,8 @@ public final class ViewUtil {
         return BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray);
     }
 
-
     public static Border getThickLeftLineBorder() {
-        return BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 4, 0, 0, Color.lightGray),BorderFactory.createEmptyBorder(0, 2, 0, 0));
+        return BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 4, 0, 0, Color.lightGray), BorderFactory.createEmptyBorder(0, 2, 0, 0));
     }
 
     public static Border getTopLineBorder() {
@@ -270,12 +315,11 @@ public final class ViewUtil {
     }
 
     public static Color getTertiaryMenuColor() {
-        //return new Color(80, 80, 80);
         return new Color(220, 220, 220);
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(41, 46, 53);
+        return new Color(20, 20, 20);
     }
 
     public static Color getLightColor() {
@@ -287,7 +331,7 @@ public final class ViewUtil {
     }
 
     public static Color getBGColor() {
-        return new Color(237, 237, 237);
+        return new Color(255, 255, 255);
     }
 
     public static Color getMenuColor() {
@@ -529,12 +573,14 @@ public final class ViewUtil {
         return b;
     }
 
-    public static void makeSmall(JComponent c) {
+    public static JComponent makeSmall(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "small");
+        return c;
     }
 
-    public static void makeMini(JComponent c) {
+    public static JComponent makeMini(JComponent c) {
         c.putClientProperty("JComponent.sizeVariant", "mini");
+        return c;
     }
 
     public static JToggleButton getMenuToggleButton(String title) { //, int num) {
@@ -577,13 +623,14 @@ public final class ViewUtil {
     public static JToggleButton getTogglableIconButton(ImageIcon icon) {
 
         final ImageIcon selectedIcon = icon;
-        final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        //final ImageIcon unselectedIcon = new AlphaImageIcon(icon, 0.3F);
+        final ImageIcon unselectedIcon = new ImageIcon(GrayFilter.createDisabledImage(icon.getImage()));
 
         final JToggleButton button = new JToggleButton(icon);
         button.setFocusable(false);
         button.setContentAreaFilled(false);
         button.setBorder(null);
-        ViewUtil.makeSmall(button);
+        //ViewUtil.makeSmall(button);
 
         final Runnable setSelected = new Runnable() {
             @Override
@@ -650,11 +697,16 @@ public final class ViewUtil {
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext) {
+        return subTextComponent(c,subtext,14);
+    }
+
+    public static JComponent subTextComponent(JComponent c, String subtext, int fontSize) {
         int width = c.getPreferredSize().width;
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
         p.add(ViewUtil.centerHorizontally(c));
         JLabel s = new JLabel(subtext);
+        ViewUtil.setFontSize(s, fontSize);
         s.setForeground(Color.darkGray);
         ViewUtil.makeSmall(s);
         p.add(ViewUtil.centerHorizontally(ViewUtil.clear(s)));
@@ -671,13 +723,18 @@ public final class ViewUtil {
         c.revalidate();
     }
 
+    public static JLabel getErrorLabel(String msg) {
+        JLabel l = new JLabel(msg);
+        l.setForeground(Color.red);
+        return l;
+    }
+
     public static JComponent getComponentOfSameSize(final JComponent c) {
         final JPanel p = new JPanel();
         p.setBackground(Color.red);
         p.setPreferredSize(c.getPreferredSize());
 
         c.addComponentListener(new ComponentListener() {
-
             private void resize() {
                 p.setPreferredSize(c.getSize());
                 p.setMaximumSize(c.getSize());
@@ -703,10 +760,136 @@ public final class ViewUtil {
             public void componentHidden(ComponentEvent ce) {
                 resize();
             }
-
         });
 
         return p;
+    }
+
+    public static JProgressBar getIndeterminateProgressBar() {
+        JProgressBar b = new JProgressBar();
+        b.setIndeterminate(true);
+        if (ClientMiscUtils.MAC) {
+            b.putClientProperty("JProgressBar.style", "circular");
+        }
+        return b;
+    }
+
+    public static void setFontSize(JLabel label, int i) {
+        Font f = label.getFont();
+        Font newFont = new Font(f.getFamily(), f.getStyle(), i);
+        label.setFont(newFont);
+    }
+
+    public static JComponent horizontallyAlignComponents(Component[] component) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        for (Component c : component) {
+            p.add(c);
+        }
+        p.add(Box.createHorizontalGlue());
+        return p;
+    }
+
+    public static void shortenLabelToLength(JLabel label, int length) {
+        String text = label.getText();
+        if (text.length() > length) {
+            label.setText(ViewUtil.ellipsize(text, length));
+            label.setToolTipText(text);
+        }
+    }
+
+    public static JDialog getHUD(Component parent, String title, String text) {
+        return getHUD(parent, title, text, false);
+    }
+
+    public static double parseDoubleFromFormattedString(String s) {
+        NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+        try {
+            Number number = format.parse(s);
+            double d = number.doubleValue();
+            return d;
+        } catch (Exception w) {
+            return 0;
+        }
+    }
+
+    public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon) {
+        int width = 300;
+
+        JLabel l = new JLabel();
+        String labelText = String.format("<html><div WIDTH=%d>%s</div><html>", width, text);
+        l.setText(labelText);
+
+        l.setOpaque(false);
+
+        final JDialog d;
+        JComponent contentPane = null;
+
+        if (ClientMiscUtils.LINUX) {
+            d = new JDialog(MedSavantFrame.getInstance(), title, false);
+            contentPane = d.getRootPane();
+            d.setResizable(false);
+            d.setUndecorated(true);
+        } else {
+            final HudWindow hud = new HudWindow(title);
+            contentPane = hud.getContentPane();
+            d = hud.getJDialog();
+            l.setForeground(Color.white);
+            if (hideCloseIcon) {
+                hud.hideCloseButton();
+            }
+        }
+
+        contentPane.setBorder(ViewUtil.getMediumBorder());
+        contentPane.setLayout(new BorderLayout());
+        contentPane.add(l, BorderLayout.CENTER);
+
+        if (ClientMiscUtils.LINUX) {
+            JLabel titleLabel = new JLabel(title);
+            titleLabel.setFont(getMediumTitleFont());
+            contentPane.add(titleLabel, BorderLayout.NORTH);
+        }
+
+        d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        d.pack();
+
+        d.setLocationRelativeTo(parent);
+
+        d.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent fe) {
+            }
+
+            @Override
+            public void focusLost(FocusEvent fe) {
+                d.setVisible(false);
+            }
+        });
+        return d;
+    }
+
+    public static JButton getHelpButton(final String title, final String helpText) {
+
+        final JButton helpButton = new JButton("?");
+        ViewUtil.makeSmall(helpButton);
+        helpButton.setFocusable(false);
+        if (MiscUtils.MAC) {
+            helpButton.putClientProperty("JButton.buttonType", "help");
+            helpButton.setText("");
+        }
+        /*helpButton.setToolTipText("<html>Type a search condition into the search box, e.g. \"Chromosome\".<br>"
+         + "Press Enter / Return to accept the selected condition name.<br>"
+         + "You\'ll then be prompted to specify parameters for this condition</html>");*/
+
+        helpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog d = getHUD(helpButton, title, helpText);
+                d.setVisible(true);
+            }
+        });
+        return helpButton;
     }
 
 
@@ -766,6 +949,10 @@ public final class ViewUtil {
     }
 
     public static String numToString(int num) {
+        return NumberFormat.getInstance().format(num);
+    }
+
+    public static String numToString(long num) {
         return NumberFormat.getInstance().format(num);
     }
 

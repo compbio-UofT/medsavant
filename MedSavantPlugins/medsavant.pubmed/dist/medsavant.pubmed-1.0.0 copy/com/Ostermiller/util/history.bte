@@ -1,0 +1,43 @@
+<%bte.doc super="page.bte" %>
+<%bte.tpl name=pageTitle%>History of com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=firstLine%>History of com.Ostermiller.util Java Utilities<%/bte.tpl%>
+<%bte.tpl name=description%>Download open source (GPL) Java utilities for common tasks such as CSV, Base64, MD5, String manipulation.<%/bte.tpl%>
+<%bte.tpl name=keywords%>history, jar, util, util, util, utils, utils, utils, utilities, utilities, base64, base64, base64, md5, md5, md5, significant, figures, encode, encoding, decode, decoding, password, username, dialog, string, string tokenizer, tokenizer, stringtokenizer, stringtokenizer,  programming, text, cgi, csv, csv, browser, random, password, generate, generator, pass, launcher, browser control, launch, web browser, open url, url, comma, separated, value, values, java, java, open source, gpl, javadoc<%/bte.tpl%>
+<%bte.tpl name=content%>
+<div class=history>
+<h2>Version History</h2>
+<ul>
+<li>Version 1.02.26 - CSVPrint updated with new methods for proper stream handling: flush, close, write methods that throw exceptions, auto flush control, and quoting behavior control..  CSVParse updated with a close method.</li>
+<li>Version 1.02.25 - Additional StringHelper methods for escaping regular expressions and comparing a string to multiple others.</li>
+<li>Version 1.02.24 - MD5 sums were not correctly computed for certain odd byte lengths.  Convenience methods/constructors to CSV to change delimiters.</li>
+<li>Version 1.02.23 - Fixed numerous inconsistencies between UberProperties and java.util.Properties, added unit test.</li>
+<li>Version 1.02.22 - Fixed //" bug in CSVParser, configuration panel added to Browser.</li>
+<li>Version 1.02.21 - BadDelimiterException neglected for use in one place.</li>
+<li>Version 1.02.20 - Fixed crash when loading some properties files with the UberProperties class, BadDelimiterException class created to fix spelling error.</li>
+<li>Version 1.02.19 - CSV Printers no longer throw an exception when changing delimiters to the current delimiter.</li>
+<li>Version 1.02.18 - Ability to change quotes and delimiters on all CSVPrinters; @since tags on all javadoc.</li>
+<li>Version 1.02.17 - UberProperties ignore blank lines when reading, can save empty name value pairs.</li>
+<li>Version 1.02.16 - Browser opens better on OS X, more options for unix; More Base64 encoding options; Ability to change quotes on CSVParsers.</li>
+<li>Version 1.02.15 - Set methods for CGI params in CGIParser, Better command line options for Base64.</li>
+<li>Version 1.02.14 - Documented lexer skeleton files for build, corrected another change delimiter bug.</li>
+<li>Version 1.02.13 - Convenience returns for significant figure methods, include skeleton file in distribution, new download page on website.</li>
+<li>Version 1.02.12 - CSV bug fixed: delim change not possible for second instance.</li>
+<li>Version 1.02.11 - More examples, fixed CLASSPATH compile problem for JDK 1.4.</li>
+<li>Version 1.02.10 - Properties no longer lost at UberProperties EOF, examples for CSV, Circular Buffers.</li>
+<li>Version 1.02.08 - Ability to change delimiters in CSV parsers.</li>
+<li>Version 1.02.07 - Added convenience methods to sigfigs, browser doesn't escape forward slash.</li>
+<li>Version 1.02.06 - Updated French translations.</li>
+<li>Version 1.02.05 - Two Polish translations.</li>
+<li>Version 1.02.04 - Created build file for Ant.</li>
+<li>Version 1.02.03 - Convenience methods in CSV parsers.</li>
+<li>Version 1.02.02 - Unclosed quoted value in CSV bug.</li>
+<li>Version 1.02.01 - Documentation improvement.</li>
+<li>Version 1.02.00 - Applet added for Random Passwords.</li>
+<li>Version 1.01.00 - NoClose Streams</li>
+<li>Version 1.00.00 - First versioned release.</li>
+</ul>
+<p>No version number was available before January 2003, old versions are not available for download.  <a href="http://www.gjt.org/servlets/JCVSlet/list/gjt/com/Ostermiller/util/">CVS from gjt.org</a> can be used to answer specific questions about revisions to a particular file.</div>
+</div>
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

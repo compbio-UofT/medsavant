@@ -18,7 +18,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.SwingWorker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -49,7 +48,6 @@ import org.genemania.type.CombiningMethod;
 import org.genemania.util.NullProgressReporter;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.Notification;
 import org.xml.sax.SAXException;
 
 /**
@@ -78,8 +76,6 @@ public class GenemaniaInfoRetriever {
         }
     }
     private List<String> genes;
-    private static final String DATA_PATH = DirectorySettings.getCacheDirectory().getAbsolutePath() + "/" + "gmdata";
-    private static final String DOWNLOAD_COMPLETE_CHECKFILE = DATA_PATH + "/gmdataOK.txt";
     private static final int DEFAULT_GENE_LIMIT = 50;
     private static final CombiningMethod DEFAULT_COMBINING_METHOD = CombiningMethod.AVERAGE;
     private static final String[] DEFAULT_NETWORKS = {"Genetic interactions", "Shared protein domains", "Other", "Pathway", "Physical interactions", "Co-localization", "Predicted", "Co-expression"};
@@ -97,18 +93,13 @@ public class GenemaniaInfoRetriever {
     private SearchOptions options;
     private static Map<Long, Integer> sequenceNumbers;
     private CytoscapeUtils cytoscapeUtils;
-    private RelatedGenesEngineResponseDto response;
-    //private static String GM_URL = "http://localhost/gmdata.zip";  //for debugging.
+    private RelatedGenesEngineResponseDto response;    
     private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
 
     static {
         sequenceNumbers = new HashMap<Long, Integer>();
-    }
-
-    public static boolean hasGeneManiaData() {
-        return new File(DOWNLOAD_COMPLETE_CHECKFILE).exists();
     }
 
     public static void extractGM(String pathToGMData) {
@@ -120,18 +111,22 @@ public class GenemaniaInfoRetriever {
             while (entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
                 if (entry.isDirectory()) {
-                    (new File(directoryPath + "/" + entry.getName())).mkdirs();
+                    (new File(directoryPath + File.separator + entry.getName())).mkdirs();
                     continue;
                 }
 
                 IOUtils.copy(zipData.getInputStream(entry),
-                        new FileOutputStream(directoryPath + "/" + entry.getName()));
+                        new FileOutputStream(directoryPath + File.separator + entry.getName()));
             }
             zipData.close();
-            FileWriter fstream = new FileWriter(DOWNLOAD_COMPLETE_CHECKFILE);
+            FileWriter fstream = new FileWriter(DirectorySettings.getGeneManiaDirectory() + File.separator + DirectorySettings.GENEMANIA_CHECK_FILE);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("This file indicates that the GeneMANIA data has finished downloading.");
             out.close();
+            if (!data.delete()) {
+                LOG.error("Couldn't delete GeneMANIA .zip: " + data.getAbsolutePath());
+            }
+
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(GenemaniaInfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -144,29 +139,20 @@ public class GenemaniaInfoRetriever {
         }
 
         @Override
-        public void doneDownload() {
+        protected Void runInBackground() {
+            super.runInBackground();
             if (isCancelled()) {
-                return;
+                return null;
             }
+            setStatusMessage("Extracting GeneMANIA files...");
+            GenemaniaInfoRetriever.extractGM(getDestPath());
+            return null;
+        }
 
-            notification.setStatusMessage("Extracting GeneMANIA files...");
-            notification.setIndeterminate(true);
-
-            new SwingWorker() {
-                @Override
-                public Void doInBackground() {
-                    GenemaniaInfoRetriever.extractGM(getDestPath());
-                    return null;
-                }
-
-                @Override
-                protected void done() {
-                    MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
-                    notification.setStatusMessage("Done.");
-                    notification.setStatus(Notification.JobStatus.FINISHED);
-                    setDownloadState(DownloadTask.DownloadState.FINISHED);
-                }
-            }.execute();
+        @Override
+        public void jobDone() {
+            super.jobDone();
+            MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
         }
     }
 
@@ -178,53 +164,8 @@ public class GenemaniaInfoRetriever {
         return geneManiaDownloadTask;
     }
 
-    /**
-     * Handles the downloading of GeneMANIA as a job. A notification is
-     * displayed when the download is complete.
-     *
-     * @param onFinish If not null, this runnable will be run when the download
-     * and extraction is complete.
-     * @throws IOException
-     * @deprecated use getGeneManiaDownloadTask() instead.
-     */
-    public static DownloadTask downloadGeneMania(final Runnable onFinish) throws IOException {
-        String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-
-        DownloadTask downloadTask = new DownloadTask(GM_URL, dstPath, "Downloading GeneMANIA...") {
-            @Override
-            public void doneDownload() {
-                if (isCancelled()) {
-                    return;
-                }
-
-                notification.setStatusMessage("Extracting GeneMANIA files...");
-                notification.setIndeterminate(true);
-
-                new SwingWorker() {
-                    @Override
-                    public Void doInBackground() {
-                        GenemaniaInfoRetriever.extractGM(getDestPath());
-                        return null;
-                    }
-
-                    @Override
-                    protected void done() {
-                        MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
-                        notification.setStatusMessage("GeneMANIA is ready.");
-                        notification.setStatus(Notification.JobStatus.FINISHED);
-                        if (onFinish != null) {
-                            onFinish.run();
-                        }
-                    }
-                }.execute();
-            }
-        };
-        downloadTask.execute();
-        return downloadTask;
-    }
-
     public GenemaniaInfoRetriever() throws IOException {
-        if (hasGeneManiaData()) {
+        if (DirectorySettings.isGeneManiaInstalled()) {
             initialize();
         } else {
             throw new IOException("GeneMANIA data not found, please download it first.");
@@ -455,6 +396,7 @@ public class GenemaniaInfoRetriever {
     }
 
     private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException {
+
         RelatedGenesEngineRequestDto request = createRequest();
         response = runQuery(request);
 
@@ -547,7 +489,7 @@ public class GenemaniaInfoRetriever {
         try {
             dataSetManager = new DataSetManager();
             dataSetManager.addDataSetFactory(new LuceneDataSetFactory<Object, Object, Object>(dataSetManager, null, new FileUtils(), new NullCytoscapeUtils<Object, Object, Object>(), null), Collections.emptyMap());
-            data = dataSetManager.open(new File(DATA_PATH));
+            data = dataSetManager.open(DirectorySettings.getGeneManiaDirectory());
 
             human = getHumanOrganism(data);
             networkUtils = new NetworkUtils();

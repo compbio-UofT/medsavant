@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>run</actionName>
+            <goals>
+<<<<<<< HEAD
+                <goal>process-classes</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
+            </goals>
+            <properties>
+                <exec.executable>java</exec.executable>
+=======
+                <goal>package</goal>
+                <goal>exec:exec</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>debug</actionName>
+            <goals>
+                <goal>package</goal>
+                <goal>exec:exec</goal>
+            </goals>
+            <properties>
+                <exec.args>-Xmx4G -Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address} -jar ${project.build.directory}/${project.build.finalName}.jar</exec.args>
+                <jpda.listen>true</jpda.listen>
+>>>>>>> upstream/master
+            </properties>
+        </action>
+    </actions>

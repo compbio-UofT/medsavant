@@ -106,8 +106,6 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 System.out.flush();
                 char[] pass = System.console().readPassword();
                 password = new String(pass);
-            } else {
-                System.out.print("  PASSWORD: " + password);
             }
 
             System.out.println();

@@ -167,8 +167,7 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         addItem(i, items.size()); // add to the end
     }
 
-    public void createGroupFromItem(SearchConditionItem i) {
-        System.out.println("Creating group from " + i.getName());
+    public void createGroupFromItem(SearchConditionItem i) {        
         i.removeListener(this);
         int indexOfItem = items.indexOf(i);
         items.remove(i);
@@ -190,7 +189,14 @@ public class SearchConditionGroupItem extends SearchConditionItem implements Sea
         items.remove(i);
         i.setParent(null);
         g.addItem(i);
-        fireSearchConditionOrderChangedEvent();
+
+        if(items.size() < 1){
+            if(getParent() != null){
+                getParent().removeItem(this);
+            }
+        }else{
+            fireSearchConditionOrderChangedEvent();
+        }
     }
 
     public void moveItemToIndex(SearchConditionItem i, int newIndex) {

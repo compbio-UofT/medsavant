@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>edu.toronto.cs.medsavant</groupId>
+    <artifactId>medsavant-distribution</artifactId>
+    <version>1.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>medsavant-server-deb</artifactId>
+  <packaging>pom</packaging>
+  <name>MedSavant - Server - Debian Distribution</name>
+  <description>Distribution containing the MedSavantServer module and its dependencies as a Debian package.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>medsavant-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <goals>
+              <goal>resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <excludeArtifactIds>medsavant-server</excludeArtifactIds>
+              <outputDirectory>${project.build.directory}/deb/lib</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-server</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>medsavant-server</includeArtifactIds>
+              <excludeTransitive>true</excludeTransitive>
+              <outputDirectory>${project.build.directory}/deb</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.vafer</groupId>
+        <artifactId>jdeb</artifactId>
+        <version>1.0.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <timestamped>true</timestamped>
+              <dataSet>
+                <data>
+                  <type>directory</type>
+                  <src>${project.build.directory}/deb/lib</src>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/local/medsavant-server-${project.version}/lib</prefix>
+                  </mapper>
+                </data>
+                <data>
+                  <type>file</type>
+                  <src>${project.build.directory}/deb/medsavant-server-${project.version}.jar</src>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/local/medsavant-server-${project.version}/</prefix>
+                  </mapper>
+                </data>
+                <data>
+                  <type>link</type>
+                  <linkName>/usr/local/medsavant-server</linkName>
+                  <linkTarget>medsavant-server-${project.version}</linkTarget>
+                  <symlink>true</symlink>
+                </data>
+                <data>
+                  <type>file</type>
+                  <src>${project.build.outputDirectory}/medsavant.default</src>
+                  <dst>/etc/default/medsavant-server</dst>
+                </data>
+                <data>
+                  <type>file</type>
+                  <src>${project.build.outputDirectory}/medsavant.properties</src>
+                  <dst>/var/lib/medsavant-server/medsavant.properties</dst>
+                </data>
+                <data>
+                  <type>file</type>
+                  <src>${project.build.outputDirectory}/medsavant.init</src>
+                  <dst>medsavant-server</dst>
+                  <mapper>
+                    <type>perm</type>
+                    <filemode>744</filemode>
+                    <prefix>/etc/init.d</prefix>
+                  </mapper>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -34,10 +34,22 @@ public class DirectorySettings {
     private static final String TMP_DIR_KEY = "TmpDir";
     private static final String PLUGINS_DIR_KEY = "PluginsDir";
     private static final String FILTERS_DIR_KEY = "FiltersDir";
-
+    private static final String GENEMANIA_DIR_KEY = "GeneManiaDir";
+    public static final String GENEMANIA_CHECK_FILE = "gmdataOK.txt"; //If this file exists, we assume GeneMANIA has been downloaded & installed.
+    //private static final String DATA_PATH = DirectorySettings.getCacheDirectory().getAbsolutePath() + File.separator + "gmdata";
+    //public static final String DOWNLOAD_COMPLETE_CHECKFILE = DATA_PATH + File.separator+"gmdataOK.txt";
+    
     private static File medSavantDir;
     private static SettingsController settings = SettingsController.getInstance();
 
+    /**
+     * Checks if GeneMANIA is installed.
+     * @return 
+     */
+    public static boolean isGeneManiaInstalled(){
+        return new File(getGeneManiaDirectory(), GENEMANIA_CHECK_FILE).exists();        
+    }
+    
     /**
      * Retrieve the directory where MedSavant stores supporting files.  Right now,
      * this is only plugins.
@@ -70,6 +82,10 @@ public class DirectorySettings {
             value.mkdirs();
         }
         settings.setFile(key, value);
+    }
+    
+    public static File getGeneManiaDirectory(){
+        return getDirectory(GENEMANIA_DIR_KEY, "cache"+File.separator+"gmdata");
     }
 
     public static File getPluginsDirectory(){

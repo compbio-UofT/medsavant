@@ -290,7 +290,7 @@ public class NumericFilterView extends FilterView {
             }
         });
 
-        JPanel bottomContainer = new JPanel();
+        JPanel bottomContainer = ViewUtil.getClearPanel();
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
         bottomContainer.add(selectAll);

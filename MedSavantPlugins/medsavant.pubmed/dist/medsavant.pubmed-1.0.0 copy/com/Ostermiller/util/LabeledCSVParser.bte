@@ -1,0 +1,39 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Labeled Comma Separated Values (CSV)<%/bte.tpl%>
+<%bte.tpl name=description%>Read a CSV file and treat the first line as column titles.<%/bte.tpl%>
+<%bte.tpl name=keywords%>labeled, labels, label, column, heading, headers, title, titles, csv, comma, separated, value, values, comma, separated, value, values comma separated value, values, java, util, utility, utilities, class, classes, library, libraries, source, code, open source, gpl<%/bte.tpl%>
+<%bte.tpl name=content%>
+
+<div class=examplecode><h3>Example</h3>
+<pre><span class=identifier>LabeledCSVParser lcsvp </span><span class=operator>= </span><span class=reservedWord>new </span><span class=identifier>LabeledCSVParser</span><span class=separator>(
+    </span><span class=reservedWord>new </span><span class=identifier>CSVParser</span><span class=separator>(
+        </span><span class=reservedWord>new </span><span class=identifier>StringReader</span><span class=separator>(
+            </span><span class=literal>&quot;Name,Phone\n&quot; </span><span class=operator>+
+            </span><span class=literal>&quot;Stewart,212-555-3233\n&quot; </span><span class=operator>+
+            </span><span class=literal>&quot;Cindy,212-555-8492\n&quot;
+        </span><span class=separator>)
+    )
+);
+
+</span><span class=reservedWord>while</span><span class=separator>(</span><span class=identifier>lcsvp</span><span class=separator>.</span><span class=identifier>getLine</span><span class=separator>() </span><span class=operator>!= </span><span class=literal>null</span><span class=separator>){
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(
+        </span><span class=literal>&quot;Name: &quot; </span><span class=operator>+ </span><span class=identifier>lcsvp</span><span class=separator>.</span><span class=identifier>getValueByLabel</span><span class=separator>(</span><span class=literal>&quot;Name&quot;</span><span class=separator>)
+    );
+    </span><span class=identifier>System</span><span class=separator>.</span><span class=identifier>out</span><span class=separator>.</span><span class=identifier>println</span><span class=separator>(
+        </span><span class=literal>&quot;Phone: &quot; </span><span class=operator>+ </span><span class=identifier>lcsvp</span><span class=separator>.</span><span class=identifier>getValueByLabel</span><span class=separator>(</span><span class=literal>&quot;Phone&quot;</span><span class=separator>)
+    );
+}</span></pre>
+</div>
+
+<h2>CSV with column headings: LabeledCSVParser</a></h2>
+
+<p>The labeled CSV parser allows you to use either the <a href="CSV.html">CSV</a> or the <a href="ExcelCSV.html">Excel CSV</a> parsers, treating them as if the first line were the column headings.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/LabeledCSVParser.java/0">Version History</a> |
+<a href="LabeledCSVParser.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/LabeledCSVParser.html">Documentation</a>]</p>
+
+<br clear=all>
+<%/bte.tpl%>
+<%/bte.doc%>

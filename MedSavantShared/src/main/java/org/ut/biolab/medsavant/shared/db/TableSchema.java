@@ -184,7 +184,24 @@ public class TableSchema implements Serializable {
         }
         return this;
     }
-
+    
+    /**
+     * Create a query object that will exclude entries with nulls in the given columns
+     *
+     * @param wheres names of columns that should not be null
+     * @return <code>this</code>
+     */
+    public synchronized TableSchema whereNotNull(Object... wheres) {                
+        if (selectQuery == null) {
+            selectQuery = new SelectQuery(false);
+            selectQuery.addFromTable(table);
+        }
+        for (int i = 0; i < wheres.length; i++) {
+            selectQuery.addCondition(com.healthmarketscience.sqlbuilder.UnaryCondition.isNotNull(table.findColumn(((ColumnDef)wheres[i]).name)));                
+        }
+        return this;
+    }
+    
     /**
      * Create a query object which will use the <code>IN</code> keyword to group all elements.
      *

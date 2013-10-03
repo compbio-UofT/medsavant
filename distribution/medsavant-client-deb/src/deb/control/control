@@ -1,0 +1,10 @@
+Package: medsavant-client
+Version: [[version]]
+Section: java
+Priority: optional
+Architecture: all
+Depends: java6-runtime | java-6-runtime
+Maintainer: Computational Biology Lab, University of Toronto (development@medavant.com)
+License: Apache 2.0
+Description: MedSavant Variant Search Engine
+ MedSavant is a search engine for genetic variants.

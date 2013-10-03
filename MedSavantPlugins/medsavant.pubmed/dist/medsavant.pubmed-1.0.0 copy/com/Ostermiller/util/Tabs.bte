@@ -1,0 +1,53 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Tabs<%/bte.tpl%>
+<%bte.tpl name=description%>Tab adjuster that can convert tabs to spaces and vice versa.<%/bte.tpl%>
+<%bte.tpl name=keywords%>tab, tabs, space, spaces, source, file, files<%/bte.tpl%>
+<%bte.tpl name=content%>
+
+<div class=i18n>
+    Internationalization - included languages:
+    <ul>	
+    <li>English</li> 
+    </ul>
+    Translations gladly accepted.  Please translate
+    <a href="Tabs.properties.html">Tabs.properties</a>.<br>
+	You may want to use: 
+	<a href="http://ostermiller.org/attesoro/">Attesoro - A Java Translation Editor</a>.
+</div>
+
+<p>Converts tabs to spaces or spaces to tabs at the beginning of each line of files.</p>
+
+<h3>Features</h3>
+<ul>
+<li>Detects binary files and does not modify those files unless forced.</li>
+<li>Can guess the tab spacing in a file and convert from the guess.</li>
+</ul>
+
+<p>To run the program use the following command line:<br>
+<b>java&nbsp;-classpath&nbsp;utils.jar&nbsp;com.Ostermiller.util.Tabs&nbsp;&lt;file&gt;</b></p>
+
+<pre>Tabs [-wgtsfVvqQ] &lt;files&gt;
+Adjusts the tabs and spaces at the beginning of each line in files.
+  If no files are specified standard input and output will be used.
+  --help              Print this help message.
+  --version           Print out the version number.
+  --about             Print out license and contact info.
+  -w --width &lt;num&gt;    Tab width (in spaces) of the input.
+  -g --guess          Guess the tab width of the input file. (default)
+  -t --tabs           Use tabs in the output.
+  -s --spaces &lt;num&gt;   Use this many spaces (not tabs) in the output. (default=4)
+  -f --force          Always modify unformatted files, even binary files.
+  --noforce           Don't modify binary files.  (default)
+  -V --reallyverbose  Print a message for each file.
+  -v --verbose        Print a message for each file modified.
+  -q --quiet          Print error messages. (default)
+  -Q --reallyquiet    Print nothing.
+</pre>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="http://www.gjt.org/servlets/JCVSlet/log/gjt/com/Ostermiller/util/Tabs.java/0">Version History</a> |
+<a href="Tabs.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/Tabs.html">Documentation</a>]</p>
+
+<%/bte.tpl%>
+<%/bte.doc%>

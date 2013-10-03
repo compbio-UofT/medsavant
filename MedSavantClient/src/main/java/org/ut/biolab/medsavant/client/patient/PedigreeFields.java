@@ -29,4 +29,5 @@ public interface PedigreeFields {
     public static final String DAD = "DAD";
     public static final String PATIENT_ID = "PATIENT";
     public static final String AFFECTED = "AFFECTED";
+    public static final String DNA_ID = "DNA_ID";
 }

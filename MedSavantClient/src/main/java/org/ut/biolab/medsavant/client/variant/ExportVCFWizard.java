@@ -72,7 +72,7 @@ public class ExportVCFWizard extends WizardDialog {
         setPageList(model);
 
         pack();
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(null);
     }
 

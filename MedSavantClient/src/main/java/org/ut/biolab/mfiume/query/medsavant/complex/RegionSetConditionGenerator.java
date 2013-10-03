@@ -40,7 +40,7 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
     private HashMap<String, RegionSet> termNameToTermObjectMap;
 
     @Override
-    public String getName() {        
+    public String getName() {
         return "Region Set";
     }
 
@@ -59,7 +59,7 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public StringSearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, new StringConditionValueGenerator() {
             @Override
             public List<String> getStringValues() {
@@ -67,8 +67,7 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
                 return acceptableValues;
             }
         });
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
 
     private void init() {

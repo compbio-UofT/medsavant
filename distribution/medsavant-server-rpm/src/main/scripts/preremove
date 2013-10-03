@@ -1,0 +1,25 @@
+#!/bin/sh
+
+CONFIG=/etc/sysconfig/medsavant-server
+
+# Stop the service and remove it from autostart
+/sbin/service medsavant-server stop || true
+/sbin/chkconfig --del medsavant-server >/dev/null
+
+# Remove the special user and group
+MEDSAVANT_USER=medsavant
+MEDSAVANT_GROUP=medsavant
+if [ -f "$CONFIG" ]; then
+    . "$CONFIG"
+fi
+userdel -Z $MEDSAVANT_USER || true
+
+# Remove data directories
+TMP_DIR="/tmp/medsavant"
+if [ -f "/var/lib/medsavant-server/medsavant.properties" ]; then
+    TMP_DIR=`cat /var/lib/medsavant-server/medsavant.properties | grep tmp-dir | cut -d= -f2`
+fi
+
+rm -rf /var/lib/medsavant-server
+rm -rf /usr/local/medsavant-server
+rm -rf $TMP_DIR

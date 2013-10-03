@@ -11,11 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.ut.biolab.medsavant.MedSavantClient;
+import javax.swing.JPopupMenu;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -26,7 +24,7 @@ import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
 import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 import org.ut.biolab.mfiume.query.view.NumberSearchConditionEditorView;
-import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
@@ -47,6 +45,13 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
                 BasicVariantColumns.FILE_ID.getColumnName()});
     private final HashMap<String, Map> columnNameToRemapMap;
 
+    private class VariantStringConditionEditorView extends StringSearchConditionEditorView{
+        public VariantStringConditionEditorView(SearchConditionItem i, StringConditionValueGenerator vg) {
+            super(i, vg);
+        }              
+        
+    }
+    
     public VariantConditionGenerator(String alias, CustomField field) {
         this.columnName = field.getColumnName();
         this.alias = alias; // field.getAlias();
@@ -98,11 +103,11 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     }
 
     @Override
-    public SearchConditionItemView generateViewFromItem(SearchConditionItem item) {
+    public SearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         return generateViewFromDatabaseField(item);
     }
 
-    private SearchConditionItemView generateViewFromDatabaseField(SearchConditionItem item) {
+    private SearchConditionEditorView generateViewFromDatabaseField(SearchConditionItem item) {
 
         if (columnsToForceStringView.contains(columnName)) {
             return generateStringViewFromDatabaseField(item);
@@ -119,7 +124,7 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
     }
 
-    private SearchConditionItemView generateStringViewFromDatabaseField(SearchConditionItem item) {
+    private StringSearchConditionEditorView generateStringViewFromDatabaseField(SearchConditionItem item) {
 
         StringConditionValueGenerator valueGenerator;
         String colName = field.getColumnName();
@@ -163,17 +168,15 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
             valueGenerator = new MedSavantDatabaseStringConditionValueGenerator(field, whichTable);
         }
 
-        StringSearchConditionEditorView editor = new StringSearchConditionEditorView(item, valueGenerator);
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        StringSearchConditionEditorView editor = new VariantStringConditionEditorView(item, valueGenerator);
+        return editor;
     }
     private static final WhichTable whichTable = WhichTable.VARIANT;
 
-    private SearchConditionItemView generateNumericViewFromDatabaseField(SearchConditionItem item) {
+    private NumberSearchConditionEditorView generateNumericViewFromDatabaseField(SearchConditionItem item) {
 
         NumberSearchConditionEditorView editor = new NumberSearchConditionEditorView(item, new MedSavantDatabaseNumberConditionValueGenerator(field, whichTable));
-        SearchConditionItemView view = new SearchConditionItemView(item, editor);
-        return view;
+        return editor;
     }
 
     private Condition generateStringConditionForVariantDatabaseField(String encoding) {

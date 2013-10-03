@@ -1,0 +1,27 @@
+<%bte.doc super="item.bte" %>
+<%bte.tpl name=pageTitle%>Size Limit Input Stream<%/bte.tpl%>
+<%bte.tpl name=description%>Create a sub-stream of a specified length from an existing string.<%/bte.tpl%>
+<%bte.tpl name=keywords%>sizelimitinputstream, size limit input stream, byte limit input stream, sub-stream, subinputstream, sub stream<%/bte.tpl%>
+<%bte.tpl name=content%>
+<p>Many Internet protocols and file types specify byte lengths for certain sections of data just prior
+to the section of data.  Size Limit Input Stream provides a mechanism for the entire data to be 
+opened as a stream, and then section of the data be parceled out to other handlers.  The handler
+is easier to write because its mission is no longer "read from this stream and process the data, but
+be careful not to read more than 398 bytes", but rather "read all the data from this stream and
+process the data."   Handlers that are easier to write have fewer bugs.   This also allows handlers
+that know how to process a stream, but may not have been written with sub-streams in mind, to
+be re-purposed without a change to the handler code.</p>
+
+<p>An example of a protocol for a Size Limit Input Stream would be appropriate is the HTTP 1.1 
+protocol.  In the HTTP 1.1 protocol a header for the web page is sent that contains (among other
+things) the size of the document.  The document is then sent, and the stream is left open for
+subsequent requests.  An implementation of an HTTP 1.1  client might read the headers, determine 
+the size, and then pass off the actual document handling to another class via a 
+SizeLimitInputStream.</p>
+
+<p>[<a href="./#download">Download /w Source</a> |
+<a href="SizeLimitInputStream.java.html">Browse Source</a> |
+<a href="doc/com/Ostermiller/util/SizeLimitInputStream.html">Documentation</a>]</p>
+
+<%/bte.tpl%>
+<%/bte.doc%>

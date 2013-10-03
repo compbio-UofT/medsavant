@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringEscapeUtils;
  */
 public class SearchConditionItem implements Serializable {
 
+    private String explanation;
+
     public enum ConditionState {
 
         UNSET, SET
@@ -23,7 +25,7 @@ public class SearchConditionItem implements Serializable {
     private QueryRelation relation;
     private SearchConditionGroupItem parent;
 
-    
+
     public SearchConditionItem(String name, SearchConditionGroupItem parent) {
         this(name, QueryRelation.AND, parent);
     }
@@ -62,7 +64,7 @@ public class SearchConditionItem implements Serializable {
     public String getDescription() {
         return this.description;
     }
-    
+
     public boolean isGroup(){
         return false;
     }
@@ -135,8 +137,8 @@ public class SearchConditionItem implements Serializable {
             return ConditionState.SET;
         }
     }
-    
-    
+
+
     protected String escape(String s){
         if(s  == null){
             return "";
@@ -144,24 +146,32 @@ public class SearchConditionItem implements Serializable {
             return StringEscapeUtils.escapeXml(s);
         }
     }
-    
+
     protected String toXML(int indent){
         String tab = "";
         for(int i = 0; i < indent; ++i){
            tab += "\t";
-        }       
+        }
         String xml = tab +"<Item";
         xml += " description=\""+escape(description) + "\"";
         xml += " encodedConditions=\""+escape(encodedConditions) + "\"";
         xml += " name=\""+escape(name) + "\"";
         xml += " queryRelation=\""+escape(relation.toString()) + "\"";
         xml += ">\n";
-        xml += tab+"</Item>\n";        
-        return xml; 
+        xml += tab+"</Item>\n";
+        return xml;
     }
-    
-    
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
+        this.fireSearchConditionsEditedEvent(this);
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
     public String toXML(){
-        return toXML(0);        
+        return toXML(0);
     }
 }

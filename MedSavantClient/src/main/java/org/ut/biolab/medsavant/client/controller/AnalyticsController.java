@@ -1,14 +1,8 @@
 package org.ut.biolab.medsavant.client.controller;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.view.genetics.family.FamilyMattersOptionView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -56,7 +50,9 @@ public class AnalyticsController {
     }
 
     private void installStandardAnalytics() {
-        Analysis enrichment = new Analysis() {
+
+        /*
+         * Analysis enrichment = new Analysis() {
             private EnrichmentPanel epanel;
 
             @Override
@@ -83,58 +79,7 @@ public class AnalyticsController {
             }
         };
 
-        Analysis cohortAnalysis = new Analysis() {
-            private JPanel view;
-            private FamilyMattersOptionView fo;
-
-            @Override
-            public String getName() {
-                return "Family Matters";
-            }
-
-            @Override
-            public JPanel getContent() {
-
-                if (view == null) {
-                    view = new JPanel();
-                    view.setLayout(new BorderLayout());
-                    view.setBackground(Color.white);
-
-                    JPanel titlePanel = new JPanel();
-                    ViewUtil.applyHorizontalBoxLayout(titlePanel);
-
-                    JLabel title = new JLabel(getName());
-                    title.setOpaque(true);
-                    title.setBorder(ViewUtil.getBigBorder());
-                    title.setOpaque(false);
-                    title.setFont(ViewUtil.getMediumTitleFont());
-                    titlePanel.add(title);
-
-                    view.add(titlePanel, BorderLayout.NORTH);
-
-                    JPanel p = ViewUtil.getClearPanel();
-                    p.setBorder(ViewUtil.getBigBorder());
-                    p.setLayout(new BorderLayout());
-
-                    fo = new FamilyMattersOptionView();
-                    p.add(ViewUtil.centerHorizontally(fo.getView()), BorderLayout.NORTH);
-
-                    view.add(p, BorderLayout.CENTER);
-                }
-                return view;
-            }
-
-            @Override
-            public void stop() {
-            }
-
-            @Override
-            public void restart() {
-            }
-        };
-
         this.installVariantAnalytic(enrichment);
-
-        this.installVariantAnalytic(cohortAnalysis);
+        */
     }
 }

@@ -148,7 +148,7 @@ public class PluginManagerDialog extends JDialog {
         File selectedFile = DialogUtils.chooseFileForOpen("Select Plugin JAR", null, null);
         if (selectedFile != null) {
             try {
-                PluginController.getInstance().installPlugin(selectedFile);
+                AppController.getInstance().installPlugin(selectedFile);
             } catch (Throwable x) {
                 DialogUtils.displayException("Installation Error", String.format("<html>Unable to install plugin from <i>%s</i>: %s.</html>", selectedFile.getName(), x), x);
             }

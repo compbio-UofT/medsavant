@@ -20,10 +20,10 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume
+ * This class is deprecated and replaced with VisibleMedSavantWorker in org.ut.biolab.medsavant.client.util.notification
  */
+@Deprecated
 public class NotificationsPanel extends JPanel {
-
     private static final Log LOG = LogFactory.getLog(NotificationsPanel.class);
     private final String name;
     private int notificationCount;
@@ -44,8 +44,8 @@ public class NotificationsPanel extends JPanel {
 
         this.notifications = new JPopupMenu();
         this.notifications.setBorder(null);
-        
-        //These listeners are a bit of a hack to fix a visual bug where clicking 
+
+        //These listeners are a bit of a hack to fix a visual bug where clicking
         //the 'jobs' button partially erases the 'Notifications' button on Linux
         //when the popup is closed.
         this.notifications.addPopupMenuListener(new PopupMenuListener() {
@@ -95,7 +95,7 @@ public class NotificationsPanel extends JPanel {
         setNotificationNumber(0);
     }
 
-    private void showPopup() {
+    private void showPopup() {        
         if (this.isVisible()) {
             JPopupMenu m;
 
@@ -105,9 +105,10 @@ public class NotificationsPanel extends JPanel {
             } else {
                 m = notifications;
             }
-            LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());
-            m.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            m.show(this, 0, getPreferredSize().height);
+            LOG.debug("notificationCount = " + notificationCount + " completedNotifications: " + completedNotifications.size());            
+            m.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+
+            m.show(this, 0, getPreferredSize().height);            
         } else {
             notifications.setVisible(false);
             noNotifications.setVisible(false);
@@ -121,7 +122,7 @@ public class NotificationsPanel extends JPanel {
         this.removeAll();
         this.add(ViewUtil.subTextComponent(button, s));
         setVisible(notificationCount != 0);
-        showPopup();
+        //showPopup();
     }
 
     public int addNotification(JPanel notification) {
