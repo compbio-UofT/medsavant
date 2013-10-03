@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLayeredPane;
@@ -45,7 +43,6 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-
 
 /**
  *
@@ -87,18 +84,6 @@ public class GenomeContainer extends JLayeredPane {
 
         chrPlusButtonContainer.add(chrContainer, BorderLayout.CENTER);
 
-        /*
-        JButton savantButton = new JButton("Export to Savant Genome Browser");
-        savantButton.addActionListener(new ActionListener() {
-
-        public void actionPerformed(ActionEvent e) {
-        new SavantExportForm();
-        }
-        });
-
-        chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
-         *
-         */
 
         add(chrPlusButtonContainer, gbc, JLayeredPane.DEFAULT_LAYER);
 
@@ -110,6 +95,7 @@ public class GenomeContainer extends JLayeredPane {
         setChromosomeViews();
 
         updateIfRequired();
+
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -124,6 +110,7 @@ public class GenomeContainer extends JLayeredPane {
                 }
             }
         });
+
     }
 
     private void setChromosomeViews() {
@@ -156,11 +143,6 @@ public class GenomeContainer extends JLayeredPane {
         chrPlusButtonContainer.repaint();
     }
 
-    /*public void filtersChanged() {
-    showWaitCard();
-    GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
-    gnv.execute();
-    }*/
     public void setUpdateRequired(boolean b) {
         updateRequired = b;
     }
@@ -169,7 +151,6 @@ public class GenomeContainer extends JLayeredPane {
         if (!init) {
             return;
         }
-
         boolean shouldUpdate = false;
         synchronized (updateLock) {
             if (updateRequired && this.isVisible() && this.getSize().getWidth() != 0) {
@@ -177,7 +158,7 @@ public class GenomeContainer extends JLayeredPane {
                 shouldUpdate = true;
             }
         }
-        if(shouldUpdate){
+        if (shouldUpdate) {
             showWaitCard();
             gnv = new GetNumVariantsSwingWorker(pageName);
             gnv.execute();
@@ -219,10 +200,11 @@ public class GenomeContainer extends JLayeredPane {
                 }
 
                 final int max = mmax;
-
-                for(ChromosomePanel p : chrViews) {
+                for (ChromosomePanel p : chrViews) {
                     Map<Range, Integer> m = map.get(p.getChrName());
-                    if(m == null) m = map.get(p.getShortChrName());
+                    if (m == null) {
+                        m = map.get(p.getShortChrName());
+                    }
                     p.updateFrequencyCounts(m, max);
                 }
 
@@ -241,7 +223,7 @@ public class GenomeContainer extends JLayeredPane {
 
         @Override
         protected void showSuccess(Object result) {
-            //TODO: why isn't this always called??
+            //TODO: why isn't this always called??            
             showShowCard();
         }
     }

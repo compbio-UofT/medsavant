@@ -122,9 +122,11 @@ public class PeekingPanel extends JXCollapsiblePane {
         if (!this.isExpanded) {
             this.title.setText(s);
             title.setFont(ViewUtil.getSmallTitleFont());
+            panel.setVisible(false);
         } else {
             this.title.setText(s);
             title.setFont(ViewUtil.getSmallTitleFont());
+            panel.setVisible(true);
         }
         //panel.setVisible(isExpanded);
         this.setCollapsed(!isExpanded);
