@@ -73,7 +73,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JLabel connectingToLabel;
 
     public LoginView() {
-        this.setBackground(new Color(237, 237, 237));//new Color(223,223,223));//Color.white);
+        //this.setBackground(new Color(237, 237, 237));//new Color(223,223,223));//Color.white);
         int padding = 100;
         this.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
         initView();

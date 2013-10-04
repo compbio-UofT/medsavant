@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -57,6 +58,7 @@ import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
 import savant.controller.FrameController;
@@ -162,7 +164,7 @@ public class BrowserPage extends SubSectionView {
                     } catch (Exception ex) {
                         LOG.error("Error loading gene track", ex);
                     }
-                
+
 
                     // load the MedSavant variant track
                     try {
@@ -177,8 +179,8 @@ public class BrowserPage extends SubSectionView {
 
                     } catch (SavantTrackCreationCancelledException ex) {
                         LOG.error("Error loading MedSavant variant track", ex);
-                    }catch(Exception ex){
-                        LOG.error("Misc. error loading MedSavant variant track", ex);                        
+                    } catch (Exception ex) {
+                        LOG.error("Misc. error loading MedSavant variant track", ex);
                     }
                 }
             }
@@ -222,15 +224,18 @@ public class BrowserPage extends SubSectionView {
          */
 
         JPanel pluginToolbar = savantInstance.getPluginToolbar();
-        
+
         // Removed temporarily 06-08-2013, in preparation for 1.1 release.
         // pluginToolbar.add(button);
 
         try {
             final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
 
+            String buttonStyle = "segmentedCapsule";
             JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(StandardIcon.BAMFILE));
             dnaButton.setToolTipText("Open BAM File(s)");
+            dnaButton.putClientProperty("JButton.buttonType", buttonStyle);
+            dnaButton.putClientProperty("JButton.segmentPosition", "only");
             dnaButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
@@ -356,7 +361,7 @@ public class BrowserPage extends SubSectionView {
     }
 
     public void addTrackFromURLString(String urlString, final DataFormat format) {
-        try {            
+        try {
             final URL url = new URL(urlString);
             if (!TrackController.getInstance().containsTrack(urlString)) {
                 if (view == null) {
@@ -364,7 +369,7 @@ public class BrowserPage extends SubSectionView {
                     Thread t = new Thread(new Runnable() {
                         public void run() {
                             try {
-                                trackAdditionLock.acquire();                                
+                                trackAdditionLock.acquire();
                                 FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
                                 trackAdditionLock.release();
                             } catch (Exception ex) {
@@ -373,7 +378,7 @@ public class BrowserPage extends SubSectionView {
                         }
                     });
                     t.start();
-                } else {                    
+                } else {
                     FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
                 }
             }
