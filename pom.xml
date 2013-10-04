@@ -548,6 +548,7 @@
   </build>
 
   <modules>
+    <module>utilities</module>
     <module>MedSavantShared</module>
     <module>MedSavantServerEngine</module>
     <module>MedSavantClient</module>

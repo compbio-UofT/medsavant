@@ -26,27 +26,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>edu.toronto.cs.medsavant</groupId>
-    <artifactId>medsavant-utilities</artifactId>
+    <artifactId>medsavant-parent</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>analytics-reporter</artifactId>
-  <name>Savant - Utilities - Analytics reporter</name>
-  <description>Analytics reporting utility.</description>
+  <artifactId>medsavant-utilities</artifactId>
+  <packaging>pom</packaging>
+  <name>MedSavant - Utilities</name>
+  <description>Parent POM for all the utility modules.</description>
 
-  <dependencies>
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.13</version>
-    </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.25</version>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>savant-analytics</module>
+    <module>analytics-reporter</module>
+    <module>annotation-formatter</module>
+  </modules>
 </project>

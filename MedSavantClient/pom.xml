@@ -167,9 +167,9 @@
       <version>0.15</version>
     </dependency>
     <dependency>
-      <groupId>org.ut.biolab.savant.analytics</groupId>
+      <groupId>edu.toronto.cs.medsavant</groupId>
       <artifactId>savant-analytics</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
