@@ -48,7 +48,7 @@
         <artifactId>osxappbundle-maven-plugin</artifactId>
         <version>1.0-alpha-4-sdumitriu</version>
         <configuration>
-          <bundleName>MedSavant Client</bundleName>
+          <bundleName>MedSavant</bundleName>
           <mainClass>org.ut.biolab.medsavant.MedSavantClient</mainClass>
           <javaApplicationStub>${basedir}/src/main/app-resources/JavaApplicationStub</javaApplicationStub>
           <jvmVersion>1.6+</jvmVersion>
