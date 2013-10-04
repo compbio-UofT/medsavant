@@ -552,7 +552,6 @@
     <module>MedSavantShared</module>
     <module>MedSavantServerEngine</module>
     <module>MedSavantClient</module>
-    <module>savant-analytics</module>
     <module>distribution</module>
   </modules>
 </project>
