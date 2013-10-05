@@ -56,10 +56,12 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 public class MedSavantClient implements MedSavantServerRegistry {
 
@@ -138,6 +140,9 @@ public class MedSavantClient implements MedSavantServerRegistry {
     static public void main(String args[]) {
         // Avoids "Comparison method violates its general contract" bug.
         // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
+
+        AnalyticsAgent.onStartSession("MedSavant", VersionSettings.getVersionString());
+
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         setRestartCommand(args);
         setExceptionHandler();

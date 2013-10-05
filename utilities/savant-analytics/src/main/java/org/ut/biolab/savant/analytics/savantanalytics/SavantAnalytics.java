@@ -19,6 +19,6 @@ public class SavantAnalytics {
 
         AnalyticsAgent.log("Example");
 
-        AnalyticsAgent.onEndSession();
+        AnalyticsAgent.onEndSession(true);
     }
 }

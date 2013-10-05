@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -193,6 +194,7 @@ public class LoginController extends Controller<LoginEvent> {
     public void logout() {
         MedSavantFrame.getInstance().setTitle("MedSavant");
         setLoggedIn(false);
+        AnalyticsAgent.onEndSession(true);
         this.unregister();
         try {
             Thread.sleep(100);
@@ -218,8 +220,6 @@ public class LoginController extends Controller<LoginEvent> {
             }
         };
         new Thread(r).start();
-
-
     }
 
     /**

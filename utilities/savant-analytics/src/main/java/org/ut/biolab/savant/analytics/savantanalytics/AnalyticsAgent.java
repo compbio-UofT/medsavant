@@ -33,7 +33,7 @@ public class AnalyticsAgent {
     private static NameValuePair[] standardKeyValues;
 
     public static void onStartSession(String softwareName, String softwareVersion) {
-
+        System.out.println("Starting session");
         locale = Locale.getDefault();
         AnalyticsAgent.softwareName = softwareName;
         AnalyticsAgent.softwareVersion = softwareVersion;
@@ -42,8 +42,9 @@ public class AnalyticsAgent {
         log("SessionStart",false);
     }
 
-    public static void onEndSession() {
-        endSession();
+    public static void onEndSession(boolean synchronous) {
+        System.out.println("Ending session");
+        endSession(synchronous);
     }
 
     public static void log(String message, boolean async) {
@@ -93,8 +94,8 @@ public class AnalyticsAgent {
         log(kvps, true);
     }
 
-    private static void endSession() {
-        log("SessionEnd",false);
+    private static void endSession(boolean synchronous) {
+        log("SessionEnd",!synchronous);
         sessionID = null;
         sessionActive = false;
     }

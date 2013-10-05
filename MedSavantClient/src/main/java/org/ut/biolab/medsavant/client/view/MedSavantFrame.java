@@ -78,6 +78,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -475,12 +476,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         final LoginController controller = LoginController.getInstance();
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
-            /*controller.unregister();
-             try {
-             Thread.sleep(100);
-             } catch (InterruptedException ex) {
-             }
-             System.exit(0);*/
         }
         LOG.info("Refusing to quit");
     }
@@ -496,6 +491,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 break;
         }
         if (queuedForExit) {
+            AnalyticsAgent.onEndSession(true);
             System.exit(0);
         }
     }
