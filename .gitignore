@@ -70,3 +70,5 @@ MedSavantPlugins/medsavant.incidentalome/src/medsavant/incidentalome/icon/icon.p
 MedSavantPlugins/medsavant.panel/src/medsavant/panel/icon/icon.png
 
 *.properties
+
+*.properties
