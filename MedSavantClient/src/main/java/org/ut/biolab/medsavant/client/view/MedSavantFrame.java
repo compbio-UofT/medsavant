@@ -128,6 +128,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         return menu;
     }
+    private final JMenu viewMenuMenu;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
         if (src != null && dst != null) {
@@ -352,6 +353,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         JMenu viewMenu = new JMenu("View");
 
+        viewMenuMenu = new JMenu("Menu");
+
         JMenuItem togglePrimaryMenu = new JMenuItem("Primary Menu");
         togglePrimaryMenu.addActionListener(new ActionListener() {
             @Override
@@ -359,7 +362,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 ViewController.getInstance().getMenu().setPrimaryMenuVisible(!ViewController.getInstance().getMenu().isPrimaryMenuVisible());
             }
         });
-        viewMenu.add(togglePrimaryMenu);
+        viewMenuMenu.add(togglePrimaryMenu);
 
         JMenuItem toggleSecondaryMenu = new JMenuItem("Secondary Menu");
         toggleSecondaryMenu.addActionListener(new ActionListener() {
@@ -368,7 +371,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 ViewController.getInstance().getMenu().setSecondaryMenuVisible(!ViewController.getInstance().getMenu().isSecondaryMenuVisible());
             }
         });
-        viewMenu.add(toggleSecondaryMenu);
+        viewMenuMenu.add(toggleSecondaryMenu);
+
+        viewMenu.add(viewMenuMenu);
+        viewMenuMenu.setEnabled(false);
 
         menuBar.add(viewMenu);
 
@@ -485,9 +491,11 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         switch (evt.getType()) {
             case LOGGED_IN:
                 switchToSessionView();
+                viewMenuMenu.setEnabled(true);
                 break;
             case LOGGED_OUT:
                 switchToLoginView();
+                viewMenuMenu.setEnabled(false);
                 break;
         }
         if (queuedForExit) {

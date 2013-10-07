@@ -32,16 +32,7 @@ public class AppInfo implements Comparable {
         this.author = author;
         this.web = web;
         this.downloadURL = downloadURL;
-        //state = State.UNKNOWN;
     }
-
-    /*public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }*/
 
     public String getShortDescription(){
         return shortdesc;

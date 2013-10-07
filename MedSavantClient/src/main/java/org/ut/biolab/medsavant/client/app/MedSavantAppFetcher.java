@@ -43,18 +43,8 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         "author",
         "description"
     };
+
     private List<AppInfo> appInfo;
-
-
-    /*private boolean isCompatibleWithThisVersion(AppInfo ai) {
-        try {
-            String sdkVersion = MedSavantSDKInformation.getSDKVersion();
-            return sdkVersion.equals(ai.getCompatibleWith()); // TODO: allow loose match for backwards compatibility
-        } catch (Exception ex) {
-            Logger.getLogger(MedSavantAppFetcher.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }*/
 
     private enum XMLElement {
 
@@ -135,7 +125,6 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
                                     String attrVal = reader.getAttributeValue(null, attrName);
                                     pluginMap.put(attrName, attrVal);
                                 }
-
                                 break;
 
                             case AUTHOR:
@@ -189,7 +178,9 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         //search names first - those hits will be listed first.
         for (AppInfo ai : appInfo) {
             if (ai.getName().contains(search)) {
-                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) { results.add(ai); }
+                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) {
+                    results.add(ai);
+                }
             }
         }
 
