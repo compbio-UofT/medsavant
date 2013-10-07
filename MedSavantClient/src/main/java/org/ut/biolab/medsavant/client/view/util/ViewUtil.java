@@ -53,6 +53,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -887,6 +888,10 @@ public final class ViewUtil {
             public void actionPerformed(ActionEvent ae) {
                 JDialog d = getHUD(helpButton, title, helpText);
                 d.setVisible(true);
+                try {
+                    AnalyticsAgent.log(title + " help button pressed");
+                } catch (Exception e) {}
+
             }
         });
         return helpButton;

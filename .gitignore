@@ -68,3 +68,5 @@ MedSavantPlugins/medsavant.mendel-clinic/dist/medsavant.mendel-clinic-1.0.0.jar
 MedSavantPlugins/medsavant.incidentalome/src/medsavant/incidentalome/icon/icon.png
 
 MedSavantPlugins/medsavant.panel/src/medsavant/panel/icon/icon.png
+
+*.properties

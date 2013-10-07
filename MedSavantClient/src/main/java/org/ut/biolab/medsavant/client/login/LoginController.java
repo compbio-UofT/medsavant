@@ -17,6 +17,7 @@ package org.ut.biolab.medsavant.client.login;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.apache.commons.httpclient.NameValuePair;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +65,14 @@ public class LoginController extends Controller<LoginEvent> {
     private String serverAddress;
 
     private synchronized void setLoggedIn(final boolean loggedIn) {
+
+        try {
+            AnalyticsAgent.log(
+                    new NameValuePair("login-event", loggedIn ? "LoggedIn" : "LoggedOut")
+                    );
+        } catch (Exception e) {
+        }
+
         Thread t = new Thread() {
             @Override
             public void run() {
@@ -235,11 +244,11 @@ public class LoginController extends Controller<LoginEvent> {
             if (level == UserLevel.ADMIN) {
                 DialogUtils.displayMessage("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
                 //if (result == DialogUtils.OK) {
-                    new ProjectWizard().setVisible(true);
-                    projNames = pc.getProjectNames();
-                    if (projNames.length > 0) {
-                        proj = projNames[0];
-                    }
+                new ProjectWizard().setVisible(true);
+                projNames = pc.getProjectNames();
+                if (projNames.length > 0) {
+                    proj = projNames[0];
+                }
                 //} else {
                 //    MedSavantFrame.getInstance().requestClose();
                 //}

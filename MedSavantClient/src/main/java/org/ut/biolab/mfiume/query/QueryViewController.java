@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.httpclient.NameValuePair;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
@@ -62,6 +63,7 @@ import org.ut.biolab.mfiume.query.view.PillView;
 import org.ut.biolab.mfiume.query.view.ConditionPopupGenerator;
 import org.ut.biolab.mfiume.query.view.ScrollableJPopupMenu;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -74,8 +76,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     private static Log LOG = LogFactory.getLog(QueryViewController.class);
     //Width of the bottom (i.e. root group) search text box.
-    
-    private static final int BOTTOM_SEARCH_TEXTFIELD_WIDTH = 270; 
+    private static final int BOTTOM_SEARCH_TEXTFIELD_WIDTH = 270;
     private final SearchConditionGroupItem rootGroup;
     private final HashMap<SearchConditionItem, SearchConditionItemView> itemToViewMap;
     private Map<SearchConditionGroupItem, Boolean> expandedItemsMap = new HashMap<SearchConditionGroupItem, Boolean>();
@@ -98,6 +99,13 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             @Override
             public void actionPerformed(ActionEvent ae) {
                 applySearchConditions();
+
+                try {
+                    AnalyticsAgent.log(new NameValuePair[]{
+                                new NameValuePair("view-event", "SearchPerformed")
+                            });
+                } catch (Exception e) {
+                }
             }
         });
 
@@ -350,7 +358,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             expandedItemsMap.remove(sci);
         }
 
-
         SearchConditionGroupItem scg = new SearchConditionGroupItem(qr, null, getQueryRootGroup());
         scg.setDescription(groupDesc);
         getQueryRootGroup().addItem(scg);
@@ -372,6 +379,13 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     //clears all search terms, and refreshes the view only if refresh is set.
     private void clearSearch(boolean refresh) {
+
+        try {
+            AnalyticsAgent.log(new NameValuePair[]{
+                        new NameValuePair("view-event", "SearchCleared")
+                    });
+        } catch (Exception e) {
+        }
 
         this.rootGroup.clearItems();
         this.itemToViewMap.clear();
@@ -407,10 +421,10 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         List<JComponent> cs;
 
         cs = getComponentsFromQueryModel(rootGroup);
-        this.setLayout(new BorderLayout());        
+        this.setLayout(new BorderLayout());
 
         JPanel p = ViewUtil.getClearPanel();
-      //  p.setBorder(ViewUtil.getBottomLineBorder());
+        //  p.setBorder(ViewUtil.getBottomLineBorder());
         p.setLayout(new MigLayout("wrap 1, hidemode 1"));
 
         this.removeAll();
@@ -423,7 +437,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         p.add(warningText, "center");
         p.add(applyButton, "center");
 
-        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(p);        
+        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(p);
         jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(jsp, BorderLayout.CENTER);
 
@@ -542,14 +556,14 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 w = pv.getMaximumSize().width;
             } else {
                 SearchConditionItemView sciv = itemToViewMap.get(item);
-                ((PillView) sciv).indent(depth);                
+                ((PillView) sciv).indent(depth);
                 w = sciv.getMaximumSize().width;
                 sciv.refresh();
                 components.add(sciv);
             }
         }
 
-        if(w == 0){
+        if (w == 0) {
             w = BOTTOM_SEARCH_TEXTFIELD_WIDTH;
         }
         JComponent c = getInputFieldForGroup(g, w);
@@ -630,8 +644,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
             public void addItemBasedOnField() {
                 SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
-                m.setVisible(false);                
-                field.setText("");                                            
+                m.setVisible(false);
+                field.setText("");
                 view.showDialog(getLocationOnScreen());
             }
 

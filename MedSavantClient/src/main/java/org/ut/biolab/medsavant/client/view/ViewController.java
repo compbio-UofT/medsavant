@@ -21,11 +21,13 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
+import org.apache.commons.httpclient.NameValuePair;
 
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -41,7 +43,7 @@ public class ViewController {
     private PersistencePanel persistencePanel;
     private PeekingPanel peekingPanel;
 
-    public SubSectionView getCurrentSubSectionView(){
+    public SubSectionView getCurrentSubSectionView() {
         return currentSubsection;
     }
 
@@ -97,6 +99,14 @@ public class ViewController {
     }
 
     public void changeSubSectionTo(SubSectionView view) {
+
+        try {
+            AnalyticsAgent.log(new NameValuePair[]{
+                        new NameValuePair("view-event", "ChangeSubsection"),
+                        new NameValuePair("view-target", view.getPageName())
+                    });
+        } catch (Exception e) {
+        }
 
         if (currentSubsection != null) {
             currentSubsection.viewDidUnload();
@@ -160,9 +170,9 @@ public class ViewController {
         public SidePanel() {
             this.setBackground(ViewUtil.getTertiaryMenuColor());
             this.setBorder(ViewUtil.getBigBorder());
-                    //BorderFactory.createCompoundBorder(
-                    //ViewUtil.getRightLineBorder(),
-                    //ViewUtil.getBigBorder()));
+            //BorderFactory.createCompoundBorder(
+            //ViewUtil.getRightLineBorder(),
+            //ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 

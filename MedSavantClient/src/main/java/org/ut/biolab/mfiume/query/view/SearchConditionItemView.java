@@ -32,10 +32,10 @@ public class SearchConditionItemView extends PillView {
 
     @Override
     public void showDialog(Point p) {
-        showDialog(p, "Editing Condition: "+item.getName()); 
+        showDialog(p, "Editing Condition: "+item.getName());
     }
 
-    
+
     public SearchConditionItemView(SearchConditionItem i, final SearchConditionEditorView editor) {
         this.item = i;
         this.editor = editor;
@@ -67,7 +67,7 @@ public class SearchConditionItemView extends PillView {
 
                 mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-                final JPanel conditionsEditor = ViewUtil.getClearPanel();                
+                final JPanel conditionsEditor = ViewUtil.getClearPanel();
                 ViewUtil.applyVerticalBoxLayout(conditionsEditor);
                 JProgressBar waitForConditions = new JProgressBar();
                 waitForConditions.setIndeterminate(true);
@@ -80,8 +80,8 @@ public class SearchConditionItemView extends PillView {
                 conditionsEditor.add(ViewUtil.centerHorizontally(waitForConditions));
 
 
-                mainPanel.add(conditionsEditor);               
-                
+                mainPanel.add(conditionsEditor);
+
                 Thread t = new Thread() {
                     @Override
                     public void run() {
@@ -90,7 +90,7 @@ public class SearchConditionItemView extends PillView {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
                                 public void run() {
-                                    conditionsEditor.removeAll();                                   
+                                    conditionsEditor.removeAll();
                                     conditionsEditor.add(editor);
                                     dialog.pack();
                                     dialog.invalidate();
@@ -109,7 +109,7 @@ public class SearchConditionItemView extends PillView {
                 JPanel horizButtonPanel = new JPanel();
                 horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));
                 if (item.getParent().getItems().size() > 0) {
-                    JButton button = new JButton("Convert to group");
+                    JButton button = ViewUtil.getSoftButton("Convert to group");
                     button.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
@@ -120,12 +120,12 @@ public class SearchConditionItemView extends PillView {
                     horizButtonPanel.add(button);
 
                     if (item.getParent().getParent() != null) {
-                        button = new JButton("Ungroup");
+                        button = ViewUtil.getSoftButton("Ungroup");
                         button.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
                                 item.getParent().moveItemToGroup(item, item.getParent().getParent());
-                                dialog.dispose();                                
+                                dialog.dispose();
                             }
                         });
                         horizButtonPanel.add(button);
@@ -136,7 +136,7 @@ public class SearchConditionItemView extends PillView {
 
                 if (!item.getParent().isFirstItem(item)) {
                     if (item.getRelation() == QueryRelation.OR) {
-                        JButton toggle = new JButton("Change to \"and\"");
+                        JButton toggle = ViewUtil.getSoftButton("Change to \"and\"");
                         toggle.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
@@ -147,7 +147,7 @@ public class SearchConditionItemView extends PillView {
 
                         horizButtonPanel.add(toggle);
                     } else {
-                        JButton toggle = new JButton("Change to \"or\"");
+                        JButton toggle = ViewUtil.getSoftButton("Change to \"or\"");
                         toggle.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent ae) {
@@ -159,7 +159,7 @@ public class SearchConditionItemView extends PillView {
                         horizButtonPanel.add(toggle);
                     }
                 }
-                JButton delete = new JButton("Remove condition");
+                JButton delete = ViewUtil.getSoftButton("Remove Condition");
                 delete.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
@@ -172,11 +172,11 @@ public class SearchConditionItemView extends PillView {
                 horizButtonPanel.add(delete);
                 horizButtonPanel.setMaximumSize(new Dimension(horizButtonPanel.getMaximumSize().width, 22));
                 mainPanel.add(horizButtonPanel);
-                
+
                 dialog.setModal(true);
                 dialog.setContentPane(mainPanel);
                 dialog.pack();
-                dialog.setLocationRelativeTo(MedSavantFrame.getInstance());                
+                dialog.setLocationRelativeTo(MedSavantFrame.getInstance());
                 return dialog;
             }
         });

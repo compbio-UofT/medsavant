@@ -3,9 +3,13 @@ package org.ut.biolab.mfiume.query;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.httpclient.NameValuePair;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
+
 /**
  *
  * @author mfiume
@@ -25,7 +29,6 @@ public class SearchConditionItem implements Serializable {
     private QueryRelation relation;
     private SearchConditionGroupItem parent;
 
-
     public SearchConditionItem(String name, SearchConditionGroupItem parent) {
         this(name, QueryRelation.AND, parent);
     }
@@ -38,6 +41,15 @@ public class SearchConditionItem implements Serializable {
 
         orderlisteners = new ArrayList<SearchConditionListener>();
 
+
+        try {
+            AnalyticsAgent.log(
+                    new NameValuePair[]{
+                        new NameValuePair("search-event", "ConditionCreated"),
+                        new NameValuePair("condition-name", name)
+                    });
+        } catch (Exception e) {
+        }
     }
 
     public String getName() {
@@ -65,10 +77,9 @@ public class SearchConditionItem implements Serializable {
         return this.description;
     }
 
-    public boolean isGroup(){
+    public boolean isGroup() {
         return false;
     }
-
 
     public void addListener(SearchConditionListener l) {
         orderlisteners.add(l);
@@ -138,27 +149,26 @@ public class SearchConditionItem implements Serializable {
         }
     }
 
-
-    protected String escape(String s){
-        if(s  == null){
+    protected String escape(String s) {
+        if (s == null) {
             return "";
-        }else{
+        } else {
             return StringEscapeUtils.escapeXml(s);
         }
     }
 
-    protected String toXML(int indent){
+    protected String toXML(int indent) {
         String tab = "";
-        for(int i = 0; i < indent; ++i){
-           tab += "\t";
+        for (int i = 0; i < indent; ++i) {
+            tab += "\t";
         }
-        String xml = tab +"<Item";
-        xml += " description=\""+escape(description) + "\"";
-        xml += " encodedConditions=\""+escape(encodedConditions) + "\"";
-        xml += " name=\""+escape(name) + "\"";
-        xml += " queryRelation=\""+escape(relation.toString()) + "\"";
+        String xml = tab + "<Item";
+        xml += " description=\"" + escape(description) + "\"";
+        xml += " encodedConditions=\"" + escape(encodedConditions) + "\"";
+        xml += " name=\"" + escape(name) + "\"";
+        xml += " queryRelation=\"" + escape(relation.toString()) + "\"";
         xml += ">\n";
-        xml += tab+"</Item>\n";
+        xml += tab + "</Item>\n";
         return xml;
     }
 
@@ -171,7 +181,7 @@ public class SearchConditionItem implements Serializable {
         return explanation;
     }
 
-    public String toXML(){
+    public String toXML() {
         return toXML(0);
     }
 }

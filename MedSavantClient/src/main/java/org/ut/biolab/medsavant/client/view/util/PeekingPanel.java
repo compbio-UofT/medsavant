@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.view.util;
 
 import java.awt.BorderLayout;
@@ -26,9 +25,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
+import org.apache.commons.httpclient.NameValuePair;
 import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -145,21 +145,28 @@ public class PeekingPanel extends JXCollapsiblePane {
     }
 
     public static JToggleButton getToggleButtonForPanel(final PeekingPanel persistencePanel) {
-        return getToggleButtonForPanel(persistencePanel,persistencePanel.titleString);
+        return getToggleButtonForPanel(persistencePanel, persistencePanel.titleString);
     }
 
-    public static JToggleButton getToggleButtonForPanel(final PeekingPanel persistencePanel,String name) {
+    public static JToggleButton getToggleButtonForPanel(final PeekingPanel persistencePanel, final String name) {
 
         final RevealToggleButton b = new RevealToggleButton(name, persistencePanel.getDockedSide());
 
         b.setFocusable(false);
         b.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 persistencePanel.setExpanded(b.isSelected());
-            }
 
+                try {
+                    AnalyticsAgent.log(new NameValuePair[]{
+                                new NameValuePair("view-event", b.isSelected() ? "PanelShown" : "PanelHidden"),
+                                new NameValuePair("panel-name", name)
+                            });
+                } catch (Exception e) {
+                }
+
+            }
         });
 
         b.setSelected(persistencePanel.isExpanded);
@@ -171,34 +178,38 @@ public class PeekingPanel extends JXCollapsiblePane {
         return dockedSide;
     }
 
-    public enum DockedSide { EAST, WEST, NORTH, SOUTH };
+    public enum DockedSide {
+
+        EAST, WEST, NORTH, SOUTH
+    };
 
     public static class RevealToggleButton extends JToggleButton {
+
         private final DockedSide side;
 
-         public RevealToggleButton(String title, DockedSide side) {
-             super(title);
+        public RevealToggleButton(String title, DockedSide side) {
+            super(title);
 
-             //this.setFont(new Font(this.getFont().getFamily(),10,Font.PLAIN));
-             //this.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-             this.side = side;
+            //this.setFont(new Font(this.getFont().getFamily(),10,Font.PLAIN));
+            //this.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+            this.side = side;
 
-             this.putClientProperty( "JButton.buttonType", "segmentedTextured" );
-             //this.setForeground(Color.gray);
+            this.putClientProperty("JButton.buttonType", "segmentedTextured");
+            //this.setForeground(Color.gray);
 
-             switch (side) {
-                 case EAST:
-                     ViewUtil.positionButtonFirst(this);
-                     break;
-                 case WEST:
-                     ViewUtil.positionButtonLast(this);
-                     break;
-                 case NORTH:
-                 case SOUTH:
-                     ViewUtil.positionButtonMiddle(this);
-                     break;
-             }
-         }
+            switch (side) {
+                case EAST:
+                    ViewUtil.positionButtonFirst(this);
+                    break;
+                case WEST:
+                    ViewUtil.positionButtonLast(this);
+                    break;
+                case NORTH:
+                case SOUTH:
+                    ViewUtil.positionButtonMiddle(this);
+                    break;
+            }
+        }
 
         public DockedSide getSide() {
             return side;
