@@ -5,6 +5,8 @@
 
 \documentclass{nature}
 
+\usepackage{graphicx}
+
 %% make sure you have the nature.cls and naturemag.bst files where
 %% LaTeX can find them
 
@@ -54,44 +56,35 @@ While standardized text-based flat file formats have commonly been used as a dat
 \subsection{Data and Annotation}
 MedSavant employs the Infobright [REF] high-performance database and a custom query engine to quickly deliver results of faceted searches on genomic variant datasets. The database stores and compresses tables column-wise, and so uses substantially fewer resources and executes faster than flat file-based processing pipelines: MedSavant databases typically require 10-20X less disk space compared to raw VCF files, while simultaneously making it possible for common queries to execute in seconds or less. The facets that are searchable by MedSavant are numerous and customizable. They include both low-level genotype information (e.g. base quality, chromosome position) and high-level information (e.g. ethnicity, family, gender, phenotype). MedSavant also contains an internal annotation engine similar to ANNOVAR[11] and SnpEff[12] that automatically appends to all uploaded VCF files user-specified searchable annotations such as harmfulness prediction scores (e.g. SIFT[13], PolyPhen2[14]), allele frequencies from population sequencing studies (e.g. 1000 Genomes Project[15], NHLBI Exome Sequencing Project[16]), and ontology relationships (e.g. Gene Ontology[17], Human Phenotype Ontology[18], OMIM[19]). Table shows a list of data and annotations stored by MedSavant. Custom annotations are also supported.
 
-Patient
-Affected Status
-Family
-Father
-Gender
-Mother
-Patient ID
-Phenotype
-more...
-Genome
-Alternate Allele
-dbSNP IP
-Chromosome
-Position
-Genotype
-Quality
-Reference Allele
-Variant Type
-Zygosity
-
-
-Annotations
-Allele Frequencies (TGP, NHLBI)
-Genes (RefSeq, UCSC)
-Ontology (GO, HPO, OMIM)
-Harmfulness (Polyphen-2, SIFT)
-more…
-
-Apps
-WikiPathways
-
-
-Table: Data stored by MedSavant. Information stored for patients and variants can be extended. External datasets can be connected through Apps available on the MedSavant App Store.
+\begin{table}
+\centering
+\caption{Data stored by MedSavant. Information stored for patients and variants can be extended. External datasets can be connected through Apps available on the MedSavant App Store.}
+\medskip
+\begin{tabular}{ccccc}
+\hline
+Patient & Genome & Annotations & Apps\\
+\hline
+Alternate Allele & Affected Status & Allele Frequencies (TGP, NHLBI) & WikiPathways\\
+dbSNP IP & Family & Genes (RefSeq, UCSC) &  \\
+Chromosome & Father & Ontology (GO, HPO, OMIM) &  \\
+Position & Gender & Harmfulness (Polyphen-2, SIFT) &  \\
+Genotype & Mother & more... &  \\
+Quality & Patient ID &  &  \\
+Reference Allele & Phenotype &  &  \\
+Variant Type & more... &  &  \\
+Zygosity &  &  &  \\
+more... &  &  &  \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsection{Search}
 The MedSavant user interface manages remote authenticated access to the database, and offers a simple means for query construction and visualization of results. A list of search conditions and familiar widgets for tuning them are provided. Search conditions can be grouped, unioned, and intersected, yielding a very expressive query language. Queries can combine conditions based on both genotype and phenotype information; the synergistic use of both types of data allows for segmentation of mutations based on disease subgroups, an important functionality when investigating complex diseases like autism spectrum disorders or cancer. The user interface for faceted variant search is shown in Figure and specific examples of possible queries are provided in later sections. Searches can be constructed incrementally, one facet at a time, with nearly instant feedback about parameter effectiveness at each step. The dynamic provision of guidance during filter construction allows for rapid exploration of the parameter space and is one of the most significant time-saving advantages of the MedSavant platform. Moreover, MedSavant saves search states internally, producing no intermediary files that need to be managed by the user. Once a search has been fine-tuned, it can be saved and reused for reproducing results on different cohorts or on samples whose genotypes will be processed in the future.
- 
-Figure: Interface for specifying searches. Queries can be constructed based on both genotype and phenotype criteria.
+
+\begin{figure}
+\includegraphics{search-genotype-phenotype} % this command will be ignored
+\caption{Interface for specifying searches. Queries can be constructed based on both genotype and phenotype criteria.}
+\end{figure}
 
 \subsection{Inspection}
 Candidate mutations can be manually inspected in various levels of detail as illustrated in Figure. The distribution of variants across the genome is depicted as a heatmap on a karyotypic ideogram. The distribution of variants can also be charted per searchable facet (as a histogram or pie chart), and between searchable facets (as a scatter plot). The full list of candidate variants is also represented in spreadsheet format with an associated Inspector that displays detailed information about selected variants, including all information contained in the original VCF file and a list of nearby genes. Further, the Inspector presents information regarding the function and relevance of nearby genes, including associated terms in the Gene Ontology, Human Phenotype Ontology, and OMIM. It also utilizes GeneMania[20], a service that finds related genes based on protein interaction and other networks, to suggest other genes to consider.
