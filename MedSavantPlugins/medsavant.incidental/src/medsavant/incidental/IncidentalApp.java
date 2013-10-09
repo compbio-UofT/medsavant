@@ -13,36 +13,30 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package medsavant.mendelclinic;
+package medsavant.incidental;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
-import medsavant.mendelclinic.view.MendelPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+
 
 /**
  * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class MendelClinicApp extends MedSavantClinicApp {
+public class IncidentalApp extends MedSavantClinicApp {
 
-    private MendelPanel fmp;
+    private JPanel p;
 
     @Override
     public JPanel getContent() {
-        if (fmp == null) {
-            fmp = new MendelPanel();
+        if (p == null) {
+            p = new JPanel();
+            p.add(new JLabel("Incidentalome"));
         }
-        return fmp.getView();
+        return p;
     }
 
     /**
@@ -50,23 +44,22 @@ public class MendelClinicApp extends MedSavantClinicApp {
      */
     @Override
     public String getTitle() {
-        return "Mendel";
+        return "Incidentalome";
     }
 
     @Override
     public void viewDidLoad() {
-        fmp.refresh();
     }
 
     @Override
     public void viewDidUnload() {
     }
 
-    private static final String iconroot = "/medsavant/mendelclinic/icon/";
+    private static final String iconroot = "/medsavant/incidental/icon/";
 
     @Override
     public ImageIcon getIcon() {
-        return getIcon(iconroot + "mendel-icon.png");
+        return getIcon(iconroot + "icon.png");
     }
 
     public ImageIcon getIcon(String resourcePath) {
