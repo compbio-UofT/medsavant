@@ -38,8 +38,6 @@
   <description>Parent POM for all the utility modules.</description>
 
   <modules>
-    <module>savant-analytics</module>
-    <module>analytics-reporter</module>
     <module>annotation-formatter</module>
   </modules>
 </project>
