@@ -46,7 +46,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>osxappbundle-maven-plugin</artifactId>
-        <version>1.0-alpha-4-sdumitriu</version>
+        <version>1.0-alpha-5-sdumitriu</version>
         <configuration>
           <bundleName>MedSavant</bundleName>
           <mainClass>org.ut.biolab.medsavant.MedSavantClient</mainClass>
