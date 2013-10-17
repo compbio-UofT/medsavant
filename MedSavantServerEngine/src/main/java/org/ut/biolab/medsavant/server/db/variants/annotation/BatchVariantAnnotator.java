@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.server.db.variants.annotation;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,17 +10,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
-import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.shared.model.Annotation;
-import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
@@ -64,6 +58,17 @@ public class BatchVariantAnnotator {
         this.sid = sid;
         this.annotations = annotations;
     }
+        
+    private int PROGRESS_STEP_SIZE = 10;
+    private int logProgress(int totalNumLinesRead, int numLines, int oldp){       
+        int x = Math.round(totalNumLinesRead/(float)numLines*100);
+        if((x-oldp) >= PROGRESS_STEP_SIZE){
+            oldp = x;
+            LOG.info("\t"+oldp+"% ("+totalNumLinesRead+" of "+numLines+" lines)");
+        }
+        return oldp;
+    }
+
 
     /**
      * Perform the prepared batch annotation in parallel
@@ -71,7 +76,7 @@ public class BatchVariantAnnotator {
      * @throws IOException
      * @throws SQLException
      */
-    public void performBatchAnnotationInParallel() throws IOException, SQLException, SessionExpiredException {
+    public void performBatchAnnotationInParallel() throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
         //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
@@ -101,6 +106,13 @@ public class BatchVariantAnnotator {
             numFieldsInOutputFile += ac.getNumNonDefaultFields();
             cursors[i] = ac;
         }
+        
+        BufferedReader reader = new BufferedReader(new FileReader(inputTDFFile));
+        int numLines = 0;
+        while (reader.readLine() != null){
+            numLines++;
+        }
+        reader.close();
 
         // open the input and output files
         CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
@@ -121,10 +133,12 @@ public class BatchVariantAnnotator {
         String previousRef = null;
         String previousAlt = null;
 
+        int oldp = 0;
         while ((inputLine = readNext(recordReader)) != null) {
 
+            
             totalNumLinesRead++;
-
+            oldp = logProgress(totalNumLinesRead, numLines, oldp);
             // index into the output line
             int j = 0;
 
@@ -196,17 +210,21 @@ public class BatchVariantAnnotator {
             }
 
             // perform each annotation, in turn
+            
             for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
 
                 // get the annotation for this line
+                
                 String[] annotationForThisLine = cursors[annotationIndex].annotateVariant(nextInputRecord);
 
+                
                 // add it to the output buffer
                 for (int k = 0; k < annotationForThisLine.length; k++) {
                     outputLine[j++] = annotationForThisLine[k];
                 }
 
             }
+            
 
             // write the output
             recordWriter.writeNext(outputLine);

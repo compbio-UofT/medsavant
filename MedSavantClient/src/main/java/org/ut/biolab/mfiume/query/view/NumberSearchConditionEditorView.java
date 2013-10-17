@@ -30,7 +30,7 @@ import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
  * @author mfiume
  */
 public class NumberSearchConditionEditorView extends SearchConditionEditorView {
-
+    private static final int FROM_TO_WIDTH = 110; //width of the 'from' and 'to' textboxes.
     private static final Log LOG = LogFactory.getLog(NumberSearchConditionEditorView.class);
     private final NumberConditionValueGenerator generator;
     boolean isAdjustingSlider = false;
@@ -75,7 +75,13 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         final JTextField toBox = new JTextField();
         fromBox.setMaximumSize(new Dimension(10000, 24));
         toBox.setMaximumSize(new Dimension(10000, 24));
-
+        fromBox.setPreferredSize(new Dimension(FROM_TO_WIDTH,24));
+        toBox.setPreferredSize(new Dimension(FROM_TO_WIDTH,24));
+        fromBox.setMinimumSize(new Dimension(FROM_TO_WIDTH,24));
+        toBox.setMinimumSize(new Dimension(FROM_TO_WIDTH,24));        
+        fromBox.setHorizontalAlignment(JTextField.RIGHT);
+        toBox.setHorizontalAlignment(JTextField.RIGHT);
+        
         final JLabel fromLabel = new JLabel();
         final JLabel toLabel = new JLabel();
 
@@ -89,6 +95,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         fromToContainer.add(new JLabel(" - "));
         fromToContainer.add(toBox);
         fromToContainer.add(Box.createHorizontalGlue());
+        
 
         JPanel minMaxContainer = ViewUtil.getClearPanel();
         minMaxContainer.setLayout(new BoxLayout(minMaxContainer, BoxLayout.X_AXIS));
@@ -117,7 +124,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             public void mouseReleased(MouseEvent e) {
                 fromBox.setText(ViewUtil.numToString(slider.getLow()));
                 toBox.setText(ViewUtil.numToString(slider.getHigh()));
-                encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1]);
+                encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1]);                 
             }
         });
 

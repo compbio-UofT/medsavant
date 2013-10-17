@@ -78,6 +78,7 @@ public class InstallAnnotationWizard extends WizardDialog {
     private AnnotationDownloadInformation annotationToInstall;
     private HashMap<String, AnnotationDownloadInformation> annotationKeyToURLMap;
 
+    private boolean hasAnnotations = false;
     public InstallAnnotationWizard() throws RemoteException {
         super((Frame) DialogUtils.getFrontWindow(), "Install Annotations", true);
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
@@ -90,7 +91,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         model.append(getCompletionPage());
         setPageList(model);
 
-        setSourceFromRepo(true);
+        //setSourceFromRepo(true,null);
 
         //change next action
         setNextAction(new AbstractAction() {
@@ -112,7 +113,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         setLocationRelativeTo(DialogUtils.getFrontWindow());
     }
 
-    private void setSourceFromRepo(boolean fromRepo) {
+    private void setSourceFromRepo(boolean fromRepo, final DefaultWizardPage page) {
         this.fromRepository = fromRepo;
 
         if (chooseContainer != null) {
@@ -130,6 +131,11 @@ public class InstallAnnotationWizard extends WizardDialog {
                         chooseTitleLabel.setText("Choose annotation from file:");
                         chooseContainer.add(fileChoosePanel, BorderLayout.CENTER);
                         fromRepository = false;
+                        String s = fileChoosePanel.getTextField().getText();
+                        if(s==null || s.length() < 1){
+                            page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+
+                        }
                         chooseContainer.updateUI();
                     }
                 });
@@ -143,6 +149,7 @@ public class InstallAnnotationWizard extends WizardDialog {
 
     }
 
+    @Deprecated
     private AbstractWizardPage getAnnotationSourcePage() {
         return new DefaultWizardPage(PAGENAME_SRC) {
             private JRadioButton radioFromRepo = new JRadioButton("MedSavant public repository");
@@ -153,17 +160,18 @@ public class InstallAnnotationWizard extends WizardDialog {
                 g.add(radioFromRepo);
                 //g.add(radioFromFile);
 
+                final DefaultWizardPage instance = this;
                 radioFromRepo.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        setSourceFromRepo(radioFromRepo.isSelected());
+                        setSourceFromRepo(radioFromRepo.isSelected(), instance);
                     }
                 });
 
                 radioFromFile.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        setSourceFromRepo(radioFromRepo.isSelected());
+                        setSourceFromRepo(radioFromRepo.isSelected(), instance);
                     }
                 });
 
@@ -204,7 +212,7 @@ public class InstallAnnotationWizard extends WizardDialog {
 
                         if (!fileChoosePanel.getTextField().getText().isEmpty()) {
                             fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                        } else {
+                        } else {                            
                             fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                         }
                     }
@@ -214,7 +222,7 @@ public class InstallAnnotationWizard extends WizardDialog {
                 addComponent(chooseTitleLabel);
                 addComponent(chooseContainer);
 
-                setSourceFromRepo(true);
+                setSourceFromRepo(true, this);
             }
 
             @Override
@@ -222,7 +230,10 @@ public class InstallAnnotationWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                //Sstem.out.println("Disabling next button");
+                if(!hasAnnotations){
+                    fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                }
             }
         };
     }
@@ -258,7 +269,7 @@ public class InstallAnnotationWizard extends WizardDialog {
                 i++;
             }
 
-            System.out.println(annotationsAvailable.size() + " annotations available");
+            LOG.info(annotationsAvailable.size() + " annotations are available");
 
             StripyTable stp = new StripyTable(data, new String[]{"Reference", "Annotation", "Version", "Description"});
             stp.setBorder(null);
@@ -275,6 +286,7 @@ public class InstallAnnotationWizard extends WizardDialog {
 
             if (!annotationsAvailable.isEmpty()) {
                 page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                hasAnnotations = true;
             }
 
         } catch (Exception ex) {

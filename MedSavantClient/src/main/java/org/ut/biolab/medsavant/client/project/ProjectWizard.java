@@ -699,8 +699,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         }
     }
 
+    
     private int modifyProject(boolean modifyProjectName, boolean modifyPatientFields, boolean modifyVariants, ProjectWorker projectWorker) throws Exception {
-
         int updateID = -1;
 
         if (modifyProjectName) {
@@ -731,10 +731,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
 
                 //add new ref
-                if (pd == null && cli.isSelected()) {
+                if (pd == null && cli.isSelected()) {                   
                     int refID = cli.getReference().getID();
-                    String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projectID, refID, 0, annIDs, false);
-                    manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projectID, refID, 0, variantFields);
+                    String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projectID, refID, 0, annIDs, false);                    
+                    manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projectID, refID, 0, variantFields);                    
                     manager.addTableToMap(LoginController.getInstance().getSessionID(), projectID, refID, 0, true, tablename, annIDs, null);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
@@ -742,10 +742,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     manager.removeReferenceForProject(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID());
                     continue;
                 }
-
+                
                 String email = this.emailField.getText();
                 //boolean autoPublishWhenComplete = this.autoPublish.isSelected();
-                boolean autoPublishWhenComplete = false;
+                boolean autoPublishWhenComplete = false;                
                 updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }
         }

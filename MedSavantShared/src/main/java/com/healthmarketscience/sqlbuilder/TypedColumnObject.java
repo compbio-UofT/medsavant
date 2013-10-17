@@ -89,8 +89,13 @@ class TypedColumnObject extends ColumnObject
     app.append(_column.getColumnNameSQL()).append(" ")
       .append(_column.getTypeNameSQL());
     Integer colFieldLength = _column.getTypeLength();
-    if(colFieldLength != null) {
-      app.append("(").append(colFieldLength).append(")");
+    Integer colFieldScale = _column.getTypeScale();
+    if(colFieldLength != null) {        
+      if(colFieldScale != null){
+        app.append("(").append(colFieldLength).append(",").append(colFieldScale).append(")");
+      }else{
+        app.append("(").append(colFieldLength).append(")");
+      }
     }
 
     if(_defaultValue != null) {

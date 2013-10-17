@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -80,23 +81,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             return s.substring(0, pos);
         }
     }
-
-    public static int getColumnLength(String s) {
-
-        int fpos = s.indexOf("(");
-        int rpos = s.indexOf(")");
-        int cpos = s.indexOf(",");
-        if (cpos != -1 && cpos < rpos) {
-            rpos = cpos;
-        }
-
-        if (fpos == -1) {
-            return -1;
-        } else {
-            return Integer.parseInt(s.substring(fpos + 1, rpos));
-        }
-    }
-
+    
     public DbTable importTable(String sessionId, String tablename) throws SQLException, SessionExpiredException {
 
         DbSpec spec = new DbSpec();
@@ -110,7 +95,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         int numberOfColumns = rsMetaData.getColumnCount();
 
         while (rs.next()) {
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
+            int[] ls = CustomField.extractColumnLengthAndScale(rs.getString(2));               
+            //scale argument should be set to null if it is unspecified (i.e. 0)
+            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), ls[0], ls[1]>0 ? ls[1] : null);
         }
 
         return table;
@@ -129,12 +116,14 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
 
         while (rs.next()) {
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
-            ts.addColumn(rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
+            int[] ls = CustomField.extractColumnLengthAndScale(rs.getString(2));        
+            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), ls[0], (ls[1] == 0 ? null : ls[1]));
+            ts.addColumn(rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), ls[0], ls[1]);    
+            
         }
-
         return ts;
     }
+    
 
     public static void dropTable(String sessID, String tableName) throws SQLException, SessionExpiredException {
         ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName + ";");

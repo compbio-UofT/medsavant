@@ -225,7 +225,7 @@ public class ProjectController extends Controller<ProjectEvent> {
     }
 
     private void setCurrentPatientTable() throws SQLException, RemoteException {
-        DbColumn dbc = new DbColumn(null, "A", "B", 1);
+        DbColumn dbc = new DbColumn(null, "A", "B", 1, 0);
         try {
             currentPatientTableSchema =  MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), getCurrentPatientTableName());
         } catch (SessionExpiredException ex) {

@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker.JobStatus;
 
 /**
  * @author Andrew
@@ -32,6 +34,22 @@ public class ThreadController {
     private static ThreadController instance;
     private Map<String, List<MedSavantWorker>> workers = new HashMap<String, List<MedSavantWorker>>();
 
+    public boolean areJobsRunning(){
+        for(List<MedSavantWorker> list : workers.values()){            
+            if(list != null){
+                for(MedSavantWorker msw : list){
+                    if(msw instanceof VisibleMedSavantWorker){
+                        VisibleMedSavantWorker vmsw = (VisibleMedSavantWorker)msw;
+                        if(vmsw.getStatus() == JobStatus.RUNNING){
+                            return true;
+                        }
+                    }//else job is not visible through the Jobs menu, and hence not considered a 'job'.
+                }
+            }
+        }
+        return false;
+    }
+    
     public static ThreadController getInstance() {
         if (instance == null) {
             instance = new ThreadController();

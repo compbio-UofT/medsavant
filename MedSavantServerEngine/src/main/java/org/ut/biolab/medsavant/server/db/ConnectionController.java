@@ -254,8 +254,8 @@ public class ConnectionController {
         @Override
         public Boolean call() throws Exception {
             ReentrantReadWriteLock lock = ConnectionController.sessionUsageLocks.remove(sessionId);
-            if (lock != null) {
-                lock.writeLock().lock();
+            if (lock != null) {                
+                lock.writeLock().lock();                
             }
             synchronized (sessionPoolMap) {
                 ConnectionPool pool = sessionPoolMap.remove(sessionId);

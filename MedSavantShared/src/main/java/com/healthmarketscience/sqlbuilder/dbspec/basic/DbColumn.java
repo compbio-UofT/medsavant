@@ -66,14 +66,16 @@ public class DbColumn extends DbObject<DbTable>
   
   private final String _typeName;
   private final Integer _typeLength;
+  private final Integer _typeScale;
   private final List<DbConstraint> _constraints = new ArrayList<DbConstraint>();
   private Object _defaultValue;
 
   public DbColumn(DbTable parent, String name,
-                  String typeName, Integer typeLength) {
+                  String typeName, Integer typeLength, Integer typeScale) {
     super(parent, name);
     _typeName = typeName;
     _typeLength = typeLength;
+    _typeScale = typeScale;
   }
 
   public DbTable getTable() {
@@ -90,6 +92,10 @@ public class DbColumn extends DbObject<DbTable>
 
   public Integer getTypeLength() {
     return _typeLength;
+  }
+  
+  public Integer getTypeScale(){
+      return _typeScale;
   }
 
   public List<DbConstraint> getConstraints() {

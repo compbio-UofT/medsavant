@@ -77,7 +77,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -480,7 +480,13 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     public void requestClose() {
         LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
-        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
+        
+        String jobsMsg = "";
+        if(ThreadController.getInstance().areJobsRunning()){
+            jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
+        }
+        
+        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", jobsMsg+"Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
         }
         LOG.info("Refusing to quit");

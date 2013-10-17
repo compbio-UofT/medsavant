@@ -205,7 +205,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         try {
             for (int ann: annIDs) {
                 AnnotationFormat annFmt = AnnotationManager.getInstance().getAnnotationFormat(sessID, ann);
-                for (CustomField f: annFmt.getCustomFields()) {
+                for (CustomField f: annFmt.getCustomFields()) {                    
                     variantSchema.addColumn(f);
                 }
             }
@@ -216,7 +216,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             } else {
                 updateString = variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
             }
-            //System.out.println(updateString);
+            //LOG.info(updateString);
             conn.executeUpdate(updateString);
         } finally {
             conn.close();

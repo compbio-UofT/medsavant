@@ -49,6 +49,12 @@ public interface Column {
   /** @return the length of the type of this column, may be
       <code>null</code> */
   public Integer getTypeLength();
+  
+  /**
+   * @return the scale of this column, may be 
+   * <code>null</code>
+   */   
+  public Integer getTypeScale();
 
   /** @return any constraints for this column */
   public List<? extends Constraint> getConstraints();

@@ -200,6 +200,7 @@ public class ExportVCFWizard extends WizardDialog {
                                 workButton.setEnabled(false);
                                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                                 completionLabel.setText("Export was cancelled by the user.");
+                                System.out.println(ex.getMessage());
                             }
                         }.execute();
                     }

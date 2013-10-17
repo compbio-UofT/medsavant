@@ -423,7 +423,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
                 + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
                 + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'" //+ " LINES TERMINATED BY '\\r\\n' ";
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' " //+ " LINES TERMINATED BY '\\r\\n' ";
                 ;
         String queryString = query.toString().replace("FROM", intoString + "FROM");
 

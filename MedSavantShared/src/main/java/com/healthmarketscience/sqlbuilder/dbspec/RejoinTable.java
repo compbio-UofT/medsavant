@@ -105,6 +105,8 @@ public class RejoinTable implements Table
     public String getTypeNameSQL() { return _column.getTypeNameSQL(); }
 
     public Integer getTypeLength() { return _column.getTypeLength(); }
+    
+    public Integer getTypeScale() { return _column.getTypeScale(); }
 
     public List<? extends Constraint> getConstraints() { return _column.getConstraints(); }
 

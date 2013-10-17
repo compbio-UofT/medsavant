@@ -409,7 +409,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     rs2.getString(AnnotationFormatColumns.COLUMN_TYPE.getColumnName()),
                     rs2.getBoolean(AnnotationFormatColumns.FILTERABLE.getColumnName()),
                     rs2.getString(AnnotationFormatColumns.ALIAS.getColumnName()),
-                    rs2.getString(AnnotationFormatColumns.DESCRIPTION.getColumnName())));
+                    rs2.getString(AnnotationFormatColumns.DESCRIPTION.getColumnName()),
+                    false)); //not null = false so that nulls represent missing values.
         }
 
         return new AnnotationFormat(program, version, referenceName, path, hasRef, hasAlt, type, isEndInclusive, fields.toArray(new CustomField[0]));

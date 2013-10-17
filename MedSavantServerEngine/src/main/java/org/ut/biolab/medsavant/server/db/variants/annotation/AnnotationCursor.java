@@ -1,6 +1,5 @@
 package org.ut.biolab.medsavant.server.db.variants.annotation;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.apache.commons.logging.Log;
@@ -11,7 +10,6 @@ import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -37,6 +35,18 @@ public class AnnotationCursor {
     private final char MULTI_ANNOTATION_DELIM = ',';
     // the annotation to apply
     private final Annotation annotation;
+    
+    //Setup default column indices for required columns.  These can be overridden
+    //if the file has a header
+    private int pos_annot_index_of_chr = 0;
+    private int pos_annot_index_of_pos = 1;
+    private int pos_annot_index_of_ref = 2;
+    private int pos_annot_index_of_alt = 3;
+    private int int_annot_index_of_chr = 0;
+    private int int_annot_index_of_start = 1;
+    private int int_annot_index_of_end = 2;
+
+    private boolean ref0_logged = false;
 
     /**
      * A file reader and cursor to be used to help in the annotation process
@@ -46,9 +56,67 @@ public class AnnotationCursor {
      * @throws IOException
      * @throws SQLException
      */
-    public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException {
+    public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
         reader = new TabixReader(annotation.getDataPath());
 
+        String header = new TabixReader(annotation.getDataPath()).readLine().trim();
+        
+        
+        //If the tabix file has a header, then find the indices for all the 
+        //required columns
+        if(header.startsWith(String.valueOf(reader.getCommentChar()))){
+            String[] parts = header.split("\t");            
+            pos_annot_index_of_chr = int_annot_index_of_chr = -1;
+            int_annot_index_of_start = -1;
+            int_annot_index_of_end = -1;
+            pos_annot_index_of_ref = -1;
+            pos_annot_index_of_alt = -1;
+            pos_annot_index_of_pos = -1;
+            
+            for(int i = parts.length - 1; i >= 0; --i){            
+                parts[i] = parts[i].replace("#", "").trim().toUpperCase();
+                if(parts[i].equals("CHR") || parts[i].equals("CHROM")){
+                    pos_annot_index_of_chr = int_annot_index_of_chr = i;
+                }else if(parts[i].equals("START")){
+                    int_annot_index_of_start = i;
+                    pos_annot_index_of_pos = i;
+                }else if(parts[i].equals("END")){
+                    int_annot_index_of_end = i;
+                }else if(parts[i].equals("REF")){
+                    pos_annot_index_of_ref = i;
+                }else if(parts[i].equals("ALT")){
+                    pos_annot_index_of_alt = i;
+                }else if(parts[i].equals("POSITION")){ 
+                    pos_annot_index_of_pos = i;
+                }
+            }
+        
+            String missingCol = null;
+            if(annotation.isInterval()){                
+                if(int_annot_index_of_chr == -1){
+                    missingCol = "Chromosome";
+                }else if(int_annot_index_of_start == -1){
+                    missingCol = "Start";
+                }else if(int_annot_index_of_end == -1){
+                    missingCol = "End";
+                }
+            }else{
+                if(pos_annot_index_of_chr == -1){
+                    missingCol = "Chromosome";
+                }else if(pos_annot_index_of_ref == -1){
+                    missingCol = "Ref";
+                }else if(pos_annot_index_of_alt == -1){
+                    missingCol = "Alt";
+                }else if(pos_annot_index_of_pos == -1){
+                    missingCol = "Position";
+                }                
+            }            
+            
+            if(missingCol != null){
+                throw new IllegalArgumentException("Couldn't locate column "+missingCol+" in annotation " + annotation.getProgram()+" (ref="+annotation.getReferenceName()+")");
+            }           
+        }
+                    
         this.annotation = annotation;
         annotationHasRef = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasRef();
         annotationHasAlt = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasAlt();
@@ -56,6 +124,7 @@ public class AnnotationCursor {
         isEndInclusive = annotation.isEndInclusive();
         numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
 
+        
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
@@ -106,13 +175,13 @@ public class AnnotationCursor {
         // check if there are annotations for this chromosome
         if (canAnnotateThisChromosome(r.chrom)) {
 
-            // seek to the appropriate record by genetic position
+            // seek to the appropriate record by genetic position            
             TabixReader.Iterator it = reader.query(
                     reader.chr2tid(r.chrom),
                     r.position - 1, // the function returns matches AFTER
                     // this position, so we need to have the -1
                     Integer.MAX_VALUE);
-
+            
             int numberIntersectingThisVariant = 0;
             int numberMatchingThisVariant = 0;
 
@@ -138,8 +207,7 @@ public class AnnotationCursor {
 
                 // save this annotation
                 lastAnnotationConsidered = annotationRecord;
-
-                //LOG.info("Comparing " + annotation + " to " + r);
+                
 
                 // does this annotation intersect the variant position
                 if (annotationRecord.intersectsPosition(r.chrom, r.position)) {
@@ -250,16 +318,10 @@ public class AnnotationCursor {
     Annotation getAnnotation() {
         return annotation;
     }
-
     private class SimpleAnnotationRecord {
 
-        private static final int POS_ANNOT_INDEX_OF_CHR = 0;
-        private static final int POS_ANNOT_INDEX_OF_POS = 1;
-        private static final int POS_ANNOT_INDEX_OF_REF = 2;
-        private static final int POS_ANNOT_INDEX_OF_ALT = 3;
-        private static final int INT_ANNOT_INDEX_OF_CHR = 0;
-        private static final int INT_ANNOT_INDEX_OF_START = 1;
-        private static final int INT_ANNOT_INDEX_OF_END = 2;
+       
+       
         public String chrom;
         public int position;
         public int start;
@@ -280,24 +342,30 @@ public class AnnotationCursor {
         }
 
         private void setFromLinePosition(String[] line) {
-            chrom = line[POS_ANNOT_INDEX_OF_CHR];
-            position = Integer.parseInt(line[POS_ANNOT_INDEX_OF_POS]);
+            chrom = line[pos_annot_index_of_chr];
+            if(!chrom.startsWith("chr")){
+                chrom = "chr"+chrom; 
+            }
+            position = Integer.parseInt(line[pos_annot_index_of_pos]);
             if (annotationHasRef) {
-                ref = line[POS_ANNOT_INDEX_OF_REF];
+                ref = line[pos_annot_index_of_ref];
             } else {
                 ref = null;
             }
             if (annotationHasAlt) {
-                alt = line[POS_ANNOT_INDEX_OF_ALT];
+                alt = line[pos_annot_index_of_alt];
             } else {
                 alt = null;
             }
         }
 
         private void setFromLineInterval(String[] line) {
-            chrom = line[INT_ANNOT_INDEX_OF_CHR];
-            start = Integer.parseInt(line[INT_ANNOT_INDEX_OF_START]);
-            end = Integer.parseInt(line[INT_ANNOT_INDEX_OF_END]);
+            chrom = line[int_annot_index_of_chr];
+            if(!chrom.startsWith("chr")){
+                chrom = "chr"+chrom; 
+            }
+            start = Integer.parseInt(line[int_annot_index_of_start]);
+            end = Integer.parseInt(line[int_annot_index_of_end]);
             ref = null;
             alt = null;
         }
@@ -310,21 +378,27 @@ public class AnnotationCursor {
                 return "SimpleAnnotationRecord{" + "chrom=" + chrom + ", position=" + position + ", ref=" + ref + ", alt=" + alt + '}';
             }
         }
-
+        
         public boolean matchesRef(String ref) {
-            return this.alt == null || (this.ref != null && this.ref.equals(ref));
+            //If annotation ref is 0, then automatically assume the ref matches.
+            //(i.e. we interpret the 0 as 'unspecified').            
+            if(ref.equals("0") && !ref0_logged){
+                ref0_logged = true;
+                LOG.info("Reference 0 detected for annotation "+annotation.getProgram());
+            }
+            return (this.alt == null) || (ref.equals("0")) || (this.ref != null && this.ref.equals(ref));
         }
 
-        public boolean matchesAlt(String alt) {
+        public boolean matchesAlt(String alt) {            
             return this.alt == null || (this.alt != null && this.alt.equals(alt));
         }
 
-        private boolean intersectsPosition(String chrom, int position) {
+        private boolean intersectsPosition(String chrom, int position) {                        
             return (!isInterval && this.chrom.equals(chrom) && this.position == position)
                     || (isInterval && this.start <= position && (isEndInclusive ? (this.end >= position) : (this.end > position)));
         }
 
-        private boolean matchesVariant(SimpleVariantRecord r) {
+        private boolean matchesVariant(SimpleVariantRecord r) {            
             return (isInterval && intersectsPosition(r.chrom, r.position))
                     || (!isInterval && intersectsPosition(r.chrom, r.position) && matchesRef(r.ref) && matchesAlt(r.alt));
         }

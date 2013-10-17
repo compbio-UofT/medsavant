@@ -13,15 +13,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.shared.format;
 
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.regex.Pattern;
 
 import org.ut.biolab.medsavant.shared.db.ColumnDef;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
-
 
 /**
  *
@@ -32,9 +31,10 @@ public class CustomField extends ColumnDef implements Serializable {
     private final boolean filterable;
     private final String alias;
     private final String description;
-
+   
     /**
-     * Construct a new custom field definition.  Extends the basic <code>ColumnDef</code> class by adding a couple of human-friendly
+     * Construct a new custom field definition. Extends the basic
+     * <code>ColumnDef</code> class by adding a couple of human-friendly
      * presentation fields.
      *
      * @param name column name
@@ -44,19 +44,42 @@ public class CustomField extends ColumnDef implements Serializable {
      * @param description human-friendly description (not currently used)
      */
     public CustomField(String name, String typeStr, boolean filterable, String alias, String description) {
-        super(name, ColumnType.fromString(typeStr), extractColumnLength(typeStr));
+        this(name, typeStr, filterable, alias, description, false);        
+    }
+    
+    public CustomField(String name, String typeStr, boolean filterable, String alias, String description, boolean nonNull) {
+        super(name, ColumnType.fromString(typeStr), extractColumnLengthAndScale(typeStr), nonNull);
         this.filterable = filterable;
         this.alias = alias;
-        this.description = description;
+        this.description = description;                
     }
+    
 
     public CustomField(String n, ColumnType t, int l, boolean autoInc, boolean notNull, boolean indexed, String dflt, boolean filterable, String alias, String description) {
-        super(n, t, l, autoInc, notNull, indexed, dflt);
+        super(n, t, l, 0, autoInc, notNull, indexed, dflt);
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
     }
 
+    public static int[] extractColumnLengthAndScale(String typeStr) {
+        int posLeft = typeStr.indexOf('(');
+        if (posLeft == -1) {
+            return new int[]{0,0};
+        }
+        int posRight = typeStr.indexOf(')');
+        if (posRight == -1) {
+            return new int[]{0,0};
+        }
+        String[] parts = typeStr.substring(posLeft + 1, posRight).split(",");
+        if (parts.length == 1) {
+            return new int[]{Integer.parseInt(parts[0].trim()), 0};
+        } else if (parts.length == 2) {
+            return new int[]{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())};
+        }
+        return new int[]{0,0};
+    }
+        
     public String getAlias() {
         return alias;
     }
@@ -69,8 +92,8 @@ public class CustomField extends ColumnDef implements Serializable {
         return filterable;
     }
 
-    public Class getColumnClass(){
-        switch (type){
+    public Class getColumnClass() {
+        switch (type) {
             case BOOLEAN:
                 return Boolean.class;
             case INTEGER:
@@ -87,23 +110,24 @@ public class CustomField extends ColumnDef implements Serializable {
         }
     }
 
-    public String generateSchema(){
+    public String generateSchema() {
         return generateSchema(false);
     }
 
-    public String generateSchema(boolean forceLowerCase){
+    public String generateSchema(boolean forceLowerCase) {
         return "`" + (forceLowerCase ? name.toLowerCase() : name) + "` " + getTypeString() + " DEFAULT NULL,";
     }
 
     /**
-     * Get the SQL string describing this type.  For now, this ignores the auto-increment, non-null, primary-key, and default fields.
-     * Also, since we don't have any ColumnDefs which specify a precision, we don't handle FLOATs and DECIMALs quite right.
+     * Get the SQL string describing this type. For now, this ignores the
+     * auto-increment, non-null, primary-key, and default fields. 
+     *
      * @return
      */
     public String getTypeString() {
         switch (type) {
             case VARCHAR:
-                 return "varchar(" + length + ")";
+                return "varchar(" + length + ")";
             case BOOLEAN:
                 return "int(1)";
             case INTEGER:
@@ -111,10 +135,9 @@ public class CustomField extends ColumnDef implements Serializable {
             case FLOAT:
                 // TODO: Honour the length field, and supply a precision.
                 return "float";
-            case DECIMAL:
-                // TODO: Honour the length field, and supply a precision.
-                return "decimal";
-        }
+            case DECIMAL:                                
+                return (length>0) ? ("decimal("+length+", "+scale+")") : "decimal";            
+        }        
         return type.toString();
     }
 
@@ -122,33 +145,17 @@ public class CustomField extends ColumnDef implements Serializable {
         return type.isNumeric();
     }
 
-    private static int extractColumnLength(String typeStr) {
-        int posLeft = typeStr.indexOf('(');
-        if (posLeft == -1) {
-            return 0;
-        }
-        typeStr = typeStr.substring(posLeft + 1);
-        int posRight = typeStr.indexOf(')');
-        typeStr = typeStr.substring(0, posRight);
-        posRight = typeStr.indexOf(',');
-        if (posRight >= 0) {
-            typeStr = typeStr.substring(0, posRight);
-        }
-        return Integer.parseInt(typeStr);
-    }
-
-
     @Override
     public String toString() {
         return alias;
     }
 
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (o == null || !o.getClass().equals(CustomField.class)) {
             return false;
         }
-        CustomField other = (CustomField)o;
+        CustomField other = (CustomField) o;
         return name.equals(other.name) && type == other.type && length == other.length;
     }
 

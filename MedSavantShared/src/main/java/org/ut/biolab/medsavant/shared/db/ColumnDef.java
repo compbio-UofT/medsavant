@@ -28,25 +28,36 @@ public class ColumnDef implements Serializable {
     protected final String name;
     protected final ColumnType type;
     protected final int length;
+    protected final int scale;
     protected final String defaultValue;
     protected final boolean autoIncrement;
     protected final boolean nonNull;
     protected final boolean primaryKey;
 
+    public ColumnDef(String n, ColumnType t, int length){
+        this(n, t, new int[]{length, 0}, true);
+    }
+    
     /**
      * Construct a generic not-null column.  No auto-increment or indexing.
      * @param n column name
      * @param t SQL column type
      * @param l column length
+     * @param p column precision -- used only for decimal types
      */
-    public ColumnDef(String n, ColumnType t, int l) {
-        this(n, t, l, false, true, false, null);
+    public ColumnDef(String n, ColumnType t, int[] lengthAndScale, boolean notNull) {
+        this(n, t, lengthAndScale[0], lengthAndScale[1], false, notNull, false, null);
     }
 
     public ColumnDef(String n, ColumnType t, int l, boolean autoInc, boolean notNull, boolean indexed, String dflt) {
+        this(n, t, l, 0, autoInc, notNull, indexed, dflt);
+    }
+    
+    public ColumnDef(String n, ColumnType t, int l, int s, boolean autoInc, boolean notNull, boolean indexed, String dflt) {
         name = n;
         type = t;
         length = l;
+        scale = s;
         autoIncrement = autoInc;
         nonNull = notNull;
         primaryKey = indexed;
@@ -56,6 +67,10 @@ public class ColumnDef implements Serializable {
 
     public int getColumnLength() {
         return length;
+    }
+    
+    public int getColumnScale(){
+        return scale;
     }
 
     public String getColumnName() {

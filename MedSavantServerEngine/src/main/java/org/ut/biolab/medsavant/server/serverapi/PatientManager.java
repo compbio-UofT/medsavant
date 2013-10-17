@@ -244,7 +244,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String tableName = DBSettings.createPatientTableName(projID);
         TableSchema patientSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicPatientColumns.class);
         for (CustomField field: fields) {
-            patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength());
+            patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength(), field.getColumnScale());
         }
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -314,7 +314,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         InsertQuery query = new InsertQuery(table.getTable());
         for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
-            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getTypeString(), 100), values.get(i));
+            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getTypeString(), 100, 0), values.get(i));
         }
 
         ConnectionController.executeUpdate(sid,  query.toString());

@@ -85,10 +85,9 @@ public class AnnotationDownloadInformation implements Serializable {
     /**
      * Static helper variables / methods
      */
-    private static final String databaseURL = "http://genomesavant.com/medsavant/serve/annotation/annotation.xml";
-
+//    private static final String databaseURL = "http://genomesavant.com/medsavant/serve/annotation/annotation.xml";
+    private static final String databaseURL = "http://compbio.cs.toronto.edu/savant/data/dropbox/annotationDirectory.xml";
     private static File downloadAnnotationDatabase() throws IOException {
-
         String targetFileName = "AnnotationDatabase.xml";
         File targetDir = DirectorySettings.getTmpDirectory();
         NetworkUtils.downloadFile(new URL(databaseURL), targetDir, targetFileName);
@@ -101,7 +100,7 @@ public class AnnotationDownloadInformation implements Serializable {
 
 
     public static List<AnnotationDownloadInformation> getDownloadableAnnotations(String versionName, String referenceName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-
+        System.out.println("Getting downloadable Annotations for version "+versionName);
         File f = downloadAnnotationDatabase();
 
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
