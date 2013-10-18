@@ -134,8 +134,9 @@ public class ExportVCF implements BasicVariantColumns {
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
         String[] customColumnNames = new String[table.getNumFields() - INDEX_OF_CUSTOM_INFO - 1];
         List<DbColumn> allColumns = table.getColumns();
-        for (int i = INDEX_OF_CUSTOM_INFO + 2; i <= table.getNumFields(); i++) {
-            customColumnNames[i - 2 - INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
+                 
+        for (int i = INDEX_OF_CUSTOM_INFO + 1; i < table.getNumFields(); i++) {                                                 
+            customColumnNames[i - 1 - INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
         }
         int infoMin = INDEX_OF_CUSTOM_INFO + 1;
         int infoMax = table.getNumFields();
@@ -144,19 +145,21 @@ public class ExportVCF implements BasicVariantColumns {
 
         double numSteps = ReferenceController.getInstance().getChromosomes().length * 6;
         String line;
+               
         while ((line = in.readLine()) != null) {
-            // parse row
-            String[] record = line.split(",");
+            // parse row         
+            //String[] record = line.split(",");
+            String[] record = line.split("\t");
             String row = "";
 
             // dna id
-            String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);
+            String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);            
             row += dnaId + "\t";
             dnaIds.add(dnaId);
-
+            
             // genotype
             row += cleanField(record[BasicVariantColumns.INDEX_OF_GT]) + "\t";
-
+            
             // default fields
             row +=
                 cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t"
@@ -167,6 +170,7 @@ public class ExportVCF implements BasicVariantColumns {
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_QUAL])) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_FILTER])) + "\t";
 
+           
             // extra fields
             for (int j = infoMin; j < infoMax; j++) {
                 if (j < record.length) {

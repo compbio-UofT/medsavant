@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.client.variant;
 
 import java.awt.event.ActionEvent;
@@ -46,7 +45,6 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
  *
  * @author Andrew
@@ -55,7 +53,6 @@ public class ExportVCFWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ExportVCFWizard.class);
     private static final int NUM_WARNING = 1000000;
-
     private File variantFile = null;
     private JLabel completionLabel;
 
@@ -85,6 +82,7 @@ public class ExportVCFWizard extends WizardDialog {
                     addComponent(new JLabel(String.format("<html><font color=\"red\">WARNING:</font><br>There are currently more than %,d records to be exported.<br><br>This may take a long time and produce a very large file!</html>", NUM_WARNING)));
                 }
             }
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -97,7 +95,6 @@ public class ExportVCFWizard extends WizardDialog {
     private AbstractDialogPage getFilePage() {
 
         final DefaultWizardPage page = new DefaultWizardPage("Choose File") {
-
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -116,10 +113,9 @@ public class ExportVCFWizard extends WizardDialog {
         outputFileField.setEnabled(false);
         JButton chooseFileButton = new JButton("...");
         chooseFileButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
-                variantFile = DialogUtils.chooseFileForSave("Export Variants", "export.vcf", ExtensionFileFilter.createFilters(new String[] { "vcf" }), null);
+                variantFile = DialogUtils.chooseFileForSave("Export Variants", "export.vcf", ExtensionFileFilter.createFilters(new String[]{"vcf"}), null);
                 if (variantFile == null) {
                     page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                 } else {
@@ -127,7 +123,6 @@ public class ExportVCFWizard extends WizardDialog {
                     outputFileField.setText(variantFile.getAbsolutePath());
                 }
             }
-
         });
         JPanel container = new JPanel();
         ViewUtil.clear(container);
@@ -148,6 +143,7 @@ public class ExportVCFWizard extends WizardDialog {
             private final JLabel progressLabel;
             private final JProgressBar progress;
             private final JButton workButton;
+
             {
                 progressLabel = new JLabel("Click \"Start\" to begin export.");
                 addComponent(progressLabel);
@@ -185,11 +181,12 @@ public class ExportVCFWizard extends WizardDialog {
 
                             @Override
                             protected void showProgress(double fraction) {
-                                progress.setValue((int)Math.round(fraction * 100.0));
+                                progress.setValue((int) Math.round(fraction * 100.0));
                             }
 
                             @Override
                             protected void showSuccess(Void ignored) {
+                                progressLabel.setText("Export successful.");
                                 workButton.setEnabled(false);
                                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                             }
@@ -200,7 +197,7 @@ public class ExportVCFWizard extends WizardDialog {
                                 workButton.setEnabled(false);
                                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                                 completionLabel.setText("Export was cancelled by the user.");
-                                System.out.println(ex.getMessage());
+                                System.out.println("Exception " + ex.getClass() + ": " + ex.getMessage());
                             }
                         }.execute();
                     }
@@ -222,6 +219,7 @@ public class ExportVCFWizard extends WizardDialog {
                 completionLabel = new JLabel("Export completed successfully.");
                 addComponent(completionLabel);
             }
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -230,5 +228,4 @@ public class ExportVCFWizard extends WizardDialog {
             }
         };
     }
-
 }

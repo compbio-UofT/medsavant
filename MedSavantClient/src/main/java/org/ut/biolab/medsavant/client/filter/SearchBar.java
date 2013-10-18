@@ -314,8 +314,7 @@ public class SearchBar extends JPanel {
 
         actionLabel.addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent me) {
-                System.out.println("Showing actions");
+            public void mouseClicked(MouseEvent me) {                
                 actionPopup.show(actionLabel, 0, -(actionLabel.getHeight()));
             }
 
