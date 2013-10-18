@@ -136,7 +136,9 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
                             setVisible(false);
                             numCouldntRemove++;
                             ClientMiscUtils.reportError("Error removing user \"" + name + "\": %s", ex);
+                            this.dispose();
                         }
+                        this.dispose();
                     }
                 }.setVisible(true);
             }
