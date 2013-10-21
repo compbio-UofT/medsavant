@@ -16,9 +16,9 @@
 package medsavant.incidental;
 
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import medsavant.incidental.view.IncidentalPanel;
 
 
 /**
@@ -28,15 +28,16 @@ import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
  */
 public class IncidentalApp extends MedSavantClinicApp {
 
-    private JPanel p;
+    private static final String iconroot= "/medsavant/incidental/icon/";
+    
+    private IncidentalPanel p;
 
     @Override
     public JPanel getContent() {
         if (p == null) {
-            p = new JPanel();
-            p.add(new JLabel("Incidentalome"));
+            p = new IncidentalPanel();
         }
-        return p;
+        return p.getView();
     }
 
     /**
@@ -54,8 +55,6 @@ public class IncidentalApp extends MedSavantClinicApp {
     @Override
     public void viewDidUnload() {
     }
-
-    private static final String iconroot = "/medsavant/incidental/icon/";
 
     @Override
     public ImageIcon getIcon() {
