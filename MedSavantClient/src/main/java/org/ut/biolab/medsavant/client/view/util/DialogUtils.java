@@ -89,7 +89,7 @@ public class DialogUtils {
 
     public static void displayMessage(String title, String message) {
         JOptionPane.showMessageDialog(getFrontWindow(), message, title, JOptionPane.PLAIN_MESSAGE);
-    }
+    }        
 
     public static String displayInputMessage(String title, String message, String defaultInput) {
         String result = JOptionPane.showInputDialog(getFrontWindow(), message, title, JOptionPane.QUESTION_MESSAGE);

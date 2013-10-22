@@ -73,6 +73,10 @@ public class ConnectionController {
     static String getConnectionString(String db) {
         return getConnectionString(dbHost, dbPort, db);
     }
+    
+    public static void revalidate(String user, String pass, String sessionID) throws SQLException{        
+        connectOnce(dbHost, dbPort, getDBName(sessionID), user, pass);                
+    }
 
     public static Connection connectOnce(String host, int port, String db, String user, String pass) throws SQLException {
         try {

@@ -45,7 +45,6 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIDefaults;
@@ -57,6 +56,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -89,7 +89,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static String restartCommand;
     private static boolean restarting = false;
 
-
     /**
      * Quits MedSavant
      */
@@ -97,10 +96,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
         LoginController.getInstance().logout();
     }
 
-
     /**
-     * Restarts MedSavant
-     * (This function has NOT been tested with Web Start)
+     * Restarts MedSavant (This function has NOT been tested with Web Start)
      */
     public static void restart() {
         if (!restarting) {
@@ -187,12 +184,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
             }
         }
 
-
         frame = MedSavantFrame.getInstance();
         frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
+       
         //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
 
         //required for FORGE plugin
@@ -244,7 +241,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setLAF() {
         try {
 
-           // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
+            // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
             //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
             //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
