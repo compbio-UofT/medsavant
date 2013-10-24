@@ -769,7 +769,7 @@ public final class ViewUtil {
     public static JProgressBar getIndeterminateProgressBar() {
         JProgressBar b = new JProgressBar();
         b.setIndeterminate(true);
-        if (ClientMiscUtils.MAC) {
+        if (ClientMiscUtils.MAC /*&& !isJava7()*/) {
             b.putClientProperty("JProgressBar.style", "circular");
         }
         return b;
@@ -895,6 +895,10 @@ public final class ViewUtil {
             }
         });
         return helpButton;
+    }
+
+    private static boolean isJava7() {
+        return System.getProperty("java.version").startsWith("1.7");
     }
 
 
