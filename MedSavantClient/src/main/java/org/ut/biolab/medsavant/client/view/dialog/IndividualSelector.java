@@ -101,7 +101,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         return selectedHospitalIDs;
     }
 
-    private Set<String> getDNAIDsOfSelectedIndividuals() {
+    public Set<String> getDNAIDsOfSelectedIndividuals() {
         Set<String> ids = new HashSet<String>();
         for (int i : selectedRows) {
             String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_IDS];
