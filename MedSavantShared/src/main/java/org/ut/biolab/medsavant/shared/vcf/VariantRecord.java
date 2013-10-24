@@ -14,7 +14,8 @@ import org.apache.commons.lang3.StringEscapeUtils;
 public class VariantRecord implements Serializable {
 
     public static enum VariantType {
-        SNP,Insertion, Deletion, Various, Unknown;
+
+        SNP, Insertion, Deletion, Various, Unknown;
 
         public static VariantType getVariantType(int type) {
             switch (type) {
@@ -33,7 +34,10 @@ public class VariantRecord implements Serializable {
             }
         }
     };
-    public static enum Zygosity {HomoRef, HomoAlt, Hetero, HeteroTriallelic, Missing;
+
+    public static enum Zygosity {
+
+        HomoRef, HomoAlt, Hetero, HeteroTriallelic, Missing;
 
         public static Zygosity getZygosity(int zygosity) {
             switch (zygosity) {
@@ -52,7 +56,6 @@ public class VariantRecord implements Serializable {
             }
         }
     };
-
     private static final int FILE_INDEX_OF_CHROM = 0;
     private static final int FILE_INDEX_OF_POS = FILE_INDEX_OF_CHROM + 1;
     private static final int FILE_INDEX_OF_DBSNPID = FILE_INDEX_OF_POS + 1;
@@ -61,7 +64,6 @@ public class VariantRecord implements Serializable {
     private static final int FILE_INDEX_OF_QUAL = FILE_INDEX_OF_ALT + 1;
     private static final int FILE_INDEX_OF_FILTER = FILE_INDEX_OF_QUAL + 1;
     private static final int FILE_INDEX_OF_INFO = FILE_INDEX_OF_FILTER + 1;
-
     public static final Class CLASS_OF_VARIANTID = Integer.class;
     public static final Class CLASS_OF_GENOMEID = Integer.class;
     public static final Class CLASS_OF_PIPELINEID = String.class;
@@ -74,11 +76,9 @@ public class VariantRecord implements Serializable {
     public static final Class CLASS_OF_QUAL = Float.class;
     public static final Class CLASS_OF_FILTER = String.class;
     public static final Class CLASS_OF_CUSTOMINFO = String.class;
-
     private int uploadID;
     private int fileID;
     private int variantID;
-
     private int genomeID;
     private int pipelineID;
     private String dnaID;
@@ -94,7 +94,6 @@ public class VariantRecord implements Serializable {
     private String genotype;
     private String customInfo;
     private Object[] customFields;
-
     private String ancestralAllele;
     private Integer alleleCount;
     private Float alleleFrequency;
@@ -113,44 +112,48 @@ public class VariantRecord implements Serializable {
     private Boolean isSomatic;
     private Boolean isValidated;
     private Boolean isInThousandGenomes;
-
-
     public static final String nullString = ".";
 
     /*
      * DO NOT USE THIS UNLESS YOU KNOW WHAT YOU'RE DOING
      * Useful for creating empty record in some circumstances
      */
-    public VariantRecord() {}
+    public VariantRecord() {
+    }
 
-    public VariantRecord(String[] line) throws Exception{//, String[] infoKeys, Class[] infoClasses) {
-        dnaID =  null;
-        chrom =         (String)    parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
-        position =      (Long)      parse(CLASS_OF_POSITION, line[FILE_INDEX_OF_POS]);
-        dbSNPID =       (String)    parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);
-        ref =           (String)    parse(CLASS_OF_REF, line[FILE_INDEX_OF_REF]);
-        alt =           (String)    parse(CLASS_OF_ALT, line[FILE_INDEX_OF_ALT]);
-        qual =          (Float)     parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
-        filter =        (String)    parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
-        customInfo =    (String)    parse(CLASS_OF_CUSTOMINFO, line[FILE_INDEX_OF_INFO]);
+    public VariantRecord(String[] line) throws Exception {//, String[] infoKeys, Class[] infoClasses) {
+        dnaID = null;
+        chrom = (String) parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
+        position = (Long) parse(CLASS_OF_POSITION, line[FILE_INDEX_OF_POS]);
+        dbSNPID = (String) parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);
+        ref = (String) parse(CLASS_OF_REF, line[FILE_INDEX_OF_REF]);
+        alt = (String) parse(CLASS_OF_ALT, line[FILE_INDEX_OF_ALT]);
+        qual = (Float) parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
+        filter = (String) parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
+        customInfo = (String) parse(CLASS_OF_CUSTOMINFO, line[FILE_INDEX_OF_INFO]);
 
-        if ((ref == null || ref.length()==0) && (alt == null || alt.length()==0)){
+        if ((ref == null || ref.length() == 0) && (alt == null || alt.length() == 0)) {
             throw new Exception();
         }
-        if(ref != null && ref.length() > 30){
+        if (ref != null && ref.length() > 30) {
             ref = "(too long to display)";
         }
-        if (alt != null && alt.length() > 30){
+        if (alt != null && alt.length() > 30) {
             alt = "(too long to display)";
         }
 
         type = getVariantType(ref, alt);
+
+        if (chrom.startsWith("chr")) {
+            //chrom = "chr"+chrom; 
+            chrom = chrom.replace("chr", "");
+        }
+
         //genotype = getGenotype(ref, alt); // DO THESE TOGETHER?
         //zygosity = calculateZygosity(); //
 
         //parseInfo(line[FILE_INDEX_OF_INFO], infoKeys, infoClasses);
     }
-
 
     public VariantRecord(
             int uploadID,
@@ -167,8 +170,7 @@ public class VariantRecord implements Serializable {
             float qual,
             String filter,
             String customInfo,
-            Object[] customFields
-            ){
+            Object[] customFields) {
         this.uploadID = uploadID;
         this.fileID = fileID;
         this.variantID = variantID;
@@ -206,11 +208,13 @@ public class VariantRecord implements Serializable {
     private static Object parse(Class c, String value) {
 
         if (c == String.class) {
-            if(value.equals(nullString)) return "";
+            if (value.equals(nullString)) {
+                return "";
+            }
             return value;
         }
 
-        if(value.equals(nullString)){
+        if (value.equals(nullString)) {
             return null;
         }
 
@@ -248,10 +252,10 @@ public class VariantRecord implements Serializable {
     }
 
     public VariantType getVariantType(String ref, String alt) {
-        if(ref.startsWith("<") || alt.startsWith("<")){
-            if(alt.contains("<DEL>") || ref.contains("<DEL>")){
+        if (ref.startsWith("<") || alt.startsWith("<")) {
+            if (alt.contains("<DEL>") || ref.contains("<DEL>")) {
                 return VariantType.Deletion;
-            } else if (alt.contains("<INS>") || ref.contains("<INS>")){
+            } else if (alt.contains("<INS>") || ref.contains("<INS>")) {
                 return VariantType.Insertion;
             } else {
                 return VariantType.Unknown;
@@ -259,10 +263,10 @@ public class VariantRecord implements Serializable {
         }
 
         VariantType result = null;
-        for(String s : alt.split(",")){
-            if(ref == null || (s != null && s.length() > ref.length())){
+        for (String s : alt.split(",")) {
+            if (ref == null || (s != null && s.length() > ref.length())) {
                 result = variantTypeHelper(result, VariantType.Insertion);
-            } else if (s == null || (ref != null && ref.length() > s.length())){
+            } else if (s == null || (ref != null && ref.length() > s.length())) {
                 result = variantTypeHelper(result, VariantType.Deletion);
             } else {
                 result = variantTypeHelper(result, VariantType.SNP);
@@ -271,30 +275,30 @@ public class VariantRecord implements Serializable {
         return result;
     }
 
-    private VariantType variantTypeHelper(VariantType currentType, VariantType newType){
-        if(currentType == null || currentType == newType){
+    private VariantType variantTypeHelper(VariantType currentType, VariantType newType) {
+        if (currentType == null || currentType == newType) {
             return newType;
         } else {
             return VariantType.Various;
         }
     }
 
-    public static Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses){
+    public static Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses) {
         Object[] values = new Object[infoKeys.length];
 
         infoString = infoString.trim();
         String[] list = infoString.split(";");
 
-        for(String element : list){
+        for (String element : list) {
             String name = element;
             String value = "";
             int equals = element.indexOf("=");
-            if(equals != -1){
+            if (equals != -1) {
                 name = element.substring(0, equals);
-                value = element.substring(equals+1);
+                value = element.substring(equals + 1);
             }
-            for(int i = 0; i < infoKeys.length; i++){
-                if(name.toLowerCase().equals(infoKeys[i].toLowerCase())){
+            for (int i = 0; i < infoKeys.length; i++) {
+                if (name.toLowerCase().equals(infoKeys[i].toLowerCase())) {
                     values[i] = parse(infoClasses[i], value);
                 }
             }
@@ -303,30 +307,31 @@ public class VariantRecord implements Serializable {
         return values;
     }
 
-    public int getUploadID(){
+    public int getUploadID() {
         return uploadID;
     }
 
-    public void setUploadIDID(int uploadID){
+    public void setUploadIDID(int uploadID) {
         this.uploadID = uploadID;
     }
-    public int getFileID(){
+
+    public int getFileID() {
         return fileID;
     }
 
-    public void setFileID(int fileID){
+    public void setFileID(int fileID) {
         this.fileID = fileID;
     }
 
-    public int getVariantID(){
+    public int getVariantID() {
         return variantID;
     }
 
-    public void setVariantID(int variantID){
+    public void setVariantID(int variantID) {
         this.variantID = variantID;
     }
 
-    public int getGenomeID(){
+    public int getGenomeID() {
         return genomeID;
     }
 
@@ -334,11 +339,11 @@ public class VariantRecord implements Serializable {
         this.genomeID = genomeID;
     }
 
-    public int getPipelineID(){
+    public int getPipelineID() {
         return pipelineID;
     }
 
-    public void setPipelineID(int pipelineID){
+    public void setPipelineID(int pipelineID) {
         this.pipelineID = pipelineID;
     }
 
@@ -406,11 +411,11 @@ public class VariantRecord implements Serializable {
         this.dnaID = dnaID;
     }
 
-    public String getCustomInfo(){
+    public String getCustomInfo() {
         return customInfo;
     }
 
-    public void setCustomInfo(String customInfo){
+    public void setCustomInfo(String customInfo) {
         this.customInfo = customInfo;
         extractInfo(customInfo);
     }
@@ -447,19 +452,19 @@ public class VariantRecord implements Serializable {
         this.customFields = customFields;
     }
 
-    public int compareTo(VariantRecord other){
+    public int compareTo(VariantRecord other) {
         return compareTo(other.getChrom(), other.getPosition());
     }
 
-    public int compareTo(String chrom, long pos){
+    public int compareTo(String chrom, long pos) {
         int chromCompare = compareChrom(this.getChrom(), chrom);
-        if(chromCompare != 0){
+        if (chromCompare != 0) {
             return chromCompare;
         }
         return this.getPosition().compareTo(pos);
     }
 
-    public static int compareChrom(String chrom1, String chrom2){
+    public static int compareChrom(String chrom1, String chrom2) {
         chrom1 = chrom1.substring(3);
         chrom2 = chrom2.substring(3);
         try {
@@ -474,7 +479,6 @@ public class VariantRecord implements Serializable {
     /*
      * CUSTOM INFO
      */
-
     public Integer getAlleleCount() {
         return alleleCount;
     }
@@ -548,36 +552,44 @@ public class VariantRecord implements Serializable {
     }
 
     private Float extractFloatFromInfo(String key, String customInfo) {
-        String val = extractValueFromInfo(key,customInfo);
+        String val = extractValueFromInfo(key, customInfo);
         return (Float) VariantRecord.parse(Float.class, val);
     }
 
     private String extractStringFromInfo(String key, String customInfo) {
-        String val = extractValueFromInfo(key,customInfo);
+        String val = extractValueFromInfo(key, customInfo);
         return val;
     }
 
     private Long extractLongFromInfo(String key, String customInfo) {
-        String val = extractValueFromInfo(key,customInfo);
+        String val = extractValueFromInfo(key, customInfo);
         return (Long) VariantRecord.parse(Long.class, val);
     }
 
     private Integer extractIntegerFromInfo(String key, String customInfo) {
-        String val = extractValueFromInfo(key,customInfo);
+        String val = extractValueFromInfo(key, customInfo);
         return (Integer) VariantRecord.parse(Integer.class, val);
     }
 
     private Boolean extractBooleanFromInfo(String key, String customInfo) {
-        Integer val = extractIntegerFromInfo(key,customInfo);
-        if (val == null) { return null; }
-        if (val == 1) { return true; } else { return false; }
+        Integer val = extractIntegerFromInfo(key, customInfo);
+        if (val == null) {
+            return null;
+        }
+        if (val == 1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private String extractValueFromInfo(String key, String customInfo) {
 
         String eKey = key + "=";
         int startIndex = customInfo.indexOf(eKey);
-        if (startIndex == -1) { return ""; }
+        if (startIndex == -1) {
+            return "";
+        }
         startIndex += eKey.length();
         String sub = customInfo.substring(startIndex);
         int endIndex = sub.indexOf(";");
@@ -586,10 +598,9 @@ public class VariantRecord implements Serializable {
         if (endIndex == -1) {
             //System.out.println(key + ":" + sub);
             result = sub;
-        }
-        else {
+        } else {
             //System.out.println(key + ":" + sub.substring(0,endIndex));
-            result = sub.substring(0,endIndex);
+            result = sub.substring(0, endIndex);
         }
 
         if (result.equals("")) {
@@ -604,54 +615,52 @@ public class VariantRecord implements Serializable {
 
         //System.out.println("Extracting info from: " + info);
 
-        this.ancestralAllele    = extractStringFromInfo ("AA",info);
-        this.alleleCount        = extractIntegerFromInfo("AC",info);
-        this.alleleFrequency    = extractFloatFromInfo  ("AF",info);
-        this.numberOfAlleles    = extractIntegerFromInfo("AN",info);
-        this.baseQuality        = extractIntegerFromInfo("BQ",info);
-        this.cigar              = extractStringFromInfo ("CIGAR",info);
-        this.dbSNPMembership    = extractBooleanFromInfo("DB",info);
-        this.depthOfCoverage    = extractIntegerFromInfo("DP",info);
-        this.endPosition        = extractLongFromInfo   ("END",info);
-        this.hapmap2Membership  = extractBooleanFromInfo("H2",info);
-        this.hapmap3Membership  = extractBooleanFromInfo("H3",info);
-        this.mappingQuality     = extractIntegerFromInfo("MQ",info);
-        this.numberOfZeroMQ     = extractIntegerFromInfo("MQ0",info);
-        this.numberOfSamplesWithData    = extractIntegerFromInfo("NS",info);
-        this.strandBias         = extractFloatFromInfo  ("SB",info);
-        this.isSomatic          = extractBooleanFromInfo("SOMATIC",info);
-        this.isValidated        = extractBooleanFromInfo("VALIDATED",info);
-        this.isInThousandGenomes = extractBooleanFromInfo("1000G",info);
+        this.ancestralAllele = extractStringFromInfo("AA", info);
+        this.alleleCount = extractIntegerFromInfo("AC", info);
+        this.alleleFrequency = extractFloatFromInfo("AF", info);
+        this.numberOfAlleles = extractIntegerFromInfo("AN", info);
+        this.baseQuality = extractIntegerFromInfo("BQ", info);
+        this.cigar = extractStringFromInfo("CIGAR", info);
+        this.dbSNPMembership = extractBooleanFromInfo("DB", info);
+        this.depthOfCoverage = extractIntegerFromInfo("DP", info);
+        this.endPosition = extractLongFromInfo("END", info);
+        this.hapmap2Membership = extractBooleanFromInfo("H2", info);
+        this.hapmap3Membership = extractBooleanFromInfo("H3", info);
+        this.mappingQuality = extractIntegerFromInfo("MQ", info);
+        this.numberOfZeroMQ = extractIntegerFromInfo("MQ0", info);
+        this.numberOfSamplesWithData = extractIntegerFromInfo("NS", info);
+        this.strandBias = extractFloatFromInfo("SB", info);
+        this.isSomatic = extractBooleanFromInfo("SOMATIC", info);
+        this.isValidated = extractBooleanFromInfo("VALIDATED", info);
+        this.isInThousandGenomes = extractBooleanFromInfo("1000G", info);
     }
 
     /**
      * END CUSTOM INFO
      */
-
     @Override
     public String toString() {
         return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + position + "id=" + dbSNPID + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';
     }
-
     private static String delim = "\t";
 
     public String toTabString(int uploadId, int fileId, int variantId) {
         String s =
-                "\"" + getString(uploadId) + "\"" + delim +
-                "\"" + getString(fileId) + "\"" + delim +
-                "\"" + getString(variantId) + "\"" + delim +
-                "\"" + getString(this.dnaID) + "\"" + delim +
-                "\"" + getString(this.chrom) + "\"" + delim +
-                "\"" + getString(this.position) + "\"" + delim +
-                "\"" + getString(this.dbSNPID) + "\"" + delim +
-                "\"" + getString(this.ref) + "\"" + delim +
-                "\"" + getString(this.alt) + "\"" + delim +
-                "\"" + getString(this.qual) + "\"" + delim +
-                "\"" + getString(this.filter) + "\"" + delim +
-                "\"" + getString(this.type) + "\"" + delim +
-                "\"" + getString(this.zygosity) + "\"" + delim +
-                "\"" + getString(this.genotype) + "\"" + delim +
-                "\"" + getString(this.customInfo) + "\"";// + delim;
+                "\"" + getString(uploadId) + "\"" + delim
+                + "\"" + getString(fileId) + "\"" + delim
+                + "\"" + getString(variantId) + "\"" + delim
+                + "\"" + getString(this.dnaID) + "\"" + delim
+                + "\"" + getString(this.chrom) + "\"" + delim
+                + "\"" + getString(this.position) + "\"" + delim
+                + "\"" + getString(this.dbSNPID) + "\"" + delim
+                + "\"" + getString(this.ref) + "\"" + delim
+                + "\"" + getString(this.alt) + "\"" + delim
+                + "\"" + getString(this.qual) + "\"" + delim
+                + "\"" + getString(this.filter) + "\"" + delim
+                + "\"" + getString(this.type) + "\"" + delim
+                + "\"" + getString(this.zygosity) + "\"" + delim
+                + "\"" + getString(this.genotype) + "\"" + delim
+                + "\"" + getString(this.customInfo) + "\"";// + delim;
         //for(Object o : this.customFields){
         //    s += "\"" + getString(o) + "\"" + delim;
         //}
@@ -661,18 +670,20 @@ public class VariantRecord implements Serializable {
 
     public static String createTabString(Object[] values) {
         String s = "";
-        if(values.length == 0) return s;
-        for(Object o : values){
+        if (values.length == 0) {
+            return s;
+        }
+        for (Object o : values) {
             s += "\"" + StringEscapeUtils.escapeJava(getString(o)) + "\"" + delim;
         }
-        return s.substring(0, s.length()-1);
+        return s.substring(0, s.length() - 1);
     }
 
-    private static String getString(Object value){
-        if(value == null){
+    private static String getString(Object value) {
+        if (value == null) {
             return "";
-        } else if (value instanceof Boolean){
-            if((Boolean)value){
+        } else if (value instanceof Boolean) {
+            if ((Boolean) value) {
                 return "1";
             } else {
                 return "0";
@@ -681,5 +692,4 @@ public class VariantRecord implements Serializable {
             return value.toString();
         }
     }
-
 }

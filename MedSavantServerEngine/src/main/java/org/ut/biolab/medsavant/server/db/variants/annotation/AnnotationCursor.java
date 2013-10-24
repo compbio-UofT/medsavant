@@ -343,8 +343,8 @@ public class AnnotationCursor {
 
         private void setFromLinePosition(String[] line) {
             chrom = line[pos_annot_index_of_chr];
-            if(!chrom.startsWith("chr")){
-                chrom = "chr"+chrom; 
+            if(chrom.startsWith("chr")){            //only do the number    
+                chrom = chrom.replace("chr", "");                                                                
             }
             position = Integer.parseInt(line[pos_annot_index_of_pos]);
             if (annotationHasRef) {
@@ -361,8 +361,9 @@ public class AnnotationCursor {
 
         private void setFromLineInterval(String[] line) {
             chrom = line[int_annot_index_of_chr];
-            if(!chrom.startsWith("chr")){
-                chrom = "chr"+chrom; 
+            if(chrom.startsWith("chr")){
+                //chrom = "chr"+chrom; 
+                chrom = chrom.replace("chr", "");                                                                
             }
             start = Integer.parseInt(line[int_annot_index_of_start]);
             end = Integer.parseInt(line[int_annot_index_of_end]);
