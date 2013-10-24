@@ -26,14 +26,10 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.plugin.AppController;
-import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -41,8 +37,9 @@ import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
- * Panel which holds together a group of related filters which are ANDed together to form a single query.  Multiple <code>QueryPanel</code>
- * can be ORed together.
+ * Panel which holds together a group of related filters which are ANDed
+ * together to form a single query. Multiple
+ * <code>QueryPanel</code> can be ORed together.
  *
  * @author mfiume
  */
@@ -50,9 +47,7 @@ public class QueryPanel extends CollapsiblePanes {
 
     static final Color INACTIVE_KEY_COLOR = Color.GRAY;
     static final Color ACTIVE_KEY_COLOR = new Color(72, 181, 249); // Color.red;
-
     private int queryID;
-
     private Map<String, FilterHolder> filterHolders = new TreeMap<String, FilterHolder>();
 
     public QueryPanel(int queryID) {
@@ -131,7 +126,7 @@ public class QueryPanel extends CollapsiblePanes {
                 if (!name.toLowerCase().contains("conditions")) {
                     name = name + " Conditions";
                 }
-                panes.add(addFilterCategory(ViewUtil.ellipsize(name,40), catHolders, false), BorderLayout.CENTER);
+                panes.add(addFilterCategory(ViewUtil.ellipsize(name, 40), catHolders, false), BorderLayout.CENTER);
             }
 
             // Ontology filters
@@ -165,12 +160,12 @@ public class QueryPanel extends CollapsiblePanes {
         KeyValuePairPanel kvp = new KeyValuePairPanel(2);
         cPane.add(kvp, BorderLayout.CENTER);
 
-        for (FilterHolder f: catHolders) {
+        for (FilterHolder f : catHolders) {
             f.addTo(kvp, longRunning);
         }
 
         FilterController.getInstance().addListener(new FilterEventListener(cPane, kvp));
-        for (FilterHolder h: catHolders) {
+        for (FilterHolder h : catHolders) {
             filterHolders.put(h.getFilterID(), h);
         }
         catHolders.clear();
@@ -179,7 +174,8 @@ public class QueryPanel extends CollapsiblePanes {
     }
 
     /**
-     * Given state loaded in from a saved file, find the correct filter holder and load in the given info.
+     * Given state loaded in from a saved file, find the correct filter holder
+     * and load in the given info.
      */
     public void loadFilterView(FilterState state) throws Exception {
         FilterHolder h = filterHolders.get(state.getFilterID());
@@ -192,6 +188,7 @@ public class QueryPanel extends CollapsiblePanes {
     }
 
     private class FilterEventListener implements Listener<FilterEvent> {
+
         private final String baseTitle;
         private final CollapsiblePane collapsiblePane;
         private final KeyValuePairPanel keyValuePanel;

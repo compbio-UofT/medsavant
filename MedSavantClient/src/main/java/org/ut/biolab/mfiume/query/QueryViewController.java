@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -404,7 +405,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
     public void loadConditions(File f) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Element rootElement = db.parse(f).getDocumentElement();
@@ -643,10 +643,18 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
 
             public void addItemBasedOnField() {
-                SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
+                final SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
                 m.setVisible(false);
                 field.setText("");
-                view.showDialog(getLocationOnScreen());
+                Point p =  getLocationOnScreen();
+                
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run(){                        
+                        view.showDialog(view.getLocationOnScreen());                        
+                    }
+                });
+                
             }
 
             private void refreshPopup() {

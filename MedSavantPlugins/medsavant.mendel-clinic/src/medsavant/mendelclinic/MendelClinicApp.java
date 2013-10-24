@@ -15,18 +15,10 @@
  */
 package medsavant.mendelclinic;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 import medsavant.mendelclinic.view.MendelPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  * Demonstration plugin to show how to do a simple panel.

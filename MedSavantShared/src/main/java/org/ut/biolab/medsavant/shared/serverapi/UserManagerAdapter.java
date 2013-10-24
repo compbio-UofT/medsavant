@@ -36,5 +36,6 @@ public interface UserManagerAdapter extends Remote {
     public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, RemoteException, SessionExpiredException;
     public UserLevel getUserLevel(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
     public void removeUser(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
+    public void changePassword(String sessID, String userName, char[] oldPass, char[] newPass)  throws SQLException, RemoteException, SessionExpiredException;
 
 }

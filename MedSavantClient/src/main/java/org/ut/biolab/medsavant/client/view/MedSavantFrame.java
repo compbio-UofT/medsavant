@@ -107,11 +107,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     //Adds a new function under the 'Debug' menu. The debug menu is not shown if
     //it is empty
     public static void addDebugFunction(String name, Runnable r) {
+        System.out.println("Adding "+name+" to debug menu");
         debugFunctions.put(name, r);
     }
 
     public static JMenu getDebugMenu() {
-        if (debugFunctions.size() < 1) {
+        if (debugFunctions.size() < 1) {            
             return null;
         }
         JMenu menu = new JMenu("Debug");
@@ -125,9 +126,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             });
             menu.add(debugItem);
         }
-
         return menu;
     }
+    
     private final JMenu viewMenuMenu;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
@@ -321,6 +322,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         });
         fileMenu.add(appItem);
+        
+        
 
         // Debug code that adds a 'Restart' function to the File menu.
         /*
@@ -377,6 +380,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         viewMenuMenu.setEnabled(false);
 
         menuBar.add(viewMenu);
+                
 
         JMenu helpMenu = new JMenu("Help");
 

@@ -101,6 +101,33 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         }
     }
 
+    @Override
+    public synchronized void changePassword(String sessID, String userName, char[] oldPass, char[] newPass) throws SQLException, RemoteException, SessionExpiredException {        
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        try {            
+            conn.setAutoCommit(true);            
+            
+            //Check that old password is valid.
+            ConnectionController.revalidate(userName, new String(oldPass), sessID);
+                         
+            
+            //TODO: Check the new password against the current mysql password policy.                                                
+            
+            //Change the password
+            conn.executePreparedUpdate("SET PASSWORD FOR ?@'localhost' = PASSWORD(?)", userName, new String(newPass));                                
+        } finally {                        
+            for(int i = 0; i < oldPass.length; ++i){
+                oldPass[i] = 0;
+            }
+            for(int i = 0; i < newPass.length; ++i){
+                newPass[i] = 0;
+            }
+            conn.close();
+        }
+    }
+    
+    
+
     /**
      * Grant the user the privileges appropriate to their level
      * @param name user name from <code>mysql.user</code> table

@@ -39,6 +39,7 @@ import org.ut.biolab.medsavant.client.project.ProjectEvent;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
+import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SectionView;
@@ -162,21 +163,10 @@ public class Menu extends JPanel {
         rightSidePanel.add(appStorePanel);
         rightSidePanel.add(getLoginMenuItem());
         primaryMenu.add(rightSidePanel);
-        /*
-         primaryMenu.add(updatesPanel);
-         primaryMenu.add(ViewUtil.getMediumSeparator());
-
-         primaryMenu.add(n);
-         primaryMenu.add(ViewUtil.getMediumSeparator());
-
-         primaryMenu.add(appStorePanel);
-         primaryMenu.add(ViewUtil.getMediumSeparator());
-         primaryMenu.add(getLoginMenuItem());
-         */
+      
         add(primaryMenu, BorderLayout.NORTH);
 
-        secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
-        //secondaryMenu.setBorder(ViewUtil.getRightLineBorder());
+        secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));      
 
         secondaryMenu.setPreferredSize(new Dimension(120, 100));
 
@@ -410,17 +400,40 @@ public class Menu extends JPanel {
         ViewUtil.applyHorizontalBoxLayout(loginMenu);
 
         userButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER));
-        loginMenu.add(ViewUtil.subTextComponent(userButton, "Log Out"));//LoginController.getInstance().getUserName()));
+        loginMenu.add(ViewUtil.subTextComponent(userButton, LoginController.getInstance().getUserName()));
 
         final JPopupMenu m = new JPopupMenu();
+        JMenuItem changePassItem = new JMenuItem("Change Password");
+        JMenuItem logoutItem = new JMenuItem("Log Out");
 
-        userButton.addActionListener(new ActionListener() {
+        m.add(changePassItem);
+        m.add(logoutItem);
+        logoutItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 MedSavantFrame.getInstance().requestClose();
             }
         });
+        
+        changePassItem.addActionListener(new ActionListener(){
+            private final String OLDPASS_LABEL = "Enter Current Password";
+            private final String NEWPASS_LABEL1 = "Enter New Password";
+            private final String NEWPASS_LABEL2 = "Confirm New Password";
+            @Override
+            public void actionPerformed(ActionEvent ae) {              
+                JDialog jd = new ChangePasswordDialog();                                                                                    
+                jd.setVisible(true);
+            }
 
+        });
+        
+        userButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                m.show(loginMenu, 0, loginMenu.getHeight());                        
+            }
+        });
+       
 
         userButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -434,10 +447,7 @@ public class Menu extends JPanel {
                 super.mouseExited(me);
                 userButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-        });
-
-
-        //loginMenu.add(ViewUtil.getSmallSeparator());
+        });      
 
         return loginMenu;
     }
