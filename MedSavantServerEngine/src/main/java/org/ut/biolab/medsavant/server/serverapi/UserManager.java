@@ -122,6 +122,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             for(int i = 0; i < newPass.length; ++i){
                 newPass[i] = 0;
             }
+            conn.executeQuery("FLUSH PRIVILEGES");
             conn.close();
         }
     }
@@ -150,8 +151,15 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
                     break;
                 case USER:
                     conn.executePreparedUpdate(String.format("GRANT CREATE TEMPORARY TABLES, SELECT ON %s.* TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT INSERT ON %s.region_set TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT INSERT ON %s.region_set_membership TO ?@'localhost'", dbName), name);
+                    
+                    //grant read/write/delete on region sets.
+                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set_membership TO ?@'localhost'", dbName), name);
+                    
+                    //Grant read/write/delete on cohorts.
+                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort_membership TO ?@'localhost'", dbName), name);
+                    
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);                    
                     conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);                    
@@ -166,6 +174,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             }
             LOG.info("... granted.");
         } finally {
+            conn.executeQuery("FLUSH PRIVILEGES");
             conn.close();
         }
     }
@@ -198,6 +207,9 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     @Override
     public void removeUser(String sid, String name) throws SQLException, SessionExpiredException {
-        ConnectionController.executePreparedUpdate(sid, "DROP USER ?@'localhost'", name);
+        PooledConnection conn = ConnectionController.connectPooled(sid);
+        conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
+        
+        conn.executeQuery("FLUSH PRIVILEGES");        
     }
 }
