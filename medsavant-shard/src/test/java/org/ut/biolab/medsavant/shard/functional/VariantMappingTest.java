@@ -28,7 +28,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.functional;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -44,11 +44,13 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.testng.annotations.Test;
+import org.ut.biolab.medsavant.shard.AbstractShardTest;
 import org.ut.biolab.medsavant.shard.mapping.ClassField;
 import org.ut.biolab.medsavant.shard.mapping.EntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.SchemaMappingUtils;
 import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
+import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
 
 /**
  * Tests to verify mapping is working.

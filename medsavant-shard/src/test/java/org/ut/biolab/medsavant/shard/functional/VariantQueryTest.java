@@ -28,7 +28,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.functional;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -44,11 +44,14 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.StringType;
 import org.hibernate.type.Type;
 import org.testng.annotations.Test;
+import org.ut.biolab.medsavant.shard.AbstractShardTest;
 import org.ut.biolab.medsavant.shard.common.EntityStyle;
 import org.ut.biolab.medsavant.shard.mapping.ClassField;
 import org.ut.biolab.medsavant.shard.mapping.EntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantEntityGenerator;
 import org.ut.biolab.medsavant.shard.mapping.VariantMappingGenerator;
+import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
+import org.ut.biolab.medsavant.shard.variant.Variant;
 
 /**
  * Tests to verify different types of queries.
@@ -88,6 +91,19 @@ public class VariantQueryTest extends AbstractShardTest {
                 Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
         Integer res = ((BigDecimal) c.list().get(0)).intValue();
 
+        ShardedSessionManager.closeSession(s);
+        System.out.println("Count: " + res);
+    }
+
+    @Test
+    public void testCountVariantsWithRestriction() {
+        Session s = ShardedSessionManager.openSession();
+        
+        Criteria c = s.createCriteria(VariantEntityGenerator.getInstance().getCompiled()).setProjection(
+                Projections.count(VariantMappingGenerator.getInstance().getId().getColumn()));
+        c.add(Restrictions.lt(VariantMappingGenerator.getInstance().getId().getColumn(), 100000000));
+        Integer res = ((BigDecimal) c.list().get(0)).intValue();
+        
         ShardedSessionManager.closeSession(s);
         System.out.println("Count: " + res);
     }

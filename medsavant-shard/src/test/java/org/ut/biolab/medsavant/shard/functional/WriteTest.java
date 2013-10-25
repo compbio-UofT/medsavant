@@ -28,7 +28,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.functional;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -38,10 +38,12 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.testng.annotations.Test;
+import org.ut.biolab.medsavant.shard.AbstractShardTest;
 import org.ut.biolab.medsavant.shard.db.NonShardDBUtils;
 import org.ut.biolab.medsavant.shard.file.FileUtils;
 import org.ut.biolab.medsavant.shard.nonshard.ShardConfigurationUtil;
 import org.ut.biolab.medsavant.shard.nonshard.ShardedConnectionController;
+import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
 
 /**
  * Tests to verify DDL is working.

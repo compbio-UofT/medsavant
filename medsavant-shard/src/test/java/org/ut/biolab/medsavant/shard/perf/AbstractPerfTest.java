@@ -28,21 +28,35 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.shard.variant;
+package org.ut.biolab.medsavant.shard.perf;
 
-import java.lang.reflect.Method;
-
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
+import org.ut.biolab.medsavant.shard.AbstractShardTest;
+import org.ut.biolab.medsavant.shard.variant.ShardedSessionManager;
 
 /**
- * Basic shard test parent.
- * 
  * @author <a href="mailto:mirocupak@gmail.com">Miroslav Cupak</a>
  * 
  */
-public class AbstractShardTest {
-    @BeforeMethod
-    protected void displayMethodName(Method method) {
-        System.out.println("--- " + method.getName() + "()");
+public class AbstractPerfTest extends AbstractShardTest{
+    private long start;
+    private long stop;
+
+    public void recordStart() {
+        start = System.nanoTime();
     }
+
+    public void recordStop() {
+        stop = System.nanoTime();
+    }
+
+    public double getTimeInMilis() {
+        return ((double) (stop - start)) / 1000000;
+    }
+
+    @BeforeClass
+    public void init() {
+        System.out.println("Number of shards: " + ShardedSessionManager.getShardNo());
+    }
+
 }
