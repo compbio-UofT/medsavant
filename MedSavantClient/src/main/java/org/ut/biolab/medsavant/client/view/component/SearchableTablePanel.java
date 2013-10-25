@@ -219,10 +219,9 @@ public class SearchableTablePanel extends JPanel {
                 columnChooser.showDialog();
             }
         });
-        fieldPanel.add(chooseColumnButton);
-        
+
+
         JButton helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
-        fieldPanel.add(helpButton);
         exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -235,6 +234,9 @@ public class SearchableTablePanel extends JPanel {
                 }
             }
         });
+
+        fieldPanel.add(helpButton);
+        fieldPanel.add(chooseColumnButton);
         fieldPanel.add(exportButton);
 
         bottomPanel = ViewUtil.getClearPanel();

@@ -54,11 +54,7 @@ public class WaitPanel extends JPanel {
         setOpaque(false);
         setBorder(ViewUtil.getHugeBorder());
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-        prog = new JProgressBar();
-        if (ClientMiscUtils.MAC) {
-            prog.putClientProperty("JProgressBar.style", "circular");
-        }
-        prog.setIndeterminate(true);
+        prog = ViewUtil.getIndeterminateProgressBar();
         prog.setMaximumSize(new Dimension(200,25));
 
         statusLabel = new JLabel("");

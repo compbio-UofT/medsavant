@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import savant.util.MiscUtils;
 
 
@@ -64,12 +65,7 @@ public abstract class ProgressDialog extends JDialog {
 
         JLabel messageLabel = new JLabel(message);
 
-        bar = new JProgressBar();
-        bar.setIndeterminate(true);
-
-        if (ClientMiscUtils.MAC) {
-            bar.putClientProperty("JProgressBar.style", "circular");
-        }
+        bar = ViewUtil.getIndeterminateProgressBar();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;

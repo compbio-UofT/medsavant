@@ -47,7 +47,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
     private JobStatus status;
     private boolean showResultsOnFinish = true;
     private JPanel view;
-    
+
     public VisibleMedSavantWorker(String pageName, String title) {
         super(pageName);
         view = ViewUtil.getClearPanel();
@@ -60,10 +60,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
         titleLabel.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
         statusLabel = new JLabel();
 
-        progressBar = new JProgressBar();
-        progressBar.setMinimum(0);
-        progressBar.setMaximum(100);
-        progressBar.setIndeterminate(true);
+        progressBar = ViewUtil.getIndeterminateProgressBar();
 
         resultsButton = ViewUtil.getSoftButton("View Results");
         cancelButton = ViewUtil.getSoftButton("Cancel");
@@ -90,7 +87,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
             public void actionPerformed(ActionEvent ae) {
                 NotificationButton nb = ViewController.getInstance().getMenu().getJobNotificationButton();
                 nb.removeNotificationView(view);
-                
+
                 closeJob();
             }
         });
@@ -111,12 +108,8 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
         statusPanel.setPreferredSize(new Dimension(300, 25));
         statusPanel.setMinimumSize(new Dimension(300, 25));
 
-        if (ClientMiscUtils.MAC) {
-            this.progressBar.putClientProperty("JProgressBar.style", "circular");
-        }
-
-        view.add(ViewUtil.alignLeft(titleLabel));        
-        view.add(statusPanel);        
+        view.add(ViewUtil.alignLeft(titleLabel));
+        view.add(statusPanel);
         view.add(ViewUtil.alignRight(buttonBar));
 
         NotificationButton button = ViewController.getInstance().getMenu().getJobNotificationButton();
@@ -203,7 +196,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
             }
         });
     }
- 
+
     @Override
     public final void propertyChange(PropertyChangeEvent evt) {
         if (!progressBar.isIndeterminate() && "progress" == evt.getPropertyName()) {
@@ -254,7 +247,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
     }
 
     /**
-     * Called if thread throws an exception.     
+     * Called if thread throws an exception.
      */
     @Override
     protected void showFailure(Throwable ex) {

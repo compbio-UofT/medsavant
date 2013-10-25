@@ -75,11 +75,7 @@ public class SearchConditionItemView extends PillView {
 
                 final JPanel conditionsEditor = ViewUtil.getClearPanel();
                 ViewUtil.applyVerticalBoxLayout(conditionsEditor);
-                JProgressBar waitForConditions = new JProgressBar();
-                waitForConditions.setIndeterminate(true);
-                if (ClientMiscUtils.MAC) {
-                    waitForConditions.putClientProperty("JProgressBar.style", "circular");
-                }
+                JProgressBar waitForConditions = ViewUtil.getIndeterminateProgressBar();
                 conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("Preparing condition,")));
                 conditionsEditor.add(Box.createVerticalStrut(5));
                 conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("please wait...")));
