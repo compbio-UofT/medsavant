@@ -45,6 +45,7 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.NoRouteToHostException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIDefaults;
@@ -56,7 +57,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -88,6 +88,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static MedSavantFrame frame;
     private static String restartCommand;
     private static boolean restarting = false;
+    private static final Object managerLock = new Object();
 
     /**
      * Quits MedSavant
@@ -135,11 +136,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     static public void main(String args[]) {
-        // Avoids "Comparison method violates its general contract" bug.
-        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
-
         AnalyticsAgent.onStartSession("MedSavant", VersionSettings.getVersionString());
 
+        // Avoids "Comparison method violates its general contract" bug.
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         setRestartCommand(args);
         setExceptionHandler();
@@ -189,53 +189,104 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
-       
+
         //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
 
         //required for FORGE plugin
         //NativeInterface.runEventPump();
     }
 
-    public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
+    public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
 
         if (initialized) {
             return;
         }
-
+        
         int port = (new Integer(serverPort)).intValue();
 
         Registry registry;
 
-        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
-        registry = LocateRegistry.getRegistry(serverAddress, port);
-
+        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");        
+        registry = LocateRegistry.getRegistry(serverAddress, port);        
         LOG.debug("Connected");
 
         // look up the remote object
-        LOG.debug("Retrieving adapters...");
-        setAdaptersFromRegistry(registry);
+        LOG.debug("Retrieving adapters...");        
+        setAdaptersFromRegistry(registry);        
         LOG.debug("Done");
     }
 
-    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
-        AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
-        CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
-        LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
-        NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
-        OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
-        PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
-        ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
-        GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
-        ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
-        RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
-        SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
-        SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
-        UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
-        VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
-        DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
-        SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
-        CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
-        NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
+    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
+        CustomTablesAdapter CustomTablesManager;
+        AnnotationManagerAdapter AnnotationManagerAdapter;
+        CohortManagerAdapter CohortManager;
+        GeneSetManagerAdapter GeneSetManager;
+        LogManagerAdapter LogManager;
+        NetworkManagerAdapter NetworkManager;
+        OntologyManagerAdapter OntologyManager;
+        PatientManagerAdapter PatientManager;
+        ProjectManagerAdapter ProjectManager;
+        UserManagerAdapter UserManager;
+        SessionManagerAdapter SessionManager;
+        SettingsManagerAdapter SettingsManager;
+        RegionSetManagerAdapter RegionSetManager;
+        ReferenceManagerAdapter ReferenceManager;
+        DBUtilsAdapter DBUtils;
+        SetupAdapter SetupManager;
+        VariantManagerAdapter VariantManager;
+        NotificationManagerAdapter NotificationManager;
+
+    //   try {
+            AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
+            CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
+            LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
+            NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
+            OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
+            PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
+            ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
+            GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
+            ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
+            RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
+            SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
+            SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
+            UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
+            VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
+            DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
+            SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
+            CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
+            NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
+
+            if (Thread.interrupted()) {                
+                return;
+            }
+
+            synchronized (managerLock) {
+                MedSavantClient.CustomTablesManager = CustomTablesManager;
+                MedSavantClient.AnnotationManagerAdapter = AnnotationManagerAdapter;
+                MedSavantClient.CohortManager = CohortManager;
+                MedSavantClient.GeneSetManager = GeneSetManager;
+                MedSavantClient.LogManager = LogManager;
+                MedSavantClient.NetworkManager = NetworkManager;
+                MedSavantClient.OntologyManager = OntologyManager;
+                MedSavantClient.PatientManager = PatientManager;
+                MedSavantClient.ProjectManager = ProjectManager;
+                MedSavantClient.UserManager = UserManager;
+                MedSavantClient.SessionManager = SessionManager;
+                MedSavantClient.SettingsManager = SettingsManager;
+                MedSavantClient.RegionSetManager = RegionSetManager;
+                MedSavantClient.ReferenceManager = ReferenceManager;
+                MedSavantClient.DBUtils = DBUtils;
+                MedSavantClient.SetupManager = SetupManager;
+                MedSavantClient.VariantManager = VariantManager;
+                MedSavantClient.NotificationManager = NotificationManager;
+            }
+     //   } catch (Exception ex) {
+         /*   if (ex instanceof RemoteException) {
+                throw (RemoteException) ex;
+            } else if (ex instanceof NotBoundException) {
+                throw (NotBoundException) ex;
+            }*/
+       // }
     }
 
     private static void setLAF() {

@@ -1,50 +1,40 @@
 package org.ut.biolab.medsavant.client.view;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.net.NoRouteToHostException;
+import java.rmi.ConnectIOException;
 import java.sql.SQLException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ButtonGroup;
-import javax.swing.GrayFilter;
-import javax.swing.ImageIcon;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXCollapsiblePane;
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
-import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
-import org.ut.biolab.medsavant.client.view.manage.AddRemoveDatabaseDialog;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.db.Settings;
 
 /**
  *
@@ -71,6 +61,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JButton connectionSettingsButton;
     private JXCollapsiblePane connectionSettings;
     private JLabel connectingToLabel;
+    private JPanel progressPanel;
 
     public LoginView() {
         //this.setBackground(new Color(237, 237, 237));//new Color(223,223,223));//Color.white);
@@ -105,17 +96,25 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         if (ex != null) {
             //statusLabel.setText("login error");
             LOG.error("Problem contacting server.", ex);
-            if (ex instanceof SQLException) {
-                if (ex.getMessage().contains("Access denied")) {
+            cancelCurrentLogin();
+            if (ex instanceof SQLException) {                                
+                String SQLState = ((SQLException)ex).getSQLState();
+                
+                //if (ex.getMessage().contains("Access denied")) {      
+                
+                if(SQLState.equals(Settings.SQLSTATE_ACCESS_DENIED)){
                     DialogUtils.displayError("Login Error", "<html>Incorrect username and password combination entered.<br><br>Please try again.</html>");
                     //statusLabel.setText("access denied");
-                } else {
+                } else {                    
                     DialogUtils.displayError("Login Error", "<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
                     //statusLabel.setText("problem contacting server");
                 }
             } else if (ex instanceof java.rmi.UnknownHostException) {
                 DialogUtils.displayError("Login Error", "<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
-            }
+            } else if(ex instanceof NoRouteToHostException){                
+                DialogUtils.displayError("Can't connect", "Can't connect to the server at "+addressField.getText()+":"+portField.getText());                
+                //JOptionPane.showMessageDialog(this, "Can't connect to the server at "+addressField.getText()+":"+portField.getText(), "Can't connect", JOptionPane.ERROR_MESSAGE);
+            } 
         }
     }
 
@@ -133,7 +132,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         JPanel loginForm = getLoginForm();
 
         container.add(ViewUtil.centerHorizontally(logo));
-        container.add(Box.createRigidArea(new Dimension(3,3)));
+        container.add(Box.createRigidArea(new Dimension(3, 3)));
         container.add(loginForm);
 
 
@@ -223,12 +222,17 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         });
     }
 
+    private void cancelCurrentLogin() {
+        LoginController.getInstance().cancelCurrentLoginAttempt();
+        this.progressPanel.setVisible(false);
+        this.progressSigningIn.setVisible(false);
+        loginButton.setEnabled(true);
+        this.loginButton.setText("Log In");
+    }
+    private MedSavantWorker loginThread;
+
     private void loginUsingEnteredUsernameAndPassword() {
-
         if (validateLoginParams()) {
-
-
-
             SettingsController settings = SettingsController.getInstance();
             settings.setDBName(dbnameField.getText());
             settings.setServerAddress(addressField.getText());
@@ -237,11 +241,11 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             this.loginButton.setText("Logging in...");
             //statusLabel.setText("Logging In...");
             this.progressSigningIn.setVisible(true);
-
+            this.progressPanel.setVisible(true);
             loginButton.setEnabled(false);
 
 
-            new MedSavantWorker<Void>("LoginView") {
+            loginThread = new MedSavantWorker<Void>("LoginView") {
                 @Override
                 protected void showProgress(double fract) {
                 }
@@ -255,14 +259,8 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
                     LoginController.getInstance().login(userField.getText(), passwordField.getText(), dbnameField.getText(), addressField.getText(), portField.getText());
                     return null;
                 }
-            }.execute();
-
-            /*SwingUtilities.invokeLater(new Runnable() {
-             @Override
-             public void run() {
-
-             }
-             });*/
+            };
+            loginThread.execute();
         }
     }
 
@@ -313,14 +311,28 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         //p.add(ViewUtil.alignLeft(connectionSettingsButton));
         p.add(ViewUtil.centerHorizontally(ViewUtil.getHelpButton("How to log in", "You can login to a MedSavant server using connection settings and credentials supplied by your administrator.<br/><br/>To edit the connection settings, click the gear icon.")));
         p.add(Box.createVerticalStrut(3));
-        p.add(ViewUtil.centerHorizontally(ViewUtil.horizontallyAlignComponents(new Component[]{connectingToLabel,Box.createHorizontalStrut(4),connectionSettingsButton})));
+        p.add(ViewUtil.centerHorizontally(ViewUtil.horizontallyAlignComponents(new Component[]{connectingToLabel, Box.createHorizontalStrut(4), connectionSettingsButton})));
         p.add(Box.createVerticalStrut(3));
         p.add(ViewUtil.centerHorizontally(connectionSettings));
 
         p.add(ViewUtil.centerHorizontally(userField));
         p.add(ViewUtil.centerHorizontally(passwordField));
         p.add(ViewUtil.centerHorizontally(loginButton));
-        p.add(ViewUtil.centerHorizontally(progressSigningIn));
+        progressPanel = new JPanel();
+        progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
+        progressPanel.add(progressSigningIn);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                cancelCurrentLogin();
+            }
+        });
+
+        progressPanel.add(cancelButton);
+        progressPanel.setVisible(false);
+        //p.add(ViewUtil.centerHorizontally(progressSigningIn));
+        p.add(ViewUtil.centerHorizontally(progressPanel));
 
         //p.add(ViewUtil.centerHorizontally(ViewUtil.horizontallyAlignComponents(new Component[]{loginButton, progressSigningIn})));
 
@@ -396,12 +408,10 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
 
     private void updateConnectionStringOnChange(JTextField f) {
         f.addCaretListener(new CaretListener() {
-
             @Override
             public void caretUpdate(CaretEvent ce) {
                 updateConnectionString();
             }
-
         });
 
     }

@@ -23,15 +23,14 @@ import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.SpringUtilities;
+import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
  *
  */
-public class ChangePasswordDialog extends JDialog {
-
-    private static final String SQLSTATE_ACCESSDENIED = "08001";
+public class ChangePasswordDialog extends JDialog {   
     private static final int INIT_X = 6;
     private static final int INIT_Y = 6;
     private static final int XPAD = 6;
@@ -137,9 +136,9 @@ public class ChangePasswordDialog extends JDialog {
             } catch (RemoteException re) {
                 DialogUtils.displayException("Error changing password", re.getMessage(), re);
             } catch (SQLException se) {
-                if (se.getSQLState().equals(SQLSTATE_ACCESSDENIED)) {
+                if (se.getSQLState().equals(Settings.SQLSTATE_ACCESS_DENIED)) {
                     DialogUtils.displayError("Access Denied", "The current password is invalid, password NOT changed");
-                } else {
+                } else {                    
                     DialogUtils.displayException("Error changing password", "Error changing password", se);
                 }
             } catch (SessionExpiredException see) {

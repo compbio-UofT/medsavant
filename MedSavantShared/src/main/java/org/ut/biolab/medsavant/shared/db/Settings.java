@@ -10,6 +10,8 @@ package org.ut.biolab.medsavant.shared.db;
  */
 public class Settings {
 
+    public static final String SQLSTATE_ACCESS_DENIED = "08001";
+    
     /* Version of client used to create database */
     public static final String KEY_CLIENT_VERSION = "client version";
 

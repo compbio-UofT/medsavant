@@ -121,8 +121,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             }
             for(int i = 0; i < newPass.length; ++i){
                 newPass[i] = 0;
-            }
-            conn.executeQuery("FLUSH PRIVILEGES");
+            }            
             conn.close();
         }
     }

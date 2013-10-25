@@ -222,12 +222,13 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
     }
 
     @Override
-    public final void cancel(boolean cancel) {
-        super.cancel(cancel);
+    public final boolean cancel(boolean cancel) {
+        boolean b = super.cancel(cancel);
         if (cancel) {
             setStatus(JobStatus.CANCELLED);
             cancelJob();
         }
+        return b;
     }
 
     @Override

@@ -15,8 +15,13 @@
  */
 package org.ut.biolab.medsavant.client.login;
 
+import java.net.NoRouteToHostException;
+import java.rmi.ConnectIOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.concurrent.Semaphore;
+import javax.swing.SwingUtilities;
 import org.apache.commons.httpclient.NameValuePair;
 
 import org.apache.commons.logging.Log;
@@ -32,6 +37,7 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
@@ -68,8 +74,7 @@ public class LoginController extends Controller<LoginEvent> {
 
         try {
             AnalyticsAgent.log(
-                    new NameValuePair("login-event", loggedIn ? "LoggedIn" : "LoggedOut")
-                    );
+                    new NameValuePair("login-event", loggedIn ? "LoggedIn" : "LoggedOut"));
         } catch (Exception e) {
         }
 
@@ -125,29 +130,14 @@ public class LoginController extends Controller<LoginEvent> {
         return loggedIn;
     }
 
-    public synchronized void login(String un, String pw, String dbname, String serverAddress, String serverPort) {
-
-        //init registry
-        try {
-            MedSavantClient.initializeRegistry(serverAddress, serverPort);
-
-            this.serverAddress = serverAddress;
-            this.dbname = dbname;
-
-            //register session
-            userName = un;
-            password = pw;
-            LOG.info("Starting session...");
-            sessionId = MedSavantClient.SessionManager.registerNewSession(un, pw, dbname);
-            LOG.info("... done.  My session ID is: " + sessionId);
-        } catch (Exception ex) {
-            fireEvent(new LoginEvent(ex));
-            return;
-        }
-
+    private void finishLogin(String un, String pw) {
         //determine privileges
         level = UserLevel.NONE;
         try {
+            LOG.info("Starting session...");
+            sessionId = MedSavantClient.SessionManager.registerNewSession(un, pw, dbname);
+            LOG.info("... done.  My session ID is: " + sessionId);
+
             if (userName.equals("root")) {
                 level = UserLevel.ADMIN;
             } else {
@@ -198,6 +188,96 @@ public class LoginController extends Controller<LoginEvent> {
             ClientMiscUtils.reportError("Error logging in: %s", ex);
             fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
         }
+    }
+    private Semaphore semLogin = new Semaphore(1, true);
+    private MedSavantWorker<Void> currentLoginThread;
+
+    public void cancelCurrentLoginAttempt() { //idempotent
+        if (currentLoginThread != null) {
+            currentLoginThread.cancel(true);
+        }
+    }
+
+    public synchronized void login(final String un, final String pw, final String dbname, final String serverAddress, final String serverPort) {
+        //init registry
+        try {
+            cancelCurrentLoginAttempt();
+
+            currentLoginThread = new MedSavantWorker<Void>("Login") {
+                @Override
+                protected Void doInBackground()  {
+                    try {
+                        MedSavantClient.initializeRegistry(serverAddress, serverPort);
+                    } catch (final Exception ex) { //server isn't running medsavant, or is down.
+                        if (!this.isCancelled()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fireEvent(new LoginEvent(new NoRouteToHostException("Can't connect to "+serverAddress+": "+serverPort)));
+                                }
+                            });
+
+                            cancelCurrentLoginAttempt();
+                        }
+                    } /*catch (RemoteException rex) { // Server doesn't immediately refuse connection, but times out.
+                        if (!this.isCancelled()) {                            
+                            throw rex;
+                        }
+                    } catch (NotBoundException nbex) {
+                        if (!this.isCancelled()) {                            
+                            throw nbex;
+                        }
+
+                    } catch (final NoRouteToHostException nrex) {
+                        if (!this.isCancelled()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fireEvent(new LoginEvent(nrex));
+                                }
+                            });
+                            //   DialogUtils.displayError("Can't connect", "Can't connect to the server at "+serverAddress+":"+serverPort);
+                            cancelCurrentLoginAttempt();
+                        }
+                    }*/
+                    return null;
+                }
+
+                @Override
+                protected void showSuccess(Void result) {
+                    if (this.isCancelled()) {
+                        return;
+                    }
+                    try {
+                        semLogin.acquire();
+                        getInstance().serverAddress = serverAddress;
+                        getInstance().dbname = dbname;
+                        //register session
+                        userName = un;
+                        password = pw;
+                        if (!LoginController.getInstance().isLoggedIn()) {
+
+                            finishLogin(un, pw);
+                        }
+                        semLogin.release();
+                    } catch (Exception ex) {
+                        LOG.info("Aborted login...");
+                    }
+                }
+            };
+            currentLoginThread.execute();
+            //MedSavantClient.initializeRegistry(serverAddress, serverPort);
+            if (Thread.interrupted()) {
+                LOG.info("Aborted login...");
+                return;
+            }
+        } catch (Exception ex) {
+            fireEvent(new LoginEvent(ex));
+            return;
+        }
+
+
+
     }
 
     public void logout() {

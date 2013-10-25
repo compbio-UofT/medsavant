@@ -459,7 +459,8 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         JPanel bp = new JPanel();
         bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
         bp.add(selectAll);
-        bp.add(selectNone);        
+        bp.add(selectNone);      
+        bp.add(Box.createHorizontalGlue());
         p.add(bp);                       
 
         if (StringConditionEncoder.encodesNull(encoding)) {

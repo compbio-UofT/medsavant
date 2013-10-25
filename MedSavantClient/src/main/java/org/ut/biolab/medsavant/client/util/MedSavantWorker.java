@@ -77,8 +77,8 @@ public abstract class MedSavantWorker<T> { //extends SwingWorker<T, Object> {
         return swingWorker.isDone();
     }
     
-    public void cancel(boolean cancel){
-        swingWorker.cancel(cancel);
+    public boolean cancel(boolean cancel){
+        return swingWorker.cancel(cancel);
     }
     
     public StateValue getState(){
