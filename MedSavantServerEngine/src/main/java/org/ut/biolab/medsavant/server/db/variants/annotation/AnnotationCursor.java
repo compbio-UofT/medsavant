@@ -10,6 +10,7 @@ import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -47,7 +48,7 @@ public class AnnotationCursor {
     private int int_annot_index_of_end = 2;
 
     private boolean ref0_logged = false;
-
+    
     /**
      * A file reader and cursor to be used to help in the annotation process
      *
@@ -57,8 +58,7 @@ public class AnnotationCursor {
      * @throws SQLException
      */
     public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
-        reader = new TabixReader(annotation.getDataPath());
-
+        reader = new TabixReader(annotation.getDataPath());        
         String header = new TabixReader(annotation.getDataPath()).readLine().trim();
         
         
@@ -343,8 +343,8 @@ public class AnnotationCursor {
 
         private void setFromLinePosition(String[] line) {
             chrom = line[pos_annot_index_of_chr];
-            if(chrom.startsWith("chr")){            //only do the number    
-                chrom = chrom.replace("chr", "");                                                                
+            if(!chrom.toLowerCase().startsWith("chr")){ 
+                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
             }
             position = Integer.parseInt(line[pos_annot_index_of_pos]);
             if (annotationHasRef) {
@@ -361,9 +361,8 @@ public class AnnotationCursor {
 
         private void setFromLineInterval(String[] line) {
             chrom = line[int_annot_index_of_chr];
-            if(chrom.startsWith("chr")){
-                //chrom = "chr"+chrom; 
-                chrom = chrom.replace("chr", "");                                                                
+           if(!chrom.toLowerCase().startsWith("chr")){ 
+                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
             }
             start = Integer.parseInt(line[int_annot_index_of_start]);
             end = Integer.parseInt(line[int_annot_index_of_end]);
