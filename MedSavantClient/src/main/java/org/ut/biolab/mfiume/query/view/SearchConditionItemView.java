@@ -173,7 +173,7 @@ public class SearchConditionItemView extends PillView {
                 }
 
                 //JButton delete = ViewUtil.getSoftButton("Remove Condition");
-                JButton delete = new JButton("Remove Con");
+                JButton delete = new JButton("Remove");
                 delete.setFocusable(false);
                 delete.addActionListener(new ActionListener() {
                     @Override
@@ -209,7 +209,8 @@ public class SearchConditionItemView extends PillView {
                 horizButtonPanel.add(Box.createHorizontalGlue());
                 horizButtonPanel.add(delete);
                 horizButtonPanel.add(OKButton);
-                horizButtonPanel.setMaximumSize(new Dimension(horizButtonPanel.getMaximumSize().width, 22));
+                //horizButtonPanel.setMaximumSize(new Dimension(horizButtonPanel.getMaximumSize().width, 22));
+                mainPanel.add(Box.createVerticalGlue());
                 mainPanel.add(horizButtonPanel);
 
                 dialog.setModal(true);

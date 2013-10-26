@@ -112,7 +112,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public static JMenu getDebugMenu() {
-        if (debugFunctions.size() < 1) {            
+        if (debugFunctions.size() < 1) {
             return null;
         }
         JMenu menu = new JMenu("Debug");
@@ -128,7 +128,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
         return menu;
     }
-    
+
     private final JMenu viewMenuMenu;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
@@ -322,8 +322,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         });
         fileMenu.add(appItem);
-        
-        
+
+
 
         // Debug code that adds a 'Restart' function to the File menu.
         /*
@@ -380,7 +380,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         viewMenuMenu.setEnabled(false);
 
         menuBar.add(viewMenu);
-                
+
 
         JMenu helpMenu = new JMenu("Help");
 
@@ -430,7 +430,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return;
         }
 
-        view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
+        view.add(new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -484,12 +484,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     public void requestClose() {
         LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
-        
+
         String jobsMsg = "";
         if(ThreadController.getInstance().areJobsRunning()){
             jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
         }
-        
+
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", jobsMsg+"Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
         }

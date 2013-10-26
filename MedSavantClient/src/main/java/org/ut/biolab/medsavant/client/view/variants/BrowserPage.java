@@ -94,10 +94,10 @@ public class BrowserPage extends SubSectionView {
     public static BrowserPage getInstance() {
         return instance;
     }
-    private GenericStringChooser gsc;
-    private List<String> dnaIDs;
-    private final ArrayList<String> sampleIdsHavingBams;
-    private final HashMap<String, String> dnaIDToURLMap;
+    //private GenericStringChooser gsc;
+    //private List<String> dnaIDs;
+    //private final ArrayList<String> sampleIdsHavingBams;
+    //private final HashMap<String, String> dnaIDToURLMap;
 
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
@@ -119,14 +119,14 @@ public class BrowserPage extends SubSectionView {
             }
         });
 
-        dnaIDs = java.util.Arrays.asList(new String[]{});
-        sampleIdsHavingBams = new ArrayList<String>();
-        dnaIDToURLMap = new HashMap<String, String>();
+        //dnaIDs = java.util.Arrays.asList(new String[]{});
+        //sampleIdsHavingBams = new ArrayList<String>();
+        //dnaIDToURLMap = new HashMap<String, String>();
 
         try {
 
-
-            dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+            // TODO: This takes a long time, do it faster or at least threaded
+            /*dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
                     LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     BasicVariantColumns.DNA_ID.getColumnName(),
@@ -144,7 +144,7 @@ public class BrowserPage extends SubSectionView {
                     String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
                     dnaIDToURLMap.put(s, splitUrls[0]);
                 }
-            }
+            }*/
         } catch (Exception ex) {
             LOG.error(ex);
         }
@@ -171,7 +171,7 @@ public class BrowserPage extends SubSectionView {
                         LOG.debug("Loading MedSavant variant track");
                         msds = new MedSavantDataSource();
                         LOG.debug("Subscribing selection change listener");
-                        gsc.addListener(msds);
+                        //gsc.addListener(msds);
                         Track t = TrackFactory.createTrack(msds);
                         FrameController c = FrameController.getInstance();
                         c.createFrame(new Track[]{t});
@@ -229,7 +229,7 @@ public class BrowserPage extends SubSectionView {
         // pluginToolbar.add(button);
 
         try {
-            final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
+            /*final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
 
             String buttonStyle = "segmentedCapsule";
             JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(StandardIcon.BAMFILE));
@@ -257,6 +257,7 @@ public class BrowserPage extends SubSectionView {
 
             pluginToolbar.add(dnaButton);
             pluginToolbar.setVisible(true);
+            */
         } catch (Exception e) {
             LOG.error("ERROR ", e);
         }
