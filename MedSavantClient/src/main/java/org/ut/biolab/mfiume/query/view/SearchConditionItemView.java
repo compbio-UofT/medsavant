@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
@@ -35,13 +36,13 @@ public class SearchConditionItemView extends PillView {
     private final SearchConditionEditorView editor;
     private static final int BORDER_PADDING = 5;
     private JPopupMenu advancedMenu = new JPopupMenu();
-    
+
     @Override
     public void showDialog(Point p) {
         showDialog(p, "Editing Condition: "+item.getName());
     }
 
-    
+
     public SearchConditionItemView(SearchConditionItem i, final SearchConditionEditorView editor) {
         this.item = i;
         this.editor = editor;
@@ -75,7 +76,7 @@ public class SearchConditionItemView extends PillView {
 
                 final JPanel conditionsEditor = ViewUtil.getClearPanel();
                 ViewUtil.applyVerticalBoxLayout(conditionsEditor);
-                JProgressBar waitForConditions = ViewUtil.getIndeterminateProgressBar();
+                ProgressWheel waitForConditions = ViewUtil.getIndeterminateProgressBar();
                 conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("Preparing condition,")));
                 conditionsEditor.add(Box.createVerticalStrut(5));
                 conditionsEditor.add(ViewUtil.centerHorizontally(new JLabel("please wait...")));
@@ -83,7 +84,7 @@ public class SearchConditionItemView extends PillView {
 
 
                 mainPanel.add(conditionsEditor);
-                
+
                 mainPanel.setBorder(new EmptyBorder(BORDER_PADDING, BORDER_PADDING, BORDER_PADDING, BORDER_PADDING));
                 Thread t = new Thread() {
                     @Override
@@ -94,7 +95,7 @@ public class SearchConditionItemView extends PillView {
                                 @Override
                                 public void run() {
                                     conditionsEditor.removeAll();
-                                    conditionsEditor.add(editor);                                    
+                                    conditionsEditor.add(editor);
                                     dialog.pack();
                                     dialog.invalidate();
                                     mainPanel.updateUI();
@@ -110,11 +111,11 @@ public class SearchConditionItemView extends PillView {
                 t.start();
 
                 JPanel horizButtonPanel = new JPanel();
-                horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));                
+                horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));
                 if (item.getParent().getItems().size() > 0) {
-                    
+
                    // JButton convertToGroupButton = ViewUtil.getSoftButton("Convert to group");
-                    
+
                     JMenuItem convertToGroupItem = new JMenuItem("Convert to group");
                     convertToGroupItem.addActionListener(new ActionListener() {
                         @Override
@@ -170,9 +171,10 @@ public class SearchConditionItemView extends PillView {
                         //horizButtonPanel.add(toggle);
                     }
                 }
-                
+
                 //JButton delete = ViewUtil.getSoftButton("Remove Condition");
-                JButton delete = new JButton("Remove");
+                JButton delete = new JButton("Remove Con");
+                delete.setFocusable(false);
                 delete.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
@@ -180,16 +182,17 @@ public class SearchConditionItemView extends PillView {
                         dialog.dispose();
                     }
                 });
-                
+
                 //JButton OKButton = ViewUtil.getSoftButton("OK");
                 JButton OKButton = new JButton("OK");
+                OKButton.setFocusable(false);
                 OKButton.addActionListener(new ActionListener() {
                     @Override
-                    public void actionPerformed(ActionEvent ae) {                      
+                    public void actionPerformed(ActionEvent ae) {
                         dialog.dispose();
                     }
                 });
-                
+
                 if(advancedMenu.getComponentCount() > 0){
                     final JButton gearButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
                     gearButton.setToolTipText("More Options");
@@ -198,11 +201,11 @@ public class SearchConditionItemView extends PillView {
                         public void actionPerformed(ActionEvent ae) {
                             advancedMenu.show(gearButton, 0, gearButton.getHeight());
                         }
-                        
+
                     });
                     horizButtonPanel.add(gearButton);
                 }
-                                                     
+
                 horizButtonPanel.add(Box.createHorizontalGlue());
                 horizButtonPanel.add(delete);
                 horizButtonPanel.add(OKButton);

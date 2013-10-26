@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.shared.util.MiscUtils;
  */
 public class WaitPanel extends JPanel {
     private final JLabel statusLabel;
-    private final JProgressBar prog;
+    private final ProgressWheel prog;
 
     public WaitPanel(String message) {
 
@@ -137,11 +137,9 @@ public class WaitPanel extends JPanel {
     }
 
     public void setComplete() {
-        prog.setIndeterminate(false);
-        prog.setValue(prog.getMaximum());
+        prog.setComplete();
     }
 
     public void setIndeterminate() {
-        prog.setIndeterminate(true);
     }
 }

@@ -104,12 +104,15 @@ public class IconFactory {
         DOCK,
         UNDOCK,
         FONT_INCREASE,
-        FONT_DECREASE
+        FONT_DECREASE,
+        WAIT
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case WAIT:
+                return getIcon(iconroot + "wait.gif");
             case SEARCH_PH:
                 return getIcon(iconroot + "search_placeholder.png");
             case CLOSE:

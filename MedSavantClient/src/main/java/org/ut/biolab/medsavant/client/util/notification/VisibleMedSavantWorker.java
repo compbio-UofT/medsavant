@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> implements PropertyChangeListener {
@@ -40,7 +41,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
     boolean indeterminate;
     private final JLabel titleLabel;
     private final JLabel statusLabel;
-    private final JProgressBar progressBar;
+    private final ProgressWheel progressBar;
     private final JButton cancelButton;
     private final JButton resultsButton;
     private final JButton closeButton;

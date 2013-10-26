@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import savant.util.MiscUtils;
@@ -40,7 +41,7 @@ public abstract class ProgressDialog extends JDialog {
 
     protected static final Log LOG = LogFactory.getLog(ProgressDialog.class);
 
-    protected JProgressBar bar;
+    protected ProgressWheel bar;
     protected Timer progressTimer;
     private Exception failure;
 

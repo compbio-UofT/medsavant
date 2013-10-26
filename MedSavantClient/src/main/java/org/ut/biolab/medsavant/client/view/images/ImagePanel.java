@@ -22,9 +22,10 @@ public class ImagePanel extends JPanel {
         this.setMaximumSize(dim);
         this.setMinimumSize(dim);
         this.setPreferredSize(dim);
+        this.setBorder(null);
         this.setOpaque(false);
     }
-
+    
     @Override
     public void paintComponent(Graphics g) {
         g.drawImage(image, 0, 0, this.getWidth(), this.getHeight(), this);

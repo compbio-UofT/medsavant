@@ -61,7 +61,6 @@ public abstract class CancellableProgressDialog extends ProgressDialog {
                 cancelled = true;
                 try {
                     progressTimer.stop();
-                    bar.setIndeterminate(true);
                     stageLabel.setText("Cancelling...");
                     cancelButton.setEnabled(false);
 

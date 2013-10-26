@@ -53,6 +53,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -766,13 +767,19 @@ public final class ViewUtil {
         return p;
     }
 
-    public static JProgressBar getIndeterminateProgressBar() {
+    public static ProgressWheel getIndeterminateProgressBar() {
+
+        ProgressWheel w = new ProgressWheel();
+        return w;
+
+        /*
         JProgressBar b = new JProgressBar();
         b.setIndeterminate(true);
-        if (ClientMiscUtils.MAC /*&& !isJava7()*/) {
+        if (ClientMiscUtils.MAC) {
             b.putClientProperty("JProgressBar.style", "circular");
         }
         return b;
+        */
     }
 
     public static void setFontSize(JLabel label, int i) {
