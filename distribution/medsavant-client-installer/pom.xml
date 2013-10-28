@@ -33,7 +33,7 @@
   <description>Distribution containing the MedSavantClient module and its dependencies as a cross-platform installer.</description>
 
   <properties>
-    <izpack.version>5.0.0-beta11</izpack.version>
+    <izpack.version>5.0.0-rc1</izpack.version>
     <izpack.staging>${project.build.directory}/staging</izpack.staging>
     <app.version>${project.version}</app.version>
   </properties>
