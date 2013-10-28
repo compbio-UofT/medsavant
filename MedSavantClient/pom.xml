@@ -164,7 +164,7 @@
       <artifactId>miglayout-swing</artifactId>
       <version>4.2</version>
     </dependency>
-    <!-- FIXME: This is GPL, it's incompatible with the Apache license of MedSavant -->
+    <!-- FIXME: This is GPL, it's incompatible with the LGPL license of MedSavant -->
     <dependency>
       <groupId>org.pedviz</groupId>
       <artifactId>pedviz</artifactId>
