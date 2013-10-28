@@ -1,3 +1,22 @@
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.ut.biolab.medsavant.server.db.variants.annotation;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -58,9 +77,9 @@ public class BatchVariantAnnotator {
         this.sid = sid;
         this.annotations = annotations;
     }
-        
+
     private int PROGRESS_STEP_SIZE = 10;
-    private int logProgress(int totalNumLinesRead, int numLines, int oldp){       
+    private int logProgress(int totalNumLinesRead, int numLines, int oldp){
         int x = Math.round(totalNumLinesRead/(float)numLines*100);
         if((x-oldp) >= PROGRESS_STEP_SIZE){
             oldp = x;
@@ -106,7 +125,7 @@ public class BatchVariantAnnotator {
             numFieldsInOutputFile += ac.getNumNonDefaultFields();
             cursors[i] = ac;
         }
-        
+
         BufferedReader reader = new BufferedReader(new FileReader(inputTDFFile));
         int numLines = 0;
         while (reader.readLine() != null){
@@ -136,7 +155,6 @@ public class BatchVariantAnnotator {
         int oldp = 0;
         while ((inputLine = readNext(recordReader)) != null) {
 
-            
             totalNumLinesRead++;
             oldp = logProgress(totalNumLinesRead, numLines, oldp);
             // index into the output line
@@ -196,35 +214,35 @@ public class BatchVariantAnnotator {
                         }
                     }
                 }
-                
+
                 if(isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)){
                     previousPosition = currentPosition;
                     previousRef = currentRef;
                     previousAlt = currentAlt;
                 }
-                                
+
                 // previousPosition = currentPosition;
                 // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
                 // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
-                
+
             }
 
             // perform each annotation, in turn
-            
+
             for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
 
                 // get the annotation for this line
-                
+
                 String[] annotationForThisLine = cursors[annotationIndex].annotateVariant(nextInputRecord);
 
-                
+
                 // add it to the output buffer
                 for (int k = 0; k < annotationForThisLine.length; k++) {
                     outputLine[j++] = annotationForThisLine[k];
                 }
 
             }
-            
+
 
             // write the output
             recordWriter.writeNext(outputLine);

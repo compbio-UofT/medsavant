@@ -1,17 +1,21 @@
-/*
- *    Copyright 2011-2012 University of Toronto
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.variants;
 
@@ -61,6 +65,7 @@ import org.ut.biolab.medsavant.shared.util.ServerRequest;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
+import savant.api.util.DialogUtils;
 import savant.controller.FrameController;
 import savant.controller.GenomeController;
 import savant.controller.TrackController;
@@ -94,10 +99,12 @@ public class BrowserPage extends SubSectionView {
     public static BrowserPage getInstance() {
         return instance;
     }
-    private GenericStringChooser gsc;
+    //private GenericStringChooser gsc;
+
+    boolean isDoneMappingIdsToBAMURLs = false;
     private List<String> dnaIDs;
-    private final ArrayList<String> sampleIdsHavingBams;
-    private final HashMap<String, String> dnaIDToURLMap;
+    private ArrayList<String> sampleIdsHavingBams;
+    private HashMap<String, String> dnaIDToURLMap;
 
     public BrowserPage(SectionView parent) {
         super(parent, "Browser");
@@ -119,72 +126,43 @@ public class BrowserPage extends SubSectionView {
             }
         });
 
-        dnaIDs = java.util.Arrays.asList(new String[]{});
-        sampleIdsHavingBams = new ArrayList<String>();
-        dnaIDToURLMap = new HashMap<String, String>();
-
-        try {
-
-
-            dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                    LoginController.getSessionID(),
-                    ProjectController.getInstance().getCurrentVariantTableName(),
-                    BasicVariantColumns.DNA_ID.getColumnName(),
-                    false);
-            gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
-
-
-            for (String s : dnaIDs) {
-                String url = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                        LoginController.getSessionID(),
-                        ProjectController.getInstance().getCurrentProjectID(),
-                        s);
-                if (url != null && !url.isEmpty()) {
-                    sampleIdsHavingBams.add(s);
-                    String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
-                    dnaIDToURLMap.put(s, splitUrls[0]);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error(ex);
-        }
+        startMappingDNAIdsToBAMURLs();
 
         GenomeController.getInstance()
                 .addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
-            @Override
-            public void handleEvent(GenomeChangedEvent event) {
-                if (!variantTrackLoaded) {
-                    // load a gene track if it exists
+                    @Override
+                    public void handleEvent(GenomeChangedEvent event) {
+                        if (!variantTrackLoaded) {
+                            // load a gene track if it exists
 
-                    try {
-                        LOG.debug("Loading gene track");
-                        String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                        String urlOfTrack = getTrackURL(referenceName, "gene");
-                        addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
-                    } catch (Exception ex) {
-                        LOG.error("Error loading gene track", ex);
+                            try {
+                                LOG.debug("Loading gene track");
+                                String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                                String urlOfTrack = getTrackURL(referenceName, "gene");
+                                addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
+                            } catch (Exception ex) {
+                                LOG.error("Error loading gene track", ex);
+                            }
+
+                            // load the MedSavant variant track
+                            try {
+                                LOG.debug("Loading MedSavant variant track");
+                                msds = new MedSavantDataSource();
+                                LOG.debug("Subscribing selection change listener");
+                                //gsc.addListener(msds);
+                                Track t = TrackFactory.createTrack(msds);
+                                FrameController c = FrameController.getInstance();
+                                c.createFrame(new Track[]{t});
+                                variantTrackLoaded = true;
+
+                            } catch (SavantTrackCreationCancelledException ex) {
+                                LOG.error("Error loading MedSavant variant track", ex);
+                            } catch (Exception ex) {
+                                LOG.error("Misc. error loading MedSavant variant track", ex);
+                            }
+                        }
                     }
-
-
-                    // load the MedSavant variant track
-                    try {
-                        LOG.debug("Loading MedSavant variant track");
-                        msds = new MedSavantDataSource();
-                        LOG.debug("Subscribing selection change listener");
-                        gsc.addListener(msds);
-                        Track t = TrackFactory.createTrack(msds);
-                        FrameController c = FrameController.getInstance();
-                        c.createFrame(new Track[]{t});
-                        variantTrackLoaded = true;
-
-                    } catch (SavantTrackCreationCancelledException ex) {
-                        LOG.error("Error loading MedSavant variant track", ex);
-                    } catch (Exception ex) {
-                        LOG.error("Misc. error loading MedSavant variant track", ex);
-                    }
-                }
-            }
-        });
+                });
     }
 
     @Override
@@ -222,14 +200,11 @@ public class BrowserPage extends SubSectionView {
          }
          });
          */
-
         JPanel pluginToolbar = savantInstance.getPluginToolbar();
 
         // Removed temporarily 06-08-2013, in preparation for 1.1 release.
         // pluginToolbar.add(button);
-
         try {
-            final GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
 
             String buttonStyle = "segmentedCapsule";
             JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(StandardIcon.BAMFILE));
@@ -239,24 +214,32 @@ public class BrowserPage extends SubSectionView {
             dnaButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    bamFileChooser.setLocationRelativeTo(view);
-                    bamFileChooser.setVisible(true);
-                }
-            });
+                    if (isDoneMappingIdsToBAMURLs) {
+                        GenericStringChooser bamFileChooser = new GenericStringChooser(sampleIdsHavingBams, "Open BAM File(s)");
+                        bamFileChooser.setLocationRelativeTo(view);
 
-            bamFileChooser.addListener(new Listener<SelectableListView.SelectionEvent>() {
-                @Override
-                public void handleEvent(SelectableListView.SelectionEvent event) {
-                    List selections = event.getSelections();
-                    for (Object o : selections) {
-                        String url = dnaIDToURLMap.get(o.toString());
-                        addTrackFromURLString(url, DataFormat.ALIGNMENT);
+                        bamFileChooser.addListener(new Listener<SelectableListView.SelectionEvent>() {
+                            @Override
+                            public void handleEvent(SelectableListView.SelectionEvent event) {
+                                List selections = event.getSelections();
+                                for (Object o : selections) {
+                                    String url = dnaIDToURLMap.get(o.toString());
+                                    addTrackFromURLString(url, DataFormat.ALIGNMENT);
+                                }
+                            }
+                        });
+                        
+                        bamFileChooser.setVisible(true);
+
+                    } else {
+                        DialogUtils.displayMessage("Still collecting alignment file URLs, try again soon.");
                     }
                 }
             });
 
             pluginToolbar.add(dnaButton);
             pluginToolbar.setVisible(true);
+
         } catch (Exception e) {
             LOG.error("ERROR ", e);
         }
@@ -298,7 +281,6 @@ public class BrowserPage extends SubSectionView {
                             Savant savantInstance = Savant.getInstance(false, false);
                             setupToolbarButtons(savantInstance);
 
-
                             PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_BOTTOM, Color.white);
                             PersistentSettings.getInstance().setColor(ColourKey.GRAPH_PANE_BACKGROUND_TOP, Color.white);
                             PersistentSettings.getInstance().setColor(ColourKey.AXIS_GRID, new Color(240, 240, 240));
@@ -310,7 +292,6 @@ public class BrowserPage extends SubSectionView {
 
                             variationPlaceHolder.removeAll();
                             variationPlaceHolder.add(VariationController.getInstance().getModule(), BorderLayout.CENTER);
-
 
                             GenomeController.getInstance().setGenome(null);
 
@@ -339,7 +320,6 @@ public class BrowserPage extends SubSectionView {
                                 }
                             });
                             t.start();
-
 
                         } catch (Exception ex) {
                             LOG.error("Got exception: " + ex);
@@ -425,5 +405,46 @@ public class BrowserPage extends SubSectionView {
         if (loaded) {
             genomeContainer.updateIfRequired();
         }
+    }
+
+    private void startMappingDNAIdsToBAMURLs() {
+
+        dnaIDs = java.util.Arrays.asList(new String[]{});
+        sampleIdsHavingBams = new ArrayList<String>();
+        dnaIDToURLMap = new HashMap<String, String>();
+
+        Thread t = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    // TODO: This takes a long time, do it faster or at least threaded
+                    dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(
+                            LoginController.getSessionID(),
+                            ProjectController.getInstance().getCurrentVariantTableName(),
+                            BasicVariantColumns.DNA_ID.getColumnName(),
+                            false);
+                    //gsc = new GenericStringChooser(dnaIDs, "Choose DNA IDs");
+
+                    for (String s : dnaIDs) {
+                        String url = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
+                                LoginController.getSessionID(),
+                                ProjectController.getInstance().getCurrentProjectID(),
+                                s);
+                        if (url != null && !url.isEmpty()) {
+                            sampleIdsHavingBams.add(s);
+                            String[] splitUrls = url.split(","); // can specify multiple urls, take the first one
+                            dnaIDToURLMap.put(s, splitUrls[0]);
+                        }
+                    }
+
+                    isDoneMappingIdsToBAMURLs = true;
+                } catch (Exception ex) {
+                    LOG.error(ex);
+                }
+            }
+
+        });
+
     }
 }
