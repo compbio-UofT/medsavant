@@ -339,8 +339,9 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         p.add(ViewUtil.centerHorizontally(passwordField));
         p.add(ViewUtil.centerHorizontally(loginButton));
         progressPanel = new JPanel();
-        progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
-        progressPanel.add(progressSigningIn);
+        progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.Y_AXIS));
+        progressPanel.add(ViewUtil.centerHorizontally(progressSigningIn));
+
         JButton cancelButton = new JButton("Cancel");
         cancelButton.setFocusable(false);
         cancelButton.addActionListener(new ActionListener() {
@@ -350,7 +351,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             }
         });
 
-        progressPanel.add(cancelButton);
+        progressPanel.add(ViewUtil.centerHorizontally(cancelButton));
         progressPanel.setVisible(false);
         //p.add(ViewUtil.centerHorizontally(progressSigningIn));
         p.add(ViewUtil.centerHorizontally(progressPanel));
