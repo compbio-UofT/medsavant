@@ -81,6 +81,12 @@
       <version>2.8.3</version>
     </dependency>
     <dependency>
+        <groupId>org.genemania</groupId>
+        <artifactId>org-genemania</artifactId>
+        <version>3.1</version>
+    </dependency>
+    <!--
+    <dependency>
       <groupId>org.genemania</groupId>
       <artifactId>genemania-common</artifactId>
       <version>2.8.0</version>
@@ -90,6 +96,7 @@
       <artifactId>plugin-cy2</artifactId>
       <version>2.5</version>
     </dependency>
+    -->
     <dependency>
       <groupId>jide</groupId>
       <artifactId>jide-components</artifactId>

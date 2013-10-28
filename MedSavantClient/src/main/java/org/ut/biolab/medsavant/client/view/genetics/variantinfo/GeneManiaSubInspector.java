@@ -22,11 +22,6 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
-import cytoscape.layout.CyLayoutAlgorithm;
-import cytoscape.layout.CyLayouts;
-import cytoscape.view.CyNetworkView;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -37,7 +32,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.genemania.plugin.cytoscape2.layout.FilteredLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 
 import org.ut.biolab.medsavant.shared.model.Gene;
@@ -58,7 +52,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class GeneManiaSubInspector extends SubInspector implements Listener<Gene> {
 
-    private static final Log LOG = LogFactory.getLog(GeneManiaSubInspector.class);    
+    private static final Log LOG = LogFactory.getLog(GeneManiaSubInspector.class);
     private final String name;
     private GenemaniaInfoRetriever genemania;
     private JPanel panel;
@@ -417,17 +411,10 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
                         progressBar.setIndeterminate(false);
                         progressBar.setValue(0);
                         progressBar.setVisible(false);
-                        graph.removeAll();
+
                         if (setMsgOff) {
                             progressMessage.setVisible(false);
                         }
-
-                        if (buildGraph) {
-                            graph.add(buildGraph());
-                        }
-
-                        graph.invalidate();
-                        graph.updateUI();
                     }
 
                 }
@@ -498,83 +485,5 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
 
         Thread t2 = new Thread(r2);
         t2.start();
-
-
-
     }
-
-    // final static Object lock;
-    public JPanel buildGraph() {
-        CyNetwork network = genemania.getGraph();
-        LOG.debug("Nodes " + network.getNodeCount());
-        LOG.debug("Edges " + network.getEdgeCount());
-        //for (int i = 0; i < network.getEdgeCount(); i++) {
-        //System.out.println(network.getEdge(i));
-        //}
-
-        CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());
-        Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, null);
-        Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
-        CyNetworkView view = cy.getNetworkView(network);
-        CyLayoutAlgorithm layout = CyLayouts.getLayout(FilteredLayout.ID);
-        if (layout == null) {
-            layout = CyLayouts.getDefaultLayout();
-        }
-        layout.doLayout(view);
-        //NetworkViewManager viewManager = Cytoscape.getDesktop().getNetworkViewManager();
-        //JInternalFrame frame = viewManager.getInternalFrame(view);
-        JPanel p = new JPanel();
-        p.add(view.getComponent());
-        return p;
-    }
-    /*
-     * private JComponent getFrameFromView(CyNetworkView view) { final
-     * JInternalFrame iframe = new JInternalFrame(view.getTitle(), true, true,
-     * true, true);
-     *
-     *
-     * // code added to support layered canvas for each CyNetworkView if (view
-     * instanceof DGraphView) { final InternalFrameComponent internalFrameComp =
-     * new InternalFrameComponent(iframe.getLayeredPane(), (DGraphView) view);
-     *
-     * iframe.getContentPane().add(internalFrameComp);
-     *
-     * } else { logger.info("NetworkViewManager.createContainer() - DGraphView
-     * not found!"); iframe.getContentPane().add(view.getComponent()); }
-     *
-     * iframe.pack();
-     *
-     * int x = 0; int y = 0; JInternalFrame refFrame = null; JInternalFrame[]
-     * allFrames = desktopPane.getAllFrames();
-     *
-     * if (allFrames.length > 1) { refFrame = allFrames[0]; }
-     *
-     * if (refFrame != null) { x = refFrame.getLocation().x + 20; y =
-     * refFrame.getLocation().y + 20; }
-     *
-     * if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH)) { x =
-     * desktopPane.getWidth() - MINIMUM_WIN_WIDTH; }
-     *
-     * if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT)) { y =
-     * desktopPane.getHeight() - MINIMUM_WIN_HEIGHT; }
-     *
-     * if (x < 0) { x = 0; }
-     *
-     * if (y < 0) { y = 0; }
-     *
-     * iframe.setBounds(x, y, 400, 400);
-     *
-     * // maximize the frame if the specified property is set try { String max
-     * = CytoscapeInit.getProperties().getProperty("maximizeViewOnCreate");
-     *
-     * if ((max != null) && Boolean.parseBoolean(max)) iframe.setMaximum(true);
-     * } catch (PropertyVetoException pve) { //logger.warn("Unable to maximize
-     * internal frame: "+pve.getMessage()); }
-     *
-     * iframe.setVisible(true); //iframe.addInternalFrameListener(this);
-     * iframe.setResizable(true);
-     *
-     * return iframe; }
-     *
-     */
 }

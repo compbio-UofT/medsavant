@@ -4,11 +4,7 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
-import cytoscape.CyEdge;
-import cytoscape.CyNetwork;
-import cytoscape.CyNode;
 import cytoscape.CytoscapeVersion;
-import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,17 +29,12 @@ import org.genemania.exception.DataStoreException;
 import org.genemania.plugin.*;
 import org.genemania.plugin.cytoscape.NullCytoscapeUtils;
 import org.genemania.plugin.cytoscape2.CompatibilityImpl;
-import org.genemania.plugin.cytoscape2.CytoscapeUtilsImpl;
 import org.genemania.plugin.cytoscape2.support.Compatibility;
 import org.genemania.plugin.cytoscape26.Cy26Compatibility;
-import org.genemania.plugin.data.Colour;
 import org.genemania.plugin.data.DataSet;
 import org.genemania.plugin.data.DataSetManager;
 import org.genemania.plugin.data.lucene.LuceneDataSetFactory;
-import org.genemania.plugin.model.SearchOptions;
-import org.genemania.plugin.proxies.EdgeProxy;
-import org.genemania.plugin.proxies.NetworkProxy;
-import org.genemania.plugin.proxies.NodeProxy;
+import org.genemania.plugin.model.SearchResult;
 import org.genemania.type.CombiningMethod;
 import org.genemania.util.NullProgressReporter;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
@@ -90,9 +81,8 @@ public class GenemaniaInfoRetriever {
     private NetworkUtils networkUtils;
     private static final int MIN_CATEGORIES = 10;
     private static final double Q_VALUE_THRESHOLD = 0.1;
-    private SearchOptions options;
-    private static Map<Long, Integer> sequenceNumbers;
-    private CytoscapeUtils cytoscapeUtils;
+    private SearchResult options;
+    private static Map<Long, Integer> sequenceNumbers;   
     private RelatedGenesEngineResponseDto response;    
     private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
@@ -218,22 +208,8 @@ public class GenemaniaInfoRetriever {
     public NetworkUtils getNetworkUtils() {
         return networkUtils;
     }
-
-    public CyNetwork getGraph() {
-        EdgeAttributeProvider provider = createEdgeAttributeProvider(data, options);
-        Compatibility compatibility = createCompatibility(new CytoscapeVersion());
-        CytoscapeUtilsImpl cy = new CytoscapeUtilsImpl(networkUtils, compatibility);
-        CyNetwork network = cy.createNetwork(data, getNextNetworkName(human), options, provider);
-
-        computeGraphCache(network, options, networks.keySet());
-
-
-        //cytoscapeUtils.registerSelectionListener(network, manager, plugin);
-        cytoscapeUtils.applyVisualization(network, filterGeneScores(computeGeneScores(response), options), computeColors(data, human), computeEdgeWeightExtrema(response));
-        return network;
-    }
-
-    private Map<Long, Double> filterGeneScores(Map<Long, Double> scores, SearchOptions options) {
+  
+    private Map<Long, Double> filterGeneScores(Map<Long, Double> scores, SearchResult options) {
         Map<Long, Gene> queryGenes = options.getQueryGenes();
         double maxScore = 0;
         for (Map.Entry<Long, Double> entry : scores.entrySet()) {
@@ -268,134 +244,7 @@ public class GenemaniaInfoRetriever {
         return extrema;
     }
 
-    private Map<String, Color> computeColors(DataSet data, Organism organism) {
-        Map<String, Color> colors = new HashMap<String, Color>();
-        Collection<InteractionNetworkGroup> groups = organism.getInteractionNetworkGroups();
-        for (InteractionNetworkGroup group : groups) {
-            Colour color = data.getColor(group);
-            colors.put(group.getName(), new Color(color.getRgb()));
-        }
-        return colors;
-    }
-
-    private Map<Long, Double> computeGeneScores(RelatedGenesEngineResponseDto result) {
-        Map<Long, Double> scores = new HashMap<Long, Double>();
-        for (NetworkDto network : result.getNetworks()) {
-            for (InteractionDto interaction : network.getInteractions()) {
-                NodeDto node1 = interaction.getNodeVO1();
-                scores.put(node1.getId(), node1.getScore());
-                NodeDto node2 = interaction.getNodeVO2();
-                scores.put(node2.getId(), node2.getScore());
-            }
-        }
-        return scores;
-    }
-
-    void computeGraphCache(CyNetwork currentNetwork, SearchOptions config, Collection<InteractionNetworkGroup> selectedGroups) {
-        // Build edge cache
-        InteractionNetworkGroup currentGroup = new InteractionNetworkGroup();
-        NetworkProxy<CyNetwork, CyNode, CyEdge> networkProxy = cytoscapeUtils.getNetworkProxy(currentNetwork);
-        for (CyEdge edge : networkProxy.getEdges()) {
-            EdgeProxy<CyEdge, CyNode> edgeProxy = cytoscapeUtils.getEdgeProxy(edge);
-            String name = edgeProxy.getAttribute(org.genemania.plugin.cytoscape.CytoscapeUtils.NETWORK_GROUP_NAME_ATTRIBUTE, String.class);
-            int groupId = config.getGroup(name);
-            currentGroup.setId(groupId);
-            config.addEdge(currentGroup, edgeProxy.getIdentifier());
-        }
-
-        // Build node cache
-        for (Gene gene : config.getScores().keySet()) {
-            Node node = gene.getNode();
-            CyNode cyNode = cytoscapeUtils.getNode(currentNetwork, node, null);
-            NodeProxy<CyNode> nodeProxy = cytoscapeUtils.getNodeProxy(cyNode);
-            config.addNode(node, nodeProxy.getIdentifier());
-        }
-
-        // Cache selected networks
-        applyDefaultSelection(config, selectedGroups);
-
-        // Enable composite network by default
-        config.setEnabled(-1, true);
-    }
-
-    private void applyDefaultSelection(SearchOptions config, Collection<InteractionNetworkGroup> selectedGroups) {
-        Set<String> targetGroups = new HashSet<String>();
-        targetGroups.add("coloc"); //$NON-NLS-1$
-        targetGroups.add("coexp"); //$NON-NLS-1$
-
-        // By default, disable colocation/coexpression networks.
-        Set<String> retainedGroups = new HashSet<String>();
-        for (InteractionNetworkGroup group : selectedGroups) {
-            String code = group.getCode();
-            boolean enabled = !targetGroups.remove(code);
-
-            if (enabled) {
-                retainedGroups.add(code);
-            }
-            config.setEnabled(group.getId(), enabled);
-        }
-
-        // If we only have colocation/coexpression networks, enabled them.
-        if (retainedGroups.size() == 0) {
-            for (InteractionNetworkGroup group : selectedGroups) {
-                config.setEnabled(group.getId(), true);
-            }
-        }
-    }
-
-    private static String getNextNetworkName(Organism organism) {
-        long id = organism.getId();
-        int sequenceNumber;
-        if (sequenceNumbers.containsKey(id)) {
-            sequenceNumber = sequenceNumbers.get(id) + 1;
-        } else {
-            sequenceNumber = 1;
-        }
-        sequenceNumbers.put(id, sequenceNumber);
-        return String.format(Strings.retrieveRelatedGenesNetworkName_label, organism.getName(), sequenceNumber);
-    }
-
-    private EdgeAttributeProvider createEdgeAttributeProvider(DataSet data, SearchOptions options) {
-        final Map<Long, InteractionNetworkGroup> groupsByNetwork = options.getGroups();
-        List<InteractionNetworkGroup> groups = networkUtils.collectGroups(options);
-        final Map<Long, Integer> ranks = new HashMap<Long, Integer>();
-        for (int rank = 0; rank < groups.size(); rank++) {
-            ranks.put(groups.get(rank).getId(), rank);
-        }
-
-        return new EdgeAttributeProvider() {
-            public Map<String, Object> getAttributes(InteractionNetwork network) {
-                HashMap<String, Object> attributes = new HashMap<String, Object>();
-                long id = network.getId();
-                if (id == -1) {
-//					attributes.put(CytoscapeUtils.NETWORK_GROUP_ID_ATTRIBUTE, -1);
-                } else {
-                    InteractionNetworkGroup group = groupsByNetwork.get(id);
-                    if (group != null) {
-                        int rank = ranks.get(groupsByNetwork.get(network.getId()).getId());
-                        attributes.put(org.genemania.plugin.cytoscape.CytoscapeUtils.RANK_ATTRIBUTE, rank);
-                        attributes.put(org.genemania.plugin.cytoscape.CytoscapeUtils.NETWORK_GROUP_NAME_ATTRIBUTE, group.getName());
-                    }
-                }
-                return attributes;
-            }
-
-            public String getEdgeLabel(InteractionNetwork network) {
-                long id = network.getId();
-                if (id == -1) {
-                    return "combined"; //$NON-NLS-1$
-                } else {
-                    InteractionNetworkGroup group = groupsByNetwork.get(id);
-                    if (group != null) {
-                        return group.getName();
-                    }
-                    return "unknown"; //$NON-NLS-1$
-                }
-            }
-        };
-    }
-
-    private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException {
+    private SearchResult runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException {
 
         RelatedGenesEngineRequestDto request = createRequest();
         response = runQuery(request);
@@ -403,7 +252,7 @@ public class GenemaniaInfoRetriever {
         EnrichmentEngineRequestDto enrichmentRequest = createEnrichmentRequest(response);
         EnrichmentEngineResponseDto enrichmentResponse = computeEnrichment(enrichmentRequest);
 
-        SearchOptions options = networkUtils.createSearchOptions(human, request, response, enrichmentResponse, data, genes);
+        SearchResult options = networkUtils.createSearchOptions(human, request, response, enrichmentResponse, data, genes);
         return options;
     }
 
@@ -493,7 +342,7 @@ public class GenemaniaInfoRetriever {
 
             human = getHumanOrganism(data);
             networkUtils = new NetworkUtils();
-            cytoscapeUtils = new CytoscapeUtils(networkUtils);
+            
             cache = new DataCache(new SynchronizedObjectCache(new MemObjectCache(data.getObjectCache(NullProgressReporter.instance(), false))));
             mania = new Mania2(cache);
             setGeneLimit(DEFAULT_GENE_LIMIT);
