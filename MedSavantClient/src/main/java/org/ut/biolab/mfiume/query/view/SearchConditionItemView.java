@@ -178,6 +178,7 @@ public class SearchConditionItemView extends PillView {
                 delete.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
+                        setSelected(false);
                         item.getParent().removeItem(item);
                         dialog.dispose();
                     }
@@ -189,6 +190,7 @@ public class SearchConditionItemView extends PillView {
                 OKButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
+                        setSelected(false);
                         dialog.dispose();
                     }
                 });
