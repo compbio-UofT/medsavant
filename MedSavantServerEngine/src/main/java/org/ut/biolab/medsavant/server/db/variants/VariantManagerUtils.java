@@ -583,10 +583,13 @@ public class VariantManagerUtils {
         for (VariantAnnotator t : annotationThreads) {
             File f = new File(t.getOutputFilePath());
             annotatedTsvFiles[i++] = f;
-            LOG.info("Annotated file " + f.getAbsolutePath());
+
             if (!t.didSucceed()) {
                 LOG.info("At least one annotation thread errored out");
+                LOG.info("Failed annotating file " + f.getAbsolutePath());
                 throw t.getException();
+            } else {
+                LOG.info("Annotated file " + f.getAbsolutePath());
             }
         }
 
