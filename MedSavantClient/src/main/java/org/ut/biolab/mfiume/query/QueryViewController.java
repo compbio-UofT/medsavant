@@ -1,3 +1,22 @@
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.ut.biolab.mfiume.query;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -17,7 +36,6 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.ParseException;
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,8 +121,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 try {
                     AnalyticsAgent.log(new NameValuePair[]{
-                                new NameValuePair("view-event", "SearchPerformed")
-                            });
+                        new NameValuePair("view-event", "SearchPerformed")
+                    });
                 } catch (Exception e) {
                 }
             }
@@ -138,7 +156,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 r = ComboCondition.and(r, getSQLConditionsFrom(rg));
             }
 
-
             return MedSavantClient.VariantManager.getVariants(
                     LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
@@ -146,7 +163,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     new Condition[][]{{r}},
                     0,
                     limit); //DEBUG CODE, sets limit to 10!
-
 
         } catch (Exception ex) {
             LOG.error(ex);
@@ -205,7 +221,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         });
         t.start();
 
-
     }
 
     public void saveConditions(File file) {
@@ -236,12 +251,10 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         SearchConditionItem sci = new SearchConditionItem(name, qr, parentGroup);
 
-
         String encodedConditions = StringEscapeUtils.unescapeXml(element.getAttribute("encodedConditions"));
         if (encodedConditions != null && encodedConditions.length() > 0) {
             sci.setSearchConditionEncoding(encodedConditions);
         }
-
 
         //The description does not need to be unescaped.
         String desc = element.getAttribute("description");
@@ -329,7 +342,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
         }
 
-
         SearchConditionItem sci = new SearchConditionItem(name, QueryRelation.AND, getQueryRootGroup());
         generateItemViewAndAddToGroup(sci, getQueryRootGroup());
 
@@ -363,7 +375,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         scg.setDescription(groupDesc);
         getQueryRootGroup().addItem(scg);
 
-
         if (sciList != null) {
             for (SearchConditionItem sci : sciList) {
                 sci.setParent(scg);
@@ -383,8 +394,8 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         try {
             AnalyticsAgent.log(new NameValuePair[]{
-                        new NameValuePair("view-event", "SearchCleared")
-                    });
+                new NameValuePair("view-event", "SearchCleared")
+            });
         } catch (Exception e) {
         }
 
@@ -488,7 +499,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 };
 
                 pv.setExpandListener(toggleGroupExpand);
-
 
                 pv.setPopupGenerator(new ConditionPopupGenerator() {
                     @Override
@@ -618,12 +628,10 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         final QueryViewController instance = this;
 
         final Map<String, List<String>> possible = conditionViewGenerator.getAllowableItemNames();
-        final List<String> allPossible = new ArrayList<String>();
+        final CaseInsensitiveArrayList allPossible = new CaseInsensitiveArrayList();
         for (String key : possible.keySet()) {
             allPossible.addAll(possible.get(key));
         }
-
-        final JButton placeHolder = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SEARCH_PH));
 
         final JXSearchField field = new JXSearchField();
         PromptSupport.setPrompt("Type search condition", field);
@@ -642,19 +650,16 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             public void keyTyped(KeyEvent ke) {
             }
 
-            public void addItemBasedOnField() {
-                final SearchConditionItemView view = generateItemViewAndAddToGroup(field.getText(), g);
+            public void addItemBasedOnField(String validTerm) {
+                final SearchConditionItemView view = generateItemViewAndAddToGroup(validTerm, g);
                 m.setVisible(false);
                 field.setText("");
-                Point p =  getLocationOnScreen();
-                
-                SwingUtilities.invokeLater(new Runnable(){
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
-                    public void run(){                        
-                        view.showDialog(view.getLocationOnScreen());                        
+                    public void run() {
+                        view.showDialog(view.getLocationOnScreen());
                     }
                 });
-                
             }
 
             private void refreshPopup() {
@@ -681,7 +686,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                     int headerIndex = menuComponents.size();
                     boolean sectionHasMatch = false;
-
 
                     Collections.sort(possible.get(key));
 
@@ -741,7 +745,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                 // the new, non-header index to be selected
                 int newIndex;
 
-
                 // disarm previous
                 if (currentlySelectedIndex != -1) {
 
@@ -785,8 +788,11 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 // accept item
                 if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                    if (allPossible.contains(field.getText())) {
-                        addItemBasedOnField();
+
+                    String match = allPossible.getInsensitiveMatch(field.getText());
+
+                    if (match != null) {
+                        addItemBasedOnField(match);
                     }
 
                     // scroll
@@ -804,7 +810,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         int increment = ke.getKeyCode() == KeyEvent.VK_DOWN ? 1 : -1;
                         moveUpOrDown(increment);
                     }
-
 
                 }
             }
@@ -827,7 +832,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
                 refreshPopup();
 
-
             }
 
             private void fixSize(JComponent m, Dimension d3) {
@@ -840,7 +844,6 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
         p.add(field);
-
 
         return p;
     }
@@ -883,6 +886,31 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             return childrenConditions;
         } else {
             return conditionViewGenerator.generateConditionForItem(item);
+        }
+    }
+
+    public class CaseInsensitiveArrayList extends ArrayList<String> {
+
+        @Override
+        public boolean contains(Object o) {
+            String paramStr = (String) o;
+            for (String s : this) {
+                if (paramStr.equalsIgnoreCase(s)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public String getInsensitiveMatch(String o) {
+            String paramStr = (String) o;
+            for (String s : this) {
+                if (paramStr.equalsIgnoreCase(s)) {
+                    return s;
+                }
+            }
+            return null;
         }
     }
 }

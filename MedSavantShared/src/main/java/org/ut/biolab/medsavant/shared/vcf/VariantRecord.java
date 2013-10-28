@@ -1,3 +1,22 @@
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -6,6 +25,7 @@ package org.ut.biolab.medsavant.shared.vcf;
 
 import java.io.Serializable;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -124,6 +144,9 @@ public class VariantRecord implements Serializable {
     public VariantRecord(String[] line) throws Exception {//, String[] infoKeys, Class[] infoClasses) {
         dnaID = null;
         chrom = (String) parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
+        if (!chrom.toLowerCase().startsWith("chr")) {
+            chrom = "chr" + MiscUtils.homogenizeSequence(chrom);
+        }
         position = (Long) parse(CLASS_OF_POSITION, line[FILE_INDEX_OF_POS]);
         dbSNPID = (String) parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);
         ref = (String) parse(CLASS_OF_REF, line[FILE_INDEX_OF_REF]);
@@ -143,12 +166,6 @@ public class VariantRecord implements Serializable {
         }
 
         type = getVariantType(ref, alt);
-
-        if (chrom.startsWith("chr")) {
-            //chrom = "chr"+chrom; 
-            chrom = chrom.replace("chr", "");
-        }
-
         //genotype = getGenotype(ref, alt); // DO THESE TOGETHER?
         //zygosity = calculateZygosity(); //
 

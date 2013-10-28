@@ -1,17 +1,21 @@
-/*
- *    Copyright 2011-2012 University of Toronto
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view;
 
@@ -112,7 +116,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     public static JMenu getDebugMenu() {
-        if (debugFunctions.size() < 1) {            
+        if (debugFunctions.size() < 1) {
             return null;
         }
         JMenu menu = new JMenu("Debug");
@@ -128,7 +132,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
         return menu;
     }
-    
+
     private final JMenu viewMenuMenu;
 
     public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
@@ -322,8 +326,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         });
         fileMenu.add(appItem);
-        
-        
+
+
 
         // Debug code that adds a 'Restart' function to the File menu.
         /*
@@ -380,7 +384,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         viewMenuMenu.setEnabled(false);
 
         menuBar.add(viewMenu);
-                
+
 
         JMenu helpMenu = new JMenu("Help");
 
@@ -430,7 +434,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return;
         }
 
-        view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
+        view.add(new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -484,12 +488,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     public void requestClose() {
         LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
-        
+
         String jobsMsg = "";
         if(ThreadController.getInstance().areJobsRunning()){
             jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
         }
-        
+
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", jobsMsg+"Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
         }

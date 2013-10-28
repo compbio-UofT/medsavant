@@ -1,3 +1,22 @@
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.ut.biolab.medsavant.server.db.variants.annotation;
 
 import java.io.IOException;
@@ -10,6 +29,7 @@ import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -47,7 +67,7 @@ public class AnnotationCursor {
     private int int_annot_index_of_end = 2;
 
     private boolean ref0_logged = false;
-
+    
     /**
      * A file reader and cursor to be used to help in the annotation process
      *
@@ -57,8 +77,7 @@ public class AnnotationCursor {
      * @throws SQLException
      */
     public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
-        reader = new TabixReader(annotation.getDataPath());
-
+        reader = new TabixReader(annotation.getDataPath());        
         String header = new TabixReader(annotation.getDataPath()).readLine().trim();
         
         
@@ -343,8 +362,8 @@ public class AnnotationCursor {
 
         private void setFromLinePosition(String[] line) {
             chrom = line[pos_annot_index_of_chr];
-            if(chrom.startsWith("chr")){            //only do the number    
-                chrom = chrom.replace("chr", "");                                                                
+            if(!chrom.toLowerCase().startsWith("chr")){ 
+                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
             }
             position = Integer.parseInt(line[pos_annot_index_of_pos]);
             if (annotationHasRef) {
@@ -361,9 +380,8 @@ public class AnnotationCursor {
 
         private void setFromLineInterval(String[] line) {
             chrom = line[int_annot_index_of_chr];
-            if(chrom.startsWith("chr")){
-                //chrom = "chr"+chrom; 
-                chrom = chrom.replace("chr", "");                                                                
+           if(!chrom.toLowerCase().startsWith("chr")){ 
+                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
             }
             start = Integer.parseInt(line[int_annot_index_of_start]);
             end = Integer.parseInt(line[int_annot_index_of_end]);

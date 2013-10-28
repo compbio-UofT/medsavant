@@ -1,3 +1,22 @@
+/**
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.ut.biolab.medsavant.client.view;
 
 import java.awt.Component;
@@ -30,6 +49,7 @@ import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -45,7 +65,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private static final Log LOG = LogFactory.getLog(LoginView.class);
     private PlaceHolderTextField userField;
     private JButton loginButton;
-    private JProgressBar progressSigningIn;
+    private ProgressWheel progressSigningIn;
     private JLabel medsavantTitle;
     private JLabel medsavantTagline;
     private LoginController controller = LoginController.getInstance();
@@ -97,24 +117,24 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             //statusLabel.setText("login error");
             LOG.error("Problem contacting server.", ex);
             cancelCurrentLogin();
-            if (ex instanceof SQLException) {                                
+            if (ex instanceof SQLException) {
                 String SQLState = ((SQLException)ex).getSQLState();
-                
-                //if (ex.getMessage().contains("Access denied")) {      
-                
+
+                //if (ex.getMessage().contains("Access denied")) {
+
                 if(SQLState.equals(Settings.SQLSTATE_ACCESS_DENIED)){
                     DialogUtils.displayError("Login Error", "<html>Incorrect username and password combination entered.<br><br>Please try again.</html>");
                     //statusLabel.setText("access denied");
-                } else {                    
+                } else {
                     DialogUtils.displayError("Login Error", "<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
                     //statusLabel.setText("problem contacting server");
                 }
             } else if (ex instanceof java.rmi.UnknownHostException) {
                 DialogUtils.displayError("Login Error", "<html>Problem contacting server.<br><br>Please contact your administrator.</html>");
-            } else if(ex instanceof NoRouteToHostException){                
-                DialogUtils.displayError("Can't connect", "Can't connect to the server at "+addressField.getText()+":"+portField.getText());                
+            } else if(ex instanceof NoRouteToHostException){
+                DialogUtils.displayError("Can't connect", "Can't connect to the server at "+addressField.getText()+":"+portField.getText());
                 //JOptionPane.showMessageDialog(this, "Can't connect to the server at "+addressField.getText()+":"+portField.getText(), "Can't connect", JOptionPane.ERROR_MESSAGE);
-            } 
+            }
         }
     }
 
@@ -322,6 +342,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
         progressPanel.add(progressSigningIn);
         JButton cancelButton = new JButton("Cancel");
+        cancelButton.setFocusable(false);
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
