@@ -1,5 +1,6 @@
 package medsavant.incidental.view;
 
+
 import java.util.Calendar;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,7 @@ import javax.swing.JLabel;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+
 
 /**
  * Default panel view for Incidentalome app
@@ -81,7 +83,7 @@ public class IncidentalPanel extends JPanel {
 				@Override
 				public void actionPerformed (ActionEvent e) {
 					date= new GregorianCalendar(); // update date/time
-					String MSWorkerText= "Incidentalome " + date.get(Calendar.DAY_OF_MONTH) + "d" + 
+					String MSWorkerText= "Incidentalome #" + date.get(Calendar.DAY_OF_MONTH) + "d" + 
 						date.get(Calendar.HOUR_OF_DAY) + "h" + date.get(Calendar.MINUTE) + "m" + 
 						date.get(Calendar.SECOND) + "s";
 					
@@ -101,7 +103,7 @@ public class IncidentalPanel extends JPanel {
 						@Override
 						protected Object runInBackground() throws Exception {
 							///FILL
-							Thread.sleep(5000); // pause for 5 sec
+							jokeStatusUpdate(VMSWorker);
 							return null;
 						}
 					};
@@ -113,6 +115,21 @@ public class IncidentalPanel extends JPanel {
 		
 		view.add(workview, BorderLayout.CENTER);
     }
+	
+	
+	private void jokeStatusUpdate (VisibleMedSavantWorker VMSWorker) throws InterruptedException {
+		VMSWorker.setStatusMessage("Priming flux capacitor...");
+		Thread.sleep(3000); // pause for 1.5 sec
+		VMSWorker.setStatusMessage("Getting to the chopper...");
+		Thread.sleep(1500);
+		VMSWorker.setStatusMessage("Setting phasers to stun...");
+		Thread.sleep(1500);
+		for (int i= 0; i < 100; i++) {
+			VMSWorker.setStatusMessage(i + "% blamed on the boogie");
+			Thread.sleep(100);
+		}
+		VMSWorker.setStatusMessage("Terminated by T1000.");
+	}
 	
 	
 	public JPanel getView() {
