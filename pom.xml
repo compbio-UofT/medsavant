@@ -295,7 +295,7 @@
                   <argument>-Xmx4G</argument>
                   <argument>-jar</argument>
                   <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
-                  <classpath></classpath>
+                  <classpath />
                 </arguments>
               </configuration>
             </execution>
