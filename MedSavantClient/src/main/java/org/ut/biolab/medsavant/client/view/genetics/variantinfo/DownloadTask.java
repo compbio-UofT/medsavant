@@ -54,6 +54,14 @@ public abstract class DownloadTask extends VisibleMedSavantWorker<Void> {
     };
     private DownloadState downloadState = DownloadState.NOT_STARTED;
 
+    @Override
+    protected void jobDone() {
+        super.jobDone(); 
+        setDownloadState(DownloadState.FINISHED);
+    }
+
+    
+    
     protected void setDownloadState(DownloadState downloadState) {
         DownloadState oldDownloadState = this.downloadState;
         this.downloadState = downloadState;
@@ -77,8 +85,11 @@ public abstract class DownloadTask extends VisibleMedSavantWorker<Void> {
         }
     }
 
+    
     public DownloadTask(String URLStr, String destPath, String notificationTitle) throws IOException {
-        super(ViewController.getInstance().getCurrentSubSectionView().getPageName(), notificationTitle);
+        //do not want download tasks to be interrupted by changing subsection views, so 
+        //use the class name for the task.        
+        super(DownloadTask.class.getSimpleName(), notificationTitle);
 
         this.URLStr = URLStr;
         this.destPath = destPath;
@@ -126,10 +137,19 @@ public abstract class DownloadTask extends VisibleMedSavantWorker<Void> {
     }
 
     public void cancelDownload() {
-        System.out.println("Cancelled job");
+        setDownloadState(DownloadState.CANCELLED);
         cancel(true);
     }
 
+    //Called when 'cancel' button is pushed from within super.cancel(true)
+    @Override
+    protected void cancelJob() {
+        super.cancelJob(); 
+        setDownloadState(DownloadState.CANCELLED);
+    }
+
+    
+    
     @Override
     protected Void runInBackground() {
         try {
@@ -149,12 +169,11 @@ public abstract class DownloadTask extends VisibleMedSavantWorker<Void> {
             totalBytesRead = 0;
             int percentCompleted = 0;
             int op = -1;
-
-
+           
             while ((bytesRead = inputStream.read(buffer)) != -1 && !isCancelled()) {
                 outputStream.write(buffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
-
+                totalBytesRead += bytesRead;                             
+                
                 //x1000 to force more frequent updates of status message.
                 percentCompleted = (int) (totalBytesRead * 1000 / filesize);
 
@@ -173,6 +192,9 @@ public abstract class DownloadTask extends VisibleMedSavantWorker<Void> {
 
         } catch (IOException ex) {
             LOG.error(ex);
+            cancelDownload();
+        }catch(Exception ex){
+            LOG.error("Unexpected exception: "+ex);                        
             cancelDownload();
         }
         return null;

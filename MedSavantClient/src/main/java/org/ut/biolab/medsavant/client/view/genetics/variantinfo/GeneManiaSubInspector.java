@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
@@ -130,6 +130,59 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
         panel.add(graph);
     }
 
+    private void showDownloadingLabel() {
+        panel.removeAll();
+        panel.add(new JLabel("GeneMANIA Downloading..."));
+        panel.revalidate();
+        panel.repaint();
+    }
+    private DownloadTask currentDownloadTask;
+
+    private void registerDownloadListener() {
+        try {
+            DownloadTask downloadTask = GenemaniaInfoRetriever.getGeneManiaDownloadTask();
+            if (currentDownloadTask != downloadTask) {
+                currentDownloadTask = downloadTask;
+
+                final DownloadTask dt = downloadTask;
+                dt.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals("downloadState")) {
+                            DownloadState ds = (DownloadState) evt.getNewValue();
+                            if (ds == DownloadState.CANCELLED) {
+                                panel.removeAll();
+                                panel.add(downloadGeneManiaButton);
+                                panel.revalidate();
+                                panel.repaint();
+                            } else if (ds == DownloadState.FINISHED) {
+                                //this should always be true.
+                                if (DirectorySettings.isGeneManiaInstalled()) {
+                                    try {
+                                        dataPresent = true;
+                                        genemania = new GenemaniaInfoRetriever();
+                                        genemaniaSettings = new GeneManiaSettingsDialog(genemania);
+                                        panel.removeAll();
+                                        buildPanel();
+                                        updateRelatedGenesPanel(genes);
+                                    } catch (IOException e) {
+                                        DialogUtils.displayMessage("Error downloading GeneMANIA files");
+                                        LOG.error("Error downloading GeneMANIA files " + e);
+                                        dataPresent = false;
+                                    }
+                                } else {
+                                    LOG.error("Error downloading GeneMANIA files.");
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (IOException e) {
+        }
+    }
+    private JButton downloadGeneManiaButton = new JButton("Download GeneMANIA");
+
     @Override
     public JPanel getInfoPanel() {
         panel = ViewUtil.getClearPanel();
@@ -138,57 +191,26 @@ public class GeneManiaSubInspector extends SubInspector implements Listener<Gene
                 genemania = new GenemaniaInfoRetriever();
                 genemaniaSettings = new GeneManiaSettingsDialog(genemania);
             } else {
-                final JButton downloadGeneManiaButton = new JButton("Download GeneMANIA");
-                downloadGeneManiaButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        try {
-                            panel.removeAll();
-                            panel.add(new JLabel("GeneMANIA Downloading..."));
-                            panel.revalidate();
-                            panel.repaint();
-                            String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
+                if (GenemaniaInfoRetriever.isGeneManiaDownloading()) {
+                    showDownloadingLabel();
+                    registerDownloadListener();
+                } else {
+                    downloadGeneManiaButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                showDownloadingLabel();
+                                registerDownloadListener();
+                                GenemaniaInfoRetriever.getGeneManiaDownloadTask().execute();
 
-                            DownloadTask dt = GenemaniaInfoRetriever.getGeneManiaDownloadTask();
-                            dt.addPropertyChangeListener(new PropertyChangeListener() {
-                                @Override
-                                public void propertyChange(PropertyChangeEvent evt) {
-                                    if (evt.getPropertyName().equals("downloadState")) {
-                                        DownloadState ds = (DownloadState) evt.getNewValue();
-                                        if (ds == DownloadState.CANCELLED) {
-                                            panel.removeAll();
-                                            panel.add(downloadGeneManiaButton);
-                                            panel.revalidate();
-                                            panel.repaint();
-                                        } else if (ds == DownloadState.FINISHED) {
-                                            //this should always be true.
-                                            if (DirectorySettings.isGeneManiaInstalled()) {
-                                                try {
-                                                    dataPresent = true;
-                                                    genemania = new GenemaniaInfoRetriever();
-                                                    genemaniaSettings = new GeneManiaSettingsDialog(genemania);
-                                                    buildPanel();
-                                                    updateRelatedGenesPanel(genes);
-                                                } catch (IOException e) {
-                                                    DialogUtils.displayMessage("Error downloading GeneMANIA files");
-                                                    LOG.error("Error downloading GeneMANIA files " + e);
-                                                    dataPresent = false;
-                                                }
-                                            } else {
-                                                LOG.error("Error downloading GeneMANIA files.");
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                            dt.execute();
-                        } catch (IOException e) {
-                            DialogUtils.displayMessage("Error downloading GeneMANIA files " + e);
-                            dataPresent = false;
+                            } catch (IOException e) {
+                                DialogUtils.displayMessage("Error downloading GeneMANIA files " + e);
+                                dataPresent = false;
+                            }
                         }
-                    }
-                });
-                panel.add(downloadGeneManiaButton);
+                    });
+                    panel.add(downloadGeneManiaButton);
+                }
                 dataPresent = false;
                 LOG.debug("Returning panel " + (panel == null));
                 return panel;

@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 /*
  * To change this template, choose Tools | Templates
@@ -101,9 +101,9 @@ public class GenemaniaInfoRetriever {
     private static final int MIN_CATEGORIES = 10;
     private static final double Q_VALUE_THRESHOLD = 0.1;
     private SearchResult options;
-    private static Map<Long, Integer> sequenceNumbers;   
-    private RelatedGenesEngineResponseDto response;    
-    private static String GM_URL = "http://genomesavant.com/serve/data/genemania/gmdata.zip";
+    private static Map<Long, Integer> sequenceNumbers;
+    private RelatedGenesEngineResponseDto response;
+    private static String GM_URL = "http://compbio.cs.toronto.edu/savant/data/dropbox/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
 
@@ -165,8 +165,14 @@ public class GenemaniaInfoRetriever {
         }
     }
 
+    public static synchronized boolean isGeneManiaDownloading() {
+        boolean b = geneManiaDownloadTask != null && (!geneManiaDownloadTask.isDone()) && (!geneManiaDownloadTask.isCancelled());
+        return b;
+    }
+
     public static synchronized DownloadTask getGeneManiaDownloadTask() throws IOException {
-        if (geneManiaDownloadTask == null) {
+
+        if (geneManiaDownloadTask == null || geneManiaDownloadTask.isCancelled()) {
             String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
             geneManiaDownloadTask = new GeneManiaDownloadTask(GM_URL, dstPath, "Downloading GeneMANIA...");
         }
@@ -227,7 +233,7 @@ public class GenemaniaInfoRetriever {
     public NetworkUtils getNetworkUtils() {
         return networkUtils;
     }
-  
+
     private Map<Long, Double> filterGeneScores(Map<Long, Double> scores, SearchResult options) {
         Map<Long, Gene> queryGenes = options.getQueryGenes();
         double maxScore = 0;
@@ -361,7 +367,7 @@ public class GenemaniaInfoRetriever {
 
             human = getHumanOrganism(data);
             networkUtils = new NetworkUtils();
-            
+
             cache = new DataCache(new SynchronizedObjectCache(new MemObjectCache(data.getObjectCache(NullProgressReporter.instance(), false))));
             mania = new Mania2(cache);
             setGeneLimit(DEFAULT_GENE_LIMIT);

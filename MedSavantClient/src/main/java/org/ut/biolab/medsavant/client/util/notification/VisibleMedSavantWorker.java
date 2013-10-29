@@ -97,7 +97,8 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                setStatus(JobStatus.CANCELLED);
+             //   setStatus(JobStatus.CANCELLED);
+                cancel(true);
             }
         });
 
@@ -210,6 +211,7 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
                         cancelButton.setVisible(false);
                         closeButton.setVisible(true);
                         progressBar.setIndeterminate(false);
+                        progressBar.setComplete();
                         progressBar.setValue(progressBar.getMaximum());
                         break;
                 }

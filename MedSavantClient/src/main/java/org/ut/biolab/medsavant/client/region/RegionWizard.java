@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.region;
 
@@ -96,6 +96,45 @@ public class RegionWizard extends WizardDialog {
     private GeneSet standardGenes;
     private final RegionController controller;
     private GeneSelectionPanel sourceGenesPanel;
+    private JButton runGeneManiaButton;
+    private GeneSelectionPanel selectedGenesPanel;
+
+    private class GeneManiaDownloadCompleteListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals("downloadState")) {
+                DownloadTask.DownloadState ds = (DownloadTask.DownloadState) evt.getNewValue();
+                if (ds == DownloadTask.DownloadState.CANCELLED
+                        || ds == DownloadTask.DownloadState.FINISHED) {
+
+                    if (ds == DownloadTask.DownloadState.FINISHED) {
+                        runGeneManiaButton.setText("Run GeneMANIA");
+                    } else {
+                        runGeneManiaButton.setText("Download GeneMANIA");
+                    }
+                    if (runGeneManiaButton != null) {
+                        runGeneManiaButton.setEnabled(
+                                (selectedGenesPanel.getNumSelected() + sourceGenesPanel.getNumSelected()) > 0);
+                    }
+                }
+            }
+        }
+    }
+    private static GeneManiaDownloadCompleteListener geneManiaDownloadCompleteListener;
+
+    private void registerDownloadListener() {
+        try {
+            if (geneManiaDownloadCompleteListener == null) {
+                geneManiaDownloadCompleteListener = new GeneManiaDownloadCompleteListener();
+                DownloadTask dt = GenemaniaInfoRetriever.getGeneManiaDownloadTask();
+                dt.addPropertyChangeListener(geneManiaDownloadCompleteListener);
+            }
+        } catch (IOException e) {
+            DialogUtils.displayMessage("Error downloading GeneMANIA files");
+            LOG.error(e);
+        }
+    }
 
     public RegionWizard(boolean imp) throws SQLException, RemoteException {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
@@ -211,7 +250,7 @@ public class RegionWizard extends WizardDialog {
                             path = getPath();
                             delim = getDelimiter();
                             fileFormat = getFileFormat();
-                            numHeaderLines = getNumHeaderLines();                            
+                            numHeaderLines = getNumHeaderLines();
                             fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                         } else {
                             fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
@@ -235,7 +274,6 @@ public class RegionWizard extends WizardDialog {
             }
         };
     }
-    private GeneSelectionPanel selectedGenesPanel;
 
     private AbstractWizardPage getGenesPage() {
         return new DefaultWizardPage(PAGENAME_GENES) {
@@ -266,7 +304,7 @@ public class RegionWizard extends WizardDialog {
                 geneManiaResultsPanel.setOddRowColor(new Color(242, 249, 245));
 
 
-                final JButton runGeneManiaButton = new JButton("Run GeneMANIA");
+                runGeneManiaButton = new JButton("Run GeneMANIA");
                 runGeneManiaButton.setEnabled(!DirectorySettings.isGeneManiaInstalled());
 
                 ListSelectionListener selectionListener = new ListSelectionListener() {
@@ -276,7 +314,11 @@ public class RegionWizard extends WizardDialog {
                         if (geneManiaGeneNames != null) {
                             numSel += geneManiaResultsPanel.getNumSelected();
                         }
-                        runGeneManiaButton.setEnabled(numSel > 0 && DirectorySettings.isGeneManiaInstalled());
+                        if (GenemaniaInfoRetriever.isGeneManiaDownloading()) {
+                            runGeneManiaButton.setEnabled(false);
+                        } else {
+                            runGeneManiaButton.setEnabled(numSel > 0 || !DirectorySettings.isGeneManiaInstalled());
+                        }
                     }
                 };
 
@@ -385,6 +427,10 @@ public class RegionWizard extends WizardDialog {
 
                 if (!DirectorySettings.isGeneManiaInstalled()) {
                     runGeneManiaButton.setText("Download GeneMANIA");
+                    if (GenemaniaInfoRetriever.isGeneManiaDownloading()) {
+                        runGeneManiaButton.setEnabled(false);
+                        registerDownloadListener();
+                    }
                 }
 
                 runGeneManiaButton.addActionListener(new ActionListener() {
@@ -398,22 +444,26 @@ public class RegionWizard extends WizardDialog {
                                 if (response == DialogUtils.OK) {
                                     runGeneManiaButton.setText("Run GeneMANIA");
                                     runGeneManiaButton.setEnabled(false);
-                                    DownloadTask dt = GenemaniaInfoRetriever.getGeneManiaDownloadTask();
-                                    dt.addPropertyChangeListener(new PropertyChangeListener() {
-                                        @Override
-                                        public void propertyChange(PropertyChangeEvent evt) {
-                                            if (evt.getPropertyName().equals("downloadState")) {
-                                                DownloadTask.DownloadState ds = (DownloadTask.DownloadState) evt.getNewValue();
-                                                if (ds == DownloadTask.DownloadState.CANCELLED
-                                                        || ds == DownloadTask.DownloadState.FINISHED) {
+                                    registerDownloadListener();
 
-                                                    runGeneManiaButton.setEnabled(
-                                                            (selectedGenesPanel.getNumSelected() + sourceGenesPanel.getNumSelected()) > 0);
-                                                }
-                                            }
-                                        }
-                                    });
-                                    dt.execute();
+                                    /*
+                                     DownloadTask dt = GenemaniaInfoRetriever.getGeneManiaDownloadTask();
+                                     dt.addPropertyChangeListener(new PropertyChangeListener() {
+                                     @Override
+                                     public void propertyChange(PropertyChangeEvent evt) {
+                                     if (evt.getPropertyName().equals("downloadState")) {
+                                     DownloadTask.DownloadState ds = (DownloadTask.DownloadState) evt.getNewValue();
+                                     if (ds == DownloadTask.DownloadState.CANCELLED
+                                     || ds == DownloadTask.DownloadState.FINISHED) {
+
+                                     runGeneManiaButton.setEnabled(
+                                     (selectedGenesPanel.getNumSelected() + sourceGenesPanel.getNumSelected()) > 0);
+                                     }
+                                     }
+                                     }
+                                     });
+                                     */
+                                    GenemaniaInfoRetriever.getGeneManiaDownloadTask().execute();
                                 }
                             } catch (IOException e) {
                                 DialogUtils.displayMessage("Error downloading GeneMANIA files");
@@ -486,19 +536,19 @@ public class RegionWizard extends WizardDialog {
                                         LOG.error(e);
                                     } catch (NoRelatedGenesInfoException e) {
                                         LOG.error(e);
-                                    } 
+                                    }
                                     return null;
                                 }
                             };
 
                             leftSide.removeAll();
-                           
+
                             closeGeneManiaButton.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent ae) {
-                                    try{
+                                    try {
                                         geneManiaWorker.cancel(true);
-                                    }catch(Exception e){
+                                    } catch (Exception e) {
                                         //genemania throws exceptions when cancelled
                                     }
                                     leftSide.removeAll();
@@ -507,15 +557,15 @@ public class RegionWizard extends WizardDialog {
                                     leftSide.repaint();
                                     geneManiaGeneNames = null;
                                 }
-                            });                            
+                            });
 
                             JPanel closeButtonPanel = new JPanel();
                             closeButtonPanel.setLayout(new BoxLayout(closeButtonPanel, BoxLayout.X_AXIS));
                             closeButtonPanel.add(closeGeneManiaButton);
                             closeButtonPanel.add(Box.createHorizontalGlue());
-                            
+
                             leftSide.add(closeButtonPanel);
-                            
+
                             geneManiaContainingPanel.add(new WaitPanel("Querying GeneMANIA for related genes"));
 
                             leftSide.add(geneManiaContainingPanel);
