@@ -51,8 +51,11 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
     //This could also be dynamic, and editable by the user via some kind of settings dialog.
 
     private static Log LOG = LogFactory.getLog(MedSavantAppFetcher.class);
+    
+    //Use http://www.genomesavant.com/dev/medsavant/serve/plugins-dev/pluginDirectory.xml for SNAPSHOT developer versions,
+    //and http://www.genomesavant.com/dev/medsavant/serve/plugins/pluginDirectory.xml for the release candidate.
     private static final String[] PLUGIN_REPOSITORY_URLS =
-            new String[]{"http://www.genomesavant.com/dev/medsavant/serve/plugins/pluginDirectory.xml"};
+            new String[]{"http://www.genomesavant.com/dev/medsavant/serve/plugins-dev/pluginDirectory.xml"};
     private static final String[] REQUIRED_PAIRS = new String[]{
         "url",
         "name",
