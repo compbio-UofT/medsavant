@@ -33,7 +33,6 @@
         <fileSet>
             <directory>${basedir}/src/main/resources/</directory>
             <outputDirectory>/</outputDirectory>
-            <fileMode>755</fileMode>
             <directoryMode>755</directoryMode>
         </fileSet>
     </fileSets>

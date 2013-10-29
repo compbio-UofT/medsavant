@@ -40,5 +40,16 @@ PRGDIR=`dirname "$SCRIPT"`
 # Go to the program directory
 cd "$PRGDIR"
 
+CONFIG="medsavant.config"
+# Read default settings from the configuration file
+if [ -r "$CONFIG" ]; then
+    . "$CONFIG"
+fi
+
+# Default Java options
+if [ -z "$JAVA_OPTS" ]; then
+    JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Xmx4G -XX:MaxPermSize=128M"
+fi
+
 # Run the medsavant server jar
-java -Xmx4g -jar medsavant-server-*.jar
+java $JAVA_OPTS -jar medsavant-server-*.jar -c medsavant.properties
