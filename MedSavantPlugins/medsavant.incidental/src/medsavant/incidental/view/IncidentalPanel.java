@@ -11,6 +11,9 @@ import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import medsavant.incidental.IncidentalFindings;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -35,6 +38,7 @@ public class IncidentalPanel extends JPanel {
 	private String currentIndividualDNA;
 	private Calendar date;
 	private VisibleMedSavantWorker VMSWorker;
+	private JScrollPane variantPane;
     
 	public IncidentalPanel() {
 		setupView();
@@ -63,7 +67,13 @@ public class IncidentalPanel extends JPanel {
 					if (customSelector.hasMadeSelection() && selectedIndividuals.size() == 1) {
 						
 						currentIndividual= selectedIndividuals.iterator().next();
-						currentIndividualDNA= customSelector.getDNAIDsOfSelectedIndividuals().iterator().next();
+						currentIndividualDNA= (String) customSelector.getDNAIDsOfSelectedIndividuals().toArray()[0];
+						
+						
+						///////// TESTING OUTPUT
+						System.out.println("DNA ID: " + currentIndividualDNA);
+						///////////
+						
 						choosePatientButton.setText(currentIndividual);
 					} else if (customSelector.getHospitalIDsOfSelectedIndividuals().size() > 1){
 						choosePatientButton.setText("Choose only 1 patient");
@@ -76,6 +86,7 @@ public class IncidentalPanel extends JPanel {
 		/* Run incidental findings analysis */
 		analyzeButton= new JButton("Identify Incidental Variants");
 		workview.add(analyzeButton);
+		workview.add(variantPane, BorderLayout.CENTER);
 		
 		analyzeButton.addActionListener(
 			new ActionListener() {
@@ -104,11 +115,12 @@ public class IncidentalPanel extends JPanel {
 						protected Object runInBackground() throws Exception {
 							///FILL
 							jokeStatusUpdate(VMSWorker);
+							updateVariantPane(new IncidentalFindings(currentIndividualDNA));
 							return null;
 						}
 					};
 					
-					VMSWorker.execute();
+					VMSWorker.execute();			
 				}
 			}
 		);
@@ -131,6 +143,12 @@ public class IncidentalPanel extends JPanel {
 		VMSWorker.setStatusMessage("Terminated by T1000.");
 	}
 	
+	
+	private void updateVariantPane (IncidentalFindings i) {
+		JTable jt= incFind.testTableOutput();
+		variantPane= new JScrollPane(jt);
+		jt.setFillsViewportHeight(true);
+	}
 	
 	public JPanel getView() {
 		return view;
