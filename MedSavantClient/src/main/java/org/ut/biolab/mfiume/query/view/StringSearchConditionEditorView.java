@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.mfiume.query.view;
 
@@ -51,6 +51,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -58,6 +59,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Position;
 import org.jdesktop.swingx.prompt.PromptSupport;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
@@ -89,8 +91,6 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         this.valueGenerator = vg;
     }
 
-   
-    
     private void loadLooseStringMatchViewFromSearchConditionParameters(String encoding) {
         this.removeAll();
 
@@ -243,7 +243,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         jsp.setVisible(true);
         this.invalidate();
     }
-    
+
     @Override
     public void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException {
 
@@ -252,14 +252,14 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             return;
         }
 
-        if (!cacheOn || values == null) {
-            values = valueGenerator.getStringValues();
-        }
+        // if (!cacheOn || values == null) {
+        values = valueGenerator.getStringValues();
+        // }
 
 
         this.removeAll();
 
-        if (values == null || values.isEmpty()) {          
+        if (values == null || values.isEmpty()) {
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
             p.add(Box.createHorizontalGlue());
@@ -384,7 +384,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                     ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
                     Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
                     renderComp.setBounds(bounds);
-                    
+
                     if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
                         if (index != lastIndex) {
                             menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
@@ -412,12 +412,25 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         } else {
 
             int[] selectedIndices = new int[selectedValues.size()];
+            boolean err = false;
             for (int i = 0; i < selectedValues.size(); i++) {
                 selectedIndices[i] = values.indexOf(selectedValues.get(i));
                 if (selectedIndices[i] == -1) {
+                    DialogUtils.displayError(selectedValues.get(i) + " is not an allowable option for " + item.getName());
                     System.err.println(selectedValues.get(i) + " is not an allowable option for " + item.getName());
+                    err = true;
                 }
             }
+            if (err) {
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run(){
+                        saveSearchConditionParameters();
+                        setDescriptionBasedOnSelections();        
+                    }
+                });                
+            }
+            
             ClientMiscUtils.selectOnlyTheseIndicies(filterableList, selectedIndices);
         }
 
@@ -443,14 +456,14 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         final StringSearchConditionEditorView instance = this;
 
         jsp = new JScrollPane(filterableList);
-        
+
         p.add(field);
-        
+
         JPanel jspContainer = new JPanel();
         jspContainer.setLayout(new BoxLayout(jspContainer, BoxLayout.Y_AXIS));
         jsp.add(Box.createVerticalGlue());
         jspContainer.add(jsp);
-        
+
         p.add(jspContainer);
         selectAll = ViewUtil.getSoftButton("Select All");
         selectAll.setFocusable(false);
@@ -474,27 +487,26 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             }
         });
 
-       
+
         JPanel bp = new JPanel();
         bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
         bp.add(selectAll);
-        bp.add(selectNone);      
+        bp.add(selectNone);
         bp.add(Box.createHorizontalGlue());
-        p.add(bp);                       
+        p.add(bp);
 
         if (StringConditionEncoder.encodesNull(encoding)) {
-            isNull.setSelected(true);           
+            isNull.setSelected(true);
         } else if (StringConditionEncoder.encodesNotNull(encoding)) {
-            isNotNull.setSelected(true);            
+            isNotNull.setSelected(true);
         } else {
             is.setSelected(true);
-            setDescriptionBasedOnSelections();           
+            setDescriptionBasedOnSelections();
         }
-        add(p);       
+        add(p);
     }
 
-
-    //@Override
+    @Deprecated
     public void loadViewFromSearchConditionParameters2(String encoding) throws ConditionRestorationException {
 
         if (isUserSpecifiedTextMatch) {
@@ -502,9 +514,9 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             return;
         }
 
-        if (!cacheOn || values == null) {
-            values = valueGenerator.getStringValues();
-        }
+        //  if (!cacheOn || values == null) {
+        values = valueGenerator.getStringValues();
+        // }
 
 
         this.removeAll();
@@ -661,13 +673,21 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         } else {
 
             int[] selectedIndices = new int[selectedValues.size()];
+            boolean err = false;
             for (int i = 0; i < selectedValues.size(); i++) {
                 selectedIndices[i] = values.indexOf(selectedValues.get(i));
                 if (selectedIndices[i] == -1) {
+                    err = true;
+                    DialogUtils.displayError(selectedValues.get(i) + " is not an allowable option for " + item.getName());
                     System.err.println(selectedValues.get(i) + " is not an allowable option for " + item.getName());
                 }
             }
             ClientMiscUtils.selectOnlyTheseIndicies(filterableList, selectedIndices);
+            if (err) {
+                saveSearchConditionParameters();
+                setDescriptionBasedOnSelections();
+                is.setSelected(true);
+            }
         }
 
         SearchableUtils.installSearchable(filterableList);
@@ -699,10 +719,10 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                 return result;
             }
         };
-        
+
         //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        
+
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -712,13 +732,14 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
         gbc.insets = new Insets(3, 15, 3, 15);
         add(p, gbc);
         //add(controlButtons, gbc);
-        
+
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(3, 3, 3, 3);
         JPanel x = new JPanel();
         x.setLayout(new BoxLayout(x, BoxLayout.Y_AXIS));
-        x.add(field); x.add(jsp); //x.add(Box.createVerticalGlue());
+        x.add(field);
+        x.add(jsp); //x.add(Box.createVerticalGlue());
         //add(field, gbc); //moved from above gbc.weighty
         //add(jsp, gbc);
         add(x, gbc);

@@ -193,7 +193,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                         c = ConditionUtils.TRUE_CONDITION;
                     }
 
-                    LOG.info(c.toString());
+                    //LOG.info(c.toString());
 
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override

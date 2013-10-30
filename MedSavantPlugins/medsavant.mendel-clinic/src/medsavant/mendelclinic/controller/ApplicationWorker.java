@@ -1021,7 +1021,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         setLabelText("Running inheritance model " + model + "...");
         System.out.println("Running inheritance model " + model + "...");
-
+        System.out.println("VariantSampleMap keysize: "+variantToSampleMap.keySet().size());
         // adjust for inheritance model
         if (model != InheritanceModel.ANY) {
 

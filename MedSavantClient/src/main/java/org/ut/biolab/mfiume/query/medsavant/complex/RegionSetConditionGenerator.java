@@ -47,6 +47,7 @@ import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
+import savant.api.util.DialogUtils;
 
 /**
  *
@@ -71,6 +72,11 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
         List<String> termNames = StringConditionEncoder.unencodeConditions(encoding);
         List<RegionSet> appliedTerms = new ArrayList<RegionSet>(termNames.size());
         for (String termName : termNames) {
+            RegionSet rs = termNameToTermObjectMap.get(termName);
+            if(rs == null){
+                DialogUtils.displayError("Search Error", "The Region Set "+termName+" is no longer valid, returning unfiltered variants.");
+                return null;
+            }
             appliedTerms.add(termNameToTermObjectMap.get(termName));
         }
 
@@ -90,9 +96,9 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
     }
 
     private void init() {
-        if (alreadyInitialized) {
+        /*if (alreadyInitialized) {
             return;
-        }
+        }*/
         acceptableValues = new ArrayList<String>();
         try {
 
