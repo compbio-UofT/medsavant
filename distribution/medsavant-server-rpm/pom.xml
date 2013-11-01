@@ -67,6 +67,9 @@
           <mappings>
             <mapping>
               <directory>/usr/local/medsavant-server-${project.version}/lib</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <dependency>
                 <excludes>
                   <exclude>${project.groupId}:medsavant-server</exclude>
@@ -75,6 +78,9 @@
             </mapping>
             <mapping>
               <directory>/usr/local/medsavant-server-${project.version}</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <dependency>
                 <includes>
                   <include>${project.groupId}:medsavant-server</include>
@@ -83,6 +89,9 @@
             </mapping>
             <mapping>
               <directory>/usr/local</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <softlinkSource>
                   <destination>medsavant-server</destination>
@@ -94,6 +103,8 @@
               <directory>/etc/sysconfig</directory>
               <directoryIncluded>false</directoryIncluded>
               <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.config</location>
@@ -105,6 +116,8 @@
             <mapping>
               <directory>/var/lib/medsavant-server</directory>
               <filemode>640</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.properties</location>
@@ -116,6 +129,8 @@
               <directory>/etc/init.d/</directory>
               <directoryIncluded>false</directoryIncluded>
               <filemode>744</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.init</location>

@@ -67,6 +67,8 @@
             <mapping>
               <directory>/usr/bin/</directory>
               <filemode>755</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.sh</location>
@@ -77,6 +79,9 @@
             </mapping>
             <mapping>
               <directory>/usr/local/medsavant-client-${project.version}/lib</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <dependency>
                 <excludes>
                   <exclude>${project.groupId}:medsavant-client</exclude>
@@ -85,6 +90,9 @@
             </mapping>
             <mapping>
               <directory>/usr/local/medsavant-client-${project.version}</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <dependency>
                 <includes>
                   <include>${project.groupId}:medsavant-client</include>
@@ -93,6 +101,9 @@
             </mapping>
             <mapping>
               <directory>/usr/local/medsavant-client-${project.version}</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.png</location>
@@ -102,6 +113,8 @@
             <mapping>
               <directory>/usr/bin</directory>
               <filemode>755</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <softlinkSource>
                   <destination>medsavant</destination>
@@ -111,6 +124,9 @@
             </mapping>
             <mapping>
               <directory>/usr/share/applications</directory>
+              <filemode>644</filemode>
+              <username>root</username>
+              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.desktop</location>
