@@ -54,7 +54,7 @@ public class SearchConditionItemView extends PillView {
     private final SearchConditionItem item;
     private final SearchConditionEditorView editor;
     private static final int BORDER_PADDING = 5;
-    private JPopupMenu advancedMenu = new JPopupMenu();
+    //private JPopupMenu advancedMenu = new JPopupMenu();
 
     @Override
     public void showDialog(Point p) {
@@ -129,12 +129,11 @@ public class SearchConditionItemView extends PillView {
                 };
                 t.start();
 
+                final JPopupMenu advancedMenu = new JPopupMenu();
                 JPanel horizButtonPanel = new JPanel();
                 horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));
-                if (item.getParent().getItems().size() > 0) {
-
+                if (item.getParent().getItems().size() > 0) {                    
                    // JButton convertToGroupButton = ViewUtil.getSoftButton("Convert to group");
-
                     JMenuItem convertToGroupItem = new JMenuItem("Convert to group");
                     convertToGroupItem.addActionListener(new ActionListener() {
                         @Override
