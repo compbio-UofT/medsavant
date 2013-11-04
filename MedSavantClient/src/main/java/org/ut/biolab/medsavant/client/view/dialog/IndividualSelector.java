@@ -481,13 +481,16 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
                 for (Object[] row : individuals) {
                     row[INDEX_OF_GENDER] = ClientMiscUtils.genderToString((Integer) row[INDEX_OF_GENDER]);
-
+                    
                     String s;
                     Object o = row[INDEX_OF_AFFECTED];
                     if (o instanceof Boolean) {
                         Boolean b = (Boolean) o;
                         s = b ? "Yes" : "No";
-                    } else {
+                    } else if(o instanceof Integer){
+                        Integer i = (Integer)o;
+                        s = (i>0) ? "Yes" : "No";
+                    }else{
                         s = "Unknown";
                     }
                     row[INDEX_OF_AFFECTED] = s;
