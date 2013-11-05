@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -208,8 +209,14 @@ public class SearchConditionItemView extends PillView {
                 OKButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        setSelected(false);
-                        dialog.dispose();
+                        try{
+                            if(editor.saveChanges()){
+                                setSelected(false);
+                                dialog.dispose();
+                            }
+                        }catch(IllegalArgumentException ex){
+                            DialogUtils.displayError(ex.getMessage());
+                        }
                     }
                 });
 
@@ -245,7 +252,9 @@ public class SearchConditionItemView extends PillView {
     }
 
     public final void refresh() {
-
+        if(item.getParent() == null){
+            return;
+        }
         this.setActivated(item.getSearchConditionEncoding() != null);
 
         if (item.getExplanation() != null) {
@@ -260,6 +269,7 @@ public class SearchConditionItemView extends PillView {
             name = name.substring(0, index);
         }
 
+     
         this.setText(
                 "<html>"
                 + (!item.getParent().isFirstItem(item) ? item.getRelation() + " " : "")

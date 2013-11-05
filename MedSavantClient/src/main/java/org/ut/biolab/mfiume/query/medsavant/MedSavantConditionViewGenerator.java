@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.mfiume.query.ConditionViewGenerator;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
+import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.OntologyConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.PatientConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
@@ -127,7 +128,10 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
 
         ComprehensiveConditionGenerator omim = new OntologyConditionGenerator(OntologyType.OMIM);
         conditionGenerators.put(omim.getName(), omim);
-
+        
+        ComprehensiveConditionGenerator genes = new GenesConditionGenerator();
+        conditionGenerators.put("Genes", genes);
+        
         // plugin
         MedSavantVariantSearchApp[] searchApps = loadSearchApps();
         for (MedSavantVariantSearchApp searchApp : searchApps) {

@@ -57,9 +57,14 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
             super(msg);
         }
     }
-
-    /*
-    public Dimension getDialogSize(){ //todo 
-        
-    } */
+ 
+    /**
+     * Called when the user hits OK after editing a condition.
+     * @return true if the edit dialog can be closed (e.g. save was successful), false otherwise.
+     * @throws IllegalArgumentException If thrown, an error dialog will be shown with the message and the dialog will NOT be closed.
+     */
+    public boolean saveChanges() throws IllegalArgumentException{ 
+        return true; 
+    }
+ 
 }
