@@ -20,6 +20,8 @@
 package org.ut.biolab.mfiume.query.medsavant.complex;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.list.FilterableListModelEvent;
+import com.jidesoft.list.FilterableListModelListener;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -85,8 +87,15 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
 
         public OntologySearchConditionEditorView(SearchConditionItem i, StringConditionValueGenerator vg) {
             super(i, vg);
-            setPreferredSize(DEFAULT_DIMENSIONS);
+            setPreferredSize(DEFAULT_DIMENSIONS);            
         }
+
+        @Override
+        public void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException {
+            super.loadViewFromSearchConditionParameters(encoding);                                       
+        }
+        
+        
         
         private synchronized void refreshMaps() {
             if (refresher != null) {
@@ -130,21 +139,19 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
                                         lbl.addMouseListener(new MouseAdapter(){
 
                                             @Override
-                                            public void mouseClicked(MouseEvent me) {
-                                                System.out.println("Mouse Clicked");
-                                                super.mouseClicked(me); //To change body of generated methods, choose Tools | Templates.
+                                            public void mouseClicked(MouseEvent me) {                                                
+                                                super.mouseClicked(me); 
                                             }
 
                                             @Override
-                                            public void mouseEntered(MouseEvent me) {
-                                                System.out.println("Mouse Entered");
-                                                super.mouseEntered(me); //To change body of generated methods, choose Tools | Templates.
+                                            public void mouseEntered(MouseEvent me) {                                                
+                                                super.mouseEntered(me); 
                                             }
 
                                             @Override
                                             public void mouseExited(MouseEvent me) {
-                                                System.out.println("Mouse exited");
-                                                super.mouseExited(me); //To change body of generated methods, choose Tools | Templates.
+                                                
+                                                super.mouseExited(me);
                                             }
                                             
                                         });
@@ -172,20 +179,18 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
         }
 
         @Override
-        protected JPopupMenu getPopupMenu(String itemHoveredOver) {                       
-            if (!mapsReady) {
+        protected JPopupMenu getPopupMenu(String itemHoveredOver) {                                   
+            if (!mapsReady) {                
                 refreshMaps();
-            }
-
+            }            
             return popupMap.get(itemHoveredOver);
         }
 
         @Override
         protected JLabel getNumberInCategory(String category) {
-            if (!mapsReady) {
+            if (!mapsReady) {             
                 refreshMaps();
-            }
-                      
+            }            
             return countMap.get(category);          
         }
 
@@ -285,7 +290,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
                 init();
                 return acceptableValues;
             }
-        });
+        });        
         editor.refreshMaps();
         return editor;
     }

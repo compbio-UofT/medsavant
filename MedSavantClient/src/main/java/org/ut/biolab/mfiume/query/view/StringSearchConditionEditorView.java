@@ -33,6 +33,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,9 +74,9 @@ import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
 public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
     private final StringConditionValueGenerator valueGenerator;
-    private QuickListFilterField field;
+    protected QuickListFilterField field;
     private final int FIELD_WIDTH = 600;
-    private FilterableCheckBoxList filterableList;
+    protected FilterableCheckBoxList filterableList;
     private List<String> values;
     private boolean cacheOn = true;
     private JButton selectNone;
@@ -215,7 +217,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             p.add(c);
             p.add(Box.createHorizontalGlue());
             totalCount = getNumberInCategory((String) value);
-            p.add(totalCount);
+            p.add(totalCount);            
             return p;
         }
 
@@ -365,7 +367,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
 
             @Override
             public ListCellRenderer getCellRenderer() {
-                final ListCellRenderer defaultListCellRenderer = super.getCellRenderer(); //To change body of generated methods, choose Tools | Templates.
+                final ListCellRenderer defaultListCellRenderer = super.getCellRenderer();
                 return (new ListCellRendererWithTotals(defaultListCellRenderer));
             }
         };
@@ -377,24 +379,31 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             private int lastIndex = -1;
 
             @Override
-            public void mouseMoved(MouseEvent e) {
-                int index = filterableList.locationToIndex(e.getPoint());
-                if (index > -1) {
-                    Rectangle bounds = filterableList.getCellBounds(index, index);
-                    ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
-                    Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
-                    renderComp.setBounds(bounds);
+            public void mouseMoved(final MouseEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int index = filterableList.locationToIndex(e.getPoint());
+                        if (index > -1) {
+                            Rectangle bounds = filterableList.getCellBounds(index, index);
+                            ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
+                            Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
+                            renderComp.setBounds(bounds);
 
-                    if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
-                        if (index != lastIndex) {
-                            menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
-                            menu.show(e.getComponent(), e.getX(), e.getY());
-                        } else if (menu != null && !menu.isVisible()) {
-                            menu.show(e.getComponent(), e.getX(), e.getY());
+                            if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
+                                //if (index != lastIndex) {
+                                    menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
+                                    menu.show(e.getComponent(), e.getX(), e.getY());
+                                //} else if (menu != null && !menu.isVisible()) {
+                                //    menu.show(e.getComponent(), e.getX(), e.getY());
+                               // }
+                            }
                         }
+                        lastIndex = index;
                     }
-                }
-                lastIndex = index;
+                });
+
+
             }
         });
 
@@ -422,15 +431,15 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
                 }
             }
             if (err) {
-                SwingUtilities.invokeLater(new Runnable(){
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
-                    public void run(){
+                    public void run() {
                         saveSearchConditionParameters();
-                        setDescriptionBasedOnSelections();        
+                        setDescriptionBasedOnSelections();
                     }
-                });                
+                });
             }
-            
+
             ClientMiscUtils.selectOnlyTheseIndicies(filterableList, selectedIndices);
         }
 
@@ -504,297 +513,6 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             setDescriptionBasedOnSelections();
         }
         add(p);
-    }
-
-    @Deprecated
-    public void loadViewFromSearchConditionParameters2(String encoding) throws ConditionRestorationException {
-
-        if (isUserSpecifiedTextMatch) {
-            loadLooseStringMatchViewFromSearchConditionParameters(encoding);
-            return;
-        }
-
-        //  if (!cacheOn || values == null) {
-        values = valueGenerator.getStringValues();
-        // }
-
-
-        this.removeAll();
-
-        if (values == null || values.isEmpty()) {
-            this.add(new JLabel("This field is not populated"));
-            return;
-        }
-
-        final JRadioButton isNull = new JRadioButton("is null");
-        final JRadioButton isNotNull = new JRadioButton("is not null");
-        final JRadioButton is = new JRadioButton("is any of the following:");
-        ButtonGroup group = new ButtonGroup();
-
-        is.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                showListFields();
-                setDescriptionBasedOnSelections();
-            }
-        });
-
-        isNull.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                if (isNull.isSelected()) {
-                    setAllSelected(false, false);
-                    saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
-                            Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NULL})));
-                    item.setDescription("is null");
-                    //hideListFields();
-                }
-            }
-        });
-
-        isNotNull.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                if (isNotNull.isSelected()) {
-                    setAllSelected(false, false);
-                    saveSearchConditionParameters(StringConditionEncoder.encodeConditions(
-                            Arrays.asList(new String[]{StringConditionEncoder.ENCODING_NOTNULL})));
-                    item.setDescription("is not null");
-                    //hideListFields();
-                }
-            }
-        });
-
-        List<String> selectedValues;
-        if (encoding == null) {
-            selectedValues = null;
-            is.setSelected(true);
-        } else {
-            selectedValues = StringConditionEncoder.unencodeConditions(encoding);
-        }
-
-        group.add(isNull);
-        group.add(isNotNull);
-        group.add(is);
-
-        JPanel controlButtons = ViewUtil.getClearPanel();
-        controlButtons.setLayout(new BoxLayout(controlButtons, BoxLayout.X_AXIS));
-        //ViewUtil.applyHorizontalBoxLayout(controlButtons);
-
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-
-        JPanel labelPanel = new JPanel();
-        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-        labelPanel.add(Box.createHorizontalGlue());
-        labelPanel.add(new JLabel("Filtering variants where " + item.getName() + ": "));
-        labelPanel.add(Box.createHorizontalGlue());
-        p.add(labelPanel);
-
-        controlButtons.add(Box.createHorizontalGlue());
-        controlButtons.add(isNull);
-        controlButtons.add(isNotNull);
-        controlButtons.add(is);
-        controlButtons.add(Box.createHorizontalGlue());
-
-        p.add(controlButtons);
-
-        AbstractListModel model = new SimpleListModel(values);
-
-        field = new QuickListFilterField(model);
-        field.setHintText("Type here to filter options");
-
-        // the width of the field has to be less than the width
-        // provided to the filter, otherwise, it will push the grid wider
-        // and components will be inaccessible
-        field.setPreferredSize(new Dimension(FIELD_WIDTH, 22));
-
-        filterableList = new FilterableCheckBoxList(field.getDisplayListModel()) {
-            @Override
-            public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
-                return -1;
-            }
-
-            @Override
-            public boolean isCheckBoxEnabled(int index) {
-                return true;
-            }
-
-            @Override
-            public ListCellRenderer getCellRenderer() {
-                final ListCellRenderer defaultListCellRenderer = super.getCellRenderer(); //To change body of generated methods, choose Tools | Templates.
-                return (new ListCellRendererWithTotals(defaultListCellRenderer));
-            }
-        };
-
-
-        //Generate popup tooltips
-        filterableList.addMouseMotionListener(new MouseMotionAdapter() {
-            private JPopupMenu menu;
-            private int lastIndex = -1;
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int index = filterableList.locationToIndex(e.getPoint());
-                if (index > -1) {
-                    Rectangle bounds = filterableList.getCellBounds(index, index);
-                    ListCellRendererWithTotals cellRenderer = (ListCellRendererWithTotals) filterableList.getCellRenderer();
-                    Component renderComp = cellRenderer.getListCellRendererComponent(filterableList, filterableList.getModel().getElementAt(index), index, false, false);
-                    renderComp.setBounds(bounds);
-                    /*
-                     Point local = new Point(e.getPoint());
-                     local.x -= bounds.x;
-                     local.y -= bounds.y;
-                     */
-                    if (cellRenderer.isMouseXOverLabel(e.getPoint())) {
-                        if (index != lastIndex) {
-                            menu = getPopupMenu(filterableList.getModel().getElementAt(index).toString());
-                            menu.show(e.getComponent(), e.getX(), e.getY());
-                        } else if (menu != null && !menu.isVisible()) {
-                            menu.show(e.getComponent(), e.getX(), e.getY());
-                        }
-                    }
-                }
-                lastIndex = index;
-            }
-        });
-
-        filterableList.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        if (model.getSize() > 0) {
-            filterableList.setPrototypeCellValue(model.getElementAt(0));    // Makes it much faster to determine the view's preferred size.
-        }
-
-        if (selectedValues == null) {
-            setAllSelected(true);
-            saveSearchConditionParameters();
-
-        } else if (StringConditionEncoder.encodesNotNull(encoding) || StringConditionEncoder.encodesNull(encoding)) {
-            setAllSelected(false);
-        } else {
-
-            int[] selectedIndices = new int[selectedValues.size()];
-            boolean err = false;
-            for (int i = 0; i < selectedValues.size(); i++) {
-                selectedIndices[i] = values.indexOf(selectedValues.get(i));
-                if (selectedIndices[i] == -1) {
-                    err = true;
-                    DialogUtils.displayError(selectedValues.get(i) + " is not an allowable option for " + item.getName());
-                    System.err.println(selectedValues.get(i) + " is not an allowable option for " + item.getName());
-                }
-            }
-            ClientMiscUtils.selectOnlyTheseIndicies(filterableList, selectedIndices);
-            if (err) {
-                saveSearchConditionParameters();
-                setDescriptionBasedOnSelections();
-                is.setSelected(true);
-            }
-        }
-
-        SearchableUtils.installSearchable(filterableList);
-
-        filterableList.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting() && !makingBatchChanges) {
-                    // TODO save encoding
-                    int[] indices = filterableList.getCheckBoxListSelectedIndices();
-                    List<String> chosenValues = new ArrayList<String>();
-                    for (int i : indices) {
-                        chosenValues.add(values.get(i));
-                    }
-                    saveSearchConditionParameters();
-                    setDescriptionBasedOnSelections();
-                    is.setSelected(true);
-                }
-            }
-        });
-
-        final StringSearchConditionEditorView instance = this;
-
-        jsp = new JScrollPane(filterableList) {
-            @Override
-            public Dimension getPreferredSize() {
-                Dimension result = super.getPreferredSize();
-                result = new Dimension(Math.min(result.width, instance.getWidth() - 20), result.height);
-                return result;
-            }
-        };
-
-        //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(3, 15, 3, 15);
-        add(p, gbc);
-        //add(controlButtons, gbc);
-
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(3, 3, 3, 3);
-        JPanel x = new JPanel();
-        x.setLayout(new BoxLayout(x, BoxLayout.Y_AXIS));
-        x.add(field);
-        x.add(jsp); //x.add(Box.createVerticalGlue());
-        //add(field, gbc); //moved from above gbc.weighty
-        //add(jsp, gbc);
-        add(x, gbc);
-
-        selectAll = ViewUtil.getSoftButton("Select All");
-        selectAll.setFocusable(false);
-        selectAll.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                is.setSelected(true);
-                setAllSelected(true);
-
-            }
-        });
-
-        selectNone = ViewUtil.getSoftButton("Select None");
-        selectNone.setFocusable(false);
-
-        selectNone.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                is.setSelected(true);
-                setAllSelected(false);
-            }
-        });
-
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(3, 3, 3, 3);
-        add(field, gbc);
-
-        //gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(3, 3, 3, 3);
-        add(jsp, gbc);
-
-        gbc.gridwidth = 1;
-        gbc.weightx = 0.0;
-        gbc.weighty = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-        add(selectAll, gbc);
-        add(selectNone, gbc);
-
-        if (StringConditionEncoder.encodesNull(encoding)) {
-            isNull.setSelected(true);
-            //hideListFields();
-        } else if (StringConditionEncoder.encodesNotNull(encoding)) {
-            isNotNull.setSelected(true);
-            //hideListFields();
-        } else {
-            is.setSelected(true);
-            setDescriptionBasedOnSelections();
-            //showListFields();
-        }
     }
 
     protected JPopupMenu getPopupMenu(String itemHoveredOver) {
