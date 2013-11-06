@@ -359,7 +359,10 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         String a = query.toString();
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
-        rs.next();
+        if(!rs.next()){
+            return new int[0];
+        }
+        
         String annotationString = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS);
 
         if (annotationString == null || annotationString.isEmpty()) {
