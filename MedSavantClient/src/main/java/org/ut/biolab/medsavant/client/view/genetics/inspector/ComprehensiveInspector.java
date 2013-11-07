@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.genetics.inspector;
 
@@ -91,6 +91,11 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         return socialSubInspector;
     }
 
+    String VARIANT_HELP_TITLE = "How to use the Variant Inspector";
+    String VARIANT_HELP_TEXT = "The Variant Inspector shows detailed information about the variant selected from the Spreadsheet.";
+    String GENE_HELP_TITLE = "How to use the Gene Inspector";
+    String GENE_HELP_TEXT = "The Gene Inspector shows detailed information about the gene intersecting the variant selected from the Spreadsheet. If multiple genes intersect a variant, you can change which gene is being inspected via the Variant Inspector.";
+
     private void createSubInspectors(
             boolean createSimpleVariantInspector,
             boolean createDetailedVariantInspector,
@@ -103,7 +108,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             boolean createAppGeneInspectors,
             SplitScreenPanel splitScreenPanel) {
 
-
         // Assemble the variant inspector
         variantCollapsibleInspector = new CollapsibleInspector() {
             @Override
@@ -112,14 +116,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             }
         };
 
-        String VARIANT_HELP_TITLE = "How to use the Variant Inspector";
-        String VARIANT_HELP_TEXT = "The Variant Inspector shows detailed information about the variant selected from the Spreadsheet.";
-        String GENE_HELP_TITLE = "How to use the Gene Inspector";
-        String GENE_HELP_TEXT = "The Gene Inspector shows detailed information about the gene intersecting the variant selected from the Spreadsheet. If multiple genes intersect a variant, you can change which gene is being inspected via the Variant Inspector.";
-
-        variantCollapsibleInspector.setMessage("No variant selected",VARIANT_HELP_TITLE,VARIANT_HELP_TEXT);
+        variantCollapsibleInspector.setMessage("No variant selected", VARIANT_HELP_TITLE, VARIANT_HELP_TEXT);
         variantCollapsibleInspector.switchToMessage();
-
 
         // Assemble the gene inspector
         geneCollapsibleInspector = new CollapsibleInspector() {
@@ -129,7 +127,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             }
         };
 
-        geneCollapsibleInspector.setMessage("No gene selected",GENE_HELP_TITLE,GENE_HELP_TEXT);
+        geneCollapsibleInspector.setMessage("No gene selected", GENE_HELP_TITLE, GENE_HELP_TEXT);
 
         variantCollapsibleInspector.addComponent(ViewUtil.getHelpButton(VARIANT_HELP_TITLE, VARIANT_HELP_TEXT));
 
@@ -162,8 +160,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             }
         }
 
-         geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
-
+        geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
 
         // Gene
         if (createGeneSubInspector) {
@@ -240,6 +237,13 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public void setVariantRecord(final VariantRecord r) {
 
         currentVariantRecord = r;
+
+        if (r == null) {
+            getVariantInspector().setMessage("No variant selected", VARIANT_HELP_TITLE, VARIANT_HELP_TEXT);
+            getVariantInspector().switchToMessage();
+            return;
+        }
+
         //System.out.println("Setting variant Record");
         if (variantRecordSetterThread == null || variantRecordSetterThread.isDone()) {
             this.switchToVariantInspector();
@@ -264,6 +268,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     VariantRecord r;
                     do {
                         r = currentVariantRecord;
+
                         instance.simpleVariantInspector.setSimpleVariant(sv);
                         if (detailedVariantSubInspector != null) {
                             instance.detailedVariantSubInspector.setVariantRecord(r);
@@ -282,6 +287,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                         }
 
                     } while (currentVariantRecord != r);
+
                     return null;
                 }
             };
@@ -293,7 +299,15 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     }
 
     public void setGene(final Gene gene) {
+
+        if (gene == null) {
+            getGeneInspector().setMessage("No gene selected", GENE_HELP_TITLE, GENE_HELP_TEXT);
+            getGeneInspector().switchToMessage();
+            return;
+        }
+
         this.switchToGeneInspector();
+
         this.getGeneInspector().setMessage(new WaitPanel("Getting detailed gene information..."));
         this.getGeneInspector().switchToMessage();
 
@@ -410,25 +424,16 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                 }
             };
             eventHandlerThread.execute();
+
         }
-        //run this in a separate thread.
-        /*if (event instanceof Gene) {
-         setGene((Gene) event);
-         } else if (event instanceof SimpleVariant) {
-         this.setSimpleVariant((SimpleVariant) event);
-         } else if (event instanceof VariantRecord) {
-         this.setVariantRecord((VariantRecord) event);
-         }
-         for (Listener<Object> l : selectionListeners) {
-         l.handleEvent(event);
-         }*/
     }
 
     private enum InspectorEnum {
 
         VARIANT, GENE
     };
-    private EnumMap<ComprehensiveInspector.InspectorEnum, Integer> inspectorsToTabIndexMap = new EnumMap<ComprehensiveInspector.InspectorEnum, Integer>(ComprehensiveInspector.InspectorEnum.class);
+    private EnumMap<ComprehensiveInspector.InspectorEnum, Integer> inspectorsToTabIndexMap = new EnumMap<ComprehensiveInspector.InspectorEnum, Integer>(ComprehensiveInspector.InspectorEnum.class
+    );
 
     public ComprehensiveInspector(
             boolean createSimpleVariantInspector,
@@ -459,6 +464,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createSimpleVariantInspector) {
             simpleVariantInspector.setGeneListener(this);
+            /*
             this.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent ce) {
@@ -475,6 +481,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     }
                 }
             });
+            */
         }
     }
 
@@ -492,7 +499,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     private void addTabPanel(ComprehensiveInspector.InspectorEnum i, Inspector inspector) {
         inspectorsToTabIndexMap.put(i, this.getTabCount());
-        JScrollPane jsp =  ViewUtil.getClearBorderlessScrollPane(inspector.getContent());
+        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(inspector.getContent());
         jsp.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         addTab(inspector.getName(), null, jsp, inspector.getName());
     }

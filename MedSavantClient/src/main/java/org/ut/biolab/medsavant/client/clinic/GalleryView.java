@@ -21,6 +21,7 @@ package org.ut.biolab.medsavant.client.clinic;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -136,6 +137,7 @@ public class GalleryView extends JPanel {
                     setContentTo(g.getPanel(), g.getName());
                 }
             });
+            b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
         carousel.setVisible(true);
         carousel.getParent().invalidate();
