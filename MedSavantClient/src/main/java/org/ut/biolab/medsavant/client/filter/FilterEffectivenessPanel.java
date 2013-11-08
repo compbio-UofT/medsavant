@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.filter;
 
@@ -28,6 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,7 +62,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
     public FilterEffectivenessPanel() {
         this(Color.black);
-     
+
     }
 
     public FilterEffectivenessPanel(Color foregroundColor) {
@@ -86,7 +87,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
         panel = ViewUtil.getClearPanel();
         panel.setLayout(new BorderLayout());
-        panel.setBorder(ViewUtil.getMediumBorder());        
+        panel.setBorder(ViewUtil.getMediumBorder());
         //panel.setPreferredSize(waitPanel.getPreferredSize());
         add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 
@@ -102,18 +103,15 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         infoPanel.add(ViewUtil.centerHorizontally(a));
 
         Listener<FilterEvent> fe = new Listener<FilterEvent>() {
-
             @Override
             public void handleEvent(FilterEvent event) {
                 try {
 
-                    if (
-                            MedSavantClient.VariantManager.willApproximateCountsForConditions(
-                                LoginController.getInstance().getSessionID(),
-                                ProjectController.getInstance().getCurrentProjectID(),
-                                ReferenceController.getInstance().getCurrentReferenceID(),
-                                FilterController.getInstance().getAllFilterConditions())
-                       ) {
+                    if (MedSavantClient.VariantManager.willApproximateCountsForConditions(
+                            LoginController.getInstance().getSessionID(),
+                            ProjectController.getInstance().getCurrentProjectID(),
+                            ReferenceController.getInstance().getCurrentReferenceID(),
+                            FilterController.getInstance().getAllFilterConditions())) {
                         a.setText("approximately");
                     } else {
                         a.setText("");
@@ -122,7 +120,6 @@ public class FilterEffectivenessPanel extends JLayeredPane {
                     ex.printStackTrace();
                 }
             }
-
         };
 
         fe.handleEvent(null);
@@ -134,7 +131,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         l.setForeground(foregroundColor);
         ViewUtil.makeSmall(l);
         infoPanel.add(ViewUtil.centerHorizontally(l));
-        infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());        
+        infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
         panel.add(infoPanel, BorderLayout.NORTH);
 
@@ -234,10 +231,15 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     }
 
     private void refreshProgressLabel() {
-        double percent = 100.0;
-        if (numTotal > 0) {
-            percent = (numLeft * 100.0) / numTotal;
-        }
-        labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                double percent = 100.0;
+                if (numTotal > 0) {
+                    percent = (numLeft * 100.0) / numTotal;
+                }
+                labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
+            }
+        });   
     }
 }

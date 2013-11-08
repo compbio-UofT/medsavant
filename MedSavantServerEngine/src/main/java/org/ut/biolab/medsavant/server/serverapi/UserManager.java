@@ -145,7 +145,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             LOG.info("Granting " + level + " privileges to " + name + " on " + dbName + "...");
             switch (level) {
                 case ADMIN:
-                    conn.executePreparedUpdate("GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
+                    conn.executePreparedUpdate("GRANT ALTER, RELOAD, CREATE, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
                     conn.executePreparedUpdate(String.format("GRANT GRANT OPTION ON %s.* TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate(String.format("GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, DELETE, DROP, INSERT, SELECT, UPDATE ON %s.* TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate("GRANT SELECT ON mysql.user TO ?@'localhost'", name);

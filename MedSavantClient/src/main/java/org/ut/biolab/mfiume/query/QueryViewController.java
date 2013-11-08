@@ -198,9 +198,9 @@ public class QueryViewController extends JPanel implements SearchConditionListen
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            warningText.setVisible(false);
-                            applyButton.setEnabled(false);
+                            warningText.setVisible(false);                            
                             applyButton.setText("Searching...");
+                            applyButton.setEnabled(false);
                             applyButton.updateUI();
                         }
                     });
