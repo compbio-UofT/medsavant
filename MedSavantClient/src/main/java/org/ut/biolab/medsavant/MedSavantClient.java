@@ -205,18 +205,18 @@ public class MedSavantClient implements MedSavantServerRegistry {
         if (initialized) {
             return;
         }
-        
+
         int port = (new Integer(serverPort)).intValue();
 
         Registry registry;
 
-        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");        
-        registry = LocateRegistry.getRegistry(serverAddress, port);        
+        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
+        registry = LocateRegistry.getRegistry(serverAddress, port);
         LOG.debug("Connected");
 
         // look up the remote object
-        LOG.debug("Retrieving adapters...");        
-        setAdaptersFromRegistry(registry);        
+        LOG.debug("Retrieving adapters...");
+        setAdaptersFromRegistry(registry);
         LOG.debug("Done");
     }
 
@@ -260,7 +260,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
             CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
             NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
 
-            if (Thread.interrupted()) {                
+            if (Thread.interrupted()) {
                 return;
             }
 

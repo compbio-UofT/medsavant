@@ -46,7 +46,6 @@ public class ClinicGalleryView extends GalleryView {
         galleryItems = initGalleryItems();
 
         setGalleryItems(galleryItems);
-        //setMenuHeroPanel(getHeroPanel());
     }
 
     private List<GalleryItem> initGalleryItems() {
@@ -54,8 +53,10 @@ public class ClinicGalleryView extends GalleryView {
         List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantClinicApp.class);
 
         for (int i = 0; i < clinicApps.size(); i++) {
-            MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
-            items.add(new GalleryItem(app.getIcon(), app.getContent(),app.getTitle()));
+            try {
+                MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
+                items.add(new GalleryItem(app.getIcon(), app.getContent(),app.getTitle()));
+            } catch (Exception e) { e.printStackTrace(); }
         }
 
         return items;

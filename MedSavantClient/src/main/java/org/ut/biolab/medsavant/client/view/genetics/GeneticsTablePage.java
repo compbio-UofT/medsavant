@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.genetics;
 
@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
+import org.ut.biolab.medsavant.client.filter.QueryPanel;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -46,7 +47,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author mfiume
  */
-public class GeneticsTablePage extends SubSectionView{
+public class GeneticsTablePage extends SubSectionView implements Listener<FilterEvent> {
 
     private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
     private Thread viewPreparationThread;
@@ -55,11 +56,12 @@ public class GeneticsTablePage extends SubSectionView{
     private TablePanel tablePanel;
     private Component[] settingComponents;
     private PeekingPanel detailView;
+    private ComprehensiveInspector inspectorPanel;
 
     //SplitScreenAdapter(JPanel panel, SplitScreenAdapter.Location location){
     @Override
-    public void clearSelection(){
-        if(tablePanel != null){
+    public void clearSelection() {
+        if (tablePanel != null) {
             tablePanel.clearSelection();
         }
     }
@@ -80,6 +82,7 @@ public class GeneticsTablePage extends SubSectionView{
                 }
             }
         });
+        FilterController.getInstance().addListener(this);
     }
 
     @Override
@@ -100,38 +103,36 @@ public class GeneticsTablePage extends SubSectionView{
         return settingComponents;
     }
 
-
     /**
-     * Splits the main table view into an upper and lower section.
-     * The upper section contains the main table pane, and the lower section
-     * contains the given JPanel.
+     * Splits the main table view into an upper and lower section. The upper
+     * section contains the main table pane, and the lower section contains the
+     * given JPanel.
      */
     /*
-    @Override
-    public void splitScreen(JPanel p){
-        split = true;
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, p);
-        splitPane.setResizeWeight(1);
-        outerTablePanel.removeAll();
-        outerTablePanel.add(splitPane);
-        outerTablePanel.revalidate();
-        outerTablePanel.repaint();
-    }
+     @Override
+     public void splitScreen(JPanel p){
+     split = true;
+     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, p);
+     splitPane.setResizeWeight(1);
+     outerTablePanel.removeAll();
+     outerTablePanel.add(splitPane);
+     outerTablePanel.revalidate();
+     outerTablePanel.repaint();
+     }
 
-    @Override
-    public void unsplitScreen(){
-        split = false;
-        outerTablePanel.removeAll();
-        outerTablePanel.add(tablePanel);
-        outerTablePanel.revalidate();
-        outerTablePanel.repaint();
-    }
+     @Override
+     public void unsplitScreen(){
+     split = false;
+     outerTablePanel.removeAll();
+     outerTablePanel.add(tablePanel);
+     outerTablePanel.revalidate();
+     outerTablePanel.repaint();
+     }
 
-    @Override
-    public boolean isSplit(){
-        return split;
-    }*/
-
+     @Override
+     public boolean isSplit(){
+     return split;
+     }*/
     @Override
     public JPanel getView() {
         try {
@@ -142,6 +143,7 @@ public class GeneticsTablePage extends SubSectionView{
                 view.add(new WaitPanel("Preparing Spreadsheet..."));
 
                 Runnable prepareViewInBackground = new Runnable() {
+
                     @Override
                     public void run() {
                         try {
@@ -152,10 +154,9 @@ public class GeneticsTablePage extends SubSectionView{
                             tablePanel = new TablePanel(pageName);
                             SplitScreenPanel ssp = new SplitScreenPanel(tablePanel);
 
-                            final ComprehensiveInspector inspectorPanel =
-                                    new ComprehensiveInspector(true, true, true, true, true, true, true, true, true, ssp);
+                            inspectorPanel = new ComprehensiveInspector(true, true, true, true, true, true, true, true, true, ssp);
 
-                            inspectorPanel.addSelectionListener(new Listener<Object>(){
+                            inspectorPanel.addSelectionListener(new Listener<Object>() {
                                 @Override
                                 public void handleEvent(Object event) {
                                     clearSelection();
@@ -191,7 +192,7 @@ public class GeneticsTablePage extends SubSectionView{
 
                         } catch (Exception ex) {
                             LOG.error(ex);
-                            System.out.println("Caught spreadsheet loading error: "+ex);
+                            System.out.println("Caught spreadsheet loading error: " + ex);
                             ex.printStackTrace();
                             view.removeAll();
                             WaitPanel p = new WaitPanel("Error loading Spreadsheet");
@@ -204,7 +205,6 @@ public class GeneticsTablePage extends SubSectionView{
 
                 viewPreparationThread = new Thread(prepareViewInBackground);
                 viewPreparationThread.start();
-
 
             }
 
@@ -234,5 +234,16 @@ public class GeneticsTablePage extends SubSectionView{
             return;
         }
         tablePanel.queueUpdate();
+    }
+
+    @Override
+    public void handleEvent(FilterEvent event) {
+        if (tablePanel != null) {
+            tablePanel.clearSelection();
+        }
+        if (inspectorPanel != null) {
+            inspectorPanel.setVariantRecord(null);
+            inspectorPanel.setGene(null);
+        }
     }
 }
