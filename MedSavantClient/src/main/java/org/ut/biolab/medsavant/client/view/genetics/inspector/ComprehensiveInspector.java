@@ -464,24 +464,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createSimpleVariantInspector) {
             simpleVariantInspector.setGeneListener(this);
-            /*
-            this.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent ce) {
-                    int selectedIndex = getSelectedIndex();
-                    if (getTitleAt(selectedIndex).equals("Gene")) {
-                        if (simpleVariantInspector.getSelectedGene() != null) {
-                            setGene(simpleVariantInspector.getSelectedGene());
-                        }
-
-                    } else if (getTitleAt(selectedIndex).equals("Variant")) {
-                        if (simpleVariantInspector.getSimpleVariant() != null) {
-                            setSimpleVariant(simpleVariantInspector.getSimpleVariant());
-                        }
-                    }
-                }
-            });
-            */
         }
     }
 
