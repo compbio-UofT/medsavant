@@ -127,7 +127,7 @@
     <checkstyle.skip>false</checkstyle.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jide.version>3.5.6</jide.version>
-    <savant.version>2.0.4</savant.version>
+    <savant.version>2.0-SNAPSHOT</savant.version>
   </properties>
 
   <dependencyManagement>
