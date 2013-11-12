@@ -26,14 +26,18 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 public class IncidentalFindings {
     
 	private String dnaID;
+	private int coverageThreshold;
+	private double hetRatio;
 	
 	private List<Object[]> allVariants;
 	
 	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?");
 	private Matcher dp4Matcher;
 	
-	public IncidentalFindings(String dnaID) {
+	public IncidentalFindings(String dnaID, int cov, double ratio) {
 		this.dnaID= dnaID;
+		this.coverageThreshold= cov;
+		this.hetRatio= ratio;
 		
 		try {
 			getVariants();
@@ -60,7 +64,7 @@ public class IncidentalFindings {
 	}
 	
 	public JTable testTableOutput() {
-		Object[][] rowData= allVariants.toArray(new Object[allVariants.size()][]); // List<Object[]> to Object[][]
+		Object[][] rowData= allVariants.toArray(new Object[allVariants.size()][]); // List<Object[]> to Object[][]		
 		Object[] header= {"UPLOAD_ID", "FILE_ID", "VARIANT_ID", "DNA_ID", 
 			"CHROM", "POSITION", "DBSNP_ID", "REF", "ALT", "QUAL", "FILTER",
 			"VARIANT_TYPE", "ZYGOSITY", "GT", "CUSTOM_INFO"};
@@ -102,6 +106,9 @@ public class IncidentalFindings {
 					System.out.println("Ratio: " + hetRatio);
 				*/
 				}
+			} else {
+				/* TEMPORARY: If there is no DP4 field, just output everything. */
+				rowDataNew.add(row);
 			}
 		}
 		

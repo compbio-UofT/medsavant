@@ -17,9 +17,9 @@ import javax.swing.JTable;
 import medsavant.incidental.IncidentalFindings;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-
 
 /**
  * Default panel view for Incidentalome app
@@ -28,11 +28,14 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class IncidentalPanel extends JPanel {
 	
-	private int TOP_MARGIN= 0;
-	private int SIDE_MARGIN= 100;
-	private int BOTTOM_MARGIN= 10;
+	private final int TOP_MARGIN= 0;
+	private final int SIDE_MARGIN= 100;
+	private final int BOTTOM_MARGIN= 10;
 	
-	public static String PAGE_NAME = "Incidentalome";
+	private int coverageThreshold= 10; // Threshold coverage for a variant
+	private double hetRatio= 0.3;
+	
+	public static final String PAGE_NAME = "Incidentalome";
 	
 	private JPanel view;
 	private RoundedPanel workview;
@@ -45,6 +48,7 @@ public class IncidentalPanel extends JPanel {
 	private Calendar date;
 	private MedSavantWorker MSWorker;
 	private JScrollPane variantPane;
+	private ProgressWheel pw;
     
 	public IncidentalPanel() {
 		setupView();
@@ -62,7 +66,15 @@ public class IncidentalPanel extends JPanel {
 		workview.add(new JLabel("Patient selection:"));
 		
 		choosePatientButton= new JButton("Choose Patient");
+		analyzeButton= new JButton("Identify Incidental Variants");
+		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		workview.add(choosePatientButton);
+		workview.add(analyzeButton);
+		
+		pw= new ProgressWheel();
+		pw.setIndeterminate(true);
+		pw.setVisible(false);
+		workview.add(pw);
 		
 		/* Choose the patient's sample using the individual selector. */
 		customSelector= new IndividualSelector();
@@ -80,6 +92,7 @@ public class IncidentalPanel extends JPanel {
 						
 						if (currentIndividualDNA != null) {
 							choosePatientButton.setText(currentIndividual);
+							analyzeButton.setEnabled(true);
 						} else {
 							choosePatientButton.setText("No DNA ID for " + currentIndividual);
 						}
@@ -92,9 +105,6 @@ public class IncidentalPanel extends JPanel {
 		
 		
 		/* Run incidental findings analysis */
-		analyzeButton= new JButton("Identify Incidental Variants");
-		workview.add(analyzeButton);
-		
 		analyzeButton.addActionListener(
 			new ActionListener() {
 				
@@ -114,7 +124,9 @@ public class IncidentalPanel extends JPanel {
 							@Override
 							protected Object doInBackground() throws Exception {
 								/* Starts a new thread for background tasks. */
-								incFin= new IncidentalFindings(currentIndividualDNA);
+								pw.setVisible(true);
+								incFin= new IncidentalFindings(currentIndividualDNA, coverageThreshold, hetRatio);
+								pw.setVisible(false);
 								return null;
 							}
 
