@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant;
 
@@ -52,6 +52,8 @@ import java.lang.management.ManagementFactory;
 import java.net.NoRouteToHostException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.net.ssl.SSLHandshakeException;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.InsetsUIResource;
@@ -211,13 +213,22 @@ public class MedSavantClient implements MedSavantServerRegistry {
         Registry registry;
 
         LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
-        registry = LocateRegistry.getRegistry(serverAddress, port);
-        LOG.debug("Connected");
 
-        // look up the remote object
-        LOG.debug("Retrieving adapters...");
-        setAdaptersFromRegistry(registry);
+        try {
+            registry = LocateRegistry.getRegistry(serverAddress, port, new SslRMIClientSocketFactory());
+            LOG.debug("Retrieving adapters...");
+            setAdaptersFromRegistry(registry);
+            LOG.info("Connected with SSL/TLS Encryption");
+        } catch (ConnectIOException ex) {
+            if (ex.getCause() instanceof SSLHandshakeException) {
+                registry = LocateRegistry.getRegistry(serverAddress, port);
+                LOG.debug("Retrieving adapters...");
+                setAdaptersFromRegistry(registry);
+                LOG.info("Connected without SSL/TLS encryption");
+            }
+        }
         LOG.debug("Done");
+
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
@@ -240,57 +251,57 @@ public class MedSavantClient implements MedSavantServerRegistry {
         VariantManagerAdapter VariantManager;
         NotificationManagerAdapter NotificationManager;
 
-    //   try {
-            AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
-            CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
-            LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
-            NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
-            OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
-            PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
-            ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
-            GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
-            ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
-            RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
-            SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
-            SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
-            UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
-            VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
-            DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
-            SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
-            CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
-            NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
+        //   try {
+        AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
+        CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
+        LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
+        NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
+        OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
+        PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
+        ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
+        GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
+        ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
+        RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
+        SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
+        SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
+        UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
+        VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
+        DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
+        SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
+        CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
+        NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
 
-            if (Thread.interrupted()) {
-                return;
-            }
+        if (Thread.interrupted()) {
+            return;
+        }
 
-            synchronized (managerLock) {
-                MedSavantClient.CustomTablesManager = CustomTablesManager;
-                MedSavantClient.AnnotationManagerAdapter = AnnotationManagerAdapter;
-                MedSavantClient.CohortManager = CohortManager;
-                MedSavantClient.GeneSetManager = GeneSetManager;
-                MedSavantClient.LogManager = LogManager;
-                MedSavantClient.NetworkManager = NetworkManager;
-                MedSavantClient.OntologyManager = OntologyManager;
-                MedSavantClient.PatientManager = PatientManager;
-                MedSavantClient.ProjectManager = ProjectManager;
-                MedSavantClient.UserManager = UserManager;
-                MedSavantClient.SessionManager = SessionManager;
-                MedSavantClient.SettingsManager = SettingsManager;
-                MedSavantClient.RegionSetManager = RegionSetManager;
-                MedSavantClient.ReferenceManager = ReferenceManager;
-                MedSavantClient.DBUtils = DBUtils;
-                MedSavantClient.SetupManager = SetupManager;
-                MedSavantClient.VariantManager = VariantManager;
-                MedSavantClient.NotificationManager = NotificationManager;
-            }
-     //   } catch (Exception ex) {
+        synchronized (managerLock) {
+            MedSavantClient.CustomTablesManager = CustomTablesManager;
+            MedSavantClient.AnnotationManagerAdapter = AnnotationManagerAdapter;
+            MedSavantClient.CohortManager = CohortManager;
+            MedSavantClient.GeneSetManager = GeneSetManager;
+            MedSavantClient.LogManager = LogManager;
+            MedSavantClient.NetworkManager = NetworkManager;
+            MedSavantClient.OntologyManager = OntologyManager;
+            MedSavantClient.PatientManager = PatientManager;
+            MedSavantClient.ProjectManager = ProjectManager;
+            MedSavantClient.UserManager = UserManager;
+            MedSavantClient.SessionManager = SessionManager;
+            MedSavantClient.SettingsManager = SettingsManager;
+            MedSavantClient.RegionSetManager = RegionSetManager;
+            MedSavantClient.ReferenceManager = ReferenceManager;
+            MedSavantClient.DBUtils = DBUtils;
+            MedSavantClient.SetupManager = SetupManager;
+            MedSavantClient.VariantManager = VariantManager;
+            MedSavantClient.NotificationManager = NotificationManager;
+        }
+        //   } catch (Exception ex) {
          /*   if (ex instanceof RemoteException) {
-                throw (RemoteException) ex;
-            } else if (ex instanceof NotBoundException) {
-                throw (NotBoundException) ex;
-            }*/
-       // }
+         throw (RemoteException) ex;
+         } else if (ex instanceof NotBoundException) {
+         throw (NotBoundException) ex;
+         }*/
+        // }
     }
 
     private static void setLAF() {

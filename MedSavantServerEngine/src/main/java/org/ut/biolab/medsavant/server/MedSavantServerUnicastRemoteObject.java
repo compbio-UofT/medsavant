@@ -23,6 +23,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+import javax.rmi.ssl.SslRMIServerSocketFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +48,12 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
      * leave this map empty.
      */
     protected final Map<String, ProgressStatus> sessionProgresses = new HashMap<String, ProgressStatus>();
-
+   
     public MedSavantServerUnicastRemoteObject() throws RemoteException {
-        super(EXPORT_PORT);
+        super(EXPORT_PORT, MedSavantServerEngine.getDefaultClientSocketFactory(), MedSavantServerEngine.getDefaultServerSocketFactory());
+        
+        //super(EXPORT_PORT, new SslRMIClientSocketFactory(), MedSavantServerEngine.getServerSocketFactory());
+        //new SslRMIServerSocketFactory(null, null, MedSavantServerEngine.REQUIRE_CLIENT_AUTH));
     }
 
     public static int getListenPort() {

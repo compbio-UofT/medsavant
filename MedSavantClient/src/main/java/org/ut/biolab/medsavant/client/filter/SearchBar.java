@@ -226,7 +226,7 @@ public class SearchBar extends JPanel {
             public void mouseClicked(MouseEvent me) {
                 fileChooser.setFileFilter(filenameFilter);
 
-                if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
+                if (fileChooser.showOpenDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
 
                     if (file.exists()) {
@@ -235,9 +235,6 @@ public class SearchBar extends JPanel {
                         DialogUtils.displayError("File " + file.getPath() + " does not exist!");
                     }
                 }
-
-
-
             }
 
             @Override

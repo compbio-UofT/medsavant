@@ -40,7 +40,12 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 import java.util.Properties;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+import javax.rmi.ssl.SslRMIServerSocketFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.VersionSettings;
 
@@ -60,12 +65,32 @@ import org.ut.biolab.medsavant.shared.util.DirectorySettings;
  * @author mfiume
  */
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
-
+    
+    //ssl/tls off by default.
+    private static boolean require_ssltls = false;
+    private static boolean require_client_auth = false;
+    
     public static boolean USE_INFINIDB_ENGINE = false;
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
 
+    public static boolean isClientAuthRequired(){
+        return require_client_auth;
+    }
+    
+    public static boolean isTLSRequired(){
+        return require_ssltls;
+    }
+    
+    public static RMIServerSocketFactory getDefaultServerSocketFactory(){
+        return isTLSRequired() ? new SslRMIServerSocketFactory(null, null, require_client_auth) : RMISocketFactory.getSocketFactory();
+    }
+    
+    public static RMIClientSocketFactory getDefaultClientSocketFactory(){
+        return isTLSRequired() ? new SslRMIClientSocketFactory() : RMISocketFactory.getSocketFactory();
+    }
+    
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
 
         try {
@@ -89,9 +114,15 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 + "  LISTENING ON PORT: " + listenOnPort + "\n");
                 //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
-            // create the registry and bind the name and object.
-            registry = LocateRegistry.createRegistry(listenOnPort);
-
+            // create the registry and bind the name and object.            
+            if(isTLSRequired()){
+                System.out.println("SSL/TLS Encryption is enabled, Client authentication is "+(isClientAuthRequired() ? "required." : "NOT required."));                                
+            }else{
+                System.out.println("SSL/TLS Encryption is NOT enabled");
+                //registry = LocateRegistry.createRegistry(listenOnPort);
+            }
+            registry = LocateRegistry.createRegistry(listenOnPort, getDefaultClientSocketFactory(), getDefaultServerSocketFactory());
+            
             //TODO: get these from the user
 
             ConnectionController.setHost(databaseHost);
@@ -110,9 +141,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 System.out.flush();
                 char[] pass = System.console().readPassword();
                 password = new String(pass);
-            }
-
-            System.out.println();
+            }            
 
             System.out.print("Connecting to database ... ");
             try {
@@ -203,6 +232,21 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             if (prop.containsKey("ms-dir")) {
                                 DirectorySettings.setMedSavantDirectory(prop.getProperty("ms-dir"));
                             }
+                            if(prop.containsKey("encryption")){
+                                String p = prop.getProperty("encryption");
+                                if(p.equalsIgnoreCase("disabled")){
+                                    require_ssltls = false;
+                                    require_client_auth = false;
+                                }else if(p.equalsIgnoreCase("no_client_auth")){
+                                    require_ssltls = true;
+                                    require_client_auth = false;
+                                }else if(p.equalsIgnoreCase("with_client_auth")){
+                                    require_ssltls = true;
+                                    require_client_auth = true;
+                                }else{
+                                    throw new IllegalArgumentException("Uncrecognized value for property 'encryption': "+p);
+                                }
+                            }
 
                         } catch (Exception e) {
                             System.out.println("ERROR: Could not load properties file " + configFileName);
@@ -247,7 +291,6 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
 
         registry.rebind(SESSION_MANAGER, SessionController.getInstance());
         registry.rebind(CUSTOM_TABLES_MANAGER, CustomTables.getInstance());
-
         registry.rebind(ANNOTATION_MANAGER, AnnotationManager.getInstance());
         registry.rebind(COHORT_MANAGER, CohortManager.getInstance());
         registry.rebind(GENE_SET_MANAGER, GeneSetManager.getInstance());

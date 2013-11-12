@@ -31,6 +31,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class NumericConditionEncoder {
     private static final Log LOG = LogFactory.getLog(NumericConditionEncoder.class);
+      public static String ENCODING_NULL = "<NULL>";
+    public static String ENCODING_NOTNULL = "<NOTNULL>";
     static DecimalFormat format;
     static DecimalFormatSymbols symbols;
     static char sep;
@@ -55,6 +57,22 @@ public class NumericConditionEncoder {
         return values;
     }
 
+    public static String encodeNull(){
+        return ENCODING_NULL;
+    }
+    
+    public static String encodeNotNull(){
+        return ENCODING_NOTNULL;
+    }
+        
+    public static boolean encodesNull(String encoding){
+        return encoding.equals(ENCODING_NULL);
+    }
+    
+    public static boolean encodesNotNull(String encoding){
+        return encoding.equals(ENCODING_NOTNULL);
+    }
+    
     public static String encodeConditions(double low, double high) {
 
         String lowString = Double.toString(low);

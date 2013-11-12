@@ -209,27 +209,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
             conditions[i++] = BinaryCondition.equalTo(col, select);
         }
         return ComboCondition.or(conditions);
-    }
-
-    private Condition generateVariantConditionForDatabaseField(MedSavantConditionViewGenerator.DatabaseFieldStruct s, String encoding) {
-        String colName = field.getColumnName();
-
-        return generateStringConditionForVariantDatabaseField(s, encoding);
-    }
-
-    private Condition generateNumericConditionForVariantDatabaseField(MedSavantConditionViewGenerator.DatabaseFieldStruct s, String encoding) {
-
-        double[] selected = NumericConditionEncoder.unencodeConditions(encoding);
-        DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
-
-        if (selected[0] == selected[1]) {
-            return BinaryCondition.equalTo(col, selected[0]);
-        } else {
-            return ComboCondition.and(
-                    BinaryCondition.greaterThan(col, selected[0], true),
-                    BinaryCondition.lessThan(col, selected[1], true));
-        }
-    }
+    }    
 
     private StringSearchConditionEditorView generateStringViewWithPresetValues(SearchConditionItem item, final Set<String> values) {
         StringConditionValueGenerator vg = new StringConditionValueGenerator() {

@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.mfiume.query.medsavant.complex;
 
@@ -58,19 +58,19 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     private final CustomField field;
     private List<String> columnsToForceStringView = Arrays.asList(
             new String[]{
-                BasicVariantColumns.AC.getColumnName(),
-                BasicVariantColumns.AN.getColumnName(),
-                BasicVariantColumns.UPLOAD_ID.getColumnName(),
-                BasicVariantColumns.FILE_ID.getColumnName()});
+        BasicVariantColumns.AC.getColumnName(),
+        BasicVariantColumns.AN.getColumnName(),
+        BasicVariantColumns.UPLOAD_ID.getColumnName(),
+        BasicVariantColumns.FILE_ID.getColumnName()});
     private final HashMap<String, Map> columnNameToRemapMap;
 
-    private class VariantStringConditionEditorView extends StringSearchConditionEditorView{
+    private class VariantStringConditionEditorView extends StringSearchConditionEditorView {
+
         public VariantStringConditionEditorView(SearchConditionItem i, StringConditionValueGenerator vg) {
             super(i, vg);
-        }              
-        
+        }
     }
-    
+
     public VariantConditionGenerator(String alias, CustomField field) {
         this.columnName = field.getColumnName();
         this.alias = alias; // field.getAlias();
@@ -88,7 +88,6 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
         columnNameToRemapMap.put(BasicVariantColumns.ZYGOSITY.getColumnName(), zygosityRemap);
     }
-
 
     @Override
     public String getName() {
@@ -203,9 +202,9 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
         DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
 
         if (StringConditionEncoder.encodesNull(encoding)) {
-            return ComboCondition.or(UnaryCondition.isNull(col),BinaryCondition.equalTo(col, ""));
+            return ComboCondition.or(UnaryCondition.isNull(col), BinaryCondition.equalTo(col, ""));
         } else if (StringConditionEncoder.encodesNotNull(encoding)) {
-            return ComboCondition.and(UnaryCondition.isNotNull(col),BinaryCondition.notEqualTo(col, ""));
+            return ComboCondition.and(UnaryCondition.isNotNull(col), BinaryCondition.notEqualTo(col, ""));
         }
 
         /*if (StringConditionEncoder.encodesAll(encoding)) {
@@ -253,15 +252,23 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
     private Condition generateNumericConditionForVariantDatabaseField(String encoding) {
 
-        double[] selected = NumericConditionEncoder.unencodeConditions(encoding);
+
         DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
 
-        if (selected[0] == selected[1]) {
-            return BinaryCondition.equalTo(col, selected[0]);
+        if (NumericConditionEncoder.encodesNull(encoding)) {
+            return UnaryCondition.isNull(col);
+        } else if (NumericConditionEncoder.encodesNotNull(encoding)) {
+            return UnaryCondition.isNotNull(col);
         } else {
-            return ComboCondition.and(
-                    BinaryCondition.greaterThan(col, selected[0], true),
-                    BinaryCondition.lessThan(col, selected[1], true));
+            double[] selected = NumericConditionEncoder.unencodeConditions(encoding);
+
+            if (selected[0] == selected[1]) {
+                return BinaryCondition.equalTo(col, selected[0]);
+            } else {
+                return ComboCondition.and(
+                        BinaryCondition.greaterThan(col, selected[0], true),
+                        BinaryCondition.lessThan(col, selected[1], true));
+            }
         }
     }
 
