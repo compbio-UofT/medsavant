@@ -1,9 +1,9 @@
 package medsavant.incidental;
 
+import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
-import medsavant.incidental.view.IncidentalPanel;
 
 
 /**
