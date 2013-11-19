@@ -83,6 +83,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.util.CacheController;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
@@ -91,6 +92,8 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.util.ModificationType;
+import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
 
 public abstract class VariantFrequencyAggregatePane extends JPanel {
 
@@ -136,7 +139,7 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
     private JLabel title;
     private SplitScreenPanel splitScreenPanel;
     private String[] columnNames;
-
+    
     ///////////////////////PUBLIC////////////////////////          
     public abstract Object[] getRow(Cohort cohort, String familyId, VariantRecord variantRecord);
 
@@ -165,8 +168,20 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
         title.setFont(title.getFont().deriveFont(Font.BOLD));
         this.add(innerPanel);
         setupAggregateColumns(columnNames[0]);
-    }
-
+                
+        final VariantFrequencyAggregatePane instance = this;
+        final String dbg = columnNames[0];
+        CacheController.getInstance().addListener(new Listener<ModificationType>(){
+            @Override
+            public void handleEvent(ModificationType modificationType) {
+                if(modificationType == COHORT || modificationType == PATIENT){                   
+                    refreshMaps();                       
+                }
+            }            
+        });            
+                
+    }   
+    
     private void setupAggregateColumns(String column){
         String[] ag = new String[columnNames.length - 2];        
         ag[0] = column;
@@ -391,22 +406,19 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
             //Should never be called
             @Override
             public void addValue(Object o) {
-                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (1)");
-                //throw new UnsupportedOperationException("Not supported yet."); 
+                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (1)");                
             }
 
             //Should never be called
             @Override
             public void addValue(IPivotDataModel ipdm, PivotField pf, int i, int i1, Object o) {
-                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (2)");
-                //throw new UnsupportedOperationException("Not supported yet."); 
+                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (2)");                
             }
 
             //Should never be called
             @Override
             public void addValue(PivotValueProvider pvp, PivotField pf, Object o) {
-                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (3)");
-                //throw new UnsupportedOperationException("Not supported yet."); 
+                LOG.error("Unexpected method invocation in OtherIndividualsSubInspector (3)");                
             }
 
             @Override
@@ -676,7 +688,7 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
                 String alt = r.getAlt();
                 String zygosity = r.getZygosity().toString();
                 individualsWithVariantAtThisPosition.add(dnaID);
-
+                
                 Set<Cohort> cohorts = dnaIDCohortMap.get(dnaID);
                 Set<String> familyIds = dnaIDFamilyIDMap.get(dnaID);
 
@@ -695,7 +707,7 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
                     familyIds = new HashSet<String>();
                     familyIds.add(ALL_INDIVIDUALS_FAMILY);
                 }
-                for (Cohort cohort : cohorts) {
+                for (Cohort cohort : cohorts) {                    
                     for (String familyId : familyIds) {
                         Object[] partialRow = getRow(cohort, familyId, r);
                         partialRow = ArrayUtils.addAll(new Object[]{cohort, familyId}, partialRow);

@@ -49,6 +49,7 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Proxy;
 import java.net.NoRouteToHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +64,8 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.client.util.CacheController;
+import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -88,13 +91,41 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static ReferenceManagerAdapter ReferenceManager;
     public static DBUtilsAdapter DBUtils;
     public static SetupAdapter SetupManager;
-    public static VariantManagerAdapter VariantManager;
+    public static VariantManagerAdapter VariantManager; //proxy
     public static NotificationManagerAdapter NotificationManager;
     public static boolean initialized = false;
     private static MedSavantFrame frame;
     private static String restartCommand;
     private static boolean restarting = false;
     private static final Object managerLock = new Object();
+
+    //Proxy the adapters to process annotations and fire events to the cache controller.    
+    private static void initProxies() {
+        VariantManager = (VariantManagerAdapter) Proxy.newProxyInstance(
+                VariantManager.getClass().getClassLoader(),
+                new Class[]{VariantManagerAdapter.class},
+                new ServerModificationInvocationHandler<VariantManagerAdapter>(VariantManager));
+
+        CohortManager = (CohortManagerAdapter) Proxy.newProxyInstance(
+                CohortManager.getClass().getClassLoader(),
+                new Class[]{CohortManagerAdapter.class},
+                new ServerModificationInvocationHandler<CohortManagerAdapter>(CohortManager));
+
+        PatientManager = (PatientManagerAdapter) Proxy.newProxyInstance(
+                PatientManager.getClass().getClassLoader(),
+                new Class[]{PatientManagerAdapter.class},
+                new ServerModificationInvocationHandler<PatientManagerAdapter>(PatientManager));
+
+        RegionSetManager = (RegionSetManagerAdapter) Proxy.newProxyInstance(
+                RegionSetManager.getClass().getClassLoader(),
+                new Class[]{RegionSetManagerAdapter.class},
+                new ServerModificationInvocationHandler<RegionSetManagerAdapter>(RegionSetManager));
+
+        OntologyManager = (OntologyManagerAdapter) Proxy.newProxyInstance(
+                OntologyManager.getClass().getClassLoader(),
+                new Class[]{OntologyManagerAdapter.class},
+                new ServerModificationInvocationHandler<OntologyManagerAdapter>(OntologyManager));
+    }
 
     /**
      * Quits MedSavant
@@ -294,6 +325,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
             MedSavantClient.SetupManager = SetupManager;
             MedSavantClient.VariantManager = VariantManager;
             MedSavantClient.NotificationManager = NotificationManager;
+
+            initProxies();
         }
         //   } catch (Exception ex) {
          /*   if (ex instanceof RemoteException) {

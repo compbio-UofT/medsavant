@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
  * @see FormEditorDialog
  * @author jim
  */
-public abstract class FormController {
+public abstract class FormController{
     private CustomField[] fields;
 
     private Map<String, CustomFieldConstraint> constraints = new HashMap<String, CustomFieldConstraint>();

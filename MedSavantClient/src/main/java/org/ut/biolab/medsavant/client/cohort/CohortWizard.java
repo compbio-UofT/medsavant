@@ -37,14 +37,14 @@ import com.jidesoft.wizard.AbstractWizardPage;
 import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+
+
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -124,8 +124,7 @@ public class CohortWizard extends WizardDialog {
         if (cohortName != null && !cohortName.equals("")) {
             try {
                 if (validateName()) {
-                    MedSavantClient.CohortManager.addCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortName);
-
+                    MedSavantClient.CohortManager.addCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortName);                    
                     setVisible(false);
                 }
             } catch (Exception ex) {

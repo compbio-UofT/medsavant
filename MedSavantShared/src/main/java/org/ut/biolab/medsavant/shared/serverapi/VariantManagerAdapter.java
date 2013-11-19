@@ -40,6 +40,8 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
+import org.ut.biolab.medsavant.shared.util.Modifier;
+import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
 
 
 /**
@@ -52,14 +54,24 @@ public interface VariantManagerAdapter extends Remote {
      * Check the status of a lengthy process, giving the user the option to cancel.
      */
     ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException, SessionExpiredException;
-
-    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;
-    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;
-    public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
-    public void publishVariants(String sessID, int projID) throws Exception;
+    
+    //These methods modify the database, but nothing happens until publishVariants is called, at which point MedSavant exits anyway.
+    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;    
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, IOException, Exception;    
+    public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;   
+    public void publishVariants(String sessID, int projID) throws Exception;   
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
+
+    //for testing, unnecessary because medsavant exits anyway after publishing.
+    @Modifier(type = VARIANT)
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, boolean autoPublish, String email) throws Exception;
+    
+    //for testing, unnecessary because medsavant exits anyway after publishing.
+    @Modifier(type = VARIANT)
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception;
+    
+    //For testing.
+    @Modifier(type = VARIANT)
     public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipped) throws SQLException, SessionExpiredException, RemoteException, IOException, InterruptedException;
 
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
@@ -80,6 +92,7 @@ public interface VariantManagerAdapter extends Remote {
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs, int limit) throws SQLException, RemoteException, SessionExpiredException;
     public Map<String, Integer> getNumVariantsInFamily(String sessID, int projID, int refID, String famID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
     public void cancelUpload(String sessID,int uploadID, String tableName) throws RemoteException, SessionExpiredException;
+    
     public void addTagsToUpload(String sessID, int uploadID, String[][] variantTags) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDistinctTagNames(String sessID) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getValuesForTagName(String sessID, String tagName) throws SQLException, RemoteException, SessionExpiredException;
@@ -88,7 +101,11 @@ public interface VariantManagerAdapter extends Remote {
     public List<String[]> getTagsForUpload(String sessID, int uploadID) throws SQLException, RemoteException, SessionExpiredException;
     //public Set<StarredVariant> getStarredVariants(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public List<VariantComment> getVariantComments(String sessID, int projID, int refID, int uploadId, int fileID, int variantID) throws SQLException, RemoteException, SessionExpiredException;
+
+    @Modifier(type = VARIANT_COMMENT)
     public void addVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type = VARIANT_COMMENT)
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException, SessionExpiredException;
     public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException, SessionExpiredException;
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException, SessionExpiredException;

@@ -99,11 +99,11 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
     
     @Override
     public boolean setObject(Object obj) {
-        if (obj instanceof SimpleVariant) {
-            if(this.currentVariant == (SimpleVariant)obj){
+        if (obj instanceof SimpleVariant) {            
+            if(this.currentVariant == (SimpleVariant)obj){                
                 return false;
             }else{
-                this.currentVariant = (SimpleVariant) obj;            
+                this.currentVariant = (SimpleVariant) obj;                            
                 return true;
             }
         }
@@ -111,7 +111,7 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
     }
     
     @Override
-    protected synchronized List<Object[]> getQueryResults(){
+    protected synchronized List<Object[]> getQueryResults(){        
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         List<Object[]> results = qvc.restrictToRegion(currentVariant.getGenomicRegion(), currentVariant.alt, MAXIMIUM_VARIANTS_TO_FETCH);        
         return results;

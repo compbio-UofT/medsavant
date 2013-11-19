@@ -49,7 +49,7 @@ public abstract class Controller<E> {
         this.listenersToAdd = new ArrayList<Listener<E>>();
         this.listenersToRemove = new ArrayList<Listener<E>>();
         this.looping = true;
-        for (final Listener l : this.listeners) {
+        for (final Listener l : this.listeners) {            
             try {
                 l.handleEvent(event);
             } catch (Throwable ex) {

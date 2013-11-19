@@ -32,6 +32,8 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.Modifier;
+import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
 
 /**
  *
@@ -46,13 +48,23 @@ public interface PatientManagerAdapter extends Remote {
     public CustomField[] getPatientFields(String sessID, int projectId) throws SQLException, RemoteException, SessionExpiredException;
     public CustomField[] getCustomPatientFields(String sessID, int projectId) throws SQLException, RemoteException, SessionExpiredException;
     public String getPatientTableName(String sessID, int projectId) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type=PATIENT)
     public void createPatientTable(String sessID, int projectid, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type=PATIENT)
     public void removePatient(String sessID, int projectId, int[] patientIds) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type=PATIENT)
     public void addPatient(String sessID, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException;
+    
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projectId, String columnName) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDNAIDsWithValuesInRange(String sessID, int projectId, String columnName, Range r) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnname, boolean allowInexactMatch) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type=PATIENT)
     public void updateFields(String sessID, int projID, CustomField[] fields) throws SQLException, RemoteException, SessionExpiredException;
+  
     public List<Object> getValuesFromField(String sessID, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDNAIDsFromField(String sessID, int projID, String columnNameA, List<Object> values) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getValuesFromDNAIDs(String sessID, int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException;

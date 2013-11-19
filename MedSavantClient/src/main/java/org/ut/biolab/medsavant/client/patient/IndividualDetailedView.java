@@ -471,7 +471,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                         if (selected == null) {
                             return;
                         }
-                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIDs, selected.getId());
+                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIDs, selected.getId());                        
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error adding individuals to cohort: %s", ex);
                     }

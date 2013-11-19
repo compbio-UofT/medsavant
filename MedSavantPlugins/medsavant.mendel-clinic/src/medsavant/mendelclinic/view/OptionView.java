@@ -644,7 +644,7 @@ public class OptionView {
 
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-
+                    customSelector.refresh();
                     JPopupMenu m = new JPopupMenu();
 
                     // edit existing selections

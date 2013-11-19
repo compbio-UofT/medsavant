@@ -104,13 +104,11 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         return null;
     }
 
-    private void openAggregatePane(String column) {
-        if (!aggregatePaneUpdated) {
+    private void openAggregatePane(String column) {        
+        if (!aggregatePaneUpdated) {        
             aggregatePane.setVariantRecords(variantRecords);
         }
-
-        // if (!aggregatePane.isSplit()) {
-        
+        // if (!aggregatePane.isSplit()) {        
         aggregatePane.splitScreen();
         // }
 
@@ -158,7 +156,11 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         buttonPanel.add(familyButton);
         innerPanel.add(buttonPanel);
         firstCol = "Cohort";
+        
+        
     }
+    
+   
 
     //clears the selection in the main pane and sets all subinspectors to the dnaID
     protected void selectVariant(VariantRecord vr) {
@@ -270,10 +272,10 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
     }
 
 
-    public void handleEvent(Object event) {        
-        if (setObject(event)) {              
+    public void handleEvent(Object event) {                
+        if (setObject(event)) {          //true if we just switched variants, or on first initialization.                
             updateSelection();
-        }else if(aggregatePane.isSplit()){
+        }else if(aggregatePane.isSplit()){            
             openAggregatePane(firstCol);
         }
     }
@@ -282,9 +284,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
 
     
     protected void updateSelection() {
-      //  System.out.println(getClass().getName()+" updateSelection");
-      
-
+      //  System.out.println(getClass().getName()+" updateSelection");     
         aggregatePaneUpdated = false;
         infoPanel.removeAll();
         infoPanel.add(new WaitPanel("Loading DNA IDs..."));

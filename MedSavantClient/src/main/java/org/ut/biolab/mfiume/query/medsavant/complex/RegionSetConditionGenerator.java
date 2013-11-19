@@ -74,8 +74,8 @@ public class RegionSetConditionGenerator implements ComprehensiveConditionGenera
         for (String termName : termNames) {
             RegionSet rs = termNameToTermObjectMap.get(termName);
             if(rs == null){
-                DialogUtils.displayError("Search Error", "The Region Set "+termName+" is no longer valid, returning unfiltered variants.");
-                return null;
+                //DialogUtils.displayError("Search Error", "The Region Set "+termName+" is no longer valid, returning unfiltered variants.");
+                throw new IllegalArgumentException("The Region Set "+termName+" is no longer valid, search cannot be executed.");                
             }
             appliedTerms.add(termNameToTermObjectMap.get(termName));
         }

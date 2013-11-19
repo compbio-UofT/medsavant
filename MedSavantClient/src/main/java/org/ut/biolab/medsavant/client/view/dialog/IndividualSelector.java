@@ -20,37 +20,31 @@
 package org.ut.biolab.medsavant.client.view.dialog;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellRenderer;
-import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.CacheController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
@@ -60,6 +54,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.ModificationType;
 
 /**
  *
@@ -72,6 +67,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     private JPanel middlePanel;
     private JPanel topPanel;
     private JPanel bottomPanel;
+    private boolean forceRefresh = false;
     private static final String[] COLUMN_NAMES = new String[]{
         PATIENT_ID.getAlias(),
         FAMILY_ID.getAlias(),
@@ -129,7 +125,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         return ids;
     }
 
-    private void refresh() {
+    public void refresh() {
         stp.forceRefreshData();
     }
 
@@ -154,6 +150,20 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         stp = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
                 true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, retriever);
+        
+        //If patients or cohorts are edited, update the searchabletable.
+        CacheController.getInstance().addListener(new Listener<ModificationType>(){
+            @Override
+            public void handleEvent(ModificationType event) {
+                if(event == ModificationType.PATIENT || event == ModificationType.COHORT){                           
+                    if(!stp.isUpdating()){                        
+                        forceRefresh = true;
+                        stp.forceRefreshData();
+                    }
+                }
+            }
+            
+        });
         stp.setExportButtonVisible(false);
 
         middlePanel.add(stp, BorderLayout.CENTER);
@@ -442,7 +452,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         return results;
     }
 
-    public static class IndividualsReceiver extends DataRetriever<Object[]> {
+    public class IndividualsReceiver extends DataRetriever<Object[]> {
         //private DataRetriever<Object[]> getIndividualsRetriever() {
 
         private List<Object[]> individuals;
@@ -452,9 +462,10 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         }
 
         @Override
-        public List<Object[]> retrieve(int start, int limit) throws Exception {
-            if (individuals == null) {
+        public List<Object[]> retrieve(int start, int limit) throws Exception {            
+            if (individuals == null || forceRefresh) {
                 setIndividuals();
+                forceRefresh = false;
             }
             return individuals;
         }

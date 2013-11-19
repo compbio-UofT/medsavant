@@ -29,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
-import org.ut.biolab.medsavant.client.filter.QueryPanel;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -103,36 +102,7 @@ public class GeneticsTablePage extends SubSectionView implements Listener<Filter
         return settingComponents;
     }
 
-    /**
-     * Splits the main table view into an upper and lower section. The upper
-     * section contains the main table pane, and the lower section contains the
-     * given JPanel.
-     */
-    /*
-     @Override
-     public void splitScreen(JPanel p){
-     split = true;
-     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, p);
-     splitPane.setResizeWeight(1);
-     outerTablePanel.removeAll();
-     outerTablePanel.add(splitPane);
-     outerTablePanel.revalidate();
-     outerTablePanel.repaint();
-     }
-
-     @Override
-     public void unsplitScreen(){
-     split = false;
-     outerTablePanel.removeAll();
-     outerTablePanel.add(tablePanel);
-     outerTablePanel.revalidate();
-     outerTablePanel.repaint();
-     }
-
-     @Override
-     public boolean isSplit(){
-     return split;
-     }*/
+   
     @Override
     public JPanel getView() {
         try {
@@ -219,7 +189,10 @@ public class GeneticsTablePage extends SubSectionView implements Listener<Filter
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
-        tablePanel.setTableShowing(true);
+        tablePanel.setTableShowing(true);        
+        if(inspectorPanel != null && this.detailView.isExpanded()){            
+            inspectorPanel.refresh();
+        }        
     }
 
     @Override

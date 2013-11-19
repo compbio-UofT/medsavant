@@ -31,6 +31,9 @@ import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.Modifier;
+import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
+
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 
 
@@ -77,6 +80,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param oboData URL of OBO file containing the ontology
      * @param geneData URL of text file defining mapping between terms and genes (format may vary)
      */
+    @Modifier(type=ONTOLOGY)
     void addOntology(String sessID, String ontName, OntologyType ont, URL oboData, URL mappingData) throws IOException, InterruptedException, SQLException, RemoteException, SessionExpiredException;
 
     /**
@@ -85,6 +89,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param sessID the login session
      * @param ontName the ontology to be removed
      */
+    @Modifier(type=ONTOLOGY)
     void removeOntology(String sessID, String ontName) throws IOException, InterruptedException, SQLException, RemoteException, SessionExpiredException;
 
     /**

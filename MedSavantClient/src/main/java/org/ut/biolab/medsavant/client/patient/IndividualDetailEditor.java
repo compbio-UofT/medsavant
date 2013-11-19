@@ -32,8 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.broad.igv.tdf.TDFDataset.DataType;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
@@ -122,8 +121,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                         MedSavantClient.PatientManager.removePatient(
                                 LoginController.getInstance().getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
-                                patients);
-                        
+                                patients);                                                
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
                         setVisible(false);
                     } catch (Exception ex) {

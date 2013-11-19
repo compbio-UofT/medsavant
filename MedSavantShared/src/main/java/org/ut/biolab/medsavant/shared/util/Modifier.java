@@ -17,27 +17,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.genetics.inspector;
+package org.ut.biolab.medsavant.shared.util;
 
-import com.jidesoft.pane.CollapsiblePane;
-import javax.swing.JPanel;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 
-/**
- *
- * @author mfiume
- */
-public abstract class SubInspector {
-    public static final String PAGE_NAME = "SubInspector";
-    protected CollapsiblePane parent;
-
-    public abstract String getName();
-    public abstract JPanel getInfoPanel();
-
-    public SubInspector() {
-    }
-
-    public void setPaneParent(CollapsiblePane p) {
-        this.parent = p;
-    }     
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface Modifier {
+    public ModificationType type();
 }

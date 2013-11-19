@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker.StateValue;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -389,6 +390,10 @@ public class SearchableTablePanel extends JPanel {
         return table;
     }
 
+    public boolean isUpdating(){
+        return worker != null && worker.getState() != StateValue.DONE;
+    }
+    
     private synchronized void updateView(boolean newData) {
         if (worker != null) {
             worker.cancel(true);

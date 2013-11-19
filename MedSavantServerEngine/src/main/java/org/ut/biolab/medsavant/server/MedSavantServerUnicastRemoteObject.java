@@ -42,7 +42,7 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
     private static final Log LOG = LogFactory.getLog(MedSavantServerUnicastRemoteObject.class);
     private static int CONNECT_PORT = 36800;
     private static int EXPORT_PORT = 36801;
-
+    
     /**
      * Classes which implement checking for progress during lengthy operations can use this map.  Classes which don't do so can just
      * leave this map empty.
@@ -55,6 +55,8 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
         //super(EXPORT_PORT, new SslRMIClientSocketFactory(), MedSavantServerEngine.getServerSocketFactory());
         //new SslRMIServerSocketFactory(null, null, MedSavantServerEngine.REQUIRE_CLIENT_AUTH));
     }
+    
+    
 
     public static int getListenPort() {
         return CONNECT_PORT;
