@@ -26,18 +26,24 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -53,8 +59,10 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.ModificationType;
+import org.ut.biolab.medsavant.shared.model.SimplePatient;
 
 /**
  *
@@ -77,7 +85,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         GENDER.getAlias(),
         AFFECTED.getAlias(),
         DNA_IDS.getAlias(),
-        PHENOTYPES.getAlias()};
+        PHENOTYPES.getAlias(),
+        "Cohort(s)"};
     private static final Class[] COLUMN_CLASSES = new Class[]{
         Integer.class, // patient
         String.class, // family
@@ -87,16 +96,18 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         String.class, // gender
         String.class, // affected
         String.class, // dna ids
-        String.class}; // phenotypes
+        String.class, // phenotypes
+        String.class  // cohorts
+    };
     private static final int[] HIDDEN_COLUMNS = new int[]{
         0, // patient
         3, // mom
         4, // dad
         7 // dna
     };
-    private SearchableTablePanel stp;
+    private SearchableTablePanel individualsSTP;
     private JLabel numselections;
-    private IndividualsReceiver retriever;
+    private IndividualsReceiver individualsRetriever;
     private HashSet<Integer> selectedRows;
     private JButton ok;
     private boolean hasMadeSelections;
@@ -119,14 +130,14 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     public Set<String> getDNAIDsOfSelectedIndividuals() {
         Set<String> ids = new HashSet<String>();
         for (int i : selectedRows) {
-            String dnaID = (String) retriever.getIndividuals().get(i)[INDEX_OF_DNA_IDS];
+            String dnaID = (String) individualsRetriever.getIndividuals().get(i)[INDEX_OF_DNA_IDS];
             ids.add(dnaID);
         }
         return ids;
     }
 
     public void refresh() {
-        stp.forceRefreshData();
+        individualsSTP.forceRefreshData();
     }
 
     private void initUI() {
@@ -146,10 +157,10 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         // middle
         middlePanel.setLayout(new BorderLayout());
 
-        retriever = new IndividualsReceiver();
-
-        stp = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
-                true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, retriever);
+        individualsRetriever = new IndividualsReceiver();
+        individualsSTP = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
+                true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, individualsRetriever);
+        individualsSTP.setExportButtonVisible(false);
         
         //If patients or cohorts are edited, update the searchabletable.
         CacheController.getInstance().addListener(new Listener<ModificationType>(){
@@ -164,9 +175,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
             }
             
         });
-        stp.setExportButtonVisible(false);
 
-        middlePanel.add(stp, BorderLayout.CENTER);
+        middlePanel.add(individualsSTP, BorderLayout.CENTER);
 
         // bottom
         ViewUtil.applyVerticalBoxLayout(bottomPanel);
@@ -248,12 +258,12 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         addIndividuals.setEnabled(false);
         removeIndividuals.setEnabled(false);
 
-        stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        individualsSTP.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
                 if (!lse.getValueIsAdjusting()) {
 
-                    int rows[] = stp.getTable().getSelectedRows();
+                    int rows[] = individualsSTP.getTable().getSelectedRows();
 
                     boolean someSelection = rows.length > 0;
 
@@ -271,7 +281,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
             }
         });
 
-        stp.getTable().getModel().addTableModelListener(new TableModelListener() {
+        individualsSTP.getTable().getModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent tme) {
                 //addAllIndividuals.setText("Add All (" + stp.getTable().getModel().getRowCount() + ")");
@@ -332,7 +342,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         this.numselections.setToolTipText(tooltipText);
 
-        stp.setToggledRows(selectedRows);
+        individualsSTP.setToggledRows(selectedRows);
 
         numselections.setText(this.selectedHospitalIDs.size() + " individual(s) selected");
 
@@ -343,7 +353,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         selectedHospitalIDs.removeAll(selectedHospitalIDs);
         selectedRows.removeAll(selectedRows);
 
-        stp.setToggledRows(null);
+        individualsSTP.setToggledRows(null);
         refreshSelectionIndicator();
     }
 
@@ -352,23 +362,23 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         int[] rows;
 
         if (all) {
-            int rowCount = stp.getTable().getModel().getRowCount();
+            int rowCount = individualsSTP.getTable().getModel().getRowCount();
             rows = new int[rowCount];
             for (int i = 0; i < rowCount; i++) {
                 rows[i] = i;
             }
         } else {
-            rows = stp.getTable().getSelectedRows();
+            rows = individualsSTP.getTable().getSelectedRows();
         }
 
         for (int r : rows) {
-            int realRow = stp.getActualRowAt(r);
-            Object[] o = retriever.getIndividuals().get(realRow);
+            int realRow = individualsSTP.getActualRowAt(r);
+            Object[] o = individualsRetriever.getIndividuals().get(realRow);
             toUnselect.add(o);
         }
 
         for (int i : rows) {
-            selectedRows.remove(stp.getActualRowAt(i));
+            selectedRows.remove(individualsSTP.getActualRowAt(i));
         }
 
 
@@ -385,23 +395,23 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         int[] rows;
 
         if (all) {
-            int rowCount = stp.getTable().getModel().getRowCount();
+            int rowCount = individualsSTP.getTable().getModel().getRowCount();
             rows = new int[rowCount];
             for (int i = 0; i < rowCount; i++) {
                 rows[i] = i;
             }
         } else {
-            rows = stp.getTable().getSelectedRows();
+            rows = individualsSTP.getTable().getSelectedRows();
         }
 
         for (int r : rows) {
-            int realRow = stp.getActualRowAt(r);
-            Object[] o = retriever.getIndividuals().get(realRow);
+            int realRow = individualsSTP.getActualRowAt(r);
+            Object[] o = individualsRetriever.getIndividuals().get(realRow);
             selected.add(o);
         }
 
         for (int i : rows) {
-            selectedRows.add(stp.getActualRowAt(i));
+            selectedRows.add(individualsSTP.getActualRowAt(i));
         }
 
 
@@ -419,7 +429,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         for (String arbitraryHostpitalID : s) {
             int rowNumber = 0;
-            List<Object[]> individuals = retriever.getIndividuals();
+            List<Object[]> individuals = individualsRetriever.getIndividuals();
             for (Object[] inOrderRow : individuals) {
                 if (inOrderRow[INDEX_OF_HOSPITAL_ID].equals(arbitraryHostpitalID)) {
                     selectedRows.add(rowNumber);
@@ -440,7 +450,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     }
 
     public Set<String> getInverseOfHospitalIDsOfSelectedIndividuals() {
-        List<Object[]> allRows = retriever.getIndividuals();
+        List<Object[]> allRows = individualsRetriever.getIndividuals();
         Set<String> results = new HashSet<String>();
         Set<String> selected = getHospitalIDsOfSelectedIndividuals();
         for (Object[] row : allRows) {
@@ -456,6 +466,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         //private DataRetriever<Object[]> getIndividualsRetriever() {
 
         private List<Object[]> individuals;
+        private HashMap<String, List<String>> hospitalIDToCohortMap;
 
         public List<Object[]> getIndividuals() {
             return individuals;
@@ -477,6 +488,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                     setIndividuals();
                 } catch (Exception ex) {
                     LOG.error(ex);
+                    ex.printStackTrace();
                 }
             }
             return individuals.size();
@@ -487,12 +499,18 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         }
 
         private void setIndividuals() throws SQLException, RemoteException {
-            try {
-                individuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+            System.out.println("Setting individuals");
 
-                for (Object[] row : individuals) {
+            try {
+
+                setCohorts();
+
+                List<Object[]> tmpIndividuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+                List<Object[]> updatedIndividuals = new ArrayList<Object[]>();
+
+                for (Object[] row : tmpIndividuals) {
                     row[INDEX_OF_GENDER] = ClientMiscUtils.genderToString((Integer) row[INDEX_OF_GENDER]);
-                    
+
                     String s;
                     Object o = row[INDEX_OF_AFFECTED];
                     if (o instanceof Boolean) {
@@ -508,10 +526,45 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                     /*Boolean b = (Boolean) row[INDEX_OF_AFFECTED];
                     String s = b ? "Yes" : "No";
                     row[INDEX_OF_AFFECTED] = s;*/
+
+                    List<String> cohorts = hospitalIDToCohortMap.get((String)row[INDEX_OF_HOSPITAL_ID]);
+
+                    String cohortString = "";
+                    if (cohorts != null) {
+                        cohortString = StringUtils.join(cohorts.toArray(), ", ");
+                    }
+
+                    row = ArrayUtils.addAll(row, new String[]{cohortString});
+
+                    updatedIndividuals.add(row);
                 }
+
+                individuals = updatedIndividuals;
 
             } catch (SessionExpiredException e) {
                 MedSavantExceptionHandler.handleSessionExpiredException(e);
+            }
+        }
+
+        private void setCohorts() throws SQLException, SessionExpiredException, RemoteException {
+            hospitalIDToCohortMap = new HashMap<String,List<String>>();
+            Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            for (Cohort c : cohorts) {
+                c.getId();
+                List<SimplePatient> patients = MedSavantClient.CohortManager.getIndividualsInCohort(
+                        LoginController.getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        c.getId());
+                for (SimplePatient p : patients) {
+                    List<String> cohortsForPatient;
+                    if (hospitalIDToCohortMap.containsKey(p.getHospitalId())) {
+                        cohortsForPatient = hospitalIDToCohortMap.get(p.getHospitalId());
+                    } else {
+                        cohortsForPatient = new ArrayList<String>();
+                    }
+                    cohortsForPatient.add(c.getName());
+                    hospitalIDToCohortMap.put(p.getHospitalId(), cohortsForPatient);
+                }
             }
         }
     }
