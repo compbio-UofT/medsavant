@@ -167,9 +167,9 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
             @Override
             public void handleEvent(ModificationType event) {
                 if(event == ModificationType.PATIENT || event == ModificationType.COHORT){                           
-                    if(!stp.isUpdating()){                        
+                    if(!individualsSTP.isUpdating()){                        
                         forceRefresh = true;
-                        stp.forceRefreshData();
+                        individualsSTP.forceRefreshData();
                     }
                 }
             }
