@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -99,7 +101,7 @@ public class IncidentalDB {
 					"  Comments_JS varchar(1000) NOT NULL " +
 					")";
 			s.addBatch(sql);
-
+/*
 			sql=	"CREATE TABLE hgmd_pro_allmut ( " +
 					"  disease varchar(125) DEFAULT NULL, " +
 					"  gene varchar(10) DEFAULT NULL, " +
@@ -134,7 +136,7 @@ public class IncidentalDB {
 					"  base char(1) DEFAULT NULL " +
 					")";
 			s.addBatch(sql);
-
+*/
 			sql=	"CREATE TABLE disease_classification ( " +
 					"  inheritance varchar(45) NOT NULL,  " +
 					"  zygosity varchar(45) NOT NULL,  " +
@@ -143,7 +145,7 @@ public class IncidentalDB {
 					"  PRIMARY KEY (inheritance,zygosity,gender)  " +
 					")";
 			s.addBatch(sql);
-
+/*
 			sql=	"CREATE TABLE clinvar_20130808 ( " +
 					"  chromosome varchar(2) NOT NULL, " +
 					"  position int NOT NULL, " +
@@ -156,7 +158,7 @@ public class IncidentalDB {
 					"  PRIMARY KEY  (chromosome,position,id) " +
 					")";
 			s.addBatch(sql);
-
+*/
 			s.executeBatch();
 			s.close();
 		} catch (SQLException e) {
@@ -191,7 +193,7 @@ public class IncidentalDB {
 			loader.setSeprator('\t');
 			filepath= "/db_files/incidentalome_annotated.txt";
 			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "incidentalome_annotated", false);
-			
+/*			
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
 			filepath= "/db_files/clinvar_20130808.txt";
@@ -201,7 +203,7 @@ public class IncidentalDB {
 			loader.setSeprator('\t');
 			filepath= "/db_files/hgmd_pro_allmut.txt";
 			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "hgmd_pro_allmut", false);
-			
+*/			
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
 			filepath= "/db_files/disease_classification.txt";
@@ -262,6 +264,25 @@ public class IncidentalDB {
 		// Remember, columsn start at index 1
 		for (int i= 1; i <= columnsNumber; ++i) {
 			result += rs.getString(i) + "\t";
+		}
+		
+		return result;
+	}
+	
+	
+	/**
+	 * Output the entire row because ResultSet get methods are busting my balls.
+	 * Gets the row pointed to by cursor's current position.
+	 */
+	public static List<Object> getRowAsList(ResultSet rs) throws SQLException {
+		ResultSetMetaData rsmd= rs.getMetaData();
+		int columnsNumber= rsmd.getColumnCount();
+		
+		LinkedList<Object> result= new LinkedList<Object>();
+		
+		// Remember, columns start at index 1
+		for (int i= 1; i <= columnsNumber; ++i) {
+			result.add(rs.getString(i));
 		}
 		
 		return result;
