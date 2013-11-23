@@ -122,6 +122,9 @@ public class VCFParser {
                 List<VariantRecord> records = null;
                 try {
                     records = parseRecord(nextLine, header);
+                    if(records == null){  
+                        continue;
+                    }
                 } catch (Exception ex) {
                     LOG.error("Erroneous line: " + nextLineString);
                     throw new IOException(ex);
@@ -230,7 +233,10 @@ public class VCFParser {
 
                 records.add(r2);
             }
-        } catch (Exception ex) {
+        }catch(IllegalArgumentException ex){ //only thrown if chromosome was invalid
+            //skip line
+            return null;
+        }catch (Exception ex) {
             String lStr = "";
             for (int i = 0; i < line.length; i++) {
                 lStr += line[i] + "\t";

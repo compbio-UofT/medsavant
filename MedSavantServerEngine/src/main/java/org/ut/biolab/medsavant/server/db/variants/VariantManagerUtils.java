@@ -616,6 +616,11 @@ public class VariantManagerUtils {
                 processBatchAndWait(batch);
                 batch.clear();
                 LOG.info("Completed " + (i+1) + " of " + threads.length + " threads");
+                for(Thread t : batch){
+                    if(!((VariantParser)t).didSucceed()){
+                        return;
+                    }
+                }
             }
         }
         processBatchAndWait(batch);
