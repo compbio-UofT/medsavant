@@ -365,7 +365,11 @@ public class BatchVariantAnnotator {
          */
         private void setFromLine(String[] line) {
             chrom = line[VARIANT_INDEX_OF_CHR];
-            position = Integer.parseInt(line[VARIANT_INDEX_OF_POS]);
+            try{
+                position = Integer.parseInt(line[VARIANT_INDEX_OF_POS]);
+            }catch(NumberFormatException nex){                
+                throw new NumberFormatException("Position is not an integer. String was '"+line[VARIANT_INDEX_OF_POS]+"' Message: "+nex.getMessage()+"\n");                
+            }
             ref = line[VARIANT_INDEX_OF_REF];
             alt = line[VARIANT_INDEX_OF_ALT];
         }
