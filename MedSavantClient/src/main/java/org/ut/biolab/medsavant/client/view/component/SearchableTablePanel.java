@@ -865,4 +865,9 @@ public class SearchableTablePanel extends JPanel {
             return null;
         }
     }
+	
+	
+	public void setResizeOff() {
+		table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
+	}
 }

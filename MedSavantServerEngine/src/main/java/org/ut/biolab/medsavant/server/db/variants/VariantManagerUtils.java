@@ -569,4 +569,5 @@ public class VariantManagerUtils {
         return VariantManagerUtils.splitFileOnColumns(splitDir, tsvFile.getAbsolutePath(), new int[]{0, 1, 3});
     }
 
+
 }

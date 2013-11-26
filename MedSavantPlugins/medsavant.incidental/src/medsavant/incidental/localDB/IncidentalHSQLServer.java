@@ -17,7 +17,7 @@ public class IncidentalHSQLServer {
 	private String DB_USER= "hsqldbUser";
 	private String DB_PASSWORD= "lsk519dj122fl307sakf"; // randomly chosen...
 	private String db_path_prefix= "mem:medsavantincidental";
-	private String DB_PATH= db_path_prefix + ";user=" +	DB_USER + ";password=" + DB_PASSWORD;
+	private String DB_PATH= db_path_prefix + ";ifexists=false" + ";user=" +	DB_USER + ";password=" + DB_PASSWORD;
 	private String DB_URL= "jdbc:hsqldb:" + db_path_prefix;
 	
 	private int DB_INDEX= 0; // leave == 0, not sure why but registers server type "mem:" when 0 only.
