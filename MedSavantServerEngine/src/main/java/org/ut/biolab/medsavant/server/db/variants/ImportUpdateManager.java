@@ -84,8 +84,8 @@ public class ImportUpdateManager {
             }
 
             if (VariantManager.REMOVE_WORKING_DIR) {
-                LOG.error("NOT deleting workingDirectory "+workingDirectory);
-                //MiscUtils.deleteDirectory(workingDirectory);
+                LOG.info("Deleting workingDirectory "+workingDirectory);
+                MiscUtils.deleteDirectory(workingDirectory);
             }
 
             LOG.info("Finished import");
