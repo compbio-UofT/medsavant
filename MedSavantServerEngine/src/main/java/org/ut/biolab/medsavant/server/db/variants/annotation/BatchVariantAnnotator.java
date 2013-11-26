@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.variants.annotation;
 
@@ -31,6 +31,9 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.IOJob;
+import org.ut.biolab.medsavant.server.MedSavantIOController;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -77,17 +80,16 @@ public class BatchVariantAnnotator {
         this.sid = sid;
         this.annotations = annotations;
     }
-
     private int PROGRESS_STEP_SIZE = 10;
-    private int logProgress(int totalNumLinesRead, int numLines, int oldp){
-        int x = Math.round(totalNumLinesRead/(float)numLines*100);
-        if((x-oldp) >= PROGRESS_STEP_SIZE){
+
+    private int logProgress(int totalNumLinesRead, int numLines, int oldp) {
+        int x = Math.round(totalNumLinesRead / (float) numLines * 100);
+        if ((x - oldp) >= PROGRESS_STEP_SIZE) {
             oldp = x;
-            LOG.info("\t"+oldp+"% ("+totalNumLinesRead+" of "+numLines+" lines)");
+            LOG.info("\t" + oldp + "% (" + totalNumLinesRead + " of " + numLines + " lines)");
         }
         return oldp;
     }
-
 
     /**
      * Perform the prepared batch annotation in parallel
@@ -100,165 +102,102 @@ public class BatchVariantAnnotator {
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
         //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
 
-        // no annotations to perform, copy input to output
-        if (annotations.length == 0) {
-            IOUtils.copyFile(inputTDFFile, outputTDFFile);
-            return;
-        }
+        CSVReader recordReader = null;
+        CSVWriter recordWriter = null;
+        AnnotationCursor[] cursors = null;
+        try {
+            // no annotations to perform, copy input to output
+            if (annotations.length == 0) {
+                MedSavantIOController.requestIO(new IOJob("Copy File") {
+                    @Override
+                    protected void doIO() throws IOException {
+                        IOUtils.copyFile(inputTDFFile, outputTDFFile);
+                    }
+                });
 
-        // otherwise, perform annotations
-        LOG.info("Performing " + annotations.length + " annotations");
-
-        // the number of columns in the input file
-        int numFieldsInInputFile = getNumFieldsInTDF(inputTDFFile);
-        if (numFieldsInInputFile == 0) {
-            throw new IOException("Error parsing input file. Is it tab delimited?");
-        }
-
-        // the number of fields that will be in the output file
-        int numFieldsInOutputFile = numFieldsInInputFile;
-
-        // create cursors for all annotations
-        AnnotationCursor[] cursors = new AnnotationCursor[annotations.length];
-        for (int i = 0; i < annotations.length; i++) {
-            AnnotationCursor ac = new AnnotationCursor(sid, annotations[i]);
-            numFieldsInOutputFile += ac.getNumNonDefaultFields();
-            cursors[i] = ac;
-        }
-
-        BufferedReader reader = new BufferedReader(new FileReader(inputTDFFile));
-        int numLines = 0;
-        while (reader.readLine() != null){
-            numLines++;
-        }
-        reader.close();
-
-        // open the input and output files
-        CSVReader recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
-        CSVWriter recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
-
-        //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
-        //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
-
-        // read the input, line by line
-        String[] inputLine;
-
-        // container for the components of the output line (original line, plus annotations)
-        String[] outputLine = new String[numFieldsInOutputFile];
-
-        // whatever chromosome we're at in the input file
-        String currentChrom = null;
-        long previousPosition = -1;
-        String previousRef = null;
-        String previousAlt = null;
-
-        int oldp = 0;
-        while ((inputLine = readNext(recordReader)) != null) {
-
-            totalNumLinesRead++;
-            oldp = logProgress(totalNumLinesRead, numLines, oldp);
-            // index into the output line
-            int j = 0;
-
-            // copy the input line
-            for (int i = 0; i < inputLine.length; i++) {
-                outputLine[j++] = inputLine[i];
+                return;
             }
 
-            // parse a simplified variant record from the line
-            SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
+            // otherwise, perform annotations
+            LOG.info("Performing " + annotations.length + " annotations");
 
-            // report whenever we get to the next chromosome
-            if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
-                currentChrom = nextInputRecord.chrom;
-                //LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
-                previousPosition = -1;
-                previousRef = null;
-                previousAlt = null;
+            // the number of columns in the input file
+            int numFieldsInInputFile = getNumFieldsInTDF(inputTDFFile);
+            if (numFieldsInInputFile == 0) {
+                throw new IOException("Error parsing input file. Is it tab delimited?");
+            }
 
-            } else {
+            // the number of fields that will be in the output file
+            int numFieldsInOutputFile = numFieldsInInputFile;
 
-                /**
-                 * Check that records for a given chromosome are sorted by
-                 * position, ref, alt
-                 */
-                long currentPosition = nextInputRecord.position;
-                String currentRef = nextInputRecord.ref;
-                String currentAlt = nextInputRecord.alt;
+            // create cursors for all annotations
+            cursors = new AnnotationCursor[annotations.length];
+            for (int i = 0; i < annotations.length; i++) {
+                AnnotationCursor ac = new AnnotationCursor(sid, annotations[i]);
+                numFieldsInOutputFile += ac.getNumNonDefaultFields();
+                cursors[i] = ac;
+            }
 
-                if (currentPosition < previousPosition) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by position, then by ref, then by alt.");
-                }
-                if (currentPosition == previousPosition) {
+            final int numlines[] = new int[1];
 
-                    int refCompare;
-                    if (!isAStandardSingleNucleotide(currentRef)) { // ignore lines where ref is not a single nucleotide
-                        refCompare = 1;
-                    } else {
-                        refCompare = currentRef.compareTo(previousRef);
-                    }
-
-                    if (refCompare < 0) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by position, then by ref, then by alt.");
-                    } else if (refCompare == 0) {
-
-                        int altCompare;
-                        if (!isAStandardSingleNucleotide(currentAlt)) { // ignore lines where alt is not a single nucleotide
-                            altCompare = 1;
-                        } else {
-                            altCompare = currentAlt.compareTo(previousAlt);
+            MedSavantIOController.requestIO(new IOJob("Line counter") {
+                @Override
+                protected void doIO() throws IOException {
+                    //LOG.info("DEBUG: Inside doIO of LineCounter, working with TDF File "+inputTDFFile+"\n");
+                    int numLines = 0;
+                    BufferedReader reader = null;
+                    try {
+                        reader = new BufferedReader(new FileReader(inputTDFFile));
+                        while (reader.readLine() != null) {
+                            numLines++;
                         }
-
-                        if (altCompare < 0) {
-                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                    } finally {
+                        if (reader != null) {
+                            reader.close();
                         }
                     }
+                    numlines[0] = numLines;
+                    //LOG.info("DEBUG: Read "+numLines+" from "+inputTDFFile);
                 }
+            });
 
-                if(isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)){
-                    previousPosition = currentPosition;
-                    previousRef = currentRef;
-                    previousAlt = currentAlt;
+
+            // open the input and output files
+            recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
+            recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
+
+            //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
+            //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
+
+            // read the input, line by line
+            String[] inputLine;
+
+            MedSavantIOController.requestIO(new VariantAnnotatorIOJob(cursors, recordReader, recordWriter, numlines[0], numFieldsInOutputFile));
+
+            // report success
+            LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+            //EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+        } catch(InterruptedException ie){
+            LOG.error("performBatchAnnotationInParallell interrupted: "+ie);            
+        }finally {
+            // clean up
+            try{
+            if (cursors != null) {
+                for (AnnotationCursor c : cursors) {                    
+                    c.cleanup();
                 }
-
-                // previousPosition = currentPosition;
-                // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
-                // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
-
             }
-
-            // perform each annotation, in turn
-
-            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
-
-                // get the annotation for this line
-
-                String[] annotationForThisLine = cursors[annotationIndex].annotateVariant(nextInputRecord);
-
-
-                // add it to the output buffer
-                for (int k = 0; k < annotationForThisLine.length; k++) {
-                    outputLine[j++] = annotationForThisLine[k];
-                }
-
+            if (recordReader != null) {
+                recordReader.close();
             }
-
-
-            // write the output
-            recordWriter.writeNext(outputLine);
+            if (recordWriter != null) {
+                recordWriter.close();
+            }
+            }catch(NullPointerException nex){
+                LOG.error("Caught nullpointerexception ");
+                nex.printStackTrace();
+            }
         }
-
-        // clean up
-        for (AnnotationCursor c : cursors) {
-            c.cleanup();
-        }
-        recordReader.close();
-        recordWriter.close();
-
-        // report success
-        LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
-        //EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
-
     }
 
     /**
@@ -412,6 +351,134 @@ public class BatchVariantAnnotator {
             hash = 79 * hash + (this.ref != null ? this.ref.hashCode() : 0);
             hash = 79 * hash + (this.alt != null ? this.alt.hashCode() : 0);
             return hash;
+        }
+    }
+
+    class VariantAnnotatorIOJob extends IOJob {
+
+        private String[] inputLine;
+        private int oldp = 0;
+        private int numLines;
+        // container for the components of the output line (original line, plus annotations)
+        private String[] outputLine;
+        // whatever chromosome we're at in the input file
+        private String currentChrom = null;
+        private long previousPosition = -1;
+        private String previousRef = null;
+        private String previousAlt = null;
+        private AnnotationCursor[] cursors;
+        private CSVReader recordReader;
+        private CSVWriter recordWriter;
+
+        public VariantAnnotatorIOJob(AnnotationCursor[] cursors, CSVReader recordReader, CSVWriter recordWriter, int numLines, int numFieldsInOutputFile) {
+            super("Variant annotator");
+            this.cursors = cursors;
+            this.recordReader = recordReader;
+            this.recordWriter = recordWriter;
+            this.numLines = numLines;
+            outputLine = new String[numFieldsInOutputFile];
+        }
+
+        @Override
+        protected boolean continueIO() throws IOException {
+            inputLine = readNext(recordReader);
+            return inputLine != null;
+        }
+
+        @Override
+        protected void doIO() throws IOException {
+            totalNumLinesRead++;
+
+            oldp = logProgress(totalNumLinesRead, numLines, oldp);
+            // index into the output line
+            int j = 0;
+
+            // copy the input line
+            for (int i = 0; i < inputLine.length; i++) {
+                outputLine[j++] = inputLine[i];
+            }
+
+            // parse a simplified variant record from the line
+            SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
+
+            // report whenever we get to the next chromosome
+            if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
+                currentChrom = nextInputRecord.chrom;
+                //LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
+                previousPosition = -1;
+                previousRef = null;
+                previousAlt = null;
+
+            } else {
+
+                /**
+                 * Check that records for a given chromosome are sorted by
+                 * position, ref, alt
+                 */
+                long currentPosition = nextInputRecord.position;
+                String currentRef = nextInputRecord.ref;
+                String currentAlt = nextInputRecord.alt;
+
+                if (currentPosition < previousPosition) {
+                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                }
+                if (currentPosition == previousPosition) {
+
+                    int refCompare;
+                    if (!isAStandardSingleNucleotide(currentRef)) { // ignore lines where ref is not a single nucleotide
+                        refCompare = 1;
+                    } else {
+                        refCompare = currentRef.compareTo(previousRef);
+                    }
+
+                    if (refCompare < 0) {
+                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                    } else if (refCompare == 0) {
+
+                        int altCompare;
+                        if (!isAStandardSingleNucleotide(currentAlt)) { // ignore lines where alt is not a single nucleotide
+                            altCompare = 1;
+                        } else {
+                            altCompare = currentAlt.compareTo(previousAlt);
+                        }
+
+                        if (altCompare < 0) {
+                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                        }
+                    }
+                }
+
+                if (isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)) {
+                    previousPosition = currentPosition;
+                    previousRef = currentRef;
+                    previousAlt = currentAlt;
+                }
+
+                // previousPosition = currentPosition;
+                // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
+                // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
+
+            }
+
+            // perform each annotation, in turn
+
+            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
+
+                // get the annotation for this line
+
+                String[] annotationForThisLine = cursors[annotationIndex].annotateVariant(nextInputRecord);
+
+
+                // add it to the output buffer
+                for (int k = 0; k < annotationForThisLine.length; k++) {
+                    outputLine[j++] = annotationForThisLine[k];
+                }
+
+            }
+
+
+            // write the output
+            recordWriter.writeNext(outputLine);
         }
     }
 }

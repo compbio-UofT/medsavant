@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.Callable;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -37,10 +38,9 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
  *
  * @author mfiume
  */
-public class VariantParser extends Thread {
+public class VariantParser implements Callable<Void> {
 
     private static final Log LOG = LogFactory.getLog(VariantParser.class);
-
     private final boolean includeHomoRef;
     private final int updateID;
     private final File vcfFile;
@@ -82,7 +82,7 @@ public class VariantParser extends Thread {
     }
 
     @Override
-    public void run() {
+    public Void call() {
 
         try {
             VCFParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
@@ -93,7 +93,7 @@ public class VariantParser extends Thread {
             success = false;
             exception = e;
         }
-
+        return null;
         //TODO: should we delete vcf file?
     }
 }

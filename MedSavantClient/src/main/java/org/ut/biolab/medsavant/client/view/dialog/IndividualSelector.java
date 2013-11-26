@@ -498,9 +498,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         public void retrievalComplete() {
         }
 
-        private void setIndividuals() throws SQLException, RemoteException {
-            System.out.println("Setting individuals");
-
+        private void setIndividuals() throws SQLException, RemoteException {            
             try {
 
                 setCohorts();

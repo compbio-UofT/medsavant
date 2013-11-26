@@ -26,19 +26,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
@@ -320,6 +318,7 @@ public class VariantManagerUtils {
 
             String id = "";
             for (int i : cols)  {
+               // LOG.info("Trying to parse column "+i+" from line "+line+" in file "+inputFile);
                 id += parsedLine[i] + "-";
             }
 
@@ -525,62 +524,26 @@ public class VariantManagerUtils {
         in.close();
         out.close();
     }
-
-
-    static int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors());
+  
     static int MAX_FILES = 20;
-
-    public static File[] convertVCFFilesToTSV(File[] vcfFiles, File outDir, int updateID, boolean includeHomozygousReferenceCalls) throws Exception {
-
-        // parse each vcf file in a separate thread with a separate file ID
-        VariantParser[] threads = new VariantParser[vcfFiles.length];
-        String stamp = System.nanoTime() + "";
-        int fileID = 0;
-        for (File vcfFile : vcfFiles) {
-            File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
-            VariantParser t = new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls);
-            threads[fileID] = t;
-            fileID++;
-            LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
-        }
-
-        processThreadsWithLimit(threads,MAX_THREADS);
-
-        // tab separated files
-        File[] tsvFiles = new File[threads.length];
-
-        LOG.info("All parsing annotation threads done");
-
-        int i = 0;
-        for (VariantParser t : threads) {
-            tsvFiles[i++] = new File(t.getOutputFilePath());
-            if (!t.didSucceed()) {
-                LOG.info("At least one parser thread errored out");
-                throw t.getException();
-            }
-        }
-
-        return tsvFiles;
-    }
-
+   
     public static File[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields) throws Exception {
 
         LOG.info("Annotating " + tsvFiles.length + " TSV files");
 
-        VariantAnnotator[] annotationThreads = new VariantAnnotator[tsvFiles.length];
+        List<VariantAnnotator> annotationThreads = new ArrayList<VariantAnnotator>(tsvFiles.length);
 
-        for (int i = 0; i < annotationThreads.length; i++) {
+        for (int i = 0; i < tsvFiles.length; i++) {
             File toAnnotate = tsvFiles[i];
             String outFile = toAnnotate + "_annotated";
-            VariantAnnotator t = new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields);
-            annotationThreads[i] = t;
+            //LOG.info("\tDEBUG: Adding annotation thread on file "+outFile);
+            annotationThreads.add(new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields));            
         }
+        //LOG.info("DEBUG: Using executor service to invoke "+annotationThreads.size()+" threads");
+        MedSavantServerEngine.getLongExecutorService().invokeAll(annotationThreads);       
+        //LOG.info("DEBUG: All annotation threads done");
 
-        processThreadsWithLimit(annotationThreads,MAX_THREADS);
-
-        LOG.info("All annotation threads done");
-
-        File[] annotatedTsvFiles = new File[annotationThreads.length];
+        File[] annotatedTsvFiles = new File[annotationThreads.size()];
 
         int i = 0;
         for (VariantAnnotator t : annotationThreads) {
@@ -605,43 +568,5 @@ public class VariantManagerUtils {
         LOG.info("Splitting " + tsvFile + " by DNA and FileIDs");
         return VariantManagerUtils.splitFileOnColumns(splitDir, tsvFile.getAbsolutePath(), new int[]{0, 1, 3});
     }
-
-    static void processThreadsWithLimit(Thread[] threads, int MAX_THREADS) throws InterruptedException {
-        LOG.info("Processing " + threads.length + " threads, " + MAX_THREADS + " at a time");
-        List<Thread> batch = new ArrayList<Thread>();
-        for (int i = 0; i < threads.length; i++) {
-            batch.add(threads[i]);
-            if (batch.size() >= MAX_THREADS) {
-
-                processBatchAndWait(batch);
-                batch.clear();
-                LOG.info("Completed " + (i+1) + " of " + threads.length + " threads");
-            }
-        }
-        processBatchAndWait(batch);
-        LOG.info("Completed all " + threads.length + " threads");
-    }
-
-
-    private static void processBatchAndWait(List<Thread> batch) throws InterruptedException {
-
-        LOG.info("Starting " + batch.size() + " threads...");
-        for (Thread t : batch) {
-            t.start();
-        }
-        // wait for all the threads to finish
-        LOG.info("Waiting for threads to finish...");
-        for (Thread t : batch) {
-            t.join();
-        }
-        LOG.info(batch.size() + " threads finished");
-
-        System.gc();
-    }
-
-    static void processThreadsWithLimit(VariantParser[] threads) throws InterruptedException {
-        processThreadsWithLimit(threads,MAX_THREADS);
-    }
-
 
 }

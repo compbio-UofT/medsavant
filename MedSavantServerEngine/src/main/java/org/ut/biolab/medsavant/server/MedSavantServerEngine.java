@@ -44,6 +44,11 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
@@ -70,11 +75,72 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     private static boolean require_ssltls = false;
     private static boolean require_client_auth = false;
     
+    //Maximum number of simultaneous 'long' jobs that can execute.  If this 
+    //amount is exceeded, the method call will block until a thread 
+    //becomes available.  
+    //(see submitLongJob)         
+    private static final int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors()-1);            
+    private static final int MAX_THREAD_KEEPALIVE_TIME = 1440; //in minutes
+    
+    //Maximum number of IO-heavy jobs that can be run simultaneously. 
+    //(see MedSavantIOScheduler)  Should be <= MAX_THREADS.
+    public static final int MAX_IO_JOBS = MAX_THREADS;    
     public static boolean USE_INFINIDB_ENGINE = false;
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-
+       
+    private static ExecutorService longThreadPool;
+    private static ExecutorService shortThreadPool;
+   
+    static{
+        longThreadPool  = Executors.newFixedThreadPool(MAX_THREADS);
+        ((ThreadPoolExecutor)longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);                                
+        shortThreadPool = Executors.newCachedThreadPool();                
+    }
+                  
+    /**
+     * Submits and runs the current job using the short job executor service, 
+     * and immediately returns.  An unlimited number of short jobs can be 
+     * executing simultaneously.  
+     * 
+     * NON_BLOCKING.
+     *      
+     * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
+     * will BLOCK.  get() will return null upon successful completion.
+     */
+    public static Future submitShortJob(Runnable r){        
+        return shortThreadPool.submit(r);
+    }
+    
+    /**
+     * Submits and runs the current job using the long job executor service, 
+     * and immediately returns.  Only MAX_THREADS of long jobs can be 
+     * executing simultaneously -- the rest are queued.
+     * 
+     * NON_BLOCKING.
+     *      
+     * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
+     * will BLOCK.  get() will return null upon successful completion.
+     */
+    public static Future submitLongJob(Runnable r){
+        return shortThreadPool.submit(r);
+    }
+    
+    /**    
+     * @return The executor service used for short jobs.  An unlimited number of short jobs can run simultaneously.
+     */
+    public static ExecutorService getShortExecutorService(){
+        return shortThreadPool;
+    }
+    
+    /**    
+     * @return The executor service used for long jobs.  Only MAX_THREADS long jobs can run simultaneously.
+     */
+    public static ExecutorService getLongExecutorService(){
+        return longThreadPool;
+    }
+    
     public static boolean isClientAuthRequired(){
         return require_client_auth;
     }
@@ -91,8 +157,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         return isTLSRequired() ? new SslRMIClientSocketFactory() : RMISocketFactory.getSocketFactory();
     }
     
-    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
-
+    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {        
         try {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
@@ -111,7 +176,10 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         System.out.println(
                 "  SERVER VERSION: " + VersionSettings.getVersionString() + "\n"
                 + "  SERVER ADDRESS: " + thisAddress + "\n"
-                + "  LISTENING ON PORT: " + listenOnPort + "\n");
+                + "  LISTENING ON PORT: " + listenOnPort + "\n"
+                + "  MAX THREADS: "+MAX_THREADS+"\n"
+                + " MAX IO THREADS: "+MAX_IO_JOBS+"\n");
+        
                 //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
             // create the registry and bind the name and object.            

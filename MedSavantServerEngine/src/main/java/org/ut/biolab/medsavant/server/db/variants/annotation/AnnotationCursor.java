@@ -77,9 +77,12 @@ public class AnnotationCursor {
      * @throws SQLException
      */
     public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
-        reader = new TabixReader(annotation.getDataPath());        
-        String header = new TabixReader(annotation.getDataPath()).readLine().trim();
+        TabixReader headerReader = new TabixReader(annotation.getDataPath());     
+        String header = headerReader.readLine().trim();
+        headerReader.cleanup();
         
+        reader = new TabixReader(annotation.getDataPath());     
+
         
         //If the tabix file has a header, then find the indices for all the 
         //required columns

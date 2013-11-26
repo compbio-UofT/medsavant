@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns;
@@ -471,7 +472,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      * @param sessID
      */
     public void populate(final String sessID) {
-        new Thread() {
+        MedSavantServerEngine.submitLongJob(new Runnable(){        
             @Override
             public void run() {
                 try {
@@ -484,6 +485,6 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     LOG.error("Error populating ontology tables.", ex);
                 }
             }
-        }.start();
+        });
     }
 }

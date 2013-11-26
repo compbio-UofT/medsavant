@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +38,7 @@ import org.ut.biolab.medsavant.shared.model.Annotation;
  *
  * @author mfiume
  */
-public class VariantAnnotator extends Thread implements BasicVariantColumns {
+public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
 
     private static final Log LOG = LogFactory.getLog(VariantAnnotator.class);
     private final File inFile;
@@ -71,10 +72,9 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
     }
 
     @Override
-    public void run() {
+    public Void call() {
 
-        List<String> filesUsed = new ArrayList<String>();
-
+        List<String> filesUsed = new ArrayList<String>();        
         try {
 
             String inputFilePath = inFile.getAbsolutePath();
@@ -93,13 +93,9 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
 
             //annotate
             if (annotations.length > 0) {
-
-                String annotatedFilename = workingFilePath + "_annotated";
-                filesUsed.add(annotatedFilename);
-                //LOG.info("File containing annotated variants, sorted by position: " + annotatedFilename);
-
-                //LOG.info("Annotating variants in " + workingFilePath + ", destination " + annotatedFilename);
-
+                //LOG.info("\tDEBUG: annotations.length is > 0: annotations.length="+annotations.length);
+                String annotatedFilename = workingFilePath + "_annotated";                
+                filesUsed.add(annotatedFilename);          
                 long startTime = System.currentTimeMillis();
 
                 BatchVariantAnnotator bva = new BatchVariantAnnotator(new File(workingFilePath), new File(annotatedFilename), annotations, sessID);
@@ -130,13 +126,7 @@ public class VariantAnnotator extends Thread implements BasicVariantColumns {
         //cleanup
         System.gc();
 
-        /*if (VariantManager.REMOVE_TMP_FILES) {
-            for (String filename : filesUsed) {
-                boolean deleted = (new File(filename)).delete();
-                LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
-            }
-        }
-        */
+        return null;
 
     }
 }

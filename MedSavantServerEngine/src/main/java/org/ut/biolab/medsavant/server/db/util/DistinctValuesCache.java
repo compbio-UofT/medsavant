@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.IOJob;
+import org.ut.biolab.medsavant.server.MedSavantIOController;
 
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -56,7 +58,7 @@ public class DistinctValuesCache {
         return getFile(getDirectory(dbName, tableName), columnName).exists();
     }
 
-    public static void cacheResults(String dbName, String tableName, String columnName, List result) {
+    public static void cacheResults(String dbName, String tableName, String columnName, final List result) {
         File dir = getDirectory(dbName, tableName);
         if (!dir.exists() && !dir.mkdirs()) {
             LOG.error(String.format("Unable to create cache directory %s.", dir.getAbsolutePath()));
@@ -66,20 +68,43 @@ public class DistinctValuesCache {
         File f = getFile(dir, columnName);
         LOG.info("Marked " + f.getAbsolutePath() + " for deletion on exit.");
         f.deleteOnExit();
+        BufferedWriter out = null;
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(f, false));
+             out = new BufferedWriter(new FileWriter(f, false));
             if (result == null) {
                 out.write(CACHE_NULL);
-            } else {
-                for (Object o : result) {
-                    out.write(o.toString());
-                    out.newLine();
-                }
+           } else {
+                final BufferedWriter fout = out;
+                MedSavantIOController.requestIO(new IOJob("Cache Results"){
+                    
+                    @Override
+                    protected void doIO() throws IOException {
+                        Object o = result.iterator().next();
+                        fout.write(o.toString());
+                        fout.newLine();
+                    }
+
+                    @Override
+                    protected boolean continueIO() throws IOException {
+                        return result.iterator().hasNext();
+                        
+                    }
+                    
+                });                                
             }
             out.close();
         } catch (Exception ex) {
             LOG.error("Error caching results for " + dbName + "." + tableName + "." + columnName, ex);
             f.delete();
+        } finally {
+            if(out != null){
+                try{
+                    out.close();
+                }catch(IOException ex){
+                    LOG.error("Couldn't close file "+f, ex);
+                    f.delete();
+                }
+            }
         }
     }
 

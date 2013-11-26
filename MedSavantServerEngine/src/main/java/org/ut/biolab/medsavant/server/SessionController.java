@@ -121,8 +121,8 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
             }
         }
 
-        for (final String sid : sessionIDsToTerminate) {
-            Thread t = new Thread() {
+        for (final String sid : sessionIDsToTerminate) {            
+            MedSavantServerEngine.submitShortJob(new Runnable(){            
                 @Override
                 public void run() {
                     try {
@@ -134,8 +134,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
                         LOG.error("Unable to terminate session for " + sid + ".", ex);
                     }
                 }
-            };
-            t.start();
+            });            
         }
     }
 }

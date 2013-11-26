@@ -27,14 +27,13 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
@@ -85,7 +84,8 @@ public class ImportUpdateManager {
             }
 
             if (VariantManager.REMOVE_WORKING_DIR) {
-                MiscUtils.deleteDirectory(workingDirectory);
+                LOG.error("NOT deleting workingDirectory "+workingDirectory);
+                //MiscUtils.deleteDirectory(workingDirectory);
             }
 
             LOG.info("Finished import");
@@ -224,21 +224,23 @@ public class ImportUpdateManager {
         LOG.info("Converting VCF files to TSV, working directory is " + outDir.getAbsolutePath());
 
         // parse each vcf file in a separate thread with a separate file ID
-        VariantParser[] threads = new VariantParser[vcfFiles.length];
+        List<VariantParser> threads = new ArrayList<VariantParser>(vcfFiles.length);
         String stamp = System.nanoTime() + "";
         int fileID = 0;
         for (File vcfFile : vcfFiles) {
             File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
-            VariantParser t = new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls);
-            threads[fileID] = t;
+            threads.add(new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
+            
+            //threads[fileID] = t;
             fileID++;
             LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
         }
-
-        VariantManagerUtils.processThreadsWithLimit(threads);
+        MedSavantServerEngine.getLongExecutorService().invokeAll(threads);
+        
+        //VariantManagerUtils.processThreadsWithLimit(threads);
 
         // tab separated files
-        File[] tsvFiles = new File[threads.length];
+        File[] tsvFiles = new File[threads.size()];
 
         LOG.info("All parsing annotation threads done");
 
@@ -299,8 +301,7 @@ public class ImportUpdateManager {
             File[] someSplitFiles = VariantManagerUtils.splitTSVFileByFileAndDNAID(workingDir, file);
             splitTSVFiles = ArrayUtils.addAll(splitTSVFiles, someSplitFiles);
         }
-
-
+        
         return splitTSVFiles;
     }
 
