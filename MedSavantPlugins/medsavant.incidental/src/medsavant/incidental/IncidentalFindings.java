@@ -14,10 +14,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JTable;
+import javax.swing.JPanel;
 import medsavant.incidental.localDB.IncidentalDB;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -29,8 +28,13 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.DataRetriever;
+import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 
 /**
  * Compute and store all incidental findings for a patient.
@@ -42,12 +46,16 @@ public class IncidentalFindings {
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
 	
-	private Map<String, String> dbAliasToColumn;
+	private String GENDER= null;
 	
+	private int INHERITANCE_INDEX= -1;
+	private int CLASSIFICATION_INDEX= -1;
+	private Map<String, String> dbAliasToColumn;
 	private String dnaID;
 	private int coverageThreshold;
 	private double hetRatio;
 	private double alleleFrequencyThreshold;
+	private Map<String, String> zygosityMap;
 	
 	private List<Object[]> allVariants;
 	private TableSchema ts;
@@ -61,23 +69,56 @@ public class IncidentalFindings {
 	private Pattern geneSymbolPattern= Pattern.compile("^([^(]+)");
 	
 	
-	public IncidentalFindings(String dnaID, int cov, double ratio, double afThreshold) {
+	/** Find all mutations in disease genes and filter for relevance.
+	 * @param dnaID	Patient's DNA ID
+	 * @param cov	The minimum coverage for alt variants
+	 * @param ratio	The minimum ratio of alt/total reads to be considered as possibly het
+	 * @param afThreshold	Allele frequency threshold
+	 * @param afColumns	The columns of the table corresponding to DBs to be used for the allele frequency cutoff
+	 */
+	public IncidentalFindings(String dnaID, int cov, double ratio, double afThreshold, List<Object> afColumns) {
 		this.dnaID= dnaID;
 		coverageThreshold= cov;
 		hetRatio= ratio;
 		alleleFrequencyThreshold= afThreshold;
-		
 		
 		allVariants= new ArrayList<Object[]>(DB_VARIANT_REQUEST_LIMIT); // initial capacity DB_VARIANT_REQUEST_LIMIT
 		
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names
 		header= getTableHeader();
-		effectIndex= header.indexOf("Functional annotation");
-		geneSymbolIndex= header.indexOf("Gene symbol");
+		effectIndex= header.indexOf("jannovar effect");
+		geneSymbolIndex= header.indexOf("jannovar gene symbol");
+		
+		// For variant DB lookup - zygosity values based on VariantRecord in org.ut.biolab.medsavant.shared.vcf
+		zygosityMap= new HashMap<String, String>();
+		zygosityMap.put("HomoAlt", "hom");
+		zygosityMap.put("Hetero", "het");
 		
 		try {
-			storeVariants();
+			// Get gender info
+			PatientManagerAdapter pma= MedSavantClient.PatientManager;
+			List<Object[]> allProjectPatients= pma.getBasicPatientInfo(
+					LoginController.getInstance().getSessionID(),
+					ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+			
+			for (Object[] row : allProjectPatients) {
+				if (dnaID.equals((String) row[BasicPatientColumns.INDEX_OF_DNA_IDS])) {
+					GENDER= (String) ClientMiscUtils.genderToString(
+						(Integer) row[BasicPatientColumns.INDEX_OF_GENDER]);
+					break; // no need to search further
+				}
+			}
+			
+			/* Add any relevant columns based on the data that has been appended. */
+			header.add("Inheritance");
+			INHERITANCE_INDEX= header.size() - 1;
+			header.add("Classification");
+			CLASSIFICATION_INDEX= header.size() - 1;
+			
+			// Download and process variants 
+			storeVariants(afColumns);
+			
 		} catch (Exception ex) {
 			System.err.println("IncidentalFindings error: " + ex.toString());
 			ex.printStackTrace();
@@ -86,13 +127,60 @@ public class IncidentalFindings {
 	
 		
 	/** JTable output for development testing. */
-	public JTable getTableOutput() {
+	public JPanel getTableOutput() {
+		/*
 		Object[][] rowData= allVariants.toArray(new Object[allVariants.size()][]); // List<Object[]> to Object[][]		
+					
+		JTable t= new SortableTable(rowData, header.toArray()) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+				JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
+
+				// Even index, selected or not selected
+				if (!isCellSelected(row, col)) {
+					if (row % 2 == 0) {
+						comp.setBackground(Color.WHITE);
+					} else {
+						comp.setBackground(ViewUtil.getAlternateRowColor());
+					}
+				}
+				comp.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 7));
+				return comp;
+			}
+		};
+		*/
 		
-		/* Add any relevant columns based on the data that has been appended. */
-		header.add("Inheritance");
+		DataRetriever<Object[]> dr= new DataRetriever<Object[]>() {
+			@Override
+			public List<Object[]> retrieve(int start, int limit) throws Exception {            
+				return allVariants;
+			}
+
+			@Override
+			public int getTotalNum() {
+				return allVariants.size();
+			}
+
+			@Override
+			public void retrievalComplete() {
+			}
+		};
 		
-		JTable t= new JTable(rowData, header.toArray());
+		System.out.println("TESTING:" + dr.getTotalNum()); /////////////////////
+		
+		Class[] STRING_ONLY_COLUMN_CLASSES= new Class[header.size()];
+		for (int i= 0; i != STRING_ONLY_COLUMN_CLASSES.length; ++i)
+			STRING_ONLY_COLUMN_CLASSES[i]= String.class; // FOR NOW ONLY CALLING THESE STRINGS
+		
+		SearchableTablePanel t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
+				STRING_ONLY_COLUMN_CLASSES, new int[]{0}, true, true, Integer.MAX_VALUE,
+				false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, dr);
+		
+		t.setResizeOff();
+		t.setExportButtonVisible(true);
+		t.setExportButtonEnabled(true);
+		t.forceRefreshData();
+		
 		return t;
 	}
 	
@@ -103,19 +191,34 @@ public class IncidentalFindings {
 	}
 	
 	
-	/* Filter and store all variants for this individual. */
-	private void storeVariants() throws SQLException, RemoteException, SessionExpiredException {
+	/** Filter and store all variants for this individual.
+	 * @param afColumns	A string list of the column aliases corresponding to the allele frequency DBs 
+	 */
+	private void storeVariants(List<Object> afColumns) throws SQLException, RemoteException, SessionExpiredException {
 		VariantManagerAdapter vma= MedSavantClient.VariantManager;
 		
-		Condition dnaCondition= BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.DNA_ID), dnaID);
-		Condition af1000gCondition= BinaryCondition.lessThan(ts.getDBColumn("5annotationfreq"), 
-			Double.toString(alleleFrequencyThreshold), false);
+		/* Put the conditions together with ANDs and ORs. */		
+		ComboCondition cc= new ComboCondition(ComboCondition.Op.AND);
 		
-		Condition cc = new ComboCondition(ComboCondition.Op.OR, af1000gCondition, 
-				UnaryCondition.isNull(ts.getDBColumn("5annotationfreq")));
-		Condition cc2= new ComboCondition(ComboCondition.Op.AND, dnaCondition, cc);
+		Condition dnaCondition= BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.DNA_ID), dnaID);
+		cc.addCondition(dnaCondition);
+		
+		/* Iterate through the selected allele freq DBs and add to the condition. */
+		for (Object columnAlias : afColumns) {
+			String columnName= dbAliasToColumn.get((String) columnAlias);
+			
+			ComboCondition currentAFComboCondition= new ComboCondition(ComboCondition.Op.OR);
+			currentAFComboCondition.addCondition(
+				BinaryCondition.lessThan(ts.getDBColumn(columnName),
+					Double.toString(alleleFrequencyThreshold), false));
+			currentAFComboCondition.addCondition(
+				UnaryCondition.isNull(ts.getDBColumn(columnName)));
+			
+			cc.addCondition(currentAFComboCondition);
+		}
+		
 		Condition[][] conditionMatrix= new Condition[1][1];
-		conditionMatrix[0][0]= cc2;
+		conditionMatrix[0][0]= cc;
 		
 		/* Get variants in chunks based on a request limit offset to save memory. */
 		int position= 0;
@@ -130,6 +233,9 @@ public class IncidentalFindings {
 			position += DB_VARIANT_REQUEST_LIMIT;
 		}
 		
+		
+		/* Identify potential compound hets. */
+		identifyPotentialCompoundHet();
 	}
 	
 	
@@ -157,53 +263,25 @@ public class IncidentalFindings {
 		List<Object[]> filtered= new LinkedList<Object[]>();
 		
 		for (Object[] row : input) {
-			String inheritance= getInheritance(row);
+			List<String> query= getClassification(getGeneSymbol(row), 
+					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY]);
+			
+			String classification= query.get(0);
+			String inheritance= query.get(1);
+			
 			if (inheritance != null && !inheritance.equals("") &&
 					(hasTruncationMutation(row) || inClinicalDB(row))) {
 						
 				List<Object> listRow= new ArrayList<Object>(Arrays.asList(row));
 				listRow.add(inheritance);
+				listRow.add(classification);
+				
+				// Add to output list
 				filtered.add(listRow.toArray());
 			}
 		}
 		
 		return filtered;		
-	}
-	
-	
-	/** Checks DB to see if this variant comes from a disease gene and retrieves
-	 * inheritance.
-	 * @return String representing inheritance. Null if not a disease gene.
-	 */
-	private String getInheritance(Object[] row) {
-		String inheritance= null;
-		
-		String sql= "SELECT inheritance_js " +
-					"FROM incidentalome_annotated " +
-					"WHERE gene_reviewedJS = '" + getGeneSymbol(row) + "'"; // MUST use single quotes
-		ResultSet rs;
-		try {
-			rs= IncidentalDB.executeQuery(sql);
-		
-			int rowCount= 0;
-			while (rs.next()) {
-				/* There should only be a single result from this query. That is, one
-				* entry per gene. */
-				if (rowCount > 1)
-					System.err.println("IncidentalFindings error: >1 row found for gene " 
-						+ getGeneSymbol(row));
-				
-				/* First and only element is the inheritance, as specified in sql above. */
-				inheritance= (String) IncidentalDB.getRowAsList(rs).get(0);
-				
-				rowCount++;
-			}
-		} catch (SQLException e) {
-			System.out.println("This was just executed: " + sql);
-			e.printStackTrace();
-		}
-		
-		return inheritance;
 	}
 	
 	
@@ -333,38 +411,101 @@ public class IncidentalFindings {
 	
 	
 	/** Get the variant classification.
-	 * Variant can be classified as disease, complex, potential compound het
+	 * Variant can be classified as: disease, complex, potential compound het
 	 * or carrier.
-	 * @return a string representation of the disease classification
+	 * @return a list containing the disease classification and inheritance
 	 */
-	private String getClassification() {
+	private List<String> getClassification(String geneSymbol, String zygosity) {
 		String classification= null;
+		String inheritance= null;
+			
+		// MUST use single quotes
+		String sql=	"SELECT D.classification, I.inheritance_JS " +
+					"FROM incidentalome_annotated I, disease_classification D " +
+					"WHERE I.gene_reviewedJS LIKE '" + geneSymbol + "' " +
+					"	AND I.inheritance_JS = D.inheritance " +
+					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +
+					"	AND (D.gender LIKE '" + GENDER + "' OR D.gender LIKE 'both') ";
 		
-		/* NEED TO STORE ALL FILTERED VARIANTS TO SCREEN FOR COMPOUND HETS
-		 * WHICH REQUIRE ME TO SEE IF CARRIER HAS BEEN OBSERVED > 1 FOR A
-		 * SPECIFIC GENE.
-		 */
+		ResultSet rs;
+		try {
+			rs= IncidentalDB.executeQuery(sql);
 		
-		return classification;
+			int rowCount= 0;
+			while (rs.next()) {
+				/* There should only be a single result from this query. */
+				if (rowCount > 1)
+					System.err.println(">1 row found for query: " + sql);
+				
+				/* First and only element is the inheritance, as specified in sql above. */
+				List temp= IncidentalDB.getRowAsList(rs);
+				classification= (String) temp.get(0);
+				inheritance= (String) temp.get(1);
+				
+				rowCount++;
+			}
+		} catch (SQLException e) {
+			System.out.println("This was just executed: " + sql);
+			e.printStackTrace();
+		}
+		
+		
+		List<String> output= new ArrayList<String>();
+		output.add(classification);
+		output.add(inheritance);
+		
+		return output;
 	}
 	
 	
 	/** Get the header for the table using the column aliases. */
 	public Map<String, String> getDbToHumanReadableMap() {
-		Map<String, String> dbNameToHumanNameMap = new HashMap<String, String>();
+		Map<String, String> dbAliasToNameMap = new HashMap<String, String>();
 
 		try {
 			AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
 			for (AnnotationFormat af : afs) {
 				for (CustomField field : af.getCustomFields()) {
-					dbNameToHumanNameMap.put(field.getAlias(), field.getColumnName());
+					dbAliasToNameMap.put(field.getAlias(), field.getColumnName());
 				}
 			}
 		} catch (Exception e) {
 			LOG.error(e);
 		}
 		
-		return dbNameToHumanNameMap;
+		return dbAliasToNameMap;
+	}
+	
+	
+	/** Marks all potential compound heterozygotes in the set of variants. */
+	private void identifyPotentialCompoundHet() {
+		/* Iterate through all variants and look for the same gene with >1 
+		 * instance where it's marked as a carrier. */
+		
+		Map<String, Integer> geneCount= new HashMap<String, Integer>();
+		
+		// Get the count for all carriers
+		for (Object[] row : allVariants) {
+			String gene= getGeneSymbol(row);
+			
+			if (row[CLASSIFICATION_INDEX].equals("carrier")) {
+				if (!geneCount.containsKey(gene))
+					geneCount.put(gene, 0);
+
+				geneCount.put(gene, (Integer) geneCount.get(gene) + 1);
+			}
+		}
+		
+		// Mark compound hets
+		for (Object[] row : allVariants) {
+			String gene= getGeneSymbol(row);
+			
+			if (((String) row[CLASSIFICATION_INDEX]).equals("carrier") &&
+				((Integer) geneCount.get(gene)) > 1) {
+				
+				row[CLASSIFICATION_INDEX]= "potential compound het";
+			}
+		}
 	}
 	
 }

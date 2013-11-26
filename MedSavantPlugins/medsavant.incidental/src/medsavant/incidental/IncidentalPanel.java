@@ -1,30 +1,43 @@
 package medsavant.incidental;
 
-
+import com.jidesoft.swing.CheckBoxList;
 import java.util.Calendar;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.GregorianCalendar;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import medsavant.incidental.localDB.IncidentalDB;
 import medsavant.incidental.localDB.IncidentalHSQLServer;
+import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+
 
 /**
  * Default panel view for Incidentalome app
@@ -32,6 +45,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author rammar
  */
 public class IncidentalPanel extends JPanel {
+	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 100;
@@ -74,6 +88,10 @@ public class IncidentalPanel extends JPanel {
 	private JLabel afThresholdLabel= new JLabel("Max. allele frequency");
 	private JTextField afThresholdText= new JTextField(Double.toString(afThreshold));
 	private JButton afThresholdHelp;
+	private JButton chooseAFColumns;
+	private JButton chooseAFColumnsHelp;
+	private CheckBoxList chooser;
+	private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
 			
 	private IncidentalHSQLServer server;
     
@@ -124,12 +142,20 @@ public class IncidentalPanel extends JPanel {
 				+ "variant to be reported, allele frequency must be below this "
 				+ "threshold across all allele frequency databases.");
 		
+		
+		statusSeparator.setVisible(false);
+		
 		progressLabel= new JLabel();
 		progressLabel.setVisible(false);
 		
 		pw= new ProgressWheel();
 		pw.setIndeterminate(true);
 		pw.setVisible(false);
+		
+		chooser= new CheckBoxList(getDbColumnList());
+		chooser.addCheckBoxListSelectedValues(new String[] 
+			{"1000g2012apr_all, AnnotationFrequency",
+			"esp6500_all, Score"});
 		
 		variantPane= new JScrollPane();
 		
@@ -170,7 +196,7 @@ public class IncidentalPanel extends JPanel {
 					if (selectedIndividuals != null && selectedIndividuals.size() == 1
 						&& !analysisRunning) {
 						analysisRunning= true;
-						
+										
 						MSWorker= new MedSavantWorker<Object> (
 							IncidentalPanel.class.getCanonicalName()) {
 
@@ -180,6 +206,7 @@ public class IncidentalPanel extends JPanel {
 							protected Object doInBackground() throws Exception {
 								/* Starts a new thread for background tasks. */
 								
+								statusSeparator.setVisible(true);
 								progressLabel.setVisible(true);
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
@@ -198,7 +225,9 @@ public class IncidentalPanel extends JPanel {
 								
 								/* Get all the user settings and then get incidental findings. */
 								setAllValuesFromFields();
-								incFin= new IncidentalFindings(currentIndividualDNA, coverageThreshold, hetRatio, afThreshold);
+								incFin= new IncidentalFindings(currentIndividualDNA, 
+										coverageThreshold, hetRatio, afThreshold, 
+										Arrays.asList(chooser.getCheckBoxListSelectedValues()));
 								
 								if (this.isCancelled()) {
 									progressLabel.setText("Analysis Cancelled.");
@@ -206,7 +235,8 @@ public class IncidentalPanel extends JPanel {
 									analyzeButton.setEnabled(true);
 									analyzeButton.setText(analyzeButtonDefaultText);
 								} else {
-									progressLabel.setText("Analysis Complete. " + incFin.getVariantCount() + " variants.");
+									progressLabel.setText(incFin.getVariantCount() + " variants. " +
+											"Click on column to sort. Hold CTRL while clicking to sort by multiple columns.");
 								}
 								pw.setVisible(false);
 								return null;
@@ -216,6 +246,8 @@ public class IncidentalPanel extends JPanel {
 							protected void showSuccess(Object t) {	
 							/* All updates to display should happen here to be run. */
 								updateVariantPane(incFin);
+								analyzeButton.setText(analyzeButtonDefaultText);
+								analysisRunning= false;
 							}
 							
 						};
@@ -224,6 +256,7 @@ public class IncidentalPanel extends JPanel {
 						
 					} else if (selectedIndividuals != null && selectedIndividuals.size() == 1
 						&& analysisRunning) {
+						analysisRunning= false;
 						MSWorker.cancel(true);
 						analyzeButton.setEnabled(false);
 						progressLabel.setText("Cancelling Analysis...");
@@ -231,6 +264,29 @@ public class IncidentalPanel extends JPanel {
 				}
 			}
 		);		
+		
+		
+		chooseAFColumns= new JButton("Choose Allelle Frequency DBs");
+		chooseAFColumnsHelp= ViewUtil.getHelpButton("Allele Frequency Database selector", 
+				"Choose the databases to use when filtering for allele frequency.");
+		chooseAFColumns.addActionListener(
+			new ActionListener() {
+				
+				@Override
+				public void actionPerformed (ActionEvent e) {
+					JScrollPane chooserScrollPane= new JScrollPane(chooser);
+					chooserScrollPane.setBorder(BorderFactory.createEmptyBorder(2,3,4,1)); // just a little bit of border
+					chooserScrollPane.setBackground(Color.LIGHT_GRAY);
+					
+					JDialog f = new JDialog(MedSavantFrame.getInstance(),"Allele Frequency Database selector");
+					f.add(chooserScrollPane);
+					f.setPreferredSize(new Dimension(300, 500));
+					f.setMinimumSize(new Dimension(300, 500));
+					f.setLocationRelativeTo(null);
+					f.setVisible(true);
+				}
+			}
+		);
 		
 		
 		/* Set up the layout for the UI.
@@ -262,11 +318,16 @@ public class IncidentalPanel extends JPanel {
 							.addComponent(afThresholdText)
 							.addComponent(afThresholdHelp)
 							)
+						.addGroup(layout.createSequentialGroup()
+							.addComponent(chooseAFColumns)
+							.addComponent(chooseAFColumnsHelp)
+							)
 						)
-					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-						.addComponent(progressLabel)
-						.addComponent(pw)
-						)
+					)
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+					.addComponent(statusSeparator)
+					.addComponent(progressLabel)
+					.addComponent(pw)
 					)
 				.addComponent(variantPane)
 		);
@@ -295,11 +356,18 @@ public class IncidentalPanel extends JPanel {
 							.addComponent(afThresholdText)
 							.addComponent(afThresholdHelp)
 							)
+						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+							.addComponent(chooseAFColumns)
+							.addComponent(chooseAFColumnsHelp)
+							)
 						)
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(progressLabel)
-						.addComponent(pw)
-						)
+					)
+				.addGroup(layout.createSequentialGroup()
+					// special parameters for the separator when adding vertically
+					.addComponent(statusSeparator, GroupLayout.PREFERRED_SIZE, 
+						GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addComponent(progressLabel)
+					.addComponent(pw)
 					)
 				.addComponent(variantPane)
 		);
@@ -310,8 +378,9 @@ public class IncidentalPanel extends JPanel {
 	
 		
 	private void updateVariantPane (IncidentalFindings i) {
-		JTable jt= i.getTableOutput();
-		jt.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		JPanel jt= i.getTableOutput();
+		//jt.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//jt.setRowHeight(20);
 		variantPane.setViewportView(jt);
 	}
 	
@@ -326,6 +395,24 @@ public class IncidentalPanel extends JPanel {
 		coverageThreshold= Integer.parseInt(coverageThresholdText.getText());
 		hetRatio= Double.parseDouble(hetRatioText.getText());
 		afThreshold= Double.parseDouble(afThresholdText.getText());
+	}
+	
+	
+	
+	/** Get the header for the table using the column aliases. */
+	public Object[] getDbColumnList() {
+		List<String> t= new ArrayList<String>();
+
+		try {
+			AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
+			for (AnnotationFormat af : afs)
+				for (CustomField field : af.getCustomFields())
+					t.add(field.getAlias());
+		} catch (Exception e) {
+			LOG.error(e);
+		}
+	
+		return t.toArray();
 	}
     
 }
