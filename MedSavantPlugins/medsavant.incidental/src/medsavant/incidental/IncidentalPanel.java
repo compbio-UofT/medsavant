@@ -62,6 +62,7 @@ public class IncidentalPanel extends JPanel {
 	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password
 	
 	private boolean analysisRunning= false;
+	private boolean dbLoaded= false;
 	
 	private JPanel view;
 	private RoundedPanel workview;
@@ -211,10 +212,12 @@ public class IncidentalPanel extends JPanel {
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
 								
-								if (!server.isRunning()) {
+								//if (!server.isRunning()) { // No need to run a local server if using JDBC driver from hsqldb
+								if (!dbLoaded) {
 									progressLabel.setText("Preparing local filtering database...");
 									try {
-										server.startServer();
+										//server.startServer(); // No need to run a local server if using JDBC driver from hsqldb
+										dbLoaded= true;
 										IncidentalDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
 									} catch (SQLException e) {
 										e.printStackTrace();
@@ -378,10 +381,8 @@ public class IncidentalPanel extends JPanel {
 	
 		
 	private void updateVariantPane (IncidentalFindings i) {
-		JPanel jt= i.getTableOutput();
-		//jt.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		//jt.setRowHeight(20);
-		variantPane.setViewportView(jt);
+		JPanel jp= i.getTableOutput();
+		variantPane.setViewportView(jp);
 	}
 	
 	

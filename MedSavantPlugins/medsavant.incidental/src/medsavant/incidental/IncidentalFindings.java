@@ -126,30 +126,8 @@ public class IncidentalFindings {
 	}
 	
 		
-	/** JTable output for development testing. */
+	/** Searchable table output for development testing. */
 	public JPanel getTableOutput() {
-		/*
-		Object[][] rowData= allVariants.toArray(new Object[allVariants.size()][]); // List<Object[]> to Object[][]		
-					
-		JTable t= new SortableTable(rowData, header.toArray()) {
-            @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
-				JComponent comp = (JComponent) super.prepareRenderer(renderer, row, col);
-
-				// Even index, selected or not selected
-				if (!isCellSelected(row, col)) {
-					if (row % 2 == 0) {
-						comp.setBackground(Color.WHITE);
-					} else {
-						comp.setBackground(ViewUtil.getAlternateRowColor());
-					}
-				}
-				comp.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 7));
-				return comp;
-			}
-		};
-		*/
-		
 		DataRetriever<Object[]> dr= new DataRetriever<Object[]>() {
 			@Override
 			public List<Object[]> retrieve(int start, int limit) throws Exception {            
@@ -166,20 +144,18 @@ public class IncidentalFindings {
 			}
 		};
 		
-		System.out.println("TESTING:" + dr.getTotalNum()); /////////////////////
-		
 		Class[] STRING_ONLY_COLUMN_CLASSES= new Class[header.size()];
 		for (int i= 0; i != STRING_ONLY_COLUMN_CLASSES.length; ++i)
 			STRING_ONLY_COLUMN_CLASSES[i]= String.class; // FOR NOW ONLY CALLING THESE STRINGS
 		
 		SearchableTablePanel t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
-				STRING_ONLY_COLUMN_CLASSES, new int[]{0}, true, true, Integer.MAX_VALUE,
+				STRING_ONLY_COLUMN_CLASSES, new int[0], true, true, Integer.MAX_VALUE,
 				false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, dr);
 		
 		t.setResizeOff();
 		t.setExportButtonVisible(true);
 		t.setExportButtonEnabled(true);
-		t.forceRefreshData();
+		t.forceRefreshData(); // without this, the table is empty with just a header
 		
 		return t;
 	}
@@ -210,7 +186,7 @@ public class IncidentalFindings {
 			ComboCondition currentAFComboCondition= new ComboCondition(ComboCondition.Op.OR);
 			currentAFComboCondition.addCondition(
 				BinaryCondition.lessThan(ts.getDBColumn(columnName),
-					Double.toString(alleleFrequencyThreshold), false));
+					Double.toString(alleleFrequencyThreshold), true));
 			currentAFComboCondition.addCondition(
 				UnaryCondition.isNull(ts.getDBColumn(columnName)));
 			

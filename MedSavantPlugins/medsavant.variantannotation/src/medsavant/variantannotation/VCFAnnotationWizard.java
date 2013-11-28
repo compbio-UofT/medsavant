@@ -241,7 +241,7 @@ public class VCFAnnotationWizard extends WizardDialog {
         page.addComponent(new JLabel("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n"));
 
 		/* Add VCF annotation support via Jannovar. */
-		final JCheckBox JannovarBox= new JCheckBox("Perform gene-based variant annotation");
+		final JCheckBox JannovarBox= new JCheckBox("Perform gene-variant annotation");
 		JannovarBox.setSelected(true);
 		JannovarBox.setOpaque(false);
 		JannovarBox.addActionListener(
