@@ -155,6 +155,8 @@ public class IncidentalFindings {
 		t.setResizeOff();
 		t.setExportButtonVisible(true);
 		t.setExportButtonEnabled(true);
+		t.setHelpButtonVisible(false);
+		t.setChooseColumnsButtonVisible(false);
 		t.forceRefreshData(); // without this, the table is empty with just a header
 		
 		return t;
@@ -396,10 +398,20 @@ public class IncidentalFindings {
 		String inheritance= null;
 			
 		// MUST use single quotes
+		/*
 		String sql=	"SELECT D.classification, I.inheritance_JS " +
 					"FROM incidentalome_annotated I, disease_classification D " +
 					"WHERE I.gene_reviewedJS LIKE '" + geneSymbol + "' " +
 					"	AND I.inheritance_JS = D.inheritance " +
+					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +
+					"	AND (D.gender LIKE '" + GENDER + "' OR D.gender LIKE 'both') ";
+		*/
+		
+		String sql=	"SELECT D.classification, S.synonym, C.* " +
+					"FROM CGD_20131126 C, disease_classification D, CGD_synonym S " +
+					"WHERE C.gene LIKE '" + geneSymbol + "' " +
+					"	AND C.inheritance = S.inheritance " +
+					"	AND S.synonym = D.inheritance " +
 					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +
 					"	AND (D.gender LIKE '" + GENDER + "' OR D.gender LIKE 'both') ";
 		

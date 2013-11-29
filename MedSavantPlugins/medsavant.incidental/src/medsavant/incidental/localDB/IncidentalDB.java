@@ -89,6 +89,44 @@ public class IncidentalDB {
 			
 			/* Create all the Incidentalome tables. These will be populated by
 			 * CSV Loader. */
+			
+			sql=	"CREATE TABLE disease_classification ( " +
+					"  inheritance varchar(45) NOT NULL,  " +
+					"  zygosity varchar(45) NOT NULL,  " +
+					"  gender varchar(45) DEFAULT 'both' NOT NULL,  " +
+					"  classification varchar(45) NOT NULL,  " +
+					"  PRIMARY KEY (inheritance,zygosity,gender)  " +
+					")";
+			s.addBatch(sql);
+
+			
+			sql=	"CREATE TABLE CGD_synonym ( " +
+					"	inheritance varchar(200) NOT NULL, " + 
+					"	synonym varchar(10) DEFAULT NULL, " +
+					"	comments varchar(500) DEFAULT NULL, " + 
+					"	PRIMARY KEY (inheritance) " +
+					")";
+			s.addBatch(sql);
+
+			sql=	"CREATE TABLE CGD_20131126 ( " +
+					"	Gene varchar(20) NOT NULL, " +
+					"	Entrez_Gene_Id varchar(20) NOT NULL, " +
+					"	Condition varchar(500) NOT NULL, " +
+					"	Inheritance varchar(500) NOT NULL, " +
+					"	Age_Group varchar(500) NOT NULL, " +
+					"	Allelic_Conditions varchar(1000) NOT NULL, " +
+					"	Manifestation_Categories varchar(1000) NOT NULL, " +
+					"	Intervention_Categories varchar(1000) NOT NULL, " +
+					"	Comments varchar(1000) NOT NULL, " +
+					"	Intervention_Rationale varchar(10000) NOT NULL, " +
+					"	Refs varchar(1000) NOT NULL, " +
+					"	PRIMARY KEY (Gene) " +
+					")";
+			s.addBatch(sql);
+		
+			
+/*
+			// OLD TABLES
 			sql=	"CREATE TABLE incidentalome_annotated ( " +
 					"  Gene varchar(100) NOT NULL, " +
 					"  Disease varchar(1000) NOT NULL, " +
@@ -101,7 +139,7 @@ public class IncidentalDB {
 					"  Comments_JS varchar(1000) NOT NULL " +
 					")";
 			s.addBatch(sql);
-/*
+
 			sql=	"CREATE TABLE hgmd_pro_allmut ( " +
 					"  disease varchar(125) DEFAULT NULL, " +
 					"  gene varchar(10) DEFAULT NULL, " +
@@ -136,16 +174,7 @@ public class IncidentalDB {
 					"  base char(1) DEFAULT NULL " +
 					")";
 			s.addBatch(sql);
-*/
-			sql=	"CREATE TABLE disease_classification ( " +
-					"  inheritance varchar(45) NOT NULL,  " +
-					"  zygosity varchar(45) NOT NULL,  " +
-					"  gender varchar(45) DEFAULT 'both' NOT NULL,  " +
-					"  classification varchar(45) NOT NULL,  " +
-					"  PRIMARY KEY (inheritance,zygosity,gender)  " +
-					")";
-			s.addBatch(sql);
-/*
+
 			sql=	"CREATE TABLE clinvar_20130808 ( " +
 					"  chromosome varchar(2) NOT NULL, " +
 					"  position int NOT NULL, " +
@@ -159,6 +188,8 @@ public class IncidentalDB {
 					")";
 			s.addBatch(sql);
 */
+			
+			
 			s.executeBatch();
 			s.close();
 		} catch (SQLException e) {
@@ -174,7 +205,8 @@ public class IncidentalDB {
 	 */
 	private static void loadTables(Connection c) throws SQLException {
 		
-		/* // load test table dbtest
+/* 
+		// load test table dbtest
 		Statement s= c.createStatement();
 		int x= 1;
 		int y= 10;
@@ -183,17 +215,36 @@ public class IncidentalDB {
 			s.execute("INSERT INTO dbtest VALUES ("+ x++ +","+ y++ + ")");
 		}
 		s.close();
-		*/
+*/
 		
 		/* Load the delimited tables from text files. */
 		CSVLoader loader;
 		try {
-			String filepath;
+
+			String filepath;			
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			filepath= "/db_files/disease_classification.txt";
+			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "disease_classification", false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			filepath= "/db_files/CGD_synonyms.txt";
+			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "CGD_synonym", false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			filepath= "/db_files/CGD-26_11_2013_header_reformatted.txt";
+			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "CGD_20131126", false);
+			
+/* 
+			//OLD TABLES
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
 			filepath= "/db_files/incidentalome_annotated.txt";
 			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "incidentalome_annotated", false);
-/*			
+
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
 			filepath= "/db_files/clinvar_20130808.txt";
@@ -203,11 +254,7 @@ public class IncidentalDB {
 			loader.setSeprator('\t');
 			filepath= "/db_files/hgmd_pro_allmut.txt";
 			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "hgmd_pro_allmut", false);
-*/			
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/disease_classification.txt";
-			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "disease_classification", false);
+*/
 			
 		} catch (Exception e) {
 			System.err.println("[IncidentalDB]: Error loading tables " + e.toString());

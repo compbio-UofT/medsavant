@@ -98,6 +98,8 @@ public class CSVLoader {
         questionmarks = (String) questionmarks.subSequence(0, questionmarks
                 .length() - 1);
  
+		
+		/* NOTE from Ron: Header column names must match SQL table fields */
         String query = SQL_INSERT.replaceFirst(TABLE_REGEX, tableName);
         query = query
                 .replaceFirst(KEYS_REGEX, StringUtils.join(headerRow, ","));

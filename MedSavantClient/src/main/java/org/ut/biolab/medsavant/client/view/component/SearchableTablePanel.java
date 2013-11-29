@@ -115,6 +115,7 @@ public class SearchableTablePanel extends JPanel {
     private int totalNumRows;
     private GetDataWorker worker;
     private JButton exportButton;
+	private JButton helpButton;
     private List<Integer> selectedRows;
     private Set<Integer> toggledRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
@@ -226,7 +227,7 @@ public class SearchableTablePanel extends JPanel {
         });
 
 
-        JButton helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
+        helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
         exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -869,5 +870,9 @@ public class SearchableTablePanel extends JPanel {
 	
 	public void setResizeOff() {
 		table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
-	}
+	}	
+			
+	public void setHelpButtonVisible(boolean enable) {
+        helpButton.setVisible(enable);
+    }
 }
