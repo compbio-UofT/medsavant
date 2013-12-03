@@ -26,6 +26,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -76,18 +77,17 @@ public class DistinctValuesCache {
            } else {
                 final BufferedWriter fout = out;
                 MedSavantIOController.requestIO(new IOJob("Cache Results"){
-                    
+                    private Iterator listIterator = result.iterator();
                     @Override
                     protected void doIO() throws IOException {
-                        Object o = result.iterator().next();
+                        Object o = listIterator.next();
                         fout.write(o.toString());
                         fout.newLine();
                     }
 
                     @Override
                     protected boolean continueIO() throws IOException {
-                        return result.iterator().hasNext();
-                        
+                        return listIterator.hasNext();                        
                     }
                     
                 });                                
