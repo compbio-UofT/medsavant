@@ -77,7 +77,6 @@ public class TabixTableLoader {
             }
             query.addPreparedColumnCollection(dataCols);
             PreparedStatement prep = conn.prepareStatement(query.toString());
-            //System.out.println(query.toString());
 
             boolean trace = true;
             while ((line = IOUtils.readLine(input)) != null) {

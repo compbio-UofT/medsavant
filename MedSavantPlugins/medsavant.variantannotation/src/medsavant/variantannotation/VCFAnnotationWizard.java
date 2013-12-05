@@ -63,7 +63,7 @@ import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 /**
  * Wizard for importing VCFs (Variant Call Files).
  * Updated to run Jannovar before uploading to server.
- * 
+ *
  * @author Andrew
  * @author rammar
  */
@@ -91,8 +91,8 @@ public class VCFAnnotationWizard extends WizardDialog {
 	private String dirPath;
 	private ArrayList<TranscriptModel> transcriptModelList= null;
 	private final String UCSCserializationFileName= "ucsc.ser";
-	
-	
+
+
     public VCFAnnotationWizard() {
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
@@ -252,10 +252,10 @@ public class VCFAnnotationWizard extends WizardDialog {
 				}
 			}
 		);
-		
+
 		page.addComponent(JannovarBox);
-		
-		
+
+
         final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly discouraged)");
         homoRefBox.setOpaque(false);
         homoRefBox.addActionListener(new ActionListener() {
@@ -265,7 +265,7 @@ public class VCFAnnotationWizard extends WizardDialog {
             }
         });
         page.addComponent(homoRefBox);
-		
+
         setUploadRequired(true);
 
         return page;
@@ -497,25 +497,25 @@ public class VCFAnnotationWizard extends WizardDialog {
                                     for (File file : variantFiles) {
 										/* Get annotated files from Jannovar and then delete them. */
 										if (useJannovar) {
-											
+
 											if (!hasSerializedFile(UCSCserializationFileName)) {
 												setStatusMessage("Downloading annotation files");
 												downloadSerializedFile(jannovar.common.Constants.UCSC);
 											}
-											
+
 											setStatusMessage("Functionally annotating " + file.getName());
 											file= annotateVCFWithJannovar(file);
 										}
-										
+
                                         LOG.info("Created input stream for file");
                                         setStatusMessage("Uploading " + file.getName());
                                         //progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
-										
+
 										/* After being copied to the server, we can remove the file from the
 										 * local computer if it was processed with Jannovar (and is superfluous). */
 										if (useJannovar) file.delete();
-										
+
                                         fileIndex++;
                                     }
                                     setStatusMessage("Importing variants");
@@ -674,8 +674,8 @@ public class VCFAnnotationWizard extends WizardDialog {
 
         return p;
     }
-	
-	
+
+
 	/**
 	 * Check if the Jannovar serialized annotation file has been downloaded.
 	 */
@@ -688,8 +688,8 @@ public class VCFAnnotationWizard extends WizardDialog {
 			return jannovarDirectory.exists();
 		}
 	}
-	
-	
+
+
 	/**
 	 * Download the Jannovar serialized annotation file.
 	 */
@@ -698,16 +698,16 @@ public class VCFAnnotationWizard extends WizardDialog {
 			File jannovarDirectory= new File(DirectorySettings.getMedSavantDirectory().getPath(), "jannovar");
 			jannovarDirectory.mkdir();
 			dirPath= jannovarDirectory.getPath();
-				
-		downloadTranscriptFiles(jannovar.common.Constants.UCSC);
+
+			downloadTranscriptFiles(jannovar.common.Constants.UCSC);
 			inputTranscriptModelDataFromUCSCFiles();
 			serializeUCSCdata();
 		} else {
 			throw new JannovarException("VCFAnnotationWizard: Currently unsupported DB specified");
-		} 
+		}
 	}
-	
-	
+
+
 	/**
      * This function creates a
      * {@link TranscriptDataDownloader} object in order to
@@ -725,7 +725,7 @@ public class VCFAnnotationWizard extends WizardDialog {
 		}
     }
 
-	
+
 	 /**
      * Input the four UCSC files for the KnownGene data.
      */
@@ -740,8 +740,8 @@ public class VCFAnnotationWizard extends WizardDialog {
 		}
 		transcriptModelList = parser.getKnownGeneList();
     }
-	
-	
+
+
 	/**
      * Inputs the KnownGenes data from UCSC files, convert the
      * resulting {@link jannovar.reference.TranscriptModel TranscriptModel}
@@ -753,20 +753,20 @@ public class VCFAnnotationWizard extends WizardDialog {
 		System.out.println("[Jannovar] Serializing known gene data as " + UCSCserializationFileName);
 		manager.serializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName, transcriptModelList);
     }
-	
-	
+
+
 	/**
 	 * Uses Jannovar to create a new VCF file and sends that file to server.
 	 * The Jannovar VCF file is subsequently removed (treated as temporary data)
-	 * 
+	 *
 	 * Code modified from Jannovar class.
 	 */
-	private File annotateVCFWithJannovar(File sourceVCF) throws JannovarException {		
+	private File annotateVCFWithJannovar(File sourceVCF) throws JannovarException {
 		chromosomeMap= Chromosome.constructChromosomeMapWithIntervalTree(
 				sManager.deserializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName));
-		
+
 		/* Annotated VCF name as determined by Jannovar. */
-		String outname= sourceVCF.getAbsolutePath(); 
+		String outname= sourceVCF.getAbsolutePath();
 		int i = outname.lastIndexOf("vcf");
 		if (i<0) {
 			i = outname.lastIndexOf("VCF");
@@ -776,7 +776,7 @@ public class VCFAnnotationWizard extends WizardDialog {
 		} else {
 			outname = outname.substring(0,i) + "jv.vcf";
 		}
-		
+
 		VCFReader parser= new VCFReader();
 		VCFLine.setStoreVCFLines();
 		try{
@@ -786,19 +786,19 @@ public class VCFAnnotationWizard extends WizardDialog {
 			System.err.println(e.toString());
 			System.exit(1);
 		}
-		
+
 		ArrayList<VCFLine> lineList = parser.getVCFLineList();
-		
+
 		try {
 			FileWriter fstream = new FileWriter(outname);
 			BufferedWriter out = new BufferedWriter(fstream);
-			
+
 			/** Write the header of the new VCF file. */
 			ArrayList<String> lst = parser.getAnnotatedVCFHeader();
 			for (String s: lst) {
 				out.write(s + "\n");
 			}
-			
+
 			/** Now write each of the variants. */
 			for (VCFLine  line : lineList) {
 				Variant v = parser.VCFline2Variant(line);
@@ -811,27 +811,27 @@ public class VCFAnnotationWizard extends WizardDialog {
 					e.printStackTrace();
 				}
 			}
-			
+
 			out.close();
-			
+
 		} catch (IOException e){
 			System.out.println("[Jannovar] Error writing annotated VCF file");
 			System.out.println("[Jannovar] " + e.toString());
 			System.exit(1);
 		}
-		
+
 		System.out.println("[Jannovar] Wrote annotated VCF file to \"" + outname + "\"");
-		
+
 		return new File(outname);
 	}
-	
+
 	/**
      * Annotate a single line of a VCF file, and output the line together with the new
      * INFO fields representing the annotations.
-	 * 
+	 *
 	 * Code modified from Jannovar class.
-	 * 
-     * @param line an object representing the original VCF line 
+	 *
+     * @param line an object representing the original VCF line
      * @param v the Variant object that was parsed from the line
      * @param out A file handle to write to.
      */
@@ -843,12 +843,12 @@ public class VCFAnnotationWizard extends WizardDialog {
 		Chromosome c = chromosomeMap.get(chr);
 		if (c==null) {
 			String e = String.format("[Jannovar] Could not identify chromosome \"%d\"", chr );
-			throw new AnnotationException(e);	
-		} 
+			throw new AnnotationException(e);
+		}
 		AnnotationList anno = c.getAnnotationList(pos,ref,alt);
 		if (anno==null) {
 			String e = String.format("[Jannovar] No annotations found for variant %s", v.toString());
-			throw new AnnotationException(e);	
+			throw new AnnotationException(e);
 		}
 		String annotation = anno.getSingleTranscriptAnnotation();
 		String effect = anno.getVariantType().toString();

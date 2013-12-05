@@ -248,6 +248,11 @@ public class ConnectionController {
                     } else {
                         LOG.info("Connection pool still in use for " + sessionId + ", not reaping connections");
                     }
+
+                    LOG.info(sessionPoolMap.keySet().size() + " active sessions:");
+                    for (String id : sessionPoolMap.keySet()) {
+                        LOG.info("\t" + id);
+                    }
                 }
             }
             return Boolean.TRUE;

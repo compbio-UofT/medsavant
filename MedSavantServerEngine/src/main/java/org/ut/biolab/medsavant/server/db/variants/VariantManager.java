@@ -199,11 +199,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String backgroundSessionID = SessionController.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         try {
-            EmailLogger.logByEmail("Update STARTED", "Update started. " + annotIDs.length + " annotation(s) will be performed. You will be notified again upon completion.", email);
+            EmailLogger.logByEmail("Update started", "Update started. " + annotIDs.length + " annotation(s) will be performed. You will be notified again upon completion.", email);
 
             int updateID = ImportUpdateManager.doUpdate(backgroundSessionID, projID, refID, annotIDs, customFields, autoPublish);
 
-            EmailLogger.logByEmail("Update COMPLETED", "Update completed. " + annotIDs.length + " annotation(s) were performed.", email);
+            EmailLogger.logByEmail("Update finished", "Update completed. " + annotIDs.length + " annotation(s) were performed.", email);
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done updating " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
 
@@ -212,7 +212,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Update failed for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID) + ". " + e.getLocalizedMessage());
 
-            EmailLogger.logByEmail("Update FAILED", "Update failed with error: " + MiscUtils.getStackTrace(e), email);
+            EmailLogger.logByEmail("Update failed", "Update failed with error: " + MiscUtils.getStackTrace(e), email);
             LOG.error(e);
             throw e;
         } finally {
@@ -239,8 +239,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             int i = 0;
             for (int id : transferIDs) {
-                vcfFiles[i] = netMgr.getFileByTransferID(backgroundSessionID, id);
-                sourceNames[i] = netMgr.getSourceNameByTransferID(backgroundSessionID, id);
+                vcfFiles[i] = netMgr.getFileByTransferID(userSessionID, id);
+                sourceNames[i] = netMgr.getSourceNameByTransferID(userSessionID, id);
                 i++;
             }
 
@@ -300,10 +300,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String backgroundSessionID = SessionController.getInstance().createBackgroundSessionFromSession(userSessionID);
 
-        EmailLogger.logByEmail("Upload STARTED", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
+        EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
         try {
             int updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, autoPublish, vcfFiles, includeHomoRef, tags);
-            EmailLogger.logByEmail("Upload COMPLETED", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
+            EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
 
@@ -312,7 +312,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID)+ ". " + e.getLocalizedMessage());
 
-            EmailLogger.logByEmail("Upload FAILED", "Upload failed with error: " + MiscUtils.getStackTrace(e), email);
+            EmailLogger.logByEmail("Upload failed", "Upload failed with error: " + MiscUtils.getStackTrace(e), email);
             LOG.error(e);
             throw e;
         } finally {
@@ -335,7 +335,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
 
 
-            EmailLogger.logByEmail("Removal STARTED", "Removal started. " + files.size() + " files(s) will be removed. You will be notified again upon completion.", email);
+            EmailLogger.logByEmail("Removal started", "Removal started. " + files.size() + " files(s) will be removed. You will be notified again upon completion.", email);
 
             //generate directory
             LOG.info("Generating base directory");
@@ -406,10 +406,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             AnnotationLogManager.getInstance().setAnnotationLogStatus(backgroundSessionID, updateId, Status.PENDING);
 
             if (autoPublish) {
-                publishVariants(backgroundSessionID, updateId);
+                publishVariants(backgroundSessionID, projID);
             }
 
-            EmailLogger.logByEmail("Removal COMPLETED", "Removal completed. " + files.size() + " file(s) were removed.", email);
+            EmailLogger.logByEmail("Removal finished", "Removal completed. " + files.size() + " file(s) were removed.", email);
 
             SessionController.getInstance().unregisterSession(backgroundSessionID);
 
@@ -422,9 +422,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
 
-
             AnnotationLogManager.getInstance().setAnnotationLogStatus(backgroundSessionID, updateId, Status.ERROR);
-            EmailLogger.logByEmail("Removal FAILED", "Removal failed with error: " + MiscUtils.getStackTrace(e), email);
+            EmailLogger.logByEmail("Removal failed", "Removal failed with error: " + MiscUtils.getStackTrace(e), email);
             throw e;
         } finally {
             SessionController.getInstance().unregisterSession(backgroundSessionID);
@@ -879,10 +878,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
 
-        //long start = System.nanoTime();
         ResultSet rs = ConnectionController.executeQuery(sid, query);
-        //System.out.println(query);
-        //System.out.println("  time:" + (System.nanoTime() - start) / 1000000000);
 
         Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         while (rs.next()) {
@@ -1279,7 +1275,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantID));
 
-        //System.out.println(q.toString());
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<VariantComment> result = new ArrayList<VariantComment>();

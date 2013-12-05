@@ -21,10 +21,12 @@ package org.ut.biolab.medsavant.client.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  * A worker for making changes to a project, which includes project
@@ -44,11 +46,11 @@ public abstract class ProjectWorker<T> extends VisibleMedSavantWorker<T> {
 
 
     public ProjectWorker(String pageName, String notificationTitle, boolean autoPublish, String sessionID, int projectID) {
-        super(pageName, notificationTitle);      
+        super(pageName, notificationTitle);
         this.autoPublish = autoPublish;
         this.projectID = projectID;
-        this.sessionID = sessionID;        
-      
+        this.sessionID = sessionID;
+
         setIndeterminate(true);
         showResultsOnFinish(false);
     }
@@ -73,14 +75,15 @@ public abstract class ProjectWorker<T> extends VisibleMedSavantWorker<T> {
     }
 
     @Override
-    protected void jobDone() {              
+    protected void jobDone() {
         setStatus(JobStatus.FINISHED);
         setStatusMessage(shortSuccessMessage);
         if (autoPublish) {
-            ProjectController.getInstance().publishVariants(sessionID, projectID, getLongSuccessMessage());
+            DialogUtils.displayMessage(getLongSuccessMessage());
+            LoginController.getInstance().logout();
         } else {
             MedSavantFrame.getInstance().notificationMessage(getLongSuccessMessage());
             ViewController.getInstance().getMenu().checkForUpdateNotifications();
         }
-    }              
+    }
 }
