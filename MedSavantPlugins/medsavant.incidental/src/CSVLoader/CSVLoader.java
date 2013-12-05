@@ -151,7 +151,7 @@ public class CSVLoader {
                 }
             }
             ps.executeBatch(); // insert remaining records
-			System.out.println("[CSVLoader]: " + count + " records loaded into " + tableName + " DB table"); ////////
+			System.out.println("[CSVLoader]: " + count + " records loaded into " + tableName + "DB table"); ////////
             con.commit();
         } catch (Exception e) {
             con.rollback();

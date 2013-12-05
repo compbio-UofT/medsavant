@@ -1,1 +1,0 @@
-Gene	Entrez_Gene_Id	Condition	Inheritance	Age_Group	Allelic_Conditions	Manifestation_Categories	Intervention_Categories	Comments	Intervention_Rationale	Refs

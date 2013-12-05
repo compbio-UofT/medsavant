@@ -7,7 +7,7 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="medsavant.incidental" default="default" basedir=".">
+<project name="medsavant.mendel" default="default" basedir=".">
     <description>Builds, tests, and runs the project savant.data.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
@@ -80,7 +80,6 @@
 		<jar jarfile="${dist.jar}-all">
 			<zipfileset src="${dist.jar}" excludes="META-INF/*" />
 			<zipfileset src="lib/hsqldb.jar" excludes="META-INF/*" />
-			<zipfileset src="lib/commons-io-2.4.jar" excludes="META-INF/*" />
 		</jar>
 		<delete dir="${dist.dir}/lib"/>
 		<move file="${dist.jar}-all" tofile="${dist.jar}"/>

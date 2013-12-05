@@ -1,8 +1,6 @@
 package medsavant.incidental.localDB;
 
 import CSVLoader.CSVLoader;
-import java.io.File;
-import java.io.FileInputStream;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,8 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
-import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 
 
 /**
@@ -27,7 +23,6 @@ public class IncidentalDB {
 	private static String DB_URL;
 	private static String DB_USER;
 	private static String DB_PASSWORD;
-	private static Properties properties;
 	
 			
 	/**
@@ -38,11 +33,10 @@ public class IncidentalDB {
 	 * @param	passw	Password for login
 	 * @throws SQLException 
 	 */
-	public static void populateDB(String url, String user, String passw, Properties prop) throws SQLException {
+	public static void populateDB(String url, String user, String passw) throws SQLException {
 		DB_URL= url;
 		DB_USER= user;
 		DB_PASSWORD= passw;
-		properties= prop;
 		
 		conn= connectionToServer();	
 		createSchema(conn);
@@ -114,7 +108,7 @@ public class IncidentalDB {
 					")";
 			s.addBatch(sql);
 
-			sql=	"CREATE TABLE CGD ( " +
+			sql=	"CREATE TABLE CGD_20131126 ( " +
 					"	Gene varchar(20) NOT NULL, " +
 					"	Entrez_Gene_Id varchar(20) NOT NULL, " +
 					"	Condition varchar(500) NOT NULL, " +
@@ -241,9 +235,8 @@ public class IncidentalDB {
 			
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
-			loader.loadCSV(new FileInputStream(DirectorySettings.getMedSavantDirectory().getPath() +
-				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename")),
-				"CGD", false);
+			filepath= "/db_files/CGD-26_11_2013_header_reformatted.txt";
+			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "CGD_20131126", false);
 			
 /* 
 			//OLD TABLES
