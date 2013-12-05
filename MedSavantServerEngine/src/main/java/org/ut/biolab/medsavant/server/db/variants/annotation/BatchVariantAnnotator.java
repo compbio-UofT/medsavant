@@ -35,8 +35,10 @@ import org.ut.biolab.medsavant.server.IOJob;
 import org.ut.biolab.medsavant.server.MedSavantIOController;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
+import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
@@ -80,6 +82,7 @@ public class BatchVariantAnnotator {
         this.sid = sid;
         this.annotations = annotations;
     }
+
     private int PROGRESS_STEP_SIZE = 10;
 
     private int logProgress(int totalNumLinesRead, int numLines, int oldp) {
@@ -98,6 +101,12 @@ public class BatchVariantAnnotator {
      * @throws SQLException
      */
     public void performBatchAnnotationInParallel() throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
+
+        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                sid,
+                LogManagerAdapter.LogType.INFO,
+                "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. "
+                        + annotations.length + " annotation(s) will be performed.");
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
         //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
@@ -124,6 +133,10 @@ public class BatchVariantAnnotator {
             // the number of columns in the input file
             int numFieldsInInputFile = getNumFieldsInTDF(inputTDFFile);
             if (numFieldsInInputFile == 0) {
+                org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                        sid,
+                        LogManagerAdapter.LogType.ERROR,
+                        "Error parsing input file " + inputTDFFile.getAbsolutePath() + " . Is it tab delimited?");
                 throw new IOException("Error parsing input file. Is it tab delimited?");
             }
 
@@ -161,7 +174,6 @@ public class BatchVariantAnnotator {
                 }
             });
 
-
             // open the input and output files
             recordReader = new CSVReader(new FileReader(inputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
             recordWriter = new CSVWriter(new FileWriter(outputTDFFile), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\', "\r\n");
@@ -174,16 +186,27 @@ public class BatchVariantAnnotator {
 
             MedSavantIOController.requestIO(new VariantAnnotatorIOJob(cursors, recordReader, recordWriter, numlines[0], numFieldsInOutputFile));
 
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                sid,
+                LogManagerAdapter.LogType.INFO,
+                "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+
             // report success
             LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
             //EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
         } catch(InterruptedException ie){
-            LOG.error("performBatchAnnotationInParallell interrupted: "+ie);            
+
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                sid,
+                LogManagerAdapter.LogType.ERROR,
+                "Error performing annotation(s). "+ ie.getLocalizedMessage());
+
+            LOG.error("performBatchAnnotationInParallell interrupted: "+ie);
         }finally {
             // clean up
             try{
             if (cursors != null) {
-                for (AnnotationCursor c : cursors) {                    
+                for (AnnotationCursor c : cursors) {
                     c.cleanup();
                 }
             }
@@ -306,8 +329,8 @@ public class BatchVariantAnnotator {
             chrom = line[VARIANT_INDEX_OF_CHR];
             try{
                 position = Integer.parseInt(line[VARIANT_INDEX_OF_POS]);
-            }catch(NumberFormatException nex){                
-                throw new NumberFormatException("Position is not an integer. String was '"+line[VARIANT_INDEX_OF_POS]+"' Message: "+nex.getMessage()+"\n");                
+            }catch(NumberFormatException nex){
+                throw new NumberFormatException("Position is not an integer. String was '"+line[VARIANT_INDEX_OF_POS]+"' Message: "+nex.getMessage()+"\n");
             }
             ref = line[VARIANT_INDEX_OF_REF];
             alt = line[VARIANT_INDEX_OF_ALT];

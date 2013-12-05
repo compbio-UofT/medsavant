@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.SQLUtils;
 
@@ -58,11 +59,11 @@ public class AnnotationLogManager {
         return instance;
     }
 
-    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action) throws SQLException, RemoteException, SessionExpiredException {
-        return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.STARTED);
+    public int addAnnotationLogEntry(String sid, int projectId, int referenceId, Action action) throws SQLException, RemoteException, SessionExpiredException {
+        return addAnnotationLogEntry(sid, projectId, referenceId, action, Status.STARTED);
     }
 
-    public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
+    public int addAnnotationLogEntry(String sid, int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
 
         String user = SessionController.getInstance().getUserForSession(sid);
 
@@ -87,26 +88,25 @@ public class AnnotationLogManager {
         return rs.getInt(1);
     }
 
-    public void removeAnnotationLogEntry(String sid,int updateId) throws SQLException, SessionExpiredException {
+    public void removeAnnotationLogEntry(String sid, int updateId) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         DeleteQuery query = new DeleteQuery(table.getTable());
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException, SessionExpiredException {
-
+    public void setAnnotationLogStatus(String sid, int updateId, Status status) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException, SessionExpiredException {
+    public void setAnnotationLogStatus(String sid, int updateId, Status status, Timestamp sqlDate) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -114,6 +114,6 @@ public class AnnotationLogManager {
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
 }

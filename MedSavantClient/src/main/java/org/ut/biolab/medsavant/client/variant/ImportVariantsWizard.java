@@ -37,6 +37,9 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -442,6 +445,15 @@ public class ImportVariantsWizard extends WizardDialog {
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
+                        /*try {
+                            if (!MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
+                                DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
+                                return;
+                            }
+                        } catch (Exception ex) {
+                           DialogUtils.displayError("Problem acquiring database lock", "The database could not be locked for changes.");
+                           return;
+                        }*/
 
                         LOG.info("Starting import worker");
                         workButton.setEnabled(false);
@@ -524,8 +536,7 @@ public class ImportVariantsWizard extends WizardDialog {
                         }.execute();
                         toFront();
 
-                    }//end actionPerformed
-                }); //end new ActionListener(...){
+                    }                }); //end new ActionListener(...){
 
                 addComponent(ViewUtil.alignRight(workButton));
             }

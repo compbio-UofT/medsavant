@@ -167,12 +167,12 @@ public class Menu extends JPanel {
         rightSidePanel.add(appStorePanel);
         rightSidePanel.add(getLoginMenuItem());
         primaryMenu.add(rightSidePanel);
-      
+
         add(primaryMenu, BorderLayout.NORTH);
 
-        secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));      
+        secondaryMenu.setLayout(new BoxLayout(secondaryMenu, BoxLayout.Y_AXIS));
 
-        secondaryMenu.setPreferredSize(new Dimension(120, 100));
+        secondaryMenu.setPreferredSize(new Dimension(140, 100));
 
         contentContainer = panel;
 
@@ -418,26 +418,26 @@ public class Menu extends JPanel {
                 MedSavantFrame.getInstance().requestClose();
             }
         });
-        
+
         changePassItem.addActionListener(new ActionListener(){
             private final String OLDPASS_LABEL = "Enter Current Password";
             private final String NEWPASS_LABEL1 = "Enter New Password";
             private final String NEWPASS_LABEL2 = "Confirm New Password";
             @Override
-            public void actionPerformed(ActionEvent ae) {              
-                JDialog jd = new ChangePasswordDialog();                                                                                    
+            public void actionPerformed(ActionEvent ae) {
+                JDialog jd = new ChangePasswordDialog();
                 jd.setVisible(true);
             }
 
         });
-        
+
         userButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                m.show(loginMenu, 0, loginMenu.getHeight());                        
+                m.show(loginMenu, 0, loginMenu.getHeight());
             }
         });
-       
+
 
         userButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -451,7 +451,7 @@ public class Menu extends JPanel {
                 super.mouseExited(me);
                 userButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-        });      
+        });
 
         return loginMenu;
     }

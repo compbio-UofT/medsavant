@@ -59,6 +59,7 @@ import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.server.db.variants.VariantManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
+import org.ut.biolab.medsavant.server.mail.Mail;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -70,94 +71,94 @@ import org.ut.biolab.medsavant.shared.util.DirectorySettings;
  * @author mfiume
  */
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
-    
+
     //ssl/tls off by default.
     private static boolean require_ssltls = false;
     private static boolean require_client_auth = false;
-    
-    //Maximum number of simultaneous 'long' jobs that can execute.  If this 
-    //amount is exceeded, the method call will block until a thread 
-    //becomes available.  
-    //(see submitLongJob)         
-    private static final int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors()-1);            
+
+    //Maximum number of simultaneous 'long' jobs that can execute.  If this
+    //amount is exceeded, the method call will block until a thread
+    //becomes available.
+    //(see submitLongJob)
+    private static final int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors()-1);
     private static final int MAX_THREAD_KEEPALIVE_TIME = 1440; //in minutes
-    
-    //Maximum number of IO-heavy jobs that can be run simultaneously. 
+
+    //Maximum number of IO-heavy jobs that can be run simultaneously.
     //(see MedSavantIOScheduler)  Should be <= MAX_THREADS.
-    public static final int MAX_IO_JOBS = MAX_THREADS;    
+    public static final int MAX_IO_JOBS = MAX_THREADS;
     public static boolean USE_INFINIDB_ENGINE = false;
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-       
+
     private static ExecutorService longThreadPool;
     private static ExecutorService shortThreadPool;
-   
+
     static{
         longThreadPool  = Executors.newFixedThreadPool(MAX_THREADS);
-        ((ThreadPoolExecutor)longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);                                
-        shortThreadPool = Executors.newCachedThreadPool();                
+        ((ThreadPoolExecutor)longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
+        shortThreadPool = Executors.newCachedThreadPool();
     }
-                  
+
     /**
-     * Submits and runs the current job using the short job executor service, 
-     * and immediately returns.  An unlimited number of short jobs can be 
-     * executing simultaneously.  
-     * 
+     * Submits and runs the current job using the short job executor service,
+     * and immediately returns.  An unlimited number of short jobs can be
+     * executing simultaneously.
+     *
      * NON_BLOCKING.
-     *      
+     *
      * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
      * will BLOCK.  get() will return null upon successful completion.
      */
-    public static Future submitShortJob(Runnable r){        
+    public static Future submitShortJob(Runnable r){
         return shortThreadPool.submit(r);
     }
-    
+
     /**
-     * Submits and runs the current job using the long job executor service, 
-     * and immediately returns.  Only MAX_THREADS of long jobs can be 
+     * Submits and runs the current job using the long job executor service,
+     * and immediately returns.  Only MAX_THREADS of long jobs can be
      * executing simultaneously -- the rest are queued.
-     * 
+     *
      * NON_BLOCKING.
-     *      
+     *
      * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
      * will BLOCK.  get() will return null upon successful completion.
      */
     public static Future submitLongJob(Runnable r){
         return shortThreadPool.submit(r);
     }
-    
-    /**    
+
+    /**
      * @return The executor service used for short jobs.  An unlimited number of short jobs can run simultaneously.
      */
     public static ExecutorService getShortExecutorService(){
         return shortThreadPool;
     }
-    
-    /**    
+
+    /**
      * @return The executor service used for long jobs.  Only MAX_THREADS long jobs can run simultaneously.
      */
     public static ExecutorService getLongExecutorService(){
         return longThreadPool;
     }
-    
+
     public static boolean isClientAuthRequired(){
         return require_client_auth;
     }
-    
+
     public static boolean isTLSRequired(){
         return require_ssltls;
     }
-    
+
     public static RMIServerSocketFactory getDefaultServerSocketFactory(){
         return isTLSRequired() ? new SslRMIServerSocketFactory(null, null, require_client_auth) : RMISocketFactory.getSocketFactory();
     }
-    
+
     public static RMIClientSocketFactory getDefaultClientSocketFactory(){
         return isTLSRequired() ? new SslRMIClientSocketFactory() : RMISocketFactory.getSocketFactory();
     }
-    
-    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {        
+
+    public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
         try {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
@@ -179,18 +180,18 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 + "  LISTENING ON PORT: " + listenOnPort + "\n"
                 + "  MAX THREADS: "+MAX_THREADS+"\n"
                 + " MAX IO THREADS: "+MAX_IO_JOBS+"\n");
-        
+
                 //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
-            // create the registry and bind the name and object.            
+            // create the registry and bind the name and object.
             if(isTLSRequired()){
-                System.out.println("SSL/TLS Encryption is enabled, Client authentication is "+(isClientAuthRequired() ? "required." : "NOT required."));                                
+                System.out.println("SSL/TLS Encryption is enabled, Client authentication is "+(isClientAuthRequired() ? "required." : "NOT required."));
             }else{
                 System.out.println("SSL/TLS Encryption is NOT enabled");
                 //registry = LocateRegistry.createRegistry(listenOnPort);
             }
             registry = LocateRegistry.createRegistry(listenOnPort, getDefaultClientSocketFactory(), getDefaultServerSocketFactory());
-            
+
             //TODO: get these from the user
 
             ConnectionController.setHost(databaseHost);
@@ -209,7 +210,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 System.out.flush();
                 char[] pass = System.console().readPassword();
                 password = new String(pass);
-            }            
+            }
 
             System.out.print("Connecting to database ... ");
             try {
@@ -290,6 +291,9 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                                 int listenOnPort = Integer.parseInt(prop.getProperty("listen-on-port"));
                                 MedSavantServerUnicastRemoteObject.setListenPort(listenOnPort);
                                 //MedSavantServerUnicastRemoteObject.setExportPort(listenOnPort + 1);
+                            }
+                            if (prop.containsKey("mail-un") && prop.containsKey("mail-pw") && prop.containsKey("smtp-server") && prop.containsKey("mail-port")) {
+                                Mail.setMailCredentials(prop.getProperty("mail-un"), prop.getProperty("mail-pw"), prop.getProperty("smtp-server"), Integer.parseInt(prop.getProperty("mail-port")));
                             }
                             if (prop.containsKey("email")) {
                                 EmailLogger.setMailRecipient(prop.getProperty("email"));

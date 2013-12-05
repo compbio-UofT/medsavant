@@ -106,6 +106,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while (rs.next()) {
             result.add(new GeneralLog(
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_USER),
                     rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
                     rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
                     rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
@@ -198,7 +199,6 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         return rs.getInt(1);
     }
 
-    @Override
     public void addServerLog(String sid, LogType t, String description) throws SessionExpiredException {
         addLog(sid,SERVER_UNAME, t, description);
     }

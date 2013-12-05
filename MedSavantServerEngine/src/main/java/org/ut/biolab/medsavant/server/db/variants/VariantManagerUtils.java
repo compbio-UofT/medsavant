@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
@@ -524,12 +525,21 @@ public class VariantManagerUtils {
         in.close();
         out.close();
     }
-  
+
     static int MAX_FILES = 20;
-   
+
     public static File[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields) throws Exception {
 
         LOG.info("Annotating " + tsvFiles.length + " TSV files");
+
+        try {
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                    sessID,
+                    LogManagerAdapter.LogType.INFO,
+                  "Annotating " + tsvFiles.length + " TSV files");
+        } catch (RemoteException ex) {
+        } catch (SessionExpiredException ex) {
+        }
 
         List<VariantAnnotator> annotationThreads = new ArrayList<VariantAnnotator>(tsvFiles.length);
 
@@ -537,10 +547,10 @@ public class VariantManagerUtils {
             File toAnnotate = tsvFiles[i];
             String outFile = toAnnotate + "_annotated";
             //LOG.info("\tDEBUG: Adding annotation thread on file "+outFile);
-            annotationThreads.add(new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields));            
+            annotationThreads.add(new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields));
         }
         //LOG.info("DEBUG: Using executor service to invoke "+annotationThreads.size()+" threads");
-        MedSavantServerEngine.getLongExecutorService().invokeAll(annotationThreads);       
+        MedSavantServerEngine.getLongExecutorService().invokeAll(annotationThreads);
         //LOG.info("DEBUG: All annotation threads done");
 
         File[] annotatedTsvFiles = new File[annotationThreads.size()];

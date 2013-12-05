@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db;
 
@@ -37,7 +37,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
  *
  * @author mfiume
@@ -48,7 +47,6 @@ public class ConnectionController {
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false&autoReconnect=true";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
-    private static final Map<String, ReentrantReadWriteLock> sessionUsageLocks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private static String dbHost;
@@ -77,9 +75,9 @@ public class ConnectionController {
     static String getConnectionString(String db) {
         return getConnectionString(dbHost, dbPort, db);
     }
-    
-    public static void revalidate(String user, String pass, String sessionID) throws SQLException{        
-        connectOnce(dbHost, dbPort, getDBName(sessionID), user, pass);                
+
+    public static void revalidate(String user, String pass, String sessionID) throws SQLException {
+        connectOnce(dbHost, dbPort, getDBName(sessionID), user, pass);
     }
 
     public static Connection connectOnce(String host, int port, String db, String user, String pass) throws SQLException {
@@ -187,72 +185,45 @@ public class ConnectionController {
         }
     }
 
-    /**
-     * Mark that a background job is starting in the context of a session. This instructs the controller not to
-     * release the database connection pool associated with that session until the background job finishes. Multiple
-     * background jobs can be registered for the same session, and the controller will wait fo ALL of them to finish
-     * before closing the connection pool. If this method returns {@code true}, then the job MUST call
-     * {@link #unregisterBackgroundUsageOfSession(String)} once it no longer needs the connection.
-     *
-     * @param sessionId the session being used
-     * @return {@code true} if the registration was successful and the job must call
-     *     {@link #unregisterBackgroundUsageOfSession(String)} when it finishes
-     */
-    public static synchronized boolean registerBackgroundUsageOfSession(String sessionId) {
-        ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
-        if (lock == null) {
-            lock = new ReentrantReadWriteLock();
-            sessionUsageLocks.put(sessionId, lock);
-        }
-        return lock.readLock().tryLock();
-    }
-
-    /**
-     * Mark that a background job running in the context of a session has finished, releasing a lock on the connection
-     * pool.
-     *
-     * @param sessionId the session being released
-     */
-    public static synchronized void unregisterBackgroundUsageOfSession(String sessionId) {
-        ReentrantReadWriteLock lock = sessionUsageLocks.get(sessionId);
-        if (lock != null) {
-            try {
-                lock.readLock().unlock();
-                sessionUsageLocks.remove(sessionId);
-            } catch (IllegalMonitorStateException e) {} // thrown when you try to unregister more than once
-        }
-    }
-
     public static synchronized void removeSession(String sessID) throws SQLException {
         executor.submit(new CloseConnectionWhenDone(sessID));
     }
 
     public static Collection<String> getSessionIDs() {
-        synchronized(sessionPoolMap) {
+        synchronized (sessionPoolMap) {
             return sessionPoolMap.keySet();
         }
     }
 
     public static Collection<String> getDBNames() {
         List<String> result = new ArrayList<String>();
-        for (ConnectionPool pool : sessionPoolMap.values()){
-            if (!result.contains(pool.getDBName())){
+        for (ConnectionPool pool : sessionPoolMap.values()) {
+            if (!result.contains(pool.getDBName())) {
                 result.add(pool.getDBName());
             }
         }
         return result;
     }
 
+    public static void registerAdditionalSessionForSession(String fromSessionID, String toSessionID) {
+        ConnectionPool pool = sessionPoolMap.get(fromSessionID);
+        sessionPoolMap.put(toSessionID, pool);
+    }
+
     /**
-     * Closes the connection pool for a session once no background users of the session are left (immediately if nobody
-     * is using it right now).
+     * Closes the connection pool for a session once no background users of the
+     * session are left (immediately if nobody is using it right now).
      */
     private static class CloseConnectionWhenDone implements Callable<Boolean> {
-        /** The session to close. */
+
+        /**
+         * The session to close.
+         */
         private final String sessionId;
 
         /**
          * Simple constructor.
+         *
          * @param sessionId the session to close
          */
         CloseConnectionWhenDone(String sessionId) {
@@ -261,13 +232,23 @@ public class ConnectionController {
 
         @Override
         public Boolean call() throws Exception {
-            ReentrantReadWriteLock lock = ConnectionController.sessionUsageLocks.remove(sessionId);
-            if (lock != null) {                
-                lock.writeLock().lock();                
-            }
             synchronized (sessionPoolMap) {
-                ConnectionPool pool = sessionPoolMap.remove(sessionId);
-                pool.close();
+
+                if (sessionPoolMap.containsKey(sessionId)) {
+
+                    // dissassociate this session with its connection pool
+                    ConnectionPool pool = sessionPoolMap.remove(sessionId);
+
+                    LOG.info("Unregistered session " + sessionId);
+
+                    // some other session may be using this pool, so check first
+                    if (!sessionPoolMap.containsValue(pool)) {
+                        pool.close();
+                        LOG.info("Reaped connections for " + sessionId);
+                    } else {
+                        LOG.info("Connection pool still in use for " + sessionId + ", not reaping connections");
+                    }
+                }
             }
             return Boolean.TRUE;
         }

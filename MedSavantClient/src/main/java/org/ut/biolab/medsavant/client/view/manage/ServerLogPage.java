@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.manage;
 
@@ -47,15 +47,14 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  * @author mfiume
  */
 public class ServerLogPage extends SubSectionView {
+
     private static final Log LOG = LogFactory.getLog(ServerLogPage.class);
     private static final String CARDNAME_WAIT = "0";
-    private static final String CARDNAME_CLIENT = "1";
-    private static final String CARDNAME_ANNOTATION = "2";
-    private static final String CARDNAME_SERVER = "3";
-    private static final String[] CLIENT_COLUMN_NAMES = new String[] { "User", "Type", "Description", "Time" };
-    private static final Class[] CLIENT_COLUMN_CLASSES = new Class[] { String.class, String.class, String.class, String.class };
-    private static final String[] ANNOTATIONS_COLUMN_NAMES = new String[] { "Project", "Reference", "Action", "Status", "Time", "User" };
-    private static final Class[] ANNOTATIONS_COLUMN_CLASSES = new Class[] { String.class, String.class, String.class, String.class, String.class, String.class };
+    private static final String CARDNAME_SERVER = "1";
+    private static final String[] CLIENT_COLUMN_NAMES = new String[]{"User", "Type", "Description", "Time"};
+    private static final Class[] CLIENT_COLUMN_CLASSES = new Class[]{String.class, String.class, String.class, String.class};
+    private static final String[] ANNOTATIONS_COLUMN_NAMES = new String[]{"Project", "Reference", "Action", "Status", "Time", "User"};
+    private static final Class[] ANNOTATIONS_COLUMN_CLASSES = new Class[]{String.class, String.class, String.class, String.class, String.class, String.class};
 
     private boolean clientTableRefreshed = false;
     private boolean serverTableRefreshed = false;
@@ -83,50 +82,16 @@ public class ServerLogPage extends SubSectionView {
             menuPanel = new JPanel();
             ViewUtil.applyHorizontalBoxLayout(menuPanel);
 
-            ButtonGroup bg = new ButtonGroup();
-
-            JRadioButton b1 = new JRadioButton("Client");
-            //JRadioButton b2 = new JRadioButton("Server");
-            JRadioButton b3 = new JRadioButton("Annotations");
-
-            bg.add(b1);
-            //bg.add(b2);
-            bg.add(b3);
-
             listPanel = new JPanel();
             listPanel.setLayout(new CardLayout());
 
             listPanel.add(getWaitPanel(), CARDNAME_WAIT);
-            listPanel.add(getClientCard(), CARDNAME_CLIENT);
-            //listPanel.add(getServerCard(), CARDNAME_SERVER);
-            listPanel.add(getAnnotationCard(), CARDNAME_ANNOTATION);
+            listPanel.add(getClientCard(), CARDNAME_SERVER);
 
             view.add(menuPanel, BorderLayout.NORTH);
             view.add(listPanel, BorderLayout.CENTER);
 
-            b1.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    changeToCard(CARDNAME_CLIENT);
-
-                }
-            });
-            /*b2.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    changeToCard(CARDNAME_SERVER);
-                }
-            });*/
-            b3.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    changeToCard(CARDNAME_ANNOTATION);
-                }
-            });
-
-
-            b3.setSelected(true);
-            this.changeToCard(CARDNAME_ANNOTATION);
+            changeToCard(CARDNAME_SERVER);
 
             JButton refreshButton = new JButton("Refresh");
             refreshButton.addActionListener(new ActionListener() {
@@ -137,9 +102,6 @@ public class ServerLogPage extends SubSectionView {
             });
 
             menuPanel.add(Box.createHorizontalGlue());
-            menuPanel.add(b3);
-            menuPanel.add(b1);
-            //menuPanel.add(b2);
             menuPanel.add(refreshButton);
             menuPanel.add(Box.createHorizontalGlue());
         }
@@ -147,13 +109,7 @@ public class ServerLogPage extends SubSectionView {
     }
 
     private void refreshCurrentCard() {
-        if (currentCard.equals(CARDNAME_CLIENT)) {
-            refreshClientCard();
-        } else if (currentCard.equals(CARDNAME_SERVER)) {
-            refreshServerCard();
-        } else if (currentCard.equals(CARDNAME_ANNOTATION)) {
-            refreshAnnotationCard();
-        }
+        refreshClientCard();
     }
 
     private synchronized void changeToCard(String cardname) {
@@ -162,20 +118,10 @@ public class ServerLogPage extends SubSectionView {
         cl.show(listPanel, cardname);
         this.currentCard = cardname;
 
-        if (cardname.equals(CARDNAME_CLIENT)) {
+        if (cardname.equals(CARDNAME_SERVER)) {
             if (!clientTableRefreshed) {
                 this.refreshClientCard();
                 clientTableRefreshed = true;
-            }
-        } else if (cardname.equals(CARDNAME_SERVER)) {
-            if (!serverTableRefreshed) {
-                this.refreshServerCard();
-                serverTableRefreshed = true;
-            }
-        } else if (cardname.equals(CARDNAME_ANNOTATION)) {
-            if (!annotationTableRefreshed) {
-                this.refreshAnnotationCard();
-                annotationTableRefreshed = true;
             }
         }
     }
@@ -195,7 +141,7 @@ public class ServerLogPage extends SubSectionView {
     private JPanel getClientCard() {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        DataRetriever retriever = new DataRetriever(){
+        DataRetriever retriever = new DataRetriever() {
             @Override
             public List<Object[]> retrieve(int start, int limit) {
                 return retrieveClientData(start, limit);
@@ -209,52 +155,21 @@ public class ServerLogPage extends SubSectionView {
                     return 0;
                 }
             }
+
             @Override
             public void retrievalComplete() {
             }
         };
         clientTable = new SearchableTablePanel(pageName, CLIENT_COLUMN_NAMES, CLIENT_COLUMN_CLASSES, new int[0], limit, retriever);
+        clientTable.setChooseColumnsButtonVisible(false);
+        clientTable.setExportButtonVisible(false);
+        
         p.add(clientTable, BorderLayout.CENTER);
-        return p;
-    }
-
-    private JPanel getAnnotationCard() {
-        JPanel p = new JPanel();
-        p.setLayout(new BorderLayout());
-        DataRetriever retriever = new DataRetriever<Object[]>() {
-            @Override
-            public List<Object[]> retrieve(int start, int limit) {
-                return retrieveAnnotationData(start, limit);
-            }
-
-            @Override
-            public int getTotalNum() {
-                try {
-                    return MedSavantClient.LogManager.getAnnotationLogSize(LoginController.getInstance().getSessionID());
-                } catch (Exception ex) {
-                    return 0;
-                }
-            }
-
-            @Override
-            public void retrievalComplete() {
-            }
-        };
-        annotationTable = new SearchableTablePanel(pageName, ANNOTATIONS_COLUMN_NAMES, ANNOTATIONS_COLUMN_CLASSES, new int[0], limit, retriever);
-        p.add(annotationTable, BorderLayout.CENTER);
         return p;
     }
 
     private void refreshClientCard() {
         clientTable.forceRefreshData();
-    }
-
-    private void refreshServerCard() {
-        serverTable.forceRefreshData();
-    }
-
-    private void refreshAnnotationCard() {
-        annotationTable.forceRefreshData();
     }
 
     @Override
@@ -267,54 +182,16 @@ public class ServerLogPage extends SubSectionView {
         return waitPanel;
     }
 
-
-    private List<Object[]> retrieveAnnotationData(int start, int limit){
-        if(!currentCard.equals(CARDNAME_ANNOTATION)) return new ArrayList<Object[]>();
-        List<Object[]> v = null;
-        waitPanel.setIndeterminate();
-        waitPanel.setStatus("");
-        showWaitPanel();
-
-
-        try {
-            List<AnnotationLog> logs = MedSavantClient.LogManager.getAnnotationLog(LoginController.getInstance().getSessionID(), start, limit);
-            v = new ArrayList<Object[]>();
-            for(final AnnotationLog log : logs){
-
-
-                Object[] r = new Object[6];
-                r[0] = log.getProjectName();
-                r[1] = log.getReferenceName();
-                r[2] = log.getAction();
-                r[3] = log.getStatus();
-                r[4] = log.getTimestamp();
-                r[5] = log.getUser();
-
-                v.add(r);
-            }
-
-        } catch (Exception ex) {
-            waitPanel.setComplete();
-            waitPanel.setStatus("Problem getting log");
-            showWaitPanel();
-            LOG.error("Error retrieving annotation log.", ex);
-        }
-
-        hideWaitPanel();
-        return v;
-    }
-
-    private List<Object[]> retrieveClientData(int start, int limit){
-        if(!currentCard.equals(CARDNAME_CLIENT)) return new ArrayList<Object[]>();
+    private List<Object[]> retrieveClientData(int start, int limit) {
         List<Object[]> v = null;
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
         try {
-            List<GeneralLog> logs = MedSavantClient.LogManager.getClientLog(LoginController.getInstance().getSessionID(), start, limit);
+            List<GeneralLog> logs = MedSavantClient.LogManager.getServerLog(LoginController.getInstance().getSessionID(), start, limit);
             v = new ArrayList<Object[]>();
-            for(GeneralLog log : logs) {
-                v.add(new Object[] {
+            for (GeneralLog log : logs) {
+                v.add(new Object[]{
                     log.getUser(),
                     log.getEvent(),
                     log.getDescription(),
@@ -324,7 +201,7 @@ public class ServerLogPage extends SubSectionView {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
-        } catch (Exception ex){
+        } catch (Exception ex) {
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");
             showWaitPanel();
