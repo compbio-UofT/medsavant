@@ -78,7 +78,10 @@ public class ImportUpdateManager {
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
 
             if (publishUponCompletion) {
+                LOG.info("Publishing");
                 publishLatestUpdate(sessionID, projectID);
+            } else {
+                LOG.info("Not publishing");
             }
 
             if (VariantManager.REMOVE_WORKING_DIR) {

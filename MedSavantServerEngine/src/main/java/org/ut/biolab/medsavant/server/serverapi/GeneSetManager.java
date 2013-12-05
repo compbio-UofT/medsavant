@@ -113,7 +113,6 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(dumbChrsCondition1);
         BinaryCondition dumbChrsCondition2 = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\-%");
         query.addCondition(dumbChrsCondition2);
-        System.out.println(query.toString());
     }
 
     @Override
@@ -125,8 +124,6 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(dumbChrsCondition);
         BinaryCondition dumbNameCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%");
         query.addCondition(dumbNameCondition);
-
-        System.out.println(query.toString());
 
         LOG.info(query);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());

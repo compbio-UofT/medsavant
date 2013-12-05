@@ -81,12 +81,12 @@ public class EmailLogger extends AppenderSkeleton {
     public static void logByEmail(String subject, String message, String cc) {
         long time = System.currentTimeMillis();
         if (emailAddress != null && !emailAddress.isEmpty()) {
-            Mail.sendEmail(emailAddress, time + " - " + subject, message);
+            Mail.sendEmail(emailAddress, subject, message);
         } else {
             LOG.warn("Cannot send email, no email recipient configured");
         }
         if (cc != null) {
-            Mail.sendEmail(cc, time + " - " + subject, message);
+            Mail.sendEmail(cc, subject, message);
         }
     }
 }

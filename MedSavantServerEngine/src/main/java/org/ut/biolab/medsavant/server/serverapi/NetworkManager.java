@@ -62,11 +62,23 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
     public int openWriterOnServer(String sessID, String name, long fileLen) throws IOException {
 
         int transferID = counter;
+
+        LOG.info("Opening writer on server, transfer ID is " + transferID);
+
         counter++;
 
-        String ext = MiscUtils.getExtension(name);
-        File outFile = File.createTempFile("sentfile", "." + ext, DirectorySettings.getTmpDirectory());
+        String fileName = (new File(name)).getName();
+
+        File outFile = new File(DirectorySettings.getTmpDirectory(),fileName);
+        int i = 0;
+        while (outFile.exists()) {
+            i++;
+            String incrementedFn = i + "-" + fileName;
+            outFile = new File(DirectorySettings.getTmpDirectory(),incrementedFn);
+        }
         inboundMap.put(sessID + transferID, new InboundStreamInfo(outFile, name, fileLen));
+
+        LOG.info("File will transfer to " + outFile.getAbsolutePath());
 
         return transferID;
     }
@@ -87,9 +99,12 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
      */
     @Override
     public void closeWriterOnServer(String sessID, int transferID) throws IOException {
+
         InboundStreamInfo info = inboundMap.get(sessID + transferID);
         info.stream.close();
         info.stream = null;
+
+        LOG.info("Closed transfer with ID " + transferID);
     }
 
     /**
@@ -98,6 +113,10 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
      * @param transferID identifies the transfer whose name we want
      */
     public File getFileByTransferID(String sessID, int transferID) {
+        for (String key : inboundMap.keySet()) {
+            LOG.info("\t" + key + " " + inboundMap.get(key).file.getAbsolutePath());
+        }
+        LOG.info("Looking up file with ID " + sessID + transferID);
         return inboundMap.get(sessID + transferID).file;
     }
 
