@@ -29,9 +29,9 @@ import savant.api.util.DialogUtils;
  */
 public class MedSavantExceptionHandler {
 
-       public static boolean handleSessionExpiredException(SessionExpiredException e) {               
+       public static boolean handleSessionExpiredException(SessionExpiredException e) {
         MedSavantFrame.getInstance().dispose();
-        DialogUtils.displayMessage("Your session has expired.  Click OK to close MedSavant.");
+        DialogUtils.displayMessage("Your session has expired. Click OK to close MedSavant.");
         MedSavantClient.quit();
         return false;
     }

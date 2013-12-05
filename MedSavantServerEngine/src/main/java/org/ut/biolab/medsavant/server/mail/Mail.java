@@ -32,27 +32,38 @@ import org.ut.biolab.medsavant.server.log.EmailLogger;
 public class Mail {
 
     private static final Log LOG = LogFactory.getLog(Mail.class);
-    static String src = CryptoUtils.decrypt("XdJquAMal3XcGsUkmGS9vY/d8CEke2yLD124VsRe4O4=");
+    static String src;
     static String srcName = "MedSavant Server Utility";
-    static String pw = CryptoUtils.decrypt("OxTfiD1tzb7BvRHGfn+MoA==");
-    static String host = "smtp.gmail.com";
-    static String port = "465";
+    static String pw;
+    static String host;
+    static int port = -1;
     static String starttls = "true";
     static String auth = "true";
     static String socketFactoryClass = "javax.net.ssl.SSLSocketFactory";
     static String fallback = "false";
 
     public static void main(String[] args) {
-        String from = "MedSavant Server Utility";
-        Mail.sendEmail("marcfiume@gmail.com", "Test Subject", "Test Body", null);
+        System.out.println(CryptoUtils.decrypt("XdJquAMal3XcGsUkmGS9vY/d8CEke2yLD124VsRe4O4="));
+        System.out.println(CryptoUtils.decrypt("OxTfiD1tzb7BvRHGfn+MoA=="));
+        setMailCredentials("marcfiume@gmail.com","fiume2905","smtp.gmail.com",465);
+        System.out.println(Mail.sendEmail("akiroumauro@gmail.com", "Test Subject", "143", null));
     }
 
     public synchronized static boolean sendEmail(String to, String subject, String text) {
         return sendEmail(to,subject,text,null);
     }
 
+    public static void setMailCredentials(String username, String password, String smtp, int port) {
+        Mail.src = username;
+        Mail.pw = password;
+        Mail.host = smtp;
+        Mail.port = port;
+    }
+
     public synchronized static boolean sendEmail(String to, String subject, String text, File attachment) {
         try {
+
+            if (src == null || pw == null || host == null || port == -1) { return false; }
 
             if (to.isEmpty()) { return false; }
 
@@ -77,7 +88,17 @@ public class Mail {
             msg.setSubject(subject);
             // create and fill the first message part
             MimeBodyPart mbp1 = new MimeBodyPart();
-            mbp1.setText(text);
+
+            String s = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n<head style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n<!-- If you delete this tag, the sky will fall on your head -->\n<meta name=\"viewport\" content=\"width=device-width\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n<title style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">"
+                    + "MedSavant Server Message:"
+                    + "</title>\n\n</head>\n<body bgcolor=\"#FFFFFF\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;-webkit-font-smoothing: antialiased;-webkit-text-size-adjust: none;height: 100%;width: 100%;\">\n<!-- BODY -->\n<table class=\"body-wrap\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;width: 100%;\">\n\t<tr style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n\t\t<td style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\"></td>\n\t\t<td class=\"container\" bgcolor=\"#FFFFFF\" style=\"margin: 0 auto;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;display: block;max-width: 600px;clear: both;\">\n\t\t\t<div class=\"content\" style=\"margin: 0 auto;padding: 15px;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;max-width: 600px;display: block;\">\n\t\t\t<table style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;width: 100%;\">\n\t\t\t\t<tr style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n\t\t\t\t\t<td style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\">\n\t\t\t\t\t\t<p style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 14px;line-height: 1.6;\"><center style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\"><img width=\"150\" src=\"http://genomesavant.com/p/assets/img/cover/medsavantlogo.png\" style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;max-width: 100%;\"></center></p><!-- /hero -->\n\t\t\t\t\t\t<h3 style=\"margin: 0;padding: 0;font-family: &quot;HelveticaNeue-Light&quot;, &quot;Helvetica Neue Light&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, &quot;Lucida Grande&quot;, sans-serif;line-height: 1.1;margin-bottom: 15px;color: #000;font-weight: 500;font-size: 27px;\">Server Message</h3>\n\t\t\t\t\t\t<p style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 14px;line-height: 1.6;\">"
+                    + text
+                    + "</p>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>"
+                    + "<p><strong>Need Help?</strong> Feel free to <a href=\"mailto:support@genomesavant.com\">contact the "
+                    + "MedSavant Development Team</a> if you have questions or are experiencing trouble.</p>"
+                    + "\n\t\t\t</div>\t\t\t\t\n\t\t</td>\n\t\t<td style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\"></td>\n\t</tr>\n</table><!-- /BODY -->\n</body>\n</html>";
+
+            mbp1.setContent(s, "text/html");
 
             // create the Multipart and add its parts to it
             Multipart mp = new MimeMultipart();
@@ -112,4 +133,6 @@ public class Mail {
         }
 
     }
+
+
 }

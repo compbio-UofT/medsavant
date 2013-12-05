@@ -79,7 +79,6 @@ public class EmailLogger extends AppenderSkeleton {
     }
 
     public static void logByEmail(String subject, String message, String cc) {
-        message += "\n\nSent by the MedSavant Server Utility";
         long time = System.currentTimeMillis();
         if (emailAddress != null && !emailAddress.isEmpty()) {
             Mail.sendEmail(emailAddress, time + " - " + subject, message);

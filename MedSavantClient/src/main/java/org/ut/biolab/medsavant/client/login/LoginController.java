@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.login;
 
@@ -209,7 +209,7 @@ public class LoginController extends Controller<LoginEvent> {
 
             currentLoginThread = new MedSavantWorker<Void>("Login") {
                 @Override
-                protected Void doInBackground()  {
+                protected Void doInBackground() {
                     try {
                         MedSavantClient.initializeRegistry(serverAddress, serverPort);
                     } catch (final Exception ex) { //server isn't running medsavant, or is down.
@@ -217,33 +217,34 @@ public class LoginController extends Controller<LoginEvent> {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    fireEvent(new LoginEvent(new NoRouteToHostException("Can't connect to "+serverAddress+": "+serverPort)));
+                                    fireEvent(new LoginEvent(new NoRouteToHostException("Can't connect to " + serverAddress + ": " + serverPort)));
                                 }
                             });
 
                             cancelCurrentLoginAttempt();
                         }
                     } /*catch (RemoteException rex) { // Server doesn't immediately refuse connection, but times out.
-                        if (!this.isCancelled()) {                            
-                            throw rex;
-                        }
-                    } catch (NotBoundException nbex) {
-                        if (!this.isCancelled()) {                            
-                            throw nbex;
-                        }
+                     if (!this.isCancelled()) {
+                     throw rex;
+                     }
+                     } catch (NotBoundException nbex) {
+                     if (!this.isCancelled()) {
+                     throw nbex;
+                     }
 
-                    } catch (final NoRouteToHostException nrex) {
-                        if (!this.isCancelled()) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fireEvent(new LoginEvent(nrex));
-                                }
-                            });
-                            //   DialogUtils.displayError("Can't connect", "Can't connect to the server at "+serverAddress+":"+serverPort);
-                            cancelCurrentLoginAttempt();
-                        }
-                    }*/
+                     } catch (final NoRouteToHostException nrex) {
+                     if (!this.isCancelled()) {
+                     SwingUtilities.invokeLater(new Runnable() {
+                     @Override
+                     public void run() {
+                     fireEvent(new LoginEvent(nrex));
+                     }
+                     });
+                     //   DialogUtils.displayError("Can't connect", "Can't connect to the server at "+serverAddress+":"+serverPort);
+                     cancelCurrentLoginAttempt();
+                     }
+                     }*/
+
                     return null;
                 }
 
@@ -280,19 +281,18 @@ public class LoginController extends Controller<LoginEvent> {
             return;
         }
 
-
-
     }
 
     public void logout() {
-        MedSavantFrame.getInstance().setTitle("MedSavant");
-        setLoggedIn(false);
-        AnalyticsAgent.onEndSession(true);
-        this.unregister();
         try {
+            System.out.println("Logging out...");
+            setLoggedIn(false);
+            AnalyticsAgent.onEndSession(true);
+            this.unregister();
             Thread.sleep(100);
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
         } finally {
+            System.out.println("Quitting...");
             System.exit(0);
         }
     }

@@ -56,21 +56,16 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
 
     @Override
     public synchronized String registerNewSession(String user, String password, String dbName) throws RemoteException, SQLException {
-        int newSessionIdNumber = ++lastSessionId;
-        String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
-
-        ConnectionController.registerCredentials(sessionId, user, password, dbName);
-        System.out.println("Registered session " + sessionId + " for " + user);
-        LOG.info("Registered session " + sessionId + " for " + user);
-        return sessionId;
+        String sessionID = nextSession();
+        ConnectionController.registerCredentials(sessionID, user, password, dbName);
+        LOG.info("Registered session " + sessionID + " for " + user);
+        return sessionID;
     }
 
     @Override
     public void unregisterSession(String sessID) throws RemoteException, SQLException {
         // TODO: fix this, session connection pools are needed by orphaned jobs
         ConnectionController.removeSession(sessID);
-        System.out.println("Unregistered session " + sessID);
-        LOG.info("Unregistered session " + sessID);
     }
 
     @Override
@@ -121,8 +116,8 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
             }
         }
 
-        for (final String sid : sessionIDsToTerminate) {            
-            MedSavantServerEngine.submitShortJob(new Runnable(){            
+        for (final String sid : sessionIDsToTerminate) {
+            MedSavantServerEngine.submitShortJob(new Runnable(){
                 @Override
                 public void run() {
                     try {
@@ -134,7 +129,26 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
                         LOG.error("Unable to terminate session for " + sid + ".", ex);
                     }
                 }
-            });            
+            });
         }
+    }
+
+    /**
+     * Creates a new session key associated with the given session,
+     * to be used by a background task.
+     * @param sessID The session ID whose credentials will be used
+     * @return A new session ID
+     */
+    public String createBackgroundSessionFromSession(String sessID) {
+        String sessionID = nextSession();
+        LOG.info("Registered background session " + sessionID + " from " + sessID);
+        ConnectionController.registerAdditionalSessionForSession(sessID,sessionID);
+        return sessionID;
+    }
+
+    private synchronized String nextSession() {
+        int newSessionIdNumber = ++lastSessionId;
+        String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
+        return sessionId;
     }
 }

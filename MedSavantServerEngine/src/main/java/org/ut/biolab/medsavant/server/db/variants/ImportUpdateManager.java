@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -56,8 +57,6 @@ public class ImportUpdateManager {
      * IMPORT FILES INTO AN EXISTING TABLE
      */
     public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
-
-        boolean needsToUnlock = acquireLock(sessionID);
 
         try {
             LOG.info("Starting import");
@@ -78,13 +77,12 @@ public class ImportUpdateManager {
             addVariantFilesToDatabase(sessionID, updateID, vcfFiles);
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
 
-            releaseLock(sessionID, needsToUnlock);
             if (publishUponCompletion) {
                 publishLatestUpdate(sessionID, projectID);
             }
 
             if (VariantManager.REMOVE_WORKING_DIR) {
-                LOG.info("Deleting workingDirectory "+workingDirectory);
+                LOG.info("Deleting workingDirectory " + workingDirectory);
                 MiscUtils.deleteDirectory(workingDirectory);
             }
 
@@ -93,8 +91,6 @@ public class ImportUpdateManager {
             return updateID;
         } catch (Exception e) {
             throw e;
-        } finally {
-            releaseLock(sessionID, needsToUnlock);
         }
     }
 
@@ -103,8 +99,6 @@ public class ImportUpdateManager {
      */
     public static int doUpdate(String sessionID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, boolean publishUponCompletion) throws Exception {
 
-        boolean needsToUnlock = acquireLock(sessionID);
-
         try {
 
             String existingVariantTableName = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true);
@@ -112,7 +106,6 @@ public class ImportUpdateManager {
             File workingDirectory = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
             File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), false);
             annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, new File[]{existingTableAsTSV}, createSubdir(workingDirectory, "annotate_upload"));
-            releaseLock(sessionID, needsToUnlock);
             if (publishUponCompletion) {
                 publishLatestUpdate(sessionID, projectID);
             }
@@ -124,8 +117,6 @@ public class ImportUpdateManager {
 
         } catch (Exception e) {
             throw e;
-        } finally {
-            releaseLock(sessionID, needsToUnlock);
         }
     }
 
@@ -142,6 +133,15 @@ public class ImportUpdateManager {
      * Annotation with the given annotation / custom field sets
      */
     private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
+
+        try {
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                    sessionID,
+                    LogManagerAdapter.LogType.INFO,
+                    "Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
+        } catch (RemoteException ex) {
+        } catch (SessionExpiredException ex) {
+        }
 
         LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
 
@@ -165,8 +165,6 @@ public class ImportUpdateManager {
                 false,
                 true);
 
-        boolean needsToUnlock = acquireLock(sessionID);
-
         try {
             //get annotation information
             Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
@@ -181,16 +179,12 @@ public class ImportUpdateManager {
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
             throw e;
-        } finally {
-            releaseLock(sessionID, needsToUnlock);
         }
     }
-
 
     /**
      * PUBLICATION AND STATUS
      */
-
     private static void publishLatestUpdate(String sessionID, int projectID) throws RemoteException, Exception {
         VariantManager.getInstance().publishVariants(sessionID, projectID);
     }
@@ -199,13 +193,11 @@ public class ImportUpdateManager {
         AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, status);
     }
 
-
     /**
      * TABLE MANAGEMENT
      */
-
     private static void registerTable(String sessionID, int projectID, int referenceID, int updateID, String tableName, String tableNameSub, int[] annotationIDs) throws RemoteException, SQLException, SessionExpiredException {
-         //add entries to tablemap
+        //add entries to tablemap
         ProjectManager.getInstance().addTableToMap(sessionID, projectID, referenceID, updateID, false, tableName, annotationIDs, tableNameSub);
 
     }
@@ -216,6 +208,7 @@ public class ImportUpdateManager {
         ProjectManager.getInstance().removeTables(sessionID, projectID, referenceID, minId, maxId);
 
     }
+
     /**
      * PARSING
      */
@@ -230,15 +223,14 @@ public class ImportUpdateManager {
         for (File vcfFile : vcfFiles) {
             File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
             threads.add(new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
-            
+
             //threads[fileID] = t;
             fileID++;
             LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
         }
         MedSavantServerEngine.getLongExecutorService().invokeAll(threads);
-        
-        //VariantManagerUtils.processThreadsWithLimit(threads);
 
+        //VariantManagerUtils.processThreadsWithLimit(threads);
         // tab separated files
         File[] tsvFiles = new File[threads.size()];
 
@@ -254,21 +246,6 @@ public class ImportUpdateManager {
         }
 
         return tsvFiles;
-    }
-
-    /**
-     * LOCK MANAGEMENT
-     */
-    private static void releaseLock(String sessionID, boolean needsToUnlock) {
-        LOG.info("Releasing session lock");
-        if (needsToUnlock) {
-            ConnectionController.unregisterBackgroundUsageOfSession(sessionID);
-        }
-    }
-
-    private static boolean acquireLock(String sessionID) {
-        LOG.info("Acquiring session lock");
-        return ConnectionController.registerBackgroundUsageOfSession(sessionID);
     }
 
     private static File doDumpTableAsTSV(String sessionID, String existingVariantTableName, File workingDir, boolean complete) throws SQLException, IOException, InterruptedException, SessionExpiredException {
@@ -301,7 +278,7 @@ public class ImportUpdateManager {
             File[] someSplitFiles = VariantManagerUtils.splitTSVFileByFileAndDNAID(workingDir, file);
             splitTSVFiles = ArrayUtils.addAll(splitTSVFiles, someSplitFiles);
         }
-        
+
         return splitTSVFiles;
     }
 
@@ -320,6 +297,15 @@ public class ImportUpdateManager {
     }
 
     private static void uploadTSVFiles(String sessionID, File[] annotatedTSVFiles, String tableName, String tableNameSub, File workingDir) throws SQLException, IOException, SessionExpiredException {
+
+        try {
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                    sessionID,
+                    LogManagerAdapter.LogType.INFO,
+                  "Uploading " + annotatedTSVFiles.length + " TSV files");
+        } catch (RemoteException ex) {
+        } catch (SessionExpiredException ex) {
+        }
 
         // upload all the TSV files to the table
         for (File f : annotatedTSVFiles) {
@@ -342,6 +328,5 @@ public class ImportUpdateManager {
             VariantManager.addEntryToFileTable(sessionID, updateID, i, vcfFiles[i].getAbsolutePath());
         }
     }
-
 
 }

@@ -328,9 +328,7 @@ public class SearchableTablePanel extends JPanel {
         ViewUtil.makeSmall(perpageL);
         bottomPanel.add(perpageL);
 
-
         strut(bottomPanel);
-
 
         boolean hasDefaultRowsPerPage = true;
         if (rowsPerPageX == ROWSPERPAGE_1 || rowsPerPageX == ROWSPERPAGE_2 || rowsPerPageX == ROWSPERPAGE_3) {
@@ -394,7 +392,7 @@ public class SearchableTablePanel extends JPanel {
     public boolean isUpdating(){
         return worker != null && worker.getState() != StateValue.DONE;
     }
-    
+
     private synchronized void updateView(boolean newData) {
         if (worker != null) {
             worker.cancel(true);
@@ -866,12 +864,12 @@ public class SearchableTablePanel extends JPanel {
             return null;
         }
     }
-	
-	
+
+
 	public void setResizeOff() {
 		table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
-	}	
-			
+	}
+
 	public void setHelpButtonVisible(boolean enable) {
         helpButton.setVisible(enable);
     }

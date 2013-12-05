@@ -489,12 +489,12 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
 
-        String jobsMsg = "";
-        if(ThreadController.getInstance().areJobsRunning()){
-            jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
-        }
+        //String jobsMsg = "";
+        //if(ThreadController.getInstance().areJobsRunning()){
+        //    jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
+        //}
 
-        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", jobsMsg+"Are you sure you want to quit?") == DialogUtils.YES) {
+        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
         }
         LOG.info("Refusing to quit");
