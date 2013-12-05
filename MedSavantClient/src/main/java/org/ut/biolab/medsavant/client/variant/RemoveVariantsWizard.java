@@ -110,7 +110,7 @@ public class RemoveVariantsWizard extends WizardDialog {
             private final JButton workButton = new JButton("Remove Files");
 
             {
-                addComponent(progressLabel);                
+                addComponent(progressLabel);
                 addComponent(ViewUtil.alignRight(workButton));
 
                 final JComponent j = new JLabel("<html>You may continue. The removal process will continue in the<br>background and you will be notified upon completion.</html>");
@@ -126,10 +126,11 @@ public class RemoveVariantsWizard extends WizardDialog {
                         fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                         // progressBar.setIndeterminate(true);
 
+                        workButton.setEnabled(false);
                         new ProjectWorker<Void>("Removing variants", autoPublish.isSelected(), LoginController.getSessionID(), projectID) {
                             @Override
                             protected Void runInBackground() throws Exception {
-                                MedSavantClient.VariantManager.removeVariants(LoginController.getSessionID(), projectID, referenceID, files, false, emailField.getText());
+                                MedSavantClient.VariantManager.removeVariants(LoginController.getSessionID(), projectID, referenceID, files, autoPublish.isSelected(), emailField.getText());
                                 return null;
                             }
                         }.execute();

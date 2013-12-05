@@ -49,6 +49,7 @@ import gnu.getopt.Getopt;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.net.NoRouteToHostException;
 import java.util.HashMap;
@@ -65,10 +66,12 @@ import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.CacheController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
@@ -99,7 +102,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static boolean restarting = false;
     private static final Object managerLock = new Object();
 
-    //Proxy the adapters to process annotations and fire events to the cache controller.    
+    //Proxy the adapters to process annotations and fire events to the cache controller.
     private static void initProxies() {
         VariantManager = (VariantManagerAdapter) Proxy.newProxyInstance(
                 VariantManager.getClass().getClassLoader(),
@@ -406,6 +409,17 @@ public class MedSavantClient implements MedSavantServerRegistry {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
                 LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
+
+                if (e instanceof InvocationTargetException) {
+                    e = ((InvocationTargetException)e).getCause();
+                }
+
+                if (e instanceof SessionExpiredException) {
+                    SessionExpiredException see = (SessionExpiredException)e;
+                    MedSavantExceptionHandler.handleSessionExpiredException(see);
+                    return;
+                }
+
                 e.printStackTrace();
                 DialogUtils.displayException("Error", e.getLocalizedMessage(), e);
             }

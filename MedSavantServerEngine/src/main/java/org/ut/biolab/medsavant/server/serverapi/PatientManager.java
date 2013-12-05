@@ -89,8 +89,6 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 table.getDBColumn(DNA_IDS),
                 table.getDBColumn(PHENOTYPES));
 
-        System.out.println(query);
-
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();

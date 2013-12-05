@@ -96,6 +96,7 @@ public class Mail {
                     + "</p>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</table>"
                     + "<p><strong>Need Help?</strong> Feel free to <a href=\"mailto:support@genomesavant.com\">contact the "
                     + "MedSavant Development Team</a> if you have questions or are experiencing trouble.</p>"
+                    + "<br>Sent by server on " + (new Date()).toString()
                     + "\n\t\t\t</div>\t\t\t\t\n\t\t</td>\n\t\t<td style=\"margin: 0;padding: 0;font-family: &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;\"></td>\n\t</tr>\n</table><!-- /BODY -->\n</body>\n</html>";
 
             mbp1.setContent(s, "text/html");

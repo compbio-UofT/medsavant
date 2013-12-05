@@ -362,7 +362,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         if(!rs.next()){
             return new int[0];
         }
-        
+
         String annotationString = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS);
 
         if (annotationString == null || annotationString.isEmpty()) {
@@ -571,10 +571,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         query2.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ANNOTATION_ID), annotationID));
         ConnectionController.executeUpdate(sessionID, query2.toString());
 
-        System.out.println(query1);
-        System.out.println(query2);
-
-        System.out.println("Deleting path: " + installationPath.getAbsolutePath());
         try {
             Process p = Runtime.getRuntime().exec("chmod -R o+w " + installationPath.getAbsolutePath());
             p.waitFor();
