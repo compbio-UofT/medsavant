@@ -81,7 +81,7 @@ public class IncidentalFindings {
 		coverageThreshold= cov;
 		hetRatio= ratio;
 		alleleFrequencyThreshold= afThreshold;
-		
+			
 		allVariants= new ArrayList<Object[]>(DB_VARIANT_REQUEST_LIMIT); // initial capacity DB_VARIANT_REQUEST_LIMIT
 		
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
@@ -156,7 +156,7 @@ public class IncidentalFindings {
 		t.setExportButtonVisible(true);
 		t.setExportButtonEnabled(true);
 		t.setHelpButtonVisible(false);
-		t.setChooseColumnsButtonVisible(false);
+		//t.setChooseColumnsButtonVisible(false);
 		t.forceRefreshData(); // without this, the table is empty with just a header
 		
 		return t;
@@ -408,7 +408,7 @@ public class IncidentalFindings {
 		*/
 		
 		String sql=	"SELECT D.classification, S.synonym, C.* " +
-					"FROM CGD_20131126 C, disease_classification D, CGD_synonym S " +
+					"FROM CGD C, disease_classification D, CGD_synonym S " +
 					"WHERE C.gene LIKE '" + geneSymbol + "' " +
 					"	AND C.inheritance = S.inheritance " +
 					"	AND S.synonym = D.inheritance " +
@@ -467,7 +467,7 @@ public class IncidentalFindings {
 	
 	/** Marks all potential compound heterozygotes in the set of variants. */
 	private void identifyPotentialCompoundHet() {
-		/* Iterate through all variants and look for the same gene with >1 
+		/* Iterate through all variants and look for the same gene with >1 pika
 		 * instance where it's marked as a carrier. */
 		
 		Map<String, Integer> geneCount= new HashMap<String, Integer>();
@@ -495,5 +495,4 @@ public class IncidentalFindings {
 			}
 		}
 	}
-	
 }
