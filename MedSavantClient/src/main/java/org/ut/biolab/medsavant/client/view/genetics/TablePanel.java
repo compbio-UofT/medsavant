@@ -121,8 +121,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private boolean tableShowing;
     private RingChart ringChart;
 
-    //If the time between keypress events exceeds this interval (in ms), we assume 
-    //the key has been released.  Larger values are safer, but make the UI response slower.    
+    //If the time between keypress events exceeds this interval (in ms), we assume
+    //the key has been released.  Larger values are safer, but make the UI response slower.
     public void clearSelection() {
         if (searchableTablePanel != null) {
             searchableTablePanel.getTable().clearSelection();
@@ -130,7 +130,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     public TablePanel(String page) {
-        
+
         pageName = page;
         setLayout(new GridBagLayout());
 
@@ -383,19 +383,19 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     /*
                      SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
                      posGroup.setDescription("Chromosome "+chrom+", Pos. "+pos);
-                    
+
                      SearchConditionItem chromItem = new SearchConditionItem(BasicVariantColumns.CHROM.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
                      chromItem.setDescription(chrom);
                      chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{chrom})));
-                                      
+
                      SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, posGroup);
                      startPosItem.setDescription(Integer.toString(pos));
-                     startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(pos, pos));                                                            
-                    
-                    
+                     startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(pos, pos));
+
+
                      qvc.generateItemViewAndAddToGroup(chromItem, posGroup);
-                     qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);                    
-                    
+                     qvc.generateItemViewAndAddToGroup(startPosItem, posGroup);
+
                      sciList.add(posGroup);                    */
                 }
                 //qvc.replaceFirstLevelGroup("Selected Position(s)", sciList, QueryRelation.OR, false);
@@ -566,10 +566,12 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 @Override
                 public void run() {
                     selectItem();
-                }                
-            });            
-            
+                }
+            });
+
             searchableTablePanel.setExportButtonVisible(false);
+
+            //searchableTablePanel.setResizeOff();
 
             searchableTablePanel.getTable().addMouseListener(new MouseAdapter() {
                 @Override

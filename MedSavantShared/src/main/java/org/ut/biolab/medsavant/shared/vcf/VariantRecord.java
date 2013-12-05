@@ -637,6 +637,17 @@ public class VariantRecord implements Serializable {
 
     }
 
+    public void setSampleInformation(String format, String info) {
+        String formatted = "FORMAT=" + format + ";SAMPLE_INFO=" + info;
+        String newCustomInfo;
+        if (customInfo == null) {
+            newCustomInfo = formatted;
+        } else {
+            newCustomInfo = customInfo + ";" + formatted;
+        }
+        setCustomInfo(newCustomInfo);
+    }
+
     private void extractInfo(String info) {
 
         //System.out.println("Extracting info from: " + info);
