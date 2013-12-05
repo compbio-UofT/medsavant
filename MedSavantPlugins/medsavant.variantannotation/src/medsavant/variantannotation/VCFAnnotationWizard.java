@@ -698,8 +698,8 @@ public class VCFAnnotationWizard extends WizardDialog {
 			File jannovarDirectory= new File(DirectorySettings.getMedSavantDirectory().getPath(), "jannovar");
 			jannovarDirectory.mkdir();
 			dirPath= jannovarDirectory.getPath();
-			
-			downloadTranscriptFiles(jannovar.common.Constants.UCSC);
+				
+		downloadTranscriptFiles(jannovar.common.Constants.UCSC);
 			inputTranscriptModelDataFromUCSCFiles();
 			serializeUCSCdata();
 		} else {

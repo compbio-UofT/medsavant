@@ -5,6 +5,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.io.File;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JPanel;
@@ -28,6 +30,7 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
@@ -43,6 +46,9 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
  */
 public class IncidentalFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
+	private static final Properties properties= new Properties();
+	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
+				File.separator + "cache" + File.separator + "incidentalome_app_settings.xml";
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
 	
@@ -81,6 +87,9 @@ public class IncidentalFindings {
 		coverageThreshold= cov;
 		hetRatio= ratio;
 		alleleFrequencyThreshold= afThreshold;
+		
+		/* Set up the properties based on stored user preference. */
+		
 		
 		allVariants= new ArrayList<Object[]>(DB_VARIANT_REQUEST_LIMIT); // initial capacity DB_VARIANT_REQUEST_LIMIT
 		
@@ -156,7 +165,7 @@ public class IncidentalFindings {
 		t.setExportButtonVisible(true);
 		t.setExportButtonEnabled(true);
 		t.setHelpButtonVisible(false);
-		t.setChooseColumnsButtonVisible(false);
+		//t.setChooseColumnsButtonVisible(false);
 		t.forceRefreshData(); // without this, the table is empty with just a header
 		
 		return t;
@@ -467,7 +476,7 @@ public class IncidentalFindings {
 	
 	/** Marks all potential compound heterozygotes in the set of variants. */
 	private void identifyPotentialCompoundHet() {
-		/* Iterate through all variants and look for the same gene with >1 
+		/* Iterate through all variants and look for the same gene with >1 pika
 		 * instance where it's marked as a carrier. */
 		
 		Map<String, Integer> geneCount= new HashMap<String, Integer>();
@@ -496,4 +505,20 @@ public class IncidentalFindings {
 		}
 	}
 	
+	
+	/**
+	 * Load the properties file if it exists.
+	 */
+	private void loadProperties () {
+		File propertiesFile= new File(PROPERTIES_FILENAME);
+		if (propertiesFile.exists()) {
+			
+	}
+		
+		
+	/** 
+	 * Save the current set of properties to the properties XML file.
+	 */
+	private void saveProperties () {
+	}
 }

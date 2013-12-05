@@ -5,7 +5,7 @@ AR	AR
 AD/AR	CX
 XL	XL
 AD/AR/Digenic	CX
-AD/Methylation	
+AD/Methylation	AD
 AR/Digenic	CX
 Maternal	
 AD/Digenic	CX
