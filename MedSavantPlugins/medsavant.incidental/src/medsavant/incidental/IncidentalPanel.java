@@ -7,11 +7,34 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
@@ -21,11 +44,13 @@ import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import medsavant.incidental.localDB.IncidentalDB;
 import medsavant.incidental.localDB.IncidentalHSQLServer;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
@@ -36,6 +61,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 
@@ -46,6 +72,12 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
  */
 public class IncidentalPanel extends JPanel {
 	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
+	private static final Properties properties= new Properties();
+	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
+				File.separator + "cache" + File.separator + "incidentalome_app_settings.xml";
+	private static final String DEFAULT_CGD_URL= "http://research.nhgri.nih.gov/CGD/download/txt/CGD.txt.gz";
+	private static final String DEFAULT_CGD_FILENAME= "CGD.txt";
+	
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 100;
@@ -93,11 +125,20 @@ public class IncidentalPanel extends JPanel {
 	private JButton chooseAFColumnsHelp;
 	private CheckBoxList chooser;
 	private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
-			
+	private URL cgdURL;
+	
 	private IncidentalHSQLServer server;
     
 	
-	public IncidentalPanel() {
+	public IncidentalPanel(){
+		/* Set up the properties based on stored user preference. */
+		try {
+			loadProperties();
+		} catch (Exception e) {
+			System.err.println("Error loading properties.");
+			e.printStackTrace();
+		}
+		
 		setupView();
 		add(view);
 		
@@ -218,7 +259,7 @@ public class IncidentalPanel extends JPanel {
 									try {
 										//server.startServer(); // No need to run a local server if using JDBC driver from hsqldb
 										dbLoaded= true;
-										IncidentalDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
+										IncidentalDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD, properties);
 									} catch (SQLException e) {
 										e.printStackTrace();
 									}
@@ -415,5 +456,164 @@ public class IncidentalPanel extends JPanel {
 	
 		return t.toArray();
 	}
-    
+ 
+		
+	
+	/**
+	 * Load the properties file if it exists.
+	 */
+	private void loadProperties () throws Exception {
+		File propertiesFile= new File(PROPERTIES_FILENAME);
+		if (propertiesFile.exists()) {
+			properties.loadFromXML(new FileInputStream(propertiesFile));
+			cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
+		} else {
+			/* Set the defaults at time of coding. */
+			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 27)).getTimeInMillis();
+			properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
+			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
+			properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
+			cgdURL= new URL(DEFAULT_CGD_URL);
+			saveProperties();
+		}
+		
+		// Update CGD file if necessary
+		updateCGD();
+		copyCGD();		
+	}
+		
+		
+	/** 
+	 * Save the current set of properties to the properties XML file.
+	 */
+	private void saveProperties() throws IOException {
+		properties.storeToXML(new FileOutputStream(PROPERTIES_FILENAME), 
+				"Configuration options for incidentalome app");
+	}
+	
+	
+	/**
+	 * Update the CGD database if a new one exists at the specified URL.
+	 */
+	private void updateCGD() throws Exception {
+		HttpURLConnection conn= (HttpURLConnection) cgdURL.openConnection();
+		Date urlDate= new Date(conn.getLastModified());
+		Date currentDate= new Date(Long.parseLong((String) properties.getProperty("CGD_DB_date")));
+		
+		if (currentDate.before(urlDate)) {
+			// notify users
+			DateFormat dateFormat= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			System.out.println("[Incidental Panel]: Existing CGD version from " + 
+				dateFormat.format(currentDate) + " to be replaced by newer CGD version from " +
+				dateFormat.format(urlDate));
+			
+			// download file to cache, uncompress, removed compressed file, set new properties
+			File cgdFile= new File(DirectorySettings.getMedSavantDirectory().getPath() +
+				File.separator + "cache" + File.separator + 
+				FilenameUtils.getName(cgdURL.getFile()));	
+			FileUtils.copyURLToFile(cgdURL, cgdFile);
+			File newCgdFile= gunzip(cgdFile);
+			cgdFile.delete();
+			changeCGDHeader(newCgdFile); // should overwrite existing CGD.txt file if exists
+			
+			// modify and save properties
+			properties.setProperty("CGD_DB_date", Long.toString(urlDate.getTime()));
+			properties.setProperty("CGD_DB_filename", newCgdFile.getName());
+			
+			saveProperties();
+		}
+	}
+	
+	
+	/** 
+	 * Copy CGD file to cache if it is not already there.
+	 */
+	private void copyCGD() {
+		File f= new File(DirectorySettings.getMedSavantDirectory().getPath() +
+				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename"));
+		if (!f.exists()) {
+			try {
+				InputStream in= IncidentalPanel.class.getResourceAsStream("/db_files/CGD.txt");
+				OutputStream out= new FileOutputStream(f);
+				IOUtils.copy(in, out);
+				in.close();
+				out.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	/** Uncompresses the gzipped File. 
+	 *  Code adapted from StackOverFlow example.
+	 * @param gzipFile the gzipped file object
+	 * @precondition Expecting the gzipFile has a .gz extension
+	 * @return the new file object
+	 */
+	public static File gunzip(File gzipFile) {
+		// Get the file name without the .gz extension
+		Pattern gunzipFilenamePattern= Pattern.compile("^(.+).gz$", Pattern.CASE_INSENSITIVE);
+		Matcher gunzipFilenameMatcher= gunzipFilenamePattern.matcher(gzipFile.getPath());
+		String gunzipFilename= null;
+		if (gunzipFilenameMatcher.find())
+			gunzipFilename= gunzipFilenameMatcher.group(1);
+		
+		// read the compressed file and output an uncompressed version
+		GZIPInputStream in = null;
+		OutputStream out = null;
+		try {
+		   in = new GZIPInputStream(new FileInputStream(gzipFile));
+		   out = new FileOutputStream(gunzipFilename);
+		   byte[] buf = new byte[1024 * 4];
+		   int len;
+		   while ((len = in.read(buf)) > 0) {
+			   out.write(buf, 0, len); // if you use write(buf), end up writing weird characters if buf not full
+		   }
+		   in.close();
+		   out.close();
+		}
+		catch (IOException e) {
+		   e.printStackTrace();
+		}
+		
+		return new File(gunzipFilename);
+	}
+	
+	
+	/** Change CGD header to predefined header. Since the file is small, make 
+	 * all changes in memory and output a new file by the same name. */
+	public static void changeCGDHeader(File cgdFile) throws FileNotFoundException, IOException {
+		List<String> newLines= new LinkedList<String>();
+		BufferedReader reader= null;
+		
+		// Store the custom header - just the first line
+		reader= new BufferedReader(
+			new InputStreamReader(IncidentalDB.class.getResourceAsStream("/db_files/CGD_header.txt"))); 
+		newLines.add(reader.readLine());
+		reader.close();
+		
+		// Store all the non-header lines from the current CGD file
+		reader= new BufferedReader(new FileReader(cgdFile));
+		boolean inHeader= true;
+		String line= reader.readLine();
+		while (line != null) {
+			if (inHeader) {
+				inHeader= false;
+			} else {
+				newLines.add(line);
+			}
+			
+			line= reader.readLine();
+		}
+		reader.close();
+		
+		// Overwrite all the new lines to the file
+		BufferedWriter writer= new BufferedWriter(new FileWriter(cgdFile, false)); // do not append
+		for (String l : newLines) {
+			writer.write(l);
+			writer.newLine();
+		}
+		writer.close();
+	}
 }
