@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.component;
 
@@ -115,7 +115,7 @@ public class SearchableTablePanel extends JPanel {
     private int totalNumRows;
     private GetDataWorker worker;
     private JButton exportButton;
-	private JButton helpButton;
+    private JButton helpButton;
     private List<Integer> selectedRows;
     private Set<Integer> toggledRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
@@ -225,7 +225,6 @@ public class SearchableTablePanel extends JPanel {
                 columnChooser.showDialog();
             }
         });
-
 
         helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
         exportButton = new JButton("Export Page");
@@ -389,7 +388,7 @@ public class SearchableTablePanel extends JPanel {
         return table;
     }
 
-    public boolean isUpdating(){
+    public boolean isUpdating() {
         return worker != null && worker.getState() != StateValue.DONE;
     }
 
@@ -439,7 +438,6 @@ public class SearchableTablePanel extends JPanel {
 
         @Override
         protected void showSuccess(List<Object[]> result) {
-
 
             applyData(result);
             retriever.retrievalComplete();
@@ -707,7 +705,6 @@ public class SearchableTablePanel extends JPanel {
         });
         keyTimer.setRepeats(false);
 
-
         getTable().addKeyListener(new KeyAdapter() {
             private long lastDelta = -1;
             private long lastTime = System.currentTimeMillis();
@@ -865,12 +862,11 @@ public class SearchableTablePanel extends JPanel {
         }
     }
 
+    public void setResizeOff() {
+        table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
+    }
 
-	public void setResizeOff() {
-		table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
-	}
-
-	public void setHelpButtonVisible(boolean enable) {
+    public void setHelpButtonVisible(boolean enable) {
         helpButton.setVisible(enable);
     }
 }
