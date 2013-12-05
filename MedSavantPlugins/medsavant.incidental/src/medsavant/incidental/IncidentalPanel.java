@@ -77,21 +77,23 @@ public class IncidentalPanel extends JPanel {
 				File.separator + "cache" + File.separator + "incidentalome_app_settings.xml";
 	private static final String DEFAULT_CGD_URL= "http://research.nhgri.nih.gov/CGD/download/txt/CGD.txt.gz";
 	private static final String DEFAULT_CGD_FILENAME= "CGD.txt";
-	
-	
+	private static final int DEFAULT_COVERAGE_THRESHOLD= 10;
+	private static final double	DEFAULT_HET_RATIO= 0.3;
+	private static final double DEFAULT_AF_THRESHOLD= 0.05;
+			
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 100;
 	private final int BOTTOM_MARGIN= 10;
 	private final int TEXT_AREA_WIDTH= 80;
 	private final int TEXT_AREA_HEIGHT= 25;
 	
-	private int coverageThreshold= 10; // Threshold coverage for a variant
-	private double hetRatio= 0.3;
-	private double afThreshold= 0.05;
-	
 	public static final String PAGE_NAME = "Incidentalome";
 	private static final String INCIDENTAL_DB_USER= "incidental_user";
 	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password
+	
+	private int coverageThreshold;
+	private double hetRatio;
+	private double afThreshold;
 	
 	private boolean analysisRunning= false;
 	private boolean dbLoaded= false;
@@ -235,6 +237,9 @@ public class IncidentalPanel extends JPanel {
 				
 				@Override
 				public void actionPerformed (ActionEvent e) {
+					/* Every time an analysis is run, parameters/settings are saved. */
+					saveProperties();
+					
 					if (selectedIndividuals != null && selectedIndividuals.size() == 1
 						&& !analysisRunning) {
 						analysisRunning= true;
@@ -467,13 +472,21 @@ public class IncidentalPanel extends JPanel {
 		if (propertiesFile.exists()) {
 			properties.loadFromXML(new FileInputStream(propertiesFile));
 			cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
+			coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
+			hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
+			afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
 		} else {
-			/* Set the defaults at time of coding. */
-			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 27)).getTimeInMillis();
+			/* Set the defaults. */
+			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 27)).getTimeInMillis(); // CGD date at time of coding
 			properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
 			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
 			properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
 			cgdURL= new URL(DEFAULT_CGD_URL);
+			
+			properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
+			properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));
+			properties.setProperty("af_threshold", Double.toString(DEFAULT_AF_THRESHOLD));
+			
 			saveProperties();
 		}
 		
@@ -486,9 +499,14 @@ public class IncidentalPanel extends JPanel {
 	/** 
 	 * Save the current set of properties to the properties XML file.
 	 */
-	private void saveProperties() throws IOException {
-		properties.storeToXML(new FileOutputStream(PROPERTIES_FILENAME), 
+	private void saveProperties() {
+		try {
+			properties.storeToXML(new FileOutputStream(PROPERTIES_FILENAME), 
 				"Configuration options for incidentalome app");
+		} catch (Exception e) {
+			System.err.println("[IncidentalPanel]: Error saving properties XML file.");
+			e.printStackTrace();
+		}
 	}
 	
 	
