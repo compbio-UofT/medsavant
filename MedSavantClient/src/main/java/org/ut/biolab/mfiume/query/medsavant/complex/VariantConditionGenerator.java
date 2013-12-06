@@ -58,10 +58,10 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     private final CustomField field;
     private List<String> columnsToForceStringView = Arrays.asList(
             new String[]{
-        BasicVariantColumns.AC.getColumnName(),
-        BasicVariantColumns.AN.getColumnName(),
-        BasicVariantColumns.UPLOAD_ID.getColumnName(),
-        BasicVariantColumns.FILE_ID.getColumnName()});
+                BasicVariantColumns.AC.getColumnName(),
+                BasicVariantColumns.AN.getColumnName(),
+                BasicVariantColumns.UPLOAD_ID.getColumnName(),
+                BasicVariantColumns.FILE_ID.getColumnName()});
     private final HashMap<String, Map> columnNameToRemapMap;
 
     private class VariantStringConditionEditorView extends StringSearchConditionEditorView {
@@ -102,12 +102,9 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
     @Override
     public Condition getConditionsFromEncoding(String encoding) throws Exception {
 
-
-
         if (columnsToForceStringView.contains(columnName)) {
             return generateStringConditionForVariantDatabaseField(encoding);
         }
-
 
         switch (field.getColumnType()) {
             case INTEGER:
@@ -207,19 +204,11 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
             return ComboCondition.and(UnaryCondition.isNotNull(col), BinaryCondition.notEqualTo(col, ""));
         }
 
-        /*if (StringConditionEncoder.encodesAll(encoding)) {
-         return BinaryCondition.equalTo(1, 1);
-         } else if (StringConditionEncoder.encodesNone(encoding)) {
-         return BinaryCondition.equalTo(1, 0);
-         }*/
-
         List<String> selected = StringConditionEncoder.unencodeConditions(encoding);
-
 
         if (columnNameToRemapMap.containsKey(columnName)) {
             selected = remapValues(selected, columnNameToRemapMap.get(columnName));
         }
-
 
         if (selected.isEmpty()) {
             return BinaryCondition.equalTo(1, 0); // always false
@@ -252,18 +241,27 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
 
     private Condition generateNumericConditionForVariantDatabaseField(String encoding) {
 
-
         DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(field.getColumnName());
 
-        if (NumericConditionEncoder.encodesNull(encoding)) {
-            return UnaryCondition.isNull(col);
-        } else if (NumericConditionEncoder.encodesNotNull(encoding)) {
-            return UnaryCondition.isNotNull(col);
-        } else {
-            double[] selected = NumericConditionEncoder.unencodeConditions(encoding);
+        boolean includeNull = NumericConditionEncoder.encodesNull(encoding);
 
-            if (selected[0] == selected[1]) {
+        double[] selected = NumericConditionEncoder.unencodeConditions(encoding);
+
+        if (selected[0] == selected[1]) {
+            if (includeNull) {
+                return ComboCondition.or(
+                        BinaryCondition.equalTo(col, selected[0]),
+                        UnaryCondition.isNull(col));
+            } else {
                 return BinaryCondition.equalTo(col, selected[0]);
+            }
+        } else {
+            if (includeNull) {
+                return ComboCondition.or(
+                        ComboCondition.and(
+                                BinaryCondition.greaterThan(col, selected[0], true),
+                                BinaryCondition.lessThan(col, selected[1], true)),
+                        UnaryCondition.isNull(col));
             } else {
                 return ComboCondition.and(
                         BinaryCondition.greaterThan(col, selected[0], true),

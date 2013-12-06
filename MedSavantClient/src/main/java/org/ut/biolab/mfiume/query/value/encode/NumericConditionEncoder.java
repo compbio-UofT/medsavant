@@ -50,43 +50,43 @@ public class NumericConditionEncoder {
 
     public static double[] unencodeConditions(String s) {
         String[] arr = s.split(DELIM);
-        double[] values = new double[arr.length];
-        for (int i = 0; i < arr.length; i++) {
+        double[] values = new double[2];
+        for (int i = 0; i < 2; i++) {
             values[i] = Double.parseDouble(arr[i]);
         }
         return values;
     }
 
+    /*
     public static String encodeNull(){
         return ENCODING_NULL;
     }
-    
+
     public static String encodeNotNull(){
         return ENCODING_NOTNULL;
     }
-        
+    */
+
     public static boolean encodesNull(String encoding){
-        return encoding.equals(ENCODING_NULL);
+        if (encoding == null) { return false; }
+        String[] arr = encoding.split(DELIM);
+        boolean includeNull = Boolean.parseBoolean(arr[2]);
+        return includeNull;
     }
-    
-    public static boolean encodesNotNull(String encoding){
+
+    /*public static boolean encodesNotNull(String encoding){
         return encoding.equals(ENCODING_NOTNULL);
-    }
-    
-    public static String encodeConditions(double low, double high) {
+    }*/
+
+
+    public static String encodeConditions(double low, double high, boolean includeNull) {
 
         String lowString = Double.toString(low);
-        /*if (low != (int) low) {
-         lowString = format.format(low);
-         }*/
         String highString = Double.toString(high);
-        /*if (high != (int) high) {
-         highString = format.format(high);
-         }
-         */
-        LOG.debug("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString);
 
-        return lowString + DELIM + highString;
+        System.out.println("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString + DELIM + includeNull);
+
+        return lowString + DELIM + highString + DELIM + includeNull;
     }
 
     public static String getDescription(double[] ds) {
@@ -103,7 +103,7 @@ public class NumericConditionEncoder {
         return s;
     }
 
-    public static String getDescription(double low, double high, double min, double max) {
+    public static String getDescription(double low, double high, double min, double max, boolean includeNull) {
 
         String s;
 
@@ -117,6 +117,10 @@ public class NumericConditionEncoder {
             s = ViewUtil.numToString(low);
         } else {
             s = ViewUtil.numToString(low) + " - " + ViewUtil.numToString(high);
+        }
+
+        if (includeNull) {
+            s += " or is missing";
         }
 
         return s;
