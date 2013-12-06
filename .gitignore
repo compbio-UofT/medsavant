@@ -65,22 +65,9 @@ MedSavantPlugins/medsavant.mendel-clinic/dist/medsavant.mendel-clinic-1.0.0.jar
 
 MedSavantPlugins/medsavant.mendel-clinic/dist/medsavant.mendel-clinic-1.0.0.jar
 
-MedSavantPlugins/medsavant.incidentalome/src/medsavant/incidentalome/icon/icon.png
-
 MedSavantPlugins/medsavant.panel/src/medsavant/panel/icon/icon.png
 
 *.properties
 
 *.properties
 
-MedSavantPlugins/medsavant.incidental/lib/commons-io-2.4.jar
-
-MedSavantPlugins/medsavant.incidental/src/db_files/CGD.txt
-
-MedSavantPlugins/medsavant.incidental/src/db_files/CGD_header.txt
-
-MedSavantPlugins/medsavant.incidental/src/db_files/CGD-26_11_2013_header_reformatted.txt
-
-MedSavantPlugins/medsavant.incidental/src/db_files/CGD-26_11_2013_header_reformatted.txt
-
-MedSavantPlugins/medsavant.incidental/src/db_files/CGD-26_11_2013_header_reformatted.txt

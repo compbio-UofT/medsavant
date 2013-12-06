@@ -115,13 +115,13 @@ public class IncidentalPanel extends JPanel {
 	private JLabel progressLabel;
 	private final int preferredNumColumns= 10;
 	private JLabel coverageThresholdLabel= new JLabel("Min. variant coverage (X)");
-	private JTextField coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
+	private JTextField coverageThresholdText;
 	private JButton coverageThresholdHelp;
 	private JLabel hetRatioLabel= new JLabel("Min. ratio of alternate/total reads");
-	private JTextField hetRatioText= new JTextField(Double.toString(hetRatio));
+	private JTextField hetRatioText;
 	private JButton hetRatioHelp;
 	private JLabel afThresholdLabel= new JLabel("Max. allele frequency");
-	private JTextField afThresholdText= new JTextField(Double.toString(afThreshold));
+	private JTextField afThresholdText;
 	private JButton afThresholdHelp;
 	private JButton chooseAFColumns;
 	private JButton chooseAFColumnsHelp;
@@ -169,16 +169,19 @@ public class IncidentalPanel extends JPanel {
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		
 		Dimension d= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
+		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
 		coverageThresholdText.setMaximumSize(d);
 		coverageThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		coverageThresholdHelp= ViewUtil.getHelpButton("Coverage Threshold", 
 				"Minimum number of sequence reads supporting the alternate allele.");
+		hetRatioText= new JTextField(Double.toString(hetRatio));
 		hetRatioText.setMaximumSize(d);
 		hetRatioText.setHorizontalAlignment(JTextField.RIGHT);
 		hetRatioHelp= ViewUtil.getHelpButton("Alt/Total Ratio", 
 				"In order for a variant to be included, it must exceeed this threshold, "
 				+ "so as not to be excluded as an erroneous variant. "
 				+ "Below this threshold, alternate alleles are not reported.");
+		afThresholdText= new JTextField(Double.toString(afThreshold));
 		afThresholdText.setMaximumSize(d);
 		afThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		afThresholdHelp= ViewUtil.getHelpButton("Allele Frequency Threshold", 
@@ -549,7 +552,7 @@ public class IncidentalPanel extends JPanel {
 	private void copyCGD() {
 		File f= new File(DirectorySettings.getMedSavantDirectory().getPath() +
 				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename"));
-		if (!f.exists()) {
+		if (!f.exists()) { // copy the default pre-packaged CGD file from Nov. 26, 2013.
 			try {
 				InputStream in= IncidentalPanel.class.getResourceAsStream("/db_files/CGD.txt");
 				OutputStream out= new FileOutputStream(f);
