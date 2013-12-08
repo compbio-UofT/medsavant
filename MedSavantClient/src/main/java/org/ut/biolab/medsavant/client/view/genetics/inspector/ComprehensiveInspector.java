@@ -268,7 +268,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         //System.out.println("Setting variant Record");
         if (variantRecordSetterThread == null || variantRecordSetterThread.isDone()) {
             this.switchToVariantInspector();
-            final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getPosition(), r.getRef(), r.getAlt(), r.getType().toString());
+            final SimpleVariant sv = new SimpleVariant(r.getChrom(), r.getStartPosition(), r.getEndPosition(), r.getRef(), r.getAlt(), r.getType().toString());
 
             final ComprehensiveInspector instance = this;
 

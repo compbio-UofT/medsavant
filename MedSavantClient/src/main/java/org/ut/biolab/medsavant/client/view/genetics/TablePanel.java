@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLayeredPane;
@@ -60,16 +59,11 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.ResultController;
 import org.ut.biolab.medsavant.client.filter.FilterEffectivenessPanel;
-import org.ut.biolab.medsavant.client.filter.FilterState;
-import org.ut.biolab.medsavant.client.filter.NumericFilterView;
-import org.ut.biolab.medsavant.client.filter.StringListFilterView;
-import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
-import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
@@ -91,13 +85,13 @@ import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILE_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILTER;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_GT;
-import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_QUAL;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_REF;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_UPLOAD_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_TYPE;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ZYGOSITY;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.START_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.UPLOAD_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.VARIANT_ID;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -279,7 +273,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         int r = TableModelWrapperUtils.getActualRowAt(model, searchableTablePanel.getTable().getSelectedRow());
 
         final String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
-        final int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
+        final int startpos = (Integer) model.getValueAt(r, INDEX_OF_START_POSITION);
+        final int endpos = (Integer)model.getValueAt(r, INDEX_OF_END_POSITION);
         final String alt = (String) model.getValueAt(r, INDEX_OF_ALT);
 
         //Filter by position
@@ -291,7 +286,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 //QueryUtils.addQueryOnChromPosition(chrom,pos);
 
                 List<GenomicRegion> gr = new ArrayList<GenomicRegion>(1);
-                gr.add(new GenomicRegion(null, chrom, pos, pos));
+                gr.add(new GenomicRegion(null, chrom, startpos, endpos));
 
                 QueryUtils.addQueryOnRegions(gr, null);
             }
@@ -304,7 +299,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         posAndAltItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, pos, pos), alt);
+                QueryUtils.addQueryOnRegionWithAlt(new GenomicRegion(null, chrom, startpos, endpos), alt);
             }
         });
         menu.add(posAndAltItem);
@@ -327,35 +322,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         showShowCard();
     }
 
-    private class PopupActionListener implements ActionListener {
-
-        private final String chrom;
-        private final int pos;
-        private final String alt;
-
-        PopupActionListener(String chrom, int pos, String alt) {
-            this.chrom = chrom;
-            this.pos = pos;
-            this.alt = alt;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ThreadController.getInstance().cancelWorkers(pageName);
-
-            FilterState chromState = StringListFilterView.wrapState(WhichTable.VARIANT, CHROM.getColumnName(), CHROM.getAlias(), Arrays.asList(chrom));
-
-            FilterState posState = NumericFilterView.wrapState(WhichTable.VARIANT, POSITION.getColumnName(), POSITION.getAlias(), new Range(pos, pos), false);
-
-            if (alt != null) {
-                FilterState altState = StringListFilterView.wrapState(WhichTable.VARIANT, ALT.getColumnName(), ALT.getAlias(), Arrays.asList(alt));
-
-                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState, altState);
-            } else {
-                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState);
-            }
-        }
-    }
+    
 
     private JPopupMenu createPopupMultiple() {
         JPopupMenu menu = new JPopupMenu();
@@ -376,9 +343,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
 
                     String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
-                    int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
-
-                    regions.add(new GenomicRegion(null, chrom, pos, pos));
+                    int startpos = (Integer) model.getValueAt(r, INDEX_OF_START_POSITION);
+                    int endpos = (Integer)model.getValueAt(r, INDEX_OF_END_POSITION);
+                    regions.add(new GenomicRegion(null, chrom, startpos, endpos));
 
                     /*
                      SearchConditionGroupItem posGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
@@ -512,7 +479,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     // hide all but some VCF fields
                     if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)
                             && field.getColumnName().equals(CHROM.getColumnName())
-                            || field.getColumnName().equals(POSITION.getColumnName())
+                            || field.getColumnName().equals(START_POSITION.getColumnName())
+                            || field.getColumnName().equals(END_POSITION.getColumnName())
                             || field.getColumnName().equals(DNA_ID.getColumnName())
                             || field.getColumnName().equals(ZYGOSITY.getColumnName())
                             || field.getColumnName().equals(REF.getColumnName())
@@ -681,7 +649,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         (Integer) 0, // pipeline ID
                         (String) row[INDEX_OF_DNA_ID],
                         (String) row[INDEX_OF_CHROM],
-                        (Integer) row[INDEX_OF_POSITION],
+                        //(Integer) row[INDEX_OF_POSITION],
+                        (Integer) row[INDEX_OF_START_POSITION],
+                        (Integer) row[INDEX_OF_END_POSITION],
                         (String) row[INDEX_OF_DBSNP_ID],
                         (String) row[INDEX_OF_REF],
                         (String) row[INDEX_OF_ALT],

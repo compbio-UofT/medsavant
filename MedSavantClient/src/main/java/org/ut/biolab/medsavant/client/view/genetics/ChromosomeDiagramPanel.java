@@ -108,7 +108,7 @@ public class ChromosomeDiagramPanel extends JPanel implements Listener<VariantRe
         if (this.selectedVariant != null && this.selectedVariant.getChrom().equals(chr.getName())) {
             //g2.setColor(new Color(69,172,237));
             g2.setColor(new Color(0,148,54));
-            int pos = translateModelToView(this.selectedVariant.getPosition(), chr.getLength(), this.getEffectiveHeight());
+            int pos = translateModelToView(this.selectedVariant.getStartPosition(), chr.getLength(), this.getEffectiveHeight());
             g2.fillRect(1, pos, width-1, 3);
         }
     }

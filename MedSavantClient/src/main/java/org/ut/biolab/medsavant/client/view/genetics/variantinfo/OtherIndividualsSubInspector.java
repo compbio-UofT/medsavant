@@ -21,7 +21,6 @@ package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import com.jidesoft.grid.HierarchicalTable;
 import com.jidesoft.grid.HierarchicalTableComponentFactory;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -50,6 +49,8 @@ import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspe
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_START_POSITION;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_END_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ALT;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CHROM;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CUSTOM_INFO;
@@ -58,7 +59,6 @@ import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILE_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_FILTER;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_GT;
-import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_QUAL;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_REF;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_UPLOAD_ID;
@@ -241,7 +241,8 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
                     (Integer) 0, // pipeline ID
                     (String) row[INDEX_OF_DNA_ID],
                     (String) row[INDEX_OF_CHROM],
-                    (Integer) row[INDEX_OF_POSITION],
+                    (Integer) row[INDEX_OF_START_POSITION],
+                    (Integer) row[INDEX_OF_END_POSITION],
                     (String) row[INDEX_OF_DBSNP_ID],
                     (String) row[INDEX_OF_REF],
                     (String) row[INDEX_OF_ALT],

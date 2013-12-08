@@ -83,9 +83,9 @@ public class VariantParser implements Callable<Void> {
 
     @Override
     public Void call() {
-
         try {
-            VCFParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
+            VCFParser vcfParser = new VCFParser();
+            vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
             success = true;
         } catch (Exception e) {
             EmailLogger.logByEmail("Error running parser on " + vcfFile.getAbsolutePath(), "Here is the object: " + toString() + ". Here is the message: " + ExceptionUtils.getStackTrace(e));

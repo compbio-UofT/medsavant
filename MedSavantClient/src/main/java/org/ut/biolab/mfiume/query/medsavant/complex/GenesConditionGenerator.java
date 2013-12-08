@@ -55,6 +55,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.Gene;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
@@ -97,12 +98,15 @@ public class GenesConditionGenerator implements ComprehensiveConditionGenerator 
                 DialogUtils.displayError("Search Error", "The gene " + geneName + " is no longer valid, returning unfiltered variants.");
                 return null;
             } else {
-                System.out.println("checking " + BasicVariantColumns.CHROM.getColumnName() + " = " + gene.getChrom() + ", " + BasicVariantColumns.POSITION.getColumnName() + " >= " + gene.getStart() + ", " + BasicVariantColumns.POSITION.getColumnName() + " <= " + gene.getEnd());
+                //System.out.println("checking " + BasicVariantColumns.CHROM.getColumnName() + " = " + gene.getChrom() + ", " + BasicVariantColumns.POSITION.getColumnName() + " >= " + gene.getStart() + ", " + BasicVariantColumns.POSITION.getColumnName() + " <= " + gene.getEnd());
                 TableSchema ts = ProjectController.getInstance().getCurrentVariantTableSchema();
                 conditions[i] = ComboCondition.and(
                         BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.CHROM), gene.getChrom()),
-                        BinaryCondition.greaterThan(ts.getDBColumn(BasicVariantColumns.POSITION), gene.getStart(), true),
-                        BinaryCondition.lessThan(ts.getDBColumn(BasicVariantColumns.POSITION), gene.getEnd(), true));
+                        MiscUtils.getIntersectCondition(
+                            gene.getStart(), 
+                            gene.getEnd(), 
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.START_POSITION), 
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.END_POSITION)));                                        
             }
             i++;
         }

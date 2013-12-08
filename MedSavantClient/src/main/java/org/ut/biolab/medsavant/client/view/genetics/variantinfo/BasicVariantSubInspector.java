@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
@@ -46,10 +46,10 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
-
 
 /**
  *
@@ -58,7 +58,7 @@ import savant.util.Range;
 public class BasicVariantSubInspector extends SubInspector implements Listener<VariantRecord> {
 
     private static final String KEY_DNAID = "DNA ID";
-    private static final String KEY_POSITION = "Position";
+    private static final String KEY_START_POSITION = "Start Position";
     private static final String KEY_GENES = "Genes";
     private static final String KEY_REF = "Reference";
     private static final String KEY_ALT = "Alternate";
@@ -68,7 +68,6 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
     private static final String KEY_ZYGOSITY = "Zygosity";
     private static final String KEY_INFO = "Info";
     private static final String URL_CHARSET = "UTF-8";
-
     private Collection<Gene> genes;
     private KeyValuePairPanel p;
     private JComboBox geneBox;
@@ -89,7 +88,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
         if (p == null) {
             p = new KeyValuePairPanel(4);
             p.addKey(KEY_DNAID);
-            p.addKey(KEY_POSITION);
+            p.addKey(KEY_START_POSITION);
             p.addKey(KEY_REF);
             p.addKey(KEY_ALT);
             p.addKey(KEY_TYPE);
@@ -109,7 +108,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
             genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getPosition() - 20), (int) (selectedVariant.getPosition() + 21)));
+                    LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getStartPosition() - 20), (int) (selectedVariant.getEndPosition() + 21)));
                     ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
                 }
             });
@@ -138,7 +137,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                                 MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                             }
                         }
-                        
+
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Unable to load BAM file: %s", ex);
                     }
@@ -175,14 +174,15 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
 
             int col = 0;
 
-            p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID,p));
-            p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP,p));
-            p.setAdditionalColumn(KEY_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_POSITION,p));
+            p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID, p));
+            p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP, p));
+            p.setAdditionalColumn(KEY_START_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_START_POSITION, p));
+            //p.setAdditionalColumn(KEY_END_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_END_POSITION,p));
             //p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
 
             col++;
             p.setAdditionalColumn(KEY_DBSNP, col, getNCBIButton(KEY_DBSNP));
-            p.setAdditionalColumn(KEY_POSITION, col, genomeBrowserButton);
+            p.setAdditionalColumn(KEY_START_POSITION, col, genomeBrowserButton);
             p.setAdditionalColumn(KEY_DNAID, col, bamButton);
 
         }
@@ -218,7 +218,11 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
         selectedVariant = r;
 
         p.setValue(KEY_DNAID, r.getDnaID());
-        p.setValue(KEY_POSITION, r.getChrom() + ":"  + ViewUtil.numToString(r.getPosition()));
+        if (r.getStartPosition() == r.getEndPosition()) {
+            p.setValue(KEY_START_POSITION, r.getChrom() + ":" + ViewUtil.numToString(r.getStartPosition()));
+        } else {
+            p.setValue(KEY_START_POSITION, r.getChrom() + ":" + ViewUtil.numToString(r.getStartPosition()));
+        }
         p.setValue(KEY_REF, r.getRef());
         p.setValue(KEY_ALT, r.getAlt());
 
@@ -239,7 +243,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                     ProjectController.getInstance().getCurrentProjectID(),
                     r.getDnaID());
 
-            JButton bamButton = (JButton)p.getAdditionalColumn(KEY_DNAID, 1);
+            JButton bamButton = (JButton) p.getAdditionalColumn(KEY_DNAID, 1);
             if (bamPath != null && !bamPath.equals("")) {
                 bamButton.setVisible(true);
             } else {
@@ -263,12 +267,13 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
             Gene g0 = null;
             JComboBox b = geneBox;
             b.removeAllItems();
-
+            
             for (Gene g : genes) {
                 if (g0 == null) {
                     g0 = g;
                 }
-                if (g.getChrom().equals(r.getChrom()) && r.getPosition() > g.getStart() && r.getPosition() < g.getEnd()) {
+                if (g.getChrom().equals(r.getChrom())
+                        && MiscUtils.doesIntersect(r.getStartPosition().intValue(), r.getEndPosition().intValue(), g.getStart(), g.getEnd())) {
                     b.addItem(g);
                 }
             }
@@ -281,8 +286,6 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
             ClientMiscUtils.reportError("Error fetching genes: %s", ex);
         }
     }
-
-
 
     private Component getFilterButton(final String key) {
 

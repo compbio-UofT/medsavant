@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.variants.annotation;
 
@@ -55,7 +55,6 @@ public class AnnotationCursor {
     private final char MULTI_ANNOTATION_DELIM = ',';
     // the annotation to apply
     private final Annotation annotation;
-    
     //Setup default column indices for required columns.  These can be overridden
     //if the file has a header
     private int pos_annot_index_of_chr = 0;
@@ -65,9 +64,8 @@ public class AnnotationCursor {
     private int int_annot_index_of_chr = 0;
     private int int_annot_index_of_start = 1;
     private int int_annot_index_of_end = 2;
-
     private boolean ref0_logged = false;
-    
+
     /**
      * A file reader and cursor to be used to help in the annotation process
      *
@@ -77,68 +75,68 @@ public class AnnotationCursor {
      * @throws SQLException
      */
     public AnnotationCursor(String sid, Annotation annotation) throws IOException, SQLException, SessionExpiredException, IllegalArgumentException {
-        TabixReader headerReader = new TabixReader(annotation.getDataPath());     
+        TabixReader headerReader = new TabixReader(annotation.getDataPath());
         String header = headerReader.readLine().trim();
         headerReader.cleanup();
-        
-        reader = new TabixReader(annotation.getDataPath());     
 
-        
+        reader = new TabixReader(annotation.getDataPath());
+
+
         //If the tabix file has a header, then find the indices for all the 
         //required columns
-        if(header.startsWith(String.valueOf(reader.getCommentChar()))){
-            String[] parts = header.split("\t");            
+        if (header.startsWith(String.valueOf(reader.getCommentChar()))) {
+            String[] parts = header.split("\t");
             pos_annot_index_of_chr = int_annot_index_of_chr = -1;
             int_annot_index_of_start = -1;
             int_annot_index_of_end = -1;
             pos_annot_index_of_ref = -1;
             pos_annot_index_of_alt = -1;
             pos_annot_index_of_pos = -1;
-            
-            for(int i = parts.length - 1; i >= 0; --i){            
+
+            for (int i = parts.length - 1; i >= 0; --i) {
                 parts[i] = parts[i].replace("#", "").trim().toUpperCase();
-                if(parts[i].equals("CHR") || parts[i].equals("CHROM")){
+                if (parts[i].equals("CHR") || parts[i].equals("CHROM")) {
                     pos_annot_index_of_chr = int_annot_index_of_chr = i;
-                }else if(parts[i].equals("START")){
+                } else if (parts[i].equals("START")) {
                     int_annot_index_of_start = i;
                     pos_annot_index_of_pos = i;
-                }else if(parts[i].equals("END")){
+                } else if (parts[i].equals("END")) {
                     int_annot_index_of_end = i;
-                }else if(parts[i].equals("REF")){
+                } else if (parts[i].equals("REF")) {
                     pos_annot_index_of_ref = i;
-                }else if(parts[i].equals("ALT")){
+                } else if (parts[i].equals("ALT")) {
                     pos_annot_index_of_alt = i;
-                }else if(parts[i].equals("POSITION")){ 
+                } else if (parts[i].equals("POSITION")) {
                     pos_annot_index_of_pos = i;
                 }
             }
-        
+
             String missingCol = null;
-            if(annotation.isInterval()){                
-                if(int_annot_index_of_chr == -1){
+            if (annotation.isInterval()) {
+                if (int_annot_index_of_chr == -1) {
                     missingCol = "Chromosome";
-                }else if(int_annot_index_of_start == -1){
+                } else if (int_annot_index_of_start == -1) {
                     missingCol = "Start";
-                }else if(int_annot_index_of_end == -1){
+                } else if (int_annot_index_of_end == -1) {
                     missingCol = "End";
                 }
-            }else{
-                if(pos_annot_index_of_chr == -1){
+            } else {
+                if (pos_annot_index_of_chr == -1) {
                     missingCol = "Chromosome";
-                }else if(pos_annot_index_of_ref == -1){
+                } else if (pos_annot_index_of_ref == -1) {
                     missingCol = "Ref";
-                }else if(pos_annot_index_of_alt == -1){
+                } else if (pos_annot_index_of_alt == -1) {
                     missingCol = "Alt";
-                }else if(pos_annot_index_of_pos == -1){
+                } else if (pos_annot_index_of_pos == -1) {
                     missingCol = "Position";
-                }                
-            }            
-            
-            if(missingCol != null){
-                throw new IllegalArgumentException("Couldn't locate column "+missingCol+" in annotation " + annotation.getProgram()+" (ref="+annotation.getReferenceName()+")");
-            }           
+                }
+            }
+
+            if (missingCol != null) {
+                throw new IllegalArgumentException("Couldn't locate column " + missingCol + " in annotation " + annotation.getProgram() + " (ref=" + annotation.getReferenceName() + ")");
+            }
         }
-                    
+
         this.annotation = annotation;
         annotationHasRef = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasRef();
         annotationHasAlt = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasAlt();
@@ -146,7 +144,7 @@ public class AnnotationCursor {
         isEndInclusive = annotation.isEndInclusive();
         numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
 
-        
+
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
@@ -173,13 +171,17 @@ public class AnnotationCursor {
      * @param r The genomic variant to annotate
      * @return An array of annotations
      */
-    public String[] annotateVariant(SimpleVariantRecord r) throws IOException {
+    String[] annotateVariant(SimpleVariantRecord r) throws IOException {
+
+        //if set, an annotation must overlap and not merely intersect a variant
+        //in order for that variant to be annotated.
+        boolean requireExactMatch = true;
 
         // short circuit when there are gaps between the variant and the next
         // annotation, return a blank annotation
         if (lastAnnotationConsidered != null
                 && r.chrom.equals(lastAnnotationConsidered.chrom)
-                && r.position < lastAnnotationConsidered.position) {
+                && r.end < lastAnnotationConsidered.start) {
             lastVariantAnnotated = r;
             lastResult = new String[getNumNonDefaultFields()]; // this annotation is empty
             return lastResult;
@@ -200,10 +202,10 @@ public class AnnotationCursor {
             // seek to the appropriate record by genetic position            
             TabixReader.Iterator it = reader.query(
                     reader.chr2tid(r.chrom),
-                    r.position - 1, // the function returns matches AFTER
+                    (int) r.start - 1, // the function returns matches AFTER
                     // this position, so we need to have the -1
                     Integer.MAX_VALUE);
-            
+
             int numberIntersectingThisVariant = 0;
             int numberMatchingThisVariant = 0;
 
@@ -229,16 +231,16 @@ public class AnnotationCursor {
 
                 // save this annotation
                 lastAnnotationConsidered = annotationRecord;
-                
+
 
                 // does this annotation intersect the variant position
-                if (annotationRecord.intersectsPosition(r.chrom, r.position)) {
+                if (annotationRecord.intersectsPosition(r.chrom, r.start, r.end)) {
 
                     // keep track of intersections
                     numberIntersectingThisVariant++;
 
                     // if there is a match, add it to the results
-                    if (annotationRecord.matchesVariant(r)) {
+                    if (requireExactMatch && annotationRecord.matchesVariant(r)) {
 
                         String prefix = "";
 
@@ -340,14 +342,13 @@ public class AnnotationCursor {
     Annotation getAnnotation() {
         return annotation;
     }
+
     private class SimpleAnnotationRecord {
 
-       
-       
         public String chrom;
         public int position;
-        public int start;
-        public int end;
+        public long start;
+        public long end;
         public String ref;
         public String alt;
 
@@ -365,10 +366,10 @@ public class AnnotationCursor {
 
         private void setFromLinePosition(String[] line) {
             chrom = line[pos_annot_index_of_chr];
-            if(!chrom.toLowerCase().startsWith("chr")){ 
-                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
+            if (!chrom.toLowerCase().startsWith("chr")) {
+                chrom = "chr" + MiscUtils.homogenizeSequence(chrom);
             }
-            position = Integer.parseInt(line[pos_annot_index_of_pos]);
+            start = end = position = Integer.parseInt(line[pos_annot_index_of_pos]);
             if (annotationHasRef) {
                 ref = line[pos_annot_index_of_ref];
             } else {
@@ -383,8 +384,8 @@ public class AnnotationCursor {
 
         private void setFromLineInterval(String[] line) {
             chrom = line[int_annot_index_of_chr];
-           if(!chrom.toLowerCase().startsWith("chr")){ 
-                chrom = "chr"+MiscUtils.homogenizeSequence(chrom);
+            if (!chrom.toLowerCase().startsWith("chr")) {
+                chrom = "chr" + MiscUtils.homogenizeSequence(chrom);
             }
             start = Integer.parseInt(line[int_annot_index_of_start]);
             end = Integer.parseInt(line[int_annot_index_of_end]);
@@ -400,29 +401,51 @@ public class AnnotationCursor {
                 return "SimpleAnnotationRecord{" + "chrom=" + chrom + ", position=" + position + ", ref=" + ref + ", alt=" + alt + '}';
             }
         }
-        
-        public boolean matchesRef(String ref) {
+
+        private boolean matchesRef(String ref) { //doon't ever depend on ref for matching.
+            return true;
+
             //If annotation ref is 0, then automatically assume the ref matches.
             //(i.e. we interpret the 0 as 'unspecified').            
-            if(ref.equals("0") && !ref0_logged){
-                ref0_logged = true;
-                LOG.info("Reference 0 detected for annotation "+annotation.getProgram());
-            }
-            return (this.alt == null) || (ref.equals("0")) || (this.ref != null && this.ref.equals(ref));
+            /*if(ref.equals("0") && !ref0_logged){
+             ref0_logged = true;
+             LOG.info("Reference 0 detected for annotation "+annotation.getProgram());
+             }
+             return (this.alt == null) || (ref.equals("0")) || (this.ref != null && this.ref.equals(ref));*/
         }
 
-        public boolean matchesAlt(String alt) {            
+        private boolean matchesAlt(String alt) {
             return this.alt == null || (this.alt != null && this.alt.equals(alt));
         }
 
-        private boolean intersectsPosition(String chrom, int position) {                        
-            return (!isInterval && this.chrom.equals(chrom) && this.position == position)
-                    || (isInterval && this.start <= position && (isEndInclusive ? (this.end >= position) : (this.end > position)));
+        private boolean intersectsPosition(String chrom, long start, long end) {
+            if (this.chrom.equals(chrom)) {
+                if (this.start < start) {
+                    if (this.end < start) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else if (start < this.start) { //start >= start
+                    if (end < this.end) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+                return true;
+
+            }
+            return false;
+            /*return (!isInterval && this.chrom.equals(chrom) && this.position == position)
+             || (isInterval && this.start <= position && (isEndInclusive ? (this.end >= position) : (this.end > position)));*/
         }
 
-        private boolean matchesVariant(SimpleVariantRecord r) {            
-            return (isInterval && intersectsPosition(r.chrom, r.position))
-                    || (!isInterval && intersectsPosition(r.chrom, r.position) && matchesRef(r.ref) && matchesAlt(r.alt));
+        private boolean matchesVariant(SimpleVariantRecord r) {
+            //return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end);
+
+            return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
+                    || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));
         }
     }
 

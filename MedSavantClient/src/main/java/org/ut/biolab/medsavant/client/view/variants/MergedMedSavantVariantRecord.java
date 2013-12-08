@@ -34,7 +34,8 @@ import savant.api.data.VariantType;
 public class MergedMedSavantVariantRecord implements VariantRecord {
 
     private int count;
-    private int position;
+    private int start_position;
+    private int end_position;
     private String chrom;
     private String name = "";
     private VariantType[][] variantTypes;
@@ -45,7 +46,8 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
 
     public MergedMedSavantVariantRecord(Object[] base, int participantCount) {
         this.chrom = (String) base[BasicVariantColumns.INDEX_OF_CHROM];
-        this.position = (Integer) base[BasicVariantColumns.INDEX_OF_POSITION];
+        this.start_position = (Integer) base[BasicVariantColumns.INDEX_OF_START_POSITION];
+        this.end_position = (Integer) base[BasicVariantColumns.INDEX_OF_END_POSITION];
         this.ref = (String) base[BasicVariantColumns.INDEX_OF_REF];
         this.count = participantCount;
         this.variantTypes = new VariantType[count][];
@@ -143,9 +145,17 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
 
     @Override
     public int getPosition() {
-        return position;
+        return start_position;
     }
 
+    public int getStartPosition(){
+        return start_position;
+    }
+    
+    public int getEndPosition(){
+        return end_position;
+    }
+    
     @Override
     public String getName() {
         return name;
@@ -166,7 +176,9 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
         if (chromCompare != 0) {
             return chromCompare;
         }
-        return ((Integer) position).compareTo(other.getPosition());
+                
+                
+        return ((Integer) start_position).compareTo(other.getPosition());
     }
 
     public static VariantType convertVariantType(org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType type, String alt) {

@@ -143,7 +143,7 @@ public class SearchSubInspector extends SubInspector implements Listener<Variant
     @Override
     public void handleEvent(VariantRecord r) {
         if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {
-            field.setText(r.getChrom() + " " + r.getPosition());
+            field.setText(r.getChrom() + " " + r.getStartPosition()+"-"+r.getEndPosition());
         } else {
             field.setText(r.getDbSNPID());
         }

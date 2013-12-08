@@ -51,6 +51,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
@@ -72,6 +74,7 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
  */
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
 
+    private static final Log LOG = LogFactory.getLog(MedSavantServerEngine.class);
     //ssl/tls off by default.
     private static boolean require_ssltls = false;
     private static boolean require_client_auth = false;

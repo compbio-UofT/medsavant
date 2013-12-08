@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
 public class MedSavantIOController {
 
     private static final Log LOG = LogFactory.getLog(MedSavantIOController.class);
-    private static final int TIME_PER_PERMIT = 10000; //0.5s, for testing.
+    private static final int TIME_PER_PERMIT = 10000;
     private static Semaphore IOSem = new Semaphore(MedSavantServerEngine.MAX_IO_JOBS, true);
     private static final Timer timer = new Timer();
     private static final List<Permit> outStandingPermits;

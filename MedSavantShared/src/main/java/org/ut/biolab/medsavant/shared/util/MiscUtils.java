@@ -1,24 +1,28 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.shared.util;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.InputEvent;
@@ -55,8 +59,6 @@ import org.ut.biolab.medsavant.shared.model.Range;
 public class MiscUtils {
 
     private static final Log LOG = LogFactory.getLog(MiscUtils.class);
-
-
     public static final boolean MAC;
     public static final boolean WINDOWS;
     public static final boolean LINUX;
@@ -73,6 +75,16 @@ public class MiscUtils {
         WINDOWS = os.startsWith("windows");
         LINUX = os.contains("linux");
         MENU_MASK = MAC ? InputEvent.META_MASK : InputEvent.CTRL_MASK;
+    }
+
+    public static boolean doesIntersect(long s_start, long s_end, long t_start, long t_end) {
+        return (t_start <= s_end) && (t_end >= s_start);
+    }
+
+    public static Condition getIntersectCondition(long s_start, long s_end, DbColumn t_start, DbColumn t_end) {
+        return ComboCondition.and(
+                new BinaryCondition(BinaryCondition.Op.LESS_THAN_OR_EQUAL_TO, t_start, s_end),
+                new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t_end, s_start));
     }
 
     /**

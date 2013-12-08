@@ -254,7 +254,7 @@ public class VariantManagerUtils {
         if (complete) {
             query = "SELECT *";
         } else {
-            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
+            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `end`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
         }
 
         query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "

@@ -107,7 +107,7 @@ public class SimpleVariantSubInspector extends SubInspector {
             genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    LocationController.getInstance().setLocation(selectedVariant.chr, new Range((int) (selectedVariant.pos - 20), (int) (selectedVariant.pos + 21)));
+                    LocationController.getInstance().setLocation(selectedVariant.chr, new Range((int) (selectedVariant.start_pos - 20), (int) (selectedVariant.end_pos + 21)));
                     ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
                 }
             });
@@ -187,7 +187,7 @@ public class SimpleVariantSubInspector extends SubInspector {
 
             for (Gene g : genes) {
                 if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.chr))
-                        && r.pos > g.getStart() && r.pos < g.getEnd()) {
+                        && MiscUtils.doesIntersect((int)r.start_pos, (int)r.end_pos, g.getStart(), g.getEnd())){
                     intersectingGenes.add(g);
                 }
             }
@@ -281,7 +281,7 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         selectedVariant = r;
-        p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.pos));
+        p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.start_pos)+" - "+r.end_pos);
         p.setValue(KEY_REF, r.ref);
         p.setValue(KEY_ALT, r.alt);
 

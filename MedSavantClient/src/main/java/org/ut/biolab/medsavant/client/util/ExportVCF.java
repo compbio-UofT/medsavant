@@ -167,7 +167,7 @@ public class ExportVCF implements BasicVariantColumns {
             // default fields
             row +=
                 cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t"
-                    + cleanField(record[BasicVariantColumns.INDEX_OF_POSITION]) + "\t"
+                    + cleanField(record[BasicVariantColumns.INDEX_OF_START_POSITION]) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_DBSNP_ID])) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_REF])) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_ALT])) + "\t"
