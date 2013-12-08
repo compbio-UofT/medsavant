@@ -42,9 +42,9 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 public class VCFParser {
 
     private static final Log LOG = LogFactory.getLog(VCFParser.class);
-    private static final String HEADER_CHARS = "#"; 
+    private static final String HEADER_CHARS = "#";
     private static final String COMMENT_CHARS = "##";
-    private static final Pattern VCF_FORMAT_REGEX = Pattern.compile("^##fileformat=VCFv([\\d+.]+)");    
+    private static final Pattern VCF_FORMAT_REGEX = Pattern.compile("^##fileformat=VCFv([\\d+.]+)");
     private static final int VCF_START_INDEX = 1;
     private static final int VCF_ID_INDEX = 2;
     private static final int VCF_REF_INDEX = 3;
@@ -201,7 +201,7 @@ public class VCFParser {
                 List<VariantRecord> records = null;
                 try {
                     records = parseRecord(nextLine, header);
-                    if(records == null){
+                    if (records == null) {
                         continue;
                     }
                 } catch (Exception ex) {
@@ -293,7 +293,6 @@ public class VCFParser {
                 vcf_warning("Invalid (non-numeric) start position detected in VCF4 file: " + line[VCF_START_INDEX]);
                 return null;
             }
-                } catch (Exception e) {}
 
             if (altStr.equals(".")) { //no real variant call was made at this position
                 return null;

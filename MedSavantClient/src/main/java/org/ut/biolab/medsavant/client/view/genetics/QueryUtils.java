@@ -63,7 +63,7 @@ public class QueryUtils {
         
         SearchConditionItem endPosItem = new SearchConditionItem(BasicVariantColumns.END_POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
         endPosItem.setDescription(Long.toString(gr.getStart()) + " - " + Long.toString(gr.getEnd()));
-        endPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd()));
+        endPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd(), false));
 
 
         if(setupViews){
