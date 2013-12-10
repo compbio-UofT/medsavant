@@ -797,7 +797,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
                                 low = format.parse(s[0]).doubleValue();
                                 high = format.parse(s[1]).doubleValue();
 
-                                QueryUtils.addNumericQuery(chartName, low, high);
+                                QueryUtils.addNumericQuery(chartName, low, high, false);
                             }
                         }
                     }

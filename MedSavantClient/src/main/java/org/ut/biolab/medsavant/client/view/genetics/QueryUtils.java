@@ -40,7 +40,7 @@ import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
  * @author mfiume
  */
 public class QueryUtils {
-    
+
     public static SearchConditionGroupItem getRegionGroup(GenomicRegion gr, String alt, boolean setupViews) {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         SearchConditionGroupItem geneGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
@@ -58,7 +58,7 @@ public class QueryUtils {
 
         SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
         startPosItem.setDescription(Long.toString(gr.getStart()) + " - " + Long.toString(gr.getEnd()));
-        startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd()));
+        startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd(), false));
 
 
         if(setupViews){
@@ -140,13 +140,13 @@ public class QueryUtils {
         qvc.replaceFirstLevelItem(alias, StringConditionEncoder.encodeConditions(selections), desc);
     }
 
-    public static void addNumericQuery(String alias, double low, double high){
-        QueryViewController qvc = SearchBar.getInstance().getQueryViewController();        
-        String encodedConditions = NumericConditionEncoder.encodeConditions(low, high);
+    public static void addNumericQuery(String alias, double low, double high, boolean includeNull){
+        QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
+        String encodedConditions = NumericConditionEncoder.encodeConditions(low, high, includeNull);
         String desc = NumericConditionEncoder.getDescription(new double[]{low, high});
-        qvc.replaceFirstLevelItem(alias, encodedConditions, desc);        
+        qvc.replaceFirstLevelItem(alias, encodedConditions, desc);
     }
-    
+
     public static void addQueryOnPatients(int[] patientIds) {
         List<String> patientIdStrings = new ArrayList<String>(patientIds.length);
         for (int patientId : patientIds) {

@@ -447,7 +447,7 @@ public class BatchVariantAnnotator {
                 String currentAlt = nextInputRecord.alt;
 
                 if (currentPosition < previousPosition) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
                 }
                 if (currentPosition == previousPosition) {
 
@@ -459,7 +459,7 @@ public class BatchVariantAnnotator {
                     }
 
                     if (refCompare < 0) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
                     } else if (refCompare == 0) {
 
                         int altCompare;
@@ -470,7 +470,7 @@ public class BatchVariantAnnotator {
                         }
 
                         if (altCompare < 0) {
-                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by position, then by ref, then by alt.");
+                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
                         }
                     }
                 }
