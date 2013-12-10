@@ -36,10 +36,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.table.TableCellRenderer;
 
 import java.util.Set;
@@ -72,7 +74,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume, AndrewBrook
+ * @author mfiume, AndrewBrook, rammar
  */
 public class SearchableTablePanel extends JPanel {
 
@@ -126,7 +128,8 @@ public class SearchableTablePanel extends JPanel {
     private boolean waitlong = false;
     private boolean keydown = false;
     private SelectionChangedWorker selectionChangedWorker;
-
+	
+	
     public enum TableSelectionType {
 
         DISABLED, CELL, ROW
@@ -218,7 +221,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("More Fields");
+        chooseColumnButton = new JButton("Customize Fields");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -470,7 +473,7 @@ public class SearchableTablePanel extends JPanel {
         //table.setModel(model);
         table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
         columnChooser.hideColumns(hiddenColumns);
-
+		
         int[] favColumns = new int[columnNames.length - hiddenColumns.length];
         int pos = 0;
         for (int i = 0; i < columnNames.length; i++) {
@@ -869,4 +872,9 @@ public class SearchableTablePanel extends JPanel {
     public void setHelpButtonVisible(boolean enable) {
         helpButton.setVisible(enable);
     }
+	
+	public ColumnChooser getColumnChooser() {
+		return columnChooser;
+	}
+
 }

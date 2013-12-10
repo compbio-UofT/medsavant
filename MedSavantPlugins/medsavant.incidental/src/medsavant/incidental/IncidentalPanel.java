@@ -51,6 +51,7 @@ import medsavant.incidental.localDB.IncidentalHSQLServer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
@@ -63,6 +64,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 
 
 /**
@@ -80,6 +82,8 @@ public class IncidentalPanel extends JPanel {
 	private static final int DEFAULT_COVERAGE_THRESHOLD= 10;
 	private static final double	DEFAULT_HET_RATIO= 0.3;
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
+	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
+		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
 			
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 100;
@@ -94,6 +98,7 @@ public class IncidentalPanel extends JPanel {
 	private int coverageThreshold;
 	private double hetRatio;
 	private double afThreshold;
+	private String[] chooserAFArray;
 	
 	private boolean analysisRunning= false;
 	private boolean dbLoaded= false;
@@ -132,7 +137,7 @@ public class IncidentalPanel extends JPanel {
 	private IncidentalHSQLServer server;
     
 	
-	public IncidentalPanel(){
+	public IncidentalPanel() {
 		/* Set up the properties based on stored user preference. */
 		try {
 			loadProperties();
@@ -200,9 +205,7 @@ public class IncidentalPanel extends JPanel {
 		pw.setVisible(false);
 		
 		chooser= new CheckBoxList(getDbColumnList());
-		chooser.addCheckBoxListSelectedValues(new String[] 
-			{"1000g2012apr_all, AnnotationFrequency",
-			"esp6500_all, Score"});
+		chooser.addCheckBoxListSelectedValues(chooserAFArray);
 		
 		variantPane= new JScrollPane();
 		
@@ -240,11 +243,8 @@ public class IncidentalPanel extends JPanel {
 				
 				@Override
 				public void actionPerformed (ActionEvent e) {
-					/* Every time an analysis is run, parameters/settings are saved. */
-					saveProperties();
-					
-					if (selectedIndividuals != null && selectedIndividuals.size() == 1
-						&& !analysisRunning) {
+					if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
+
 						analysisRunning= true;
 										
 						MSWorker= new MedSavantWorker<Object> (
@@ -275,11 +275,17 @@ public class IncidentalPanel extends JPanel {
 								
 								progressLabel.setText("Downloading and filtering variants...");
 								
-								/* Get all the user settings and then get incidental findings. */
+								/* Get all the user settings. */
 								setAllValuesFromFields();
+								
+								/* Every time an analysis is run, parameters/settings are saved. */
+								saveProperties();
+								
+								/*  Get incidental findings. */
 								incFin= new IncidentalFindings(currentIndividualDNA, 
 										coverageThreshold, hetRatio, afThreshold, 
 										Arrays.asList(chooser.getCheckBoxListSelectedValues()));
+								
 								
 								if (this.isCancelled()) {
 									progressLabel.setText("Analysis Cancelled.");
@@ -430,8 +436,15 @@ public class IncidentalPanel extends JPanel {
 	
 		
 	private void updateVariantPane (IncidentalFindings i) {
-		JPanel jp= i.getTableOutput();
-		variantPane.setViewportView(jp);
+		SearchableTablePanel stp;
+		if (properties.getProperty("sortable_table_panel_columns") == null) {
+			stp= i.getTableOutput(null);
+		} else {
+			stp= i.getTableOutput(
+				getIntArrayFromString(properties.getProperty("sortable_table_panel_columns")));
+		}
+		stp.getColumnChooser().setProperties(properties, PROPERTIES_FILENAME);
+		variantPane.setViewportView(stp);
 	}
 	
 	
@@ -440,13 +453,22 @@ public class IncidentalPanel extends JPanel {
 	}
     
 	
-	/** Set all values from JTextFields. */
+	/** Set all values from JTextFields. Also set the relevant properties. */
 	private void setAllValuesFromFields() {
 		coverageThreshold= Integer.parseInt(coverageThresholdText.getText());
 		hetRatio= Double.parseDouble(hetRatioText.getText());
 		afThreshold= Double.parseDouble(afThresholdText.getText());
+		
+		/* Set the properties. */
+		properties.setProperty("coverage_threshold", Integer.toString(coverageThreshold));
+		properties.setProperty("het_ratio", Double.toString(hetRatio));
+		properties.setProperty("af_threshold", Double.toString(afThreshold));
+		
+		// quote-enclosed, comma-delimited list as string
+		String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(
+			chooser.getCheckBoxListSelectedValues()), "\"\t\"") + "\"";
+		properties.setProperty("af_chooser_list", afChooserStringList);
 	}
-	
 	
 	
 	/** Get the header for the table using the column aliases. */
@@ -464,41 +486,49 @@ public class IncidentalPanel extends JPanel {
 	
 		return t.toArray();
 	}
- 
-		
+
 	
 	/**
 	 * Load the properties file if it exists.
 	 */
 	private void loadProperties () throws Exception {
 		File propertiesFile= new File(PROPERTIES_FILENAME);
-		if (propertiesFile.exists()) {
-			properties.loadFromXML(new FileInputStream(propertiesFile));
-			cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
-			coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
-			hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
-			afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
-		} else {
+		if (!propertiesFile.exists()) {
 			/* Set the defaults. */
-			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 27)).getTimeInMillis(); // CGD date at time of coding
+			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 
+				27)).getTimeInMillis(); // CGD date at time of coding
+			
 			properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
 			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
 			properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
-			cgdURL= new URL(DEFAULT_CGD_URL);
 			
 			properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
 			properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));
 			properties.setProperty("af_threshold", Double.toString(DEFAULT_AF_THRESHOLD));
 			
+			String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_AF_DB_LIST), "\"\t\"") + "\"";
+			properties.setProperty("af_chooser_list", afChooserStringList);
+						
 			saveProperties();
+		} else {
+			properties.loadFromXML(new FileInputStream(propertiesFile));
 		}
+		
+		/* Set the parameters from properties. */
+		cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
+		coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
+		hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
+		afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
+
+		String s= properties.getProperty("af_chooser_list");
+		chooserAFArray= (s.substring(1, s.length() - 1)).split("\"\t\"");
 		
 		// Update CGD file if necessary
 		updateCGD();
 		copyCGD();		
 	}
-		
-		
+
+	
 	/** 
 	 * Save the current set of properties to the properties XML file.
 	 */
@@ -636,5 +666,23 @@ public class IncidentalPanel extends JPanel {
 			writer.newLine();
 		}
 		writer.close();
+	}
+	
+	/**
+	 * Convert string list of integers into an int[].
+	 * @param arr String list in the format "[1,2,3,4,5]
+	 */
+	private int[] getIntArrayFromString(String arr) {
+		String[] items = arr.replaceAll("\\[", "").replaceAll("\\]", "").split("\\s?,\\s?");
+
+		int[] results = new int[items.length];
+
+		for (int i = 0; i < items.length; i++) {
+			try {
+				results[i] = Integer.parseInt(items[i]);
+			} catch (NumberFormatException nfe) {};
+		}
+		
+		return results;
 	}
 }
