@@ -503,7 +503,7 @@ public class VCFAnnotationWizard extends WizardDialog {
 												downloadSerializedFile(jannovar.common.Constants.UCSC);
 											}
 
-											setStatusMessage("Functionally annotating " + file.getName());
+											setStatusMessage("Annotating variants " + file.getName());
 											file= annotateVCFWithJannovar(file);
 										}
 

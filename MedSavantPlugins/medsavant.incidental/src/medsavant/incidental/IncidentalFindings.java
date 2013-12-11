@@ -126,8 +126,11 @@ public class IncidentalFindings {
 	}
 	
 		
-	/** Searchable table output for development testing. */
-	public JPanel getTableOutput() {
+	/** 
+	 * Searchable table output for development testing. 
+	 * @param selectedViewColumns Columns preselected for SearchableTablePanel output
+	 */
+	public SearchableTablePanel getTableOutput(int[] selectedViewColumns) {
 		DataRetriever<Object[]> dr= new DataRetriever<Object[]>() {
 			@Override
 			public List<Object[]> retrieve(int start, int limit) throws Exception {            
@@ -148,9 +151,26 @@ public class IncidentalFindings {
 		for (int i= 0; i != STRING_ONLY_COLUMN_CLASSES.length; ++i)
 			STRING_ONLY_COLUMN_CLASSES[i]= String.class; // FOR NOW ONLY CALLING THESE STRINGS
 		
-		SearchableTablePanel t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
+		SearchableTablePanel t;
+		
+		// if the selected columns use incorrect/outdated indices, default to all columns
+		try {
+			
+			if (selectedViewColumns == null) {
+				t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
+					STRING_ONLY_COLUMN_CLASSES, new int[0], true, true, Integer.MAX_VALUE,
+					false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, dr);
+			} else {
+				t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
+					STRING_ONLY_COLUMN_CLASSES, getHiddenColumns(selectedViewColumns, header.size()), 
+					true, true, Integer.MAX_VALUE, false, 
+					SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, dr);
+			}
+		} catch (Exception e) {
+			t= new SearchableTablePanel("Results", header.toArray(new String[header.size()]), 
 				STRING_ONLY_COLUMN_CLASSES, new int[0], true, true, Integer.MAX_VALUE,
 				false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, dr);
+		}
 		
 		t.setResizeOff();
 		t.setExportButtonVisible(true);
@@ -169,7 +189,8 @@ public class IncidentalFindings {
 	}
 	
 	
-	/** Filter and store all variants for this individual.
+	/** 
+	 * Filter and store all variants for this individual.
 	 * @param afColumns	A string list of the column aliases corresponding to the allele frequency DBs 
 	 */
 	private void storeVariants(List<Object> afColumns) throws SQLException, RemoteException, SessionExpiredException {
@@ -194,6 +215,10 @@ public class IncidentalFindings {
 			
 			cc.addCondition(currentAFComboCondition);
 		}
+		
+		/* Report only variants that have truncation mutations or that are present in
+		 * a disease variant database. So far, Clinvar and HGMD. */
+		// FILL IN LATER - currently downloads all data and filters client-side which is less efficient
 		
 		Condition[][] conditionMatrix= new Condition[1][1];
 		conditionMatrix[0][0]= cc;
@@ -307,12 +332,26 @@ public class IncidentalFindings {
 	}
 	
 	
-	/** Checks to see if variant is in a clinical database.
+	/** 
+	 * Checks to see if variant is in a clinical database.
 	 * Current DBs include Clinvar and HGMD.
+	 * 
+	 * IMPORTANT!
+	 * CURRENTLY HARDCODED FOR DEMO PURPOSES, NEEDS TO BE INTEGRATED INTO BINARYCONDITION/
+	 * COMBOCONDITION QUERY TO SERVER.
 	 */
 	private boolean inClinicalDB(Object[] row) {
-		////// FILL IN - will have to use JDBC
-		return true; ///// TEMP VALUE
+		boolean result= false;
+		
+		String clinvarText= (String) row[header.indexOf("clinvar_20131105b, info")];
+		String hgmdText= (String) row[header.indexOf("hgmd_pro_allmut, gene")];
+		
+		if ((clinvarText != null && clinvarText.length() > 0)
+			|| (hgmdText != null && hgmdText.length() > 0)) {
+			result= true;
+		}
+		
+		return result;
 	}
 	
 	
@@ -495,4 +534,26 @@ public class IncidentalFindings {
 			}
 		}
 	}
+	
+	/**
+	 * Get inverse int[]. If presented with [0,3,4] and the header has 6 elements,
+	 * returns the inverse list [1,2,5].
+	 * @precondition selected.length <= length
+	 */
+	public static int[] getHiddenColumns(int[] selected, int length) {
+		int[] results= new int[length - selected.length];
+		
+		int selectedIndex= 0;
+		int resultsIndex= 0;
+		for (int i= 0; i != length; ++i) {
+			if (selectedIndex < selected.length && selected[selectedIndex] == i) {
+				selectedIndex++;
+			} else {
+				results[resultsIndex++]= i;
+			}
+		}
+		
+		return results;
+	}
+			
 }

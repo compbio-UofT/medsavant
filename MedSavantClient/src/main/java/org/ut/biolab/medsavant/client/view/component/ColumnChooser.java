@@ -19,11 +19,15 @@
  */
 package org.ut.biolab.medsavant.client.view.component;
 
+import cern.colt.Arrays;
 import java.awt.Dimension;
 import javax.swing.JTable;
 
 import com.jidesoft.grid.TableColumnChooserDialog;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
+import java.io.FileOutputStream;
+import java.util.List;
+import java.util.Properties;
 
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
@@ -31,10 +35,13 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 /**
  * Used by a <code>SearchableTablePanel</code> to select the columns to be displayed.
  *
- * @author tarkvara
+ * @author tarkvara, rammar
  */
 public class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
     private JTable table;
+	
+	private Properties properties= null;
+	private String propertiesFilename= null;
 
     public ColumnChooser(JTable t) {
         table = t;
@@ -52,5 +59,26 @@ public class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
         dialog.setSize(new Dimension(300,500));
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
+		
+		
+		/* Optionally save these hidden columns to a Properties object, if initialized. */
+		try {
+			if (properties != null) {
+				int[] selectedColumns= dialog.getSelectedColumns();
+				properties.setProperty("sortable_table_panel_columns", Arrays.toString(selectedColumns));
+				properties.storeToXML(new FileOutputStream(propertiesFilename), "Configuration options");
+			}
+		} catch (Exception e) {
+			System.err.println("[SearchableTablePanel]: Error storing and saving properties.");
+			e.printStackTrace();
+		}
     }
+	
+		
+	public void setProperties(Properties p, String filename) {
+		if (p != null) {			
+			this.properties= p;
+			this.propertiesFilename= filename;
+		}
+	}
 }
