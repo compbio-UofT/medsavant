@@ -21,7 +21,6 @@ package org.ut.biolab.medsavant.shared.format;
 
 import java.io.Serializable;
 import java.sql.Date;
-import java.util.regex.Pattern;
 
 import org.ut.biolab.medsavant.shared.db.ColumnDef;
 import org.ut.biolab.medsavant.shared.db.ColumnType;

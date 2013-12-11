@@ -25,7 +25,8 @@ import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-
+import org.ut.biolab.medsavant.shared.util.ClientPermission;
+import static org.ut.biolab.medsavant.shared.util.ClientType.*;
 
 /**
  *
@@ -33,7 +34,9 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public interface CustomTablesAdapter extends Remote {
 
+    @ClientPermission(deny=WEB)
     public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException, SessionExpiredException;
+    @ClientPermission(deny=WEB)
     public TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException, SessionExpiredException;
 
 }

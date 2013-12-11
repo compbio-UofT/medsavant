@@ -19,6 +19,8 @@
  */
 package org.ut.biolab.medsavant;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
@@ -46,41 +48,34 @@ import java.lang.reflect.Method;
 import java.net.NoRouteToHostException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 
 public class MedSavantClient implements MedSavantServerRegistry {
 
-    //A bean for primitive types.
-    public static class PrimitiveBean<T>{
-        private T value;
-        public PrimitiveBean(T value){
-            this.value = value;
-        }
-        public T getValue(){
-            return value;
-        }
-        public void setValue(T value){
-            this.value = value;
-        }
+    private static final Gson gson;
+ 
+    static {       
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        //configure gson here -- for now, default config seems to work.
+        gson = gsonBuilder.create();      
     }
     
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
+    public static CohortManagerAdapter CohortManager; 
+    public static PatientManagerAdapter PatientManager; 
     public static CustomTablesAdapter CustomTablesManager;
     public static AnnotationManagerAdapter AnnotationManagerAdapter;
-    public static CohortManagerAdapter CohortManager;
     public static GeneSetManagerAdapter GeneSetManager;
     public static LogManagerAdapter LogManager;
     public static NetworkManagerAdapter NetworkManager;
     public static OntologyManagerAdapter OntologyManager;
-    public static PatientManagerAdapter PatientManager;
     public static ProjectManagerAdapter ProjectManager;
     public static UserManagerAdapter UserManager;
     public static SessionManagerAdapter SessionManager;
@@ -89,170 +84,116 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static ReferenceManagerAdapter ReferenceManager;
     public static DBUtilsAdapter DBUtils;
     public static SetupAdapter SetupManager;
-    public static VariantManagerAdapter VariantManager; //proxy
+    public static VariantManagerAdapter VariantManager; 
     public static NotificationManagerAdapter NotificationManager;
     private static final Object managerLock = new Object();
     private static boolean initialized = false;
-
     private static String medSavantServerHost = "localhost";
     private static int medSavantServerPort = 36850;
     
     //Debug variable, for convenience.
     private static Object lastReturnVal;
-    
-    private static void test(){      
-        //String registerNewSession(String user, String pass, String db)
-        String js = json_invoke("SessionManager", "registerNewSession", "[\"root\", \"savant12\", \"indeltest\"]");        
-        String sessionId = (String)lastReturnVal;
-        System.out.println("JS: "+js+"\n");
-        
-        js = json_invoke("ProjectManager", "getProjectNames", "[\""+sessionId+"\"]");
-        System.out.println("JS: "+js+"\n");
-        String firstProject = ((String[])lastReturnVal)[0];
-        
-        js = json_invoke("ProjectManager", "getProjectID", "[\""+sessionId+"\", \""+firstProject+"\"]");
-        System.out.println("JS: "+js+"\n");
-        
-        int projId = ((Integer)lastReturnVal);
-        
-        js = json_invoke("CohortManager", "getCohorts", "[\""+sessionId+"\", \""+projId+"\"]");
-        System.out.println("JS: "+js+"\n");
 
-        
+    private static void test() {
+        //A few simple tests.
+        String js = json_invoke("SessionManager", "registerNewSession", "[\"root\", \"savant12\", \"indeltest\"]");
+        String sessionId = (String) lastReturnVal;
+        System.out.println("JS: " + js + "\n");
+
+        js = json_invoke("ProjectManager", "getProjectNames", "[\"" + sessionId + "\"]");
+        System.out.println("JS: " + js + "\n");
+        String firstProject = ((String[]) lastReturnVal)[0];
+
+        js = json_invoke("ProjectManager", "getProjectID", "[\"" + sessionId + "\", \"" + firstProject + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        int projId = ((Integer) lastReturnVal);
+
+        js = json_invoke("CohortManager", "getCohorts", "[\"" + sessionId + "\", \"" + projId + "\"]");
+        System.out.println("JS: " + js + "\n");
+
         int cohortId = 1;
-        js = json_invoke("CohortManager", "getIndividualsInCohort", "[\""+sessionId+"\", \""+projId+"\", \""+cohortId+"\"]");
-        System.out.println("JS: "+js+"\n");     
+        js = json_invoke("CohortManager", "getIndividualsInCohort", "[\"" + sessionId + "\", \"" + projId + "\", \"" + cohortId + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        //Test CustomField, read-only.  OK.
+        js = json_invoke("PatientManager", "getPatientFields", "[\"" + sessionId + "\", \"" + projId + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        //Test CustomField as parameter
+        js = json_invoke("PatientManager", "test", "[" + js + "]"); //Works!
+        System.out.println("Got void result: " + js);
+
     }
-    
-    /*
-    medsavant.com/VariantManager/getVariants
-            [{} {} {}]*/
-    public static String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException{
-        JSON json = JSONSerializer.toJSON( jsonStr );
-        JSONArray jsonArray;
-        if(json.isArray()){            
-            jsonArray = (JSONArray)json;// JSONSerializer.toJSON( json );
-        }else{
+
+    public static String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException {        
+        JsonParser parser = new JsonParser();
+        JsonArray gArray = parser.parse(jsonStr).getAsJsonArray();
+        JsonElement jse = parser.parse(jsonStr);
+        JsonArray jsonArray;
+
+        if (jse.isJsonArray()) {
+            jsonArray = jse.getAsJsonArray();
+        } else {
             throw new IllegalArgumentException("The json method arguments are not an array");
         }
-        
-        adapter = adapter+"Adapter";
-        
+
+        adapter = adapter + "Adapter";
+
         Field selectedAdapter = null;
-        for(Field f : MedSavantClient.class.getFields()){
-            if(f.getType().getSimpleName().equalsIgnoreCase(adapter)){
-                selectedAdapter = f;                
-            }else{
-              //  System.out.println(f.getType().getSimpleName()+" != "+adapter);
-            }
-        }
-        if(selectedAdapter == null){
-            throw new IllegalArgumentException("The adapter "+adapter+" does not exist");
+        for (Field f : MedSavantClient.class.getFields()) {
+            if (f.getType().getSimpleName().equalsIgnoreCase(adapter)) {
+                selectedAdapter = f;
+            } 
         }
         
+        if (selectedAdapter == null) {
+            throw new IllegalArgumentException("The adapter " + adapter + " does not exist");
+        }
         
-        System.out.println("Selected adapter has class "+selectedAdapter.getType().getName());        
         Method selectedMethod = null;
-        
-        
-        for(Method m : selectedAdapter.getType().getMethods()){
-            if(m.getName().equalsIgnoreCase(method)){
+
+
+        for (Method m : selectedAdapter.getType().getMethods()) {
+            if (m.getName().equalsIgnoreCase(method)) {
                 selectedMethod = m;
-            }else{
-                //System.out.println(method+" != "+m.getName());
-            }
+            } 
         }
-        if(selectedMethod == null){
-            throw new IllegalArgumentException("The method "+method+" in adapter "+adapter+" does not exist");
-        }                              
         
+        if (selectedMethod == null) {
+            throw new IllegalArgumentException("The method " + method + " in adapter " + adapter + " does not exist");
+        }
+
         int i = 0;
-        
+
         Object[] methodArgs = new Object[selectedMethod.getParameterTypes().length];
-        for(Class t : selectedMethod.getParameterTypes()){   
-            System.out.println("Parameter "+i+" should be of type "+t.getName());         
-            
-            if(String.class == t){
-                methodArgs[i] = jsonArray.getString(i);
-            }else if(Integer.class == t || int.class == t){
-                methodArgs[i] = jsonArray.getInt(i);
-            }else if(Double.class == t || double.class == t){
-                methodArgs[i] = jsonArray.getDouble(i);
-            }else if(Float.class == t || float.class == t){
-                methodArgs[i] = (float)jsonArray.getDouble(i);
-            }else if(Boolean.class == t || boolean.class == t){
-                methodArgs[i] = jsonArray.getBoolean(i);                
-            }else if(Long.class == t || long.class == t){
-                methodArgs[i] = jsonArray.getLong(i);
-            }else{                                    
-                JSONObject jo = jsonArray.getJSONObject(i);                    
-                methodArgs[i] = JSONObject.toBean(jo, t.getClass());
-            }
+        for (Class t : selectedMethod.getParameterTypes()) {
+            //if (t.toString().contains("CustomField")) {
+            //    CustomField[] cf = (CustomField[]) gson.fromJson(gArray.get(i), t);
+            //    System.out.println("Custom field name is " + cf[0].getAlias() + " with col length: " + cf[0].getColumnLength());
+            //}
+            methodArgs[i] = gson.fromJson(gArray.get(i), t);
             ++i;
-            //BeanA bean = (BeanA) JSONObject.toBean( jsonObject, BeanA.class );  
         }
-        try{
+        try {
             Object selectedAdapterInstance = selectedAdapter.get(null);
-            if(selectedAdapterInstance == null){
-                throw new NullPointerException("Requested adapter "+selectedAdapter.getName()+" was not initialized.");
+            if (selectedAdapterInstance == null) {
+                throw new NullPointerException("Requested adapter " + selectedAdapter.getName() + " was not initialized.");
             }
-            Object returnVal = selectedMethod.invoke(selectedAdapterInstance, methodArgs);                         
+            //Method invocation
+            Object returnVal = selectedMethod.invoke(selectedAdapterInstance, methodArgs);
             lastReturnVal = returnVal;
-            if(returnVal == null){
-                System.out.println("No return val!");
+            if (returnVal == null) {                
                 return null;
-            }else{
-                //Accepts JSON formatted strings, Maps, arrays, Collections, DynaBeans and JavaBeans. 
-                if(returnVal instanceof Integer){
-                    return JSONSerializer.toJSON(new PrimitiveBean<Integer>((Integer)returnVal)).toString();
-                }else if(returnVal instanceof Long){
-                    return JSONSerializer.toJSON(new PrimitiveBean<Long>((Long)returnVal)).toString();
-                }else if(returnVal instanceof String){
-                    return JSONSerializer.toJSON(new PrimitiveBean<String>((String)returnVal)).toString();
-                }else if(returnVal instanceof Double || returnVal instanceof Float){
-                    return JSONSerializer.toJSON(new PrimitiveBean<Double>((Double)returnVal)).toString();
-                }else if(returnVal instanceof Boolean){
-                    return JSONSerializer.toJSON(new PrimitiveBean<Boolean>((Boolean)returnVal)).toString();
-                }else{
-                    return JSONSerializer.toJSON(returnVal).toString();
-                }
+            } else {
+                return gson.toJson(returnVal, selectedMethod.getReturnType());
             }
-            //return JSONObject.fromObject(returnVal).toString();
-        }catch(IllegalAccessException iae){
-            throw new IllegalArgumentException("Couldn't execute method with given arguments: "+iae.getMessage());
-        }catch(InvocationTargetException ite){
-            throw new IllegalArgumentException("Couldn't execute method with given arguments: "+ite.getMessage());
+
+        } catch (IllegalAccessException iae) {
+            throw new IllegalArgumentException("Couldn't execute method with given arguments: " + iae.getMessage());
+        } catch (InvocationTargetException ite) {
+            throw new IllegalArgumentException("Couldn't execute method with given arguments: " + ite.getMessage());
         }
-    }
-    
-    //Proxy the adapters to process annotations and fire events to the cache controller.
-    private static void initProxies() {
-        /*
-        VariantManager = (VariantManagerAdapter) Proxy.newProxyInstance(
-                VariantManager.getClass().getClassLoader(),
-                new Class[]{VariantManagerAdapter.class},
-                new ServerModificationInvocationHandler<VariantManagerAdapter>(VariantManager));
-
-        CohortManager = (CohortManagerAdapter) Proxy.newProxyInstance(
-                CohortManager.getClass().getClassLoader(),
-                new Class[]{CohortManagerAdapter.class},
-                new ServerModificationInvocationHandler<CohortManagerAdapter>(CohortManager));
-
-        PatientManager = (PatientManagerAdapter) Proxy.newProxyInstance(
-                PatientManager.getClass().getClassLoader(),
-                new Class[]{PatientManagerAdapter.class},
-                new ServerModificationInvocationHandler<PatientManagerAdapter>(PatientManager));
-
-        RegionSetManager = (RegionSetManagerAdapter) Proxy.newProxyInstance(
-                RegionSetManager.getClass().getClassLoader(),
-                new Class[]{RegionSetManagerAdapter.class},
-                new ServerModificationInvocationHandler<RegionSetManagerAdapter>(RegionSetManager));
-
-        OntologyManager = (OntologyManagerAdapter) Proxy.newProxyInstance(
-                OntologyManager.getClass().getClassLoader(),
-                new Class[]{OntologyManagerAdapter.class},
-                new ServerModificationInvocationHandler<OntologyManagerAdapter>(OntologyManager));
-                */
     }
     
 
@@ -280,13 +221,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
         }
 
         LOG.info("MedSavant JSON Client/Server booted.");
-        try{
+        try {
             initializeRegistry(medSavantServerHost, Integer.toString(medSavantServerPort));
             test();
-        }catch(Exception ex){
+        } catch (Exception ex) {
             LOG.error(ex);
             ex.printStackTrace();
-        }        
+        }
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
@@ -338,7 +279,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         SetupAdapter SetupManager;
         VariantManagerAdapter VariantManager;
         NotificationManagerAdapter NotificationManager;
-        
+
         AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
         CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
         LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
@@ -380,10 +321,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
             MedSavantClient.DBUtils = DBUtils;
             MedSavantClient.SetupManager = SetupManager;
             MedSavantClient.VariantManager = VariantManager;
-            MedSavantClient.NotificationManager = NotificationManager;
-
-            initProxies();
-        }        
+            MedSavantClient.NotificationManager = NotificationManager;            
+        }
     }
 
     private static void setExceptionHandler() {

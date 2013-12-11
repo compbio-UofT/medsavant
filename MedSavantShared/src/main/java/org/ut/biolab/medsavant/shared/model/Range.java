@@ -62,6 +62,14 @@ public class Range implements Comparable<Range>, Serializable {
     public double getMax() {
         return max;
     }
+    
+    public void setMin(double min){
+        this.min = min;
+    }
+    
+    public void setMax(double max){
+        this.max = max;
+    }
 
     /**
      * Get the list you get by merging the Range objects in the collection
