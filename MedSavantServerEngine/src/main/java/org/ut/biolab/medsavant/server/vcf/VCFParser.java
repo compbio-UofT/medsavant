@@ -491,7 +491,7 @@ public class VCFParser {
                 }
             }
         } catch (IllegalArgumentException ex) { //only thrown if chromosome was invalid
-            //skip line
+            vcf_warning(ex.getMessage());
             return null;
         } catch (Exception ex) {
             String lStr = "";

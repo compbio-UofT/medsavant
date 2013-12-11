@@ -32,6 +32,7 @@ public class SimplePatient implements Serializable {
     private String hid;
     private List<String> dnaIds;
 
+    public SimplePatient(){  } 
     public SimplePatient(int id, String hid, List<String> dnaIds){
         this.id = id;
         this.hid = hid;
@@ -48,6 +49,18 @@ public class SimplePatient implements Serializable {
 
     public List<String> getDnaIds(){
         return this.dnaIds;
+    }
+    
+    public void setId(int id){
+        this.id = id;
+    }
+    
+    public void setHospitalId(String hid){
+        this.hid = hid;
+    }
+    
+    public void setDnaIds(List<String> dnaIds){
+        this.dnaIds = dnaIds;
     }
 
     @Override
