@@ -121,8 +121,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
         System.out.println("JS: " + js + "\n");
 
         //Test CustomField as parameter
-        js = json_invoke("PatientManager", "test", "[" + js + "]"); //Works!
-        System.out.println("Got void result: " + js);
+        //js = json_invoke("PatientManager", "test", "[" + js + "]"); //Works!
+        //System.out.println("Got void result: " + js);
 
     }
 

@@ -81,95 +81,9 @@
             <artifactId>mail</artifactId>
             <version>1.4.4</version>
         </dependency>        
-        <dependency>
-            <groupId>cytoscape</groupId>
-            <artifactId>application</artifactId>
-            <version>2.8.3</version>
-        </dependency>
-        <!--<dependency>
-            <groupId>org.genemania</groupId>
-            <artifactId>org-genemania</artifactId>
-            <version>3.1</version>
-        </dependency>-->
-    
-    <!-- net.sf.json-lib:json-lib:jar:jdk15:2.4 -->
-        <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <classifier>jdk15</classifier>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.genemania</groupId>
-            <artifactId>genemania-common</artifactId>
-            <version>3.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.genemania</groupId>
-            <artifactId>plugin-cy2</artifactId>
-            <version>3.2</version>
-        </dependency>            
-        <dependency>
-            <groupId>com.apple</groupId>
-            <artifactId>AppleJavaExtensions</artifactId>
-            <version>1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>net.ericaro</groupId>
-            <artifactId>surfaceplotter</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.toronto.cs.savant</groupId>
-            <artifactId>savant-core</artifactId>
-            <version>${savant.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.explodingpixels</groupId>
-            <artifactId>mac_widgets</artifactId>
-            <version>0.9.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.miglayout</groupId>
-            <artifactId>miglayout-swing</artifactId>
-            <version>4.2</version>
-        </dependency>
-        <!-- FIXME: This is GPL, it's incompatible with the LGPL license of MedSavant -->
-        <dependency>
-            <groupId>org.pedviz</groupId>
-            <artifactId>pedviz</artifactId>
-            <version>0.15</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.toronto.cs.savant</groupId>
-            <artifactId>savant-analytics</artifactId>
-            <version>${savant.version}</version>
-        </dependency>
+       
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>cytoscape_releases</id>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <name>Cytoscape Releases</name>
-            <url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-        </repository>
-    </repositories>
+   
 
     <build>
         <plugins>
