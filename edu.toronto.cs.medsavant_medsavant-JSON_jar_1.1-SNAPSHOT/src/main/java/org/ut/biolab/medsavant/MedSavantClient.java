@@ -88,12 +88,18 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static NotificationManagerAdapter NotificationManager;
     private static final Object managerLock = new Object();
     private static boolean initialized = false;
-    private static String medSavantServerHost = "localhost";
+    
+    //change credentials as needed
+    private static String medSavantServerHost = "medsavant-dev.cs.utoronto.ca";
     private static int medSavantServerPort = 36850;
+    private static String username = "guest";
+    private static String password = "guest";
+    private static String db = "dbgoeshere";
     
     //Debug variable, for convenience.
     private static Object lastReturnVal;
-
+    
+    
     private static void test() {
         //A few simple tests.
         String js = json_invoke("SessionManager", "registerNewSession", "[\"root\", \"savant12\", \"indeltest\"]");
