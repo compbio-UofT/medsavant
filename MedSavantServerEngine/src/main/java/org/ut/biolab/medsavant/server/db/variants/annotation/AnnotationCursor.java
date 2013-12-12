@@ -162,6 +162,34 @@ public class AnnotationCursor {
     SimpleVariantRecord lastVariantAnnotated;
     SimpleAnnotationRecord lastAnnotationConsidered;
     String[] lastResult;
+    private final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 10000;
+
+    //Annotates the first numRecords variant records given in 'records'.  
+    //Precondition: All records have the same chromosome, are SNPs, and are ordered by position in ascending order.
+    String[][] annotateSnps(SimpleVariantRecord[] records, int numRecords) {
+        long variantStart = records[0].start;
+        long variantEnd = records[numRecords-1].end;
+        
+        do {
+            //find all annotations that lie within the current basepair window.
+            if (!canAnnotateThisChromosome(records[0].chrom)) {
+                return null;
+            }
+
+            TabixReader.Iterator it =
+                    reader.query(reader.chr2tid(records[0].chrom),
+                    (int) variantStart - 1,
+                    Integer.MAX_VALUE); //this function returns variants AFTER this position, so we need to have the -1
+
+            variantStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW;
+            variantEnd = Math.min(variantStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, records[numRecords - 1].end);
+        } while (variantStart < variantEnd);
+
+
+        if (variantEnd - variantStart) {
+        }
+        return null;
+    }
 
     /**
      * Retrieve the annotation for this variant, if any. If an annotation does
