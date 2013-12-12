@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JPanel;
 import medsavant.incidental.localDB.IncidentalDB;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -45,6 +44,13 @@ public class IncidentalFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
+	private final String JANNOVAR_EFFECT= "jannovar effect";
+	private final String JANNOVAR_GENE= "jannovar gene symbol";
+	private final String STOPGAIN= "STOPGAIN";
+	private final String FRAMESHIFTS= "FS_%";
+	private final String SPLICING= "SPLICING";
+	private final String CLINVAR_COLUMN= "clinvar_20131105b, info";
+	private final String HGMD_COLUMN= "hgmd_pro_allmut, gene";
 	
 	private String GENDER= null;
 	
@@ -87,8 +93,8 @@ public class IncidentalFindings {
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names
 		header= getTableHeader();
-		effectIndex= header.indexOf("jannovar effect");
-		geneSymbolIndex= header.indexOf("jannovar gene symbol");
+		effectIndex= header.indexOf(JANNOVAR_EFFECT);
+		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);
 		
 		// For variant DB lookup - zygosity values based on VariantRecord in org.ut.biolab.medsavant.shared.vcf
 		zygosityMap= new HashMap<String, String>();
@@ -218,7 +224,38 @@ public class IncidentalFindings {
 		
 		/* Report only variants that have truncation mutations or that are present in
 		 * a disease variant database. So far, Clinvar and HGMD. */
-		// FILL IN LATER - currently downloads all data and filters client-side which is less efficient
+		ComboCondition truncationOrDBComboCondition= new ComboCondition(ComboCondition.Op.OR);
+		
+		// Truncation mutations, if they exist
+		if (dbAliasToColumn.get(JANNOVAR_EFFECT) != null) {
+			ComboCondition truncationComboCondition= new ComboCondition(ComboCondition.Op.OR);
+			truncationComboCondition.addCondition(
+				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), STOPGAIN));
+			truncationComboCondition.addCondition(
+				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), SPLICING));
+			truncationComboCondition.addCondition(
+				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), FRAMESHIFTS));
+			
+			truncationOrDBComboCondition.addCondition(truncationComboCondition);
+		}
+
+		// Clinvar DB annotations, if they exist
+		if (dbAliasToColumn.get(CLINVAR_COLUMN) != null) {
+			Condition clinvarCondition= UnaryCondition.isNotNull(
+				ts.getDBColumn(dbAliasToColumn.get(CLINVAR_COLUMN)));
+			
+			truncationOrDBComboCondition.addCondition(clinvarCondition);
+		}
+		
+		// HGMD DB annotations, if they exist
+		if (dbAliasToColumn.get(HGMD_COLUMN) != null) {
+			Condition hgmdCondition= UnaryCondition.isNotNull(
+				ts.getDBColumn(dbAliasToColumn.get(HGMD_COLUMN)));
+			
+			truncationOrDBComboCondition.addCondition(hgmdCondition);
+		}
+		
+		cc.addCondition(truncationOrDBComboCondition);
 		
 		Condition[][] conditionMatrix= new Condition[1][1];
 		conditionMatrix[0][0]= cc;
@@ -272,8 +309,11 @@ public class IncidentalFindings {
 			String classification= query.get(0);
 			String inheritance= query.get(1);
 			
+			/* // OLD CLIENT-SIDE FILTERING - DO NOT USE
 			if (inheritance != null && !inheritance.equals("") &&
 					(hasTruncationMutation(row) || inClinicalDB(row))) {
+			*/
+			if (inheritance != null && !inheritance.equals("")) {
 						
 				List<Object> listRow= new ArrayList<Object>(Arrays.asList(row));
 				listRow.add(inheritance);
@@ -288,7 +328,7 @@ public class IncidentalFindings {
 	}
 	
 	
-	/* Checks if this variant encodes a truncation mutation. 
+	/** Checks if this variant encodes a truncation mutation. 
 	 * Expects Jannovar-style annotations in the EFFECT column. Based on Jannovar
 	 * documentation (JannovarTutorial.pdf) the possibilities are:
 	 * 
@@ -318,6 +358,7 @@ public class IncidentalFindings {
 	 * SPLICING
 	 * FS_DELETION
 	 * 
+	 * @deprecated Do not use
 	 */
 	private boolean hasTruncationMutation(Object[] row) {
 		boolean result= false;
@@ -339,6 +380,8 @@ public class IncidentalFindings {
 	 * IMPORTANT!
 	 * CURRENTLY HARDCODED FOR DEMO PURPOSES, NEEDS TO BE INTEGRATED INTO BINARYCONDITION/
 	 * COMBOCONDITION QUERY TO SERVER.
+	 * 
+	 * @deprecated Do not use
 	 */
 	private boolean inClinicalDB(Object[] row) {
 		boolean result= false;
