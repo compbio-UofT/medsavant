@@ -64,8 +64,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import org.ut.biolab.medsavant.client.util.CacheController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -73,6 +71,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 public class MedSavantClient implements MedSavantServerRegistry {

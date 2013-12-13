@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 
 /**
@@ -142,5 +143,15 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
                 conn.close();
             }
         }
+    }
+
+
+    @Override
+    public String getServerVersion() throws RemoteException, SessionExpiredException {
+        return VersionSettings.getVersionString();
+    }
+
+    public String getServerVersionWhenDatabaseCreated(String sessID) throws SQLException, SessionExpiredException {
+       return getSetting(sessID,Settings.KEY_SERVER_VERSION);
     }
 }

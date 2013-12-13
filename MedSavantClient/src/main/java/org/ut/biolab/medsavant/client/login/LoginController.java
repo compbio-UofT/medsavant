@@ -20,8 +20,6 @@
 package org.ut.biolab.medsavant.client.login;
 
 import java.net.NoRouteToHostException;
-import java.rmi.ConnectIOException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
@@ -38,12 +36,12 @@ import org.ut.biolab.medsavant.client.project.ProjectChooser;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.project.ProjectWizard;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -168,15 +166,13 @@ public class LoginController extends Controller<LoginEvent> {
 
         //check db version
         try {
-            String databaseVersion = VersionSettings.getDatabaseVersion(); // TODO: implement database version check
-            if (!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)) {
-                DialogUtils.displayMessage("Version Mismatch", "<html>Your client version (" + VersionSettings.getVersionString() + ") is not compatible with the selected database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>");
+            String clientVersion = VersionSettings.getVersionString(); // TODO: implement database version check
+            String serverVersion = MedSavantClient.SettingsManager.getServerVersion();
+            if (!VersionSettings.isClientCompatibleWithServer(clientVersion, serverVersion)) {
+                DialogUtils.displayMessage("Version Mismatch", "<html>Your client version (" + clientVersion + ") is not compatible with the server (" + serverVersion + ").<br>Visit " + WebResources.URL + " to get the correct version.</html>");
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
                 return;
             }
-        } catch (SQLException ex) {
-            fireEvent(new LoginEvent(ex));
-            return;
         } catch (Exception ex) {
             LOG.error("Error comparing versions.", ex);
             ex.printStackTrace();

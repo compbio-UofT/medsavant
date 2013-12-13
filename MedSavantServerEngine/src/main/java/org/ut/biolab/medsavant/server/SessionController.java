@@ -55,13 +55,13 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public synchronized String registerNewSession(String user, String password, String dbName) throws RemoteException, SQLException {
+    public synchronized String registerNewSession(String user, String password, String dbName) throws RemoteException, SQLException, Exception {
         String sessionID = nextSession();
         ConnectionController.registerCredentials(sessionID, user, password, dbName);
         LOG.info("Registered session " + sessionID + " for " + user);
         return sessionID;
     }
-
+    
     @Override
     public void unregisterSession(String sessID) throws RemoteException, SQLException {
         // TODO: fix this, session connection pools are needed by orphaned jobs

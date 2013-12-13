@@ -31,7 +31,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public interface SessionManagerAdapter extends Remote {
 
-    String registerNewSession(String user, String pass, String db) throws RemoteException, SQLException, SessionExpiredException;
+    String registerNewSession(String user, String pass, String db) throws RemoteException, SQLException, SessionExpiredException, Exception;
     void unregisterSession(String sessID) throws RemoteException, SQLException, SessionExpiredException;
     void testConnection(String sessID) throws RemoteException, SQLException, SessionExpiredException;
 }

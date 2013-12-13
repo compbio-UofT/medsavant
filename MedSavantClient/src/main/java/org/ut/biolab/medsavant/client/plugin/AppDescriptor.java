@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 /**
  * Plugin description read from the plugin.xml file.
  *
@@ -226,14 +225,6 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     public int compareTo(AppDescriptor t) {
         return (name + version).compareTo(t.name + t.version);
     }
-
-    /**
-     * Here's where we do our SDK compatibility check.
-     */
-    public boolean isCompatible() {
-        return MedSavantSDKInformation.isAppCompatible(this.getSDKVersion());
-    }
-
 
     public static AppDescriptor fromFile(File f) throws PluginVersionException {
         try {

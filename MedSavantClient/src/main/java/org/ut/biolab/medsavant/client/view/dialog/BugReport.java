@@ -33,7 +33,7 @@ import java.util.List;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 /**
  *
