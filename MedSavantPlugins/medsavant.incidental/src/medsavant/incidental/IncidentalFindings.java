@@ -73,7 +73,8 @@ public class IncidentalFindings {
 	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);
 	private Pattern truncationPattern= Pattern.compile("STOPGAIN|FS_\\w+|SPLICING", Pattern.CASE_INSENSITIVE);
 	private Pattern geneSymbolPattern= Pattern.compile("^([^(]+)");
-	
+	private Pattern formatFieldPattern= Pattern.compile(";?FORMAT=([^;]*AD[^;]*);?", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
+	private Pattern sampleInfoFieldPattern= Pattern.compile(";?SAMPLE_INFO=([^;]+);?", Pattern.CASE_INSENSITIVE);
 	
 	/** Find all mutations in disease genes and filter for relevance.
 	 * @param dnaID	Patient's DNA ID
@@ -308,12 +309,9 @@ public class IncidentalFindings {
 			
 			String classification= query.get(0);
 			String inheritance= query.get(1);
-			
-			/* // OLD CLIENT-SIDE FILTERING - DO NOT USE
-			if (inheritance != null && !inheritance.equals("") &&
-					(hasTruncationMutation(row) || inClinicalDB(row))) {
-			*/
-			if (inheritance != null && !inheritance.equals("")) {
+
+			if (inheritance != null && !inheritance.equals("") && 
+				coverageAndRatioPass(row, true)) {
 						
 				List<Object> listRow= new ArrayList<Object>(Arrays.asList(row));
 				listRow.add(inheritance);
@@ -398,15 +396,25 @@ public class IncidentalFindings {
 	}
 	
 	
-	/** Checks that this variant passes coverage and heterozygote ratio thresholds. */
-	private boolean coverageAndRatioPass(Object[] row) {
+	/** 
+	 * Checks that this variant passes coverage and heterozygote ratio thresholds. 
+	 * If there is no coverage information present for a variant, it is reported 
+	 * as specified by the if-absent parameter. 
+	 * @param row The variant row which contains all VCF details
+	 * @param outputIfAbsent If AD is absent from FORMAT file and DP4 is absent from INFO field, decides whether to output variant
+	 * @return Returns if this variant passes the coverage and ratio cutoffs
+	 */
+	private boolean coverageAndRatioPass(Object[] row, boolean outputIfAbsent) {
 		boolean result= false;
 		
 		String info_field= (String) row[BasicVariantColumns.INDEX_OF_CUSTOM_INFO];
 	
 		Matcher dp4Matcher= dp4Pattern.matcher(info_field);
-
-		if (dp4Matcher.find()) {
+		Matcher formatFieldMatcher= formatFieldPattern.matcher(info_field);
+		Matcher sampleInfoFieldMatcher= sampleInfoFieldPattern.matcher(info_field);		
+		
+		/* Process DP4 or AD or AO text (from VCF INFO or Format columns) if present. */
+		if (dp4Matcher.find()) { // NOTE: need to run find() to get group() below
 
 			String dp4Text= dp4Matcher.group(1);
 
@@ -421,19 +429,35 @@ public class IncidentalFindings {
 			 * URL: http://samtools.sourceforge.net/mpileup.shtml
 			 */
 
-			// Split on "," and check if 1) alt >= 10x, 2) alt/total >= 0.3
+			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
 			String[] delimited= dp4Text.split(",");
 			int refCount= Integer.parseInt(delimited[0]) + Integer.parseInt(delimited[1]);
 			int altCount= Integer.parseInt(delimited[2]) + Integer.parseInt(delimited[3]);
-			double hetRatio= ((double) altCount)/(altCount + refCount);
+			double ratio= ((double) altCount)/(altCount + refCount);
 
-			if (altCount >= 10 && hetRatio >= 0.3) {
+			if (altCount >= coverageThreshold && ratio >= hetRatio) {
 				result= true;
-			} /*else {
-				System.out.println("Reject variant DP4: " + dp4Text);
-				System.out.println("Alt Count: " + altCount + " refCount: " + refCount);
-				System.out.println("Ratio: " + hetRatio);
-			}*/
+			} 
+			
+		} else if (formatFieldMatcher.find() && sampleInfoFieldMatcher.find()) { // NOTE: need to run find() to get group() below
+			
+			String formatFieldText= formatFieldMatcher.group(1);
+			String sampleInfoFieldText= sampleInfoFieldMatcher.group(1);
+			
+			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
+			String[] adDelimited= formatFieldText.split(":");
+			int adIndex= Arrays.asList(adDelimited).indexOf("AD");
+			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
+			int refCount= Integer.parseInt(adCoverageDelimited[0]);
+			int altCount= Integer.parseInt(adCoverageDelimited[1]);
+			double ratio= ((double) altCount)/(altCount + refCount);
+			
+			if (altCount >= coverageThreshold && ratio >= hetRatio) {
+				result= true;
+			}
+			
+		} else if (outputIfAbsent) { // check the default behaviour if coverage is absent
+			result= true;
 		}
 		
 		return result;
