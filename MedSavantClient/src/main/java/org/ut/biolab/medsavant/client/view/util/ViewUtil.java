@@ -810,6 +810,10 @@ public final class ViewUtil {
         }
     }
 
+    public static JDialog getHUD(Component parent, String title, String text) {
+        return getHUD(parent, title, text, false);
+    }
+
     public static JDialog getHUD(Component parent, String title, String text, boolean modal) {
         return getHUD(parent, title, text, false, modal);
     }
