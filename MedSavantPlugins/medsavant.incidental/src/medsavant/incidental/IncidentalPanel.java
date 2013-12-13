@@ -1,10 +1,13 @@
 package medsavant.incidental;
 
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.CheckBoxList;
 import java.util.Calendar;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -36,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
@@ -48,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import medsavant.incidental.localDB.IncidentalDB;
 import medsavant.incidental.localDB.IncidentalHSQLServer;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -105,10 +110,9 @@ public class IncidentalPanel extends JPanel {
 	
 	private JPanel view;
 	private RoundedPanel workview;
-	private JLabel topText;
 	private JButton choosePatientButton;
 	private JButton analyzeButton;
-	private String analyzeButtonDefaultText= "Identify Incidental Variants";
+	private String analyzeButtonDefaultText= "Refresh";
 	private IndividualSelector customSelector;
 	private Set<String> selectedIndividuals;
 	private String currentIndividual;
@@ -131,8 +135,9 @@ public class IncidentalPanel extends JPanel {
 	private JButton chooseAFColumns;
 	private JButton chooseAFColumnsHelp;
 	private CheckBoxList chooser;
-	private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
+	//private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
 	private URL cgdURL;
+	private CollapsiblePane collapsible;
 	
 	private IncidentalHSQLServer server;
     
@@ -159,35 +164,31 @@ public class IncidentalPanel extends JPanel {
 		//view.setBorder(BorderFactory.createLineBorder(Color.RED));
 		view.setBorder(BorderFactory.createEmptyBorder(TOP_MARGIN, SIDE_MARGIN, BOTTOM_MARGIN, SIDE_MARGIN));
 		
-		
-		/* Set up the layout for the GUI. */
-		workview= new RoundedPanel(10);
-		GroupLayout layout= new GroupLayout(workview);
-		workview.setLayout(layout);
-		layout.setAutoCreateGaps(true);
-		layout.setAutoCreateContainerGaps(true);
-						
-		
-		topText= new JLabel("Patient selection:");
 		choosePatientButton= new JButton("Choose Patient");
+		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
+			Font.PLAIN, 18));
+				
 		analyzeButton= new JButton(analyzeButtonDefaultText);
+		analyzeButton.setFont(new Font(analyzeButton.getFont().getName(),
+			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
+		analyzeButton.setVisible(false);
 		
 		Dimension d= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
 		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
-		coverageThresholdText.setMaximumSize(d);
+		coverageThresholdText.setMinimumSize(d);
 		coverageThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		coverageThresholdHelp= ViewUtil.getHelpButton("Coverage Threshold", 
 				"Minimum number of sequence reads supporting the alternate allele.");
 		hetRatioText= new JTextField(Double.toString(hetRatio));
-		hetRatioText.setMaximumSize(d);
+		hetRatioText.setMinimumSize(d);
 		hetRatioText.setHorizontalAlignment(JTextField.RIGHT);
 		hetRatioHelp= ViewUtil.getHelpButton("Alt/Total Ratio", 
 				"In order for a variant to be included, it must exceeed this threshold, "
 				+ "so as not to be excluded as an erroneous variant. "
 				+ "Below this threshold, alternate alleles are not reported.");
 		afThresholdText= new JTextField(Double.toString(afThreshold));
-		afThresholdText.setMaximumSize(d);
+		afThresholdText.setMinimumSize(d);
 		afThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		afThresholdHelp= ViewUtil.getHelpButton("Allele Frequency Threshold", 
 				"The maximum allele frequency for this variant. In order for a "
@@ -195,7 +196,7 @@ public class IncidentalPanel extends JPanel {
 				+ "threshold across all allele frequency databases.");
 		
 		
-		statusSeparator.setVisible(false);
+		//statusSeparator.setVisible(false);
 		
 		progressLabel= new JLabel();
 		progressLabel.setVisible(false);
@@ -226,6 +227,7 @@ public class IncidentalPanel extends JPanel {
 						if (currentIndividualDNA != null) {
 							choosePatientButton.setText(currentIndividual);
 							analyzeButton.setEnabled(true);
+							analyzeButton.doClick(); // trigger button's actionPerformed() even though it's not visible
 						} else {
 							choosePatientButton.setText("No DNA ID for " + currentIndividual);
 						}
@@ -256,10 +258,11 @@ public class IncidentalPanel extends JPanel {
 							protected Object doInBackground() throws Exception {
 								/* Starts a new thread for background tasks. */
 								
-								statusSeparator.setVisible(true);
+								//statusSeparator.setVisible(true);
 								progressLabel.setVisible(true);
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
+								analyzeButton.setVisible(true);
 								
 								//if (!server.isRunning()) { // No need to run a local server if using JDBC driver from hsqldb
 								if (!dbLoaded) {
@@ -350,85 +353,45 @@ public class IncidentalPanel extends JPanel {
 		/* Set up the layout for the UI.
 		 * GroupLayout requires defintion of the same components from both 
 		 * horizontal and verical perspectives. */
-		layout.setAutoCreateGaps(true); // Not sure if this really makes a difference...
 		
-		layout.setHorizontalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-				.addGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-						.addComponent(topText)
-						.addComponent(choosePatientButton)
-						.addComponent(analyzeButton)
-						)
-					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(coverageThresholdLabel)
-							.addComponent(coverageThresholdText)
-							.addComponent(coverageThresholdHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(hetRatioLabel)
-							.addComponent(hetRatioText)
-							.addComponent(hetRatioHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(afThresholdLabel)
-							.addComponent(afThresholdText)
-							.addComponent(afThresholdHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(chooseAFColumns)
-							.addComponent(chooseAFColumnsHelp)
-							)
-						)
-					)
-				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addComponent(statusSeparator)
-					.addComponent(progressLabel)
-					.addComponent(pw)
-					)
-				.addComponent(variantPane)
-		);
+		/* Set up the layout for the advanced options collapsible panel. */
+		collapsible= new CollapsiblePane("Advanced options");
+		collapsible.setLayout(new MigLayout());
+		collapsible.add(coverageThresholdLabel);
+		collapsible.add(coverageThresholdText);
+		collapsible.add(coverageThresholdHelp, "wrap");
+		collapsible.add(hetRatioLabel);
+		collapsible.add(hetRatioText);
+		collapsible.add(hetRatioHelp, "wrap");
+		collapsible.add(afThresholdLabel);
+		collapsible.add(afThresholdText);
+		collapsible.add(afThresholdHelp, "wrap");
+		collapsible.add(chooseAFColumns);
+		collapsible.add(chooseAFColumnsHelp);
+		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsible.setFocusPainted(false);
+		collapsible.collapse(true);
 		
-		layout.setVerticalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(topText)
-						.addComponent(choosePatientButton)
-						.addComponent(analyzeButton)
-						)
-					.addGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(coverageThresholdLabel)
-							.addComponent(coverageThresholdText)
-							.addComponent(coverageThresholdHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(hetRatioLabel)
-							.addComponent(hetRatioText)
-							.addComponent(hetRatioHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(afThresholdLabel)
-							.addComponent(afThresholdText)
-							.addComponent(afThresholdHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(chooseAFColumns)
-							.addComponent(chooseAFColumnsHelp)
-							)
-						)
-					)
-				.addGroup(layout.createSequentialGroup()
-					// special parameters for the separator when adding vertically
-					.addComponent(statusSeparator, GroupLayout.PREFERRED_SIZE, 
-						GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addComponent(progressLabel)
-					.addComponent(pw)
-					)
-				.addComponent(variantPane)
-		);
+		/* Patient selection panel. */
+		CollapsiblePanes patientPanel= new CollapsiblePanes();
+		patientPanel.add(choosePatientButton);
+		patientPanel.add(collapsible);
+		patientPanel.add(analyzeButton);
+		
+		/* Progress bar panel. */
+		JPanel progressPanel= new JPanel(new MigLayout("", "center", "center"));
+		progressPanel.add(progressLabel, "wrap");
+		progressPanel.add(pw, "");
+		
+		/* Final window layout along with size preferences. */
+		collapsible.setMinimumSize(new Dimension(350,20));
+		variantPane.setPreferredSize(variantPane.getMaximumSize());
+		
+		workview= new RoundedPanel(10);
+		workview.setLayout(new MigLayout("", "center", "top"));
+		workview.add(patientPanel, "cell 0 0 1 2");
+		workview.add(variantPane, "cell 1 0");
+		workview.add(progressPanel, "cell 1 1");
 		
 		/* Add the UI to the main app panel. */
 		view.add(workview, BorderLayout.CENTER);
