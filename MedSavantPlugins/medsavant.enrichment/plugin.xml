@@ -3,13 +3,13 @@
 <plugin class="medsavant.enrichment.EnrichmentApp">
     <properties>
         <property name="version" value="1.0.0" />
-        <property name="sdk-version" value="1.1-SNAPSHOT" />
+        <property name="sdk-version" value="1.1-rc-2" />
         <property name="name" value="Enrichment" />
         <property name="category" value="ANALYSIS" />
         <property name="author" value="University of Toronto" />
         <property name="webpage" value="http://www.genomesavant.com" />
         <property name="newinversion" value="Initial Version" />
         <property name="shortdesc" value="demo" />
-        <property name="description" />        
+        <property name="description" />
     </properties>
 </plugin>

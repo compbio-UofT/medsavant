@@ -30,7 +30,6 @@ import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
@@ -129,7 +128,7 @@ public class AdminDialog extends JDialog {
             public void run() {
                 try {
                     MedSavantClient.initializeRegistry(address, port + "");
-                    MedSavantClient.SetupManager.createDatabase(address, port, database, username, password, VersionSettings.getVersionString());
+                    MedSavantClient.SetupManager.createDatabase(address, port, database, username, password);
                     DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
                 } catch (Throwable ex) {
                     setVisible(false);

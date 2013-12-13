@@ -19,6 +19,8 @@
  */
 package org.ut.biolab.medsavant.server.db;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,9 +35,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -146,8 +152,8 @@ public class ConnectionController {
     /**
      * Register credentials for the given session.
      */
-    public static void registerCredentials(String sessID, String user, String pass, String db) throws SQLException {
-        LOG.debug(String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
+    public static void registerCredentials(String sessID, String user, String pass, String db) throws SQLException, RemoteException, Exception {
+        //LOG.debug(String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
         ConnectionPool pool = new ConnectionPool(db, user, pass);
         LOG.debug(String.format("sc=%s", pool));
         synchronized (sessionPoolMap) {
@@ -156,6 +162,25 @@ public class ConnectionController {
             Connection c = null;
             try {
                 c = pool.getConnection();
+
+                // check that the database is not outdated, i.e. compatible with this server
+                if (db != null && !db.equals("")) {
+
+                    String dbVersion = SettingsManager.getInstance().getServerVersionWhenDatabaseCreated(sessID);
+                    String serverVersion = VersionSettings.getVersionString();
+                    LOG.info("Checking compatibility of database " + dbVersion + " to server " + serverVersion);
+                    try {
+                        if (!VersionSettings.isDatabaseCompatibleWithServer(dbVersion, serverVersion)) {
+                            LOG.info("Database " + dbVersion + " and server " + serverVersion + " are NOT compatible");
+                            throw new Exception("Database (" + dbVersion + ") is not compatible with server (" + serverVersion + ")");
+                        } else {
+                            LOG.info("Database " + dbVersion + " and server " + serverVersion + " are compatible");
+                        }
+                    } catch (ParserConfigurationException e) {
+                        throw new Exception("Problem checking compatibility between server and database");
+                    }
+                }
+
             } finally {
                 if (c != null) {
                     c.close();

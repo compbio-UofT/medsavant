@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -231,7 +230,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                 public void run() {
                     try {
                         MedSavantClient.initializeRegistry(hostField.getText(), portField.getText());
-                        MedSavantClient.SetupManager.createDatabase(hostField.getText(), Integer.parseInt(portField.getText()), databaseField.getText(), userField.getText(), passwordField.getPassword(), VersionSettings.getVersionString());
+                        MedSavantClient.SetupManager.createDatabase(hostField.getText(), Integer.parseInt(portField.getText()), databaseField.getText(), userField.getText(), passwordField.getPassword());
                         AddRemoveDatabaseDialog.this.setVisible(false);
                         DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", databaseField.getText()));
                     } catch (Throwable ex) {

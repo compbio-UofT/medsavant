@@ -65,7 +65,6 @@ import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
@@ -82,6 +81,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -570,7 +570,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 @Override
                 public void handleAbout(AboutEvent evt) {
                     JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + MedSavantSDKInformation.getSDKVersion()
+                            + VersionSettings.getVersionString()
                             + "\nCreated by Biolab at University of Toronto.");
                 }
             });

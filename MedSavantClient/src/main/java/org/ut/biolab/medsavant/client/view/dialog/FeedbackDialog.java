@@ -19,7 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view.dialog;
 
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import savant.api.util.DialogUtils;
 
 /**

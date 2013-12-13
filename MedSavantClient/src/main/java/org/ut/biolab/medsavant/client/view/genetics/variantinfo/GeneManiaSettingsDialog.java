@@ -20,6 +20,7 @@
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
@@ -119,7 +120,6 @@ public class GeneManiaSettingsDialog extends JDialog{
         okButton = new JButton();
         updateQueryNeeded= false;
 
-        limitTo.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         limitTo.setText("Limit to");
         genemaniaScore.setSelected(true);
         rankByVarFreq=false;
@@ -133,7 +133,8 @@ public class GeneManiaSettingsDialog extends JDialog{
         predict.setSelected(true);
         average.setSelected(true);
         okButton.setEnabled(false);
-        relatedGenesLimit.setColumns(3);
+        relatedGenesLimit.setColumns(5);
+        relatedGenesLimit.setPreferredSize(new Dimension(30,relatedGenesLimit.getPreferredSize().height));
         relatedGenesLimit.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,7 +146,6 @@ public class GeneManiaSettingsDialog extends JDialog{
 
         relatedGenes.setText("related genes.");
 
-        rankBy.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         rankBy.setText("Rank by");
 
         ActionListener scoringActionPerformed = new ActionListener() {
@@ -170,7 +170,6 @@ public class GeneManiaSettingsDialog extends JDialog{
         genemaniaScore.setActionCommand("genemaniaScore");
         genemaniaScore.addActionListener(scoringActionPerformed);
 
-        networks.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         networks.setText("Networks");
 
         ActionListener networksActionPerformed = new ActionListener() {
@@ -212,7 +211,6 @@ public class GeneManiaSettingsDialog extends JDialog{
         other.setText("Other");
         other.addActionListener(networksActionPerformed);
 
-        networkWeighting.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         networkWeighting.setText("Network weighting");
 
         equal.setBorder(javax.swing.BorderFactory.createTitledBorder("Equal weighting"));

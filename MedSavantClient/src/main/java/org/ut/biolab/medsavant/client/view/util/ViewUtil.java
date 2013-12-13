@@ -814,6 +814,10 @@ public final class ViewUtil {
         return getHUD(parent, title, text, false);
     }
 
+    public static JDialog getHUD(Component parent, String title, String text, boolean modal) {
+        return getHUD(parent, title, text, false, modal);
+    }
+
     public static double parseDoubleFromFormattedString(String s) {
         NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
         try {
@@ -825,7 +829,7 @@ public final class ViewUtil {
         }
     }
 
-    public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon) {
+    public static JDialog getHUD(Component parent, String title, String text, boolean hideCloseIcon, boolean modal) {
         int width = 300;
 
         JLabel l = new JLabel();
@@ -846,6 +850,7 @@ public final class ViewUtil {
             final HudWindow hud = new HudWindow(title);
             contentPane = hud.getContentPane();
             d = hud.getJDialog();
+            d.setModal(modal);
             l.setForeground(Color.white);
             if (hideCloseIcon) {
                 hud.hideCloseButton();
@@ -882,6 +887,10 @@ public final class ViewUtil {
     }
 
     public static JButton getHelpButton(final String title, final String helpText) {
+        return getHelpButton(title,helpText, false);
+    }
+
+    public static JButton getHelpButton(final String title, final String helpText, final boolean modal) {
 
         final JButton helpButton = new JButton("?");
         ViewUtil.makeSmall(helpButton);
@@ -897,7 +906,7 @@ public final class ViewUtil {
         helpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                JDialog d = getHUD(helpButton, title, helpText);
+                JDialog d = getHUD(helpButton, title, helpText, modal);
                 d.setVisible(true);
                 try {
                     AnalyticsAgent.log(title + " help button pressed");

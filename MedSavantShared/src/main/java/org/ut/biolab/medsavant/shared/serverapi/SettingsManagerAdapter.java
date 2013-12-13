@@ -37,4 +37,5 @@ public interface SettingsManagerAdapter extends Remote {
     public void updateSetting(String sid, String key, String value) throws SQLException, RemoteException, SessionExpiredException;
     public boolean getDBLock(String sid) throws SQLException, RemoteException, SessionExpiredException;
     public void releaseDBLock(String sid) throws SQLException, RemoteException, SessionExpiredException;
+    public String getServerVersion() throws RemoteException, SessionExpiredException;
 }
