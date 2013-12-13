@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,6 +44,8 @@ import org.xml.sax.SAXException;
  * @author mfiume
  */
 public class VersionSettings {
+
+    private static final Log LOG = LogFactory.getLog(VersionSettings.class);
 
     // version to user if the version could not be found
     private static final String UNDEFINED_VERSION = "";
@@ -75,7 +79,7 @@ public class VersionSettings {
 
     public static boolean isCompatible(URL url, String queryVersion, String hostVersion, boolean exactMatchByPass) throws SAXException, IOException {
 
-        System.out.println("Checking comptatibility betwen " + queryVersion + " and host: " + hostVersion);
+        LOG.info("Checking compatibility between " + queryVersion + " and host: " + hostVersion);
 
         if (exactMatchByPass) {
             if (hostVersion.equals(queryVersion)) {
@@ -114,17 +118,17 @@ public class VersionSettings {
     }
 
     public static boolean isClientCompatibleWithServer(String clientVersion, String serverVersion) throws IOException, SAXException {
-        System.out.println("Checking client->server comptatibility");
+        LOG.info("Checking client->server compatibility");
         return isCompatible(WebResources.CLIENT_SERVER_VERSION_COMPATIBILITY_URL,clientVersion,serverVersion,true);
     }
 
     public static boolean isDatabaseCompatibleWithServer(String dbVersion, String serverVersion) throws IOException, SAXException {
-        System.out.println("Checking database->server comptatibility");
+        LOG.info("Checking database->server compatibility");
         return isCompatible(WebResources.DATABASE_SERVER_VERSION_COMPATIBILITY_URL,dbVersion,serverVersion,true);
     }
 
     public static boolean isAppSDKCompatibleWithClient(String appSDKVersion, String clientVersion) throws IOException, SAXException {
-        System.out.println("Checking app->client comptatibility");
+        LOG.info("Checking app->client compatibility");
         return isCompatible(WebResources.APPSDK_CLIENT_VERSION_COMPATIBILITY_URL,appSDKVersion,clientVersion,false);
     }
 }
