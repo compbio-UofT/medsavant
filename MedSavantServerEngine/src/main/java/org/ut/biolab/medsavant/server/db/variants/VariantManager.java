@@ -225,7 +225,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Import variant files which have been transferred from a client.
      */
     @Override
-    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws Exception {
+    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
 
         String backgroundSessionID = SessionController.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -244,7 +244,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 i++;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish);
+            return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
         } finally {
             SessionController.getInstance().unregisterSession(backgroundSessionID);
         }
@@ -255,7 +255,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * of an entire directory.
      */
     @Override
-    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws RemoteException, SessionExpiredException, IOException, Exception {
+    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, SessionExpiredException, IOException, Exception {
 
         String backgroundSessionID = SessionController.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -282,7 +282,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 return -1;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish);
+            return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
         } finally {
             SessionController.getInstance().unregisterSession(backgroundSessionID);
         }
@@ -296,12 +296,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    public int uploadVariants(String userSessionID, File[] vcfFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish) throws Exception {
+    public int uploadVariants(String userSessionID, File[] vcfFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
 
         String backgroundSessionID = SessionController.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
         try {
+            if (preAnnotateWithAnnovar) {
+                vcfFiles = Jannovar.annotateVCFFiles(vcfFiles);
+            }
             int updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, autoPublish, vcfFiles, includeHomoRef, tags);
             EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
 
