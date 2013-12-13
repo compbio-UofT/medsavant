@@ -259,12 +259,12 @@ public class FilterController extends Controller<FilterEvent> {
 
             @Override
             public String getName() {
-                return "fake";
+                return "";
             }
 
             @Override
             public String getID() {
-                return "faker";
+                return "";
             }
 
             @Override
