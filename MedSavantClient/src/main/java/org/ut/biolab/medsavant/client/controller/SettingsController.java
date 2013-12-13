@@ -31,7 +31,7 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 import savant.util.CryptoUtils;
 
@@ -220,7 +220,7 @@ public class SettingsController {
      */
     private void resetPersistenceMap() {
         this.persistenceMap.clear();
-        setValueSilent(KEY_VERSION,MedSavantSDKInformation.getSDKVersion());
+        setValueSilent(KEY_VERSION,VersionSettings.getVersionString());
         resetSettingSilent(KEY_USERNAME);
         resetSettingSilent(KEY_PASSWORD);
         resetSettingSilent(KEY_REMEMBER_PASSWORD);

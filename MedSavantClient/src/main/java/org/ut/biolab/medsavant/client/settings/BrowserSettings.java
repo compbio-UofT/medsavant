@@ -20,6 +20,7 @@
 package org.ut.biolab.medsavant.client.settings;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 /**
  *
