@@ -89,7 +89,7 @@
             <artifactId>org-genemania</artifactId>
             <version>3.1</version>
         </dependency>-->
-    
+
         <dependency>
             <groupId>org.genemania</groupId>
             <artifactId>genemania-common</artifactId>
@@ -100,7 +100,7 @@
             <artifactId>plugin-cy2</artifactId>
             <version>3.2</version>
         </dependency>
-    
+
         <dependency>
             <groupId>jide</groupId>
             <artifactId>jide-components</artifactId>
@@ -170,6 +170,11 @@
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout-swing</artifactId>
             <version>4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar</artifactId>
+            <version>0.1.1-beta-1</version>
         </dependency>
         <!-- FIXME: This is GPL, it's incompatible with the LGPL license of MedSavant -->
         <dependency>
