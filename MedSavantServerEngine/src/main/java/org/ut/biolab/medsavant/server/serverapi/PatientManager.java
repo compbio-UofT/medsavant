@@ -248,6 +248,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength(), field.getColumnScale());
         }
 
+        // make hospital id unique
+        patientSchema.getDBColumn(BasicPatientColumns.HOSPITAL_ID).unique();
+
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.executeUpdate(patientSchema.getCreateQuery() + " ENGINE=MyISAM;");
