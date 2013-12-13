@@ -478,13 +478,6 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file : variantFiles) {
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
-
-                                        /* After being copied to the server, we can remove the file from the
-                                         * local computer if it was processed with Jannovar (and is superfluous). */
-                                        if (useJannovar) {
-                                            file.delete();
-                                        }
-
                                         fileIndex++;
                                     }
                                     setStatusMessage("Importing variants");
