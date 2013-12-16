@@ -116,6 +116,7 @@ public class MedSavantIOController {
                 permit.renew();
                 job.doIO();                
             }
+            job.finish();
         }finally{
             permit.release();
         }

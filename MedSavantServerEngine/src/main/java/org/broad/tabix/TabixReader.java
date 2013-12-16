@@ -322,13 +322,26 @@ public class TabixReader {
 		private TPair64[] off;
 		private long curr_off;
 		private boolean iseof;
-
+                private String lastStr;
 		Iterator(final int _tid, final int _beg, final int _end, final TPair64[] _off) {
 			i = -1; n_seeks = 0; curr_off = 0; iseof = false;
 			off = _off; tid = _tid; beg = _beg; end = _end;
 		}
 
+                public boolean hasNext() throws IOException{
+                    if(lastStr == null){
+                        lastStr = next();
+                    }                    
+                    return lastStr != null;                    
+                }
+                
 		public String next() throws IOException {
+                        if(lastStr != null){
+                            String tmp =  lastStr;
+                            lastStr = null;
+                            return tmp;
+                        }   
+                        
 			if (iseof) return null;
 			for (;;) {
 				if (curr_off == 0 || !less64(curr_off, off[i].v)) { // then jump to the next chunk

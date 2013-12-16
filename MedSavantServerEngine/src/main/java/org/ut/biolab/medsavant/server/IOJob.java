@@ -22,6 +22,10 @@ public abstract class IOJob {
         return name;
     }
     
+    protected void finish(){
+        
+    }
+    
     protected boolean continueIO() throws IOException{        
         if(x){
             x = false;
@@ -31,4 +35,6 @@ public abstract class IOJob {
     }    
     
     protected abstract void doIO() throws IOException; 
+    
+    
 }

@@ -21,6 +21,8 @@ package org.ut.biolab.medsavant.server.db.variants.annotation;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broad.tabix.TabixReader;
@@ -163,12 +165,33 @@ public class AnnotationCursor {
     SimpleAnnotationRecord lastAnnotationConsidered;
     String[] lastResult;
     private final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 10000;
+    private final boolean REQUIRE_EXACT_MATCH = true;
+
+    private String[] getVariantAnnotationString(SimpleVariantRecord variant, SimpleAnnotationRecord annotation, String[] annotationLine) {
+        String prefix = "";
+        String[] result = new String[getNumNonDefaultFields()];
+
+        // the number of redundant and non-redundant columns
+        int numColumnsToCopy = getNumNonDefaultFields();
+        int numRedundantColumns = annotationLine.length - numColumnsToCopy;
+
+        // copy only the non-redundant columns
+        for (int i = 0; i < numColumnsToCopy; i++) {
+            // tricky, skip the redundant columns
+            result[i] = prefix + annotationLine[numRedundantColumns + i];
+        }
+        return result;
+    }
 
     //Annotates the first numRecords variant records given in 'records'.  
-    //Precondition: All records have the same chromosome, are SNPs, and are ordered by position in ascending order.
-    String[][] annotateSnps(SimpleVariantRecord[] records, int numRecords) {
-        long variantStart = records[0].start;
-        long variantEnd = records[numRecords-1].end;
+    //Precondition: All records have the same chromosome, and are ordered by position in ascending order.
+    String[][] annotateVariants(SimpleVariantRecord[] records, long start, long end, int numRecords) {
+        int numAnnots = 0;
+        System.out.println("Annotating "+numRecords+" between "+start+" and "+end+" inclusive on chrom "+records[0].chrom);
+        int queryStart = (int)start;
+        int queryEnd = (int)Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
+        
+        String[][] results = new String[numRecords][];
         
         do {
             //find all annotations that lie within the current basepair window.
@@ -178,17 +201,54 @@ public class AnnotationCursor {
 
             TabixReader.Iterator it =
                     reader.query(reader.chr2tid(records[0].chrom),
-                    (int) variantStart - 1,
-                    Integer.MAX_VALUE); //this function returns variants AFTER this position, so we need to have the -1
+                    (int) queryStart - 1, //this function returns annotations AFTER this position, so we need to have the -1
+                    queryEnd);
+            if(it == null){
+                System.out.println("Didn't find any annotations between "+(queryStart-1)+" and "+queryEnd);
+                return results;
+            }
+            try {
+                boolean first;
+                int vi = 0;
+                int l = 0;
+                while (it.hasNext()) { //For each annotation in start + min(start+max_base_pair_distance_in_window, end)
+                    String annotationLineStr = (String) it.next(); 
+                    String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
+                    SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
+                    first = true;
+                    while (vi < records.length) { //for each variant                        
+                        if (annotationRecord.intersectsPosition(records[vi].chrom, records[vi].start, records[vi].end)) {
+                            if (!REQUIRE_EXACT_MATCH || annotationRecord.matchesVariant(records[vi])) {
+                                results[vi] = getVariantAnnotationString(records[vi], annotationRecord, annotationLine);
+                                //results.add(getVariantAnnotationString(records[vi], annotationRecord, annotationLine));
+                            }
+                            //If this is the first annotation that intersects a variant, we're guaranteed
+                            //the future annotations don't need to consider variants to the left of the current
+                            //variant index, vi.
+                            if (first) {
+                                first = false;
+                                l = vi;
+                            }
+                        }
 
-            variantStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW;
-            variantEnd = Math.min(variantStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, records[numRecords - 1].end);
-        } while (variantStart < variantEnd);
+                        if (records[vi].start > annotationRecord.end) {
+                            vi = l;
+                            break;
+                        }
+                        vi++;
+                    }
+                    numAnnots++;
+                }
+                System.out.println("Processed "+numAnnots);
+            } catch (IOException ioex) {
+                //TODO: Change.
+                LOG.error(ioex);
+            }
+            queryStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW;
+            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, queryEnd);
+        } while (queryStart < queryEnd);
 
-
-        if (variantEnd - variantStart) {
-        }
-        return null;
+        return results;
     }
 
     /**
@@ -199,6 +259,7 @@ public class AnnotationCursor {
      * @param r The genomic variant to annotate
      * @return An array of annotations
      */
+    /*
     String[] annotateVariant(SimpleVariantRecord r) throws IOException {
 
         //if set, an annotation must overlap and not merely intersect a variant
@@ -254,6 +315,7 @@ public class AnnotationCursor {
                 }
 
                 // get the next annotation and parse it
+                //annotationLineString is NULL, nullPointerException!
                 String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER, -1);
                 SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
 
@@ -304,7 +366,8 @@ public class AnnotationCursor {
         lastResult = result;
         return result;
     }
-
+*/
+    
     /**
      * Get the number of fields (not including standard ones like chr, pos, ref,
      * alt)

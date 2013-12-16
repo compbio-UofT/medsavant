@@ -29,14 +29,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.IOJob;
 import org.ut.biolab.medsavant.server.MedSavantIOController;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
-import org.ut.biolab.medsavant.server.db.variants.annotation.AnnotationCursor.SimpleAnnotationRecord;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
@@ -207,7 +205,7 @@ public class BatchVariantAnnotator {
             try {
                 if (cursors != null) {
                     for (AnnotationCursor c : cursors) {
-                        c.cleanup();
+                        //c.cleanup();
                     }
                 }
                 if (recordReader != null) {
@@ -422,7 +420,8 @@ public class BatchVariantAnnotator {
         private int oldp = 0;
         private int numLines;
         // container for the components of the output line (original line, plus annotations)
-        private String[][] outputLines;
+        private String[][] inputLines;
+        private String[][] outputAnnotations;
         // whatever chromosome we're at in the input file
         private String currentChrom = null;
         private long previousStart = -1;
@@ -431,6 +430,9 @@ public class BatchVariantAnnotator {
         private CSVWriter recordWriter;
         private int numVariantsInWindow = 0;
         private SimpleVariantRecord[] variantWindow;
+        private long minStart = Integer.MAX_VALUE;
+        private long maxEnd = 0;
+        private int numFieldsInOutputFile = 0;
 
         public VariantAnnotatorIOJob(AnnotationCursor[] cursors, CSVReader recordReader, CSVWriter recordWriter, int numLines, int numFieldsInOutputFile) {
             super("Variant annotator");
@@ -438,7 +440,9 @@ public class BatchVariantAnnotator {
             this.recordReader = recordReader;
             this.recordWriter = recordWriter;
             this.numLines = numLines;
-            outputLines = new String[VARIANT_WINDOW_SIZE][numFieldsInOutputFile];
+            this.numFieldsInOutputFile = numFieldsInOutputFile;
+
+            inputLines = new String[VARIANT_WINDOW_SIZE][];
             variantWindow = new SimpleVariantRecord[VARIANT_WINDOW_SIZE];
         }
 
@@ -448,14 +452,76 @@ public class BatchVariantAnnotator {
             return inputLine != null;
         }
 
+        private void resetWindow() {
+            minStart = Integer.MAX_VALUE;
+            maxEnd = 0;
+            numVariantsInWindow = 0;
+        }
+
+        private void annotateWindow(boolean chromMismatch) throws IllegalArgumentException {
+            // Check that records for a given chromosome are sorted by
+            // start,end, ref, alt
+         /*   if ((currentChrom == null) || !currentChrom.equals(nextInputRecord.chrom)) {
+                currentChrom = nextInputRecord.chrom;
+                previousStart = -1;
+            } else {
+                long start = nextInputRecord.start;
+                if (start < previousStart) {
+                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position started at " + previousStart + " but this one starts at " + start + ". Input variant files must be sorted by chromosome and (start) position.");
+                }
+                previousStart = start;
+            } */
+
+            int ofs = 0;
+            // perform each annotation, in turn
+            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
+                // get the annotation for this line
+                String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
+                // add it to the output buffer                    
+                for (int k = 0; k < annotationsForThisLine.length; ++k) { //for each row
+                    for (int l = 0; l < cursors[annotationIndex].getNumNonDefaultFields(); ++l) {
+                        //LOG.info("inputLine.length=" + inputLine.length + " l=" + l + " ofs=" + ofs + " getnum=" + cursors[annotationIndex].getNumNonDefaultFields() + " numFieldsInOutput=" + this.numFieldsInOutputFile + " linelength=" + annotationsForThisLine.length + " annotations.length=" + annotations.length);
+
+                        //outputLines: VARIANT_WINDOW_SIZE x numFieldsInOuptutFile
+                        if (annotationsForThisLine[k] == null) {
+                            outputAnnotations[k][l + ofs] = ""; //index out of bounds.
+                        } else {
+                            outputAnnotations[k][l + ofs] = annotationsForThisLine[k][l];
+                        }
+                    }
+                }
+                ofs += cursors[annotationIndex].getNumNonDefaultFields();
+            }
+
+            
+            for(int i = 0; i < numVariantsInWindow; ++i){
+                recordWriter.writeNext((String[])ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));                
+            }                                  
+        }
+
+        @Override
+        protected void finish(){
+            annotateWindow(false);
+        }
+        
         @Override
         protected void doIO() throws IOException {
             try {
+                //TODO: Log progress
                 boolean chromMismatch = false;
                 SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
+
+                if (outputAnnotations == null) {
+                    outputAnnotations = new String[VARIANT_WINDOW_SIZE][numFieldsInOutputFile - inputLine.length];
+                }
+
                 if (numVariantsInWindow < VARIANT_WINDOW_SIZE) {
-                    if (currentChrom.equals(nextInputRecord.chrom)) {
+                    if ((currentChrom == null) || currentChrom.equals(nextInputRecord.chrom)) { //npe 
                         variantWindow[numVariantsInWindow] = nextInputRecord;
+                        minStart = Math.min(nextInputRecord.start, minStart);
+                        maxEnd = Math.max(nextInputRecord.end, maxEnd);
+
+                        inputLines[numVariantsInWindow] = inputLine;
                         ++numVariantsInWindow;
                         return;
                     } else {
@@ -463,52 +529,19 @@ public class BatchVariantAnnotator {
                     }
                 }
 
-                // Check that records for a given chromosome are sorted by
-                // start,end, ref, alt
-                if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
-                    currentChrom = nextInputRecord.chrom;
-                    previousStart = -1;
-                } else {
-                    long start = nextInputRecord.start;
-                    if (start < previousStart) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousStart + ", " + previousEnd + " but this one is " + start + ", " + end + ". Input variant files must be sorted by chromosome and (start) position.");
-                    }
-                    previousStart = start;
-                }
+                annotateWindow(chromMismatch);
 
-
-
-                int j = 0;
-                int ofs = 0;
-                // perform each annotation, in turn
-                for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
-                    // get the annotation for this line
-                    String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, numVariantsInWindow);
-
-                    // add it to the output buffer
-                    for (int k = 0; k < annotationsForThisLine.length; k++) { //rows
-                        for (int l = 0; l < annotationsForThisLine[k].length; ++l) { //cols
-                            outputLines[k][l + ofs] = annotationsForThisLine[k][l];
-                        }
-                    }
-                    ofs += outputLines[0].length;
-                }
-
-                for (String[] outputLine : outputLines) {
-                    recordWriter.writeNext(outputLine);
-                }
-
-
-                //finish up
+                 //finish up
+                resetWindow();
                 if (chromMismatch) {
                     numVariantsInWindow = 1;
                     variantWindow[0] = nextInputRecord;
-                } else {
-                    numVariantsInWindow = 0;
                 }
-
+            
             } catch (IllegalArgumentException iex) {
-                //skip line.
+
+                //TOOD: Change
+                LOG.error(iex);
             }
 
         }
