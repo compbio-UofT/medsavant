@@ -48,7 +48,7 @@ fi
 
 # Default Java options
 if [ -z "$JAVA_OPTS" ]; then
-    JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Xmx4G -XX:MaxPermSize=128M"
+    JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Xmx8G -XX:MaxPermSize=128M"
 fi
 
 # Run the medsavant server jar

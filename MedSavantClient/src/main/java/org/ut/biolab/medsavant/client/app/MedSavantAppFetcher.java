@@ -22,26 +22,20 @@ package org.ut.biolab.medsavant.client.app;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.AppInfo;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -51,11 +45,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
     //This could also be dynamic, and editable by the user via some kind of settings dialog.
 
     private static Log LOG = LogFactory.getLog(MedSavantAppFetcher.class);
-    
-    //Use http://www.genomesavant.com/dev/medsavant/serve/plugins-dev/pluginDirectory.xml for SNAPSHOT developer versions,
-    //and http://www.genomesavant.com/dev/medsavant/serve/plugins/pluginDirectory.xml for the release candidate.
-    private static final String[] PLUGIN_REPOSITORY_URLS =
-            new String[]{"http://www.genomesavant.com/dev/medsavant/serve/plugins-dev/pluginDirectory.xml"};
+
     private static final String[] REQUIRED_PAIRS = new String[]{
         "url",
         "name",
@@ -187,7 +177,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
     public List<AppInfo> fetchApplicationInformation(String search) throws Exception {
 
         if (appInfo == null) {
-            refreshAppInfo(PLUGIN_REPOSITORY_URLS);
+            refreshAppInfo(WebResources.PLUGIN_REPOSITORY_URLS);
         }
 
 
@@ -200,7 +190,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         //search names first - those hits will be listed first.
         for (AppInfo ai : appInfo) {
             if (ai.getName().contains(search)) {
-                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) {
+                if (VersionSettings.isAppSDKCompatibleWithClient(ai.getSDKVersion(),VersionSettings.getVersionString())) {
                     results.add(ai);
                 }
             }
@@ -210,7 +200,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
         for (AppInfo ai : appInfo) {
             if (ai.getDescription().contains(search) || ai.getShortDescription().contains(search)
                     || ai.getNewInVersion().contains(search)) {
-                if (MedSavantSDKInformation.isAppCompatible(ai.getSDKVersion())) { results.add(ai); }
+                if (VersionSettings.isAppSDKCompatibleWithClient(ai.getSDKVersion(),VersionSettings.getVersionString())) { results.add(ai); }
             }
         }
 

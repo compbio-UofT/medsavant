@@ -3,7 +3,7 @@ MEDSAVANT_USER=medsavant
 MEDSAVANT_GROUP=medsavant
 
 # Increase the available memory for the server; adjust according to the capabilities of the server:
-JAVA_OPTS="-Xmx4G -XX:MaxPermSize=128M"
+JAVA_OPTS="-Xmx8G -XX:MaxPermSize=128M"
 
 # Run "headless" on servers without an X11 display:
 JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"

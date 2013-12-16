@@ -67,6 +67,7 @@ import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ZYGOSITY;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
+
 /**
  * A subinspector listing other individuals, with two buttons for family and
  * cohort buttons that launch an aggregate pane in a split screen view. The
@@ -104,15 +105,15 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         return null;
     }
 
-    private void openAggregatePane(String column) {        
-        if (!aggregatePaneUpdated) {        
+    private void openAggregatePane(String column) {
+        if (!aggregatePaneUpdated) {
             aggregatePane.setVariantRecords(variantRecords);
         }
-        // if (!aggregatePane.isSplit()) {        
+        // if (!aggregatePane.isSplit()) {
         aggregatePane.splitScreen();
         // }
 
-        aggregatePaneUpdated = true;       
+        aggregatePaneUpdated = true;
         aggregatePane.groupBy(column);
         firstCol = column;
     }
@@ -123,7 +124,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
     protected final void init(VariantFrequencyAggregatePane ap) {
         this.aggregatePane = ap;
         ap.setSplitScreenPanel(splitScreenPanel);
-        
+
         infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         innerPanel = new JPanel();
@@ -156,11 +157,11 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         buttonPanel.add(familyButton);
         innerPanel.add(buttonPanel);
         firstCol = "Cohort";
-        
-        
+
+
     }
-    
-   
+
+
 
     //clears the selection in the main pane and sets all subinspectors to the dnaID
     protected void selectVariant(VariantRecord vr) {
@@ -175,7 +176,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
 
     /**
      * Adds a listener for whenever a different variant is selected via this
-     * SubInspector. 
+     * SubInspector.
      *
      * @see VariantRecord
      */
@@ -196,7 +197,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
         hTable.setShowGrid(false);
         hTable.setTableHeader(null);
         hTable.setSelectInsertedRows(false);
-        hTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);       
+        hTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         hTable.setComponentFactory(new HierarchicalTableComponentFactory() {
             @Override
             public Component createChildComponent(HierarchicalTable table, Object value, int row) {
@@ -272,19 +273,19 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
     }
 
 
-    public void handleEvent(Object event) {                
-        if (setObject(event)) {          //true if we just switched variants, or on first initialization.                
+    public void handleEvent(Object event) {
+        if (setObject(event)) {          //true if we just switched variants, or on first initialization.
             updateSelection();
-        }else if(aggregatePane.isSplit()){            
+        }else if(aggregatePane.isSplit()){
             openAggregatePane(firstCol);
         }
     }
 
     public abstract boolean setObject(Object event);
 
-    
+
     protected void updateSelection() {
-      //  System.out.println(getClass().getName()+" updateSelection");     
+      //  System.out.println(getClass().getName()+" updateSelection");
         aggregatePaneUpdated = false;
         infoPanel.removeAll();
         infoPanel.add(new WaitPanel("Loading DNA IDs..."));
@@ -303,16 +304,16 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
 
                     openAggregatePane(firstCol);
                     //AggregatePane is currently visible, so we automatially update it.
-                    //aggregatePane.setVariantRecords(variantRecords);                    
+                    //aggregatePane.setVariantRecords(variantRecords);
                 }
-                
+
                 hTable.clearSelection();
                 hTable.revalidate();
                 hTable.repaint();
                 infoPanel.removeAll();
                 infoPanel.add(innerPanel);
                 infoPanel.revalidate();
-                infoPanel.repaint();                
+                infoPanel.repaint();
             }
 
             @Override

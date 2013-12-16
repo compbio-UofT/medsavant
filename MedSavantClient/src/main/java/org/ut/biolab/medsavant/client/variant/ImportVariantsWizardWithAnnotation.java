@@ -1,22 +1,3 @@
-/**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.ut.biolab.medsavant.client.variant;
 
 import java.awt.*;
@@ -37,9 +18,7 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,12 +40,15 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
+ * Wizard for importing VCFs (Variant Call Files). Updated to run Jannovar
+ * before uploading to server.
  *
  * @author Andrew
+ * @author rammar
  */
-public class ImportVariantsWizard extends WizardDialog {
+public class ImportVariantsWizardWithAnnotation extends WizardDialog {
 
-    private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
+    private static final Log LOG = LogFactory.getLog(ImportVariantsWizardWithAnnotation.class);
     private static VariantManagerAdapter manager = MedSavantClient.VariantManager;
     private List<VariantTag> variantTags;
     private File[] variantFiles;
@@ -82,7 +64,9 @@ public class ImportVariantsWizard extends WizardDialog {
     private JCheckBox autoPublish;
     private static final String NOTIFICATION_TITLE = "Importing Variants";
 
-    public ImportVariantsWizard() {
+    private boolean useJannovar = true;
+
+    public ImportVariantsWizardWithAnnotation() {
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -156,7 +140,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
                 onMyComputerButton.setSelected(true);
 
-
             }
 
             @Override
@@ -227,9 +210,39 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(chooseTitleLabel);
         page.addComponent(chooseContainer);
 
-        page.addComponent(new JLabel("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n"));
+        page.addText("Files must be in Variant Call Format v4.1 (*.vcf) or BGZipped\nVCF (*.vcf.gz).");
 
-        final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly discouraged)");
+        page.addComponent(ViewUtil.horizontallyAlignComponents(
+                new Component[] {
+                    new JLabel("More VCF file restrictions"),
+                    ViewUtil.getHelpButton("Variant File Format",
+                            "Files must be in Variant Call Format v4.1 (*.vcf) or BGZipped\nVCF (*.vcf.gz).<br/><br/>"
+                                    + "VCF files must also be sorted by chromosome, then by position, then by "
+                                    + "reference, then by alternate.<br/><br/>Non-canonical chrmosomes (e.g. chr6_random) "
+                                    + "will be skipped.", true)
+                }));
+
+        /* Add VCF annotation support via Jannovar. */
+        final JCheckBox JannovarBox = new JCheckBox("Perform gene-variant annotation");
+        JannovarBox.setSelected(true);
+        JannovarBox.setOpaque(false);
+        JannovarBox.addActionListener(
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        useJannovar = JannovarBox.isSelected();
+                    }
+                }
+        );
+
+        page.addComponent(JannovarBox);
+        if (!ReferenceController.getInstance().getCurrentReferenceName().equals("hg19")) {
+            JannovarBox.setSelected(false);
+            JannovarBox.setEnabled(false);
+            page.addText("Annotation only available for hg19");
+        }
+
+        final JCheckBox homoRefBox = new JCheckBox("Include variants matching the reference (discouraged)");
         homoRefBox.setOpaque(false);
         homoRefBox.addActionListener(new ActionListener() {
             @Override
@@ -240,7 +253,6 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(homoRefBox);
 
         setUploadRequired(true);
-
 
         return page;
 
@@ -278,7 +290,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
         final JTextField valueField = new JTextField();
 
-
         final String startingValue = "<Value>";
         valueField.setText(startingValue);
 
@@ -313,7 +324,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 }
 
                 VariantTag tag = new VariantTag((String) locationField.getSelectedItem(), valueField.getText());
-
 
                 variantTags.add(tag);
                 ta.append(tag.toString() + "\n");
@@ -438,29 +448,18 @@ public class ImportVariantsWizard extends WizardDialog {
                 final DefaultWizardPage page = this;
 
                 //autoPublishVariants.setOpaque(false);
-
                 workButton.addActionListener(new ActionListener() {
                     private int notificationId;
                     private MedSavantWorker<Void> variantWorker;
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        /*try {
-                            if (!MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                                DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
-                                return;
-                            }
-                        } catch (Exception ex) {
-                           DialogUtils.displayError("Problem acquiring database lock", "The database could not be locked for changes.");
-                           return;
-                        }*/
 
                         LOG.info("Starting import worker");
                         workButton.setEnabled(false);
                         j.setVisible(true);
                         page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
 
                         new ProjectWorker<Void>("Importing variants", autoPublish.isSelected(), LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID()) {
                             private int fileIndex = 0;
@@ -478,21 +477,18 @@ public class ImportVariantsWizard extends WizardDialog {
                                     LOG.info("Creating input streams");
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file : variantFiles) {
-                                        LOG.info("Created input stream for file");
-                                        setStatusMessage("Uploading " + file.getName());
-                                        //progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
                                         fileIndex++;
                                     }
                                     setStatusMessage("Importing variants");
                                     inUploading = false;
                                     setIndeterminate(true);
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     setStatusMessage("Importing variants");
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar);
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -536,7 +532,8 @@ public class ImportVariantsWizard extends WizardDialog {
                         }.execute();
                         toFront();
 
-                    }                }); //end new ActionListener(...){
+                    }//end actionPerformed
+                }); //end new ActionListener(...){
 
                 addComponent(ViewUtil.alignRight(workButton));
             }
@@ -636,7 +633,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         p.add(ViewUtil.clear(ViewUtil.alignLeft(container)));
 
-
         return p;
     }
+
 }

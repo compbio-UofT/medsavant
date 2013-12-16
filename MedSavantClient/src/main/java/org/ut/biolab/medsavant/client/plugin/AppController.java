@@ -33,15 +33,16 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientIOUtils;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.shared.serverapi.MedSavantSDKInformation;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 /**
  * Plugin controller ported over from Savant.
@@ -382,15 +383,23 @@ public class AppController extends Controller {
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
-            if (desc.isCompatible()) {
+
+            boolean isCompatible;
+            try {
+                isCompatible = VersionSettings.isAppSDKCompatibleWithClient(desc.getSDKVersion(), VersionSettings.getVersionString());
+            } catch (Exception ex) {
+                throw new PluginVersionException("Could not determine compatibility between " + desc.getSDKVersion() + " and " + VersionSettings.getVersionString());
+            }
+
+            if (isCompatible) {
                 if (existingDesc != null) {
                     LOG.debug(String.format("   Replaced %s.", existingDesc));
                     pluginErrors.remove(desc.getID());
                 }
             } else {
                 LOG.info(String.format("Found incompatible %s (SDK version %s) in %s.", desc, desc.getSDKVersion(), f.getName()));
-                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
-                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + " vs " + MedSavantSDKInformation.getSDKVersion() + ")");
+                pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + " vs " + VersionSettings.getVersionString() + ")");
+                throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + " vs " + VersionSettings.getVersionString() + ")");
             }
         }
         return desc;
@@ -422,7 +431,8 @@ public class AppController extends Controller {
     private boolean checkForPluginUpdate(String id) {
         try {
             if (repositoryIndex == null) {
-                repositoryIndex = new PluginIndex(VersionSettings.PLUGIN_URL);
+                // TODO : this isn't clean, fix it
+                repositoryIndex = new PluginIndex(NetworkUtils.getKnownGoodURL(WebResources.PLUGIN_REPOSITORY_URLS[0]));
             }
             URL updateURL = repositoryIndex.getPluginURL(id);
             if (updateURL != null) {

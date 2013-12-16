@@ -20,11 +20,8 @@
 package org.ut.biolab.medsavant.client.view.dialog;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.client.settings.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import savant.api.util.DialogUtils;
-import savant.settings.BrowserSettings;
 
 /**
  *

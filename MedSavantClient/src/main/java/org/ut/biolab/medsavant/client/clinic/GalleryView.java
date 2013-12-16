@@ -53,7 +53,7 @@ public class GalleryView extends JPanel {
 
     public GalleryView(String title,String backButtonText,String bottomText) {
         this.setLayout(new BorderLayout());
-        this.setBackground(Color.white);
+        this.setBackground(Color.WHITE);
         this.title = title;
 
         JPanel banner = ViewUtil.getTertiaryBannerPanel();

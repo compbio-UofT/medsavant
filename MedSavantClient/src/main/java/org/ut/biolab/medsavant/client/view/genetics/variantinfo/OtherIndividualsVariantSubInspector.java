@@ -62,7 +62,7 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
             }
 
             @Override
-            public String getTitle(String currentFirstColumn) {                
+            public String getTitle(String currentFirstColumn) {
                 String position = "this position";
                 if(currentVariant != null){
                     position = "Position "+NumberFormat.getNumberInstance().format(currentVariant.getGenomicRegion().getStart());
@@ -70,7 +70,7 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
                 if(position.length() > MAX_POSITION_STRLENGTH_TODISPLAY){
                     position = "this position";
                 }
-                
+
                 if (currentFirstColumn.equals(BasicPatientColumns.FAMILY_ID.getAlias())) {
                     return "Variants at "+position+" by Family";
                 } else {
@@ -83,7 +83,7 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
                 OtherIndividualsVariantSubInspector.this.selectVariant(variantRecord);
             }
         };
-
+        
         init(ap);
     }
 
@@ -96,27 +96,27 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
     protected JPanel getIndividualSummaryPanel(String dnaID){
         return new VariantSummaryPanel(dnaID);
     }
-    
+
     @Override
     public boolean setObject(Object obj) {
-        if (obj instanceof SimpleVariant) {            
-            if(this.currentVariant == (SimpleVariant)obj){                
+        if (obj instanceof SimpleVariant) {
+            if(this.currentVariant == (SimpleVariant)obj){
                 return false;
             }else{
-                this.currentVariant = (SimpleVariant) obj;                            
+                this.currentVariant = (SimpleVariant) obj;
                 return true;
             }
         }
-        return false;        
+        return false;
     }
-    
+
     @Override
-    protected synchronized List<Object[]> getQueryResults(){        
+    protected synchronized List<Object[]> getQueryResults(){
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
-        List<Object[]> results = qvc.restrictToRegion(currentVariant.getGenomicRegion(), currentVariant.alt, MAXIMIUM_VARIANTS_TO_FETCH);        
+        List<Object[]> results = qvc.restrictToRegion(currentVariant.getGenomicRegion(), currentVariant.alt, MAXIMIUM_VARIANTS_TO_FETCH);
         return results;
     }
-    
+
     private class VariantSummaryPanel extends JPanel {
 
         public VariantSummaryPanel(String dnaID) {

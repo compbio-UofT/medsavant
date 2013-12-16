@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.admin;
 
@@ -38,10 +38,10 @@ import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
-import org.ut.biolab.medsavant.server.db.VersionSettings;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 /**
  *
@@ -63,15 +63,17 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     @Override
-    public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException, SessionExpiredException {
+    public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws IOException, SQLException, RemoteException, SessionExpiredException, Exception {
 
         SessionController sessController = SessionController.getInstance();
         String sessID = sessController.registerNewSession(adminName, new String(rootPassword), "");
 
         Connection conn = ConnectionController.connectPooled(sessID);
-        conn.createStatement().execute("CREATE DATABASE " + dbName);
-        conn.close();
-
+        try {
+            conn.createStatement().execute("CREATE DATABASE " + dbName);
+        } finally {
+            conn.close();
+        }
 
         ConnectionController.switchDatabases(sessID, dbName); //closes all connections
         conn = ConnectionController.connectPooled(sessID);
@@ -82,19 +84,23 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         userMgr.grantPrivileges(sessID, adminName, UserLevel.ADMIN);
 
         createTables(sessID);
-        addRootUser(sessID, conn, rootPassword);
-        addDefaultReferenceGenomes(sessID);
-        addDBSettings(sessID, versionString);
-        populateGenes(sessID);
+        try {
+            addRootUser(sessID, conn, rootPassword);
 
-        // Grant permissions to everybody else.
-        for (String user : userMgr.getUserNames(sessID)) {
-            if (!user.equals(adminName)) {
-                userMgr.grantPrivileges(sessID, user, userMgr.getUserLevel(sessID, user));
+            addDefaultReferenceGenomes(sessID);
+            addDBSettings(sessID, VersionSettings.getVersionString());
+            populateGenes(sessID);
+
+            // Grant permissions to everybody else.
+            for (String user : userMgr.getUserNames(sessID)) {
+                if (!user.equals(adminName)) {
+                    userMgr.grantPrivileges(sessID, user, userMgr.getUserLevel(sessID, user));
+                }
             }
-        }
 
-        conn.close();
+        } finally {
+            conn.close();
+        }
 
         // We populate the ontology tables on a separate thread because it can take a very long time, and users aren't going to be
         // looking at ontologies any time soon.  The initial session has no associated database, so we need to reregister with
@@ -105,7 +111,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     @Override
-    public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException {
+    public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException, Exception {
 
         String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
@@ -277,7 +283,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`dna_ids` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
                     + "`bam_url` varchar(5000) COLLATE latin1_bin DEFAULT NULL,"
                     + "`phenotypes` varchar(10000) COLLATE latin1_bin DEFAULT NULL,"
-                    + "PRIMARY KEY (`patient_id`)"
+                    + "PRIMARY KEY (`patient_id`), "
+                    + "UNIQUE KEY `hospital_id` (`hospital_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
             String createVariantStatement;
@@ -299,8 +306,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                         + "gt  varchar(10)  ,"
                         + "custom_info  varchar(8000)  ) ENGINE=INFINIDB;";
             } else {
-                createVariantStatement =
-                        "CREATE TABLE  `default_variant` ("
+                createVariantStatement
+                        = "CREATE TABLE  `default_variant` ("
                         + "`upload_id` int(11),"
                         + "`file_id` int(11),"
                         + "`variant_id` int(11),"
@@ -378,7 +385,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     private static void addDBSettings(String sid, String versionString) throws SQLException, RemoteException, SessionExpiredException {
-        SettingsManager.getInstance().addSetting(sid, Settings.KEY_CLIENT_VERSION, versionString);
+        SettingsManager.getInstance().addSetting(sid, Settings.KEY_SERVER_VERSION, versionString);
         SettingsManager.getInstance().addSetting(sid, Settings.KEY_DB_LOCK, Boolean.toString(false));
     }
 
@@ -389,17 +396,11 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
             // bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
             loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://genomesavant.com/data/hg18/hg18.refGene.gz").toURI(), "hg18", "RefSeq", null, "transcript", "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");
             loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://genomesavant.com/data/medsavant/hg19/refGene.txt.gz").toURI(), "hg19", "RefSeq", null, "transcript", "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");
-                    //refGene.txt.gz
+            //refGene.txt.gz
             //loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://genomesavant.com/data/hg19/hg19.refGene.gz").toURI(), "hg19", "RefSeq", null, "transcript", "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");
         } catch (IOException iox) {
             throw new RemoteException("Error populating gene tables.", iox);
         } catch (URISyntaxException ignored) {
         }
-    }
-
-
-    @Override
-    public String getServerVersion() throws RemoteException, SessionExpiredException {
-        return VersionSettings.getVersionString();
     }
 }

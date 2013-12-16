@@ -32,9 +32,9 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public interface SetupAdapter extends Remote {
 
-    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException, SessionExpiredException;
+    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws IOException, SQLException, RemoteException, SessionExpiredException, Exception;
 
-    public void removeDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException;
+    public void removeDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException, Exception;
 
-    public String getServerVersion() throws RemoteException, SessionExpiredException;
+    //public String getServerVersion() throws RemoteException, SessionExpiredException;
 }

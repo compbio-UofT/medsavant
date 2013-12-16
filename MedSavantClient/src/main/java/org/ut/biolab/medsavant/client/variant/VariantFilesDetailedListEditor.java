@@ -56,7 +56,7 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                     // Get lock.
                     if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                         try {
-                            new ImportVariantsWizard().setVisible(true);
+                            new ImportVariantsWizardWithAnnotation().setVisible(true);
                         } finally {
                             try {
                                 MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());

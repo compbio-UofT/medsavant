@@ -1,10 +1,14 @@
 package medsavant.incidental;
 
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.JideButton;
 import java.util.Calendar;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -36,18 +40,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import medsavant.incidental.localDB.IncidentalDB;
 import medsavant.incidental.localDB.IncidentalHSQLServer;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -99,16 +102,16 @@ public class IncidentalPanel extends JPanel {
 	private double hetRatio;
 	private double afThreshold;
 	private String[] chooserAFArray;
+	private String incidentalPanelString;
 	
 	private boolean analysisRunning= false;
 	private boolean dbLoaded= false;
 	
 	private JPanel view;
 	private RoundedPanel workview;
-	private JLabel topText;
-	private JButton choosePatientButton;
-	private JButton analyzeButton;
-	private String analyzeButtonDefaultText= "Identify Incidental Variants";
+	private JideButton choosePatientButton;
+	private JideButton analyzeButton;
+	private String analyzeButtonDefaultText= "Refresh";
 	private IndividualSelector customSelector;
 	private Set<String> selectedIndividuals;
 	private String currentIndividual;
@@ -119,7 +122,7 @@ public class IncidentalPanel extends JPanel {
 	private ProgressWheel pw;
 	private JLabel progressLabel;
 	private final int preferredNumColumns= 10;
-	private JLabel coverageThresholdLabel= new JLabel("Min. variant coverage (X)");
+	private JLabel coverageThresholdLabel= new JLabel("Min. variant coverage");
 	private JTextField coverageThresholdText;
 	private JButton coverageThresholdHelp;
 	private JLabel hetRatioLabel= new JLabel("Min. ratio of alternate/total reads");
@@ -131,8 +134,13 @@ public class IncidentalPanel extends JPanel {
 	private JButton chooseAFColumns;
 	private JButton chooseAFColumnsHelp;
 	private CheckBoxList chooser;
-	private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
+	//private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
 	private URL cgdURL;
+	private CollapsiblePane collapsible;
+	private JLabel cgdURLLabel= new JLabel("Clinical Genomics Database (CGD) URL");
+	private JTextField cgdText;
+	private JButton cgdHelp;
+	private JComboBox incidentalPanelComboBox;
 	
 	private IncidentalHSQLServer server;
     
@@ -147,7 +155,8 @@ public class IncidentalPanel extends JPanel {
 		}
 		
 		setupView();
-		add(view);
+		this.setLayout(new BorderLayout());
+		add(view, BorderLayout.CENTER);
 		
 		server= new IncidentalHSQLServer(INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
 	}
@@ -159,43 +168,59 @@ public class IncidentalPanel extends JPanel {
 		//view.setBorder(BorderFactory.createLineBorder(Color.RED));
 		view.setBorder(BorderFactory.createEmptyBorder(TOP_MARGIN, SIDE_MARGIN, BOTTOM_MARGIN, SIDE_MARGIN));
 		
-		
-		/* Set up the layout for the GUI. */
-		workview= new RoundedPanel(10);
-		GroupLayout layout= new GroupLayout(workview);
-		workview.setLayout(layout);
-		layout.setAutoCreateGaps(true);
-		layout.setAutoCreateContainerGaps(true);
-						
-		
-		topText= new JLabel("Patient selection:");
-		choosePatientButton= new JButton("Choose Patient");
-		analyzeButton= new JButton(analyzeButtonDefaultText);
+		choosePatientButton= new JideButton("Choose Patient");
+		choosePatientButton.setButtonStyle(JideButton.FLAT_STYLE);
+		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
+			Font.PLAIN, 18));
+				
+		analyzeButton= new JideButton(analyzeButtonDefaultText);
+		analyzeButton.setButtonStyle(JideButton.FLAT_STYLE);
+		analyzeButton.setFont(new Font(analyzeButton.getFont().getName(),
+			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
+		analyzeButton.setVisible(false);
 		
 		Dimension d= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
 		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
-		coverageThresholdText.setMaximumSize(d);
+		coverageThresholdText.setMinimumSize(d);
 		coverageThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		coverageThresholdHelp= ViewUtil.getHelpButton("Coverage Threshold", 
 				"Minimum number of sequence reads supporting the alternate allele.");
 		hetRatioText= new JTextField(Double.toString(hetRatio));
-		hetRatioText.setMaximumSize(d);
+		hetRatioText.setMinimumSize(d);
 		hetRatioText.setHorizontalAlignment(JTextField.RIGHT);
 		hetRatioHelp= ViewUtil.getHelpButton("Alt/Total Ratio", 
 				"In order for a variant to be included, it must exceeed this threshold, "
 				+ "so as not to be excluded as an erroneous variant. "
 				+ "Below this threshold, alternate alleles are not reported.");
 		afThresholdText= new JTextField(Double.toString(afThreshold));
-		afThresholdText.setMaximumSize(d);
+		afThresholdText.setMinimumSize(d);
 		afThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		afThresholdHelp= ViewUtil.getHelpButton("Allele Frequency Threshold", 
 				"The maximum allele frequency for this variant. In order for a "
 				+ "variant to be reported, allele frequency must be below this "
 				+ "threshold across all allele frequency databases.");
 		
+		cgdText= new JTextField(cgdURL.toString());
+		cgdHelp= ViewUtil.getHelpButton("Clinical Genomics Database", 
+				"URL for automatic updates of CGD database");
+		// ADD AN ACTION LISTENER
 		
-		statusSeparator.setVisible(false);
+		
+		incidentalPanelComboBox= new JComboBox(new String[]{"ACMG", "CGD"});
+		incidentalPanelComboBox.setSelectedItem("CGD");
+		incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem(); // default
+		incidentalPanelComboBox.addActionListener(
+			new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem();
+				}
+			}
+		);
+		
+		
+		//statusSeparator.setVisible(false);
 		
 		progressLabel= new JLabel();
 		progressLabel.setVisible(false);
@@ -226,6 +251,7 @@ public class IncidentalPanel extends JPanel {
 						if (currentIndividualDNA != null) {
 							choosePatientButton.setText(currentIndividual);
 							analyzeButton.setEnabled(true);
+							analyzeButton.doClick(); // trigger button's actionPerformed() even though it's not visible
 						} else {
 							choosePatientButton.setText("No DNA ID for " + currentIndividual);
 						}
@@ -256,14 +282,15 @@ public class IncidentalPanel extends JPanel {
 							protected Object doInBackground() throws Exception {
 								/* Starts a new thread for background tasks. */
 								
-								statusSeparator.setVisible(true);
+								//statusSeparator.setVisible(true);
 								progressLabel.setVisible(true);
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
+								analyzeButton.setVisible(true);
 								
 								//if (!server.isRunning()) { // No need to run a local server if using JDBC driver from hsqldb
 								if (!dbLoaded) {
-									progressLabel.setText("Preparing local filtering database...");
+									progressLabel.setText("Preparing local filtering database");
 									try {
 										//server.startServer(); // No need to run a local server if using JDBC driver from hsqldb
 										dbLoaded= true;
@@ -273,7 +300,7 @@ public class IncidentalPanel extends JPanel {
 									}
 								}
 								
-								progressLabel.setText("Downloading and filtering variants...");
+								progressLabel.setText("Downloading and filtering variants");
 								
 								/* Get all the user settings. */
 								setAllValuesFromFields();
@@ -284,7 +311,8 @@ public class IncidentalPanel extends JPanel {
 								/*  Get incidental findings. */
 								incFin= new IncidentalFindings(currentIndividualDNA, 
 										coverageThreshold, hetRatio, afThreshold, 
-										Arrays.asList(chooser.getCheckBoxListSelectedValues()));
+										Arrays.asList(chooser.getCheckBoxListSelectedValues()),
+										incidentalPanelString);
 								
 								
 								if (this.isCancelled()) {
@@ -293,8 +321,7 @@ public class IncidentalPanel extends JPanel {
 									analyzeButton.setEnabled(true);
 									analyzeButton.setText(analyzeButtonDefaultText);
 								} else {
-									progressLabel.setText(incFin.getVariantCount() + " variants. " +
-											"Click on column to sort. Hold CTRL while clicking to sort by multiple columns.");
+									progressLabel.setText(incFin.getVariantCount() + " variants. ");
 								}
 								pw.setVisible(false);
 								return null;
@@ -317,7 +344,7 @@ public class IncidentalPanel extends JPanel {
 						analysisRunning= false;
 						MSWorker.cancel(true);
 						analyzeButton.setEnabled(false);
-						progressLabel.setText("Cancelling Analysis...");
+						progressLabel.setText("Cancelling Analysis");
 					}
 				}
 			}
@@ -350,85 +377,51 @@ public class IncidentalPanel extends JPanel {
 		/* Set up the layout for the UI.
 		 * GroupLayout requires defintion of the same components from both 
 		 * horizontal and verical perspectives. */
-		layout.setAutoCreateGaps(true); // Not sure if this really makes a difference...
 		
-		layout.setHorizontalGroup(
-			layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-				.addGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-						.addComponent(topText)
-						.addComponent(choosePatientButton)
-						.addComponent(analyzeButton)
-						)
-					.addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(coverageThresholdLabel)
-							.addComponent(coverageThresholdText)
-							.addComponent(coverageThresholdHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(hetRatioLabel)
-							.addComponent(hetRatioText)
-							.addComponent(hetRatioHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(afThresholdLabel)
-							.addComponent(afThresholdText)
-							.addComponent(afThresholdHelp)
-							)
-						.addGroup(layout.createSequentialGroup()
-							.addComponent(chooseAFColumns)
-							.addComponent(chooseAFColumnsHelp)
-							)
-						)
-					)
-				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addComponent(statusSeparator)
-					.addComponent(progressLabel)
-					.addComponent(pw)
-					)
-				.addComponent(variantPane)
-		);
+		/* Set up the layout for the advanced options collapsible panel. */
+		collapsible= new CollapsiblePane("Advanced options");
+		collapsible.setLayout(new MigLayout());
+		collapsible.add(coverageThresholdLabel);
+		collapsible.add(coverageThresholdText);
+		collapsible.add(coverageThresholdHelp, "wrap");
+		collapsible.add(hetRatioLabel);
+		collapsible.add(hetRatioText);
+		collapsible.add(hetRatioHelp, "wrap");
+		collapsible.add(afThresholdLabel);
+		collapsible.add(afThresholdText);
+		collapsible.add(afThresholdHelp, "wrap");
+		collapsible.add(incidentalPanelComboBox, "wrap");
+		collapsible.add(chooseAFColumns);
+		collapsible.add(chooseAFColumnsHelp, "wrap 40px");
+		collapsible.add(cgdURLLabel);
+		collapsible.add(cgdHelp, "wrap");
+		collapsible.add(cgdText, "span");
+		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsible.setFocusPainted(false);
+		collapsible.collapse(true);
 		
-		layout.setVerticalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(topText)
-						.addComponent(choosePatientButton)
-						.addComponent(analyzeButton)
-						)
-					.addGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(coverageThresholdLabel)
-							.addComponent(coverageThresholdText)
-							.addComponent(coverageThresholdHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(hetRatioLabel)
-							.addComponent(hetRatioText)
-							.addComponent(hetRatioHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(afThresholdLabel)
-							.addComponent(afThresholdText)
-							.addComponent(afThresholdHelp)
-							)
-						.addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-							.addComponent(chooseAFColumns)
-							.addComponent(chooseAFColumnsHelp)
-							)
-						)
-					)
-				.addGroup(layout.createSequentialGroup()
-					// special parameters for the separator when adding vertically
-					.addComponent(statusSeparator, GroupLayout.PREFERRED_SIZE, 
-						GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addComponent(progressLabel)
-					.addComponent(pw)
-					)
-				.addComponent(variantPane)
-		);
+		/* Progress bar panel. */
+		//JPanel progressPanel= new JPanel(new MigLayout("insets 0", "center", "center")); // Remove borders around the panel using "insets"
+		JPanel progressPanel= new JPanel(new MigLayout("gap 50px 50px"));
+		progressPanel.add(progressLabel);
+		progressPanel.add(pw);
+		
+		/* Patient selection panel. */
+		CollapsiblePanes patientPanel= new CollapsiblePanes();
+		patientPanel.add(choosePatientButton);
+		patientPanel.add(collapsible);
+		patientPanel.add(progressPanel);
+		patientPanel.add(analyzeButton);
+		
+		/* Final window layout along with size preferences. */
+		collapsible.setMinimumSize(new Dimension(380,20));
+		variantPane.setPreferredSize(variantPane.getMaximumSize());
+		
+		workview= new RoundedPanel(10);
+		workview.setLayout(new MigLayout("", "center", "top"));
+		//workview.add(patientPanel, "cell 0 0 1 2");
+		workview.add(patientPanel, "cell 0 0");
+		workview.add(variantPane, "cell 1 0");
 		
 		/* Add the UI to the main app panel. */
 		view.add(workview, BorderLayout.CENTER);
@@ -463,6 +456,7 @@ public class IncidentalPanel extends JPanel {
 		properties.setProperty("coverage_threshold", Integer.toString(coverageThreshold));
 		properties.setProperty("het_ratio", Double.toString(hetRatio));
 		properties.setProperty("af_threshold", Double.toString(afThreshold));
+		properties.setProperty("CGD_DB_URL", cgdText.getText());
 		
 		// quote-enclosed, comma-delimited list as string
 		String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(
