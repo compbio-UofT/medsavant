@@ -18,25 +18,6 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
-import jannovar.Jannovar;
-import jannovar.annotation.AnnotationList;
-import jannovar.exception.AnnotationException;
-import jannovar.exception.FileDownloadException;
-import jannovar.exception.JannovarException;
-import jannovar.exception.VCFParseException;
-import jannovar.exome.Variant;
-import jannovar.io.SerializationManager;
-import jannovar.io.TranscriptDataDownloader;
-import jannovar.io.UCSCKGParser;
-import jannovar.io.VCFLine;
-import jannovar.io.VCFReader;
-import jannovar.reference.Chromosome;
-import jannovar.reference.TranscriptModel;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +38,6 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 /**
  * Wizard for importing VCFs (Variant Call Files). Updated to run Jannovar
@@ -85,11 +65,6 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
     private static final String NOTIFICATION_TITLE = "Importing Variants";
 
     private boolean useJannovar = true;
-    private SerializationManager sManager = new SerializationManager();
-    private HashMap<Byte, Chromosome> chromosomeMap;
-    private String dirPath;
-    private ArrayList<TranscriptModel> transcriptModelList = null;
-    private final String UCSCserializationFileName = "ucsc.ser";
 
     public ImportVariantsWizardWithAnnotation() {
         setTitle("Import Variants Wizard");
@@ -502,40 +477,18 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
                                     LOG.info("Creating input streams");
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file : variantFiles) {
-                                        /* Get annotated files from Jannovar and then delete them. */
-                                        if (useJannovar) {
-
-                                            if (!hasSerializedFile(UCSCserializationFileName)) {
-                                                setStatusMessage("Downloading annotation files");
-                                                downloadSerializedFile(jannovar.common.Constants.UCSC);
-                                            }
-
-                                            setStatusMessage("Annotating variants " + file.getName());
-                                            file = annotateVCFWithJannovar(file);
-                                        }
-
-                                        LOG.info("Created input stream for file");
-                                        setStatusMessage("Uploading " + file.getName());
-                                        //progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
-
-                                        /* After being copied to the server, we can remove the file from the
-                                         * local computer if it was processed with Jannovar (and is superfluous). */
-                                        if (useJannovar) {
-                                            file.delete();
-                                        }
-
                                         fileIndex++;
                                     }
                                     setStatusMessage("Importing variants");
                                     inUploading = false;
                                     setIndeterminate(true);
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected());
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     setStatusMessage("Importing variants");
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected());
+                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar);
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -683,191 +636,4 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
         return p;
     }
 
-    /**
-     * Check if the Jannovar serialized annotation file has been downloaded.
-     */
-    private boolean hasSerializedFile(String filename) {
-        File jannovarDirectory = new File(DirectorySettings.getMedSavantDirectory().getPath(), "jannovar");
-        if (jannovarDirectory.exists()) {
-            dirPath = jannovarDirectory.getPath();
-            return (new File(jannovarDirectory.getPath(), filename)).exists();
-        } else {
-            return jannovarDirectory.exists();
-        }
-    }
-
-    /**
-     * Download the Jannovar serialized annotation file.
-     */
-    private void downloadSerializedFile(int sourceDB) throws JannovarException {
-        if (sourceDB == jannovar.common.Constants.UCSC) {
-            File jannovarDirectory = new File(DirectorySettings.getMedSavantDirectory().getPath(), "jannovar");
-            jannovarDirectory.mkdir();
-            dirPath = jannovarDirectory.getPath();
-
-            downloadTranscriptFiles(jannovar.common.Constants.UCSC);
-            inputTranscriptModelDataFromUCSCFiles();
-            serializeUCSCdata();
-        } else {
-            throw new JannovarException("VCFAnnotationWizard: Currently unsupported DB specified");
-        }
-    }
-
-    /**
-     * This function creates a {@link TranscriptDataDownloader} object in order
-     * to download the required transcript data files. If the user has set the
-     * proxy and proxy port via the command line, we use these to download the
-     * files.
-     */
-    public void downloadTranscriptFiles(int source) {
-        TranscriptDataDownloader downloader = null;
-        try {
-            downloader = new TranscriptDataDownloader(dirPath);
-            downloader.downloadTranscriptFiles(source);
-        } catch (FileDownloadException e) {
-            System.err.println(e);
-            System.exit(1);
-        }
-    }
-
-    /**
-     * Input the four UCSC files for the KnownGene data.
-     */
-    private void inputTranscriptModelDataFromUCSCFiles() {
-        UCSCKGParser parser = new UCSCKGParser(dirPath);
-        try {
-            parser.parseUCSCFiles();
-        } catch (Exception e) {
-            System.out.println("[Jannovar] Unable to input data from the UCSC files");
-            e.printStackTrace();
-            System.exit(1);
-        }
-        transcriptModelList = parser.getKnownGeneList();
-    }
-
-    /**
-     * Inputs the KnownGenes data from UCSC files, convert the resulting
-     * {@link jannovar.reference.TranscriptModel TranscriptModel} objects to
-     * {@link jannovar.interval.Interval Interval} objects, and store these in a
-     * serialized file.
-     */
-    public void serializeUCSCdata() throws JannovarException {
-        SerializationManager manager = new SerializationManager();
-        System.out.println("[Jannovar] Serializing known gene data as " + UCSCserializationFileName);
-        manager.serializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName, transcriptModelList);
-    }
-
-    /**
-     * Uses Jannovar to create a new VCF file and sends that file to server. The
-     * Jannovar VCF file is subsequently removed (treated as temporary data)
-     *
-     * Code modified from Jannovar class.
-     */
-    private File annotateVCFWithJannovar(File sourceVCF) throws JannovarException {
-        chromosomeMap = Chromosome.constructChromosomeMapWithIntervalTree(
-                sManager.deserializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName));
-
-        /* Annotated VCF name as determined by Jannovar. */
-        String outname = sourceVCF.getAbsolutePath();
-        int i = outname.lastIndexOf("vcf");
-        if (i < 0) {
-            i = outname.lastIndexOf("VCF");
-        }
-        if (i < 0) {
-            outname = outname + ".jv.vcf";
-        } else {
-            outname = outname.substring(0, i) + "jv.vcf";
-        }
-
-        VCFReader parser = new VCFReader();
-        VCFLine.setStoreVCFLines();
-        try {
-            parser.parseFile(sourceVCF.getAbsolutePath());
-        } catch (VCFParseException e) {
-            System.err.println("[Jannovar] Unable to parse VCF file");
-            System.err.println(e.toString());
-            System.exit(1);
-        }
-
-        ArrayList<VCFLine> lineList = parser.getVCFLineList();
-
-        try {
-            FileWriter fstream = new FileWriter(outname);
-            BufferedWriter out = new BufferedWriter(fstream);
-
-            /**
-             * Write the header of the new VCF file.
-             */
-            ArrayList<String> lst = parser.getAnnotatedVCFHeader();
-            for (String s : lst) {
-                out.write(s + "\n");
-            }
-
-            /**
-             * Now write each of the variants.
-             */
-            for (VCFLine line : lineList) {
-                Variant v = parser.VCFline2Variant(line);
-                try {
-                    annotateVCFLine(line, v, out);
-                } catch (AnnotationException e) {
-                    System.out.println("[Jannovar] Warning: Annotation error: " + e.toString());
-                } catch (JannovarException e) {
-                    System.out.println("[Jannovar] Error processing VCF file");
-                    e.printStackTrace();
-                }
-            }
-
-            out.close();
-
-        } catch (IOException e) {
-            System.out.println("[Jannovar] Error writing annotated VCF file");
-            System.out.println("[Jannovar] " + e.toString());
-            System.exit(1);
-        }
-
-        System.out.println("[Jannovar] Wrote annotated VCF file to \"" + outname + "\"");
-
-        return new File(outname);
-    }
-
-    /**
-     * Annotate a single line of a VCF file, and output the line together with
-     * the new INFO fields representing the annotations.
-     *
-     * Code modified from Jannovar class.
-     *
-     * @param line an object representing the original VCF line
-     * @param v the Variant object that was parsed from the line
-     * @param out A file handle to write to.
-     */
-    private void annotateVCFLine(VCFLine line, Variant v, Writer out) throws IOException, AnnotationException, JannovarException {
-        byte chr = v.getChromosomeAsByte();
-        int pos = v.get_position();
-        String ref = v.get_ref();
-        String alt = v.get_alt();
-        Chromosome c = chromosomeMap.get(chr);
-        if (c == null) {
-            String e = String.format("[Jannovar] Could not identify chromosome \"%d\"", chr);
-            throw new AnnotationException(e);
-        }
-        AnnotationList anno = c.getAnnotationList(pos, ref, alt);
-        if (anno == null) {
-            String e = String.format("[Jannovar] No annotations found for variant %s", v.toString());
-            throw new AnnotationException(e);
-        }
-        String annotation = anno.getSingleTranscriptAnnotation();
-        String effect = anno.getVariantType().toString();
-        String A[] = line.getOriginalVCFLine().split("\t");
-        for (int i = 0; i < 7; ++i) {
-            out.write(A[i] + "\t");
-        }
-        /* Now add the stuff to the INFO line */
-        String INFO = String.format("EFFECT=%s;HGVS=%s;%s", effect, annotation, A[7]);
-        out.write(INFO + "\t");
-        for (int i = 8; i < A.length; ++i) {
-            out.write(A[i] + "\t");
-        }
-        out.write("\n");
-    }
 }

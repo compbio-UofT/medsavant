@@ -89,7 +89,7 @@ class IndividualDetailEditor extends DetailedListEditor {
             PatientFormController pfc = new PatientFormController();
             FormEditorDialog fed = new FormEditorDialog(pfc);
             fed.setTitle("Add Patient");
-            fed.setVisible(true);           
+            fed.setVisible(true);
 
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to present Add Individual form: %s", ex);
@@ -121,7 +121,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                         MedSavantClient.PatientManager.removePatient(
                                 LoginController.getInstance().getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
-                                patients);                                                
+                                patients);
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
                         setVisible(false);
                     } catch (Exception ex) {
@@ -147,11 +147,10 @@ class IndividualDetailEditor extends DetailedListEditor {
             if (file != null) {
                 //remove current data
                 MedSavantClient.PatientManager.clearPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
-
                 new ImportProgressDialog(file).showDialog();
             }
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Unable to import individuals.", ex);
+            ClientMiscUtils.reportError("Unable to import individuals. Please make sure the file is in CSV format and that Hospital IDs are unique.", ex);
         }
     }
 

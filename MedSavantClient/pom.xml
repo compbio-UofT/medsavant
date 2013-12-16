@@ -171,11 +171,6 @@
             <artifactId>miglayout-swing</artifactId>
             <version>4.2</version>
         </dependency>
-        <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>jannovar</artifactId>
-            <version>0.1.1-beta-1</version>
-        </dependency>
         <!-- FIXME: This is GPL, it's incompatible with the LGPL license of MedSavant -->
         <dependency>
             <groupId>org.pedviz</groupId>
