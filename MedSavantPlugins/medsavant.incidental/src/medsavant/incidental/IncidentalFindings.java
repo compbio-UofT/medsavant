@@ -62,6 +62,7 @@ public class IncidentalFindings {
 	private double hetRatio;
 	private double alleleFrequencyThreshold;
 	private Map<String, String> zygosityMap;
+	private String incidentalPanel;
 	
 	private List<Object[]> allVariants;
 	private TableSchema ts;
@@ -82,12 +83,14 @@ public class IncidentalFindings {
 	 * @param ratio	The minimum ratio of alt/total reads to be considered as possibly het
 	 * @param afThreshold	Allele frequency threshold
 	 * @param afColumns	The columns of the table corresponding to DBs to be used for the allele frequency cutoff
+	 * @param panel	Which incidental panel to use. For example, "CGD" or "ACMG".
 	 */
-	public IncidentalFindings(String dnaID, int cov, double ratio, double afThreshold, List<Object> afColumns) {
+	public IncidentalFindings(String dnaID, int cov, double ratio, double afThreshold, List<Object> afColumns, String panel) {
 		this.dnaID= dnaID;
 		coverageThreshold= cov;
 		hetRatio= ratio;
 		alleleFrequencyThreshold= afThreshold;
+		incidentalPanel= panel;
 			
 		allVariants= new ArrayList<Object[]>(DB_VARIANT_REQUEST_LIMIT); // initial capacity DB_VARIANT_REQUEST_LIMIT
 		
@@ -305,7 +308,7 @@ public class IncidentalFindings {
 		
 		for (Object[] row : input) {
 			List<String> query= getClassification(getGeneSymbol(row), 
-					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY]);
+					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], incidentalPanel);
 			
 			String classification= query.get(0);
 			String inheritance= query.get(1);
@@ -499,23 +502,20 @@ public class IncidentalFindings {
 	 * or carrier.
 	 * @return a list containing the disease classification and inheritance
 	 */
-	private List<String> getClassification(String geneSymbol, String zygosity) {
+	private List<String> getClassification(String geneSymbol, String zygosity, String panel) {
 		String classification= null;
 		String inheritance= null;
-			
-		// MUST use single quotes
-		/*
-		String sql=	"SELECT D.classification, I.inheritance_JS " +
-					"FROM incidentalome_annotated I, disease_classification D " +
-					"WHERE I.gene_reviewedJS LIKE '" + geneSymbol + "' " +
-					"	AND I.inheritance_JS = D.inheritance " +
-					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +
-					"	AND (D.gender LIKE '" + GENDER + "' OR D.gender LIKE 'both') ";
-		*/
+		String queryAddition= "";
 		
+		if (panel.equals("ACMG")) {
+			queryAddition= "AND C.gene in (SELECT gene FROM acmg) ";
+		}
+		
+		// MUST use single quotes		
 		String sql=	"SELECT D.classification, S.synonym, C.* " +
 					"FROM CGD C, disease_classification D, CGD_synonym S " +
-					"WHERE C.gene LIKE '" + geneSymbol + "' " +
+					"WHERE C.gene LIKE '" + geneSymbol + "' " + 
+					queryAddition +
 					"	AND C.inheritance = S.inheritance " +
 					"	AND S.synonym = D.inheritance " +
 					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +

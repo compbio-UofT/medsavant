@@ -130,6 +130,11 @@ public class IncidentalDB {
 					")";
 			s.addBatch(sql);
 		
+			sql=	"CREATE TABLE ACMG ( " +
+					"	gene varchar(20) NOT NULL, " +
+					"	PRIMARY KEY (Gene) " +
+					")";
+			s.addBatch(sql);
 			
 /*
 			// OLD TABLES
@@ -244,6 +249,11 @@ public class IncidentalDB {
 			loader.loadCSV(new FileInputStream(DirectorySettings.getMedSavantDirectory().getPath() +
 				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename")),
 				"CGD", false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			filepath= "/db_files/ACMG_incidental_genes_list.txt";
+			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "ACMG", false);
 			
 /* 
 			//OLD TABLES
