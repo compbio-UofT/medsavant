@@ -89,8 +89,8 @@ public class IncidentalPanel extends JPanel {
 		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
 			
 	private final int TOP_MARGIN= 0;
-	private final int SIDE_MARGIN= 100;
-	private final int BOTTOM_MARGIN= 10;
+	private final int SIDE_MARGIN= 5;
+	private final int BOTTOM_MARGIN= 5;
 	private final int TEXT_AREA_WIDTH= 80;
 	private final int TEXT_AREA_HEIGHT= 25;
 	
