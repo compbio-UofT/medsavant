@@ -89,8 +89,8 @@ public class IncidentalPanel extends JPanel {
 		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
 			
 	private final int TOP_MARGIN= 0;
-	private final int SIDE_MARGIN= 100;
-	private final int BOTTOM_MARGIN= 10;
+	private final int SIDE_MARGIN= 5;
+	private final int BOTTOM_MARGIN= 5;
 	private final int TEXT_AREA_WIDTH= 80;
 	private final int TEXT_AREA_HEIGHT= 25;
 	
@@ -137,10 +137,13 @@ public class IncidentalPanel extends JPanel {
 	//private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
 	private URL cgdURL;
 	private CollapsiblePane collapsible;
+	private CollapsiblePane collapsibleSettings;
 	private JLabel cgdURLLabel= new JLabel("Clinical Genomics Database (CGD) URL");
 	private JTextField cgdText;
 	private JButton cgdHelp;
+	private JLabel incidentalPanelLabel= new JLabel("Incidental findings panel");
 	private JComboBox incidentalPanelComboBox;
+	private JButton incidentalPanelHelp;
 	
 	private IncidentalHSQLServer server;
     
@@ -207,9 +210,10 @@ public class IncidentalPanel extends JPanel {
 		// ADD AN ACTION LISTENER
 		
 		
+		/* Allow users to change the incidental findings panel to predefined options. */
 		incidentalPanelComboBox= new JComboBox(new String[]{"ACMG", "CGD"});
-		incidentalPanelComboBox.setSelectedItem("CGD");
-		incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem(); // default
+		incidentalPanelComboBox.setSelectedItem("CGD"); // default value
+		incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem(); // assign the default
 		incidentalPanelComboBox.addActionListener(
 			new ActionListener() {
 				@Override
@@ -218,6 +222,11 @@ public class IncidentalPanel extends JPanel {
 				}
 			}
 		);
+		incidentalPanelHelp= ViewUtil.getHelpButton("Incidental Findings Panel Selection", 
+				"Current options: All genes from the Clinical Genomics Database " + 
+				"(CGD) for which the mode of inhertiance has been manually curated. "+
+				"Alternatively, one may choose the limited panel of incidental finding "+
+				"genes as assigned by the American College of Medical Genetics (ACMG).");
 		
 		
 		//statusSeparator.setVisible(false);
@@ -235,12 +244,13 @@ public class IncidentalPanel extends JPanel {
 		variantPane= new JScrollPane();
 		
 		/* Choose the patient's sample using the individual selector. */
-		customSelector= new IndividualSelector();
+		customSelector= new IndividualSelector(true);
 		choosePatientButton.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					customSelector.setVisible(true);
+					
 					selectedIndividuals= customSelector.getHospitalIDsOfSelectedIndividuals();
 					
 					if (customSelector.hasMadeSelection() && selectedIndividuals.size() == 1) {
@@ -378,9 +388,12 @@ public class IncidentalPanel extends JPanel {
 		 * GroupLayout requires defintion of the same components from both 
 		 * horizontal and verical perspectives. */
 		
-		/* Set up the layout for the advanced options collapsible panel. */
-		collapsible= new CollapsiblePane("Advanced options");
+		/* Set up the layout for the analysis options collapsible panel. */
+		collapsible= new CollapsiblePane("Analysis options");
 		collapsible.setLayout(new MigLayout());
+		collapsible.add(incidentalPanelLabel);
+		collapsible.add(incidentalPanelComboBox);
+		collapsible.add(incidentalPanelHelp, "wrap 40px");
 		collapsible.add(coverageThresholdLabel);
 		collapsible.add(coverageThresholdText);
 		collapsible.add(coverageThresholdHelp, "wrap");
@@ -390,15 +403,22 @@ public class IncidentalPanel extends JPanel {
 		collapsible.add(afThresholdLabel);
 		collapsible.add(afThresholdText);
 		collapsible.add(afThresholdHelp, "wrap");
-		collapsible.add(incidentalPanelComboBox, "wrap");
 		collapsible.add(chooseAFColumns);
-		collapsible.add(chooseAFColumnsHelp, "wrap 40px");
-		collapsible.add(cgdURLLabel);
-		collapsible.add(cgdHelp, "wrap");
-		collapsible.add(cgdText, "span");
+		collapsible.add(chooseAFColumnsHelp);
 		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsible.setFocusPainted(false);
 		collapsible.collapse(true);
+		
+		/* Set up the layout for the Advanced settings collapsible panel. */
+		collapsibleSettings= new CollapsiblePane("Advanced Settings");
+		collapsibleSettings.setLayout(new MigLayout());
+		collapsibleSettings.add(cgdURLLabel);
+		collapsibleSettings.add(cgdHelp, "wrap");
+		collapsibleSettings.add(cgdText, "span");
+		collapsibleSettings.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsibleSettings.setFocusPainted(false);
+		collapsibleSettings.collapse(true);
+		
 		
 		/* Progress bar panel. */
 		//JPanel progressPanel= new JPanel(new MigLayout("insets 0", "center", "center")); // Remove borders around the panel using "insets"
@@ -410,6 +430,7 @@ public class IncidentalPanel extends JPanel {
 		CollapsiblePanes patientPanel= new CollapsiblePanes();
 		patientPanel.add(choosePatientButton);
 		patientPanel.add(collapsible);
+		patientPanel.add(collapsibleSettings);
 		patientPanel.add(progressPanel);
 		patientPanel.add(analyzeButton);
 		
@@ -422,6 +443,16 @@ public class IncidentalPanel extends JPanel {
 		//workview.add(patientPanel, "cell 0 0 1 2");
 		workview.add(patientPanel, "cell 0 0");
 		workview.add(variantPane, "cell 1 0");
+		
+		// TESTING - Inspector and Splitpane
+		/*
+		workview.add(patientPanel, "cell 0 0");
+		SplitScreenPanel ssp = new SplitScreenPanel(variantPane);
+        ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, true, true, ssp);
+		vip.setPreferredSize(vip.getMaximumSize());
+		workview.add(ssp, "cell 1 0");
+		workview.add(vip, "cell 2 0");
+		*/
 		
 		/* Add the UI to the main app panel. */
 		view.add(workview, BorderLayout.CENTER);
