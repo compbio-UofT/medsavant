@@ -621,7 +621,11 @@ public final class ViewUtil {
         button.setFocusable(false);
         button.setContentAreaFilled(false);
         button.setBorder(null);
-        ViewUtil.makeSmall(button);
+
+        //final ImageIcon unselectedIcon = new ImageIcon(GrayFilter.createDisabledImage(icon.getImage()));
+        //button.setPressedIcon(unselectedIcon);
+
+        //ViewUtil.makeSmall(button);
 
         return button;
     }

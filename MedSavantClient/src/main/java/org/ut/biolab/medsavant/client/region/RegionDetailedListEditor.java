@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
  *
  * @author mfiume
  */
-class RegionDetailedListEditor extends DetailedListEditor {
+public class RegionDetailedListEditor extends DetailedListEditor {
 
     private final RegionController controller;
 
@@ -84,7 +84,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
         if(items == null || items.isEmpty()){
             return;
         }
-        
+
         if (items.size() == 1) {
             String name = ((RegionSet)items.get(0)[0]).getName();
             result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);

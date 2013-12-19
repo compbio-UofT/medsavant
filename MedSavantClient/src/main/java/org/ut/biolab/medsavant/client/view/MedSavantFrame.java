@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.dashboard.Dashboard;
 import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
@@ -50,6 +51,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -81,6 +83,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.client.view.dashboard.DashboardSectionFactory;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
@@ -290,6 +293,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             customizeForMac();
         }
 
+        LOG.info("Loading apps...");
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
@@ -448,12 +452,19 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
             @Override
             protected Void doInBackground() throws Exception {
-                sessionView = new LoggedInView();
+
+                Dashboard dash = new Dashboard();
+                dash.addDashboardSection(DashboardSectionFactory.getAppSection());
+                dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
+
+                sessionView = dash;
+
+                // remove this line later
+                new LoggedInView();
+
                 view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
-
                 ViewController.getInstance().getMenu().updateLoginStatus();
-                //bottomBar.updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
                 return null;
             }

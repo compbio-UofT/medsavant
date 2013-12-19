@@ -56,7 +56,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  *
  * @author mfiume
  */
-class IndividualDetailEditor extends DetailedListEditor {
+public class IndividualDetailEditor extends DetailedListEditor {
 
     @Override
     public boolean doesImplementAdding() {
