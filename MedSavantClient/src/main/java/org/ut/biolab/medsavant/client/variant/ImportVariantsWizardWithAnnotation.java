@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  *
  * @author Andrew
  * @author rammar
+ * @author mfiume
  */
 public class ImportVariantsWizardWithAnnotation extends WizardDialog {
 
@@ -477,6 +478,7 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
                                     LOG.info("Creating input streams");
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file : variantFiles) {
+										setStatusMessage("Uploading variants " + file.getName());
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
                                         fileIndex++;
                                     }

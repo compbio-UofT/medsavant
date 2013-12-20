@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividuals
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class ComprehensiveInspector extends JTabbedPane implements Listener<Object> {
 
@@ -360,7 +360,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
     public synchronized void setSimpleVariant(final SimpleVariant sv) {
         currentSimpleVariant = sv;
-        System.out.println("variantSetterThread is null?"+(variantSetterThread==null)+" varaintSetterThread isDone?"+variantSetterThread.isDone());
+        // rammar - not sure what the following line is doing, but it's throwing NullPointerExceptions. Commenting it out.
+		//System.out.println("variantSetterThread is null?"+(variantSetterThread==null)+" varaintSetterThread isDone?"+variantSetterThread.isDone());
         if (variantSetterThread == null || variantSetterThread.isDone()) {           
             final ComprehensiveInspector instance = this;
 

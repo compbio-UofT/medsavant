@@ -293,7 +293,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                     }
 					
 					/* Close the dialog if only a single individual is requested. */
-					if (onlyOnePatient) {
+					if (onlyOnePatient && rows.length == 1) {
 						selectedRows.clear();
 						selectedHospitalIDs.clear();
 						

@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public abstract class CollapsibleInspector extends JPanel implements Inspector {
     private static final Log LOG = LogFactory.getLog(CollapsibleInspector.class);
@@ -130,6 +130,7 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         }
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
+		p.setFocusPainted(false);
 
         LOG.debug("Adding subinspector...");
         p.add(ipan.getInfoPanel(), BorderLayout.CENTER);

@@ -1,5 +1,6 @@
 package medsavant.incidental;
 
+import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.CheckBoxList;
@@ -65,9 +66,14 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 
 
 /**
@@ -93,6 +99,8 @@ public class IncidentalPanel extends JPanel {
 	private final int BOTTOM_MARGIN= 5;
 	private final int TEXT_AREA_WIDTH= 80;
 	private final int TEXT_AREA_HEIGHT= 25;
+	private final int PANE_WIDTH= 380;
+	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down
 	
 	public static final String PAGE_NAME = "Incidentalome";
 	private static final String INCIDENTAL_DB_USER= "incidental_user";
@@ -118,6 +126,7 @@ public class IncidentalPanel extends JPanel {
 	private String currentIndividualDNA;
 	private Calendar date;
 	private MedSavantWorker MSWorker;
+	private SearchableTablePanel stp;
 	private JScrollPane variantPane;
 	private ProgressWheel pw;
 	private JLabel progressLabel;
@@ -144,6 +153,8 @@ public class IncidentalPanel extends JPanel {
 	private JLabel incidentalPanelLabel= new JLabel("Incidental findings panel");
 	private JComboBox incidentalPanelComboBox;
 	private JButton incidentalPanelHelp;
+	private SplitScreenPanel ssp;
+	private ComprehensiveInspector vip;
 	
 	private IncidentalHSQLServer server;
     
@@ -434,25 +445,29 @@ public class IncidentalPanel extends JPanel {
 		patientPanel.add(progressPanel);
 		patientPanel.add(analyzeButton);
 		
+		
+		/* Set up the gene and variant inspectors. */
+		ssp = new SplitScreenPanel(variantPane);
+        vip = new ComprehensiveInspector(true, true, true, true, true, true, true, true, true, ssp);
+		
 		/* Final window layout along with size preferences. */
-		collapsible.setMinimumSize(new Dimension(380,20));
-		variantPane.setPreferredSize(variantPane.getMaximumSize());
-		
 		workview= new RoundedPanel(10);
-		workview.setLayout(new MigLayout("", "center", "top"));
-		//workview.add(patientPanel, "cell 0 0 1 2");
-		workview.add(patientPanel, "cell 0 0");
-		workview.add(variantPane, "cell 1 0");
 		
-		// TESTING - Inspector and Splitpane
-		/*
+		workview.setLayout(new MigLayout("", "center", "top"));
 		workview.add(patientPanel, "cell 0 0");
-		SplitScreenPanel ssp = new SplitScreenPanel(variantPane);
-        ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, true, true, ssp);
-		vip.setPreferredSize(vip.getMaximumSize());
 		workview.add(ssp, "cell 1 0");
 		workview.add(vip, "cell 2 0");
-		*/
+		
+		collapsible.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+		variantPane.setPreferredSize(variantPane.getMaximumSize());
+		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, PANE_HEIGHT));
+		vip.addSelectionListener(new Listener<Object>() {
+			@Override
+			public void handleEvent(Object event) {
+				stp.getTable().clearSelection();
+			}
+        });
+		
 		
 		/* Add the UI to the main app panel. */
 		view.add(workview, BorderLayout.CENTER);
@@ -460,7 +475,6 @@ public class IncidentalPanel extends JPanel {
 	
 		
 	private void updateVariantPane (IncidentalFindings i) {
-		SearchableTablePanel stp;
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
 			stp= i.getTableOutput(null);
 		} else {
@@ -469,6 +483,24 @@ public class IncidentalPanel extends JPanel {
 		}
 		stp.getColumnChooser().setProperties(properties, PROPERTIES_FILENAME);
 		variantPane.setViewportView(stp);
+		
+		stp.scrollSafeSelectAction(new Runnable() {
+            @Override
+            public void run() {
+                if (stp.getTable().getSelectedRow() != -1) {
+					SortableTable st= stp.getTable();
+                    int selectedIndex= st.getSelectedRow();
+					String chr= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_CHROM);
+					long pos= ((Integer) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_POSITION)).longValue();
+					String ref= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_REF);
+					String alt= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_ALT);
+					String type= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_VARIANT_TYPE);
+					
+                    SimpleVariant v= new SimpleVariant(chr, pos, ref, alt, type);
+                    vip.setSimpleVariant(v);
+                }
+            }
+        });
 	}
 	
 	
