@@ -74,6 +74,7 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -448,7 +449,8 @@ public class IncidentalPanel extends JPanel {
 		
 		/* Set up the gene and variant inspectors. */
 		ssp = new SplitScreenPanel(variantPane);
-        vip = new ComprehensiveInspector(true, true, true, true, true, true, true, true, true, ssp);
+        vip = new ComprehensiveInspector(false, false, true, true, true, true, true, true, true, ssp);
+		vip.addClinvarSubInspector();
 		
 		/* Final window layout along with size preferences. */
 		workview= new RoundedPanel(10);
@@ -460,7 +462,7 @@ public class IncidentalPanel extends JPanel {
 		
 		collapsible.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
 		variantPane.setPreferredSize(variantPane.getMaximumSize());
-		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, PANE_HEIGHT));
+		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); //TEMP
 		vip.addSelectionListener(new Listener<Object>() {
 			@Override
 			public void handleEvent(Object event) {
@@ -474,7 +476,7 @@ public class IncidentalPanel extends JPanel {
     }
 	
 		
-	private void updateVariantPane (IncidentalFindings i) {
+	private void updateVariantPane (final IncidentalFindings i) {
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
 			stp= i.getTableOutput(null);
 		} else {
@@ -498,7 +500,14 @@ public class IncidentalPanel extends JPanel {
 					
                     SimpleVariant v= new SimpleVariant(chr, pos, ref, alt, type);
                     vip.setSimpleVariant(v);
-                }
+					
+					
+					/* Create custom SubInspectors. */
+					Object[] line= new Object[i.header.size()];
+					for (int index= 0; index != i.header.size(); ++index)
+						line[index]= st.getModel().getValueAt(selectedIndex, index);
+					vip.setVariantLine(line, i.header);
+               }
             }
         });
 	}

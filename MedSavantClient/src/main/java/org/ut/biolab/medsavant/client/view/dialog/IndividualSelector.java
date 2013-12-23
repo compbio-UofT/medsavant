@@ -304,6 +304,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 						
 						instance.setVisible(false);
 						setIndividualsChosen(true);
+						
+						individualsSTP.getTable().clearSelection(); // if errors crop up, this line may be causing ListSelectionEvents - can be removed
 					}
                 }
             }

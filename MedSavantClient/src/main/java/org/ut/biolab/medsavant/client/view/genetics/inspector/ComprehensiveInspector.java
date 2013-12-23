@@ -30,7 +30,6 @@ import org.ut.biolab.medsavant.client.api.MedSavantVariantInspectorApp;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
-import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
@@ -45,6 +44,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSub
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsGeneSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsVariantSubInspector;
 
@@ -76,14 +76,27 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private OtherIndividualsGeneSubInspector otherIndividualsDetailedSubInspector;
     private List<Listener<Object>> selectionListeners = new LinkedList<Listener<Object>>();
     private MedSavantGeneInspectorApp[] appGeneInspectors;     
-            
+	private ClinvarSubInspector clinvarSubInspector;
+	
+	private MedSavantWorker<Object> variantRecordSetterThread;
+    private VariantRecord currentVariantRecord;
+	private MedSavantWorker<Object> variantSetterThread;
+    private SimpleVariant currentSimpleVariant;
+	private Object[] currentVariantLine;
+	private List<String> currentHeader;
+	
+	
     public void refresh(){
         if(inspectorsToTabIndexMap != null){                        
             if(this.currentSimpleVariant != null){                
                 setSimpleVariant(currentSimpleVariant);
             }else if(this.currentVariantRecord != null){                
                 setVariantRecord(currentVariantRecord);
-            }            
+            }
+			
+			if (this.currentVariantLine != null) {
+				setVariantLine(currentVariantLine, currentHeader);
+			}
         }
     }
     
@@ -238,8 +251,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public CollapsibleInspector getGeneInspector() {
         return geneCollapsibleInspector;
     }
-    private MedSavantWorker<Object> variantRecordSetterThread;
-    private VariantRecord currentVariantRecord;
+   
 
     public void setVariantRecord(final VariantRecord r) {
 
@@ -355,8 +367,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         }.execute();
 
     }
-    private MedSavantWorker<Object> variantSetterThread;
-    private SimpleVariant currentSimpleVariant;
 
     public synchronized void setSimpleVariant(final SimpleVariant sv) {
         currentSimpleVariant = sv;
@@ -493,4 +503,17 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         jsp.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         addTab(inspector.getName(), null, jsp, inspector.getName());
     }
+	
+	
+	public void addClinvarSubInspector() {
+		clinvarSubInspector= new ClinvarSubInspector();
+		variantCollapsibleInspector.addSubInspector(clinvarSubInspector);
+	}
+	
+	public void setVariantLine(Object[] line, List<String> header) {
+		currentVariantLine= line;
+		if (line != null) {
+			clinvarSubInspector.setVariantLine(line, header);
+		}
+	}
 }
