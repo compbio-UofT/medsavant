@@ -449,8 +449,11 @@ public class IncidentalPanel extends JPanel {
 		
 		/* Set up the gene and variant inspectors. */
 		ssp = new SplitScreenPanel(variantPane);
-        vip = new ComprehensiveInspector(false, false, true, true, true, true, true, true, true, ssp);
+        vip = new ComprehensiveInspector();
 		vip.addClinvarSubInspector();
+		vip.addHGMDSubInspector();
+		vip.addOtherIndividualsVariantSubInspector(ssp);
+		vip.addSocialSubInspector();
 		
 		/* Final window layout along with size preferences. */
 		workview= new RoundedPanel(10);

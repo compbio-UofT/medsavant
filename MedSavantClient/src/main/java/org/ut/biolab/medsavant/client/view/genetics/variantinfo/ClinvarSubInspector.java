@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import java.awt.Component;
@@ -24,7 +20,8 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
- *
+ * Clinvar SubInspector to display variant details.
+ * 
  * @author rammar
  */
 public class ClinvarSubInspector extends SubInspector {
