@@ -293,7 +293,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                     }
 					
 					/* Close the dialog if only a single individual is requested. */
-					if (onlyOnePatient) {
+					if (onlyOnePatient && rows.length == 1) {
 						selectedRows.clear();
 						selectedHospitalIDs.clear();
 						
@@ -304,6 +304,8 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 						
 						instance.setVisible(false);
 						setIndividualsChosen(true);
+						
+						individualsSTP.getTable().clearSelection(); // if errors crop up, this line may be causing ListSelectionEvents - can be removed
 					}
                 }
             }
