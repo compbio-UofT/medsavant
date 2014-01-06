@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
@@ -58,6 +59,7 @@ public interface ProjectManagerAdapter extends Remote {
     public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, RemoteException, SessionExpiredException;
     public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException;
 
+    public int[] getDefaultAnnotationIDs(String sessID, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException;
     public String[] getReferenceNamesForProject(String sessID, int projectid) throws SQLException, RemoteException, SessionExpiredException;
     public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;
 }

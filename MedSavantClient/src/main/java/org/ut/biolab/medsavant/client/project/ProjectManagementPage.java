@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.project;
 
@@ -51,16 +51,14 @@ import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
-
 /**
  *
  * @author mfiume
  */
 public class ProjectManagementPage extends SubSectionView {
+
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
-
     private ProjectController controller = ProjectController.getInstance();
-
     private SplitScreenView view;
 
     public ProjectManagementPage(SectionView parent) {
@@ -79,14 +77,14 @@ public class ProjectManagementPage extends SubSectionView {
     public JPanel getView() {
         if (view == null) {
             view = new SplitScreenView(
-                        new SimpleDetailedListModel<String>("Projects") {
-                            @Override
-                            public String[] getData() throws Exception {
-                                return ProjectController.getInstance().getProjectNames();
-                            }
-                        },
-                        new ProjectsDetailedView(),
-                        new ProjectDetailedListEditor());
+                    new SimpleDetailedListModel<String>("Projects") {
+                @Override
+                public String[] getData() throws Exception {
+                    return ProjectController.getInstance().getProjectNames();
+                }
+            },
+                    new ProjectsDetailedView(),
+                    new ProjectDetailedListEditor());
         }
         return view;
     }
@@ -128,23 +126,26 @@ public class ProjectManagementPage extends SubSectionView {
         @Override
         public void editItem(Object[] items) {
             try {
-                String projName = (String)items[0];
+                String projName = (String) items[0];
                 int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.getInstance().getSessionID(), projName);
 
                 // Check for existing unpublished changes to this project.
+
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
                         if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
                             try {
+                                LOG.info("Locked database for changes");
                                 ProjectWizard wiz = new ProjectWizard(projID, projName,
-                                                                      MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
-                                                                      MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
+                                        MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
+                                        MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
                                 wiz.setVisible(true);
 
                             } finally {
                                 try {
                                     MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
+                                    LOG.info("Released lock");
                                 } catch (Exception ex1) {
                                     LOG.error("Error releasing database lock.", ex1);
                                 }
@@ -163,8 +164,8 @@ public class ProjectManagementPage extends SubSectionView {
 
         @Override
         public void deleteItems(List<Object[]> items) {
-           int nameIndex = 0;
-           int keyIndex = 0;
+            int nameIndex = 0;
+            int keyIndex = 0;
 
             int result;
 
@@ -198,10 +199,8 @@ public class ProjectManagementPage extends SubSectionView {
         private final JPanel content;
         private String projectName;
         private DetailsWorker detailsWorker;
-
         private JPanel details;
         private CollapsiblePane infoPanel;
-
 
         public ProjectsDetailedView() {
             super(pageName);
@@ -227,7 +226,7 @@ public class ProjectManagementPage extends SubSectionView {
             content = new JPanel();
             content.setLayout(new BorderLayout());
             infoPanel.setLayout(new BorderLayout());
-            infoPanel.add(content,BorderLayout.CENTER);
+            infoPanel.add(content, BorderLayout.CENTER);
 
             details = ViewUtil.getClearPanel();
 
@@ -292,7 +291,7 @@ public class ProjectManagementPage extends SubSectionView {
             ViewUtil.setBoxYLayout(details);
 
             String[][] values = new String[projectDetails.length][2];
-            for(int i = 0; i < projectDetails.length; i++){
+            for (int i = 0; i < projectDetails.length; i++) {
                 values[i][0] = projectDetails[i].getReferenceName();
                 values[i][1] = projectDetails[i].getNumAnnotations() + " annotation(s) applied";
             }
@@ -306,7 +305,6 @@ public class ProjectManagementPage extends SubSectionView {
 
                     JButton b = new JButton("Unlock");
                     b.addActionListener(new ActionListener() {
-
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             try {
@@ -332,7 +330,6 @@ public class ProjectManagementPage extends SubSectionView {
 
                     JButton b = new JButton("Lock");
                     b.addActionListener(new ActionListener() {
-
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             try {
@@ -364,6 +361,5 @@ public class ProjectManagementPage extends SubSectionView {
             details.removeAll();
             details.updateUI();
         }
-
     }
 }

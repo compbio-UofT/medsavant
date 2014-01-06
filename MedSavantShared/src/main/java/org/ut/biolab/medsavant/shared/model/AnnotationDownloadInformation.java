@@ -50,15 +50,28 @@ public class AnnotationDownloadInformation implements Serializable {
     private final String reference;
     private final String description;
     private final String url;
-
-    public AnnotationDownloadInformation(String name, String version, String reference, String description, String url) {
+    private final boolean defaultAnnotation;
+    
+    public AnnotationDownloadInformation(String name, String version, String reference, String description, String url){
+        this(name, version, reference, description, url, "N");
+    }
+    
+    public AnnotationDownloadInformation(String name, String version, String reference, String description, String url, String isDefault) {
         this.name = name;
         this.reference = reference;
         this.version = version;
         this.description = description;
         this.url = url;
+        if(isDefault != null && (isDefault.equalsIgnoreCase("yes") || isDefault.equalsIgnoreCase("true") || isDefault.equalsIgnoreCase("y") || isDefault.equalsIgnoreCase("yes"))){
+            this.defaultAnnotation = true;
+        }else{
+            this.defaultAnnotation = false;
+        }
     }
 
+    public boolean isDefault(){
+        return defaultAnnotation;
+    }
     public String getDescription() {
         return description;
     }
@@ -138,7 +151,8 @@ public class AnnotationDownloadInformation implements Serializable {
                                     annotation.getAttribute("version"),
                                     reference.getAttribute("name"),
                                     annotation.getAttribute("description"),
-                                    annotation.getAttribute("url"));
+                                    annotation.getAttribute("url"),
+                                    annotation.getAttribute("isDefault"));
 
                             adiList.add(adi);
                         }
