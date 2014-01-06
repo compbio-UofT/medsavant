@@ -1,8 +1,9 @@
-package medsavant.incidental;
+package medsavant.discovery;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
-import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.JideButton;
 import java.util.Calendar;
@@ -12,6 +13,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,6 +38,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -43,14 +47,14 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import medsavant.incidental.localDB.IncidentalDB;
-import medsavant.incidental.localDB.IncidentalHSQLServer;
+import medsavant.discovery.localDB.DiscoveryDB;
+import medsavant.discovery.localDB.DiscoveryHSQLServer;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -74,7 +78,6 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -82,7 +85,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
  * 
  * @author rammar
  */
-public class IncidentalPanel extends JPanel {
+public class DiscoveryPanel extends JPanel {
 	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	private static final Properties properties= new Properties();
 	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
@@ -94,27 +97,37 @@ public class IncidentalPanel extends JPanel {
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
 		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
-			
+	public static final String PAGE_NAME = "Incidentalome";
+	private static final String INCIDENTAL_DB_USER= "incidental_user";
+	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password		
+	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
+		"NONSYNONYMOUS", "STOPGAIN", "STOPLOSS", "SPLICING", "NON_FS_INSERTION",
+		"FS_INSERTION", "NON_FS_DELETION", "FS_DELETION", "NON_FS_SUBSTITUTION",
+		"FS_SUBSTITUTION", "ncRNA_EXONIC", "ncRNA_SPLICING", "UTR3", "UTR5",
+		"SYNONYMOUS", "INTRONIC", "ncRNA_INTRONIC", "UPSTREAM", "DOWNSTREAM",
+		"INTERGENIC", "ERROR");
+	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 5;
 	private final int BOTTOM_MARGIN= 5;
-	private final int TEXT_AREA_WIDTH= 80;
+	private final int TEXT_AREA_WIDTH= 70;
 	private final int TEXT_AREA_HEIGHT= 25;
 	private final int PANE_WIDTH= 380;
 	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down
 	
-	public static final String PAGE_NAME = "Incidentalome";
-	private static final String INCIDENTAL_DB_USER= "incidental_user";
-	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password
-	
+	private DiscoveryFindings discFind= null;
+	private ComboCondition baseComboCondition;
+	private ComboCondition newComboCondition;
 	private int coverageThreshold;
 	private double hetRatio;
 	private double afThreshold;
 	private String[] chooserAFArray;
 	private String incidentalPanelString;
+	private List<String> mutationFilterList= new LinkedList<String>();
 	
 	private boolean analysisRunning= false;
 	private boolean dbLoaded= false;
+	private Date currentDate= null;
 	
 	private JPanel view;
 	private RoundedPanel workview;
@@ -135,7 +148,7 @@ public class IncidentalPanel extends JPanel {
 	private JLabel coverageThresholdLabel= new JLabel("Min. variant coverage");
 	private JTextField coverageThresholdText;
 	private JButton coverageThresholdHelp;
-	private JLabel hetRatioLabel= new JLabel("Min. ratio of alt/total");
+	private JLabel hetRatioLabel= new JLabel("Min. ratio of alternate/total reads");
 	private JTextField hetRatioText;
 	private JButton hetRatioHelp;
 	private JLabel afThresholdLabel= new JLabel("Max. allele frequency");
@@ -148,19 +161,18 @@ public class IncidentalPanel extends JPanel {
 	private URL cgdURL;
 	private CollapsiblePane collapsible;
 	private CollapsiblePane collapsibleSettings;
-	private JLabel cgdURLLabel= new JLabel("Clinical Genomics Database URL");
+	private JLabel cgdURLLabel= new JLabel("Clinical Genomics Database (CGD) URL");
 	private JTextField cgdText;
 	private JButton cgdHelp;
-	private JLabel incidentalPanelLabel= new JLabel("Incidental findings panel");
-	private JComboBox incidentalPanelComboBox;
-	private JButton incidentalPanelHelp;
+	private JLabel cgdDateLabel;
 	private SplitScreenPanel ssp;
 	private ComprehensiveInspector vip;
+	private JButton addFilterButton;
 	
-	private IncidentalHSQLServer server;
+	private DiscoveryHSQLServer server;
     
 	
-	public IncidentalPanel() {
+	public DiscoveryPanel() {
 		/* Set up the properties based on stored user preference. */
 		try {
 			loadProperties();
@@ -173,7 +185,7 @@ public class IncidentalPanel extends JPanel {
 		this.setLayout(new BorderLayout());
 		add(view, BorderLayout.CENTER);
 		
-		server= new IncidentalHSQLServer(INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
+		server= new DiscoveryHSQLServer(INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
 	}
 
 	
@@ -184,16 +196,18 @@ public class IncidentalPanel extends JPanel {
 		view.setBorder(BorderFactory.createEmptyBorder(TOP_MARGIN, SIDE_MARGIN, BOTTOM_MARGIN, SIDE_MARGIN));
 		
 		choosePatientButton= new JideButton("Choose Patient");
-		choosePatientButton.setButtonStyle(JideButton.FLAT_STYLE);
+		choosePatientButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
 		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
 			Font.PLAIN, 18));
+		
 				
 		analyzeButton= new JideButton(analyzeButtonDefaultText);
-		analyzeButton.setButtonStyle(JideButton.FLAT_STYLE);
+		analyzeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
 		analyzeButton.setFont(new Font(analyzeButton.getFont().getName(),
 			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		analyzeButton.setVisible(false);
+			
 		
 		Dimension d= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
 		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
@@ -219,31 +233,37 @@ public class IncidentalPanel extends JPanel {
 		cgdText= new JTextField(cgdURL.toString());
 		cgdHelp= ViewUtil.getHelpButton("Clinical Genomics Database", 
 				"URL for automatic updates of CGD database");
-		// ADD AN ACTION LISTENER
-		
-		
-		/* Allow users to change the incidental findings panel to predefined options. */
-		incidentalPanelComboBox= new JComboBox(new String[]{"ACMG", "CGD"});
-		incidentalPanelComboBox.setSelectedItem("CGD"); // default value
-		incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem(); // assign the default
-		incidentalPanelComboBox.addActionListener(
-			new ActionListener() {
+		cgdDateLabel= new JLabel("CGD last updated on " +
+			(new SimpleDateFormat("MMM dd, yyyy")).format(currentDate) + ".");
+		cgdDateLabel.setFont(new Font(cgdDateLabel.getFont().getName(),
+			Font.BOLD, cgdDateLabel.getFont().getSize()));
+		cgdText.addKeyListener(
+			new KeyListener() {
+				
 				@Override
-				public void actionPerformed(ActionEvent e) {
-					incidentalPanelString= (String) incidentalPanelComboBox.getSelectedItem();
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						try {
+							updateCGD();
+							copyCGD();
+						} catch (Exception exc) {
+							exc.printStackTrace();
+						}
+					}
 				}
+				
+				@Override
+				public void keyReleased(KeyEvent e) {}
+				
+				@Override
+				public void keyTyped(KeyEvent e) {}
 			}
 		);
-		incidentalPanelHelp= ViewUtil.getHelpButton("Incidental Findings Panel Selection", 
-				"Current options: All genes from the Clinical Genomics Database " + 
-				"(CGD) for which the mode of inhertiance has been manually curated. "+
-				"Alternatively, one may choose the limited panel of incidental finding "+
-				"genes as assigned by the American College of Medical Genetics (ACMG).");
 		
-		
-		//statusSeparator.setVisible(false);
 		
 		progressLabel= new JLabel();
+		progressLabel.setFont(new Font(progressLabel.getFont().getName(),
+			Font.BOLD, progressLabel.getFont().getSize()));
 		progressLabel.setVisible(false);
 		
 		pw= new ProgressWheel();
@@ -292,31 +312,23 @@ public class IncidentalPanel extends JPanel {
 				@Override
 				public void actionPerformed (ActionEvent e) {
 					if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
-
-						analysisRunning= true;
-										
+						analysisRunning= true;					
 						MSWorker= new MedSavantWorker<Object> (
-							IncidentalPanel.class.getCanonicalName()) {
-
-							IncidentalFindings incFin;
+							DiscoveryPanel.class.getCanonicalName()) {
 								
 							@Override
 							protected Object doInBackground() throws Exception {
 								/* Starts a new thread for background tasks. */
-								
-								//statusSeparator.setVisible(true);
 								progressLabel.setVisible(true);
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
 								analyzeButton.setVisible(true);
 								
-								//if (!server.isRunning()) { // No need to run a local server if using JDBC driver from hsqldb
 								if (!dbLoaded) {
 									progressLabel.setText("Preparing local filtering database");
 									try {
-										//server.startServer(); // No need to run a local server if using JDBC driver from hsqldb
 										dbLoaded= true;
-										IncidentalDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD, properties);
+										DiscoveryDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD, properties);
 									} catch (SQLException e) {
 										e.printStackTrace();
 									}
@@ -330,20 +342,29 @@ public class IncidentalPanel extends JPanel {
 								/* Every time an analysis is run, parameters/settings are saved. */
 								saveProperties();
 								
-								/*  Get incidental findings. */
-								incFin= new IncidentalFindings(currentIndividualDNA, 
-										coverageThreshold, hetRatio, afThreshold, 
-										Arrays.asList(chooser.getCheckBoxListSelectedValues()),
-										incidentalPanelString);
+								/*  Get discovery findings. */
 								
+								// Initialize or update for current DNA ID
+								if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
+									discFind= new DiscoveryFindings(currentIndividualDNA);
+								}
+								baseComboCondition= discFind.getComboCondition(
+									Arrays.asList(chooser.getCheckBoxListSelectedValues()),
+									coverageThreshold, hetRatio, afThreshold);
+								updateCondition();
 								
+								discFind.storeVariants(5000); // limit variant fetching to first 5000
+								
+								/* Update progress messages to user. */
 								if (this.isCancelled()) {
 									progressLabel.setText("Analysis Cancelled.");
 									pw.setVisible(false);
 									analyzeButton.setEnabled(true);
 									analyzeButton.setText(analyzeButtonDefaultText);
 								} else {
-									progressLabel.setText(incFin.getVariantCount() + " variants. ");
+									progressLabel.setText(discFind.getMaximumVariantCount() +
+										" total variants, " + discFind.getFilteredVariantCount() + 
+										" variants after filtering.");
 								}
 								pw.setVisible(false);
 								return null;
@@ -352,7 +373,7 @@ public class IncidentalPanel extends JPanel {
 							@Override
 							protected void showSuccess(Object t) {	
 							/* All updates to display should happen here to be run. */
-								updateVariantPane(incFin);
+								updateVariantPane(discFind);
 								analyzeButton.setText(analyzeButtonDefaultText);
 								analysisRunning= false;
 							}
@@ -395,17 +416,25 @@ public class IncidentalPanel extends JPanel {
 			}
 		);
 		
+		addFilterButton= new JButton("Add variant filter");
+		addFilterButton.setFocusPainted(false);
+		addFilterButton.addActionListener(
+			new ActionListener() {
+				
+				@Override
+				public void actionPerformed (ActionEvent e) {
+				}
+			}
+		);
+		
 		
 		/* Set up the layout for the UI.
 		 * GroupLayout requires defintion of the same components from both 
 		 * horizontal and verical perspectives. */
 		
 		/* Set up the layout for the analysis options collapsible panel. */
-		collapsible= new CollapsiblePane("Analysis options");
+		collapsible= new CollapsiblePane("Sequence coverage and allele frequency");
 		collapsible.setLayout(new MigLayout());
-		collapsible.add(incidentalPanelLabel);
-		collapsible.add(incidentalPanelComboBox);
-		collapsible.add(incidentalPanelHelp, "wrap 40px");
 		collapsible.add(coverageThresholdLabel);
 		collapsible.add(coverageThresholdText);
 		collapsible.add(coverageThresholdHelp, "wrap");
@@ -419,7 +448,7 @@ public class IncidentalPanel extends JPanel {
 		collapsible.add(chooseAFColumnsHelp);
 		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsible.setFocusPainted(false);
-		collapsible.collapse(true);
+		collapsible.collapse(true);	
 		
 		/* Set up the layout for the Advanced settings collapsible panel. */
 		collapsibleSettings= new CollapsiblePane("Advanced Settings");
@@ -427,24 +456,28 @@ public class IncidentalPanel extends JPanel {
 		collapsibleSettings.add(cgdURLLabel);
 		collapsibleSettings.add(cgdHelp, "wrap");
 		collapsibleSettings.add(cgdText, "span");
+		collapsibleSettings.add(cgdDateLabel);		
 		collapsibleSettings.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsibleSettings.setFocusPainted(false);
 		collapsibleSettings.collapse(true);
 		
-		
 		/* Progress bar panel. */
 		//JPanel progressPanel= new JPanel(new MigLayout("insets 0", "center", "center")); // Remove borders around the panel using "insets"
-		JPanel progressPanel= new JPanel(new MigLayout("gap 50px 50px"));
-		progressPanel.add(progressLabel);
+		JPanel progressPanel= new JPanel(new MigLayout("", "center", ""));
+		progressPanel.add(progressLabel, "wrap");
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
-		CollapsiblePanes patientPanel= new CollapsiblePanes();
-		patientPanel.add(choosePatientButton);
-		patientPanel.add(collapsible);
-		patientPanel.add(collapsibleSettings);
-		patientPanel.add(progressPanel);
-		patientPanel.add(analyzeButton);
+		//CollapsiblePanes colPanes= new CollapsiblePanes();
+		JPanel patientPanel= new JPanel();
+		patientPanel.setLayout(new MigLayout("gapy 20px"));
+		patientPanel.add(choosePatientButton, "alignx center, wrap");
+		patientPanel.add(addFilterButton, "alignx center, wrap");
+		patientPanel.add(collapsible, "wrap");
+		patientPanel.add(mutationCheckboxPanel(), "span");
+		patientPanel.add(collapsibleSettings, "wrap");
+		patientPanel.add(progressPanel, "alignx center, wrap");
+		patientPanel.add(analyzeButton, "alignx center");
 		
 		
 		/* Set up the gene and variant inspectors. */
@@ -463,7 +496,12 @@ public class IncidentalPanel extends JPanel {
 		workview.add(ssp, "cell 1 0");
 		workview.add(vip, "cell 2 0");
 		
-		collapsible.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+		/* Set the sizing for a couple panels and let the other panels auto-size. */
+		choosePatientButton.setMinimumSize(new Dimension(
+			250, choosePatientButton.getHeight()));
+		analyzeButton.setMinimumSize(new Dimension(
+			200, analyzeButton.getSize().height));
+		patientPanel.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
 		variantPane.setPreferredSize(variantPane.getMaximumSize());
 		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); //TEMP
 		vip.addSelectionListener(new Listener<Object>() {
@@ -479,7 +517,7 @@ public class IncidentalPanel extends JPanel {
     }
 	
 		
-	private void updateVariantPane (final IncidentalFindings i) {
+	private void updateVariantPane (final DiscoveryFindings i) {
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
 			stp= i.getTableOutput(null);
 		} else {
@@ -504,7 +542,6 @@ public class IncidentalPanel extends JPanel {
                     SimpleVariant v= new SimpleVariant(chr, pos, ref, alt, type);
                     vip.setSimpleVariant(v);
 					
-					
 					/* Create custom SubInspectors. */
 					Object[] line= new Object[i.header.size()];
 					for (int index= 0; index != i.header.size(); ++index)
@@ -519,7 +556,78 @@ public class IncidentalPanel extends JPanel {
 	public JPanel getView() {
 		return view;
 	}
+	
+	
+	/**
+	 * Create a CollapsiblePane of a checkbox panel of mutations
+	 * @return A mutation checkbox JPanel
+	 */
+	private CollapsiblePane mutationCheckboxPanel() {
+		CollapsiblePane collapsibleMutation= new CollapsiblePane("Mutations");
+		collapsibleMutation.setLayout(new MigLayout("gapy 0px"));
+		
+		for (String jm : JANNOVAR_MUTATIONS) {
+			final JCheckBox currentCheckBox= new JCheckBox(jm);
+			//currentCheckBox.setSelected(true);
+			// Allow checkboxes to register themselves as checked or unchecked upon being clicked
+			currentCheckBox.addActionListener(
+				new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (currentCheckBox.isSelected()) {
+							mutationFilterList.add(currentCheckBox.getText());
+						} else {
+							mutationFilterList.remove(currentCheckBox.getText());
+						}
+					}
+				}
+			);
+			
+			collapsibleMutation.add(currentCheckBox, "wrap");
+		}
+		
+		collapsibleMutation.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsibleMutation.setFocusPainted(false);
+		collapsibleMutation.collapse(true);	
+		
+		return collapsibleMutation;
+	}
+	
+	
+	/**
+	 * Update and set the new ComboCondition based on user selections and the
+	 * base ComboCondition returned from the DiscoveryFindings object.
+	 */
+	private void updateCondition() {
+		newComboCondition= new ComboCondition(ComboCondition.Op.AND);
+		
+		newComboCondition.addCondition(baseComboCondition);
+		addMutationCondition(mutationFilterList);
+		
+		discFind.setComboCondition(newComboCondition);
+	}
+	
     
+	/**
+	 * Add a filter condition describing mutations to the ComboCondition of DiscoveryFindings.
+	 * @param mutations A list of the mutation Strings, as annotated in Jannovar, to filter the variants
+	 */
+	private void addMutationCondition(List<String> mutations) {
+		Map<String, String> columns= discFind.dbAliasToColumn;
+		String JANNOVAR_EFFECT= "jannovar effect";
+		
+		if (columns.get(JANNOVAR_EFFECT) != null) {
+			ComboCondition mutationComboCondition= new ComboCondition(ComboCondition.Op.OR);
+			
+			for (String m : mutations) {
+				mutationComboCondition.addCondition(
+					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+			}
+			
+			newComboCondition.addCondition(mutationComboCondition);
+		}
+	}
+	
 	
 	/** Set all values from JTextFields. Also set the relevant properties. */
 	private void setAllValuesFromFields() {
@@ -560,12 +668,12 @@ public class IncidentalPanel extends JPanel {
 	/**
 	 * Load the properties file if it exists.
 	 */
-	private void loadProperties () throws Exception {
+	private void loadProperties() throws Exception {
 		File propertiesFile= new File(PROPERTIES_FILENAME);
 		if (!propertiesFile.exists()) {
 			/* Set the defaults. */
 			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 
-				27)).getTimeInMillis(); // CGD date at time of coding
+				27)).getTimeInMillis(); // CGD date at time of coding corresponding to the download date of the embedded CGD file
 			
 			properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
 			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
@@ -618,7 +726,7 @@ public class IncidentalPanel extends JPanel {
 	private void updateCGD() throws Exception {
 		HttpURLConnection conn= (HttpURLConnection) cgdURL.openConnection();
 		Date urlDate= new Date(conn.getLastModified());
-		Date currentDate= new Date(Long.parseLong((String) properties.getProperty("CGD_DB_date")));
+		currentDate= new Date(Long.parseLong((String) properties.getProperty("CGD_DB_date")));
 		
 		if (currentDate.before(urlDate)) {
 			// notify users
@@ -653,7 +761,7 @@ public class IncidentalPanel extends JPanel {
 				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename"));
 		if (!f.exists()) { // copy the default pre-packaged CGD file from Nov. 26, 2013.
 			try {
-				InputStream in= IncidentalPanel.class.getResourceAsStream("/db_files/CGD.txt");
+				InputStream in= DiscoveryPanel.class.getResourceAsStream("/db_files/CGD.txt");
 				OutputStream out= new FileOutputStream(f);
 				IOUtils.copy(in, out);
 				in.close();
@@ -709,7 +817,7 @@ public class IncidentalPanel extends JPanel {
 		
 		// Store the custom header - just the first line
 		reader= new BufferedReader(
-			new InputStreamReader(IncidentalDB.class.getResourceAsStream("/db_files/CGD_header.txt"))); 
+			new InputStreamReader(DiscoveryDB.class.getResourceAsStream("/db_files/CGD_header.txt"))); 
 		newLines.add(reader.readLine());
 		reader.close();
 		

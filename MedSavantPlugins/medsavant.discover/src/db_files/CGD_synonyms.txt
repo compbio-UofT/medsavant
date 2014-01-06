@@ -1,0 +1,33 @@
+inheritance	synonym
+AD	AD
+BG	
+AR	AR
+AD/AR	CX
+XL	XL
+AD/AR/Digenic	CX
+AD/Methylation	AD
+AR/Digenic	CX
+Maternal	
+AD/Digenic	CX
+Digenic (involving a SMCHD1 mutation and a permissive D4Z4 haplotype)	CX
+AD/Multigenic	CX
+AD/Digenic/Multigenic	CX
+AR/AD	CX
+AR/Digenic)	CX
+AD (with imprinting)	AD
+Pediatric	
+AD/AR/Digenic/Multigenic	CX
+AD/AR (Triallelic)	CX
+XL/Digenic	XC
+AD/BG	AD
+XL (involving both OPN1 genes)	XC
+(Digenic) AR	CX
+AD/Digenic (Severe digenic insulin resistance can be due to digenic mutations in PPP1R3A and PPARG)	CX
+Digenic	CX
+AR/BG	AR
+AR/Digenic (with CFTR or other SCCN1 genes)	CX
+XL/PAR	XL 
+AD/AR/BG	CX
+Digenic (involving a SMCHD1 mutation and permissive D4Z4 haplotype)	CX
+YL	Y
+AR (AD)	CX
