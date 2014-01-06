@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server;
 
@@ -80,7 +80,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     //amount is exceeded, the method call will block until a thread
     //becomes available.
     //(see submitLongJob)
-    private static final int MAX_THREADS = Math.max(1,Runtime.getRuntime().availableProcessors()-1);
+    private static final int MAX_THREADS = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
     private static final int MAX_THREAD_KEEPALIVE_TIME = 1440; //in minutes
 
     //Maximum number of IO-heavy jobs that can be run simultaneously.
@@ -94,67 +94,71 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     private static ExecutorService longThreadPool;
     private static ExecutorService shortThreadPool;
 
-    static{
-        longThreadPool  = Executors.newFixedThreadPool(MAX_THREADS);
-        ((ThreadPoolExecutor)longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
+    static {
+        longThreadPool = Executors.newFixedThreadPool(MAX_THREADS);
+        ((ThreadPoolExecutor) longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
         shortThreadPool = Executors.newCachedThreadPool();
     }
 
     /**
      * Submits and runs the current job using the short job executor service,
-     * and immediately returns.  An unlimited number of short jobs can be
+     * and immediately returns. An unlimited number of short jobs can be
      * executing simultaneously.
      *
      * NON_BLOCKING.
      *
-     * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
-     * will BLOCK.  get() will return null upon successful completion.
+     * @return The pending result of the job. Trying to fetch the result with
+     * the 'get' method of Future will BLOCK. get() will return null upon
+     * successful completion.
      */
-    public static Future submitShortJob(Runnable r){
+    public static Future submitShortJob(Runnable r) {
         return shortThreadPool.submit(r);
     }
 
     /**
-     * Submits and runs the current job using the long job executor service,
-     * and immediately returns.  Only MAX_THREADS of long jobs can be
-     * executing simultaneously -- the rest are queued.
+     * Submits and runs the current job using the long job executor service, and
+     * immediately returns. Only MAX_THREADS of long jobs can be executing
+     * simultaneously -- the rest are queued.
      *
      * NON_BLOCKING.
      *
-     * @return The pending result of the job.  Trying to fetch the result with the 'get' method of Future
-     * will BLOCK.  get() will return null upon successful completion.
+     * @return The pending result of the job. Trying to fetch the result with
+     * the 'get' method of Future will BLOCK. get() will return null upon
+     * successful completion.
      */
-    public static Future submitLongJob(Runnable r){
+    public static Future submitLongJob(Runnable r) {
         return shortThreadPool.submit(r);
     }
 
     /**
-     * @return The executor service used for short jobs.  An unlimited number of short jobs can run simultaneously.
+     * @return The executor service used for short jobs. An unlimited number of
+     * short jobs can run simultaneously.
      */
-    public static ExecutorService getShortExecutorService(){
+    public static ExecutorService getShortExecutorService() {
         return shortThreadPool;
     }
 
     /**
-     * @return The executor service used for long jobs.  Only MAX_THREADS long jobs can run simultaneously.
+     * @return The executor service used for long jobs. Only MAX_THREADS long
+     * jobs can run simultaneously.
      */
-    public static ExecutorService getLongExecutorService(){
+    public static ExecutorService getLongExecutorService() {
         return longThreadPool;
     }
 
-    public static boolean isClientAuthRequired(){
+    public static boolean isClientAuthRequired() {
         return require_client_auth;
     }
 
-    public static boolean isTLSRequired(){
+    public static boolean isTLSRequired() {
         return require_ssltls;
     }
 
-    public static RMIServerSocketFactory getDefaultServerSocketFactory(){
+    public static RMIServerSocketFactory getDefaultServerSocketFactory() {
         return isTLSRequired() ? new SslRMIServerSocketFactory(null, null, require_client_auth) : RMISocketFactory.getSocketFactory();
     }
 
-    public static RMIClientSocketFactory getDefaultClientSocketFactory(){
+    public static RMIClientSocketFactory getDefaultClientSocketFactory() {
         return isTLSRequired() ? new SslRMIClientSocketFactory() : RMISocketFactory.getSocketFactory();
     }
 
@@ -178,22 +182,22 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 "  SERVER VERSION: " + VersionSettings.getVersionString() + "\n"
                 + "  SERVER ADDRESS: " + thisAddress + "\n"
                 + "  LISTENING ON PORT: " + listenOnPort + "\n"
-                + "  MAX THREADS: "+MAX_THREADS+"\n"
-                + " MAX IO THREADS: "+MAX_IO_JOBS+"\n");
+                + "  EXPORT PORT: " + MedSavantServerUnicastRemoteObject.getExportPort() + "\n"
+                + "  MAX THREADS: " + MAX_THREADS + "\n"
+                + " MAX IO THREADS: " + MAX_IO_JOBS + "\n");
 
-                //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
+        //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
         try {
             // create the registry and bind the name and object.
-            if(isTLSRequired()){
-                System.out.println("SSL/TLS Encryption is enabled, Client authentication is "+(isClientAuthRequired() ? "required." : "NOT required."));
-            }else{
+            if (isTLSRequired()) {
+                System.out.println("SSL/TLS Encryption is enabled, Client authentication is " + (isClientAuthRequired() ? "required." : "NOT required."));
+            } else {
                 System.out.println("SSL/TLS Encryption is NOT enabled");
                 //registry = LocateRegistry.createRegistry(listenOnPort);
             }
             registry = LocateRegistry.createRegistry(listenOnPort, getDefaultClientSocketFactory(), getDefaultServerSocketFactory());
 
             //TODO: get these from the user
-
             ConnectionController.setHost(databaseHost);
             ConnectionController.setPort(databasePort);
 
@@ -262,7 +266,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         + "\t\tlisten-on-port - the port on which clients will connect\n"
                         + "\t\temail - the email address to send important notifications\n"
                         + "\t\ttmp-dir - the directory to use for temporary files\n"
-                        + "\t\tms-dir - the directory to use to store permanent files\n");
+                        + "\t\tms-dir - the directory to use to store permanent files\n"
+                        + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')");
                 return;
             }
 
@@ -304,24 +309,37 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             if (prop.containsKey("ms-dir")) {
                                 DirectorySettings.setMedSavantDirectory(prop.getProperty("ms-dir"));
                             }
-                            if(prop.containsKey("encryption")){
+                            if (prop.containsKey("encryption")) {
                                 String p = prop.getProperty("encryption");
-                                if(p.equalsIgnoreCase("disabled")){
+                                if (p.equalsIgnoreCase("disabled")) {
                                     require_ssltls = false;
                                     require_client_auth = false;
-                                }else if(p.equalsIgnoreCase("no_client_auth")){
+                                } else if (p.equalsIgnoreCase("no_client_auth")) {
                                     require_ssltls = true;
                                     require_client_auth = false;
-                                }else if(p.equalsIgnoreCase("with_client_auth")){
+                                } else if (p.equalsIgnoreCase("with_client_auth")) {
                                     require_ssltls = true;
                                     require_client_auth = true;
-                                }else{
-                                    throw new IllegalArgumentException("Uncrecognized value for property 'encryption': "+p);
+                                } else {
+                                    throw new IllegalArgumentException("Uncrecognized value for property 'encryption': " + p);
+                                }
+                                if (require_ssltls) {
+                                    if (prop.containsKey("keyStore")) {
+                                        System.setProperty("javax.net.ssl.keyStore", prop.getProperty("keyStore"));
+                                    } else {
+                                        System.err.println("WARNING: No keyStore specified in configuration");
+                                    }
+
+                                    if (prop.containsKey("keyStorePass")) {
+                                        System.setProperty("javax.net.ssl.keyStorePassword", prop.getProperty("keyStorePass"));
+                                    } else {
+                                        throw new IllegalArgumentException("ERROR: No keyStore password specified in configuration");
+                                    }
                                 }
                             }
 
                         } catch (Exception e) {
-                            System.out.println("ERROR: Could not load properties file " + configFileName);
+                            System.err.println("ERROR: Could not load properties file " + configFileName+", "+e);
                         }
                         break;
                     case 'h':
