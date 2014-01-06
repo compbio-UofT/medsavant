@@ -515,10 +515,13 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         };
 
         geneCollapsibleInspector.setMessage("No gene selected", GENE_HELP_TITLE, GENE_HELP_TEXT);
-        variantCollapsibleInspector.addComponent(ViewUtil.getHelpButton(VARIANT_HELP_TITLE, VARIANT_HELP_TEXT));
-
-        geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
         
+		/*
+		// Help buttons
+		variantCollapsibleInspector.addComponent(ViewUtil.getHelpButton(VARIANT_HELP_TITLE, VARIANT_HELP_TEXT));
+        geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
+        */
+		
         // Assemble everything        
         addTabPanel(ComprehensiveInspector.InspectorEnum.VARIANT, variantCollapsibleInspector);
         addTabPanel(ComprehensiveInspector.InspectorEnum.GENE, geneCollapsibleInspector);
