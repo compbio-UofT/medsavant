@@ -605,7 +605,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         while (true) {
             dir = new File(localDirectory.getAbsolutePath(), i + "");
             if (!dir.exists()) {
-                dir.mkdir();
+                dir.mkdirs();
                 return dir;
             }
             i++;
