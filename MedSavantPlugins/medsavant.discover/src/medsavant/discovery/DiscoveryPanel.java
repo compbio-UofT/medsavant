@@ -2,6 +2,8 @@ package medsavant.discovery;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.CheckBoxList;
@@ -15,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -51,6 +55,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import medsavant.discovery.localDB.DiscoveryDB;
@@ -77,6 +84,7 @@ import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 
 
@@ -106,6 +114,13 @@ public class DiscoveryPanel extends JPanel {
 		"FS_SUBSTITUTION", "ncRNA_EXONIC", "ncRNA_SPLICING", "UTR3", "UTR5",
 		"SYNONYMOUS", "INTRONIC", "ncRNA_INTRONIC", "UPSTREAM", "DOWNSTREAM",
 		"INTERGENIC", "ERROR");
+	private static final String EXIST_KEYWORD= "Exists";
+	private static final String EQUALS_KEYWORD= "=";
+	private static final String LESS_KEYWORD= "<";
+	private static final String GREATER_KEYWORD= ">";
+	private static final String LIKE_KEYWORD= "Like";
+	private static final List<String> OPERATOR_OPTIONS= Arrays.asList(
+		EXIST_KEYWORD, EQUALS_KEYWORD, LESS_KEYWORD, GREATER_KEYWORD, LIKE_KEYWORD);
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 5;
@@ -118,6 +133,7 @@ public class DiscoveryPanel extends JPanel {
 	private DiscoveryFindings discFind= null;
 	private ComboCondition baseComboCondition;
 	private ComboCondition newComboCondition;
+	private List<FilterDetails> conditionList= new LinkedList<FilterDetails>();
 	private int coverageThreshold;
 	private double hetRatio;
 	private double afThreshold;
@@ -126,6 +142,7 @@ public class DiscoveryPanel extends JPanel {
 	private List<String> mutationFilterList= new LinkedList<String>();
 	
 	private boolean analysisRunning= false;
+	private DiscoveryHSQLServer server;
 	private boolean dbLoaded= false;
 	private Date currentDate= null;
 	
@@ -168,8 +185,7 @@ public class DiscoveryPanel extends JPanel {
 	private SplitScreenPanel ssp;
 	private ComprehensiveInspector vip;
 	private JButton addFilterButton;
-	
-	private DiscoveryHSQLServer server;
+	private JPanel patientPanel;
     
 	
 	public DiscoveryPanel() {
@@ -189,6 +205,64 @@ public class DiscoveryPanel extends JPanel {
 	}
 
 	
+	public JPanel getView() {
+		return view;
+	}
+	
+	
+	/**
+	 * Inner class: From the filter panes, stores details that are required for
+	 * building ComboConditions at runtime.
+	 */
+	private class FilterDetails {
+		private String variantProperty;
+		private String operator;
+		private JTextField jtf;
+		
+		private FilterDetails() {
+		}
+		
+		/**
+		 * Set the FilterDetails fields.
+		 * @param variantProperty The name of the variant property used for filtering
+		 * @param operator The logical operator applied
+		 * @param jtf the JTextField where the condition is being specified
+		 */
+		private void setDetails(String variantProperty, String operator, JTextField jtf) {
+			this.variantProperty= variantProperty;
+			this.operator= operator;
+			this.jtf= jtf;			
+		}
+		
+		/**
+		 * Get the current Condition object based on this filter.
+		 */
+		private Condition getCurrentCondition() {
+			Condition c= null;
+			Map<String, String> columns= discFind.dbAliasToColumn;
+		
+			if (columns.get(variantProperty) != null) {
+				if (operator.equals(DiscoveryPanel.LIKE_KEYWORD)) {
+					c= BinaryCondition.like(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
+				} else if (operator.equals(DiscoveryPanel.EQUALS_KEYWORD)) {
+					c= BinaryCondition.equalTo(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
+				} else if (operator.equals(DiscoveryPanel.LESS_KEYWORD)) {
+					c= BinaryCondition.lessThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
+				} else if (operator.equals(DiscoveryPanel.GREATER_KEYWORD)) {
+					c= BinaryCondition.greaterThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
+				} else if (operator.equals(DiscoveryPanel.EXIST_KEYWORD)) {
+					c= UnaryCondition.isNotNull(discFind.ts.getDBColumn(columns.get(variantProperty)));
+				}	
+			}
+			
+			return c;
+		}
+	}
+	
+	
+	/**
+	 * Set up the DiscoveryPanel.
+	 */
 	private void setupView() {
 		view= ViewUtil.getClearPanel();
 		view.setLayout(new BorderLayout());
@@ -263,7 +337,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		progressLabel= new JLabel();
 		progressLabel.setFont(new Font(progressLabel.getFont().getName(),
-			Font.BOLD, progressLabel.getFont().getSize()));
+			Font.BOLD, 14));
 		progressLabel.setVisible(false);
 		
 		pw= new ProgressWheel();
@@ -373,7 +447,7 @@ public class DiscoveryPanel extends JPanel {
 							@Override
 							protected void showSuccess(Object t) {	
 							/* All updates to display should happen here to be run. */
-								updateVariantPane(discFind);
+								updateVariantPane();
 								analyzeButton.setText(analyzeButtonDefaultText);
 								analysisRunning= false;
 							}
@@ -423,6 +497,29 @@ public class DiscoveryPanel extends JPanel {
 				
 				@Override
 				public void actionPerformed (ActionEvent e) {
+					JPopupMenu popupMenu= new JPopupMenu();
+					JMenu filterMenu= new JMenu(addFilterButton.getText());
+					
+					for (Object columnName : getDbColumnList()) {
+						final JMenuItem filter= new JMenuItem((String) columnName);
+						filter.addMouseListener(
+							new MouseListener() {
+								@Override
+								public void mousePressed(MouseEvent me) {
+									patientPanel.add(addFilterPanel(filter.getText()), "wrap", 2);
+								}
+								// remaining methods included but do nothing
+								@Override public void mouseExited(MouseEvent me) {}
+								@Override public void mouseReleased(MouseEvent me) {}
+								@Override public void mouseClicked(MouseEvent me) {}
+								@Override public void mouseEntered(MouseEvent me) {}
+							}
+						);
+						filterMenu.add(filter);
+					}
+					
+					popupMenu.add(filterMenu);
+					popupMenu.show(addFilterButton, 0, 0);
 				}
 			}
 		);
@@ -469,8 +566,8 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Patient selection panel. */
 		//CollapsiblePanes colPanes= new CollapsiblePanes();
-		JPanel patientPanel= new JPanel();
-		patientPanel.setLayout(new MigLayout("gapy 20px"));
+		patientPanel= new JPanel();
+		patientPanel.setLayout(new MigLayout("insets 0px, gapy 20px"));
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap");
 		patientPanel.add(collapsible, "wrap");
@@ -478,7 +575,6 @@ public class DiscoveryPanel extends JPanel {
 		patientPanel.add(collapsibleSettings, "wrap");
 		patientPanel.add(progressPanel, "alignx center, wrap");
 		patientPanel.add(analyzeButton, "alignx center");
-		
 		
 		/* Set up the gene and variant inspectors. */
 		ssp = new SplitScreenPanel(variantPane);
@@ -511,17 +607,19 @@ public class DiscoveryPanel extends JPanel {
 			}
         });
 		
-		
 		/* Add the UI to the main app panel. */
 		view.add(workview, BorderLayout.CENTER);
     }
 	
-		
-	private void updateVariantPane (final DiscoveryFindings i) {
+	
+	/**
+	 * Update the variantPane with the set of variants.
+	 */
+	private void updateVariantPane() {
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
-			stp= i.getTableOutput(null);
+			stp= discFind.getTableOutput(null);
 		} else {
-			stp= i.getTableOutput(
+			stp= discFind.getTableOutput(
 				getIntArrayFromString(properties.getProperty("sortable_table_panel_columns")));
 		}
 		stp.getColumnChooser().setProperties(properties, PROPERTIES_FILENAME);
@@ -543,24 +641,112 @@ public class DiscoveryPanel extends JPanel {
                     vip.setSimpleVariant(v);
 					
 					/* Create custom SubInspectors. */
-					Object[] line= new Object[i.header.size()];
-					for (int index= 0; index != i.header.size(); ++index)
+					Object[] line= new Object[discFind.header.size()];
+					for (int index= 0; index != discFind.header.size(); ++index)
 						line[index]= st.getModel().getValueAt(selectedIndex, index);
-					vip.setVariantLine(line, i.header);
+					vip.setVariantLine(line, discFind.header);
                }
             }
         });
 	}
 	
 	
-	public JPanel getView() {
-		return view;
+	/**
+	 * Create a CollapsiblePane for a custom filter
+	 * @param name The name of this filter property/panel
+	 * @return A filter panel
+	 */
+	private JPanel addFilterPanel(final String name) {
+		final JPanel j= new JPanel();
+		j.setLayout(new MigLayout("insets 0px"));
+		
+		// CollapsiblePane for the filter
+		CollapsiblePane collapsible= new CollapsiblePane(name);
+		collapsible.setLayout(new MigLayout());
+		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsible.setFocusPainted(false);
+		
+		// The operator selection button
+		final JButton operatorButton= new JButton(EXIST_KEYWORD); // defaults to Exists
+		final JTextField operatorText= new JTextField(10); // 10 character spaces wide			
+		operatorText.setVisible(false);
+		
+		// Add this FilterDetails object to the list of conditions
+		final FilterDetails filterPanelDetails= new FilterDetails();
+		filterPanelDetails.setDetails(name, operatorButton.getText(), operatorText); // initialize for the default operator
+		conditionList.add(filterPanelDetails);
+		
+		// The operator selection button's ActionListener
+		operatorButton.addActionListener(
+			new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					JPopupMenu jpm= new JPopupMenu();
+					JMenu jm= new JMenu(operatorButton.getText());
+					for (final String op : OPERATOR_OPTIONS) {
+						JMenuItem jmi= new JMenuItem(op);
+						jmi.addMouseListener(
+							new MouseListener() {
+								@Override
+								public void mousePressed(MouseEvent me) {
+									operatorButton.setText(op);
+									if (op.equals(EXIST_KEYWORD))
+										operatorText.setVisible(false);
+									else
+										operatorText.setVisible(true);
+									
+									// update fields for the FilterDetails object
+									filterPanelDetails.setDetails(name, op, operatorText);
+								}
+								// remaining methods included but do nothing
+								@Override public void mouseExited(MouseEvent me) {}
+								@Override public void mouseReleased(MouseEvent me) {}
+								@Override public void mouseClicked(MouseEvent me) {}
+								@Override public void mouseEntered(MouseEvent me) {}
+							}
+						);
+						
+						jm.add(jmi);
+					}
+					
+					jpm.add(jm);
+					jpm.show(operatorButton, 0, 0);
+				}
+			}
+		);
+		
+		collapsible.add(operatorButton);
+		collapsible.add(operatorText);
+		
+		// Button to remove this filter panel
+		JLabel removeButton= ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
+		removeButton.addMouseListener(
+			new MouseListener() {
+				@Override
+				public void mouseClicked(MouseEvent me) {
+					conditionList.remove(filterPanelDetails);
+					patientPanel.remove(j); // remove the entire panel when pressed
+					patientPanel.revalidate(); // Causes the panel to refresh immediately - was delaying without this and looked sloppy
+				}
+				// remaining methods included but do nothing
+				@Override public void mouseExited(MouseEvent me) {}
+				@Override public void mouseReleased(MouseEvent me) {}
+				@Override public void mousePressed(MouseEvent me) {}
+				@Override public void mouseEntered(MouseEvent me) {}
+			}
+		);
+		
+		// Add both components to the panel
+		j.add(collapsible);
+		j.add(removeButton);
+		
+		return j;
 	}
 	
 	
 	/**
 	 * Create a CollapsiblePane of a checkbox panel of mutations
-	 * @return A mutation checkbox JPanel
+	 * @return A mutation checkbox CollapsiblePane
 	 */
 	private CollapsiblePane mutationCheckboxPanel() {
 		CollapsiblePane collapsibleMutation= new CollapsiblePane("Mutations");
@@ -601,7 +787,15 @@ public class DiscoveryPanel extends JPanel {
 	private void updateCondition() {
 		newComboCondition= new ComboCondition(ComboCondition.Op.AND);
 		
+		// Start from the original base ComboCondition
 		newComboCondition.addCondition(baseComboCondition);
+		
+		// Iterate through the filters and add those conditions to the new ComboCondition
+		for (FilterDetails fd : conditionList) {
+			newComboCondition.addCondition(fd.getCurrentCondition());
+		}
+		
+		// Add the mutations to the new ComboCondition
 		addMutationCondition(mutationFilterList);
 		
 		discFind.setComboCondition(newComboCondition);
