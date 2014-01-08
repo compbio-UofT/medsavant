@@ -83,7 +83,6 @@ public class AnnotationCursor {
 
         reader = new TabixReader(annotation.getDataPath());
 
-
         //If the tabix file has a header, then find the indices for all the 
         //required columns
         if (header.startsWith(String.valueOf(reader.getCommentChar()))) {
@@ -146,7 +145,6 @@ public class AnnotationCursor {
         isEndInclusive = annotation.isEndInclusive();
         numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
 
-
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
@@ -187,65 +185,71 @@ public class AnnotationCursor {
     //Precondition: All records have the same chromosome, and are ordered by position in ascending order.
     String[][] annotateVariants(SimpleVariantRecord[] records, long start, long end, int numRecords) {
         int numAnnots = 0;
-        System.out.println("Annotating "+numRecords+" between "+start+" and "+end+" inclusive on chrom "+records[0].chrom);
-        int queryStart = (int)start;
-        int queryEnd = (int)Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
-        
+        System.out.println("Annotating " + numRecords + " between " + start + " and " + end + " inclusive on chrom " + records[0].chrom);
+        //int queryStart = (int)start;
+        //int queryEnd = (int)Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
+
+        long queryStart = start;
+        long queryEnd = Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
+
         String[][] results = new String[numRecords][];
-        
+
         do {
+            System.out.println("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
             //find all annotations that lie within the current basepair window.
             if (!canAnnotateThisChromosome(records[0].chrom)) {
                 return null;
             }
 
-            TabixReader.Iterator it =
-                    reader.query(reader.chr2tid(records[0].chrom),
-                    (int) queryStart - 1, //this function returns annotations AFTER this position, so we need to have the -1
-                    queryEnd);
-            if(it == null){
-                System.out.println("Didn't find any annotations between "+(queryStart-1)+" and "+queryEnd);
-                return results;
-            }
-            try {
-                boolean first;
-                int vi = 0;
-                int l = 0;
-                while (it.hasNext()) { //For each annotation in start + min(start+max_base_pair_distance_in_window, end)
-                    String annotationLineStr = (String) it.next(); 
-                    String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
-                    SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
-                    first = true;
-                    while (vi < records.length) { //for each variant                        
-                        if (annotationRecord.intersectsPosition(records[vi].chrom, records[vi].start, records[vi].end)) {
-                            if (!REQUIRE_EXACT_MATCH || annotationRecord.matchesVariant(records[vi])) {
-                                results[vi] = getVariantAnnotationString(records[vi], annotationRecord, annotationLine);
-                                //results.add(getVariantAnnotationString(records[vi], annotationRecord, annotationLine));
+            TabixReader.Iterator it
+                    = reader.query(reader.chr2tid(records[0].chrom),
+                            (int) queryStart - 1, //this function returns annotations AFTER this position, so we need to have the -1
+                            (int) queryEnd);
+            if (it == null) {
+                System.out.println("Didn't find any annotations between " + (queryStart - 1) + " and " + queryEnd);
+            } else {
+                try {
+                    boolean first;
+                    int vi = 0;
+                    int l = 0;
+                    while (it.hasNext()) { //For each annotation in start + min(start+max_base_pair_distance_in_window, end)
+                        String annotationLineStr = (String) it.next();
+                        String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
+                        SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
+                        first = true;
+                        while (vi < numRecords) { //for each variant                           
+                            if (annotationRecord.intersectsPosition(records[vi].chrom, records[vi].start, records[vi].end)) {
+                                if (!REQUIRE_EXACT_MATCH || annotationRecord.matchesVariant(records[vi])) {
+                                    results[vi] = getVariantAnnotationString(records[vi], annotationRecord, annotationLine);
+                                    //results.add(getVariantAnnotationString(records[vi], annotationRecord, annotationLine));
+                                }
+                                //If this is the first annotation that intersects a variant, we're guaranteed
+                                //the future annotations don't need to consider variants to the left of the current
+                                //variant index, vi.
+                                if (first) {
+                                    first = false;
+                                    l = vi;
+                                }
                             }
-                            //If this is the first annotation that intersects a variant, we're guaranteed
-                            //the future annotations don't need to consider variants to the left of the current
-                            //variant index, vi.
-                            if (first) {
-                                first = false;
-                                l = vi;
-                            }
-                        }
 
-                        if (records[vi].start > annotationRecord.end) {
-                            vi = l;
-                            break;
+                            if (records[vi].start > annotationRecord.end) {
+                                vi = l;
+                                break;
+                            }
+                            vi++;
                         }
-                        vi++;
+                        numAnnots++;
                     }
-                    numAnnots++;
+                    System.out.println("\tProcessed " + numAnnots);
+                } catch (IOException ioex) {
+                    //TODO: Change.
+                    LOG.error(ioex);
                 }
-                System.out.println("Processed "+numAnnots);
-            } catch (IOException ioex) {
-                //TODO: Change.
-                LOG.error(ioex);
             }
-            queryStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW;
-            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, queryEnd);
+            //previous range: 41981 - 51981
+            //queryStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW; //41981 -> 51981
+            queryStart = queryEnd + 1; //41981 -> 51982
+            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end); //min(61981, 51981)????
         } while (queryStart < queryEnd);
 
         return results;
@@ -260,114 +264,113 @@ public class AnnotationCursor {
      * @return An array of annotations
      */
     /*
-    String[] annotateVariant(SimpleVariantRecord r) throws IOException {
+     String[] annotateVariant(SimpleVariantRecord r) throws IOException {
 
-        //if set, an annotation must overlap and not merely intersect a variant
-        //in order for that variant to be annotated.
-        boolean requireExactMatch = true;
+     //if set, an annotation must overlap and not merely intersect a variant
+     //in order for that variant to be annotated.
+     boolean requireExactMatch = true;
 
-        // short circuit when there are gaps between the variant and the next
-        // annotation, return a blank annotation
-        if (lastAnnotationConsidered != null
-                && r.chrom.equals(lastAnnotationConsidered.chrom)
-                && r.end < lastAnnotationConsidered.start) {
-            lastVariantAnnotated = r;
-            lastResult = new String[getNumNonDefaultFields()]; // this annotation is empty
-            return lastResult;
-        }
+     // short circuit when there are gaps between the variant and the next
+     // annotation, return a blank annotation
+     if (lastAnnotationConsidered != null
+     && r.chrom.equals(lastAnnotationConsidered.chrom)
+     && r.end < lastAnnotationConsidered.start) {
+     lastVariantAnnotated = r;
+     lastResult = new String[getNumNonDefaultFields()]; // this annotation is empty
+     return lastResult;
+     }
 
-        // try to reuse the previous annotation
-        if (lastVariantAnnotated != null && lastVariantAnnotated.equals(r)) {
-            lastVariantAnnotated = r;
-            return lastResult; // resuse the last annotation
-        }
+     // try to reuse the previous annotation
+     if (lastVariantAnnotated != null && lastVariantAnnotated.equals(r)) {
+     lastVariantAnnotated = r;
+     return lastResult; // resuse the last annotation
+     }
 
-        // the annotation
-        String[] result = new String[getNumNonDefaultFields()];
+     // the annotation
+     String[] result = new String[getNumNonDefaultFields()];
 
-        // check if there are annotations for this chromosome
-        if (canAnnotateThisChromosome(r.chrom)) {
+     // check if there are annotations for this chromosome
+     if (canAnnotateThisChromosome(r.chrom)) {
 
-            // seek to the appropriate record by genetic position            
-            TabixReader.Iterator it = reader.query(
-                    reader.chr2tid(r.chrom),
-                    (int) r.start - 1, // the function returns matches AFTER
-                    // this position, so we need to have the -1
-                    Integer.MAX_VALUE);
+     // seek to the appropriate record by genetic position            
+     TabixReader.Iterator it = reader.query(
+     reader.chr2tid(r.chrom),
+     (int) r.start - 1, // the function returns matches AFTER
+     // this position, so we need to have the -1
+     Integer.MAX_VALUE);
 
-            int numberIntersectingThisVariant = 0;
-            int numberMatchingThisVariant = 0;
+     int numberIntersectingThisVariant = 0;
+     int numberMatchingThisVariant = 0;
 
-            // loop until the annotations no longer intersect the variant
-            // intersect for positional annotations imply a exact match of chrom and pos
-            // intersect for interval annotations imply containment
-            while (true) {
+     // loop until the annotations no longer intersect the variant
+     // intersect for positional annotations imply a exact match of chrom and pos
+     // intersect for interval annotations imply containment
+     while (true) {
 
-                // nothing there
-                if (it == null) {
-                    //LOG.warn("NULL iterator; offending variant is " + r);
-                    break;
-                }
-                String annotationLineString = it.next();
-                if (annotationLineString == null) {
-                    //LOG.warn("NULL annotation; offending variant is " + r);
-                    break;
-                }
+     // nothing there
+     if (it == null) {
+     //LOG.warn("NULL iterator; offending variant is " + r);
+     break;
+     }
+     String annotationLineString = it.next();
+     if (annotationLineString == null) {
+     //LOG.warn("NULL annotation; offending variant is " + r);
+     break;
+     }
 
-                // get the next annotation and parse it
-                //annotationLineString is NULL, nullPointerException!
-                String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER, -1);
-                SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
+     // get the next annotation and parse it
+     //annotationLineString is NULL, nullPointerException!
+     String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER, -1);
+     SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
 
-                // save this annotation
-                lastAnnotationConsidered = annotationRecord;
-
-
-                // does this annotation intersect the variant position
-                if (annotationRecord.intersectsPosition(r.chrom, r.start, r.end)) {
-
-                    // keep track of intersections
-                    numberIntersectingThisVariant++;
-
-                    // if there is a match, add it to the results
-                    if (requireExactMatch && annotationRecord.matchesVariant(r)) {
-
-                        String prefix = "";
-
-                        // the number of redundant and non-redundant columns
-                        int numColumnsToCopy = getNumNonDefaultFields();
-                        int numRedundantColumns = annotationLine.length - numColumnsToCopy;
-
-                        // copy only the non-redundant columns
-                        for (int i = 0; i < numColumnsToCopy; i++) {
-                            // tricky, skip the redundant columns
-                            result[i] = prefix + annotationLine[numRedundantColumns + i];
-                        }
+     // save this annotation
+     lastAnnotationConsidered = annotationRecord;
 
 
-                        // track the number of matches
-                        numberMatchingThisVariant++;
-                        break;
-                    }
+     // does this annotation intersect the variant position
+     if (annotationRecord.intersectsPosition(r.chrom, r.start, r.end)) {
 
-                    // if the next annotation doesn't intersect, break out
-                } else {
-                    break;
-                }
-            }
+     // keep track of intersections
+     numberIntersectingThisVariant++;
 
-            // log
-            //LOG.info(numberIntersectingThisVariant + " annotations intersecting variant");
-            //LOG.info(numberMatchingThisVariant + " annotations matching variant");
-        }
+     // if there is a match, add it to the results
+     if (requireExactMatch && annotationRecord.matchesVariant(r)) {
 
-        // save the result and return
-        lastVariantAnnotated = r;
-        lastResult = result;
-        return result;
-    }
-*/
-    
+     String prefix = "";
+
+     // the number of redundant and non-redundant columns
+     int numColumnsToCopy = getNumNonDefaultFields();
+     int numRedundantColumns = annotationLine.length - numColumnsToCopy;
+
+     // copy only the non-redundant columns
+     for (int i = 0; i < numColumnsToCopy; i++) {
+     // tricky, skip the redundant columns
+     result[i] = prefix + annotationLine[numRedundantColumns + i];
+     }
+
+
+     // track the number of matches
+     numberMatchingThisVariant++;
+     break;
+     }
+
+     // if the next annotation doesn't intersect, break out
+     } else {
+     break;
+     }
+     }
+
+     // log
+     //LOG.info(numberIntersectingThisVariant + " annotations intersecting variant");
+     //LOG.info(numberMatchingThisVariant + " annotations matching variant");
+     }
+
+     // save the result and return
+     lastVariantAnnotated = r;
+     lastResult = result;
+     return result;
+     }
+     */
     /**
      * Get the number of fields (not including standard ones like chr, pos, ref,
      * alt)
@@ -421,7 +424,6 @@ public class AnnotationCursor {
             }
         }
         return false;
-
 
     }
 
@@ -510,6 +512,9 @@ public class AnnotationCursor {
         }
 
         private boolean intersectsPosition(String chrom, long start, long end) {
+            if (start == 52238) {
+                LOG.info("Variant: chrom=" + chrom + " start=" + start + " end=" + end + "; Annotation=" + this.chrom + " start=" + this.start + " end=" + this.end + " ref=" + this.ref + " alt=" + this.alt);
+            }
             if (this.chrom.equals(chrom)) {
                 if (this.start < start) {
                     if (this.end < start) {

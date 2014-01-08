@@ -270,7 +270,9 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         + "\t\temail - the email address to send important notifications\n"
                         + "\t\ttmp-dir - the directory to use for temporary files\n"
                         + "\t\tms-dir - the directory to use to store permanent files\n"
-                        + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')");
+                        + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')\n"
+                        + "\t\tkeyStore - full path to the key store\n"
+                        + "\t\tkeyStorePass - password for the key store\n");
                 return;
             }
 

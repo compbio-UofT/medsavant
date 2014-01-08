@@ -86,7 +86,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
     //public static boolean REMOVE_TMP_FILES = false;
-    static boolean REMOVE_WORKING_DIR = true;
+    static boolean REMOVE_WORKING_DIR = false;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
     }

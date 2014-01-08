@@ -91,6 +91,10 @@
                     <excludes>
                         <exclude>**/internal/**</exclude>
                         <exclude>**/test/**</exclude>
+                        <!-- Made some changes to support Indels -->
+                        <exclude>**/org/ut/biolab/medsavant/shared/format/BasicVariantColumns</exclude>
+                        <exclude>**/org/ut/biolab/medsavant/shared/vcf/VariantRecord</exclude>
+                        
                         <!-- Remove the following excludes after each release -->
                     </excludes>
                 </configuration>

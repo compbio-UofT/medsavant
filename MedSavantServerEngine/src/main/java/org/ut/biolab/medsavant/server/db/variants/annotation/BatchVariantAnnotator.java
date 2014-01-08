@@ -459,6 +459,7 @@ public class BatchVariantAnnotator {
         }
 
         private void annotateWindow(boolean chromMismatch) throws IllegalArgumentException {
+            LOG.info("Annotating window, chromMismatch="+chromMismatch+" numVariantsInWindow="+numVariantsInWindow);
             // Check that records for a given chromosome are sorted by
             // start,end, ref, alt
          /*   if ((currentChrom == null) || !currentChrom.equals(nextInputRecord.chrom)) {
@@ -475,6 +476,7 @@ public class BatchVariantAnnotator {
             int ofs = 0;
             // perform each annotation, in turn
             for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
+                System.out.println("\nannotationIndex="+annotationIndex);
                 // get the annotation for this line
                 String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
                 // add it to the output buffer                    
@@ -520,8 +522,8 @@ public class BatchVariantAnnotator {
                         variantWindow[numVariantsInWindow] = nextInputRecord;
                         minStart = Math.min(nextInputRecord.start, minStart);
                         maxEnd = Math.max(nextInputRecord.end, maxEnd);
-
                         inputLines[numVariantsInWindow] = inputLine;
+                        currentChrom = nextInputRecord.chrom;
                         ++numVariantsInWindow;
                         return;
                     } else {
@@ -529,13 +531,17 @@ public class BatchVariantAnnotator {
                     }
                 }
 
+                //possibilities: chromMismatch, window size exceeded.
                 annotateWindow(chromMismatch);
 
                  //finish up
                 resetWindow();
                 if (chromMismatch) {
+                    //if chrom mismatch, then we can save the last read variant
+                    //into the window.
                     numVariantsInWindow = 1;
                     variantWindow[0] = nextInputRecord;
+                    chromMismatch = false;
                 }
             
             } catch (IllegalArgumentException iex) {
