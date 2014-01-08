@@ -248,46 +248,6 @@ public class DiscoveryFindings {
 
 			cc.addCondition(currentAFComboCondition);
 		}
-
-		/* Report only variants that have truncation mutations or that are present in
-		 * a disease variant database. So far, Clinvar and HGMD. */
-		ComboCondition truncationOrDBComboCondition= new ComboCondition(ComboCondition.Op.OR);
-
-
-/*
-		// Truncation mutations, if they exist
-		if (dbAliasToColumn.get(JANNOVAR_EFFECT) != null) {
-			ComboCondition truncationComboCondition= new ComboCondition(ComboCondition.Op.OR);
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), STOPGAIN));
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), SPLICING));
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), FRAMESHIFTS));
-
-			truncationOrDBComboCondition.addCondition(truncationComboCondition);
-		}
-*/
-
-/*
-		// Clinvar DB annotations, if they exist
-		if (dbAliasToColumn.get(CLINVAR_COLUMN) != null) {
-			Condition clinvarCondition= UnaryCondition.isNotNull(
-				ts.getDBColumn(dbAliasToColumn.get(CLINVAR_COLUMN)));
-
-			truncationOrDBComboCondition.addCondition(clinvarCondition);
-		}
-
-		// HGMD DB annotations, if they exist
-		if (dbAliasToColumn.get(HGMD_COLUMN) != null) {
-			Condition hgmdCondition= UnaryCondition.isNotNull(
-				ts.getDBColumn(dbAliasToColumn.get(HGMD_COLUMN)));
-
-			truncationOrDBComboCondition.addCondition(hgmdCondition);
-		}
-*/
-
-		cc.addCondition(truncationOrDBComboCondition);
 		
 		return cc;
 	}
@@ -325,7 +285,7 @@ public class DiscoveryFindings {
 		int requestLimit= maxVariants;
 		int position= 0;
 		List<Object[]> currentVariants= null;
-		while ((currentVariants == null || currentVariants.size() != 0 ) && allVariants.size() <= maxVariants) {
+		while ((currentVariants == null || currentVariants.size() != 0 )) { //&& allVariants.size() <= maxVariants) {
 			int currentLimit= DB_VARIANT_REQUEST_LIMIT;
 			if (DB_VARIANT_REQUEST_LIMIT <= requestLimit)
 				requestLimit -= DB_VARIANT_REQUEST_LIMIT;

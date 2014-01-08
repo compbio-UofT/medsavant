@@ -97,7 +97,8 @@ public class DiscoveryPanel extends JPanel {
 	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	private static final Properties properties= new Properties();
 	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
-				File.separator + "cache" + File.separator + "incidentalome_app_settings.xml";
+				File.separator + "cache" + File.separator + "discovery_app_settings.xml";
+	private static final int DEFAULT_FETCH_LIMIT= 2000;
 	private static final String DEFAULT_CGD_URL= "http://research.nhgri.nih.gov/CGD/download/txt/CGD.txt.gz";
 	private static final String DEFAULT_CGD_FILENAME= "CGD.txt";
 	private static final int DEFAULT_COVERAGE_THRESHOLD= 10;
@@ -131,6 +132,7 @@ public class DiscoveryPanel extends JPanel {
 	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down
 	
 	private DiscoveryFindings discFind= null;
+	private int variantFetchLimit;
 	private ComboCondition baseComboCondition;
 	private ComboCondition newComboCondition;
 	private List<FilterDetails> conditionList= new LinkedList<FilterDetails>();
@@ -186,6 +188,9 @@ public class DiscoveryPanel extends JPanel {
 	private ComprehensiveInspector vip;
 	private JButton addFilterButton;
 	private JPanel patientPanel;
+	private JLabel fetchLimitLabel;
+	private JTextField fetchLimitText;
+	private JButton fetchLimitHelp;
     
 	
 	public DiscoveryPanel() {
@@ -303,6 +308,15 @@ public class DiscoveryPanel extends JPanel {
 				"The maximum allele frequency for this variant. In order for a "
 				+ "variant to be reported, allele frequency must be below this "
 				+ "threshold across all allele frequency databases.");
+		
+		fetchLimitLabel= new JLabel("Variant fetch limit");
+		fetchLimitText= new JTextField(Integer.toString(variantFetchLimit));
+		fetchLimitText.setMinimumSize(d);
+		fetchLimitText.setHorizontalAlignment(JTextField.RIGHT);
+		fetchLimitHelp= ViewUtil.getHelpButton("Variant fetch limit", 
+				"The maximum number of records to retrieve from the server " +
+				"for this individual. Increasing the number makes data " +
+				"retrieval take longer.");
 		
 		cgdText= new JTextField(cgdURL.toString());
 		cgdHelp= ViewUtil.getHelpButton("Clinical Genomics Database", 
@@ -427,7 +441,7 @@ public class DiscoveryPanel extends JPanel {
 									coverageThreshold, hetRatio, afThreshold);
 								updateCondition();
 								
-								discFind.storeVariants(5000); // limit variant fetching to first 5000
+								discFind.storeVariants(variantFetchLimit);
 								
 								/* Update progress messages to user. */
 								if (this.isCancelled()) {
@@ -550,6 +564,9 @@ public class DiscoveryPanel extends JPanel {
 		/* Set up the layout for the Advanced settings collapsible panel. */
 		collapsibleSettings= new CollapsiblePane("Advanced Settings");
 		collapsibleSettings.setLayout(new MigLayout());
+		collapsibleSettings.add(fetchLimitLabel);
+		collapsibleSettings.add(fetchLimitText);
+		collapsibleSettings.add(fetchLimitHelp, "wrap");
 		collapsibleSettings.add(cgdURLLabel);
 		collapsibleSettings.add(cgdHelp, "wrap");
 		collapsibleSettings.add(cgdText, "span");
@@ -567,7 +584,7 @@ public class DiscoveryPanel extends JPanel {
 		/* Patient selection panel. */
 		//CollapsiblePanes colPanes= new CollapsiblePanes();
 		patientPanel= new JPanel();
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 20px"));
+		patientPanel.setLayout(new MigLayout("insets 0px, gapy 10px"));
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap");
 		patientPanel.add(collapsible, "wrap");
@@ -828,12 +845,14 @@ public class DiscoveryPanel extends JPanel {
 		coverageThreshold= Integer.parseInt(coverageThresholdText.getText());
 		hetRatio= Double.parseDouble(hetRatioText.getText());
 		afThreshold= Double.parseDouble(afThresholdText.getText());
+		variantFetchLimit= Integer.parseInt(fetchLimitText.getText());
 		
 		/* Set the properties. */
 		properties.setProperty("coverage_threshold", Integer.toString(coverageThreshold));
 		properties.setProperty("het_ratio", Double.toString(hetRatio));
 		properties.setProperty("af_threshold", Double.toString(afThreshold));
 		properties.setProperty("CGD_DB_URL", cgdText.getText());
+		properties.setProperty("variant_fetch_limit", fetchLimitText.getText());
 		
 		// quote-enclosed, comma-delimited list as string
 		String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(
@@ -873,6 +892,7 @@ public class DiscoveryPanel extends JPanel {
 			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
 			properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
 			
+			properties.setProperty("variant_fetch_limit", Integer.toString(DEFAULT_FETCH_LIMIT));
 			properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
 			properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));
 			properties.setProperty("af_threshold", Double.toString(DEFAULT_AF_THRESHOLD));
@@ -887,6 +907,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Set the parameters from properties. */
 		cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
+		variantFetchLimit= Integer.parseInt(properties.getProperty("variant_fetch_limit"));
 		coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
 		hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
 		afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
@@ -925,7 +946,7 @@ public class DiscoveryPanel extends JPanel {
 		if (currentDate.before(urlDate)) {
 			// notify users
 			DateFormat dateFormat= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			System.out.println("[Incidental Panel]: Existing CGD version from " + 
+			System.out.println("[Discovery app]: Existing CGD version from " + 
 				dateFormat.format(currentDate) + " to be replaced by newer CGD version from " +
 				dateFormat.format(urlDate));
 			
@@ -941,6 +962,7 @@ public class DiscoveryPanel extends JPanel {
 			// modify and save properties
 			properties.setProperty("CGD_DB_date", Long.toString(urlDate.getTime()));
 			properties.setProperty("CGD_DB_filename", newCgdFile.getName());
+			currentDate= urlDate;
 			
 			saveProperties();
 		}
