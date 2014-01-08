@@ -111,12 +111,51 @@ public class IconFactory {
         FONT_DECREASE,
         WAIT,
         APP_REGIONS,
-        APP_PANELS
+        APP_PANELS,
+        APP_PATIENTS,
+        APP_IMPORTVCF,
+        APP_APPSTORE,
+        APP_VARIANTNAVIGATOR,
+        APP_ADMIN,
+        APP_PHENOTIPS,
+        APP_TASKMANAGER,
+        APP_ACCOUNT,
+        APP_SAVANT,
+        BTN_LEFTARROW,
+        BTN_UPARROW,
+        BTN_MENU,
+        HOME
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case HOME:
+                return getIcon(iconroot + "icon-dashboard.png");
+            case BTN_MENU:
+                return getIcon(iconroot + "btn-menu.png");
+            case BTN_LEFTARROW:
+                return getIcon(iconroot + "btn-left.png");
+            case BTN_UPARROW:
+                return getIcon(iconroot + "btn-up.png");
+            case APP_SAVANT:
+                return getIcon(iconroot + "icon-savant.png");
+            case APP_ACCOUNT:
+                return getIcon(iconroot + "icon-user.png");
+            case APP_TASKMANAGER:
+                return getIcon(iconroot + "icon-taskmanager.png");
+            case APP_PHENOTIPS:
+                return getIcon(iconroot + "icon-phenotips.png");
+             case APP_ADMIN:
+                return getIcon(iconroot + "icon-admin.png");
+             case APP_APPSTORE:
+                return getIcon(iconroot + "icon-appstore.png");
+            case APP_VARIANTNAVIGATOR:
+                return getIcon(iconroot + "icon-variantnavigator.png");
+            case APP_IMPORTVCF:
+                return getIcon(iconroot + "icon-importvcf.png");
+            case APP_PATIENTS:
+                return getIcon(iconroot + "icon-patients.png");
             case APP_REGIONS:
                 return getIcon(iconroot + "icon-regions.png");
             case APP_PANELS:

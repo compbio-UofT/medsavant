@@ -75,7 +75,7 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Posit
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
@@ -83,7 +83,8 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ThreadController;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardSectionFactory;
+import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
@@ -101,7 +102,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private static MedSavantFrame instance;
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
-    private JPanel sessionView;
+    private Dashboard sessionDashboard;
     private LoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
@@ -173,7 +174,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
-        for (SubSectionView sv : menu.subSectionViews) {
+        for (SubSection sv : menu.subSectionViews) {
             if (sv.getPageName().equalsIgnoreCase("Browser")) {
                 //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
                 dstComponent = menu.getSubSectionButton(sv);
@@ -438,7 +439,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return;
         }
 
-        view.add(new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
+        JPanel waitPanel;
+        view.add(waitPanel = new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
+        waitPanel.setBackground(Color.white);
+        
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -454,15 +458,16 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             protected Void doInBackground() throws Exception {
 
                 Dashboard dash = new Dashboard();
-                dash.addDashboardSection(DashboardSectionFactory.getAppSection());
-                dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
+                dash.addDashboardSection(DashboardSectionFactory.getUberSection());
+                //dash.addDashboardSection(DashboardSectionFactory.getAppSection());
+                //dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
 
-                sessionView = dash;
+                sessionDashboard = dash;
 
                 // remove this line later
                 new LoggedInView();
 
-                view.add(sessionView, SESSION_VIEW_CARD_NAME);
+                view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
 
                 ViewController.getInstance().getMenu().updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
@@ -471,13 +476,18 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }.execute();
 
     }
+    
+    public Dashboard getDashboard() {
+        return sessionDashboard;
+    }
+
 
     public final void switchToLoginView() {
         if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {
             return;
         }
-        if (sessionView != null) {
-            view.remove(sessionView);
+        if (sessionDashboard != null) {
+            view.remove(sessionDashboard);
         }
 
         if (loginView != null) {

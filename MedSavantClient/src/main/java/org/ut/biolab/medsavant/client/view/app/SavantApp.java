@@ -1,23 +1,10 @@
-/**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.variants;
+
+package org.ut.biolab.medsavant.client.view.app;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,21 +19,19 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
-import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -54,15 +39,16 @@ import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.images.IconFactory.StandardIcon;
 import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import org.ut.biolab.medsavant.client.view.variants.MedSavantDataSource;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
-import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
 import savant.api.util.DialogUtils;
@@ -81,34 +67,13 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class BrowserPage extends SubSection {
+public class SavantApp implements DashboardApp {
+    private String pageName = "Savant";
+    private boolean initialized;
 
-    private static final Log LOG = LogFactory.getLog(BrowserPage.class);
-    private JPanel view;
-    private JPanel browserPanel;
-    private GenomeContainer genomeContainer;
-    private PeekingPanel genomeView;
-    private PeekingPanel variationPanel;
-    private Component[] settingComponents;
-    private boolean variantTrackLoaded = false;
-    private static BrowserPage instance;
-    private MedSavantDataSource msds;
-    private final Semaphore trackAdditionLock = new Semaphore(1, true);
-
-    // Do not use unless you're sure BrowserPage has been initialized
-    public static BrowserPage getInstance() {
-        return instance;
-    }
-    //private GenericStringChooser gsc;
-
-    boolean isDoneMappingIdsToBAMURLs = false;
-    private List<String> dnaIDs;
-    private ArrayList<String> sampleIdsHavingBams;
-    private HashMap<String, String> dnaIDToURLMap;
-
-    public BrowserPage(MultiSection parent) {
-        super(parent, "Browser");
-        instance = this;
+    private void initView() {
+        if (!initialized) {
+            instance = this;
 
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
@@ -163,9 +128,56 @@ public class BrowserPage extends SubSection {
                         }
                     }
                 });
+        }
+        initialized = true;
     }
 
     @Override
+    public void viewWillUnload() {
+    }
+
+    @Override
+    public void viewWillLoad() {
+        initView();
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.APP_SAVANT);
+    }
+
+    @Override
+    public String getName() {
+        return "Genome Browser";
+    }
+    
+    private static final Log LOG = LogFactory.getLog(SavantApp.class);
+    private JPanel view;
+    private JPanel browserPanel;
+    private GenomeContainer genomeContainer;
+    private PeekingPanel genomeView;
+    private PeekingPanel variationPanel;
+    private Component[] settingComponents;
+    private boolean variantTrackLoaded = false;
+    private static SavantApp instance;
+    private MedSavantDataSource msds;
+    private final Semaphore trackAdditionLock = new Semaphore(1, true);
+
+    // Do not use unless you're sure BrowserPage has been initialized
+    public static SavantApp getInstance() {
+        return instance;
+    }
+    //private GenericStringChooser gsc;
+
+    boolean isDoneMappingIdsToBAMURLs = false;
+    private List<String> dnaIDs;
+    private ArrayList<String> sampleIdsHavingBams;
+    private HashMap<String, String> dnaIDToURLMap;
+
+    public SavantApp() {
+        
+    }
+
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
 
@@ -178,10 +190,9 @@ public class BrowserPage extends SubSection {
                 }
             }
 
-            settingComponents = new Component[3];
+            settingComponents = new Component[2];
             settingComponents[0] = PeekingPanel.getToggleButtonForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getToggleButtonForPanel(variationPanel, "Variation");
-            settingComponents[2] = getUndockButton();
         }
         return settingComponents;
     }
@@ -207,7 +218,7 @@ public class BrowserPage extends SubSection {
         try {
 
             String buttonStyle = "segmentedCapsule";
-            JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(StandardIcon.BAMFILE));
+            JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BAMFILE));
             dnaButton.setToolTipText("Open BAM File(s)");
             dnaButton.putClientProperty("JButton.buttonType", buttonStyle);
             dnaButton.putClientProperty("JButton.segmentPosition", "only");
@@ -255,7 +266,7 @@ public class BrowserPage extends SubSection {
                 view.add(new WaitPanel("Preparing Savant Genome Browser..."));
 
                 Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
-                genomeContainer = new GenomeContainer(pageName, chroms);
+                genomeContainer = new GenomeContainer(pageName, chroms); // what's the first param for?
                 genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
 
                 final JPanel variationPlaceHolder = new JPanel();
@@ -378,7 +389,6 @@ public class BrowserPage extends SubSection {
 
     @Override
     public void viewDidLoad() {
-        super.viewDidLoad();
         //MedSavantDataSource.setActive(true);
 
         genomeContainer.updateIfRequired();
@@ -393,7 +403,6 @@ public class BrowserPage extends SubSection {
 
     @Override
     public void viewDidUnload() {
-        super.viewDidUnload();
     }
 
     public void updateContents() {
@@ -402,7 +411,7 @@ public class BrowserPage extends SubSection {
             return;
         }
         genomeContainer.setUpdateRequired(true);
-        if (loaded) {
+        if (initialized) {
             genomeContainer.updateIfRequired();
         }
     }
@@ -447,4 +456,5 @@ public class BrowserPage extends SubSection {
         });
 
     }
+    
 }

@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -84,7 +85,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JPanel progressPanel;
 
     public LoginView() {
-        //this.setBackground(new Color(237, 237, 237));//new Color(223,223,223));//Color.white);
+        this.setBackground(Color.white);
         int padding = 100;
         this.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
         initView();
@@ -338,7 +339,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         p.add(ViewUtil.centerHorizontally(userField));
         p.add(ViewUtil.centerHorizontally(passwordField));
         p.add(ViewUtil.centerHorizontally(loginButton));
-        progressPanel = new JPanel();
+        progressPanel = ViewUtil.getClearPanel();
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.Y_AXIS));
         progressPanel.add(ViewUtil.centerHorizontally(progressSigningIn));
 

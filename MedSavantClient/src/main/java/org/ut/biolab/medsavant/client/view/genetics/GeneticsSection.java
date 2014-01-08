@@ -38,9 +38,9 @@ import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.variant.ExportVCFWizard;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.manage.PluginPage;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
+import org.ut.biolab.medsavant.client.view.app.settings.PluginPage;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
 import org.ut.biolab.medsavant.client.view.subview.SubSectionViewCollection;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 
@@ -48,7 +48,7 @@ import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
  *
  * @author mfiume
  */
-public class GeneticsSection extends SectionView {
+public class GeneticsSection extends MultiSection {
 
     private static final Log LOG = LogFactory.getLog(GeneticsSection.class);
     public static boolean isInitialized = false;
@@ -60,7 +60,7 @@ public class GeneticsSection extends SectionView {
     }
 
     @Override
-    public SubSectionView[] getSubSections() {
+    public SubSection[] getSubSections() {
 
         SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
 
@@ -70,7 +70,7 @@ public class GeneticsSection extends SectionView {
 
         //SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
 
-        List<SubSectionView> appSections = new LinkedList<SubSectionView>();
+        List<SubSection> appSections = new LinkedList<SubSection>();
         //for (int i = 0; i < knownPlugins.size(); i++) {
 
         List<MedSavantApp> variantSectionApps = AppController.getInstance().getPluginsOfClass(MedSavantVariantSectionApp.class);
@@ -81,11 +81,11 @@ public class GeneticsSection extends SectionView {
             appSections.add(new PluginPage(this, (MedSavantVariantSectionApp)app));
         }
 
-        SubSectionView[] builtInSections = new SubSectionView[]{new GeneticsTablePage(this),
-            new BrowserPage(this),
+        SubSection[] builtInSections = new SubSection[]{new GeneticsTablePage(this),
+            //new BrowserPage(this),
             new GeneticsChartPage(this)};
 
-        return ArrayUtils.addAll(builtInSections, appSections.toArray(new SubSectionView[numApps]));
+        return ArrayUtils.addAll(builtInSections, appSections.toArray(new SubSection[numApps]));
     }
 
     @Override

@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.util;
 
@@ -30,6 +30,7 @@ import javax.swing.border.MatteBorder;
 import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
+import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -41,15 +42,27 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -213,7 +226,6 @@ public final class ViewUtil {
 
                 //Color top = new Color(227, 227, 227);
                 //Color bottom = new Color(179, 179, 179);
-
                 GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
                 ((Graphics2D) g).setPaint(p);
                 g.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -615,18 +627,61 @@ public final class ViewUtil {
         return button;
     }
 
+    public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2 = output.createGraphics();
+
+    // This is what we want, but it only does hard-clipping, i.e. aliasing
+        // g2.setClip(new RoundRectangle2D ...)
+        // so instead fake soft-clipping by first drawing the desired clip shape
+        // in fully opaque white with antialiasing enabled...
+        g2.setComposite(AlphaComposite.Src);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(Color.WHITE);
+        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
+
+        // ... then compositing the image on top,
+        // using the white shape from above as alpha source
+        g2.setComposite(AlphaComposite.SrcAtop);
+        g2.drawImage(image, 0, 0, null);
+
+        g2.dispose();
+
+        return output;
+    }
+    
+    public static BufferedImage darkenImage(BufferedImage image) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2 = output.createGraphics();
+
+        g2.drawImage(image, 0, 0, null);
+        g2.setColor(new Color(0,0,0,100));
+        g2.fill(new Rectangle(0, 0, w, h));
+
+        g2.dispose();
+
+        return output;
+    }
+
     public static JButton getIconButton(ImageIcon icon) {
 
-        final JButton button = new JButton(icon);
+        BufferedImage unselectedImage = makeRoundedCorner(makeBufferedImageFromIcon(icon), 30);
+        BufferedImage selectedImage = makeRoundedCorner(darkenImage(makeBufferedImageFromIcon(icon)), 30);
+
+        final JButton button = new JButton(new ImageIcon(unselectedImage));
+        button.setPressedIcon(new ImageIcon(selectedImage));
+
         button.setFocusable(false);
         button.setContentAreaFilled(false);
         button.setBorder(null);
 
-        //final ImageIcon unselectedIcon = new ImageIcon(GrayFilter.createDisabledImage(icon.getImage()));
-        //button.setPressedIcon(unselectedIcon);
-
         //ViewUtil.makeSmall(button);
-
         return button;
     }
 
@@ -707,7 +762,7 @@ public final class ViewUtil {
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext) {
-        return subTextComponent(c,subtext,14);
+        return subTextComponent(c, subtext, 14);
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext, int fontSize) {
@@ -781,13 +836,13 @@ public final class ViewUtil {
         return w;
 
         /*
-        JProgressBar b = new JProgressBar();
-        b.setIndeterminate(true);
-        if (ClientMiscUtils.MAC) {
-            b.putClientProperty("JProgressBar.style", "circular");
-        }
-        return b;
-        */
+         JProgressBar b = new JProgressBar();
+         b.setIndeterminate(true);
+         if (ClientMiscUtils.MAC) {
+         b.putClientProperty("JProgressBar.style", "circular");
+         }
+         return b;
+         */
     }
 
     public static void setFontSize(JLabel label, int i) {
@@ -891,7 +946,7 @@ public final class ViewUtil {
     }
 
     public static JButton getHelpButton(final String title, final String helpText) {
-        return getHelpButton(title,helpText, false);
+        return getHelpButton(title, helpText, false);
     }
 
     public static JButton getHelpButton(final String title, final String helpText, final boolean modal) {
@@ -914,7 +969,8 @@ public final class ViewUtil {
                 d.setVisible(true);
                 try {
                     AnalyticsAgent.log(title + " help button pressed");
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
             }
         });
@@ -925,6 +981,11 @@ public final class ViewUtil {
         return System.getProperty("java.version").startsWith("1.7");
     }
 
+    private static BufferedImage makeBufferedImageFromIcon(ImageIcon icon) {
+        BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+        bufferedImage.getGraphics().drawImage(icon.getImage(), 0, 0, null);
+        return bufferedImage;
+    }
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
@@ -962,10 +1023,8 @@ public final class ViewUtil {
 
     public static JList getDetailList(DefaultListModel lm) {
 
-
         JList list = new JList(lm);
         list.setCellRenderer(listCellRenderer);
-
 
         list = (JList) ViewUtil.clear(list);
         list.setForeground(ViewUtil.detailForeground);

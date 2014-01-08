@@ -27,8 +27,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
@@ -40,14 +40,14 @@ import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 public class ViewController {
 
     private Menu menu;
-    private SectionView currentSection;
-    private SubSectionView currentSubsection;
+    private MultiSection currentSection;
+    private SubSection currentSubsection;
     private static ViewController instance;
     private JPanel contentContainer;
     private PersistencePanel persistencePanel;
     private PeekingPanel peekingPanel;
 
-    public SubSectionView getCurrentSubSectionView() {
+    public SubSection getCurrentSubSectionView() {
         return currentSubsection;
     }
 
@@ -102,7 +102,7 @@ public class ViewController {
         return instance;
     }
 
-    public void changeSubSectionTo(SubSectionView view) {
+    public void changeSubSectionTo(SubSection view) {
 
         try {
             AnalyticsAgent.log(new NameValuePair[]{
@@ -122,7 +122,7 @@ public class ViewController {
             currentSubsection.viewDidLoad();
         }
 
-        SectionView parent = view != null ? view.getParent() : null;
+        MultiSection parent = view != null ? view.getParent() : null;
 
         if (parent != currentSection && parent != null) {
             JPanel[] persistentPanels = parent.getPersistentPanels();
@@ -149,7 +149,7 @@ public class ViewController {
         menu.clearMenu();
     }
 
-    public void addSection(SectionView section) {
+    public void addSection(MultiSection section) {
         menu.addSection(section);
     }
 
@@ -209,7 +209,7 @@ public class ViewController {
         }
     }
 
-    public SectionView getCurrentSectionView() {
+    public MultiSection getCurrentSectionView() {
         return currentSection;
     }
 }

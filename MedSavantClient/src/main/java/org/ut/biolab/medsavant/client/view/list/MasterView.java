@@ -75,7 +75,7 @@ public class MasterView extends JPanel {
         setLayout(new CardLayout());
 
         WaitPanel wp = new WaitPanel("Getting list");
-        wp.setBackground(ViewUtil.getTertiaryMenuColor());
+        //wp.setBackground(ViewUtil.getTertiaryMenuColor());
         add(wp, CARD_WAIT);
 
         showCard = new JPanel();
@@ -259,7 +259,7 @@ public class MasterView extends JPanel {
         showCard.removeAll();
 
         showCard.setLayout(new BorderLayout());
-        showCard.setBackground(ViewUtil.getTertiaryMenuColor());
+        //showCard.setBackground(ViewUtil.getTertiaryMenuColor());
         showCard.setBorder(ViewUtil.getBigBorder());
 
         String[] columnNames = detailedModel.getColumnNames();
