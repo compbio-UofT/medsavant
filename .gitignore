@@ -75,3 +75,7 @@ MedSavantPlugins/medsavant.panel/src/medsavant/panel/icon/icon.png
 MedSavantPlugins/medsavant.enrichment/dist/medsavant.enrichment-1.0.0.jar
 
 MedSavantPlugins/medsavant.mendel-clinic/nbproject/private/private.properties
+
+MedSavantPlugins/medsavant.mendel-clinic/nbproject/project.properties
+
+MedSavantPlugins/medsavant.mendel-clinic/nbproject/private/private.xml
