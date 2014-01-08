@@ -26,26 +26,26 @@ import org.ut.biolab.medsavant.client.patient.IndividualsPage;
 import org.ut.biolab.medsavant.client.region.RegionPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 
 /**
  * Section which displays information about the current project.
  *
  * @author tarkvara
  */
-public class ClinicSection extends SectionView {
+public class ClinicSection extends MultiSection {
 
-    private SubSectionView[] subSections;
+    private SubSection[] subSections;
 
     public ClinicSection() {
         super("Clinic");//ProjectController.getInstance().getCurrentProjectName());
     }
 
     @Override
-    public SubSectionView[] getSubSections() {
+    public SubSection[] getSubSections() {
         if (subSections == null) {
-            subSections = new SubSectionView[]{
+            subSections = new SubSection[]{
                 new ClinicSubSectionView(this)
             };
         }
@@ -57,11 +57,11 @@ public class ClinicSection extends SectionView {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_CLINIC);
     }
 
-    private static class ClinicSubSectionView extends SubSectionView {
+    private static class ClinicSubSectionView extends SubSection {
 
         ClinicGalleryView gallery;
 
-        public ClinicSubSectionView(SectionView parent) {
+        public ClinicSubSectionView(MultiSection parent) {
             super(parent,"Clinic");
             gallery = new ClinicGalleryView();
         }

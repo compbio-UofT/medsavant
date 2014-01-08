@@ -30,8 +30,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 
@@ -39,13 +39,13 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
  *
  * @author Andrew
  */
-public class ReferenceGenomePage extends SubSectionView {
+public class ReferenceGenomePage extends SubSection {
 
     private ReferenceController controller;
 
     private SplitScreenView view;
 
-    public ReferenceGenomePage(SectionView parent) {
+    public ReferenceGenomePage(MultiSection parent) {
         super(parent, "Reference Genomes");
         controller = ReferenceController.getInstance();
         controller.addListener(new Listener<ReferenceEvent>() {

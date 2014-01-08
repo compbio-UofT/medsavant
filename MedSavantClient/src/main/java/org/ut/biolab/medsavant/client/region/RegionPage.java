@@ -24,20 +24,20 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 
 /**
  *
  * @author mfiume
  */
-public class RegionPage extends SubSectionView {
+public class RegionPage extends SubSection {
 
     private final RegionController controller;
     private SplitScreenView view;
 
 
-    public RegionPage(SectionView parent) {
+    public RegionPage(MultiSection parent) {
         super(parent, "Gene Lists");
         controller = RegionController.getInstance();
     }
