@@ -32,8 +32,8 @@ public class DashboardSectionFactory {
 
         for (int i = 0; i < clinicApps.size(); i++) {
             try {
+                
                 final MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
-
                 for (int j = 0; j < 10; j++) {
                     s.addDashboardApp(getDashboardAppFromMedSavantApp(app));
                 }
