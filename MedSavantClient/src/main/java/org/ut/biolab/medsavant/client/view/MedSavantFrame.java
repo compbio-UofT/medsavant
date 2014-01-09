@@ -186,24 +186,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (dstComponent != null) {
             animationFromMousePos(dstComponent, img, notificationMsg);
         }
-
-        /*
-         if(dst != null){
-         //view.cancel();
-         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-         public void done(){
-         if(notificationMsg != null){
-         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-         notificationMessage(notificationMsg);
-         }
-         }
-         });
-
-
-
-         //view.animate(img.getImage(), src, dst);
-         }
-         */
     }
 
     public void notificationMessage(String notificationMsg) {

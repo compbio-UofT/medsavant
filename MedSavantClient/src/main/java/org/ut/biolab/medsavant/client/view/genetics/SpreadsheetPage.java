@@ -46,9 +46,9 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author mfiume
  */
-public class GeneticsTablePage extends SubSection implements Listener<FilterEvent> {
+public class SpreadsheetPage extends SubSection implements Listener<FilterEvent> {
 
-    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
+    private static final Log LOG = LogFactory.getLog(SpreadsheetPage.class);
     private Thread viewPreparationThread;
     private JPanel view;
     private JPanel outerTablePanel;
@@ -65,7 +65,7 @@ public class GeneticsTablePage extends SubSection implements Listener<FilterEven
         }
     }
 
-    public GeneticsTablePage(MultiSection parent) {
+    public SpreadsheetPage(MultiSection parent) {
         super(parent, "Spreadsheet");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override

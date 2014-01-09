@@ -81,7 +81,7 @@ public class GeneticsSection extends MultiSection {
             appSections.add(new PluginPage(this, (MedSavantVariantSectionApp)app));
         }
 
-        SubSection[] builtInSections = new SubSection[]{new GeneticsTablePage(this),
+        SubSection[] builtInSections = new SubSection[]{new SpreadsheetPage(this),
             //new BrowserPage(this),
             new GeneticsChartPage(this)};
 
