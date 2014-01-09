@@ -481,8 +481,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Done zipping");
         }
 
-        // add file to map and send the id back
-        int fileID = NetworkManager.getInstance().openReaderOnServer(backgroundSessionID, file);
+        // add file to map and send the id back 
+        //int fileID = NetworkManager.getInstance().openReaderOnServer(backgroundSessionID, file);
+        int fileID = NetworkManager.getInstance().openReaderOnServer(userSessionID, file);
         return fileID;
     }
 
