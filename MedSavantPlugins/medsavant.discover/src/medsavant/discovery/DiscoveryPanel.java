@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -52,6 +53,7 @@ import javax.swing.BorderFactory;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
@@ -122,6 +124,10 @@ public class DiscoveryPanel extends JPanel {
 	private static final String LIKE_KEYWORD= "Like";
 	private static final List<String> OPERATOR_OPTIONS= Arrays.asList(
 		EXIST_KEYWORD, EQUALS_KEYWORD, LESS_KEYWORD, GREATER_KEYWORD, LIKE_KEYWORD);
+	private static final String GENE_COLUMN_KEYWORD= "jannovar gene symbol"; // may change later
+	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
+	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
+	private static final String ALL_GENE_PANEL= DiscoveryFindings.ALL_GENE_PANEL;
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 5;
@@ -142,6 +148,8 @@ public class DiscoveryPanel extends JPanel {
 	private String[] chooserAFArray;
 	private String incidentalPanelString;
 	private List<String> mutationFilterList= new LinkedList<String>();
+	private List<String> genePanelList= Arrays.asList(ALL_GENE_PANEL, "ACMG", "CGD");
+	private String currentGenePanel;
 	
 	private boolean analysisRunning= false;
 	private DiscoveryHSQLServer server;
@@ -248,7 +256,9 @@ public class DiscoveryPanel extends JPanel {
 		
 			if (columns.get(variantProperty) != null) {
 				if (operator.equals(DiscoveryPanel.LIKE_KEYWORD)) {
-					c= BinaryCondition.like(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
+					/* Special case: For the LIKE operator, a "%" wildcard is 
+					 * appended to the end of the text from the text field. */
+					c= BinaryCondition.like(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText() + "%");
 				} else if (operator.equals(DiscoveryPanel.EQUALS_KEYWORD)) {
 					c= BinaryCondition.equalTo(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
 				} else if (operator.equals(DiscoveryPanel.LESS_KEYWORD)) {
@@ -288,21 +298,21 @@ public class DiscoveryPanel extends JPanel {
 		analyzeButton.setVisible(false);
 			
 		
-		Dimension d= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
+		Dimension textFieldDimension= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
 		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
-		coverageThresholdText.setMinimumSize(d);
+		coverageThresholdText.setMinimumSize(textFieldDimension);
 		coverageThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		coverageThresholdHelp= ViewUtil.getHelpButton("Coverage Threshold", 
 				"Minimum number of sequence reads supporting the alternate allele.");
 		hetRatioText= new JTextField(Double.toString(hetRatio));
-		hetRatioText.setMinimumSize(d);
+		hetRatioText.setMinimumSize(textFieldDimension);
 		hetRatioText.setHorizontalAlignment(JTextField.RIGHT);
 		hetRatioHelp= ViewUtil.getHelpButton("Alt/Total Ratio", 
 				"In order for a variant to be included, it must exceeed this threshold, "
 				+ "so as not to be excluded as an erroneous variant. "
 				+ "Below this threshold, alternate alleles are not reported.");
 		afThresholdText= new JTextField(Double.toString(afThreshold));
-		afThresholdText.setMinimumSize(d);
+		afThresholdText.setMinimumSize(textFieldDimension);
 		afThresholdText.setHorizontalAlignment(JTextField.RIGHT);
 		afThresholdHelp= ViewUtil.getHelpButton("Allele Frequency Threshold", 
 				"The maximum allele frequency for this variant. In order for a "
@@ -311,7 +321,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		fetchLimitLabel= new JLabel("Variant fetch limit");
 		fetchLimitText= new JTextField(Integer.toString(variantFetchLimit));
-		fetchLimitText.setMinimumSize(d);
+		fetchLimitText.setMinimumSize(textFieldDimension);
 		fetchLimitText.setHorizontalAlignment(JTextField.RIGHT);
 		fetchLimitHelp= ViewUtil.getHelpButton("Variant fetch limit", 
 				"The maximum number of records to retrieve from the server " +
@@ -332,6 +342,7 @@ public class DiscoveryPanel extends JPanel {
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 						try {
+							setAllValuesFromFields();
 							updateCGD();
 							copyCGD();
 						} catch (Exception exc) {
@@ -431,7 +442,6 @@ public class DiscoveryPanel extends JPanel {
 								saveProperties();
 								
 								/*  Get discovery findings. */
-								
 								// Initialize or update for current DNA ID
 								if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
 									discFind= new DiscoveryFindings(currentIndividualDNA);
@@ -440,7 +450,7 @@ public class DiscoveryPanel extends JPanel {
 									Arrays.asList(chooser.getCheckBoxListSelectedValues()),
 									coverageThreshold, hetRatio, afThreshold);
 								updateCondition();
-								
+								discFind.setGenePanel(currentGenePanel);
 								discFind.storeVariants(variantFetchLimit);
 								
 								/* Update progress messages to user. */
@@ -588,7 +598,8 @@ public class DiscoveryPanel extends JPanel {
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap");
 		patientPanel.add(collapsible, "wrap");
-		patientPanel.add(mutationCheckboxPanel(), "span");
+		patientPanel.add(geneSelectionPanel(), "wrap");
+		patientPanel.add(mutationCheckboxPanel(), "wrap");
 		patientPanel.add(collapsibleSettings, "wrap");
 		patientPanel.add(progressPanel, "alignx center, wrap");
 		patientPanel.add(analyzeButton, "alignx center");
@@ -685,7 +696,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		// The operator selection button
 		final JButton operatorButton= new JButton(EXIST_KEYWORD); // defaults to Exists
-		final JTextField operatorText= new JTextField(10); // 10 character spaces wide			
+		final JTextField operatorText= new JTextField(10); // 10 character spaces wide
 		operatorText.setVisible(false);
 		
 		// Add this FilterDetails object to the list of conditions
@@ -743,7 +754,7 @@ public class DiscoveryPanel extends JPanel {
 				public void mouseClicked(MouseEvent me) {
 					conditionList.remove(filterPanelDetails);
 					patientPanel.remove(j); // remove the entire panel when pressed
-					patientPanel.revalidate(); // Causes the panel to refresh immediately - was delaying without this and looked sloppy
+					patientPanel.updateUI(); // Causes the panel to refresh immediately - was delaying without this and looked sloppy
 				}
 				// remaining methods included but do nothing
 				@Override public void mouseExited(MouseEvent me) {}
@@ -798,6 +809,94 @@ public class DiscoveryPanel extends JPanel {
 	
 	
 	/**
+	 * Create a CollapsiblePane for gene or gene panel selection
+	 * @return A gene/gene panel selection CollapsiblePane
+	 */
+	private CollapsiblePane geneSelectionPanel() {
+		CollapsiblePane collapsibleGene= new CollapsiblePane("Genes");
+		collapsibleGene.setLayout(new MigLayout("gapy 0px, insets 0px"));
+		
+		final String GENE_TEXT= "Gene";
+		final String GENE_PANEL_TEXT= "Gene panel";
+		final String triangleString= " ▾"; // I added the triangles to imply this is a popupmenu button
+		
+		final JButton geneButton= new JButton(GENE_PANEL_TEXT + triangleString);
+		final JTextField geneTextField= new JTextField(10); // 10 character spaces wide
+		final JComboBox genePanelComboBox= new JComboBox(genePanelList.toArray());
+		genePanelComboBox.setSelectedItem(ALL_GENE_PANEL); // may be set later from properties - remove this
+		currentGenePanel= (String) genePanelComboBox.getSelectedItem();
+		geneTextField.setVisible(false);
+		
+		// Add this FilterDetails object to the list of conditions
+		final FilterDetails filterPanelDetails= new FilterDetails();
+		filterPanelDetails.setDetails(GENE_COLUMN_KEYWORD, LIKE_KEYWORD, geneTextField);
+		
+		// Detect changes to the panel
+		genePanelComboBox.addActionListener(
+			new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					currentGenePanel= (String) genePanelComboBox.getSelectedItem();
+				}
+			}
+		);
+		
+		// UI response to changing the gene or gene panel search option
+		geneButton.addActionListener(
+			new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					JPopupMenu jpm= new JPopupMenu();
+					// copy over the button text without the triangle
+					String jmText= geneButton.getText().substring(0, geneButton.getText().length() - 1 - triangleString.length());
+					JMenu jm= new JMenu(jmText);
+					for (final String s : (new String[] {GENE_PANEL_TEXT, GENE_TEXT})) {
+						JMenuItem jmi= new JMenuItem(s);
+						jmi.addMouseListener(
+							new MouseListener() {
+								@Override
+								public void mousePressed(MouseEvent me) {
+									geneButton.setText(s + triangleString);
+									if (s.equals(GENE_TEXT)) {
+										geneTextField.setVisible(true);
+										genePanelComboBox.setVisible(false);
+										conditionList.add(filterPanelDetails);
+										currentGenePanel= ALL_GENE_PANEL;
+									} else if (s.equals(GENE_PANEL_TEXT)) {
+										geneTextField.setVisible(false);
+										genePanelComboBox.setVisible(true);
+										conditionList.remove(filterPanelDetails);
+									}
+								}
+								// remaining methods included but do nothing
+								@Override public void mouseExited(MouseEvent me) {}
+								@Override public void mouseReleased(MouseEvent me) {}
+								@Override public void mouseClicked(MouseEvent me) {}
+								@Override public void mouseEntered(MouseEvent me) {}
+							}
+						);
+						
+						jm.add(jmi);
+					}
+					
+					jpm.add(jm);
+					jpm.show(geneButton, 0, 0);
+				}
+			}
+		);
+		
+		collapsibleGene.add(geneButton);
+		collapsibleGene.add(geneTextField);
+		collapsibleGene.add(genePanelComboBox);
+		
+		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
+		collapsibleGene.setFocusPainted(false);
+		collapsibleGene.collapse(true);
+		
+		return collapsibleGene;
+	}
+	
+	/**
 	 * Update and set the new ComboCondition based on user selections and the
 	 * base ComboCondition returned from the DiscoveryFindings object.
 	 */
@@ -841,11 +940,12 @@ public class DiscoveryPanel extends JPanel {
 	
 	
 	/** Set all values from JTextFields. Also set the relevant properties. */
-	private void setAllValuesFromFields() {
+	private void setAllValuesFromFields() throws MalformedURLException {
 		coverageThreshold= Integer.parseInt(coverageThresholdText.getText());
 		hetRatio= Double.parseDouble(hetRatioText.getText());
 		afThreshold= Double.parseDouble(afThresholdText.getText());
 		variantFetchLimit= Integer.parseInt(fetchLimitText.getText());
+		cgdURL= new URL(cgdText.getText());
 		
 		/* Set the properties. */
 		properties.setProperty("coverage_threshold", Integer.toString(coverageThreshold));
@@ -938,33 +1038,38 @@ public class DiscoveryPanel extends JPanel {
 	/**
 	 * Update the CGD database if a new one exists at the specified URL.
 	 */
-	private void updateCGD() throws Exception {
-		HttpURLConnection conn= (HttpURLConnection) cgdURL.openConnection();
-		Date urlDate= new Date(conn.getLastModified());
-		currentDate= new Date(Long.parseLong((String) properties.getProperty("CGD_DB_date")));
-		
-		if (currentDate.before(urlDate)) {
-			// notify users
-			DateFormat dateFormat= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			System.out.println("[Discovery app]: Existing CGD version from " + 
-				dateFormat.format(currentDate) + " to be replaced by newer CGD version from " +
-				dateFormat.format(urlDate));
-			
-			// download file to cache, uncompress, removed compressed file, set new properties
-			File cgdFile= new File(DirectorySettings.getMedSavantDirectory().getPath() +
-				File.separator + "cache" + File.separator + 
-				FilenameUtils.getName(cgdURL.getFile()));	
-			FileUtils.copyURLToFile(cgdURL, cgdFile);
-			File newCgdFile= gunzip(cgdFile);
-			cgdFile.delete();
-			changeCGDHeader(newCgdFile); // should overwrite existing CGD.txt file if exists
-			
-			// modify and save properties
-			properties.setProperty("CGD_DB_date", Long.toString(urlDate.getTime()));
-			properties.setProperty("CGD_DB_filename", newCgdFile.getName());
-			currentDate= urlDate;
-			
-			saveProperties();
+	private void updateCGD() {
+		try {
+			HttpURLConnection conn= (HttpURLConnection) cgdURL.openConnection();
+			Date urlDate= new Date(conn.getLastModified());
+			currentDate= new Date(Long.parseLong((String) properties.getProperty("CGD_DB_date")));
+
+			if (currentDate.before(urlDate)) {
+				// notify users
+				DateFormat dateFormat= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				System.out.println("[Discovery app]: Existing CGD version from " + 
+					dateFormat.format(currentDate) + " to be replaced by newer CGD version from " +
+					dateFormat.format(urlDate));
+
+				// download file to cache, uncompress, removed compressed file, set new properties
+				File cgdFile= new File(DirectorySettings.getMedSavantDirectory().getPath() +
+					File.separator + "cache" + File.separator + 
+					FilenameUtils.getName(cgdURL.getFile()));	
+				FileUtils.copyURLToFile(cgdURL, cgdFile, TIMEOUT_CONNECTION, TIMEOUT_DATA_READ);
+				File newCgdFile= gunzip(cgdFile);
+				cgdFile.delete();
+				changeCGDHeader(newCgdFile); // should overwrite existing CGD.txt file if exists
+
+				// modify and save properties
+				properties.setProperty("CGD_DB_date", Long.toString(urlDate.getTime()));
+				properties.setProperty("CGD_DB_filename", newCgdFile.getName());
+				currentDate= urlDate;
+
+				saveProperties();
+			}
+		} catch (IOException e) {
+			System.err.println("[Discovery app]: Error when processing CGD URL.");
+			e.printStackTrace();
 		}
 	}
 	

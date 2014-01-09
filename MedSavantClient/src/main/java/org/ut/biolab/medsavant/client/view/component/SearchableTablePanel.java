@@ -869,6 +869,10 @@ public class SearchableTablePanel extends JPanel {
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
     }
 
+	public void setAutoResizeMode(int mode) {
+		table.setAutoResizeMode(mode);
+	}
+	
     public void setHelpButtonVisible(boolean enable) {
         helpButton.setVisible(enable);
     }
