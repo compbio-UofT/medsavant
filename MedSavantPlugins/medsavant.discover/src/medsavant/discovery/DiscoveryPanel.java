@@ -813,7 +813,7 @@ public class DiscoveryPanel extends JPanel {
 	 * @return A gene/gene panel selection CollapsiblePane
 	 */
 	private CollapsiblePane geneSelectionPanel() {
-		CollapsiblePane collapsibleGene= new CollapsiblePane("Genes");
+		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes");
 		collapsibleGene.setLayout(new MigLayout("gapy 0px, insets 0px"));
 		
 		final String GENE_TEXT= "Gene";
@@ -825,7 +825,6 @@ public class DiscoveryPanel extends JPanel {
 		final JComboBox genePanelComboBox= new JComboBox(genePanelList.toArray());
 		genePanelComboBox.setSelectedItem(ALL_GENE_PANEL); // may be set later from properties - remove this
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem();
-		geneTextField.setVisible(false);
 		
 		// Add this FilterDetails object to the list of conditions
 		final FilterDetails filterPanelDetails= new FilterDetails();
@@ -858,13 +857,13 @@ public class DiscoveryPanel extends JPanel {
 								public void mousePressed(MouseEvent me) {
 									geneButton.setText(s + triangleString);
 									if (s.equals(GENE_TEXT)) {
-										geneTextField.setVisible(true);
-										genePanelComboBox.setVisible(false);
+										collapsibleGene.remove(genePanelComboBox);
+										collapsibleGene.add(geneTextField);
 										conditionList.add(filterPanelDetails);
 										currentGenePanel= ALL_GENE_PANEL;
 									} else if (s.equals(GENE_PANEL_TEXT)) {
-										geneTextField.setVisible(false);
-										genePanelComboBox.setVisible(true);
+										collapsibleGene.remove(geneTextField);
+										collapsibleGene.add(genePanelComboBox);
 										conditionList.remove(filterPanelDetails);
 									}
 								}
@@ -886,7 +885,6 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		collapsibleGene.add(geneButton);
-		collapsibleGene.add(geneTextField);
 		collapsibleGene.add(genePanelComboBox);
 		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
