@@ -56,22 +56,13 @@ public class GeneticsSection extends MultiSection {
 
     public GeneticsSection() {
         super("Variants");
-        getSectionMenuComponents(); // force banner to be active, in turn forcing default reference selection
+        getSectionMenuComponents(); 
     }
 
     @Override
     public SubSection[] getSubSections() {
 
-        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
-
-        AppController pc = AppController.getInstance();
-        //pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        //List<AppDescriptor> knownPlugins = pc.getDescriptorsOfType(AppDescriptor.Category.VARIANT);
-
-        //SubSectionView[] appSections = new SubSectionView[knownPlugins.size()];
-
         List<SubSection> appSections = new LinkedList<SubSection>();
-        //for (int i = 0; i < knownPlugins.size(); i++) {
 
         List<MedSavantApp> variantSectionApps = AppController.getInstance().getPluginsOfClass(MedSavantVariantSectionApp.class);
 
@@ -81,7 +72,8 @@ public class GeneticsSection extends MultiSection {
             appSections.add(new PluginPage(this, (MedSavantVariantSectionApp)app));
         }
 
-        SubSection[] builtInSections = new SubSection[]{new SpreadsheetPage(this),
+        SubSection[] builtInSections = new SubSection[]{
+            new SpreadsheetPage(this),
             //new BrowserPage(this),
             new GeneticsChartPage(this)};
 

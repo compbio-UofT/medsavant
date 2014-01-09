@@ -446,13 +446,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
                 sessionDashboard = dash;
 
-                // remove this line later
-                new LoggedInView();
-
                 view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
-
-                ViewController.getInstance().getMenu().updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
+                
                 return null;
             }
         }.execute();
