@@ -209,9 +209,9 @@ public class SearchableTablePanel extends JPanel {
         filterField = new QuickTableFilterField(model);
 
         if (allowPages) {
-            filterField.setHintText("Type to search page");
+            filterField.setHintText("Search for anything on the page");
         } else {
-            filterField.setHintText("Type to search");
+            filterField.setHintText("Search for anything");
         }
 
         setLayout(new BorderLayout(3, 3));

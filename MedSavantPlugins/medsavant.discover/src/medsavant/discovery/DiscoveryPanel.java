@@ -62,6 +62,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import medsavant.discovery.localDB.DiscoveryDB;
 import medsavant.discovery.localDB.DiscoveryHSQLServer;
 import net.miginfocom.swing.MigLayout;
@@ -84,6 +85,8 @@ import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
+import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -112,11 +115,11 @@ public class DiscoveryPanel extends JPanel {
 	private static final String INCIDENTAL_DB_USER= "incidental_user";
 	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
-		"NONSYNONYMOUS", "STOPGAIN", "STOPLOSS", "SPLICING", "NON_FS_INSERTION",
-		"FS_INSERTION", "NON_FS_DELETION", "FS_DELETION", "NON_FS_SUBSTITUTION",
-		"FS_SUBSTITUTION", "ncRNA_EXONIC", "ncRNA_SPLICING", "UTR3", "UTR5",
-		"SYNONYMOUS", "INTRONIC", "ncRNA_INTRONIC", "UPSTREAM", "DOWNSTREAM",
-		"INTERGENIC", "ERROR");
+		"NONSYNONYMOUS", "SYNONYMOUS", "STOPGAIN", "STOPLOSS", "FS_INSERTION", 
+		"FS_DELETION", "FS_SUBSTITUTION", "NON_FS_INSERTION", "NON_FS_DELETION",
+		"NON_FS_SUBSTITUTION", "SPLICING", "UTR3", "UTR5", "INTRONIC", 
+		"ncRNA_INTRONIC","ncRNA_EXONIC", "ncRNA_SPLICING", "UPSTREAM", 
+		"DOWNSTREAM", "INTERGENIC", "ERROR");
 	private static final String EXIST_KEYWORD= "Exists";
 	private static final String EQUALS_KEYWORD= "=";
 	private static final String LESS_KEYWORD= "<";
@@ -135,7 +138,9 @@ public class DiscoveryPanel extends JPanel {
 	private final int TEXT_AREA_WIDTH= 70;
 	private final int TEXT_AREA_HEIGHT= 25;
 	private final int PANE_WIDTH= 380;
-	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down
+	private final int PANE_WIDTH_OFFSET= 20;
+	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down - may need to change later
+	private final int RING_DIAMETER= 200;
 	
 	private DiscoveryFindings discFind= null;
 	private int variantFetchLimit;
@@ -199,6 +204,9 @@ public class DiscoveryPanel extends JPanel {
 	private JLabel fetchLimitLabel;
 	private JTextField fetchLimitText;
 	private JButton fetchLimitHelp;
+	private JPanel progressPanel;
+	private RingChart ringChart;
+	private Ring ring;
     
 	
 	public DiscoveryPanel() {
@@ -359,10 +367,12 @@ public class DiscoveryPanel extends JPanel {
 			}
 		);
 		
+		ringChart= new RingChart();
+		ringChart.setPreferredSize(new Dimension(RING_DIAMETER, RING_DIAMETER));
 		
 		progressLabel= new JLabel();
 		progressLabel.setFont(new Font(progressLabel.getFont().getName(),
-			Font.BOLD, 14));
+			Font.PLAIN, 15));
 		progressLabel.setVisible(false);
 		
 		pw= new ProgressWheel();
@@ -422,6 +432,7 @@ public class DiscoveryPanel extends JPanel {
 								pw.setVisible(true);
 								analyzeButton.setText("Cancel analysis");
 								analyzeButton.setVisible(true);
+								progressPanel.remove(ringChart); // if it's currently added
 								
 								if (!dbLoaded) {
 									progressLabel.setText("Preparing local filtering database");
@@ -460,9 +471,17 @@ public class DiscoveryPanel extends JPanel {
 									analyzeButton.setEnabled(true);
 									analyzeButton.setText(analyzeButtonDefaultText);
 								} else {
-									progressLabel.setText(discFind.getMaximumVariantCount() +
-										" total variants, " + discFind.getFilteredVariantCount() + 
-										" variants after filtering.");
+									int total= discFind.getMaximumVariantCount();
+									int filtered= discFind.getFilteredVariantCount();
+									
+									ring= new Ring();
+									ring.addItem("Pass all filters", filtered, Color.RED);
+									ring.addItem("Don't pass filters", total - filtered, Color.LIGHT_GRAY);				
+									ringChart.setRings(Arrays.asList(ring));
+									progressPanel.add(ringChart, "wrap", 0);
+									
+									progressLabel.setText(total + " total variants, "
+										+ filtered + " variants after filtering");
 								}
 								pw.setVisible(false);
 								return null;
@@ -574,10 +593,10 @@ public class DiscoveryPanel extends JPanel {
 		/* Set up the layout for the Advanced settings collapsible panel. */
 		collapsibleSettings= new CollapsiblePane("Advanced Settings");
 		collapsibleSettings.setLayout(new MigLayout());
-		collapsibleSettings.add(fetchLimitLabel);
-		collapsibleSettings.add(fetchLimitText);
-		collapsibleSettings.add(fetchLimitHelp, "wrap");
-		collapsibleSettings.add(cgdURLLabel);
+		//collapsibleSettings.add(fetchLimitLabel, "split"); // split this cell, makes the panel less wide (see MigLayout Quickstart on splitting)
+		//collapsibleSettings.add(fetchLimitText);
+		//collapsibleSettings.add(fetchLimitHelp, "wrap");
+		collapsibleSettings.add(cgdURLLabel); // split this cell, makes the panel less wide (see MigLayout Quickstart on splitting)
 		collapsibleSettings.add(cgdHelp, "wrap");
 		collapsibleSettings.add(cgdText, "span");
 		collapsibleSettings.add(cgdDateLabel);		
@@ -587,12 +606,12 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Progress bar panel. */
 		//JPanel progressPanel= new JPanel(new MigLayout("insets 0", "center", "center")); // Remove borders around the panel using "insets"
-		JPanel progressPanel= new JPanel(new MigLayout("", "center", ""));
-		progressPanel.add(progressLabel, "wrap");
+		progressPanel= new JPanel(new MigLayout("", "center", ""));
+		progressPanel.add(ringChart, "wrap");
+		progressPanel.add(progressLabel, "gapy 25, wrap");
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
-		//CollapsiblePanes colPanes= new CollapsiblePanes();
 		patientPanel= new JPanel();
 		patientPanel.setLayout(new MigLayout("insets 0px, gapy 10px"));
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
@@ -603,6 +622,12 @@ public class DiscoveryPanel extends JPanel {
 		patientPanel.add(collapsibleSettings, "wrap");
 		patientPanel.add(progressPanel, "alignx center, wrap");
 		patientPanel.add(analyzeButton, "alignx center");
+		// Put the patient panel in a JScrollPane
+		JScrollPane patientJSP= new JScrollPane(patientPanel);
+		patientJSP.setMinimumSize(new Dimension(patientPanel.getMinimumSize().width + PANE_WIDTH_OFFSET, PANE_HEIGHT));
+		patientJSP.setPreferredSize(new Dimension(patientPanel.getMinimumSize().width, patientPanel.getMaximumSize().height));
+		patientJSP.setBorder(BorderFactory.createEmptyBorder());
+		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		/* Set up the gene and variant inspectors. */
 		ssp = new SplitScreenPanel(variantPane);
@@ -615,19 +640,26 @@ public class DiscoveryPanel extends JPanel {
 		/* Final window layout along with size preferences. */
 		workview= new RoundedPanel(10);
 		
-		workview.setLayout(new MigLayout("", "center", "top"));
-		workview.add(patientPanel, "cell 0 0");
-		workview.add(ssp, "cell 1 0");
-		workview.add(vip, "cell 2 0");
+		workview.setLayout(new MigLayout("", "", "top"));
+		workview.add(patientJSP);
+		workview.add(ssp);
+		workview.add(vip);
 		
 		/* Set the sizing for a couple panels and let the other panels auto-size. */
 		choosePatientButton.setMinimumSize(new Dimension(
 			250, choosePatientButton.getHeight()));
 		analyzeButton.setMinimumSize(new Dimension(
 			200, analyzeButton.getSize().height));
+		collapsible.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		collapsibleSettings.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		collapsibleSettings.setMaximumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 
+			collapsibleSettings.getMaximumSize().height)); // also set the max size for this Pane
 		patientPanel.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
-		variantPane.setPreferredSize(variantPane.getMaximumSize());
-		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); //TEMP
+		
+		//variantPane.setMinimumSize(new Dimension(variantPane.));
+		variantPane.setPreferredSize(variantPane.getMaximumSize()); // Needs changing - try MigLayout features
+		
+		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); // NEEDS TO BE UPDATED
 		vip.addSelectionListener(new Listener<Object>() {
 			@Override
 			public void handleEvent(Object event) {
@@ -689,15 +721,14 @@ public class DiscoveryPanel extends JPanel {
 		j.setLayout(new MigLayout("insets 0px"));
 		
 		// CollapsiblePane for the filter
-		CollapsiblePane collapsible= new CollapsiblePane(name);
-		collapsible.setLayout(new MigLayout());
+		final CollapsiblePane collapsible= new CollapsiblePane(name);
+		collapsible.setLayout(new MigLayout("align center"));
 		collapsible.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsible.setFocusPainted(false);
 		
 		// The operator selection button
 		final JButton operatorButton= new JButton(EXIST_KEYWORD); // defaults to Exists
 		final JTextField operatorText= new JTextField(10); // 10 character spaces wide
-		operatorText.setVisible(false);
 		
 		// Add this FilterDetails object to the list of conditions
 		final FilterDetails filterPanelDetails= new FilterDetails();
@@ -719,9 +750,9 @@ public class DiscoveryPanel extends JPanel {
 								public void mousePressed(MouseEvent me) {
 									operatorButton.setText(op);
 									if (op.equals(EXIST_KEYWORD))
-										operatorText.setVisible(false);
+										collapsible.remove(operatorText);
 									else
-										operatorText.setVisible(true);
+										collapsible.add(operatorText);
 									
 									// update fields for the FilterDetails object
 									filterPanelDetails.setDetails(name, op, operatorText);
@@ -744,10 +775,12 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		collapsible.add(operatorButton);
-		collapsible.add(operatorText);
+		
+		collapsible.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET - 30, 0)); // 30px extra to accomodate the - button
 		
 		// Button to remove this filter panel
-		JLabel removeButton= ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
+		JLabel removeButton= ViewUtil.createIconButton(IconFactory.getInstance().getIcon(
+			IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
 		removeButton.addMouseListener(
 			new MouseListener() {
 				@Override
@@ -804,6 +837,8 @@ public class DiscoveryPanel extends JPanel {
 		collapsibleMutation.setFocusPainted(false);
 		collapsibleMutation.collapse(true);	
 		
+		collapsibleMutation.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		
 		return collapsibleMutation;
 	}
 	
@@ -814,7 +849,7 @@ public class DiscoveryPanel extends JPanel {
 	 */
 	private CollapsiblePane geneSelectionPanel() {
 		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes");
-		collapsibleGene.setLayout(new MigLayout("gapy 0px, insets 0px"));
+		collapsibleGene.setLayout(new MigLayout("gapy 0px, align center"));
 		
 		final String GENE_TEXT= "Gene";
 		final String GENE_PANEL_TEXT= "Gene panel";
@@ -887,6 +922,7 @@ public class DiscoveryPanel extends JPanel {
 		collapsibleGene.add(geneButton);
 		collapsibleGene.add(genePanelComboBox);
 		
+		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsibleGene.setFocusPainted(false);
 		collapsibleGene.collapse(true);
