@@ -53,5 +53,11 @@ public class PatientsApp extends MultiSectionDashboardApp {
         return "Patient Directory";
     }
 
+    @Override
+    public void didLogout() {
+    }
 
+    @Override
+    public void didLogin() {
+    }
 }

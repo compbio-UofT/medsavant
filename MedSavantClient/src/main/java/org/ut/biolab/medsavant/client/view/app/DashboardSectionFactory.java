@@ -32,7 +32,7 @@ public class DashboardSectionFactory {
 
         for (int i = 0; i < clinicApps.size(); i++) {
             try {
-                
+
                 final MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
                 for (int j = 0; j < 10; j++) {
                     s.addDashboardApp(getDashboardAppFromMedSavantApp(app));
@@ -86,7 +86,6 @@ public class DashboardSectionFactory {
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
         s.addDashboardApp(new PhenotipsApp());
-        
 
         s.addDashboardApp(new AppStoreApp());
 
@@ -129,6 +128,16 @@ public class DashboardSectionFactory {
             @Override
             public String getName() {
                 return app.getTitle();
+            }
+
+            @Override
+            public void didLogout() {
+                // todo: make this a part of app API
+            }
+
+            @Override
+            public void didLogin() {
+                // todo: make this a part of app API
             }
 
         };

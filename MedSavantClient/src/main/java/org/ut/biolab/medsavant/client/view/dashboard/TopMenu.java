@@ -7,6 +7,7 @@
 package org.ut.biolab.medsavant.client.view.dashboard;
 
 import java.awt.Color;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -28,8 +29,10 @@ class TopMenu extends JPanel {
     public TopMenu() {
         
         this.setBackground(new Color(41,41,41));
+        this.setBorder(BorderFactory.createEmptyBorder());
         
         leftComponent = ViewUtil.getClearPanel();
+        leftComponent.setLayout(new MigLayout("insets 0, nogrid"));
         
         centerComponent = ViewUtil.getClearPanel();
         
@@ -39,21 +42,22 @@ class TopMenu extends JPanel {
         centerComponent.add(titleLabel);
         
         rightComponent = ViewUtil.getClearPanel();
+        rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing"));
         
-        layout = new MigLayout("gapx 0, gapy 0, insets 0 0 0 0, fillx");
+        layout = new MigLayout("gapx 0, gapy 0, insets 0, fillx");
         this.setLayout(layout);
         
-        this.add(leftComponent,"width 20%, left");
+        this.add(leftComponent,"width 20%");
         this.add(centerComponent, "width 60%, center");
-        this.add(rightComponent, "width 20%, right");
+        this.add(rightComponent, "width 20%");
     }
 
     void addLeftComponent(JComponent c) {
-        leftComponent.add(c);
+        leftComponent.add(c,"left");
     }
     
     void addRightComponent(JComponent c) {
-        rightComponent.add(c);
+        rightComponent.add(c,"right");
     }
 
     void setTitle(String title) {

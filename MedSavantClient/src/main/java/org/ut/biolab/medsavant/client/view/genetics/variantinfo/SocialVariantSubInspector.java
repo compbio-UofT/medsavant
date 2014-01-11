@@ -207,7 +207,7 @@ public class SocialVariantSubInspector extends SubInspector implements Listener<
             ViewUtil.applyVerticalBoxLayout(h2);
 
             userLabel = new JLabel();
-            userLabel.setFont(ViewUtil.getSmallTitleFont());
+            userLabel.setFont(ViewUtil.getTinyTitleFont());
 
             timeStampLabel = new JLabel();
 

@@ -80,4 +80,12 @@ public class AccountManagerApp implements DashboardApp {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.APP_ACCOUNT);
     }
 
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
+
 }

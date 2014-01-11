@@ -273,13 +273,13 @@ public class FileDrop
                     if( isDragOk( out, evt ) )
                     {
                         // If it's a Swing component, set its border
-                        if( c instanceof javax.swing.JComponent )
+                        /*if( c instanceof javax.swing.JComponent )
                         {   javax.swing.JComponent jc = (javax.swing.JComponent) c;
                             normalBorder = jc.getBorder();
                             log( out, "FileDrop: normal border saved." );
                             jc.setBorder( dragBorder );
                             log( out, "FileDrop: drag border set." );
-                        }   // end if: JComponent   
+                        }   // end if: JComponent  */ 
 
                         // Acknowledge that it's okay to enter
                         //evt.acceptDrag( java.awt.dnd.DnDConstants.ACTION_COPY_OR_MOVE );
@@ -376,23 +376,27 @@ public class FileDrop
                     }   // end catch: UnsupportedFlavorException
                     finally
                     {
+                        /*
                         // If it's a Swing component, reset its border
                         if( c instanceof javax.swing.JComponent )
                         {   javax.swing.JComponent jc = (javax.swing.JComponent) c;
                             jc.setBorder( normalBorder );
                             log( out, "FileDrop: normal border restored." );
                         }   // end if: JComponent
+                        */
                     }   // end finally
                 }   // end drop
 
                 public void dragExit( java.awt.dnd.DropTargetEvent evt ) 
                 {   log( out, "FileDrop: dragExit event." );
+                /*
                     // If it's a Swing component, reset its border
                     if( c instanceof javax.swing.JComponent )
                     {   javax.swing.JComponent jc = (javax.swing.JComponent) c;
                         jc.setBorder( normalBorder );
                         log( out, "FileDrop: normal border restored." );
                     }   // end if: JComponent
+                */
                 }   // end dragExit
 
                 public void dropActionChanged( java.awt.dnd.DropTargetDragEvent evt ) 

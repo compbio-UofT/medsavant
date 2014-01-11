@@ -19,6 +19,7 @@ import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
  * @author mfiume
  */
 class PhenotipsApp implements DashboardApp {
+
     private JPanel view;
 
     public PhenotipsApp() {
@@ -66,4 +67,11 @@ class PhenotipsApp implements DashboardApp {
         return "Patient Import";
     }
 
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
 }

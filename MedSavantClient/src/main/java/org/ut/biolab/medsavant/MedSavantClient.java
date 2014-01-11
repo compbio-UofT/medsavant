@@ -188,7 +188,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
         //required for FORGE plugin
         //NativeInterface.open();
-
         SettingsController.getInstance();
 
         Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
@@ -228,9 +227,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
-
         //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
-
         //required for FORGE plugin
         //NativeInterface.runEventPump();
     }
@@ -330,13 +327,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
             initProxies();
         }
-        //   } catch (Exception ex) {
-         /*   if (ex instanceof RemoteException) {
-         throw (RemoteException) ex;
-         } else if (ex instanceof NotBoundException) {
-         throw (NotBoundException) ex;
-         }*/
-        // }
     }
 
     private static void setLAF() {
@@ -382,8 +372,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
             LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
 
-
-
+            System.setProperty("awt.useSystemAAFontSettings", "on");
+            System.setProperty("swing.aatext", "true");
 
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
@@ -405,23 +395,23 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(
                 new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
 
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException)e).getCause();
-                }
+                        if (e instanceof InvocationTargetException) {
+                            e = ((InvocationTargetException) e).getCause();
+                        }
 
-                if (e instanceof SessionExpiredException) {
-                    SessionExpiredException see = (SessionExpiredException)e;
-                    MedSavantExceptionHandler.handleSessionExpiredException(see);
-                    return;
-                }
+                        if (e instanceof SessionExpiredException) {
+                            SessionExpiredException see = (SessionExpiredException) e;
+                            MedSavantExceptionHandler.handleSessionExpiredException(see);
+                            return;
+                        }
 
-                e.printStackTrace();
-                DialogUtils.displayException("Error", e.getLocalizedMessage(), e);
-            }
-        });
+                        e.printStackTrace();
+                        DialogUtils.displayException("Error", e.getLocalizedMessage(), e);
+                    }
+                });
     }
 }

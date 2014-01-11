@@ -15,7 +15,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-class VariantNavigatorApp extends MultiSectionDashboardApp {
+public class VariantNavigatorApp extends MultiSectionDashboardApp {
 
     public VariantNavigatorApp() {
         super(new GeneticsSection());
@@ -47,4 +47,11 @@ class VariantNavigatorApp extends MultiSectionDashboardApp {
         return "Variant Navigator";
     }
 
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
 }

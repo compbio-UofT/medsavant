@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.client.view.dashboard;
 
+import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -171,6 +172,8 @@ public class Dashboard extends JPanel {
         JScrollPane p = ViewUtil.getClearBorderlessScrollPane(middlePane);
         p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
+        MenuFactory.generateMenu(); // initialize the Apps in the menus
+        
         final JButton menu = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BTN_MENU));
         menu.addActionListener(new ActionListener() {
 
@@ -301,11 +304,11 @@ public class Dashboard extends JPanel {
         return list;
     }
 
-    LaunchableApp getCurrentApp() {
+    public LaunchableApp getCurrentApp() {
         return this.previousApp;
     }
 
-    void blackListAppFromHistory(LaunchableApp app) {
+    public void blackListAppFromHistory(LaunchableApp app) {
         appHistoryBlackList.add(app);
     }
 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.dashboard;
+package org.ut.biolab.medsavant.client.view.app;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -16,7 +16,13 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
-import org.ut.biolab.medsavant.client.view.app.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
@@ -24,12 +30,12 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-class MenuFactory {
+public class MenuFactory {
 
     private static TaskManagerApp taskManager;
     private static AccountManagerApp accountManager;
 
-    static JPopupMenu generateMenu() {
+    public static JPopupMenu generateMenu() {
         
         if (accountManager == null) {
             accountManager = new AccountManagerApp();
@@ -39,6 +45,7 @@ class MenuFactory {
         if (taskManager == null) {
             taskManager = new TaskManagerApp();
             MedSavantFrame.getInstance().getDashboard().blackListAppFromHistory(taskManager);
+            AppDirectory.registerTaskManager(taskManager);
         }
         
         JPopupMenu m = new JPopupMenu();

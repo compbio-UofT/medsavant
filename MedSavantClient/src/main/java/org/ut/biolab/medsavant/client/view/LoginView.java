@@ -85,7 +85,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JPanel progressPanel;
 
     public LoginView() {
-        this.setBackground(Color.white);
+        //this.setBackground(Color.white);
         int padding = 100;
         this.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
         initView();

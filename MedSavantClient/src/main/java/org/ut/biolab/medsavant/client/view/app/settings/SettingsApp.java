@@ -43,4 +43,12 @@ public class SettingsApp extends MultiSectionDashboardApp {
         return "Settings";
     }
 
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
+
 }

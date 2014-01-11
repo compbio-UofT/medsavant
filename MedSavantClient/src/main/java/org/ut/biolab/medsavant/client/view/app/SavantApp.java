@@ -68,6 +68,7 @@ import savant.view.variation.VariationController;
  * @author mfiume
  */
 public class SavantApp implements DashboardApp {
+    
     private String pageName = "Savant";
     private boolean initialized;
 
@@ -456,5 +457,12 @@ public class SavantApp implements DashboardApp {
         });
 
     }
-    
+
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
 }

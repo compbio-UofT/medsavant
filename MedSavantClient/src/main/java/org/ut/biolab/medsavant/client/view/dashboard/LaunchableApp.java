@@ -6,6 +6,7 @@
 
 package org.ut.biolab.medsavant.client.view.dashboard;
 
+import java.util.Map;
 import javax.swing.JPanel;
 
 /**
@@ -26,4 +27,8 @@ public interface LaunchableApp {
     
     String getName();
     
+    void didLogout();
+    
+    void didLogin();
+
 }

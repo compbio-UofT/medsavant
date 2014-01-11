@@ -60,6 +60,7 @@ public class IconFactory {
         SECTION_DATA,
         SECTION_CLINIC,
         MENU_NOTIFY,
+        IMPORT_VCF,
         TRASH,
         DELETE,
         ADD_ON_TOOLBAR,
@@ -130,6 +131,8 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case IMPORT_VCF:
+                return getIcon(iconroot + "import-dd-vcf.png");
             case HOME:
                 return getIcon(iconroot + "icon-dashboard.png");
             case BTN_MENU:

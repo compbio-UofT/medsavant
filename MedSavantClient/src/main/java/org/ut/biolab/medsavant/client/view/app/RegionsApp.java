@@ -73,5 +73,12 @@ class RegionsApp implements DashboardApp {
     public String getName() {
         return "Regions";
     }
+    
+    @Override
+    public void didLogout() {
+    }
 
+    @Override
+    public void didLogin() {
+    }
 }

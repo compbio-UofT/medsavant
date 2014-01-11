@@ -74,4 +74,12 @@ public class AppStoreApp implements DashboardApp {
         return "App Store";
     }
 
+    @Override
+    public void didLogout() {
+    }
+
+    @Override
+    public void didLogin() {
+    }
+
 }

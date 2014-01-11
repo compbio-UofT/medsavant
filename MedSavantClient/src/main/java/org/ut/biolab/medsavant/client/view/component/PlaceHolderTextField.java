@@ -23,7 +23,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
@@ -38,7 +37,6 @@ public class PlaceHolderTextField extends JTextField {
         tf.setColumns(20);
         final Font f = tf.getFont();
         tf.setFont(new Font(f.getName(), f.getStyle(), 30));
-        //JOptionPane.showMessageDialog(null, tf);
     }
 
     private String placeholder;

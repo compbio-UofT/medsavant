@@ -181,11 +181,11 @@ public final class ViewUtil {
     }
 
     public static Font getSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 9);
+        return new Font("Arial", Font.PLAIN, 11);
     }
 
-    public static Font getSuperSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 4);
+    public static Font getTinyTitleFont() {
+        return new Font("Arial", Font.PLAIN, 9);
     }
 
     public static Color getDarkColor() {
@@ -634,7 +634,7 @@ public final class ViewUtil {
 
         Graphics2D g2 = output.createGraphics();
 
-    // This is what we want, but it only does hard-clipping, i.e. aliasing
+        // This is what we want, but it only does hard-clipping, i.e. aliasing
         // g2.setClip(new RoundRectangle2D ...)
         // so instead fake soft-clipping by first drawing the desired clip shape
         // in fully opaque white with antialiasing enabled...
@@ -652,7 +652,7 @@ public final class ViewUtil {
 
         return output;
     }
-    
+
     public static BufferedImage darkenImage(BufferedImage image) {
         int w = image.getWidth();
         int h = image.getHeight();
@@ -661,7 +661,7 @@ public final class ViewUtil {
         Graphics2D g2 = output.createGraphics();
 
         g2.drawImage(image, 0, 0, null);
-        g2.setColor(new Color(0,0,0,100));
+        g2.setColor(new Color(0, 0, 0, 100));
         g2.fill(new Rectangle(0, 0, w, h));
 
         g2.dispose();
@@ -985,6 +985,19 @@ public final class ViewUtil {
         BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
         bufferedImage.getGraphics().drawImage(icon.getImage(), 0, 0, null);
         return bufferedImage;
+    }
+
+    public static JLabel getSettingsHeaderLabel(String name) {
+        JLabel l = new JLabel(name);
+        l.setFont(ViewUtil.getMediumTitleFont());
+        return l;
+    }
+
+    public static Component getSettingsHelpLabel(String name) {
+        JLabel l = new JLabel(name);
+        l.setFont(ViewUtil.getSmallTitleFont());
+        l.setForeground(new Color(150, 150, 150));
+        return l;
     }
 
     /*public static void applyMenuStyleInset(JPanel p) {
