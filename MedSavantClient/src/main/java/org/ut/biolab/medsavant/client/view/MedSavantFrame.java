@@ -441,6 +441,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
+                dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
                 //dash.addDashboardSection(DashboardSectionFactory.getAppSection());
                 //dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
 
@@ -557,7 +558,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 "TitledBorder.font",
                 "ToolBar.font",
                 "ToolTip.font",
-                "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
+                "Tree.font"}, new Font("HelveticaNeue-Light", Font.PLAIN, 13));
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");

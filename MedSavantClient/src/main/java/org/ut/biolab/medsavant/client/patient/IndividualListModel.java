@@ -72,7 +72,6 @@ public class IndividualListModel implements DetailedListModel, BasicPatientColum
         return COLUMN_CLASSES;
     }
 
-    @Override
     public int[] getHiddenColumns() {
         return HIDDEN_COLUMNS;
     }

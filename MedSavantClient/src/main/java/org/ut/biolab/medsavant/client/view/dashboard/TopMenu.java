@@ -28,7 +28,7 @@ class TopMenu extends JPanel {
 
     public TopMenu() {
         
-        this.setBackground(new Color(41,41,41));
+        this.setBackground(new Color(221,221,221));
         this.setBorder(BorderFactory.createEmptyBorder());
         
         leftComponent = ViewUtil.getClearPanel();
@@ -37,7 +37,7 @@ class TopMenu extends JPanel {
         centerComponent = ViewUtil.getClearPanel();
         
         titleLabel = new JLabel("");
-        titleLabel.setForeground(new Color(214,214,214));
+        titleLabel.setForeground(new Color(64,64,64));
         titleLabel.setFont(ViewUtil.getBigTitleFont());
         centerComponent.add(titleLabel);
         

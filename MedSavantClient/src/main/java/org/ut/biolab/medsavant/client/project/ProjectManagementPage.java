@@ -90,12 +90,10 @@ public class ProjectManagementPage extends SubSection {
         }
         return view;
     }
-
+    
     @Override
     public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
-        //result[0] = getAddPatientsButton();
-
         return result;
     }
 

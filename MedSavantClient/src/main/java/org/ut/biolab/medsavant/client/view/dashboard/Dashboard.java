@@ -159,6 +159,12 @@ public class Dashboard extends JPanel {
                 continue;
             }
 
+            if (!s.getName().equals("Apps")) {
+                JLabel l = new JLabel(s.getName());
+                l.setFont(ViewUtil.getBigTitleFont());
+                middlePane.add(l, "wrap, center");
+            }
+
             JPanel appPlaceholder = ViewUtil.getClearPanel();
 
             MigLayout layout = new MigLayout(String.format("gapx %d, gapy %d, wrap %d", gapHorizontal, gapVertical, numIconsPerRow));
@@ -173,7 +179,7 @@ public class Dashboard extends JPanel {
         p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         MenuFactory.generateMenu(); // initialize the Apps in the menus
-        
+
         final JButton menu = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BTN_MENU));
         menu.addActionListener(new ActionListener() {
 

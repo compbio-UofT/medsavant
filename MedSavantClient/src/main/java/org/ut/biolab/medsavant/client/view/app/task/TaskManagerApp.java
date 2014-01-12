@@ -6,31 +6,21 @@
 package org.ut.biolab.medsavant.client.view.app.task;
 
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
-import com.explodingpixels.macwidgets.MacIcons;
-import com.explodingpixels.macwidgets.SourceList;
-import com.explodingpixels.macwidgets.SourceListCategory;
-import com.explodingpixels.macwidgets.SourceListControlBar;
-import com.explodingpixels.macwidgets.SourceListItem;
-import com.explodingpixels.macwidgets.SourceListModel;
-import com.explodingpixels.macwidgets.SourceListSelectionListener;
-import com.explodingpixels.widgets.PopupMenuCustomizer;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.HashMap;
-import javax.swing.BorderFactory;
+import java.util.List;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.list.DetailedListModel;
+import org.ut.biolab.medsavant.client.view.list.DetailedView;
+import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
@@ -40,20 +30,13 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 public class TaskManagerApp implements DashboardApp {
 
     private ArrayList<TaskWorker> tasks;
-    private JPanel container;
-    private SourceListModel model;
-    private SourceListCategory runningCategory;
-    private final HashMap<SourceListItem, TaskWorker> itemToTaskMap;
-    private JPanel detailView;
+    private SplitScreenView container;
 
     public TaskManagerApp() {
         tasks = new ArrayList<TaskWorker>();
-        itemToTaskMap = new HashMap<SourceListItem, TaskWorker>();
         initView();
-        
     }
 
-    //private JPanel taskContainer;
     @Override
     public JPanel getView() {
         return container;
@@ -62,54 +45,90 @@ public class TaskManagerApp implements DashboardApp {
     private void initView() {
         if (container == null) {
 
-            model = new SourceListModel();
-            runningCategory = new SourceListCategory("Tasks");
-            model.addCategory(runningCategory);
-
-            SourceList sourceList = new SourceList(model);
-            sourceList.useIAppStyleScrollBars();
-            
-            detailView = new JPanel();
-            
-            StandardAppContainer spc = new StandardAppContainer(detailView);
-            
-            JSplitPane p = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                    sourceList.getComponent(), spc);
-            p.setBorder(BorderFactory.createEmptyBorder());
-            p.setDividerSize(0);
-            p.setDividerLocation(200);
-
-            SourceListControlBar controlBar = new SourceListControlBar();
-            sourceList.installSourceListControlBar(controlBar);
-            controlBar.installDraggableWidgetOnSplitPane(p);
-            controlBar.createAndAddButton(MacIcons.PLUS, null);
-            controlBar.createAndAddButton(MacIcons.MINUS, null);
-            
-            sourceList.addSourceListSelectionListener(new SourceListSelectionListener() {
+            container = new SplitScreenView(new DetailedListModel() {
 
                 @Override
-                public void sourceListItemSelected(SourceListItem sli) {
-                    System.out.println("Selected " + sli.getText());
-                    showDetailsForTask(itemToTaskMap.get(sli));
+                public Object[][] getList(int limit) throws Exception {
+                    Object[][] results = new Object[tasks.size()][];
+                    int counter = 0;
+                    for (TaskWorker t : tasks) {
+                        results[counter++] = new Object[]{t.getTaskName(), t};
+                    }
+                    return results;
                 }
-                
+
+                @Override
+                public String[] getColumnNames() {
+                    return new String[]{"Task name", "Task"};
+                }
+
+                @Override
+                public Class[] getColumnClasses() {
+                    return new Class[]{String.class, TaskWorker.class};
+                }
+
+                @Override
+                public int[] getHiddenColumns() {
+                    return new int[0];
+                }
+
+            }, new DetailedView("Task name") {
+
+                @Override
+                public void setSelectedItem(Object[] selectedRow) {
+
+                    if (selectedRow.length == 0) {
+                        updateView(null);
+                        return;
+                    }
+
+                    TaskWorker t = (TaskWorker) selectedRow[1];
+                    updateView(t);
+                }
+
+                @Override
+                public void setMultipleSelections(List<Object[]> selectedRows) {
+                }
+
+                @Override
+                public JPopupMenu createPopup() {
+                    return null;
+                }
+
+                private void updateView(TaskWorker t) {
+
+                    // show a block panel
+                    if (t == null) {
+                        this.removeAll();
+                        BlockingPanel p;
+                        this.add(p = new BlockingPanel("No item selected", new JPanel()));
+                        p.block();
+                        this.updateUI();
+                        return;
+                    }
+
+                    // show task information
+                    
+                    this.removeAll();
+
+                    this.setLayout(new BorderLayout());
+
+                    JPanel view = new JPanel();
+
+                    MigLayout l = new MigLayout();
+                    view.setLayout(l);
+
+                    view.add(new JLabel(t.getTaskName()), "wrap");
+
+                    JPanel container = new StandardAppContainer(view);
+                    this.add(container, BorderLayout.CENTER);
+
+                    this.updateUI();
+                }
             });
-
-            container = new JPanel();
-            container.setLayout(new BorderLayout());
-            container.add(p, BorderLayout.CENTER);
         }
     }
 
-    private void showDetailsForTask(TaskWorker w) {
-        detailView.removeAll();
-        detailView.setLayout(new MigLayout("wrap 1"));
-        for (int i = 0; i < 100; i++) {
-            detailView.add(new JLabel("Selected " + w.getTaskName() + " " + w.getCurrentStatus()));
-        }
-        detailView.updateUI();
-    }
-    
     @Override
     public void viewWillUnload() {
     }
@@ -139,18 +158,7 @@ public class TaskManagerApp implements DashboardApp {
     public void submitTask(TaskWorker t) {
         tasks.add(t);
 
-        SourceListItem item = new SourceListItem(t.getTaskName());
-        
-        itemToTaskMap.put(item,t);
-        
-        
-        /*if (t.getOwner() != null) {
-            if (t.getOwner() instanceof DashboardApp) {
-                item.setIcon(new ImageIcon(((DashboardApp) t.getOwner()).getIcon().getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
-            }
-        }*/
-        
-        model.addItemToCategory(item, runningCategory);
+        container.refresh();
 
         int result = DialogUtils.askYesNo("Task Submitted", "View in Task Manager?");
 
@@ -159,57 +167,12 @@ public class TaskManagerApp implements DashboardApp {
         }
     }
 
-    public static void main(String[] argx) {
-        SourceListModel model = new SourceListModel();
-        SourceListCategory runningCategory = new SourceListCategory("Running Tasks");
-        model.addCategory(runningCategory);
-        model.addItemToCategory(new SourceListItem("sample item"), runningCategory);
-        
-        SourceList sourceList = new SourceList(model);
-
-        JSplitPane p = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                sourceList.getComponent(), new JPanel());
-        p.setDividerSize(0);
-        p.setDividerLocation(300);
-
-        SourceListControlBar controlBar = new SourceListControlBar();
-        sourceList.installSourceListControlBar(controlBar);
-        controlBar.installDraggableWidgetOnSplitPane(p);
-        controlBar.createAndAddButton(MacIcons.PLUS, null);
-        controlBar.createAndAddButton(MacIcons.MINUS, null);
-        controlBar.createAndAddPopdownButton(MacIcons.GEAR,
-                new PopupMenuCustomizer() {
-                    public void customizePopup(JPopupMenu popup) {
-                        popup.removeAll();
-                        popup.add(new JMenuItem("Item One"));
-                        popup.add(new JMenuItem("Item Two"));
-                        popup.add(new JMenuItem("Item Three"));
-                    }
-                });
-
-        JFrame f = new JFrame();
-
-        f.setSize(new Dimension(600, 600));
-        f.add(p);
-        f.show();
-
-        p.updateUI();
-
-    }
-    
     @Override
     public void didLogout() {
-        
+
         tasks.removeAll(tasks);
-        
-        for (SourceListItem i : itemToTaskMap.keySet()) {
-            model.removeItemFromCategory(i, runningCategory);
-        }
-        
-        itemToTaskMap.clear();
-        
-        detailView.removeAll();
-        
+        container.refresh();
+
     }
 
     @Override

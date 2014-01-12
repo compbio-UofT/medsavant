@@ -58,9 +58,11 @@ public class WaitPanel extends JPanel {
         prog.setMaximumSize(new Dimension(200,25));
 
         statusLabel = new JLabel("");
-
+        
+        statusLabel.setForeground(new Color(100,100,100));
+        
         add(Box.createVerticalGlue());
-        add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, Color.BLACK)));
+        add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, new Color(100,100,100))));
         add(ViewUtil.getCenterAlignedComponent(statusLabel));
         add(Box.createVerticalStrut(5));
         add(ViewUtil.getCenterAlignedComponent(prog));

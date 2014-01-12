@@ -34,6 +34,7 @@ public abstract class MultiSectionDashboardApp implements DashboardApp {
             view.setLayout(new BorderLayout());
 
             JTabbedPane tabs = new JTabbedPane();
+            tabs.setFocusable(false);
             for (SubSection sub : multiSection.getSubSections()) {
                 tabs.add(sub.getPageName(), sub.getView());
             }

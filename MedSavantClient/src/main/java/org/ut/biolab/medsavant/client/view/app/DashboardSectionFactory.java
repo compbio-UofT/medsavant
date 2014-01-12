@@ -47,7 +47,7 @@ public class DashboardSectionFactory {
     }
 
     public static DashboardSection getUberSection() {
-        DashboardSection s = new DashboardSection("Uber Section");
+        DashboardSection s = new DashboardSection("Apps");
 
         List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantClinicApp.class);
 
@@ -64,14 +64,9 @@ public class DashboardSectionFactory {
 
         s.addDashboardApp(new VariantNavigatorApp());
         s.addDashboardApp(new SavantApp());
-        s.addDashboardApp(new PatientsApp());
-        s.addDashboardApp(new RegionsApp());
-        s.addDashboardApp(new VCFImportApp());
-        s.addDashboardApp(new PhenotipsApp());
 
         s.addDashboardApp(new AppStoreApp());
 
-        s.addDashboardApp(new SettingsApp());
 
         return s;
     }
@@ -141,6 +136,20 @@ public class DashboardSectionFactory {
             }
 
         };
+    }
+
+    public static DashboardSection getManagementSection() {
+        DashboardSection s = new DashboardSection("Management");
+
+        s.addDashboardApp(new PatientsApp());
+        s.addDashboardApp(new RegionsApp());
+        s.addDashboardApp(new VCFImportApp());
+        s.addDashboardApp(new PhenotipsApp());
+
+
+        s.addDashboardApp(new SettingsApp());
+        
+        return s;
     }
 
 }

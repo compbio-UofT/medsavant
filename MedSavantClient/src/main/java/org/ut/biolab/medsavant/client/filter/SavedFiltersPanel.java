@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.client.view.list.MasterView;
+import org.ut.biolab.medsavant.client.view.list.ListView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author tarkvara
  */
-class SavedFiltersPanel extends MasterView {
+class SavedFiltersPanel extends ListView {
 
     SavedFiltersPanel() {
         super("Filters", new SimpleDetailedListModel("Saved Searches") {
