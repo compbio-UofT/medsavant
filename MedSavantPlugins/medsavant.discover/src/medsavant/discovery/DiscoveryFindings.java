@@ -4,7 +4,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.jidesoft.grid.SortableTable;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
  */
 public class DiscoveryFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
+	public static final String ALL_GENE_PANEL= "All genes";
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
 	private final String JANNOVAR_EFFECT= "jannovar effect";
@@ -51,7 +52,7 @@ public class DiscoveryFindings {
 	private final String SPLICING= "SPLICING";
 	private final String CLINVAR_COLUMN= "clinvar_20131105b, info";
 	private final String HGMD_COLUMN= "hgmd_pro_allmut, gene";
-
+	
 	private String GENDER= null;
 	private ComboCondition currentCC= new ComboCondition(ComboCondition.Op.AND);
 	private VariantManagerAdapter vma= MedSavantClient.VariantManager;
@@ -64,7 +65,7 @@ public class DiscoveryFindings {
 	private double hetRatio;
 	private double alleleFrequencyThreshold;
 	private Map<String, String> zygosityMap;
-	private String inheritancePanel;
+	private String genePanel= ALL_GENE_PANEL;
 	
 	private List<Object[]> allVariants= null;
 	public TableSchema ts;
@@ -84,7 +85,6 @@ public class DiscoveryFindings {
 	 */
 	public DiscoveryFindings(String dnaID) {
 		this.dnaID= dnaID;
-		inheritancePanel= "CGD";
 					
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names
@@ -248,46 +248,6 @@ public class DiscoveryFindings {
 
 			cc.addCondition(currentAFComboCondition);
 		}
-
-		/* Report only variants that have truncation mutations or that are present in
-		 * a disease variant database. So far, Clinvar and HGMD. */
-		ComboCondition truncationOrDBComboCondition= new ComboCondition(ComboCondition.Op.OR);
-
-
-/*
-		// Truncation mutations, if they exist
-		if (dbAliasToColumn.get(JANNOVAR_EFFECT) != null) {
-			ComboCondition truncationComboCondition= new ComboCondition(ComboCondition.Op.OR);
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), STOPGAIN));
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), SPLICING));
-			truncationComboCondition.addCondition(
-				BinaryCondition.like(ts.getDBColumn(dbAliasToColumn.get(JANNOVAR_EFFECT)), FRAMESHIFTS));
-
-			truncationOrDBComboCondition.addCondition(truncationComboCondition);
-		}
-*/
-
-/*
-		// Clinvar DB annotations, if they exist
-		if (dbAliasToColumn.get(CLINVAR_COLUMN) != null) {
-			Condition clinvarCondition= UnaryCondition.isNotNull(
-				ts.getDBColumn(dbAliasToColumn.get(CLINVAR_COLUMN)));
-
-			truncationOrDBComboCondition.addCondition(clinvarCondition);
-		}
-
-		// HGMD DB annotations, if they exist
-		if (dbAliasToColumn.get(HGMD_COLUMN) != null) {
-			Condition hgmdCondition= UnaryCondition.isNotNull(
-				ts.getDBColumn(dbAliasToColumn.get(HGMD_COLUMN)));
-
-			truncationOrDBComboCondition.addCondition(hgmdCondition);
-		}
-*/
-
-		cc.addCondition(truncationOrDBComboCondition);
 		
 		return cc;
 	}
@@ -304,7 +264,7 @@ public class DiscoveryFindings {
 	
 	/** 
 	 * Filter and store all variants for this individual.
-	 * @param maxVariants The maximum number of variants to fetch
+	 * @param maxVariants The maximum number of variants to fetch - currently NOT implemented
 	 * @precondition Assumes that the ComboCondition has been set
 	 */
 	public void storeVariants(int maxVariants) throws SQLException, RemoteException, 
@@ -322,23 +282,16 @@ public class DiscoveryFindings {
 		conditionMatrix[0][0]= currentCC;
 		
 		/* Get variants in chunks based on a request limit offset to save memory. */
-		int requestLimit= maxVariants;
 		int position= 0;
 		List<Object[]> currentVariants= null;
-		while ((currentVariants == null || currentVariants.size() != 0 ) && allVariants.size() <= maxVariants) {
-			int currentLimit= DB_VARIANT_REQUEST_LIMIT;
-			if (DB_VARIANT_REQUEST_LIMIT <= requestLimit)
-				requestLimit -= DB_VARIANT_REQUEST_LIMIT;
-			else if (DB_VARIANT_REQUEST_LIMIT > requestLimit)
-				currentLimit= requestLimit;
-			
+		while (currentVariants == null || currentVariants.size() != 0 ){			
 			currentVariants= vma.getVariants(LoginController.getInstance().getSessionID(),
 				ProjectController.getInstance().getCurrentProjectID(),
 				ReferenceController.getInstance().getCurrentReferenceID(),
 				conditionMatrix,
-				position, currentLimit);
+				position, DB_VARIANT_REQUEST_LIMIT);
 			allVariants.addAll(filterVariants(currentVariants));
-			position += currentLimit;
+			position += DB_VARIANT_REQUEST_LIMIT;
 		}
 		
 		
@@ -364,7 +317,8 @@ public class DiscoveryFindings {
 	}
 	
 	
-	/** Filter a list of variants and return only those variants that pass all
+	/** 
+	 * Filter a list of variants and return only those variants that pass all
 	 * filters.
 	 */
 	private List<Object[]> filterVariants(List<Object[]> input) {
@@ -372,13 +326,13 @@ public class DiscoveryFindings {
 		
 		for (Object[] row : input) {
 			List<String> query= getClassification(getGeneSymbol(row), 
-					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], inheritancePanel);
+					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], genePanel);
 			
 			String classification= query.get(0);
 			String inheritance= query.get(1);
 
-			if (inheritance != null && !inheritance.equals("") && 
-				coverageAndRatioPass(row, true)) {
+			if (genePanel.equals(ALL_GENE_PANEL) || 
+				(inheritance != null && !inheritance.equals("") && coverageAndRatioPass(row, true))) {
 						
 				List<Object> listRow= new ArrayList<Object>(Arrays.asList(row));
 				listRow.add(inheritance);
@@ -494,7 +448,7 @@ public class DiscoveryFindings {
 			queryAddition= "AND C.gene in (SELECT gene FROM acmg) ";
 		}
 		
-		// MUST use single quotes		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
 		String sql=	"SELECT D.classification, S.synonym, C.* " +
 					"FROM CGD C, disease_classification D, CGD_synonym S " +
 					"WHERE C.gene LIKE '" + geneSymbol + "' " + 
@@ -554,9 +508,11 @@ public class DiscoveryFindings {
 	}
 	
 	
-	/** Marks all potential compound heterozygotes in the set of variants. */
+	/** 
+	 * Marks all potential compound heterozygotes in the set of variants.
+	 */
 	private void identifyPotentialCompoundHet() {
-		/* Iterate through all variants and look for the same gene with >1 pika
+		/* Iterate through all variants and look for the same gene with >1 
 		 * instance where it's marked as a carrier. */
 		
 		Map<String, Integer> geneCount= new HashMap<String, Integer>();
@@ -565,7 +521,9 @@ public class DiscoveryFindings {
 		for (Object[] row : allVariants) {
 			String gene= getGeneSymbol(row);
 			
-			if (row[CLASSIFICATION_INDEX].equals("carrier")) {
+			if (row[CLASSIFICATION_INDEX] != null &&
+				row[CLASSIFICATION_INDEX].equals("carrier")) {
+				
 				if (!geneCount.containsKey(gene))
 					geneCount.put(gene, 0);
 
@@ -577,7 +535,8 @@ public class DiscoveryFindings {
 		for (Object[] row : allVariants) {
 			String gene= getGeneSymbol(row);
 			
-			if (((String) row[CLASSIFICATION_INDEX]).equals("carrier") &&
+			if (row[CLASSIFICATION_INDEX] != null &&
+				((String) row[CLASSIFICATION_INDEX]).equals("carrier") &&
 				((Integer) geneCount.get(gene)) > 1) {
 				
 				row[CLASSIFICATION_INDEX]= "potential compound het";
@@ -605,5 +564,14 @@ public class DiscoveryFindings {
 		
 		return results;
 	}
-			
+
+	
+	/**
+	 * Sets the gene panel for this instance.
+	 * @param panelString A string descriptor for this gene panel.
+	 */
+	public void setGenePanel(String panelString) {
+		this.genePanel= panelString;
+	}
+	
 }

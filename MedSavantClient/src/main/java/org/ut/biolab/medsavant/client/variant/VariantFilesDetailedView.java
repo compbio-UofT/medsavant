@@ -154,6 +154,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             result.add(0, new String[]{"File Name", file.getName()});
             result.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
             result.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
+			//result.add(3, new String[]{"DNA ID", ""}); // need to fill this field.
             setFileInfoList(result);
             blockPanel.unblock();
         }
