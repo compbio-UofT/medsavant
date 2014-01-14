@@ -192,8 +192,12 @@ public class ClinvarSubInspector extends SubInspector {
 		/* Extract the Clivar accession */
 		Pattern accessionPattern= Pattern.compile(";?CLNACC=([^;]+);?", Pattern.CASE_INSENSITIVE);
 		Matcher accessionMatcher= accessionPattern.matcher(clinvarInfoText);
-		if (accessionMatcher.find())
-			accession= accessionMatcher.group(1);
+		// Assign the first accession, if there is a list
+		if (accessionMatcher.find()) {
+			String s= accessionMatcher.group(1);
+			List<String> l= Arrays.asList(s.split("\\|"));
+			accession= l.get(0); // get the first accession, if there is > 1
+		}
 		
 		/* Extract the OMIM allelic variant ID */
 		Matcher omimAllelicMatcher= Pattern.compile(";?CLNSRC=([^;]+);?", Pattern.CASE_INSENSITIVE).matcher(clinvarInfoText);

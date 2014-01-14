@@ -219,8 +219,6 @@ public class DiscoveryPanel extends JPanel {
 		}
 		
 		setupView();
-		this.setLayout(new BorderLayout());
-		add(view, BorderLayout.CENTER);
 		
 		server= new DiscoveryHSQLServer(INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
 	}
@@ -414,7 +412,7 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		
-		/* Run incidental findings analysis */
+		/* Run discovery findings analysis */
 		analyzeButton.addActionListener(
 			new ActionListener() {
 				
@@ -613,15 +611,16 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Patient selection panel. */
 		patientPanel= new JPanel();
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 10px"));
+		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
-		patientPanel.add(addFilterButton, "alignx center, wrap");
-		patientPanel.add(collapsible, "wrap");
+		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
+		patientPanel.add(collapsible, "wrap, gapy 20px");
 		patientPanel.add(geneSelectionPanel(), "wrap");
 		patientPanel.add(mutationCheckboxPanel(), "wrap");
 		patientPanel.add(collapsibleSettings, "wrap");
 		patientPanel.add(progressPanel, "alignx center, wrap");
-		patientPanel.add(analyzeButton, "alignx center");
+		patientPanel.add(analyzeButton, "alignx center, wrap"); // need wrap for spacer below
+		patientPanel.add(new JLabel(" "), "gapy 20px"); // use as a spacer at the bottom
 		// Put the patient panel in a JScrollPane
 		JScrollPane patientJSP= new JScrollPane(patientPanel);
 		patientJSP.setMinimumSize(new Dimension(patientPanel.getMinimumSize().width + PANE_WIDTH_OFFSET, PANE_HEIGHT));
@@ -645,7 +644,14 @@ public class DiscoveryPanel extends JPanel {
 		workview.add(ssp);
 		workview.add(vip);
 		
-		/* Set the sizing for a couple panels and let the other panels auto-size. */
+		/* Add the UI to the main app panel. */
+		view.add(workview, BorderLayout.CENTER);
+		this.setLayout(new BorderLayout());
+		this.add(view, BorderLayout.CENTER);
+		
+		/* Set the sizing for a couple panels and let the other panels auto-size. 
+		 * Do sizing after all the components have been added to their parent panels
+		 * otherwise the size will be Dimension(0,0). */
 		choosePatientButton.setMinimumSize(new Dimension(
 			250, choosePatientButton.getHeight()));
 		analyzeButton.setMinimumSize(new Dimension(
@@ -655,20 +661,15 @@ public class DiscoveryPanel extends JPanel {
 		collapsibleSettings.setMaximumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 
 			collapsibleSettings.getMaximumSize().height)); // also set the max size for this Pane
 		patientPanel.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
-		
-		//variantPane.setMinimumSize(new Dimension(variantPane.));
 		variantPane.setPreferredSize(variantPane.getMaximumSize()); // Needs changing - try MigLayout features
+		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); //Needs to be updated - is modified further down below.
 		
-		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); // NEEDS TO BE UPDATED
 		vip.addSelectionListener(new Listener<Object>() {
 			@Override
 			public void handleEvent(Object event) {
 				stp.getTable().clearSelection();
 			}
         });
-		
-		/* Add the UI to the main app panel. */
-		view.add(workview, BorderLayout.CENTER);
     }
 	
 	
@@ -705,6 +706,12 @@ public class DiscoveryPanel extends JPanel {
 					for (int index= 0; index != discFind.header.size(); ++index)
 						line[index]= st.getModel().getValueAt(selectedIndex, index);
 					vip.setVariantLine(line, discFind.header);
+					
+					// Set the size here, once workview has a non 0,0 dimension
+					// LIKELY needs to CHANGE later
+					vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH,
+						workview.getSize().height));					
+					vip.updateUI();
                }
             }
         });
