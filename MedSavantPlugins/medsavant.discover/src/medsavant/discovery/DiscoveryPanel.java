@@ -6,15 +6,19 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.JideButton;
 import java.util.Calendar;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -50,6 +54,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -57,9 +62,11 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
@@ -131,6 +138,8 @@ public class DiscoveryPanel extends JPanel {
 	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
 	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
 	private static final String ALL_GENE_PANEL= DiscoveryFindings.ALL_GENE_PANEL;
+	private static final String LEFT_HIDE_STRING= "<<";
+	private static final String RIGHT_HIDE_STRING= ">>";
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 5;
@@ -207,6 +216,8 @@ public class DiscoveryPanel extends JPanel {
 	private JPanel progressPanel;
 	private RingChart ringChart;
 	private Ring ring;
+	private JScrollPane patientJSP;
+	private JRootPane rootPane;
     
 	
 	public DiscoveryPanel() {
@@ -381,6 +392,7 @@ public class DiscoveryPanel extends JPanel {
 		chooser.addCheckBoxListSelectedValues(chooserAFArray);
 		
 		variantPane= new JScrollPane();
+		variantPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		/* Choose the patient's sample using the individual selector. */
 		customSelector= new IndividualSelector(true);
@@ -417,7 +429,7 @@ public class DiscoveryPanel extends JPanel {
 			new ActionListener() {
 				
 				@Override
-				public void actionPerformed (ActionEvent e) {
+				public void actionPerformed (ActionEvent e) {					
 					if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
 						analysisRunning= true;					
 						MSWorker= new MedSavantWorker<Object> (
@@ -610,8 +622,8 @@ public class DiscoveryPanel extends JPanel {
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
-		patientPanel= new JPanel();
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));
+		patientPanel= new JPanel();		
+		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));	
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
 		patientPanel.add(collapsible, "wrap, gapy 20px");
@@ -622,7 +634,7 @@ public class DiscoveryPanel extends JPanel {
 		patientPanel.add(analyzeButton, "alignx center, wrap"); // need wrap for spacer below
 		patientPanel.add(new JLabel(" "), "gapy 20px"); // use as a spacer at the bottom
 		// Put the patient panel in a JScrollPane
-		JScrollPane patientJSP= new JScrollPane(patientPanel);
+		patientJSP= new JScrollPane(patientPanel);
 		patientJSP.setMinimumSize(new Dimension(patientPanel.getMinimumSize().width + PANE_WIDTH_OFFSET, PANE_HEIGHT));
 		patientJSP.setPreferredSize(new Dimension(patientPanel.getMinimumSize().width, patientPanel.getMaximumSize().height));
 		patientJSP.setBorder(BorderFactory.createEmptyBorder());
@@ -637,15 +649,38 @@ public class DiscoveryPanel extends JPanel {
 		vip.addSocialSubInspector();
 		
 		/* Final window layout along with size preferences. */
+		rootPane= new JRootPane();
+		Container contentPane= rootPane.getContentPane();
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
 		workview= new RoundedPanel(10);
-		
 		workview.setLayout(new MigLayout("", "", "top"));
 		workview.add(patientJSP);
 		workview.add(ssp);
 		workview.add(vip);
+		contentPane.add(workview);
+		// Draw hide buttons once the component has been shown or resized
+		// because the JLayeredPane from the JRootPane doesn't have a layout to
+		// dynamically resize itself.
+		rootPane.addComponentListener(
+			new ComponentListener() {
+				@Override
+				public void componentShown(ComponentEvent ce) {
+					drawHideButtons(false);
+				}
+				
+				@Override
+				public void componentResized(ComponentEvent ce) {
+					drawHideButtons(true);
+				}
+				
+				@Override public void componentMoved(ComponentEvent ce) {}
+				@Override public void componentHidden(ComponentEvent ce) {}
+			}
+		);
+		
 		
 		/* Add the UI to the main app panel. */
-		view.add(workview, BorderLayout.CENTER);
+		view.add(rootPane, BorderLayout.CENTER);
 		this.setLayout(new BorderLayout());
 		this.add(view, BorderLayout.CENTER);
 		
@@ -979,6 +1014,82 @@ public class DiscoveryPanel extends JPanel {
 		}
 	}
 	
+	
+	/** 
+	 * Create hide buttons for the patient and inspector panels.
+	 * This method draws the hide buttons in a JLayeredPane from the JRootPane
+	 * instance once the JRootPane has been made visible in parent containers.
+	 * This is required because the JLayeredPane has to have dimensions related
+	 * to the content pane of the JRootPane, and the dimensions are non-zero
+	 * once the JRootPane has been made visible. Also this is critical when the
+	 * window or JRootPane component has been resized.
+	 * @param redraw true if redrawing the hide buttons - won't add them to the layered pane again
+	 */
+	private void drawHideButtons(boolean redraw) {
+		JLayeredPane layeredPane= rootPane.getLayeredPane();
+		layeredPane.setSize(rootPane.getSize());
+		
+		final JideButton leftButton= new JideButton(LEFT_HIDE_STRING);
+		final JideButton rightButton= new JideButton(RIGHT_HIDE_STRING);
+		
+		leftButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
+		leftButton.setFont(new Font(leftButton.getFont().getName(), Font.BOLD, 24));
+		leftButton.setSize(leftButton.getMinimumSize());
+		leftButton.setLocation(0, 10);
+		
+		rightButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
+		rightButton.setFont(new Font(rightButton.getFont().getName(), Font.BOLD, 24));
+		rightButton.setSize(rightButton.getMinimumSize());
+		rightButton.setLocation(layeredPane.getSize().width - rightButton.getSize().width, 10);
+		
+		/* Hide actions. */
+		leftButton.addMouseListener(
+			new MouseListener() {
+				@Override
+				public void mouseClicked(MouseEvent me) {
+					if (leftButton.getText().equals(LEFT_HIDE_STRING)) {
+						leftButton.setText(RIGHT_HIDE_STRING);
+						workview.remove(patientJSP); // remove the patient panel when pressed
+					} else if (leftButton.getText().equals(RIGHT_HIDE_STRING)) {
+						leftButton.setText(LEFT_HIDE_STRING);
+						workview.add(patientJSP, 0); // add the patient panel when pressed
+					}
+					workview.updateUI();
+				}
+				// remaining methods included but do nothing
+				@Override public void mouseExited(MouseEvent me) {}
+				@Override public void mouseReleased(MouseEvent me) {}
+				@Override public void mousePressed(MouseEvent me) {}
+				@Override public void mouseEntered(MouseEvent me) {}
+			}
+		);
+		
+		rightButton.addMouseListener(
+			new MouseListener() {
+				@Override
+				public void mouseClicked(MouseEvent me) {
+					if (rightButton.getText().equals(RIGHT_HIDE_STRING)) {
+						rightButton.setText(LEFT_HIDE_STRING);
+						workview.remove(vip); // remove the patient panel when pressed
+					} else if (rightButton.getText().equals(LEFT_HIDE_STRING)) {
+						rightButton.setText(RIGHT_HIDE_STRING);
+						workview.add(vip, -1); // add the patient panel to the end when pressed
+					}
+					workview.updateUI();
+				}
+				// remaining methods included but do nothing
+				@Override public void mouseExited(MouseEvent me) {}
+				@Override public void mouseReleased(MouseEvent me) {}
+				@Override public void mousePressed(MouseEvent me) {}
+				@Override public void mouseEntered(MouseEvent me) {}
+			}
+		);
+		
+		
+		/* Add the buttons in a layer above the content pane layer. */
+		layeredPane.add(leftButton, JLayeredPane.PALETTE_LAYER);
+		layeredPane.add(rightButton, JLayeredPane.PALETTE_LAYER);
+	}
 	
 	/** Set all values from JTextFields. Also set the relevant properties. */
 	private void setAllValuesFromFields() throws MalformedURLException {
