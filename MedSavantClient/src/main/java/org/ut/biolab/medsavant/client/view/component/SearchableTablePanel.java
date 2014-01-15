@@ -221,7 +221,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("Customize Fields");
+        chooseColumnButton = new JButton("Columns");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -230,7 +230,7 @@ public class SearchableTablePanel extends JPanel {
         });
 
         helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
-        exportButton = new JButton("Export Page");
+        exportButton = new JButton("Export");
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {

@@ -218,6 +218,8 @@ public class DiscoveryPanel extends JPanel {
 	private Ring ring;
 	private JScrollPane patientJSP;
 	private JRootPane rootPane;
+	private JideButton leftHideButton= new JideButton(LEFT_HIDE_STRING);
+	private JideButton rightHideButton= new JideButton(RIGHT_HIDE_STRING);
     
 	
 	public DiscoveryPanel() {
@@ -485,8 +487,8 @@ public class DiscoveryPanel extends JPanel {
 									int filtered= discFind.getFilteredVariantCount();
 									
 									ring= new Ring();
-									ring.addItem("Pass all filters", filtered, Color.RED);
-									ring.addItem("Don't pass filters", total - filtered, Color.LIGHT_GRAY);				
+									ring.addItem("Pass all filters", filtered, Color.LIGHT_GRAY);
+									ring.addItem("Don't pass filters", total - filtered, Color.RED);
 									ringChart.setRings(Arrays.asList(ring));
 									progressPanel.add(ringChart, "wrap", 0);
 									
@@ -665,12 +667,12 @@ public class DiscoveryPanel extends JPanel {
 			new ComponentListener() {
 				@Override
 				public void componentShown(ComponentEvent ce) {
-					drawHideButtons(false);
+					drawHideButtons();
 				}
 				
 				@Override
 				public void componentResized(ComponentEvent ce) {
-					drawHideButtons(true);
+					drawHideButtons();
 				}
 				
 				@Override public void componentMoved(ComponentEvent ce) {}
@@ -1023,35 +1025,31 @@ public class DiscoveryPanel extends JPanel {
 	 * to the content pane of the JRootPane, and the dimensions are non-zero
 	 * once the JRootPane has been made visible. Also this is critical when the
 	 * window or JRootPane component has been resized.
-	 * @param redraw true if redrawing the hide buttons - won't add them to the layered pane again
 	 */
-	private void drawHideButtons(boolean redraw) {
+	private void drawHideButtons() {
 		JLayeredPane layeredPane= rootPane.getLayeredPane();
 		layeredPane.setSize(rootPane.getSize());
 		
-		final JideButton leftButton= new JideButton(LEFT_HIDE_STRING);
-		final JideButton rightButton= new JideButton(RIGHT_HIDE_STRING);
+		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
+		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
+		leftHideButton.setSize(leftHideButton.getMinimumSize());
+		leftHideButton.setLocation(0, 0);
 		
-		leftButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
-		leftButton.setFont(new Font(leftButton.getFont().getName(), Font.BOLD, 24));
-		leftButton.setSize(leftButton.getMinimumSize());
-		leftButton.setLocation(0, 10);
-		
-		rightButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
-		rightButton.setFont(new Font(rightButton.getFont().getName(), Font.BOLD, 24));
-		rightButton.setSize(rightButton.getMinimumSize());
-		rightButton.setLocation(layeredPane.getSize().width - rightButton.getSize().width, 10);
+		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
+		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
+		rightHideButton.setSize(rightHideButton.getMinimumSize());
+		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
 		
 		/* Hide actions. */
-		leftButton.addMouseListener(
+		leftHideButton.addMouseListener(
 			new MouseListener() {
 				@Override
 				public void mouseClicked(MouseEvent me) {
-					if (leftButton.getText().equals(LEFT_HIDE_STRING)) {
-						leftButton.setText(RIGHT_HIDE_STRING);
+					if (leftHideButton.getText().equals(LEFT_HIDE_STRING)) {
+						leftHideButton.setText(RIGHT_HIDE_STRING);
 						workview.remove(patientJSP); // remove the patient panel when pressed
-					} else if (leftButton.getText().equals(RIGHT_HIDE_STRING)) {
-						leftButton.setText(LEFT_HIDE_STRING);
+					} else if (leftHideButton.getText().equals(RIGHT_HIDE_STRING)) {
+						leftHideButton.setText(LEFT_HIDE_STRING);
 						workview.add(patientJSP, 0); // add the patient panel when pressed
 					}
 					workview.updateUI();
@@ -1064,15 +1062,15 @@ public class DiscoveryPanel extends JPanel {
 			}
 		);
 		
-		rightButton.addMouseListener(
+		rightHideButton.addMouseListener(
 			new MouseListener() {
 				@Override
 				public void mouseClicked(MouseEvent me) {
-					if (rightButton.getText().equals(RIGHT_HIDE_STRING)) {
-						rightButton.setText(LEFT_HIDE_STRING);
+					if (rightHideButton.getText().equals(RIGHT_HIDE_STRING)) {
+						rightHideButton.setText(LEFT_HIDE_STRING);
 						workview.remove(vip); // remove the patient panel when pressed
-					} else if (rightButton.getText().equals(LEFT_HIDE_STRING)) {
-						rightButton.setText(RIGHT_HIDE_STRING);
+					} else if (rightHideButton.getText().equals(LEFT_HIDE_STRING)) {
+						rightHideButton.setText(RIGHT_HIDE_STRING);
 						workview.add(vip, -1); // add the patient panel to the end when pressed
 					}
 					workview.updateUI();
@@ -1086,9 +1084,12 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		
-		/* Add the buttons in a layer above the content pane layer. */
-		layeredPane.add(leftButton, JLayeredPane.PALETTE_LAYER);
-		layeredPane.add(rightButton, JLayeredPane.PALETTE_LAYER);
+		/* Add the buttons in a layer above the content pane layer.
+		 * Only add the buttons if they haven't already been added.*/
+		if (leftHideButton.getParent() != layeredPane) { // only check left since left and right are added together
+			layeredPane.add(leftHideButton, JLayeredPane.PALETTE_LAYER);
+			layeredPane.add(rightHideButton, JLayeredPane.PALETTE_LAYER);
+		}
 	}
 	
 	/** Set all values from JTextFields. Also set the relevant properties. */
