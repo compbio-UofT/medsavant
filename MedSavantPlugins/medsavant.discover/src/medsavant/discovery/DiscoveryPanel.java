@@ -4,6 +4,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
+import com.jidesoft.grid.JideTable;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
@@ -68,6 +69,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import medsavant.discovery.localDB.DiscoveryDB;
@@ -125,8 +127,12 @@ public class DiscoveryPanel extends JPanel {
 		"NONSYNONYMOUS", "SYNONYMOUS", "STOPGAIN", "STOPLOSS", "FS_INSERTION", 
 		"FS_DELETION", "FS_SUBSTITUTION", "NON_FS_INSERTION", "NON_FS_DELETION",
 		"NON_FS_SUBSTITUTION", "SPLICING", "UTR3", "UTR5", "INTRONIC", 
-		"ncRNA_INTRONIC","ncRNA_EXONIC", "ncRNA_SPLICING", "UPSTREAM", 
+		"ncRNA_INTRONIC","ncRNA_EXONIC", "ncRNA_SPLICING", "UPSTREAM",
 		"DOWNSTREAM", "INTERGENIC", "ERROR");
+	private static final String[] DEFAULT_MUTATIONS= new String[] {
+		"NONSYNONYMOUS", "STOPGAIN", "STOPLOSS", "FS_INSERTION", "FS_DELETION", 
+		"FS_SUBSTITUTION", "NON_FS_INSERTION", "NON_FS_DELETION",
+		"NON_FS_SUBSTITUTION", "SPLICING"};
 	private static final String EXIST_KEYWORD= "Exists";
 	private static final String EQUALS_KEYWORD= "=";
 	private static final String LESS_KEYWORD= "<";
@@ -164,6 +170,7 @@ public class DiscoveryPanel extends JPanel {
 	private List<String> mutationFilterList= new LinkedList<String>();
 	private List<String> genePanelList= Arrays.asList(ALL_GENE_PANEL, "ACMG", "CGD");
 	private String currentGenePanel;
+	private String[] mutationArray;
 	
 	private boolean analysisRunning= false;
 	private DiscoveryHSQLServer server;
@@ -859,7 +866,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		for (String jm : JANNOVAR_MUTATIONS) {
 			final JCheckBox currentCheckBox= new JCheckBox(jm);
-			//currentCheckBox.setSelected(true);
+			
 			// Allow checkboxes to register themselves as checked or unchecked upon being clicked
 			currentCheckBox.addActionListener(
 				new ActionListener() {
@@ -873,6 +880,12 @@ public class DiscoveryPanel extends JPanel {
 					}
 				}
 			);
+			
+			// Set the defaults
+			if (Arrays.asList(mutationArray).contains(jm)) {
+				currentCheckBox.setSelected(true);
+				mutationFilterList.add(currentCheckBox.getText());
+			}
 			
 			collapsibleMutation.add(currentCheckBox, "wrap");
 		}
@@ -1111,6 +1124,10 @@ public class DiscoveryPanel extends JPanel {
 		String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(
 			chooser.getCheckBoxListSelectedValues()), "\"\t\"") + "\"";
 		properties.setProperty("af_chooser_list", afChooserStringList);
+		
+		// quote-enclosed, comma-delimited list as string
+		String mutationStringList= "\"" + StringUtils.join(mutationFilterList, "\"\t\"") + "\"";
+		properties.setProperty("mutation_list", mutationStringList);
 	}
 	
 	
@@ -1152,7 +1169,10 @@ public class DiscoveryPanel extends JPanel {
 			
 			String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_AF_DB_LIST), "\"\t\"") + "\"";
 			properties.setProperty("af_chooser_list", afChooserStringList);
-						
+			
+			String mutationStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_MUTATIONS), "\"\t\"") + "\"";
+			properties.setProperty("mutation_list", mutationStringList);
+			
 			saveProperties();
 		} else {
 			properties.loadFromXML(new FileInputStream(propertiesFile));
@@ -1167,6 +1187,9 @@ public class DiscoveryPanel extends JPanel {
 
 		String s= properties.getProperty("af_chooser_list");
 		chooserAFArray= (s.substring(1, s.length() - 1)).split("\"\t\"");
+		
+		String s2= properties.getProperty("mutation_list");
+		mutationArray= (s2.substring(1, s2.length() - 1)).split("\"\t\"");
 		
 		// Update CGD file if necessary
 		updateCGD();
