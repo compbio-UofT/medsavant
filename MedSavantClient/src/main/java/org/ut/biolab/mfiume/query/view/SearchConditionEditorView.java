@@ -38,6 +38,10 @@ public abstract class SearchConditionEditorView extends JPanel implements Serial
         this.item = i;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
+    
+    public SearchConditionItem getSearchConditionItem(){
+        return item;
+    }
 
     protected Dimension getDialogDimension(){
         return null;
