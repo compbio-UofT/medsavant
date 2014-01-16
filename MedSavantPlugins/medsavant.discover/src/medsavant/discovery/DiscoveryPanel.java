@@ -4,7 +4,6 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
-import com.jidesoft.grid.JideTable;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
@@ -69,9 +68,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import medsavant.discovery.localDB.DiscoveryDB;
 import medsavant.discovery.localDB.DiscoveryHSQLServer;
 import net.miginfocom.swing.MigLayout;
@@ -103,7 +105,7 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 
 
 /**
- * Default panel view for Incidentalome app
+ * Default panel for Discovery app
  * 
  * @author rammar
  */
@@ -120,9 +122,8 @@ public class DiscoveryPanel extends JPanel {
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
 		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
-	public static final String PAGE_NAME = "Incidentalome";
-	private static final String INCIDENTAL_DB_USER= "incidental_user";
-	private static final String INCIDENTAL_DB_PASSWORD= "$hazam!2734"; // random password		
+	private static final String DISCOVERY_DB_USER= "incidental_user";
+	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
 		"NONSYNONYMOUS", "SYNONYMOUS", "STOPGAIN", "STOPLOSS", "FS_INSERTION", 
 		"FS_DELETION", "FS_SUBSTITUTION", "NON_FS_INSERTION", "NON_FS_DELETION",
@@ -166,7 +167,6 @@ public class DiscoveryPanel extends JPanel {
 	private double hetRatio;
 	private double afThreshold;
 	private String[] chooserAFArray;
-	private String incidentalPanelString;
 	private List<String> mutationFilterList= new LinkedList<String>();
 	private List<String> genePanelList= Arrays.asList(ALL_GENE_PANEL, "ACMG", "CGD");
 	private String currentGenePanel;
@@ -182,7 +182,7 @@ public class DiscoveryPanel extends JPanel {
 	private JideButton choosePatientButton;
 	private JideButton analyzeButton;
 	private String analyzeButtonDefaultText= "Refresh";
-	private IndividualSelector customSelector;
+	private IndividualSelector customSelector= new IndividualSelector(true); // to choose the patient sample
 	private Set<String> selectedIndividuals;
 	private String currentIndividual;
 	private String currentIndividualDNA;
@@ -204,8 +204,7 @@ public class DiscoveryPanel extends JPanel {
 	private JButton afThresholdHelp;
 	private JButton chooseAFColumns;
 	private JButton chooseAFColumnsHelp;
-	private CheckBoxList chooser;
-	//private JSeparator statusSeparator= new JSeparator(SwingConstants.HORIZONTAL);
+	private CheckBoxList afChooser;
 	private URL cgdURL;
 	private CollapsiblePane collapsible;
 	private CollapsiblePane collapsibleSettings;
@@ -231,16 +230,13 @@ public class DiscoveryPanel extends JPanel {
 	
 	public DiscoveryPanel() {
 		/* Set up the properties based on stored user preference. */
-		try {
-			loadProperties();
-		} catch (Exception e) {
-			System.err.println("Error loading properties.");
-			e.printStackTrace();
-		}
-		
+		loadProperties();
+	
+		/* Set up the initial app view. */
 		setupView();
 		
-		server= new DiscoveryHSQLServer(INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD);
+		// the local server
+		server= new DiscoveryHSQLServer(DISCOVERY_DB_USER, DISCOVERY_DB_PASSWORD);
 	}
 
 	
@@ -302,7 +298,7 @@ public class DiscoveryPanel extends JPanel {
 	
 	
 	/**
-	 * Set up the DiscoveryPanel.
+	 * Set up the initial view of the DiscoveryPanel.
 	 */
 	private void setupView() {
 		view= ViewUtil.getClearPanel();
@@ -314,7 +310,7 @@ public class DiscoveryPanel extends JPanel {
 		choosePatientButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
 		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
 			Font.PLAIN, 18));
-		
+		choosePatientButton.addActionListener(getChoosePatientButtonAL());
 				
 		analyzeButton= new JideButton(analyzeButtonDefaultText);
 		analyzeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
@@ -322,7 +318,7 @@ public class DiscoveryPanel extends JPanel {
 			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		analyzeButton.setVisible(false);
-			
+		analyzeButton.addActionListener(getAnalyzeButtonAL()); // to run the analysis
 		
 		Dimension textFieldDimension= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
 		coverageThresholdText= new JTextField(Integer.toString(coverageThreshold));
@@ -397,194 +393,20 @@ public class DiscoveryPanel extends JPanel {
 		pw.setIndeterminate(true);
 		pw.setVisible(false);
 		
-		chooser= new CheckBoxList(getDbColumnList());
-		chooser.addCheckBoxListSelectedValues(chooserAFArray);
+		afChooser= new CheckBoxList(getDbColumnList());
+		afChooser.addCheckBoxListSelectedValues(chooserAFArray);
 		
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
 		
-		/* Choose the patient's sample using the individual selector. */
-		customSelector= new IndividualSelector(true);
-		choosePatientButton.addActionListener(
-			new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					customSelector.setVisible(true);
-					
-					selectedIndividuals= customSelector.getHospitalIDsOfSelectedIndividuals();
-					
-					if (customSelector.hasMadeSelection() && selectedIndividuals.size() == 1) {
-						
-						currentIndividual= selectedIndividuals.iterator().next();
-						currentIndividualDNA= customSelector.getDNAIDsOfSelectedIndividuals().iterator().next();
-						
-						if (currentIndividualDNA != null) {
-							choosePatientButton.setText(currentIndividual);
-							analyzeButton.setEnabled(true);
-							analyzeButton.doClick(); // trigger button's actionPerformed() even though it's not visible
-						} else {
-							choosePatientButton.setText("No DNA ID for " + currentIndividual);
-						}
-					} else if (customSelector.getHospitalIDsOfSelectedIndividuals().size() > 1){
-						choosePatientButton.setText("Choose only 1 patient");
-					}
-				}
-			}
-		);
-		
-		
-		/* Run discovery findings analysis */
-		analyzeButton.addActionListener(
-			new ActionListener() {
-				
-				@Override
-				public void actionPerformed (ActionEvent e) {					
-					if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
-						analysisRunning= true;					
-						MSWorker= new MedSavantWorker<Object> (
-							DiscoveryPanel.class.getCanonicalName()) {
-								
-							@Override
-							protected Object doInBackground() throws Exception {
-								/* Starts a new thread for background tasks. */
-								progressLabel.setVisible(true);
-								pw.setVisible(true);
-								analyzeButton.setText("Cancel analysis");
-								analyzeButton.setVisible(true);
-								progressPanel.remove(ringChart); // if it's currently added
-								
-								if (!dbLoaded) {
-									progressLabel.setText("Preparing local filtering database");
-									try {
-										dbLoaded= true;
-										DiscoveryDB.populateDB(server.getURL(), INCIDENTAL_DB_USER, INCIDENTAL_DB_PASSWORD, properties);
-									} catch (SQLException e) {
-										e.printStackTrace();
-									}
-								}
-								
-								progressLabel.setText("Downloading and filtering variants");
-								
-								/* Get all the user settings. */
-								setAllValuesFromFields();
-								
-								/* Every time an analysis is run, parameters/settings are saved. */
-								saveProperties();
-								
-								/*  Get discovery findings. */
-								// Initialize or update for current DNA ID
-								if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
-									discFind= new DiscoveryFindings(currentIndividualDNA);
-								}
-								baseComboCondition= discFind.getComboCondition(
-									Arrays.asList(chooser.getCheckBoxListSelectedValues()),
-									coverageThreshold, hetRatio, afThreshold);
-								updateCondition();
-								discFind.setGenePanel(currentGenePanel);
-								discFind.storeVariants(variantFetchLimit);
-								
-								/* Update progress messages to user. */
-								if (this.isCancelled()) {
-									progressLabel.setText("Analysis Cancelled.");
-									pw.setVisible(false);
-									analyzeButton.setEnabled(true);
-									analyzeButton.setText(analyzeButtonDefaultText);
-								} else {
-									int total= discFind.getMaximumVariantCount();
-									int filtered= discFind.getFilteredVariantCount();
-									
-									ring= new Ring();
-									ring.addItem("Pass all filters", filtered, Color.LIGHT_GRAY);
-									ring.addItem("Don't pass filters", total - filtered, Color.RED);
-									ringChart.setRings(Arrays.asList(ring));
-									progressPanel.add(ringChart, "wrap", 0);
-									
-									progressLabel.setText(total + " total variants, "
-										+ filtered + " variants after filtering");
-								}
-								pw.setVisible(false);
-								return null;
-							}
-
-							@Override
-							protected void showSuccess(Object t) {	
-							/* All updates to display should happen here to be run. */
-								updateVariantPane();
-								analyzeButton.setText(analyzeButtonDefaultText);
-								analysisRunning= false;
-							}
-							
-						};
-						
-						MSWorker.execute();
-						
-					} else if (selectedIndividuals != null && selectedIndividuals.size() == 1
-						&& analysisRunning) {
-						analysisRunning= false;
-						MSWorker.cancel(true);
-						analyzeButton.setEnabled(false);
-						progressLabel.setText("Cancelling Analysis");
-					}
-				}
-			}
-		);		
-		
-		
 		chooseAFColumns= new JButton("Choose Allelle Frequency DBs");
 		chooseAFColumnsHelp= ViewUtil.getHelpButton("Allele Frequency Database selector", 
 				"Choose the databases to use when filtering for allele frequency.");
-		chooseAFColumns.addActionListener(
-			new ActionListener() {
-				
-				@Override
-				public void actionPerformed (ActionEvent e) {
-					JScrollPane chooserScrollPane= new JScrollPane(chooser);
-					chooserScrollPane.setBorder(BorderFactory.createEmptyBorder(2,3,4,1)); // just a little bit of border
-					chooserScrollPane.setBackground(Color.LIGHT_GRAY);
-					
-					JDialog f = new JDialog(MedSavantFrame.getInstance(),"Allele Frequency Database selector");
-					f.add(chooserScrollPane);
-					f.setPreferredSize(new Dimension(300, 500));
-					f.setMinimumSize(new Dimension(300, 500));
-					f.setLocationRelativeTo(null);
-					f.setVisible(true);
-				}
-			}
-		);
+		chooseAFColumns.addActionListener(getChooseAFColumnsAL());
 		
 		addFilterButton= new JButton("Add variant filter");
 		addFilterButton.setFocusPainted(false);
-		addFilterButton.addActionListener(
-			new ActionListener() {
-				
-				@Override
-				public void actionPerformed (ActionEvent e) {
-					JPopupMenu popupMenu= new JPopupMenu();
-					JMenu filterMenu= new JMenu(addFilterButton.getText());
-					
-					for (Object columnName : getDbColumnList()) {
-						final JMenuItem filter= new JMenuItem((String) columnName);
-						filter.addMouseListener(
-							new MouseListener() {
-								@Override
-								public void mousePressed(MouseEvent me) {
-									patientPanel.add(addFilterPanel(filter.getText()), "wrap", 2);
-								}
-								// remaining methods included but do nothing
-								@Override public void mouseExited(MouseEvent me) {}
-								@Override public void mouseReleased(MouseEvent me) {}
-								@Override public void mouseClicked(MouseEvent me) {}
-								@Override public void mouseEntered(MouseEvent me) {}
-							}
-						);
-						filterMenu.add(filter);
-					}
-					
-					popupMenu.add(filterMenu);
-					popupMenu.show(addFilterButton, 0, 0);
-				}
-			}
-		);
+		addFilterButton.addActionListener(getAddFilterButtonAL());
 		
 		
 		/* Set up the layout for the UI.
@@ -610,6 +432,21 @@ public class DiscoveryPanel extends JPanel {
 		collapsible.collapse(true);	
 		
 		/* Set up the layout for the Advanced settings collapsible panel. */
+		JPanel resetPanel= new JPanel();
+		resetPanel.setLayout(new MigLayout("insets 2 6 2 6")); // top left bottom right
+		resetPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+		JButton reset= new JButton("Restore defaults");
+		reset.addActionListener(new ActionListener() 
+		{
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				resetProperties();
+			}
+		}
+		);
+		resetPanel.add(reset);
+		resetPanel.add(new JLabel("(restart required)"));
+		
 		collapsibleSettings= new CollapsiblePane("Advanced Settings");
 		collapsibleSettings.setLayout(new MigLayout());
 		//collapsibleSettings.add(fetchLimitLabel, "split"); // split this cell, makes the panel less wide (see MigLayout Quickstart on splitting)
@@ -618,13 +455,14 @@ public class DiscoveryPanel extends JPanel {
 		collapsibleSettings.add(cgdURLLabel); // split this cell, makes the panel less wide (see MigLayout Quickstart on splitting)
 		collapsibleSettings.add(cgdHelp, "wrap");
 		collapsibleSettings.add(cgdText, "span");
-		collapsibleSettings.add(cgdDateLabel);		
+		collapsibleSettings.add(cgdDateLabel, "wrap");
+		collapsibleSettings.add(new JLabel(" "), "wrap"); // use as a spacer
+		collapsibleSettings.add(resetPanel);
 		collapsibleSettings.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsibleSettings.setFocusPainted(false);
 		collapsibleSettings.collapse(true);
 		
 		/* Progress bar panel. */
-		//JPanel progressPanel= new JPanel(new MigLayout("insets 0", "center", "center")); // Remove borders around the panel using "insets"
 		progressPanel= new JPanel(new MigLayout("", "center", ""));
 		progressPanel.add(ringChart, "wrap");
 		progressPanel.add(progressLabel, "gapy 25, wrap");
@@ -715,6 +553,209 @@ public class DiscoveryPanel extends JPanel {
 			}
         });
     }
+	
+	
+	/**
+	 * Creates an ActionListener for specific use with the choosePatientButton.
+	 * @return the choosePatientButton ActionListener
+	 */
+	private ActionListener getChoosePatientButtonAL() {
+		ActionListener outputAL= new ActionListener() 
+		{
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				customSelector.setVisible(true);
+
+				selectedIndividuals= customSelector.getHospitalIDsOfSelectedIndividuals();
+
+				if (customSelector.hasMadeSelection() && selectedIndividuals.size() == 1) {
+
+					currentIndividual= selectedIndividuals.iterator().next();
+					currentIndividualDNA= customSelector.getDNAIDsOfSelectedIndividuals().iterator().next();
+
+					if (currentIndividualDNA != null) {
+						choosePatientButton.setText(currentIndividual);
+						analyzeButton.setEnabled(true);
+						analyzeButton.doClick(); // trigger button's actionPerformed() even though it's not visible
+					} else {
+						choosePatientButton.setText("No DNA ID for " + currentIndividual);
+					}
+				} else if (customSelector.getHospitalIDsOfSelectedIndividuals().size() > 1){
+					choosePatientButton.setText("Choose only 1 patient");
+				}
+			}
+		};
+		
+		return outputAL;
+	}
+	
+	
+	/**
+	 * Creates an ActionListener for specific use with the analyzeButton.
+	 * @return the analyzeButton ActionListener
+	 */
+	private ActionListener getAnalyzeButtonAL() {
+		ActionListener outputAL= new ActionListener()
+		{	
+			@Override
+			public void actionPerformed (ActionEvent e) {					
+				if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
+					analysisRunning= true;					
+					MSWorker= new MedSavantWorker<Object> (
+						DiscoveryPanel.class.getCanonicalName()) {
+
+						@Override
+						protected Object doInBackground() throws Exception {
+							/* Starts a new thread for background tasks. */
+							progressLabel.setVisible(true);
+							pw.setVisible(true);
+							analyzeButton.setText("Cancel analysis");
+							analyzeButton.setVisible(true);
+							progressPanel.remove(ringChart); // if it's currently added
+
+							if (!dbLoaded) {
+								progressLabel.setText("Preparing local filtering database");
+								try {
+									dbLoaded= true;
+									DiscoveryDB.populateDB(server.getURL(), DISCOVERY_DB_USER, DISCOVERY_DB_PASSWORD, properties);
+								} catch (SQLException e) {
+									e.printStackTrace();
+								}
+							}
+
+							/* Get all the user settings. */
+							setAllValuesFromFields();
+
+							/* Every time an analysis is run, parameters/settings are saved. */
+							saveProperties();
+
+							/*  Get discovery findings. Initialize or update for current DNA ID. */
+							if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
+								discFind= new DiscoveryFindings(currentIndividualDNA);
+							}
+							
+							int total= discFind.getMaximumVariantCount(); // total variants for this DNA ID
+							
+							progressLabel.setText(total + " total variants found. Applying filters.");
+							
+							baseComboCondition= discFind.getComboCondition(
+								Arrays.asList(afChooser.getCheckBoxListSelectedValues()),
+								coverageThreshold, hetRatio, afThreshold);
+							updateCondition();
+							discFind.setGenePanel(currentGenePanel);
+							discFind.storeVariants(variantFetchLimit);
+
+							/* Update progress messages to user. */
+							if (this.isCancelled()) {
+								progressLabel.setText("Analysis Cancelled.");
+								pw.setVisible(false);
+								analyzeButton.setEnabled(true);
+								analyzeButton.setText(analyzeButtonDefaultText);
+							} else {
+								int filtered= discFind.getFilteredVariantCount();
+
+								ring= new Ring();
+								ring.addItem("Pass all filters", filtered, Color.LIGHT_GRAY);
+								ring.addItem("Don't pass filters", total - filtered, Color.RED);
+								ringChart.setRings(Arrays.asList(ring));
+								progressPanel.add(ringChart, "wrap", 0);
+
+								progressLabel.setText(total + " total variants, "
+									+ filtered + " variants after filtering");
+							}
+							pw.setVisible(false);
+							return null;
+						}
+
+						@Override
+						protected void showSuccess(Object t) {	
+						/* All updates to display should happen here to be run. */
+							updateVariantPane();
+							analyzeButton.setText(analyzeButtonDefaultText);
+							analysisRunning= false;
+						}
+
+					};
+
+					MSWorker.execute();
+
+				} else if (selectedIndividuals != null && selectedIndividuals.size() == 1
+					&& analysisRunning) {
+					analysisRunning= false;
+					MSWorker.cancel(true);
+					analyzeButton.setEnabled(false);
+					progressLabel.setText("Cancelling Analysis");
+				}
+			}
+		};
+		
+		return outputAL;
+	}
+	
+	
+	/**
+	 * Creates an ActionListener for specific use with the addFilterButton.
+	 * @return the addFilterButton ActionListener
+	 */
+	private ActionListener getAddFilterButtonAL() {
+		ActionListener outputAL= new ActionListener()
+		{		
+			@Override
+			public void actionPerformed (ActionEvent e) {
+				JPopupMenu popupMenu= new JPopupMenu();
+				JMenu filterMenu= new JMenu(addFilterButton.getText());
+
+				for (Object columnName : getDbColumnList()) {
+					final JMenuItem filter= new JMenuItem((String) columnName);
+					filter.addMouseListener(
+						new MouseListener() {
+							@Override
+							public void mousePressed(MouseEvent me) {
+								patientPanel.add(addFilterPanel(filter.getText()), "wrap", 2);
+							}
+							// remaining methods included but do nothing
+							@Override public void mouseExited(MouseEvent me) {}
+							@Override public void mouseReleased(MouseEvent me) {}
+							@Override public void mouseClicked(MouseEvent me) {}
+							@Override public void mouseEntered(MouseEvent me) {}
+						}
+					);
+					filterMenu.add(filter);
+				}
+
+				popupMenu.add(filterMenu);
+				popupMenu.show(addFilterButton, 0, 0);
+			}
+		};
+		
+		return outputAL;
+	}
+	
+	
+	/**
+	 * Creates an ActionListener for specific use with chooseAFColumns
+	 * @return the chooseAFColumns ActionListener
+	 */
+	public ActionListener getChooseAFColumnsAL() {
+		ActionListener outputAL= new ActionListener()
+		{		
+			@Override
+			public void actionPerformed (ActionEvent e) {
+				JScrollPane chooserScrollPane= new JScrollPane(afChooser);
+				chooserScrollPane.setBorder(BorderFactory.createEmptyBorder(2,3,4,1)); // just a little bit of border
+				chooserScrollPane.setBackground(Color.LIGHT_GRAY);
+
+				JDialog f = new JDialog(MedSavantFrame.getInstance(),"Allele Frequency Database selector");
+				f.add(chooserScrollPane);
+				f.setPreferredSize(new Dimension(300, 500));
+				f.setMinimumSize(new Dimension(300, 500));
+				f.setLocationRelativeTo(null);
+				f.setVisible(true);
+			}
+		};
+		
+		return outputAL;
+	}
 	
 	
 	/**
@@ -1045,11 +1086,13 @@ public class DiscoveryPanel extends JPanel {
 		
 		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
+		leftHideButton.setForeground(Color.GRAY);
 		leftHideButton.setSize(leftHideButton.getMinimumSize());
 		leftHideButton.setLocation(0, 0);
 		
 		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
+		rightHideButton.setForeground(Color.GRAY);
 		rightHideButton.setSize(rightHideButton.getMinimumSize());
 		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
 		
@@ -1122,7 +1165,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		// quote-enclosed, comma-delimited list as string
 		String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(
-			chooser.getCheckBoxListSelectedValues()), "\"\t\"") + "\"";
+			afChooser.getCheckBoxListSelectedValues()), "\"\t\"") + "\"";
 		properties.setProperty("af_chooser_list", afChooserStringList);
 		
 		// quote-enclosed, comma-delimited list as string
@@ -1151,49 +1194,54 @@ public class DiscoveryPanel extends JPanel {
 	/**
 	 * Load the properties file if it exists.
 	 */
-	private void loadProperties() throws Exception {
-		File propertiesFile= new File(PROPERTIES_FILENAME);
-		if (!propertiesFile.exists()) {
-			/* Set the defaults. */
-			long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 
-				27)).getTimeInMillis(); // CGD date at time of coding corresponding to the download date of the embedded CGD file
-			
-			properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
-			properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
-			properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
-			
-			properties.setProperty("variant_fetch_limit", Integer.toString(DEFAULT_FETCH_LIMIT));
-			properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
-			properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));
-			properties.setProperty("af_threshold", Double.toString(DEFAULT_AF_THRESHOLD));
-			
-			String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_AF_DB_LIST), "\"\t\"") + "\"";
-			properties.setProperty("af_chooser_list", afChooserStringList);
-			
-			String mutationStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_MUTATIONS), "\"\t\"") + "\"";
-			properties.setProperty("mutation_list", mutationStringList);
-			
-			saveProperties();
-		} else {
-			properties.loadFromXML(new FileInputStream(propertiesFile));
-		}
-		
-		/* Set the parameters from properties. */
-		cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
-		variantFetchLimit= Integer.parseInt(properties.getProperty("variant_fetch_limit"));
-		coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
-		hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
-		afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
+	private void loadProperties() {
+		try {
+			File propertiesFile= new File(PROPERTIES_FILENAME);
+			if (!propertiesFile.exists()) {
+				/* Set the defaults. */
+				long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 
+					27)).getTimeInMillis(); // CGD date at time of coding corresponding to the download date of the embedded CGD file
 
-		String s= properties.getProperty("af_chooser_list");
-		chooserAFArray= (s.substring(1, s.length() - 1)).split("\"\t\"");
-		
-		String s2= properties.getProperty("mutation_list");
-		mutationArray= (s2.substring(1, s2.length() - 1)).split("\"\t\"");
-		
-		// Update CGD file if necessary
-		updateCGD();
-		copyCGD();		
+				properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
+				properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
+				properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
+
+				properties.setProperty("variant_fetch_limit", Integer.toString(DEFAULT_FETCH_LIMIT));
+				properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
+				properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));
+				properties.setProperty("af_threshold", Double.toString(DEFAULT_AF_THRESHOLD));
+
+				String afChooserStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_AF_DB_LIST), "\"\t\"") + "\"";
+				properties.setProperty("af_chooser_list", afChooserStringList);
+
+				String mutationStringList= "\"" + StringUtils.join(Arrays.asList(DEFAULT_MUTATIONS), "\"\t\"") + "\"";
+				properties.setProperty("mutation_list", mutationStringList);
+
+				saveProperties();
+			} else {
+				properties.loadFromXML(new FileInputStream(propertiesFile));
+			}
+
+			/* Set the parameters from properties. */
+			cgdURL= new URL(properties.getProperty("CGD_DB_URL"));
+			variantFetchLimit= Integer.parseInt(properties.getProperty("variant_fetch_limit"));
+			coverageThreshold= Integer.parseInt(properties.getProperty("coverage_threshold"));
+			hetRatio= Double.parseDouble(properties.getProperty("het_ratio"));
+			afThreshold= Double.parseDouble(properties.getProperty("af_threshold"));
+
+			String s= properties.getProperty("af_chooser_list");
+			chooserAFArray= (s.substring(1, s.length() - 1)).split("\"\t\"");
+
+			String s2= properties.getProperty("mutation_list");
+			mutationArray= (s2.substring(1, s2.length() - 1)).split("\"\t\"");
+
+			// Update CGD file if necessary
+			updateCGD();
+			copyCGD();	
+		} catch (Exception e) {
+			System.err.println("[" + this.getClass().getSimpleName() + "]: Error loading properties.");
+			e.printStackTrace();
+		}
 	}
 
 	
@@ -1203,11 +1251,23 @@ public class DiscoveryPanel extends JPanel {
 	private void saveProperties() {
 		try {
 			properties.storeToXML(new FileOutputStream(PROPERTIES_FILENAME), 
-				"Configuration options for incidentalome app");
+				"Configuration options for Discovery app");
 		} catch (Exception e) {
-			System.err.println("[IncidentalPanel]: Error saving properties XML file.");
+			System.err.println("[" + this.getClass().getSimpleName() + "]: Error saving properties XML file.");
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Resets the entire set of properties to defaults.
+	 */
+	private void resetProperties() {
+		File propertiesFile= new File(PROPERTIES_FILENAME);
+		propertiesFile.delete(); // delete existing properties, switches to defaults
+		loadProperties();
+		
+		workview.updateUI(); // May need to update the UI based on these properties.
 	}
 	
 	
@@ -1223,7 +1283,7 @@ public class DiscoveryPanel extends JPanel {
 			if (currentDate.before(urlDate)) {
 				// notify users
 				DateFormat dateFormat= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				System.out.println("[Discovery app]: Existing CGD version from " + 
+				System.out.println("[" + this.getClass().getSimpleName() + "]: Existing CGD version from " + 
 					dateFormat.format(currentDate) + " to be replaced by newer CGD version from " +
 					dateFormat.format(urlDate));
 
@@ -1244,7 +1304,7 @@ public class DiscoveryPanel extends JPanel {
 				saveProperties();
 			}
 		} catch (IOException e) {
-			System.err.println("[Discovery app]: Error when processing CGD URL.");
+			System.err.println("[" + this.getClass().getSimpleName() + "]: Error when processing CGD URL.");
 			e.printStackTrace();
 		}
 	}

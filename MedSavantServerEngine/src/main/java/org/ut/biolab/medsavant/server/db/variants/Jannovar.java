@@ -136,11 +136,12 @@ class Jannovar {
     }
 
     /**
-     * Input the four UCSC files for the KnownGene data.
+	 * Modified from Jannovar
      */
     private static void inputTranscriptModelDataFromRefSeq() {
 		// parse GFF/GTF
 		GFFparser gff = new GFFparser();
+		gff.parse(dirPath + Constants.refseq_gff_hg19);
 		try {
 			transcriptModelList = gff.getTranscriptModelBuilder().buildTranscriptModels();
 		} catch (InvalidAttributException e) {
@@ -158,10 +159,7 @@ class Jannovar {
     }
 
     /**
-     * Inputs the KnownGenes data from UCSC files, convert the resulting
-     * {@link jannovar.reference.TranscriptModel TranscriptModel} objects to
-     * {@link jannovar.interval.Interval Interval} objects, and store these in a
-     * serialized file.
+	 * Modified from Jannovar
      */
     public static void serializeRefSeqData() throws JannovarException {
         SerializationManager manager = new SerializationManager();
