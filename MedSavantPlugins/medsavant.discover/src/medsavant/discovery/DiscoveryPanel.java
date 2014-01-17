@@ -226,6 +226,7 @@ public class DiscoveryPanel extends JPanel {
 	private JRootPane rootPane;
 	private JideButton leftHideButton= new JideButton(LEFT_HIDE_STRING);
 	private JideButton rightHideButton= new JideButton(RIGHT_HIDE_STRING);
+	private VariantSummaryPanel vsp;
     
 	
 	public DiscoveryPanel() {
@@ -488,12 +489,19 @@ public class DiscoveryPanel extends JPanel {
 		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		/* Set up the gene and variant inspectors. */
-		ssp = new SplitScreenPanel(variantPane);
-        vip = new ComprehensiveInspector();
+		ssp= new SplitScreenPanel(variantPane);
+        vip= new ComprehensiveInspector();
 		vip.addClinvarSubInspector();
 		vip.addHGMDSubInspector();
 		vip.addOtherIndividualsVariantSubInspector(ssp);
 		vip.addSocialSubInspector();
+		
+		
+		/* Set up the variant summary panel. */
+		vsp= new VariantSummaryPanel("Variant Summary");
+		vsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		vsp.addOtherIndividualsPane();
+			
 		
 		/* Final window layout along with size preferences. */
 		rootPane= new JRootPane();
@@ -502,8 +510,8 @@ public class DiscoveryPanel extends JPanel {
 		workview= new RoundedPanel(10);
 		workview.setLayout(new MigLayout("", "", "top"));
 		workview.add(patientJSP);
-		workview.add(ssp);
-		workview.add(vip);
+		workview.add(variantPane);
+		workview.add(vsp);
 		contentPane.add(workview);
 		// Draw hide buttons once the component has been shown or resized
 		// because the JLayeredPane from the JRootPane doesn't have a layout to
@@ -797,6 +805,11 @@ public class DiscoveryPanel extends JPanel {
 					vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH,
 						workview.getSize().height));					
 					vip.updateUI();
+					
+					
+					// TESTING
+					vsp.updateOtherIndividualsPane(chr, Long.toString(pos), ref, alt);
+					
                }
             }
         });
@@ -1124,10 +1137,10 @@ public class DiscoveryPanel extends JPanel {
 				public void mouseClicked(MouseEvent me) {
 					if (rightHideButton.getText().equals(RIGHT_HIDE_STRING)) {
 						rightHideButton.setText(LEFT_HIDE_STRING);
-						workview.remove(vip); // remove the patient panel when pressed
+						workview.remove(vsp); // remove the patient panel when pressed
 					} else if (rightHideButton.getText().equals(LEFT_HIDE_STRING)) {
 						rightHideButton.setText(RIGHT_HIDE_STRING);
-						workview.add(vip, -1); // add the patient panel to the end when pressed
+						workview.add(vsp, -1); // add the patient panel to the end when pressed
 					}
 					workview.updateUI();
 				}

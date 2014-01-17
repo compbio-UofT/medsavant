@@ -304,7 +304,7 @@ public class DiscoveryFindings {
 	 * 
 	 * @return	String of gene symbol, null if pattern does not match hgvs text from DB.
 	 */
-	private String getGeneSymbol(Object[] row) {
+	public String getGeneSymbol(Object[] row) {
 		String geneSymbol= null;
 		String hgvsText= (String) row[geneSymbolIndex];
 			
