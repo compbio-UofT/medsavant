@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.manage;
+package org.ut.biolab.medsavant.client.view.app.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -48,8 +48,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import static org.ut.biolab.medsavant.client.view.util.DialogUtils.getFrontWindow;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -58,11 +58,11 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class AnnotationsPage extends SubSectionView {
+public class AnnotationsPage extends SubSection {
     private static final Log LOG = LogFactory.getLog(AnnotationsPage.class);
     private SplitScreenView view;
 
-    public AnnotationsPage(SectionView parent) {
+    public AnnotationsPage(MultiSection parent) {
         super(parent, "Annotations");
     }
 

@@ -41,8 +41,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
@@ -51,14 +51,14 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  *
  * @author tarkvara
  */
-public class ProjectSummaryPage extends SubSectionView {
+public class ProjectSummaryPage extends SubSection {
 
     private static final Log LOG = LogFactory.getLog(ProjectSummaryPage.class);
 
     private final String projectName;
     private final int projectID;
 
-    ProjectSummaryPage(SectionView parent) {
+    ProjectSummaryPage(MultiSection parent) {
         super(parent, "Summary");
         projectName = ProjectController.getInstance().getCurrentProjectName();
         projectID = ProjectController.getInstance().getCurrentProjectID();

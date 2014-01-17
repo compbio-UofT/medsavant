@@ -125,11 +125,11 @@ public class PeekingPanel extends JXCollapsiblePane {
         titlePanel.setToolTipText(s);
         if (!this.isExpanded) {
             this.title.setText(s);
-            title.setFont(ViewUtil.getSmallTitleFont());
+            title.setFont(ViewUtil.getTinyTitleFont());
             panel.setVisible(false);
         } else {
             this.title.setText(s);
-            title.setFont(ViewUtil.getSmallTitleFont());
+            title.setFont(ViewUtil.getTinyTitleFont());
             panel.setVisible(true);
         }
         //panel.setVisible(isExpanded);

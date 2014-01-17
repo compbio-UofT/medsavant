@@ -127,7 +127,6 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         nullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                System.out.println("Encoding from null button");
                 encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1], nullButton.isSelected());
             }
         });
@@ -187,7 +186,6 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (slider.isEnabled()) {
-                    System.out.println("Encoding from slider");
                     fromBox.setText(ViewUtil.numToString(slider.getLow()));
                     toBox.setText(ViewUtil.numToString(slider.getHigh()));
                     encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1], nullButton.isSelected());
@@ -219,7 +217,6 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
             public void caretUpdate(CaretEvent ce) {
                 if (!isAdjustingSlider) {
                     try {
-                        System.out.println("Encoding from caret");
                         encodeValue(ViewUtil.parseDoubleFromFormattedString(fromBox.getText()), ViewUtil.parseDoubleFromFormattedString(toBox.getText()), extremeValues[0], extremeValues[1], nullButton.isSelected());
                     } catch (Exception e) {
                     }
@@ -266,7 +263,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
 
     private void encodeValue(double low, double high, double min, double max, boolean includeNull) {
 
-        LOG.debug("Encoding " + low + " - " + high);
+        //LOG.debug("Encoding " + low + " - " + high);
         String s = NumericConditionEncoder.encodeConditions(low, high, includeNull);
 
         saveSearchConditionParameters(s);

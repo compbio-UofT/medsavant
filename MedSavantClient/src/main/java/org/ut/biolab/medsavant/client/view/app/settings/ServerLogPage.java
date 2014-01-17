@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.manage;
+package org.ut.biolab.medsavant.client.view.app.settings;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -37,8 +37,8 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author mfiume
  */
-public class ServerLogPage extends SubSectionView {
+public class ServerLogPage extends SubSection {
 
     private static final Log LOG = LogFactory.getLog(ServerLogPage.class);
     private static final String CARDNAME_WAIT = "0";
@@ -69,7 +69,7 @@ public class ServerLogPage extends SubSectionView {
     private SearchableTablePanel annotationTable;
     private WaitPanel waitPanel;
 
-    public ServerLogPage(SectionView parent) {
+    public ServerLogPage(MultiSection parent) {
         super(parent, "Logs");
     }
 

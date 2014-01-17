@@ -30,22 +30,22 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class AnalyticsPage extends SubSectionView {
+public class AnalyticsPage extends SubSection {
 
     private JPanel view;
     //private FamilyMattersOptionView fo;
     public static final String PAGE_NAME = "Analytics";
     private final AnalyticsController controller;
 
-    public AnalyticsPage(SectionView parent) {
+    public AnalyticsPage(MultiSection parent) {
         super(parent, PAGE_NAME);
         controller = AnalyticsController.getInstance();
     }

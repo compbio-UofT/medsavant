@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.plugin;
 
@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.shared.util.WebResources;
  * @author mfiume, tarkvara
  */
 public class AppController extends Controller {
-
+    
     private static final Log LOG = LogFactory.getLog(AppController.class);
     private static final String UNINSTALL_FILENAME = ".uninstall_apps";
     private static AppController instance;
@@ -78,7 +78,7 @@ public class AppController extends Controller {
     private AppController() {
         try {
             uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
-
+            
             LOG.debug(String.format("Uninstall list %s.", UNINSTALL_FILENAME));
             if (uninstallFile.exists()) {
                 deleteFileList(uninstallFile);
@@ -144,7 +144,7 @@ public class AppController extends Controller {
                 }
             }
         }
-
+        
         Set<URL> jarURLs = new HashSet<URL>();
         for (AppDescriptor desc : knownPlugins.values()) {
             try {
@@ -156,7 +156,7 @@ public class AppController extends Controller {
         }
         if (jarURLs.size() > 0) {
             pluginLoader = new PluginLoader(jarURLs.toArray(new URL[0]), getClass().getClassLoader());
-
+            
             for (final AppDescriptor desc : knownPlugins.values()) {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     new Thread("PluginLoader-" + desc) {
@@ -175,7 +175,7 @@ public class AppController extends Controller {
             }
         }
     }
-
+    
     public List<AppDescriptor> getDescriptors() {
         List<AppDescriptor> result = new ArrayList<AppDescriptor>();
         result.addAll(knownPlugins.values());
@@ -240,30 +240,34 @@ public class AppController extends Controller {
         in.close();
         out.close();
     }
-
+    
     public MedSavantApp getPlugin(String id) {
         return loadedPlugins.get(id);
     }
-
+    
     public List<MedSavantApp> getPluginsOfClass(Class c) {
         List<MedSavantApp> results = new ArrayList<MedSavantApp>();
         for (AppDescriptor ad : this.getDescriptors()) {
-            MedSavantApp appInstance = getPlugin(ad.getID());
-            if (c.isInstance(appInstance)) {
-                results.add(appInstance);
+            try {
+                MedSavantApp appInstance = getPlugin(ad.getID());
+                if (c.isInstance(appInstance)) {
+                    results.add(appInstance);
+                }
+            } catch (Exception e) {
+                LOG.error("Problem loading App", e);
             }
         }
         LOG.info(results.size() + " apps of class " + c.getSimpleName());
         return results;
     }
-
+    
     public boolean queuePluginForRemoval(String id) {
         FileWriter fstream = null;
         boolean success = false;
         try {
             AppDescriptor info = knownPlugins.get(id);
             LOG.info(String.format("Adding plugin %s to uninstall list %s.", info.getFile().getAbsolutePath(), uninstallFile.getPath()));
-
+            
             if (!uninstallFile.exists()) {
                 uninstallFile.createNewFile();
             }
@@ -273,11 +277,11 @@ public class AppController extends Controller {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(info.getFile().getAbsolutePath() + "\n");
             out.close();
-
+            
             pluginsToRemove.add(id);
-
+            
             fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
-
+            
             success = true;
         } catch (IOException ex) {
             LOG.error(String.format("Error uninstalling plugin: %s.", uninstallFile), ex);
@@ -287,14 +291,14 @@ public class AppController extends Controller {
             } catch (IOException ignored) {
             }
         }
-
+        
         return success;
     }
-
+    
     public boolean isPluginQueuedForRemoval(String id) {
         return pluginsToRemove.contains(id);
     }
-
+    
     public String getPluginStatus(String id) {
         if (pluginsToRemove.contains(id)) {
             return "Queued for removal";
@@ -312,13 +316,13 @@ public class AppController extends Controller {
         }
         return "Unknown";
     }
-
+    
     private void deleteFileList(File fileListFile) {
         BufferedReader br = null;
         String line = "";
         try {
             br = new BufferedReader(new FileReader(fileListFile));
-
+            
             while ((line = br.readLine()) != null) {
                 LOG.info(String.format("Uninstalling %s.", line));
                 if (!new File(line).delete()) {
@@ -335,7 +339,7 @@ public class AppController extends Controller {
         }
         fileListFile.delete();
     }
-
+    
     private void copyBuiltInPlugins() {
         File destDir = DirectorySettings.getPluginsDirectory();
         File srcDir = null;
@@ -357,7 +361,7 @@ public class AppController extends Controller {
             LOG.error(String.format("Unable to copy builtin plugins from %s to %s.", srcDir.getAbsolutePath(), destDir), x);
         }
     }
-
+    
     private void loadPlugin(AppDescriptor desc) throws Throwable {
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
@@ -383,14 +387,14 @@ public class AppController extends Controller {
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
-
+            
             boolean isCompatible;
             try {
                 isCompatible = VersionSettings.isAppSDKCompatibleWithClient(desc.getSDKVersion(), VersionSettings.getVersionString());
             } catch (Exception ex) {
                 throw new PluginVersionException("Could not determine compatibility between " + desc.getSDKVersion() + " and " + VersionSettings.getVersionString());
             }
-
+            
             if (isCompatible) {
                 if (existingDesc != null) {
                     LOG.debug(String.format("   Replaced %s.", existingDesc));
@@ -427,7 +431,7 @@ public class AppController extends Controller {
             LOG.info("Done loading plugin");
         }
     }
-
+    
     private boolean checkForPluginUpdate(String id) {
         try {
             if (repositoryIndex == null) {
@@ -446,16 +450,15 @@ public class AppController extends Controller {
             LOG.error(String.format("Update for %s not loaded.", id));
         }
         return false;
-
-
+        
     }
-
+    
     class PluginLoader extends URLClassLoader {
-
+        
         PluginLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }
-
+        
         void addJar(File f) {
             try {
                 addURL(f.toURI().toURL());

@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.manage;
+package org.ut.biolab.medsavant.client.view.app.settings;
 
 import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.geneset.GeneSetPage;
@@ -26,22 +26,22 @@ import org.ut.biolab.medsavant.client.project.ProjectManagementPage;
 import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
 import org.ut.biolab.medsavant.client.user.UserManagementPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
 
 /**
  *
  * @author mfiume
  */
-public class ManageSection extends SectionView {
+public class ManageSection extends MultiSection {
 
     public ManageSection() {
         super("Admin");
     }
 
     @Override
-    public SubSectionView[] getSubSections() {
-        return new SubSectionView[] {
+    public SubSection[] getSubSections() {
+        return new SubSection[] {
             new UserManagementPage(this),
             new ProjectManagementPage(this),
             new AnnotationsPage(this),

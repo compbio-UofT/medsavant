@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.images;
 
@@ -60,6 +60,7 @@ public class IconFactory {
         SECTION_DATA,
         SECTION_CLINIC,
         MENU_NOTIFY,
+        IMPORT_VCF,
         TRASH,
         DELETE,
         ADD_ON_TOOLBAR,
@@ -109,12 +110,59 @@ public class IconFactory {
         UNDOCK,
         FONT_INCREASE,
         FONT_DECREASE,
-        WAIT
+        WAIT,
+        APP_REGIONS,
+        APP_PANELS,
+        APP_PATIENTS,
+        APP_IMPORTVCF,
+        APP_APPSTORE,
+        APP_VARIANTNAVIGATOR,
+        APP_ADMIN,
+        APP_PHENOTIPS,
+        APP_TASKMANAGER,
+        APP_ACCOUNT,
+        APP_SAVANT,
+        BTN_LEFTARROW,
+        BTN_UPARROW,
+        BTN_MENU,
+        HOME
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/client/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case IMPORT_VCF:
+                return getIcon(iconroot + "import-dd-vcf.png");
+            case HOME:
+                return getIcon(iconroot + "icon-dashboard.png");
+            case BTN_MENU:
+                return getIcon(iconroot + "btn-menu.png");
+            case BTN_LEFTARROW:
+                return getIcon(iconroot + "btn-left.png");
+            case BTN_UPARROW:
+                return getIcon(iconroot + "btn-up.png");
+            case APP_SAVANT:
+                return getIcon(iconroot + "icon-savant.png");
+            case APP_ACCOUNT:
+                return getIcon(iconroot + "icon-user.png");
+            case APP_TASKMANAGER:
+                return getIcon(iconroot + "icon-taskmanager.png");
+            case APP_PHENOTIPS:
+                return getIcon(iconroot + "icon-phenotips.png");
+             case APP_ADMIN:
+                return getIcon(iconroot + "icon-admin.png");
+             case APP_APPSTORE:
+                return getIcon(iconroot + "icon-appstore.png");
+            case APP_VARIANTNAVIGATOR:
+                return getIcon(iconroot + "icon-variantnavigator.png");
+            case APP_IMPORTVCF:
+                return getIcon(iconroot + "icon-importvcf.png");
+            case APP_PATIENTS:
+                return getIcon(iconroot + "icon-patients.png");
+            case APP_REGIONS:
+                return getIcon(iconroot + "icon-regions.png");
+            case APP_PANELS:
+                return getIcon(iconroot + "icon-panels.png");
             case WAIT:
                 return getIcon(iconroot + "wait.gif");
             case SEARCH_PH:

@@ -57,8 +57,8 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory.StandardIcon;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
@@ -81,7 +81,7 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class BrowserPage extends SubSectionView {
+public class BrowserPage extends SubSection {
 
     private static final Log LOG = LogFactory.getLog(BrowserPage.class);
     private JPanel view;
@@ -106,7 +106,7 @@ public class BrowserPage extends SubSectionView {
     private ArrayList<String> sampleIdsHavingBams;
     private HashMap<String, String> dnaIDToURLMap;
 
-    public BrowserPage(SectionView parent) {
+    public BrowserPage(MultiSection parent) {
         super(parent, "Browser");
         instance = this;
 

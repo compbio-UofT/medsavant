@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.manage;
+package org.ut.biolab.medsavant.client.view.app.settings;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -33,8 +33,8 @@ import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.PluginEvent;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 
@@ -43,14 +43,14 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public class PluginPage extends SubSectionView {
+public class PluginPage extends SubSection {
     private static final Log LOG = LogFactory.getLog(PluginPage.class);
     private static AppController controller = AppController.getInstance();
 
     private MedSavantVariantSectionApp plugin;
     private final JPanel view;
 
-    public PluginPage(SectionView parent, final MedSavantVariantSectionApp plugin) {
+    public PluginPage(MultiSection parent, final MedSavantVariantSectionApp plugin) {
         super(parent, plugin.getTitle());
         view = new JPanel();
         view.setLayout(new GridBagLayout());

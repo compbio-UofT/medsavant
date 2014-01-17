@@ -25,7 +25,7 @@
     <parent>
         <groupId>edu.toronto.cs.medsavant</groupId>
         <artifactId>medsavant-parent</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>medsavant-client</artifactId>
     <name>MedSavant - Client application</name>
@@ -162,11 +162,6 @@
             <version>${savant.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.explodingpixels</groupId>
-            <artifactId>mac_widgets</artifactId>
-            <version>0.9.5</version>
-        </dependency>
-        <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout-swing</artifactId>
             <version>4.2</version>
@@ -182,6 +177,34 @@
             <artifactId>savant-analytics</artifactId>
             <version>${savant.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.pushing-pixels</groupId>
+            <artifactId>trident</artifactId>
+            <version>1.2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.javadev.animatingcardlayout</groupId>
+            <artifactId>animatingcardlayout</artifactId>
+            <version>0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.jhlabs</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.explodingpixels</groupId>
+            <artifactId>mac_widgets</artifactId>
+            <version>0.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jgoodies</groupId>
+            <artifactId>forms</artifactId>
+            <version>1.2.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -195,6 +218,10 @@
             </releases>
             <name>Cytoscape Releases</name>
             <url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>vaadin-addons</id>
+            <url>http://maven.vaadin.com/vaadin-addons</url>
         </repository>
     </repositories>
 

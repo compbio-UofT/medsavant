@@ -28,11 +28,11 @@ import javax.swing.JPanel;
  *
  * @author mfiume
  */
-public abstract class SectionView {
+public abstract class MultiSection {
 
     private final String name;
 
-    protected SectionView(String name) {
+    protected MultiSection(String name) {
         this.name = name;
     }
 
@@ -40,7 +40,7 @@ public abstract class SectionView {
         return name;
     }
 
-    public abstract SubSectionView[] getSubSections();
+    public abstract SubSection[] getSubSections();
 
     public JPanel[] getPersistentPanels() {
         return null;

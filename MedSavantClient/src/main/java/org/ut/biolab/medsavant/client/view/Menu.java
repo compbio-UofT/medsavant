@@ -46,9 +46,9 @@ import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView.DockState;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection.DockState;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -60,9 +60,9 @@ public class Menu extends JPanel {
 
     private static final String JOBS_BUTTON_TITLE = "Jobs";
     private static final ImageIcon JOBS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_SERVER);
-    private SubSectionView currentView;
+    private SubSection currentView;
     private final JPanel contentContainer;
-    List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
+    List<SubSection> subSectionViews = new ArrayList<SubSection>();
     private final JPanel primaryMenu;
     private final JPanel secondaryMenu;
     private final JPanel tertiaryMenu;
@@ -71,7 +71,7 @@ public class Menu extends JPanel {
     private final JPanel tertiaryMenuPanelVisibilityContainer;
     private final JPanel tertiaryMenuPanelAccessoryContainer;
     private JPanel previousSectionPanel;
-    private Map<SubSectionView, SubSectionButton> map;
+    private Map<SubSection, SubSectionButton> map;
     private JButton userButton;
     private static final Log LOG = LogFactory.getLog(Menu.class);
     private UpdatesPanel updatesPanel = new UpdatesPanel();
@@ -81,7 +81,7 @@ public class Menu extends JPanel {
         updatesPanel.update();
     }
 
-    public JButton getSubSectionButton(SubSectionView ssv) {
+    public JButton getSubSectionButton(SubSection ssv) {
         return map.get(ssv);
     }
 
@@ -244,7 +244,7 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
-    public void addSection(final SectionView section) {
+    public void addSection(final MultiSection section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
@@ -283,7 +283,7 @@ public class Menu extends JPanel {
 
         ButtonGroup subSectionsGroup = new ButtonGroup();
 
-        for (SubSectionView v : section.getSubSections()) {
+        for (SubSection v : section.getSubSections()) {
             subSectionViews.add(v);
 
             SubSectionButton subSectionButton = new SubSectionButton(v, subSectionsGroup);
@@ -313,7 +313,7 @@ public class Menu extends JPanel {
         }
     }
 
-    public void switchToSubSection(SubSectionView view) {
+    public void switchToSubSection(SubSection view) {
         LOG.debug("Switching to subsection " + view.getPageName());
         if (view.getDockState() == DockState.UNDOCKED) {
             view.focusUndockedFrame();
@@ -325,7 +325,7 @@ public class Menu extends JPanel {
     /**
      * Refreshes the given content pane with content from the subsection view.
      */
-    public void refreshSubSection(JPanel contentPanel, SubSectionView v) {
+    public void refreshSubSection(JPanel contentPanel, SubSection v) {
         contentPanel.removeAll();
         contentPanel.add(v.getDockedView(), BorderLayout.CENTER);
         contentPanel.updateUI();
@@ -361,7 +361,7 @@ public class Menu extends JPanel {
         ViewController.getInstance().changeSubSectionTo(v);
     }
 
-    public void setContentTo(SubSectionView v) {
+    public void setContentTo(SubSection v) {
         if (currentView != v) {
             currentView = v;
             refreshSubSection(contentContainer, currentView);
@@ -393,7 +393,7 @@ public class Menu extends JPanel {
     }
 
     private void resetMap() {
-        map = new HashMap<SubSectionView, SubSectionButton>();
+        map = new HashMap<SubSection, SubSectionButton>();
     }
 
     private JPanel getLoginMenuItem() {
@@ -468,7 +468,7 @@ public class Menu extends JPanel {
 
         private final JPanel panel;
 
-        SectionButton(SectionView v, JPanel p) {
+        SectionButton(MultiSection v, JPanel p) {
             super(v.getName());
             panel = p;
 
@@ -496,10 +496,10 @@ public class Menu extends JPanel {
 
     private class SubSectionButton extends HoverButton {
 
-        private final SubSectionView view;
+        private final SubSection view;
         private final ButtonGroup group;
 
-        SubSectionButton(SubSectionView v, ButtonGroup g) {
+        SubSectionButton(SubSection v, ButtonGroup g) {
             super(v.getPageName());
             view = v;
             group = g;

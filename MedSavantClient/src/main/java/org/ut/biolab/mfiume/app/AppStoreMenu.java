@@ -19,9 +19,6 @@
  */
 package org.ut.biolab.mfiume.app;
 
-import com.explodingpixels.macwidgets.MacButtonFactory;
-import com.explodingpixels.macwidgets.UnifiedToolBar;
-import com.explodingpixels.widgets.WindowUtils;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;

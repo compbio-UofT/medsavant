@@ -35,22 +35,22 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 
 
 /**
  *
  * @author Andrew
  */
-public class VariantFilesPage extends SubSectionView {
+public class VariantFilesPage extends SubSection {
     static final Log LOG = LogFactory.getLog(VariantFilesPage.class);
 
     private SplitScreenView view;
     private boolean updateRequired = false;
     private boolean showPeekOnUnload = false;
 
-    public VariantFilesPage(SectionView parent) {
+    public VariantFilesPage(MultiSection parent) {
         super(parent, "Variant Files");
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override

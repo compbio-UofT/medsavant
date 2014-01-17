@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.dashboard.Dashboard;
 import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
@@ -53,6 +54,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -76,13 +78,15 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Posit
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -106,7 +110,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private static MedSavantFrame instance;
     private AnimatablePanel view;
     private CardLayout viewCardLayout;
-    private JPanel sessionView;
+    private Dashboard sessionDashboard;
     private LoginView loginView;
     private String currentCard;
     private boolean queuedForExit = false;
@@ -178,7 +182,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
-        for (SubSectionView sv : menu.subSectionViews) {
+        for (SubSection sv : menu.subSectionViews) {
             if (sv.getPageName().equalsIgnoreCase("Browser")) {
                 //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
                 dstComponent = menu.getSubSectionButton(sv);
@@ -190,24 +194,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (dstComponent != null) {
             animationFromMousePos(dstComponent, img, notificationMsg);
         }
-
-        /*
-         if(dst != null){
-         //view.cancel();
-         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-         public void done(){
-         if(notificationMsg != null){
-         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-         notificationMessage(notificationMsg);
-         }
-         }
-         });
-
-
-
-         //view.animate(img.getImage(), src, dst);
-         }
-         */
     }
 
     public void notificationMessage(String notificationMsg) {
@@ -298,6 +284,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             customizeForMac();
         }
 
+        LOG.info("Loading apps...");
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
@@ -433,7 +420,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return;
         }
 
-        view.add(new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
+        JPanel waitPanel;
+        view.add(waitPanel = new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
+        waitPanel.setBackground(Color.white);
+        
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -447,24 +437,35 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
             @Override
             protected Void doInBackground() throws Exception {
-                sessionView = new LoggedInView();
-                view.add(sessionView, SESSION_VIEW_CARD_NAME);
 
-                ViewController.getInstance().getMenu().updateLoginStatus();
-                //bottomBar.updateLoginStatus();
+                Dashboard dash = new Dashboard();
+                dash.addDashboardSection(DashboardSectionFactory.getUberSection());
+                dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
+                //dash.addDashboardSection(DashboardSectionFactory.getAppSection());
+                //dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
+
+                sessionDashboard = dash;
+
+                view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
                 switchToView(SESSION_VIEW_CARD_NAME);
+                
                 return null;
             }
         }.execute();
 
     }
+    
+    public Dashboard getDashboard() {
+        return sessionDashboard;
+    }
+
 
     public final void switchToLoginView() {
         if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {
             return;
         }
-        if (sessionView != null) {
-            view.remove(sessionView);
+        if (sessionDashboard != null) {
+            view.remove(sessionDashboard);
         }
 
         if (loginView != null) {
@@ -555,7 +556,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 "TitledBorder.font",
                 "ToolBar.font",
                 "ToolTip.font",
-                "Tree.font"}, new Font("Helvetica Neue", Font.PLAIN, 13));
+                "Tree.font"}, new Font("HelveticaNeue-Light", Font.PLAIN, 13));
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");

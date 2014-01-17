@@ -40,20 +40,20 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SubSectionViewCollection extends SubSectionView {
+public class SubSectionViewCollection extends SubSection {
 
-    Map<String, SubSectionView> subsectionMap;
+    Map<String, SubSection> subsectionMap;
     private JPanel view;
     private List<Component> menuComponents = new ArrayList<Component>();
     private final ButtonGroup buttonGroup;
     private JPanel contentPanel;
-    private SubSectionView currentView;
+    private SubSection currentView;
     private String firstPageName;
     boolean firstPageShown = false;
 
-    public SubSectionViewCollection(SectionView parent, String page) {
+    public SubSectionViewCollection(MultiSection parent, String page) {
         super(parent, page);
-        subsectionMap = new HashMap<String, SubSectionView>();
+        subsectionMap = new HashMap<String, SubSection>();
 
         buttonGroup = new ButtonGroup();
 
@@ -70,7 +70,7 @@ public class SubSectionViewCollection extends SubSectionView {
         return arr;
     }
 
-    public void addSubSectionView(SubSectionView v) {
+    public void addSubSectionView(SubSection v) {
 
         this.subsectionMap.put(v.getPageName(), v);
 
@@ -193,7 +193,7 @@ public class SubSectionViewCollection extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
-        for (SubSectionView v : subsectionMap.values()) {
+        for (SubSection v : subsectionMap.values()) {
             v.viewDidUnload();
         }
     }

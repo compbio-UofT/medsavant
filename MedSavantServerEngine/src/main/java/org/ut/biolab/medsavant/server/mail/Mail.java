@@ -43,10 +43,6 @@ public class Mail {
     static String fallback = "false";
 
     public static void main(String[] args) {
-        System.out.println(CryptoUtils.decrypt("XdJquAMal3XcGsUkmGS9vY/d8CEke2yLD124VsRe4O4="));
-        System.out.println(CryptoUtils.decrypt("OxTfiD1tzb7BvRHGfn+MoA=="));
-        setMailCredentials("marcfiume@gmail.com","fiume2905","smtp.gmail.com",465);
-        System.out.println(Mail.sendEmail("akiroumauro@gmail.com", "Test Subject", "143", null));
     }
 
     public synchronized static boolean sendEmail(String to, String subject, String text) {

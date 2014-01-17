@@ -34,9 +34,9 @@ import org.ut.biolab.medsavant.client.region.RegionPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.manage.ManageSection;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.app.settings.ManageSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 
 
 /**
@@ -68,14 +68,14 @@ public class LoggedInView extends JPanel {
         viewController.selectFirstItem();
     }
 
-    private class ListsSection extends SectionView {
+    private class ListsSection extends MultiSection {
         private ListsSection() {
             super("Tables");
         }
 
         @Override
-        public SubSectionView[] getSubSections() {
-            return new SubSectionView[] {
+        public SubSection[] getSubSections() {
+            return new SubSection[] {
                 new IndividualsPage(this),
                 new CohortsPage(this),
                 new RegionPage(this),

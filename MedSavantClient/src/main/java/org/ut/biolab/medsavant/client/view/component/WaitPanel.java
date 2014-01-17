@@ -32,10 +32,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 
 /**
@@ -61,9 +58,11 @@ public class WaitPanel extends JPanel {
         prog.setMaximumSize(new Dimension(200,25));
 
         statusLabel = new JLabel("");
-
+        
+        statusLabel.setForeground(new Color(100,100,100));
+        
         add(Box.createVerticalGlue());
-        add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, Color.BLACK)));
+        add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, new Color(100,100,100))));
         add(ViewUtil.getCenterAlignedComponent(statusLabel));
         add(Box.createVerticalStrut(5));
         add(ViewUtil.getCenterAlignedComponent(prog));

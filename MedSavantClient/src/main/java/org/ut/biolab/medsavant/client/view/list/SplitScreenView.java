@@ -23,10 +23,8 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
 import com.jidesoft.grid.TableModelWrapperUtils;
-
-import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-
+import javax.swing.BorderFactory;
+import javax.swing.JSplitPane;
 
 /**
  *
@@ -35,7 +33,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class SplitScreenView extends JPanel {
 
     private final DetailedView detailedView;
-    private final MasterView masterView;
+    private final ListView listView;
 
     public SplitScreenView(DetailedListModel model, DetailedView view) {
         this(model, view, new DetailedListEditor());
@@ -46,28 +44,29 @@ public class SplitScreenView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        masterView = new MasterView(view.getPageName(), model, view, editor);
-
-        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, masterView, true, 330);
-        pp.setToggleBarVisible(false);
-        //pp.setBorder(ViewUtil.getRightLineBorder());
-        add(pp, BorderLayout.WEST);
-        add(detailedView, BorderLayout.CENTER);
+        listView = new ListView(view.getPageName(), model, view, editor);
         detailedView.setSplitScreenParent(this);
+        
+        JSplitPane p = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                    listView, detailedView);
+            p.setBorder(BorderFactory.createEmptyBorder());
+            p.setDividerSize(0);
+            p.setDividerLocation(230);
+        add(p,BorderLayout.CENTER);
     }
 
     public void refresh() {
-        masterView.refreshList();
+        listView.refreshList();
     }
 
     public Object[][] getList() {
-        return masterView.data;
+        return listView.data;
     }
 
     public void selectInterval(int start, int end){
-        start = TableModelWrapperUtils.getRowAt(masterView.stp.getTable().getModel(), start);
-        end = TableModelWrapperUtils.getRowAt(masterView.stp.getTable().getModel(), end);
-        masterView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
-        masterView.stp.scrollToIndex(start);
+        start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
+        end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
+        listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
+        listView.stp.scrollToIndex(start);
     }
 }

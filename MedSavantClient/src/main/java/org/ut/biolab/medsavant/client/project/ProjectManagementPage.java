@@ -46,8 +46,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.SectionView;
-import org.ut.biolab.medsavant.client.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -55,13 +55,13 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class ProjectManagementPage extends SubSectionView {
-
+public class ProjectManagementPage extends SubSection {
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
+
     private ProjectController controller = ProjectController.getInstance();
     private SplitScreenView view;
 
-    public ProjectManagementPage(SectionView parent) {
+    public ProjectManagementPage(MultiSection parent) {
         super(parent, "Projects");
         controller.addListener(new Listener<ProjectEvent>() {
             @Override
@@ -88,12 +88,10 @@ public class ProjectManagementPage extends SubSectionView {
         }
         return view;
     }
-
+    
     @Override
     public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
-        //result[0] = getAddPatientsButton();
-
         return result;
     }
 

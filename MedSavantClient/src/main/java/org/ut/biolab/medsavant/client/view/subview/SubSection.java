@@ -43,9 +43,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public abstract class SubSectionView {
+public abstract class SubSection {
 
-    private final SectionView parent;
+    private final MultiSection parent;
     protected final String pageName;
     protected boolean loaded;
     private boolean updateRequired = true;
@@ -141,7 +141,7 @@ public abstract class SubSectionView {
         return updateRequired;
     }
 
-    public SubSectionView(SectionView parent, String page) {
+    public SubSection(MultiSection parent, String page) {
         this.parent = parent;
         pageName = page;
     }
@@ -184,7 +184,7 @@ public abstract class SubSectionView {
         return pageName;
     }
 
-    public SectionView getParent() {
+    public MultiSection getParent() {
         return parent;
     }
 
