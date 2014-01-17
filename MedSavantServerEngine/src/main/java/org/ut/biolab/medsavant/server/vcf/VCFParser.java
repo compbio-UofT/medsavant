@@ -19,13 +19,19 @@
  */
 package org.ut.biolab.medsavant.server.vcf;
 
+import com.google.code.externalsorting.ExternalSort;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -130,6 +136,17 @@ public class VCFParser {
         return parseVariantsFromReader(r, outfile, updateId, fileId, false);
     }
 
+    private Map<String, BufferedWriter> chromOutOfOrderFileMap = new HashMap<String, BufferedWriter>();
+
+    private void writeOutOfOrderLine(String chrom, String[] line, String prefix) throws IOException {
+        BufferedWriter handle = chromOutOfOrderFileMap.get(chrom);
+        if (handle == null) {
+            handle = new BufferedWriter(new FileWriter(prefix + "_" + chrom, true));
+            chromOutOfOrderFileMap.put(chrom, handle);
+        }
+
+    }
+
     /**
      * Like parseVariantsFromReader, but use a pre-parsed header object (useful
      * when reusing a header)
@@ -153,7 +170,12 @@ public class VCFParser {
         String nextLineString;
         int numRecords = 0;
 
+        long previousPosition = -1;
+        String previousChrom = "";
+
+        final String outOfOrderFilename = outfile.getAbsolutePath() + "_ooo";
         BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
+        BufferedWriter outOfOrderHandle = null;
 
         int variantId = 0;
         int numLinesWritten = 0;
@@ -175,7 +197,6 @@ public class VCFParser {
             if (numRecords % 100000 == 0 && numRecords != 0) {
                 LOG.info("Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...");
             }
-
 
             String[] nextLine = nextLineString.split("\t");
 
@@ -211,10 +232,22 @@ public class VCFParser {
                 //add records to tdf
                 for (VariantRecord v : records) {
                     if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
-                        out.write(v.toTabString(updateId, fileId, variantId));
+                        if (previousChrom.equals(v.getChrom()) && v.getStartPosition() < previousPosition) {
+                            if (outOfOrderHandle == null) {
+                                outOfOrderHandle = new BufferedWriter(new FileWriter(outOfOrderFilename, true));
+                            }
+
+                            outOfOrderHandle.write(v.toTabString(updateId, fileId, variantId));
+                            outOfOrderHandle.write("\r\n");
+                            //out of order!
+                        } else {
+                            out.write(v.toTabString(updateId, fileId, variantId));
+                            out.write("\r\n");
+                        }
                         numLinesWritten++;
-                        out.write("\r\n");
                         variantId++;
+                        previousPosition = v.getStartPosition();
+                        previousChrom = v.getChrom();
                     }
                 }
                 numRecords++;
@@ -222,9 +255,83 @@ public class VCFParser {
         }
         out.close();
 
+        if (outOfOrderHandle != null) {
+            outOfOrderHandle.close();
+            LOG.info("Some variants were out of order, sorting and merging...");
+            //sort the out of order file.            
+            mergeUnsortedTDFIntoSortedTDF(outOfOrderFilename, outfile);
+        }
         System.out.println("Read " + numRecords + " lines");
 
         return numLinesWritten;
+    }
+
+    private final static int EXTERNALSORT_MAX_TMPFILES = 128;
+    private final static Charset EXTERNALSORT_CHARSET = Charset.defaultCharset();
+
+    private final static int TDF_INDEX_OF_CHROM = 4;
+    private final static int TDF_INDEX_OF_STARTPOS = 5;
+
+    //Uses ExternalSort so that it can be used with very large files.    
+    static void mergeUnsortedTDFIntoSortedTDF(String unsortedTDF, File sortedTDF) throws IOException {
+        final boolean eliminateDuplicateRows = false;
+        final int numHeaderLinesToExcludeFromSort = 0;
+        //should stay false, due to batch.add(sortedTDF).  (can't mix gzipped
+        //and non-gzipped files).
+        final boolean useGzipForTmpFiles = false;
+
+        //Sorts by chromosome, then position.
+        Comparator comparator = new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                String[] tokens1 = o1.split("\t");
+                String[] tokens2 = o2.split("\t");
+
+                String chr1 = tokens1[TDF_INDEX_OF_CHROM].substring(3);
+                String chr2 = tokens2[TDF_INDEX_OF_CHROM].substring(3);
+                if (chr1.equals(chr2)) {
+                    //strings are quoted.                
+                    long pos1 = Long.parseLong(tokens1[TDF_INDEX_OF_STARTPOS].substring(1, tokens1[TDF_INDEX_OF_STARTPOS].length() - 1));
+                    long pos2 = Long.parseLong(tokens2[TDF_INDEX_OF_STARTPOS].substring(1, tokens2[TDF_INDEX_OF_STARTPOS].length() - 1));
+
+                    if (pos1 < pos2) {
+                        return -1;
+                    } else if (pos1 > pos2) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                } else {                    
+                    int c1 = NumberUtils.isDigits(chr1) ? Integer.parseInt(chr1) : (int) chr1.charAt(0);
+                    int c2 = NumberUtils.isDigits(chr2) ? Integer.parseInt(chr2) : (int) chr2.charAt(0);
+                    return (c1 < c2) ? -1 : ((c1 > c2) ? 1 : 0);
+                }
+            }
+        };
+
+        //Sort the file, producing up to EXTERNALSORT_MAX_TMPFILES temproary 
+        //files.
+        List<File> batch = ExternalSort.sortInBatch(
+                new File(unsortedTDF),
+                comparator,
+                EXTERNALSORT_MAX_TMPFILES,
+                EXTERNALSORT_CHARSET,
+                new File(sortedTDF.getParent()),
+                eliminateDuplicateRows,
+                numHeaderLinesToExcludeFromSort,
+                useGzipForTmpFiles);
+
+        //Merge the temporary files with each other and with sortedTDF
+        batch.add(sortedTDF);
+        String finalOutputFileName = sortedTDF.getCanonicalPath();
+        File outputFile = new File(finalOutputFileName + "_MERGED");
+
+        ExternalSort.mergeSortedFiles(batch, outputFile, comparator, EXTERNALSORT_CHARSET,
+                eliminateDuplicateRows, false, useGzipForTmpFiles);
+
+        if (!outputFile.renameTo(sortedTDF)) {
+            throw new IOException("Can't rename merged file " + outputFile.getCanonicalPath() + " to " + sortedTDF.getCanonicalPath());
+        }
     }
 
     static BufferedReader openFile(File vcf) throws FileNotFoundException, IOException {
@@ -282,7 +389,6 @@ public class VCFParser {
 
         int triedIndex = 0;
         try {
-
 
             String ref = line[VCF_REF_INDEX].toUpperCase();
             String altStr = line[VCF_ALT_INDEX].toUpperCase();
@@ -349,7 +455,6 @@ public class VCFParser {
                 } else {
                     ++numIndels;
                 }
-
 
                 String newAlt;
                 String newRef;
@@ -454,9 +559,6 @@ public class VCFParser {
                             ++numHom;
                         }
                     }
-
-
-
 
                     if (snp) {
                         ++numSnp1;

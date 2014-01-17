@@ -61,7 +61,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     private static PatientManager instance;
 
     @Override
-    public void test(CustomField[] c){
+    public void test(CustomField[] c) throws RemoteException{
         System.out.println("Got custom field "+c[0]);
         System.out.println("Alias: "+c[0].getAlias());
         System.out.println("Col Name: "+c[0].getColumnName());

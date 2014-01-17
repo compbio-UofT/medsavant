@@ -178,7 +178,6 @@ public class BatchVariantAnnotator {
 
             //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
             //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
-
             // read the input, line by line
             String[] inputLine;
 
@@ -272,7 +271,6 @@ public class BatchVariantAnnotator {
         CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
         //LOG.info("Analyzing file to be annotated " + file.getAbsolutePath());
-
         // read the first line
         String[] next = reader.readNext();
         if (next == null) {
@@ -459,24 +457,24 @@ public class BatchVariantAnnotator {
         }
 
         private void annotateWindow(boolean chromMismatch) throws IllegalArgumentException {
-            LOG.info("Annotating window, chromMismatch="+chromMismatch+" numVariantsInWindow="+numVariantsInWindow);
+            System.out.println("Annotating window, chromMismatch=" + chromMismatch + " numVariantsInWindow=" + numVariantsInWindow + ", annotations length=" + annotations.length);
             // Check that records for a given chromosome are sorted by
             // start,end, ref, alt
          /*   if ((currentChrom == null) || !currentChrom.equals(nextInputRecord.chrom)) {
-                currentChrom = nextInputRecord.chrom;
-                previousStart = -1;
-            } else {
-                long start = nextInputRecord.start;
-                if (start < previousStart) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position started at " + previousStart + " but this one starts at " + start + ". Input variant files must be sorted by chromosome and (start) position.");
-                }
-                previousStart = start;
-            } */
+             currentChrom = nextInputRecord.chrom;
+             previousStart = -1;
+             } else {
+             long start = nextInputRecord.start;
+             if (start < previousStart) {
+             throw new IOException(nextInputRecord.toString() + " out of order. The previous position started at " + previousStart + " but this one starts at " + start + ". Input variant files must be sorted by chromosome and (start) position.");
+             }
+             previousStart = start;
+             } */
 
             int ofs = 0;
             // perform each annotation, in turn
             for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
-                System.out.println("\nannotationIndex="+annotationIndex);
+                System.out.println("\nannotationIndex=" + annotationIndex);
                 // get the annotation for this line
                 String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
                 // add it to the output buffer                    
@@ -495,17 +493,16 @@ public class BatchVariantAnnotator {
                 ofs += cursors[annotationIndex].getNumNonDefaultFields();
             }
 
-            
-            for(int i = 0; i < numVariantsInWindow; ++i){
-                recordWriter.writeNext((String[])ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));                
-            }                                  
+            for (int i = 0; i < numVariantsInWindow; ++i) {
+                recordWriter.writeNext((String[]) ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));
+            }
         }
 
         @Override
-        protected void finish(){
+        protected void finish() {
             annotateWindow(false);
         }
-        
+
         @Override
         protected void doIO() throws IOException {
             try {
@@ -513,17 +510,30 @@ public class BatchVariantAnnotator {
                 boolean chromMismatch = false;
                 SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
 
+                if (nextInputRecord.start == 4195698) {
+                    //break.
+                    System.out.println("Got breakpoint");
+
+                }
+
                 if (outputAnnotations == null) {
                     outputAnnotations = new String[VARIANT_WINDOW_SIZE][numFieldsInOutputFile - inputLine.length];
                 }
 
                 if (numVariantsInWindow < VARIANT_WINDOW_SIZE) {
-                    if ((currentChrom == null) || currentChrom.equals(nextInputRecord.chrom)) { //npe 
+                    if ((currentChrom == null) || currentChrom.equals(nextInputRecord.chrom)) { //npe                         )
                         variantWindow[numVariantsInWindow] = nextInputRecord;
                         minStart = Math.min(nextInputRecord.start, minStart);
                         maxEnd = Math.max(nextInputRecord.end, maxEnd);
                         inputLines[numVariantsInWindow] = inputLine;
                         currentChrom = nextInputRecord.chrom;
+                        if (nextInputRecord.start < previousStart) {
+                            //We should never allow the database to enter this unsorted state, so unless 
+                            //there's a bug or the database dump files are corrupt, this error shouldn't occur.
+
+                            throw new IOException("File is out of order, start position " + nextInputRecord.start + " is less than previous position " + previousStart + " on chromosome " + nextInputRecord.chrom + ".  The variant table may be invalid -- please contact the system administrator.");
+                        }
+                        previousStart = nextInputRecord.start;
                         ++numVariantsInWindow;
                         return;
                     } else {
@@ -534,16 +544,23 @@ public class BatchVariantAnnotator {
                 //possibilities: chromMismatch, window size exceeded.
                 annotateWindow(chromMismatch);
 
-                 //finish up
+                //finish up
                 resetWindow();
+                //if (chromMismatch) {
+                //if chrom mismatch, then we can save the last read variant
+                //into the window.
+                numVariantsInWindow = 1;
+                variantWindow[0] = nextInputRecord;
+                currentChrom = nextInputRecord.chrom;
+                previousStart = chromMismatch ? -1 : nextInputRecord.start;
+                minStart = nextInputRecord.start;
+                maxEnd = nextInputRecord.end;
                 if (chromMismatch) {
-                    //if chrom mismatch, then we can save the last read variant
-                    //into the window.
-                    numVariantsInWindow = 1;
-                    variantWindow[0] = nextInputRecord;
-                    chromMismatch = false;
+                    previousStart = -1;
                 }
-            
+                chromMismatch = false;
+                //}
+
             } catch (IllegalArgumentException iex) {
 
                 //TOOD: Change
