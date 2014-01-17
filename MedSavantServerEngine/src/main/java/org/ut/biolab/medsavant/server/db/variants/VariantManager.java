@@ -33,18 +33,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import net.sf.samtools.util.BlockCompressedInputStream;
+import jannovar.exception.JannovarException;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -311,12 +306,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
 
             return updateID;
-        } catch (Exception e) {
+        } catch(JannovarException je){
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID)+ ". " + je.getLocalizedMessage());
+            EmailLogger.logByEmail("Upload failed", "Upload failed with error: " + MiscUtils.getStackTrace(je), email);
+            throw new IllegalArgumentException("Could not annotate variant file: "+je.getLocalizedMessage());
+        }catch (Exception e) {
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID)+ ". " + e.getLocalizedMessage());
 
             EmailLogger.logByEmail("Upload failed", "Upload failed with error: " + MiscUtils.getStackTrace(e), email);
-            LOG.error(e);
+            LOG.error(e);      
             throw e;
         } finally {
             SessionController.getInstance().unregisterSession(backgroundSessionID);
@@ -481,8 +480,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Done zipping");
         }
 
-        // add file to map and send the id back
-        int fileID = NetworkManager.getInstance().openReaderOnServer(backgroundSessionID, file);
+        // add file to map and send the id back 
+        //int fileID = NetworkManager.getInstance().openReaderOnServer(backgroundSessionID, file);
+        int fileID = NetworkManager.getInstance().openReaderOnServer(userSessionID, file);
         return fileID;
     }
 

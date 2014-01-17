@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
@@ -33,6 +33,8 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,8 +60,12 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.Annotation;
+import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
+import org.ut.biolab.medsavant.shared.model.Reference;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
 /**
  *
@@ -68,9 +74,7 @@ import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 public class ProjectManager extends MedSavantServerUnicastRemoteObject implements ProjectManagerAdapter {
 
     private static final Log LOG = LogFactory.getLog(ProjectManager.class);
-
     private static ProjectManager instance;
-
 
     private ProjectManager() throws RemoteException, SessionExpiredException {
     }
@@ -158,6 +162,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                     BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID),
                     BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID)));
             conn.executeUpdate(query2.toString());
+            
+            table = MedSavantDatabase.VariantformatTableSchema;
+            query2 = new DeleteQuery(table.getTable());
+            query2.addCondition(ComboCondition.and(
+                    BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID),
+                    BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID)));
+            conn.executeUpdate(query2.toString());
         } finally {
             conn.close();
         }
@@ -182,19 +193,52 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
+    public int[] getDefaultAnnotationIDs(String sessID, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException {
+        List<Integer> defaultAnnIds = new ArrayList<Integer>();
+        Reference[] refs = ReferenceManager.getInstance().getReferences(sessID);
+        String refStr = null;
+        for (Reference ref : refs) {
+            if (ref.getID() == refID) {
+                refStr = ref.getName();
+                break;
+            }
+        }
+        if (refStr == null) { //can't find reference in database.
+            LOG.error("Reference id " + refID + " is invalid");
+            throw new SQLException("Reference id " + refID + " is invalid");
+        }
+        try {
+            List<AnnotationDownloadInformation> annotations = AnnotationDownloadInformation.getDownloadableAnnotations(VersionSettings.getVersionString(), refStr);
+            for (AnnotationDownloadInformation adi : annotations) {
+                if(adi.isDefault()){
+                    int id = AnnotationManager.getInstance().doInstallAnnotationForProject(sessID, projID, adi);
+                    if(id == -1){
+                        LOG.error("Couldn't install annotation "+adi+" for project "+projID);
+                    }         
+                    defaultAnnIds.add(id);
+                    //break; //DEBUG CODE!  ONLY ALLOWS ONE ANNOTATION TO BE INSTALLED!
+                }
+            }                                
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
+        //return ids of these annotations.
+        return ArrayUtils.toPrimitive(defaultAnnIds.toArray(new Integer[defaultAnnIds.size()]));        
+    }
+    
+    @Override
     public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws RemoteException, SQLException, SessionExpiredException {
         return createVariantTable(sessID, projID, refID, updID, annIDs, staging, false);
     }
 
-    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException, SessionExpiredException {
-
-        // Create basic fields.
+    public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException, SessionExpiredException {               
+        // Create basic fields.        
         String tableName = DBSettings.getVariantTableName(projID, refID, updID);
         if (sub) {
             tableName += "_subset";
         }
         TableSchema variantSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
-        for (CustomField f: getCustomVariantFields(sessID, projID, refID, updID)) {
+        for (CustomField f : getCustomVariantFields(sessID, projID, refID, updID)) {
             variantSchema.addColumn(f);
         }
 
@@ -207,12 +251,15 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
-            for (int ann: annIDs) {
+            int j = 0;
+            for (int ann : annIDs) {
+                annIDs[j++] = ann;
                 AnnotationFormat annFmt = AnnotationManager.getInstance().getAnnotationFormat(sessID, ann);
-                for (CustomField f: annFmt.getCustomFields()) {                    
+                for (CustomField f : annFmt.getCustomFields()) {
                     variantSchema.addColumn(f);
                 }
             }
+
             String updateString;
             if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
 
@@ -225,11 +272,12 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         } finally {
             conn.close();
         }
+                
         return tableName;
     }
 
     @Override
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException{
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
         InsertQuery query = new InsertQuery(variantTableMap.getTable());
@@ -257,7 +305,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 annIDString += id + ",";
             }
             //LOG.info(annIDString);
-            annIDString = annIDString.substring(0,annIDString.length()-1); // remove the last comma
+            annIDString = annIDString.substring(0, annIDString.length() - 1); // remove the last comma
             query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDString);
         }
 
@@ -321,7 +369,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    public void addSubsetInfoToMap(String sessID, int projID, int refID, int updID, String subTableName, float multiplier) throws SQLException, SessionExpiredException{
+    public void addSubsetInfoToMap(String sessID, int projID, int refID, int updID, String subTableName, float multiplier) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -337,8 +385,10 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     private float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException, SessionExpiredException {
         int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
         int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
-        if (denominator == 0) denominator = 1;
-        return (float)numerator / (float)denominator;
+        if (denominator == 0) {
+            denominator = 1;
+        }
+        return (float) numerator / (float) denominator;
     }
 
     @Override
@@ -358,7 +408,6 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         int projID = res.getInt(1);
 
         PatientManager.getInstance().createPatientTable(sessID, projID, fields);
-
         c.close();
         return projID;
     }
@@ -520,7 +569,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addSetClause(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), newName);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
 
     @Override
@@ -671,8 +720,8 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 variantMapTable.getTable(),
                 refTable.getTable(),
                 BinaryConditionMS.equalTo(
-                        refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                        variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
+                refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
@@ -680,7 +729,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
         List<String> references = new ArrayList<String>();
         while (rs.next()) {
-            if (!references.contains(rs.getString(1))){
+            if (!references.contains(rs.getString(1))) {
                 references.add(rs.getString(1));
             }
         }
@@ -708,7 +757,6 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
         return ArrayUtils.toPrimitive(references.toArray(new Integer[0]));
     }
-
 
     /**
      * Remove any variant tables with updateMin <= updateId <= updateMax

@@ -209,9 +209,9 @@ public class SearchableTablePanel extends JPanel {
         filterField = new QuickTableFilterField(model);
 
         if (allowPages) {
-            filterField.setHintText("Type to search page");
+            filterField.setHintText("Search for anything on the page");
         } else {
-            filterField.setHintText("Type to search");
+            filterField.setHintText("Search for anything");
         }
 
         setLayout(new BorderLayout(3, 3));
@@ -221,7 +221,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("Customize Fields");
+        chooseColumnButton = new JButton("Columns");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -230,7 +230,7 @@ public class SearchableTablePanel extends JPanel {
         });
 
         helpButton = ViewUtil.getHelpButton("About Variant List", "Variants are sorted first by DNA ID, then by position.  The list of variants within each page can be sorted by various fields by clicking the corresponding column name, but note that this will only sort the current page.");
-        exportButton = new JButton("Export Page");
+        exportButton = new JButton("Export");
         exportButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -869,6 +869,10 @@ public class SearchableTablePanel extends JPanel {
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_OFF);
     }
 
+	public void setAutoResizeMode(int mode) {
+		table.setAutoResizeMode(mode);
+	}
+	
     public void setHelpButtonVisible(boolean enable) {
         helpButton.setVisible(enable);
     }

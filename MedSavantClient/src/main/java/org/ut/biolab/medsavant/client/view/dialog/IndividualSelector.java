@@ -29,15 +29,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.Box;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -59,6 +56,7 @@ import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import static org.ut.biolab.medsavant.shared.format.BasicPatientColumns.INDEX_OF_HOSPITAL_ID;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.ModificationType;
@@ -66,7 +64,7 @@ import org.ut.biolab.medsavant.shared.model.SimplePatient;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
@@ -111,16 +109,28 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
     private HashSet<Integer> selectedRows;
     private JButton ok;
     private boolean hasMadeSelections;
+	private boolean onlyOnePatient;
 
-    public IndividualSelector() {
-        super(MedSavantFrame.getInstance(), true);
-        setTitle("Select Individuals");
+	
+	/**
+	 * Creates an IndividualSelector patient chooser with the option of selecting
+	 * either a single patient or multiple patients.
+	 * @param onlyOnePatient True if only selecting an individual, false otherwise.
+	 */
+	public IndividualSelector(boolean onlyOnePatient) {
+		super(MedSavantFrame.getInstance(), true);
+		this.onlyOnePatient= onlyOnePatient;	
+        setTitle("Select Individual(s)");
         this.setPreferredSize(new Dimension(700, 600));
         this.setMinimumSize(new Dimension(700, 600));
         selectedHospitalIDs = new HashSet<String>();
         selectedRows = new HashSet<Integer>();
         initUI();
         refresh();
+	}
+	
+	public IndividualSelector() {
+		this(false);
     }
 
     public Set<String> getHospitalIDsOfSelectedIndividuals() {
@@ -152,7 +162,11 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
         p.add(topPanel);
         p.add(middlePanel);
-        p.add(bottomPanel);
+		p.add(bottomPanel);
+		
+		// Only display the bottom panel for multiple patient selection
+		if (onlyOnePatient)
+			bottomPanel.setVisible(false);
 
         // middle
         middlePanel.setLayout(new BorderLayout());
@@ -161,7 +175,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
         individualsSTP = new SearchableTablePanel("Individuals", COLUMN_NAMES, COLUMN_CLASSES, HIDDEN_COLUMNS,
                 true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE, individualsRetriever);
         individualsSTP.setExportButtonVisible(false);
-        
+		
         //If patients or cohorts are edited, update the searchabletable.
         CacheController.getInstance().addListener(new Listener<ModificationType>(){
             @Override
@@ -277,6 +291,22 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                         addIndividuals.setText("Add Selected");
                         removeIndividuals.setText("Remove Selected");
                     }
+					
+					/* Close the dialog if only a single individual is requested. */
+					if (onlyOnePatient && rows.length == 1) {
+						selectedRows.clear();
+						selectedHospitalIDs.clear();
+						
+						selectedRows.add(rows[0]);
+						int realRow = individualsSTP.getActualRowAt(rows[0]);
+						Object[] o = individualsRetriever.getIndividuals().get(realRow);
+						selectedHospitalIDs.add(o[INDEX_OF_HOSPITAL_ID].toString());
+						
+						instance.setVisible(false);
+						setIndividualsChosen(true);
+						
+						individualsSTP.getTable().clearSelection(); // if errors crop up, this line may be causing ListSelectionEvents - can be removed
+					}
                 }
             }
         });

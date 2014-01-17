@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view;
 
@@ -38,6 +38,7 @@ import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import com.explodingpixels.macwidgets.MacUtils;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -48,7 +49,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractButton;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -82,10 +85,15 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
+import org.ut.biolab.mfiume.query.medsavant.complex.OntologyConditionGenerator;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
+import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -115,7 +123,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     //Adds a new function under the 'Debug' menu. The debug menu is not shown if
     //it is empty
     public static void addDebugFunction(String name, Runnable r) {
-        System.out.println("Adding "+name+" to debug menu");
+        System.out.println("Adding " + name + " to debug menu");
         debugFunctions.put(name, r);
     }
 
@@ -302,19 +310,17 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         });
         fileMenu.add(dbManagementItem);
 
-
         JMenuItem appItem = new JMenuItem("App Store");
         appItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-
 
                 showAppStore();
             }
         });
         fileMenu.add(appItem);
 
-
+       
 
         // Debug code that adds a 'Restart' function to the File menu.
         /*
@@ -327,11 +333,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
          });
          fileMenu.add(restartItem);
          */
-
-
         //fileMenu.add(manageDBItem);
-
-
         if (!ClientMiscUtils.MAC) {
             JMenuItem closeItem = new JMenuItem("Exit");
             closeItem.addActionListener(new ActionListener() {
@@ -372,7 +374,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         menuBar.add(viewMenu);
 
-
         JMenu helpMenu = new JMenu("Help");
 
         JMenuItem feedbackItem = new JMenuItem("Send Feedback");
@@ -387,7 +388,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             }
         });
 
-
         helpMenu.add(feedbackItem);
         menuBar.add(helpMenu);
 
@@ -395,7 +395,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         //bottomBar = new BottomBar();
         //add(bottomBar, BorderLayout.SOUTH);
-
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -493,7 +492,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         //if(ThreadController.getInstance().areJobsRunning()){
         //    jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
         //}
-
         if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
             controller.logout();
         }

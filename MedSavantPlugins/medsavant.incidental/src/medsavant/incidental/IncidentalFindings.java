@@ -66,7 +66,7 @@ public class IncidentalFindings {
 	
 	private List<Object[]> allVariants;
 	private TableSchema ts;
-	private List<String> header;
+	public List<String> header;
 	private int effectIndex;
 	private int geneSymbolIndex;
 	private int af1000gIndex;

@@ -94,7 +94,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             NetworkManager netMgr = NetworkManager.getInstance();
             File annotationFile = netMgr.getFileByTransferID(sessionID, transferID);
             File installPath = generateInstallationDirectory();
-            LOG.info("Insalling to " + installPath.getAbsolutePath());
+            LOG.info("Installing to " + installPath.getAbsolutePath());
             /* Path p = Paths.get(annotationFile.getAbsolutePath());
              String fn = p.getFileName().toString();
              File newDestination = new File(installPath,fn);
@@ -110,29 +110,30 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             File doneFile = new File(installPath, "installed.touch");
             doneFile.createNewFile();
 
-            registerAnnotationWithProject(installPath, sessionID);
-
-            return true;
+            //return registerAnnotationWithProject(installPath, sessionID);
+            return (registerAnnotationWithProject(installPath, sessionID) >= 0);
+            
         } catch (Exception ex) {
             LOG.error("Problem installing annotation", ex);
             ex.printStackTrace();
+            //return -1;
+            return false;
         }
-        return false;
-
-
 
     }
-
-    @Override
+    
+    @Override    
     public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) {
-
-        LOG.info("Installing annotation " + info);
-
+        return (doInstallAnnotationForProject(sessID, projectID, info) >= 0);
+    }
+           
+    public int doInstallAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) {
+        
         try {
-
             // if it's not installed
-            if (!checkIfAnnotationIsInstalled(sessID, info)) {
-
+            int i = getInstalledAnnotationID(sessID, info);
+            if (i < 0) {
+                LOG.info("Installing annotation " + info);
                 // is it already downloaded?
                 File installPath = generateInstallationDirectory();
                 File doneFile = new File(installPath, "installed.touch");
@@ -152,20 +153,15 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     LOG.info("Annotation files already on disk");
                 }
 
-                registerAnnotationWithProject(installPath, sessID);
+                i = registerAnnotationWithProject(installPath, sessID);
 
-                LOG.info("Done installing annotation");
-                return true;
-
-                // annotation already installed
-            } else {
-                LOG.info("This annotation is already installed");
-                return false;
-            }
+                LOG.info("Done installing annotation");                              
+            } 
+            return i;
         } catch (Exception ex) {
             LOG.error("Problem installing annotation", ex);
-        }
-        return false;
+            return -1;
+        }        
     }
 
     /*
@@ -532,9 +528,9 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      *
      * @param info The Annotation information (version,reference,etc) for the
      * annotation to check
-     * @return Whether or not this annotation is currently installed
+     * @return The id of the annotation if it is installed, -1 otherwise.
      */
-    private boolean checkIfAnnotationIsInstalled(String sessID, AnnotationDownloadInformation info) throws RemoteException, SQLException, SessionExpiredException {
+    private int getInstalledAnnotationID(String sessID, AnnotationDownloadInformation info) throws RemoteException, SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
         SelectQuery query1 = new SelectQuery();
@@ -550,7 +546,11 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         ResultSet rs1 = ConnectionController.executeQuery(sessID, query1.toString());
 
         // true if there is a match and false otherwise
-        return rs1.next();
+        if(rs1.next()){
+            return rs1.getInt("annotation_id");
+        }else{
+            return -1;
+        }        
     }
 
     @Override
@@ -605,7 +605,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         while (true) {
             dir = new File(localDirectory.getAbsolutePath(), i + "");
             if (!dir.exists()) {
-                dir.mkdir();
+                dir.mkdirs();
                 return dir;
             }
             i++;
@@ -613,7 +613,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         //return new File(localDirectory.getAbsolutePath() + "/" + programName + "_" + version + "_" + reference);
     }
 
-    private static void registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException, SessionExpiredException {
+    private static int registerAnnotationWithProject(File dir, String sessionID) throws RemoteException, SAXException, SQLException, IOException, ParserConfigurationException, SessionExpiredException {
         LOG.info("Parsing format...");
         AnnotationFormat format = parseFormat(getTabixFile(dir), getFormatFile(dir));
         LOG.info("... DONE");
@@ -644,6 +644,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         conn.close();
 
         LOG.info("Installed to " + dir.getAbsolutePath());
+        return id;
     }
 
     private File getInstallationDirectoryFromID(String sessID, int annotationID) throws SQLException, SessionExpiredException {

@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.project;
 
@@ -39,6 +39,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.awt.BorderLayout;
+import java.util.Arrays;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.ArrayUtils;
@@ -58,6 +60,7 @@ import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ProjectWorker;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -74,7 +77,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
     private static final String PAGENAME_NOTIFICATIONS = "Notifications";
-    private static final String PAGENAME_COMPLETE = "Complete";
+    private static final String PAGENAME_COMPLETE = "Finish";
     private static String PAGENAME_CREATE = "Create";
     private final boolean modify;
     private boolean isModified = false;
@@ -103,8 +106,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         this.customFields = fields;
         this.projectDetails = details;
         PAGENAME_CREATE = "Modify";
-        manager = MedSavantClient.ProjectManager;           
-        setupWizard();                
+        manager = MedSavantClient.ProjectManager;
+        setupWizard();
     }
 
     /*
@@ -538,6 +541,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                         LOG.info("Requesting modification from server");
                         modifyProject(true, true, true, this);
                         LOG.info("Modification complete");
+                        if (isAutoPublish()) {                            
+                            MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
+                            LOG.info("Released lock");
+                        }
                         return null;
                     }
                 }.execute();
@@ -560,6 +567,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private AbstractWizardPage getCompletionPage() {
+        final ProgressWheel pw = new ProgressWheel();
+        final JPanel p = new JPanel();
+        p.setOpaque(false);
+        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
         final CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
             public void setupWizardButtons() {
@@ -584,7 +595,11 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
                         @Override
                         protected void done() {
+                            pw.setComplete();
+                            p.setVisible(true);
                             fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
+                            revalidate();
+                            repaint();
                         }
                     }.execute();
                 }
@@ -594,7 +609,18 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         if (modify) {
             page.addText("You have completed the project modification process.");
         } else {
-            page.addText("The project has been created.");
+            page.addText("Creating project...");
+            page.addComponent(pw);
+            p.add(new JLabel("Complete."));
+            p.add(Box.createHorizontalGlue());
+            page.addComponent(p);
+            p.setVisible(false);
+
+            /*p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+             p.add(pw, Box.createHorizontalGlue());
+             p.add(pw, BorderLayout.CENTER);
+             p.add(pw, Box.createHorizontalGlue());
+             page.addComponent(p);*/
         }
 
         return page;
@@ -684,6 +710,14 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         return null;
     }
 
+    private int[] mergeAnnIDsWithDefaults(int[] annIDs, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException {
+        int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getInstance().getSessionID(), projID, refID);
+        Set<Integer> a = new HashSet<Integer>();
+        a.addAll(Arrays.asList(ArrayUtils.toObject(annIDs)));
+        a.addAll(Arrays.asList(ArrayUtils.toObject(defaults)));
+        return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));
+    }
+
     private void createNewProject() throws Exception {
         //create project
         int projID = ProjectController.getInstance().addProject(projectName, customFields);
@@ -695,15 +729,13 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 //set custom vcf fields
                 int refID = cli.getReference().getID();
                 manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projID, refID, 0, variantFields);
-
-                int[] annIDs = cli.getAnnotationIDs();
+                int[] annIDs = mergeAnnIDsWithDefaults(cli.getAnnotationIDs(), projID, refID);
                 String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projID, refID, 0, annIDs, false);
                 manager.addTableToMap(LoginController.getInstance().getSessionID(), projID, refID, 0, true, tablename, annIDs, null);
             }
         }
     }
 
-    
     private int modifyProject(boolean modifyProjectName, boolean modifyPatientFields, boolean modifyVariants, ProjectWorker projectWorker) throws Exception {
         int updateID = -1;
 
@@ -725,31 +757,34 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             for (CheckListItem cli : checkListItems) {
                 ProjectDetails pd = getProjectDetails(cli.getReference().getID());
 
+                LOG.info("Processing ref id " + cli.getReference().getID());
                 //skip if not selected and not existing
                 if (!cli.isSelected() && pd == null) {
+                    LOG.info("Skipping this ref");
                     continue;
                 }
 
-                //get annotation ids
                 int[] annIDs = cli.getAnnotationIDs();
 
-
                 //add new ref
-                if (pd == null && cli.isSelected()) {                   
+                if (pd == null && cli.isSelected()) {
                     int refID = cli.getReference().getID();
-                    String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projectID, refID, 0, annIDs, false);                    
-                    manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projectID, refID, 0, variantFields);                    
+                    LOG.info("Adding reference with id " + refID);
+                    annIDs = mergeAnnIDsWithDefaults(annIDs, projectID, refID);
+                    String tablename = manager.createVariantTable(LoginController.getInstance().getSessionID(), projectID, refID, 0, annIDs, false);
+                    manager.setCustomVariantFields(LoginController.getInstance().getSessionID(), projectID, refID, 0, variantFields);
                     manager.addTableToMap(LoginController.getInstance().getSessionID(), projectID, refID, 0, true, tablename, annIDs, null);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
                     //remove existing ref
+                    LOG.info("Removing reference with id " + cli.getReference().getID());
                     manager.removeReferenceForProject(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID());
                     continue;
                 }
-                
+
                 String email = this.emailField.getText();
-                //boolean autoPublishWhenComplete = this.autoPublish.isSelected();
-                boolean autoPublishWhenComplete = false;                
+                boolean autoPublishWhenComplete = this.autoPublish.isSelected();
+                //boolean autoPublishWhenComplete = false;
                 updateID = MedSavantClient.VariantManager.updateTable(LoginController.getInstance().getSessionID(), projectID, cli.getReference().getID(), annIDs, variantFields, autoPublishWhenComplete, email);
             }
         }
