@@ -95,12 +95,15 @@ class Jannovar {
             outname = outname.substring(0, i) + "jv.vcf";
         }
         
-		//File outFile = new File(DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()),outname);
 		File outFile= new File(outname);
 		
 		jannovar.Jannovar.main(new String[] {"-D", Jannovar.getJannovarDirectoryPath() 
 			+ File.separator + serializationFileName, "-V", sourceVCF.getAbsolutePath()});
 
+		/* Since we can't seem to specify the output directory for Jannovar
+		 * VCF files, once the file is created, move it to the temp directory. */
+		outFile.renameTo(new File(DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()),outname));
+		
         LOG.info("[Jannovar] Wrote annotated VCF file to \"" + outFile.getAbsolutePath() + "\"");
 
         return outFile;
