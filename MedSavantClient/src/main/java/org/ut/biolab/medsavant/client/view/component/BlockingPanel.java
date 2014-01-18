@@ -32,11 +32,12 @@ public final class BlockingPanel extends JPanel {
     private CardLayout cardLayout = new CardLayout();
     private static String BLOCK_CARD_NAME = "block";
     private static String CONTENT_CARD_NAME = "content";
+    private final WaitPanel blockCard;
 
 
     public BlockingPanel(String blockMessage, JPanel content) {
         setLayout(cardLayout);
-        WaitPanel blockCard = new WaitPanel(blockMessage);
+        blockCard = new WaitPanel(blockMessage);
         blockCard.setTextColor(Color.gray);
         blockCard.setProgressBarVisible(false);
         add(blockCard,BLOCK_CARD_NAME);
@@ -55,4 +56,5 @@ public final class BlockingPanel extends JPanel {
     private void showCard(String card) {
         cardLayout.show(this, card);
     }
+    
 }

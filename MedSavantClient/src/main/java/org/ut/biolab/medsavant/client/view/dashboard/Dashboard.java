@@ -161,13 +161,14 @@ public class Dashboard extends JPanel {
 
             if (!s.getName().equals("Apps")) {
                 JLabel l = new JLabel(s.getName());
+                l.setForeground(new Color(64,64,64));
                 l.setFont(ViewUtil.getBigTitleFont());
-                middlePane.add(l, "wrap, center");
+                middlePane.add(l, "wrap, center, gapy 0");
             }
 
             JPanel appPlaceholder = ViewUtil.getClearPanel();
 
-            MigLayout layout = new MigLayout(String.format("gapx %d, gapy %d, wrap %d", gapHorizontal, gapVertical, numIconsPerRow));
+            MigLayout layout = new MigLayout(String.format("gapx %d, gapy %d, wrap %d, insets 0", gapHorizontal, gapVertical, numIconsPerRow));
             appPlaceholder.setLayout(layout);
             for (DashboardApp launcher : s.getApps()) {
                 appPlaceholder.add(getRepresentationForLauncher(launcher));

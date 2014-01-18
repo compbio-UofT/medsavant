@@ -39,48 +39,7 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
         return status.toString();
     }
 
-    enum TaskStatus {
-        UNSTARTED {
-
-            @Override
-            public String toString() {
-                return "Not started";
-            }
-            
-        },
-        INPROGRESS {
-
-            @Override
-            public String toString() {
-                return "Running";
-            }
-            
-        },
-        FINISHED {
-
-            @Override
-            public String toString() {
-                return "Done";
-            }
-            
-        },
-        CANCELLED {
-
-            @Override
-            public String toString() {
-                return "Cancelled";
-            }
-            
-        },
-        ERROR {
-
-            @Override
-            public String toString() {
-                return "Error";
-            }
-            
-        },
-    }
+    
 
     /**
      * Add a string log to this task. Use to indicate which step a task is on.
@@ -90,6 +49,15 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
     public void addLog(String s) {
         taskLog.add((new Date().toString() + " - " + s));
         taskUpdated();
+    }
+    
+    /**
+     * Get the log
+     * @return A list of string logs
+     */
+    @Override
+    public List<String> getLog() {
+        return taskLog;
     }
 
     /**
@@ -105,15 +73,17 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
      * Set the status for this task
      * @param taskStatus 
      */
-    final void setStatus(TaskStatus taskStatus) {
+    public final void setStatus(TaskStatus taskStatus) {
         this.status = taskStatus;
+        taskUpdated();
     }
     
     public BackgroundTaskWorker(LaunchableApp owner) {
         taskLog = new ArrayList<String>();
         this.owner = owner;
-        setStatus(TaskStatus.UNSTARTED);
         listeners = new ArrayList<Listener<TaskWorker>>();
+        
+        setStatus(TaskStatus.UNSTARTED);
         AppDirectory.getTaskManager().submitTask(this);
     }
     
@@ -123,7 +93,7 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
      */
     public void start() {
         this.startDate = new Date();
-        setStatus(TaskStatus.INPROGRESS);
+        setStatus(TaskStatus.INPROGRESS); // calls taskUpdated, so no need to call it separately
         super.execute();
     }
     
@@ -133,7 +103,7 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
     @Override
     public void cancel() {
         this.stopDate = new Date();
-        setStatus(TaskStatus.CANCELLED);
+        setStatus(TaskStatus.CANCELLED); // calls taskUpdated, so no need to call it separately
         super.cancel(true);
     }
     
@@ -154,9 +124,8 @@ public abstract class BackgroundTaskWorker extends SwingWorker<Void,Void> implem
     }
     
     @Override
-    public String getCurrentStatus() {
-        if (taskLog.isEmpty()) { return ""; }
-        return this.taskLog.get(taskLog.size()-1);
+    public TaskStatus getCurrentStatus() {
+        return status;
     }
     
     @Override

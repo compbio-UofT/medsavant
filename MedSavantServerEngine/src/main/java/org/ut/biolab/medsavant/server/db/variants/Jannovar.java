@@ -1,14 +1,19 @@
 package org.ut.biolab.medsavant.server.db.variants;
 
 import jannovar.annotation.AnnotationList;
+import jannovar.common.Constants;
+import jannovar.common.Constants.Release;
 import jannovar.exception.AnnotationException;
 import jannovar.exception.FileDownloadException;
+import jannovar.exception.InvalidAttributException;
 import jannovar.exception.JannovarException;
 import jannovar.exception.VCFParseException;
 import jannovar.exome.Variant;
+import jannovar.io.FastaParser;
+import jannovar.io.GFFparser;
+import jannovar.io.RefSeqFastaParser;
 import jannovar.io.SerializationManager;
 import jannovar.io.TranscriptDataDownloader;
-import jannovar.io.UCSCKGParser;
 import jannovar.io.VCFLine;
 import jannovar.io.VCFReader;
 import jannovar.reference.Chromosome;
@@ -20,6 +25,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -36,7 +42,7 @@ class Jannovar {
     private static HashMap<Byte, Chromosome> chromosomeMap;
     private static String dirPath;
     private static ArrayList<TranscriptModel> transcriptModelList = null;
-    private static final String UCSCserializationFileName = "ucsc.ser";
+    private static final String serializationFileName = "refseq_hg19.ser";
 
     /**
      * The main entry point to this class
@@ -83,10 +89,10 @@ class Jannovar {
         }
 
         // download the serizalized files, if needed
-        if (!hasSerializedFile(UCSCserializationFileName)) {
+        if (!hasSerializedFile(serializationFileName)) {
             LOG.info("Downloading Jannovar annotation files");
             try {
-                downloadSerializedFile(jannovar.common.Constants.UCSC);
+                downloadSerializedFile(jannovar.common.Constants.REFSEQ);
             } catch (JannovarException e) {
                 dir.delete();
                 LOG.error(e);
@@ -108,10 +114,10 @@ class Jannovar {
      * Download the Jannovar serialized annotation file.
      */
     private static void downloadSerializedFile(int sourceDB) throws JannovarException {
-        if (sourceDB == jannovar.common.Constants.UCSC) {
-            downloadTranscriptFiles(jannovar.common.Constants.UCSC);
-            inputTranscriptModelDataFromUCSCFiles();
-            serializeUCSCdata();
+        if (sourceDB == jannovar.common.Constants.REFSEQ) {
+            downloadTranscriptFiles(jannovar.common.Constants.REFSEQ);
+            inputTranscriptModelDataFromRefSeq();
+            serializeRefSeqData();
         } else {
             throw new JannovarException("VCFAnnotationWizard: Currently unsupported DB specified");
         }
@@ -126,16 +132,29 @@ class Jannovar {
     private static void downloadTranscriptFiles(int source) throws FileDownloadException {
         TranscriptDataDownloader downloader = null;
         downloader = new TranscriptDataDownloader(dirPath);
-        downloader.downloadTranscriptFiles(source);
+        downloader.downloadTranscriptFiles(source, Release.HG19);
     }
 
     /**
      * Input the four UCSC files for the KnownGene data.
      */
-    private static void inputTranscriptModelDataFromUCSCFiles() {
-        UCSCKGParser parser = new UCSCKGParser(dirPath);
-        parser.parseUCSCFiles();
-        transcriptModelList = parser.getKnownGeneList();
+    private static void inputTranscriptModelDataFromRefSeq() {
+		// parse GFF/GTF
+		GFFparser gff = new GFFparser();
+		try {
+			transcriptModelList = gff.getTranscriptModelBuilder().buildTranscriptModels();
+		} catch (InvalidAttributException e) {
+			System.out.println("[Jannovar] Unable to input data from the Refseq files");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		// add sequences
+		FastaParser efp = new RefSeqFastaParser(dirPath + Constants.refseq_rna, transcriptModelList);
+		int before	= transcriptModelList.size();
+		transcriptModelList = efp.parse();
+		int after = transcriptModelList.size();
+		LOG.info(String.format("[Jannovar] removed %d (%d --> %d) transcript models w/o rna sequence",
+						before-after,before, after));
     }
 
     /**
@@ -144,12 +163,13 @@ class Jannovar {
      * {@link jannovar.interval.Interval Interval} objects, and store these in a
      * serialized file.
      */
-    public static void serializeUCSCdata() throws JannovarException {
+    public static void serializeRefSeqData() throws JannovarException {
         SerializationManager manager = new SerializationManager();
-        LOG.info("[Jannovar] Serializing known gene data as " + UCSCserializationFileName);
-        manager.serializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName, transcriptModelList);
+        LOG.info("[Jannovar] Serializing known gene data as " + serializationFileName);
+        manager.serializeKnownGeneList(dirPath + File.separator + serializationFileName, transcriptModelList);
     }
 
+	
     /**
      * Uses Jannovar to create a new VCF file and sends that file to server. The
      * Jannovar VCF file is subsequently removed (treated as temporary data)
@@ -158,7 +178,7 @@ class Jannovar {
      */
     private static File annotateVCFWithJannovar(File sourceVCF) throws JannovarException, IOException {
         chromosomeMap = Chromosome.constructChromosomeMapWithIntervalTree(
-                sManager.deserializeKnownGeneList(dirPath + File.separator + UCSCserializationFileName));
+                sManager.deserializeKnownGeneList(dirPath + File.separator + serializationFileName));
 
         /* Annotated VCF name as determined by Jannovar. */
         String outname = sourceVCF.getName();
@@ -173,16 +193,14 @@ class Jannovar {
         }
         File outFile = new File(DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()),outname);
 
-        VCFReader parser = new VCFReader();
+        VCFReader parser = new VCFReader(sourceVCF.getAbsolutePath());
         VCFLine.setStoreVCFLines();
         try {
-            parser.parseFile(sourceVCF.getAbsolutePath());
+            parser.parseFile();
         } catch (VCFParseException e) {
             LOG.error("[Jannovar] Unable to parse VCF file");
             LOG.error(e.toString());
         }
-
-        ArrayList<VCFLine> lineList = parser.getVCFLineList();
 
         FileWriter fstream = new FileWriter(outFile.getAbsolutePath());
         BufferedWriter out = new BufferedWriter(fstream);
@@ -194,18 +212,18 @@ class Jannovar {
         for (String s : lst) {
             out.write(s + "\n");
         }
-
-        /**
-         * Now write each of the variants.
-         */
-        for (VCFLine line : lineList) {
-            Variant v = parser.VCFline2Variant(line);
-            try {
-                annotateVCFLine(line, v, out);
-            } catch (AnnotationException e) {
-                LOG.error("[Jannovar] Warning: Annotation error: " + e.toString());
-            }
-        }
+		
+		/** Now write each of the variants. */
+	    Iterator<VCFLine> iter = parser.getVCFLineIterator();
+	    while(iter.hasNext()){
+			VCFLine line = iter.next();
+			Variant v = line.toVariant();
+				try {
+				annotateVCFLine(line,v,out);
+			} catch (AnnotationException e) {
+				System.out.println("[Jannovar] Warning: Annotation error: " + e.toString());
+			}
+	    }
 
         out.close();
 

@@ -29,7 +29,7 @@ class TopMenu extends JPanel {
     public TopMenu() {
         
         this.setBackground(new Color(221,221,221));
-        this.setBorder(BorderFactory.createEmptyBorder());
+        this.setBorder(ViewUtil.getBottomLineBorder());
         
         leftComponent = ViewUtil.getClearPanel();
         leftComponent.setLayout(new MigLayout("insets 0, nogrid"));
@@ -50,6 +50,8 @@ class TopMenu extends JPanel {
         this.add(leftComponent,"width 20%");
         this.add(centerComponent, "width 60%, center");
         this.add(rightComponent, "width 20%");
+        
+        
     }
 
     void addLeftComponent(JComponent c) {
