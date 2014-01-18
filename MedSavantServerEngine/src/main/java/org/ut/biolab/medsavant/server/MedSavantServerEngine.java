@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.server;
 
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
 import org.ut.biolab.medsavant.server.serverapi.LogManager;
 import org.ut.biolab.medsavant.server.serverapi.NotificationManager;
@@ -379,7 +380,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         System.out.print("Initializing server registry ... ");
         System.out.flush();
 
-        registry.rebind(SESSION_MANAGER, SessionController.getInstance());
+        registry.rebind(SESSION_MANAGER, SessionManager.getInstance());
         registry.rebind(CUSTOM_TABLES_MANAGER, CustomTables.getInstance());
         registry.rebind(ANNOTATION_MANAGER, AnnotationManager.getInstance());
         registry.rebind(COHORT_MANAGER, CohortManager.getInstance());

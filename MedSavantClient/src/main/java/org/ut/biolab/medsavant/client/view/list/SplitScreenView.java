@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import com.jidesoft.grid.TableModelWrapperUtils;
 import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -47,8 +48,13 @@ public class SplitScreenView extends JPanel {
         listView = new ListView(view.getPageName(), model, view, editor);
         detailedView.setSplitScreenParent(this);
         
+        JPanel listViewContainer = ViewUtil.getClearPanel();
+        listViewContainer.setLayout(new BorderLayout());
+        listViewContainer.setBorder(ViewUtil.getRightLineBorder());
+        listViewContainer.add(listView,BorderLayout.CENTER);
+        
         JSplitPane p = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                    listView, detailedView);
+                    listViewContainer, detailedView);
             p.setBorder(BorderFactory.createEmptyBorder());
             p.setDividerSize(0);
             p.setDividerLocation(230);

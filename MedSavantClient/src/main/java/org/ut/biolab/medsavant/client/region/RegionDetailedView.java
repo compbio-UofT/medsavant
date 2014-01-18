@@ -50,7 +50,6 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
     public RegionDetailedView(String page) {
         super(page, "", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
         controller = RegionController.getInstance();
-        
     }
 
     @Override

@@ -48,7 +48,7 @@ public abstract class DetailedView extends JPanel {
         setLayout(new BorderLayout());
 
         contentPanel = new JPanel();
-        contentPanel.setBorder(ViewUtil.getMediumBorder());
+        //contentPanel.setBorder(ViewUtil.getMediumBorder());
 
         add(contentPanel, BorderLayout.CENTER);
 

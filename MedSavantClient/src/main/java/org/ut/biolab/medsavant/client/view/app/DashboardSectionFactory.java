@@ -80,7 +80,7 @@ public class DashboardSectionFactory {
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
-        s.addDashboardApp(new PhenotipsApp());
+        //s.addDashboardApp(new PhenotipsApp());
 
         s.addDashboardApp(new AppStoreApp());
 
@@ -144,7 +144,7 @@ public class DashboardSectionFactory {
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
-        s.addDashboardApp(new PhenotipsApp());
+        //s.addDashboardApp(new PhenotipsApp());
 
 
         s.addDashboardApp(new SettingsApp());

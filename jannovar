@@ -1,0 +1,57 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] MedSavant - Parent POM
+[INFO] MedSavant - Utilities
+[INFO] Savant - Utilities - Analytics
+[INFO] MedSavant - Shared libraries between the client and the server
+[INFO] MedSavant - Server engine
+[INFO] MedSavant - Client application
+[INFO] MedSavant - Distributions
+[INFO] MedSavant - Server - Zip Distribution
+[INFO] MedSavant - Server - Debian Distribution
+[INFO] MedSavant - Client - Zip Distribution
+[INFO] MedSavant - Client - Cross-platform Installer Distribution
+[INFO] MedSavant - Client - Windows Installer Distribution
+[INFO] MedSavant - Client - Debian Distribution
+[INFO] MedSavant - Client - DMG Distribution
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building MedSavant - Parent POM 1.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-deploy-plugin:2.7:deploy-file (default-cli) @ medsavant-parent ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] MedSavant - Parent POM ............................ FAILURE [0.135s]
+[INFO] MedSavant - Utilities ............................. SKIPPED
+[INFO] Savant - Utilities - Analytics .................... SKIPPED
+[INFO] MedSavant - Shared libraries between the client and the server  SKIPPED
+[INFO] MedSavant - Server engine ......................... SKIPPED
+[INFO] MedSavant - Client application .................... SKIPPED
+[INFO] MedSavant - Distributions ......................... SKIPPED
+[INFO] MedSavant - Server - Zip Distribution ............. SKIPPED
+[INFO] MedSavant - Server - Debian Distribution .......... SKIPPED
+[INFO] MedSavant - Client - Zip Distribution ............. SKIPPED
+[INFO] MedSavant - Client - Cross-platform Installer Distribution  SKIPPED
+[INFO] MedSavant - Client - Windows Installer Distribution  SKIPPED
+[INFO] MedSavant - Client - Debian Distribution .......... SKIPPED
+[INFO] MedSavant - Client - DMG Distribution ............. SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.434s
+[INFO] Finished at: Thu Jan 16 10:12:46 EST 2014
+[INFO] Final Memory: 7M/81M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file (default-cli) on project medsavant-parent: The artifact information is incomplete or not valid:
+[ERROR] [0]  'artifactId' is missing.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

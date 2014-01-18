@@ -1000,6 +1000,13 @@ public final class ViewUtil {
         return l;
     }
 
+    public static JLabel getLargeGrayLabel(String n) {
+        JLabel l = new JLabel(n);
+        l.setFont(ViewUtil.getBigTitleFont());
+        l.setForeground(new Color(64,64,64));
+        return l;
+    }
+
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
      p.setBackground(new Color(100,100,100));
@@ -1133,7 +1140,7 @@ public final class ViewUtil {
     public final static Color detailForeground = new Color(10, 10, 10);
     public final static Color detailBackground = Color.white;
     public final static Color detailSelectedBackground = new Color(92, 168, 229);
-    public final static Color evenRowColor = Color.white;//new Color(250,250,250);
+    public final static Color evenRowColor = new Color(250,250,250);
     public final static Color oddRowColor = new Color(242, 245, 249);//new Color(235,235,235);
 
     public static JPanel getKeyValuePairList(String[][] keyPairs) {

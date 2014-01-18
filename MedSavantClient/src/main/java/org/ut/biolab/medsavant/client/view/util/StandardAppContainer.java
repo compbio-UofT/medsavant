@@ -6,6 +6,7 @@
 package org.ut.biolab.medsavant.client.view.util;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
@@ -25,9 +26,10 @@ public class StandardAppContainer extends JPanel {
     
     public StandardAppContainer(JPanel view, boolean doesScroll) {
         
-        JPanel paddedContainer = new JPanel();
+        JPanel paddedContainer = ViewUtil.getClearPanel();
         paddedContainer.setLayout(new MigLayout("fillx, filly"));
 
+        this.setBackground(Color.white);
         this.setLayout(new BorderLayout());
 
         if (doesScroll) {

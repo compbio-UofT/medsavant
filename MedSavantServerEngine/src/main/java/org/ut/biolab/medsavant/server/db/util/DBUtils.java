@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -207,7 +207,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
 
-        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
+        String dbName = SessionManager.getInstance().getDatabaseForSession(sessID);
         if (cacheing && DistinctValuesCache.isCached(dbName, tableName, colName)) {
             try {
                 makeProgress(sessID, "Using cached values...", 1.0);
@@ -267,7 +267,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     public Range getExtremeValuesForColumn(String sessID, String tabName, String colName) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting extreme values for " + tabName + "." + colName);
         makeProgress(sessID, String.format("Retrieving extreme values for %s...", colName), 0.0);
-        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
+        String dbName = SessionManager.getInstance().getDatabaseForSession(sessID);
         if (DistinctValuesCache.isCached(dbName, tabName, colName)) {
             try {
                 Range result = DistinctValuesCache.getCachedRange(dbName, tabName, colName);

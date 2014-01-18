@@ -68,122 +68,16 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         return instance;
     }
 
-    @Override
-    public List<GeneralLog> getClientLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
-        query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-
-        List<GeneralLog> result = new ArrayList<GeneralLog>();
-        while(rs.next()) {
-            result.add(new GeneralLog(
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_USER),
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                    rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
-        }
-        return result;
-    }
 
     @Override
     public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
-
-        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
-        query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-
-        List<GeneralLog> result = new ArrayList<GeneralLog>();
-        while (rs.next()) {
-            result.add(new GeneralLog(
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_USER),
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
-                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                    rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
-        }
-        return result;
-    }
-
-    @Override
-    public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
-
-        TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
-        TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema updateTable = MedSavantDatabase.VariantpendingupdateTableSchema;
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(updateTable.getTable());
-        query.addColumns(
-                projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME),
-                referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID));
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                updateTable.getTable(),
-                projectTable.getTable(),
-                BinaryConditionMS.equalTo(
-                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID),
-                        projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                updateTable.getTable(),
-                referenceTable.getTable(),
-                BinaryConditionMS.equalTo(
-                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                        referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-
-        List<AnnotationLog> result = new ArrayList<AnnotationLog>();
-        while (rs.next()) {
-
-            Timestamp t = null;
-            try {
-                t = rs.getTimestamp(5);
-            } catch (Exception e) {}
-
-            result.add(new AnnotationLog(
-                    rs.getString(1),
-                    rs.getString(2),
-                    AnnotationLog.intToAction(rs.getInt(3)),
-                    AnnotationLog.intToStatus(rs.getInt(4)),
-                    t,
-                    rs.getString(6),
-                    rs.getInt(7)));
-        }
-        return result;
-
-    }
-
-    @Override
-    public int getAnnotationLogSize(String sid) throws SQLException, SessionExpiredException {
-        return getLogSize(sid,MedSavantDatabase.VariantpendingupdateTableSchema, null);
+        return getServerLogForUser(sid,null,start,limit);
     }
 
     @Override
     public int getServerLogSize(String sid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(sid,table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
-    }
-
-    @Override
-    public int getClientLogSize(String sid) throws SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        return getLogSize(sid,table, BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
     private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException, SessionExpiredException {
@@ -199,18 +93,18 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         return rs.getInt(1);
     }
 
-    public void addServerLog(String sid, LogType t, String description) throws SessionExpiredException {
-        addLog(sid,SERVER_UNAME, t, description);
+    public void addServerLog(String sid, LogType t, String description) throws SessionExpiredException, RemoteException {
+        addLog(sid, t, description);
     }
 
     @Override
-    public void addLog(String sessID, String user, LogType type, String desc) throws SessionExpiredException {
+    public void addLog(String sessID, LogType type, String desc) throws SessionExpiredException, RemoteException {
         try {
             Timestamp sqlDate = new java.sql.Timestamp((new java.util.Date()).getTime());
 
             TableSchema table = MedSavantDatabase.ServerlogTableSchema;
             InsertQuery query = new InsertQuery(table.getTable());
-            query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), user);
+            query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), SessionManager.getInstance().getUserForSession(sessID));
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_EVENT), type.toString());
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION), desc);
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
@@ -241,4 +135,33 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         } else {
             return null;
         }
-    }}
+    }
+
+    @Override
+    public List<GeneralLog> getServerLogForUserWithSessionID(String sid, int start, int limit) throws SQLException, RemoteException, SessionExpiredException {
+        return getServerLogForUser(sid, SessionManager.getInstance().getUserForSession(sid),start,limit);
+    }
+
+    private List<GeneralLog> getServerLogForUser(String sid, String userForSession, int start, int limit) throws SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.ServerlogTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        if (userForSession != null) {
+            query.addCondition(BinaryCondition.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), userForSession));
+        }
+        query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
+
+        List<GeneralLog> result = new ArrayList<GeneralLog>();
+        while (rs.next()) {
+            result.add(new GeneralLog(
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_USER),
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
+                    rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
+        }
+        return result;
+    }
+}

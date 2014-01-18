@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.client.ontology.OntologyPage;
 import org.ut.biolab.medsavant.client.project.ProjectManagementPage;
 import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
 import org.ut.biolab.medsavant.client.user.UserManagementPage;
+import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.SubSection;
 import org.ut.biolab.medsavant.client.view.subview.MultiSection;
@@ -44,6 +45,7 @@ public class ManageSection extends MultiSection {
         return new SubSection[] {
             new UserManagementPage(this),
             new ProjectManagementPage(this),
+            new VariantFilesPage(this),
             new AnnotationsPage(this),
             new OntologyPage(this),
             new ReferenceGenomePage(this),

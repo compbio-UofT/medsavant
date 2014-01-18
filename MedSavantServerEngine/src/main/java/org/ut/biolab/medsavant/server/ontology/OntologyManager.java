@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ALT_IDS;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.DEF;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ID;
@@ -480,7 +480,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
                     addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
                     addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
-                    SessionController.getInstance().unregisterSession(sessID);
+                    SessionManager.getInstance().unregisterSession(sessID);
                 } catch (Exception ex) {
                     LOG.error("Error populating ontology tables.", ex);
                 }
