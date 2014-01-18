@@ -64,6 +64,13 @@ public interface TaskWorker  {
                 return "Error";
             }
             
-        },
+        }, 
+        PERSISTENT {
+
+            @Override
+            public String toString() {
+                return "Irrelevant";
+            }
+        }
     }
 }

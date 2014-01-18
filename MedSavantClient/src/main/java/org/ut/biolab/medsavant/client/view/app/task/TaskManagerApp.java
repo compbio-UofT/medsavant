@@ -62,11 +62,13 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
-                    Object[][] results = new Object[tasks.size()][];
+                    Object[][] results = new Object[tasks.size()+1][];
                     int counter = 0;
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
+                    TaskWorker t = new ServerLogTaskWorker();
+                    results[counter] = new Object[]{t.getTaskName(), t};
                     return results;
                 }
 

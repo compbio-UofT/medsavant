@@ -109,7 +109,7 @@ public class LoginController extends Controller<LoginEvent> {
     public void addLog(String message) {
         if (loggedIn) {
             try {
-                MedSavantClient.LogManager.addLog(sessionId, userName, LogType.INFO, message);
+                MedSavantClient.LogManager.addLog(sessionId, LogType.INFO, message);
             } catch (Exception ex) {
                 LOG.error("Error adding server log entry.", ex);
             }

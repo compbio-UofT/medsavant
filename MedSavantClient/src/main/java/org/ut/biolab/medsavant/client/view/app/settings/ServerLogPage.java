@@ -150,7 +150,7 @@ public class ServerLogPage extends SubSection {
             @Override
             public int getTotalNum() {
                 try {
-                    return MedSavantClient.LogManager.getClientLogSize(LoginController.getInstance().getSessionID());
+                    return MedSavantClient.LogManager.getServerLogSize(LoginController.getInstance().getSessionID());
                 } catch (Exception ex) {
                     return 0;
                 }
