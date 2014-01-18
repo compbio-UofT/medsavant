@@ -54,7 +54,6 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 public class LogManager extends MedSavantServerUnicastRemoteObject implements LogManagerAdapter {
 
     private static final Log LOG = LogFactory.getLog(LogManager.class);
-    private static final String SERVER_UNAME = "server";
 
     private static LogManager instance;
 
