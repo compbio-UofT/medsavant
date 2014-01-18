@@ -30,7 +30,6 @@ import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.server.SessionController;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
@@ -65,7 +64,7 @@ public class AnnotationLogManager {
 
     public int addAnnotationLogEntry(String sid, int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
 
-        String user = SessionController.getInstance().getUserForSession(sid);
+        String user = SessionManager.getInstance().getUserForSession(sid);
 
         Timestamp sqlDate = SQLUtils.getCurrentTimestamp();
 

@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
-import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
@@ -65,7 +65,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     @Override
     public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws IOException, SQLException, RemoteException, SessionExpiredException, Exception {
 
-        SessionController sessController = SessionController.getInstance();
+        SessionManager sessController = SessionManager.getInstance();
         String sessID = sessController.registerNewSession(adminName, new String(rootPassword), "");
 
         Connection conn = ConnectionController.connectPooled(sessID);
@@ -113,7 +113,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     @Override
     public void removeDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword) throws SQLException, RemoteException, SessionExpiredException, Exception {
 
-        String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
+        String sessID = SessionManager.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
         Connection conn = ConnectionController.connectPooled(sessID);
         try {
