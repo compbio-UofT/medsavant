@@ -48,7 +48,6 @@ public class VariantFilesPage extends AppSubSection {
 
     private SplitScreenView view;
     private boolean updateRequired = false;
-    private boolean showPeekOnUnload = false;
 
     public VariantFilesPage(MultiSectionApp parent) {
         super(parent, "Variant Files");
@@ -88,13 +87,10 @@ public class VariantFilesPage extends AppSubSection {
     @Override
     public void viewWillLoad() {
         super.viewWillLoad();
-        showPeekOnUnload = ViewController.getInstance().isPeekRightShown();
-        ViewController.getInstance().setPeekRightShown(false);
     }
 
     @Override
     public void viewDidUnload() {
-        ViewController.getInstance().setPeekRightShown(showPeekOnUnload);
         super.viewDidUnload();
     }
 

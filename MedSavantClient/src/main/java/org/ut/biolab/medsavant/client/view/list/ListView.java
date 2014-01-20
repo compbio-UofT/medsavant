@@ -129,8 +129,12 @@ public class ListView extends JPanel {
                         return;
                     }
 
-                    int selectedIndex = itemToIndexMap.get(item);
+                    Integer selectedIndex = itemToIndexMap.get(item);
 
+                    if (selectedIndex == null) {
+                        return;
+                    }
+                    
                     List<Object[]> selectedObjects = new ArrayList<Object[]>();
                     selectedObjects.add(data[selectedIndex]);
                     detailedEditor.deleteItems(selectedObjects);
@@ -470,59 +474,10 @@ public class ListView extends JPanel {
             listModel.addItemToCategory(item = new SourceListItem(label), category);
             itemToIndexMap.put(item, counter++);
         }
-
         
-        
-        /// old stuff
-        /*
-         String[] columnNames = detailedModel.getColumnNames();
-         Class[] columnClasses = detailedModel.getColumnClasses();
-         int[] columnVisibility = detailedModel.getHiddenColumns();
-
-         stp = new ListViewTablePanel(data, columnNames, columnClasses, columnVisibility) {
-         @Override
-         public void forceRefreshData() {
-         refreshList();
-         }
-         };
-        
-        
-        
-
-         selectionGrabber = new RowSelectionGrabber(stp.getTable(), data);
-
-         if (detailedView != null) {
-         stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-         @Override
-         public void valueChanged(ListSelectionEvent e) {
-
-         if (!e.getValueIsAdjusting()) {
-         List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
-         if (selectedItems.size() == 1) {
-         detailedView.setSelectedItem(selectedItems.get(0));
-         } else {
-         detailedView.setMultipleSelections(selectedItems);
-         }
-         }
-         }
-         });
-
-         stp.getTable().addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         if (SwingUtilities.isRightMouseButton(e)) {
-         JPopupMenu popup = detailedView.createPopup();
-         if (popup != null) {
-         popup.show(e.getComponent(), e.getX(), e.getY());
-         }
-         }
-         }
-         });
-         }
-
-         stp.getTable().getSelectionModel().setSelectionInterval(0, 0);
-
-         //showCard.add(stp, BorderLayout.CENTER);
-         */
+        // need to add an item otherwise the category title doesn't display
+        if (data.length == 0) {
+            listModel.addItemToCategory(item = new SourceListItem(""), category);
+        }
     }
 }

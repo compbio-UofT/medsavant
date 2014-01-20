@@ -337,7 +337,7 @@ public final class ViewUtil {
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(20, 20, 20);
+        return new Color(214,221,230);
     }
 
     public static Color getLightColor() {
@@ -1006,6 +1006,11 @@ public final class ViewUtil {
         l.setForeground(new Color(64,64,64));
         return l;
     }
+
+    public static Color getPrimaryMenuColor() {
+        return new Color(221,221,221);
+    }
+   
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());

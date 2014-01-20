@@ -1,24 +1,25 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.filter;
 
+import com.explodingpixels.macwidgets.SourceListControlBar;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,9 +42,8 @@ import org.ut.biolab.mfiume.query.QueryViewController;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
 
 /**
- * Panel which contains a collection of
- * <code>QueryPanel</code>s, each of which contains a range of
- * <code>Filter</code>s.
+ * Panel which contains a collection of <code>QueryPanel</code>s, each of which
+ * contains a range of <code>Filter</code>s.
  *
  * @author Andrew
  */
@@ -127,7 +127,10 @@ public class SearchBar extends JPanel {
     }
 
     private void initComponents() {
-        setOpaque(false);
+
+        this.setBackground(ViewUtil.getSecondaryMenuColor());
+        this.setBorder(ViewUtil.getSideLineBorder());
+
         setLayout(new BorderLayout());
 
         FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
@@ -135,29 +138,14 @@ public class SearchBar extends JPanel {
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
-        JLabel newLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLEAR_ON_TOOLBAR));
-        newLabel.setToolTipText("Clear current search");
-
-        JLabel historyLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR));
-        historyLabel.setToolTipText("Show search history");
-
-        JLabel loadLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR));
-        loadLabel.setToolTipText("Load search conditions");
-
-        JLabel saveLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR));
-        saveLabel.setToolTipText("Save search");
-
-        final JLabel actionLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR));
-        actionLabel.setToolTipText("Actions");
-
-
-        historyPanel = new FilterHistoryPanel();       
+        historyPanel = new FilterHistoryPanel();
 
         final Dimension dialogDimensions = new Dimension(400, 400);
 
         historyPanel.setMinimumSize(dialogDimensions);
         historyPanel.setPreferredSize(dialogDimensions);
 
+        // history dialog
         final JDialog dHistory = new JDialog(MedSavantFrame.getInstance(), true);
         dHistory.setTitle("Search History");
         dHistory.add(historyPanel);
@@ -165,138 +153,12 @@ public class SearchBar extends JPanel {
         dHistory.setLocationRelativeTo(MedSavantFrame.getInstance());
         dHistory.setResizable(false);
 
-        historyLabel.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                dHistory.setVisible(true);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-            }
-        });
-
+        // save dialog
         final JFileChooser fileChooser = new JFileChooser();
 
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
         dSave.setTitle("Load Search Conditions");
         dSave.setResizable(false);
-
-        newLabel.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                if (DialogUtils.askYesNo("Clear current search", "Clear current search?") == JOptionPane.YES_OPTION) {
-                    getQueryViewController().clearSearch();
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-            }
-        });
-
-        loadLabel.addMouseListener(new MouseListener() {
-            SavedFiltersPanel savedFiltersPanel;
-
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                fileChooser.setFileFilter(filenameFilter);
-
-                if (fileChooser.showOpenDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-
-                    if (file.exists()) {
-                        getQueryViewController().loadConditions(file);
-                    } else {
-                        DialogUtils.displayError("File " + file.getPath() + " does not exist!");
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-            }
-        });
-
-        saveLabel.addMouseListener(new MouseListener() {
-         
-            private void saveFile(File file) {
-                getQueryViewController().saveConditions(file);
-                JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Search conditions saved to " + file.getPath());
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                fileChooser.setFileFilter(filenameFilter);
-
-                if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    if (!file.getPath().toLowerCase().endsWith("." + SAVED_SEARCH_EXTENSION)) {
-                        file = new File(file.getPath() + "." + SAVED_SEARCH_EXTENSION);
-                    }
-                    if (file.exists()) {
-                        int r = JOptionPane.showConfirmDialog(fileChooser, "The file " + file.getPath() + " already exists.  Overwrite?", "Warning", JOptionPane.YES_NO_OPTION);
-                        if (r == JOptionPane.YES_OPTION) {
-                            saveFile(file);
-                        }
-                    } else {
-                        saveFile(file);
-                    }
-                }             
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-            }
-        });
 
         final JPopupMenu actionPopup = new JPopupMenu();
         JMenuItem exportAction = new JMenuItem("Export VCF");
@@ -312,41 +174,89 @@ public class SearchBar extends JPanel {
         });
         actionPopup.add(exportAction);
 
+        final SourceListControlBar controlbar = new SourceListControlBar();
 
-        actionLabel.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent me) {                
-                actionPopup.show(actionLabel, 0, -(actionLabel.getHeight()));
-            }
+        // add clear button
+        controlbar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLEAR_ON_TOOLBAR), new ActionListener() {
 
             @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
+            public void actionPerformed(ActionEvent e) {
+                if (DialogUtils.askYesNo("Clear current search", "Clear current search?") == JOptionPane.YES_OPTION) {
+                    getQueryViewController().clearSearch();
+                }
             }
         });
 
-        JPanel bottomBar = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(bottomBar);
-        bottomBar.add(newLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
-        bottomBar.add(saveLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(3, 1)));
-        bottomBar.add(loadLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
-        bottomBar.add(historyLabel);
-        bottomBar.add(Box.createRigidArea(new Dimension(10, 1)));
-        bottomBar.add(actionLabel);
+        // add save button
+        controlbar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE_ON_TOOLBAR), new ActionListener() {
+
+            private void saveFile(File file) {
+                getQueryViewController().saveConditions(file);
+                JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Search conditions saved to " + file.getPath());
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser.setFileFilter(filenameFilter);
+
+                if (fileChooser.showSaveDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    if (!file.getPath().toLowerCase().endsWith("." + SAVED_SEARCH_EXTENSION)) {
+                        file = new File(file.getPath() + "." + SAVED_SEARCH_EXTENSION);
+                    }
+                    if (file.exists()) {
+                        int r = JOptionPane.showConfirmDialog(fileChooser, "The file " + file.getPath() + " already exists.  Overwrite?", "Warning", JOptionPane.YES_NO_OPTION);
+                        if (r == JOptionPane.YES_OPTION) {
+                            saveFile(file);
+                        }
+                    } else {
+                        saveFile(file);
+                    }
+                }
+            }
+        });
+
+        // add load button
+        controlbar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR), new ActionListener() {
+
+            SavedFiltersPanel savedFiltersPanel;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser.setFileFilter(filenameFilter);
+
+                if (fileChooser.showOpenDialog(MedSavantFrame.getInstance()) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+
+                    if (file.exists()) {
+                        getQueryViewController().loadConditions(file);
+                    } else {
+                        DialogUtils.displayError("File " + file.getPath() + " does not exist!");
+                    }
+                }
+            }
+
+        });
+
+        // add history button
+        controlbar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.HISTORY_ON_TOOLBAR), new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dHistory.setVisible(true);
+            }
+
+        });
+
+        // add action button
+        controlbar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR), new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionPopup.show(controlbar.getComponent(), 0, -(actionPopup.getHeight()));
+            }
+
+        });
 
         JPanel instead = getSearchComponent();
 
@@ -355,8 +265,8 @@ public class SearchBar extends JPanel {
         this.setFocusable(true);
         add(effectivenessPanel, BorderLayout.NORTH);
         add(instead, BorderLayout.CENTER);
-        add(ViewUtil.centerHorizontally(bottomBar), BorderLayout.SOUTH);
-        
+        add(controlbar.getComponent(), BorderLayout.SOUTH);
+
     }
 
     /**
@@ -379,10 +289,10 @@ public class SearchBar extends JPanel {
         final SearchConditionGroupItem entireQueryModel = new SearchConditionGroupItem(null);
         queryViewController = new QueryViewController(entireQueryModel, MedSavantConditionViewGenerator.getInstance());
 
-        JPanel p = new JPanel();        
+        JPanel p = new JPanel();
         p.setFocusable(true);
         p.setOpaque(false);
-        p.setLayout(new BorderLayout());        
+        p.setLayout(new BorderLayout());
         p.add(queryViewController, BorderLayout.CENTER);
         return p;
     }

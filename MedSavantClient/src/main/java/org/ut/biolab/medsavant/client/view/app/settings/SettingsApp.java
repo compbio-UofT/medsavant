@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
 public class SettingsApp extends MultiSectionApp {
 
     public SettingsApp() {
-        super("Admin");
+        super("Settings");
     }
 
      @Override

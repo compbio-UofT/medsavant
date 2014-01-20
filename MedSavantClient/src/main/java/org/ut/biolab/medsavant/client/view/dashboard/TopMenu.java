@@ -28,7 +28,7 @@ class TopMenu extends JPanel {
 
     public TopMenu() {
         
-        this.setBackground(new Color(221,221,221));
+        this.setBackground(ViewUtil.getPrimaryMenuColor());
         this.setBorder(ViewUtil.getBottomLineBorder());
         
         leftComponent = ViewUtil.getClearPanel();

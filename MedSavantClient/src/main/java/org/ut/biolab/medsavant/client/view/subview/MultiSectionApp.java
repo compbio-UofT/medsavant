@@ -24,6 +24,8 @@ import java.awt.Component;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 
@@ -67,16 +69,27 @@ public abstract class MultiSectionApp implements DashboardApp {
             view = new JPanel();
             view.setLayout(new BorderLayout());
 
-            JTabbedPane tabs = new JTabbedPane();
+            final JTabbedPane tabs = new JTabbedPane();
             tabs.setFocusable(false);
 
-            AppSubSection[] subsections = getSubSections();
+            final AppSubSection[] subsections = getSubSections();
             for (AppSubSection sub : subsections) {
                 tabs.add(sub.getPageName(), sub.getView());
             }
             if (subsections.length > 0) {
                 currentSubSection = subsections[0];
             }
+            
+            tabs.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (currentSubSection != null) { currentSubSection.viewDidUnload(); }
+                    currentSubSection = subsections[tabs.getSelectedIndex()];
+                    currentSubSection.viewWillLoad();
+                }
+                
+            });
 
             if (getPersistentPanels() != null
                     && getPersistentPanels().length > 0) {
