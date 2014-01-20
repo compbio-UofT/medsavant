@@ -253,7 +253,8 @@ public class SearchBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionPopup.show(controlbar.getComponent(), 0, -(actionPopup.getHeight()));
+                // 124 empirically determined to be the x position of the action button on controlbar
+                actionPopup.show(controlbar.getComponent(), 124, 0);
             }
 
         });
