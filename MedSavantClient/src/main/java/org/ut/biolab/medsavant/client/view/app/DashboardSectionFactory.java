@@ -139,7 +139,7 @@ public class DashboardSectionFactory {
     }
 
     public static DashboardSection getManagementSection() {
-        DashboardSection s = new DashboardSection("Management");
+        DashboardSection s = new DashboardSection("Management Apps");
 
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());

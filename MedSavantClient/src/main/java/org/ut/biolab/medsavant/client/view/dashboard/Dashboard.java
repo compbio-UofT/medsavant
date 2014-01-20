@@ -141,7 +141,7 @@ public class Dashboard extends JPanel {
         int leftInset = widthOfContainer / 2 - (numIconsPerRow * (appIconWidth + gapHorizontal)) / 2;
         int rightInset = 0;//centralWidth/2;
 
-        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", gapVertical, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
+        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
         //"gapy 30, insets 100 0 100 0"));
 
         baseLayer.setOpaque(true);
@@ -160,10 +160,10 @@ public class Dashboard extends JPanel {
             }
 
             if (!s.getName().equals("Apps")) {
-                JLabel l = new JLabel(s.getName());
-                l.setForeground(new Color(64,64,64));
-                l.setFont(ViewUtil.getBigTitleFont());
-                middlePane.add(l, "wrap, center, gapy 0");
+                JLabel l = new JLabel(s.getName().toUpperCase());
+                l.setForeground(new Color(124,124,124));
+                l.setFont(ViewUtil.getSmallTitleFont());
+                middlePane.add(l, "wrap, center");
             }
 
             JPanel appPlaceholder = ViewUtil.getClearPanel();
@@ -173,7 +173,7 @@ public class Dashboard extends JPanel {
             for (DashboardApp launcher : s.getApps()) {
                 appPlaceholder.add(getRepresentationForLauncher(launcher));
             }
-            middlePane.add(appPlaceholder, "wrap");
+            middlePane.add(appPlaceholder, String.format("wrap, gapy 5 %d",gapVertical));
         }
 
         JScrollPane p = ViewUtil.getClearBorderlessScrollPane(middlePane);

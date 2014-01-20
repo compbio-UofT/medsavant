@@ -21,10 +21,6 @@ package org.ut.biolab.medsavant.client.clinic;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.cohort.CohortsPage;
-import org.ut.biolab.medsavant.client.patient.IndividualsPage;
-import org.ut.biolab.medsavant.client.region.RegionPage;
-import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.subview.MultiSection;
 import org.ut.biolab.medsavant.client.view.subview.SubSection;

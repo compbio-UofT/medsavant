@@ -46,6 +46,7 @@ import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -54,6 +55,8 @@ import java.lang.reflect.Proxy;
 import java.net.NoRouteToHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLHandshakeException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.UIDefaults;
@@ -223,7 +226,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
         }
 
         frame = MedSavantFrame.getInstance();
-        frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
+        frame.setLocationRelativeTo(null);
+        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        frame.setPreferredSize(frame.getSize());
+        
+        // old technique to maximize which resulted in maximize animation showing
+        //frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
+
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
