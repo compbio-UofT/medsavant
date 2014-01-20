@@ -41,7 +41,7 @@ public interface LogManagerAdapter extends Remote {
     
     public int getServerLogSize(String sid) throws SQLException, RemoteException, SessionExpiredException;
 
-    public void addLog(String sid, LogType t, String description) throws RemoteException, SessionExpiredException;
+    //public void addLog(String sid, LogType t, String description) throws RemoteException, SessionExpiredException;
     
     public Date getDateOfLastServerLog(String sid) throws SQLException, RemoteException, SessionExpiredException;
 }

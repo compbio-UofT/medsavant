@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.SettingsTableSchema;
@@ -45,6 +47,9 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
  * @author Andrew
  */
 public class SettingsManager extends MedSavantServerUnicastRemoteObject implements SettingsManagerAdapter {
+    
+    private static final Log LOG = LogFactory.getLog(SettingsManager.class);
+    
     private static SettingsManager instance;
     private boolean lockReleased = false;
 
@@ -125,7 +130,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     public synchronized void releaseDBLock(Connection conn) throws SQLException, SessionExpiredException {
-        System.out.println("Server releasing lock");
+        LOG.info("Server releasing lock");
         try {
             updateSetting(conn, Settings.KEY_DB_LOCK, Boolean.toString(false));
         } finally {

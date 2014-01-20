@@ -96,7 +96,6 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         addLog(sid, t, description);
     }
 
-    @Override
     public void addLog(String sessID, LogType type, String desc) throws SessionExpiredException, RemoteException {
         try {
             Timestamp sqlDate = new java.sql.Timestamp((new java.util.Date()).getTime());

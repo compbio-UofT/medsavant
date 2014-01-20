@@ -58,7 +58,6 @@ public class MenuFactory {
             }
 
             JMenuItem appLauncher = getMenuItemAppLauncherForApp(app);
-
             m.add(appLauncher);
         }
 

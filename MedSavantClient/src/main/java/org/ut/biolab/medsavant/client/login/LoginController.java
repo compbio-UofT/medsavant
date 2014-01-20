@@ -87,10 +87,8 @@ public class LoginController extends Controller<LoginEvent> {
                     LoginController.this.loggedIn = loggedIn;
 
                     if (loggedIn) {
-                        addLog("Logged in");
                         fireEvent(new LoginEvent(LoginEvent.Type.LOGGED_IN));
                     } else {
-                        addLog("Logged out");
                         unregister();
                         fireEvent(new LoginEvent(LoginEvent.Type.LOGGED_OUT));
                     }
@@ -104,16 +102,6 @@ public class LoginController extends Controller<LoginEvent> {
             }
         };
         t.start();
-    }
-
-    public void addLog(String message) {
-        if (loggedIn) {
-            try {
-                MedSavantClient.LogManager.addLog(sessionId, LogType.INFO, message);
-            } catch (Exception ex) {
-                LOG.error("Error adding server log entry.", ex);
-            }
-        }
     }
 
     public String getPassword() {

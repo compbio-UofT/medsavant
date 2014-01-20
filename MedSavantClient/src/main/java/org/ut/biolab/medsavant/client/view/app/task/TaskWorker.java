@@ -69,7 +69,7 @@ public interface TaskWorker  {
 
             @Override
             public String toString() {
-                return "Irrelevant";
+                return "Persistent";
             }
         }
     }

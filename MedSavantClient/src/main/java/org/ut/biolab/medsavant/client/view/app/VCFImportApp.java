@@ -369,9 +369,9 @@ public class VCFImportApp implements DashboardApp {
                         this.setStatus(TaskStatus.FINISHED);
 
                         AppDirectory.getTaskManager().showMessageForTask(this, 
-                                "<html>Variants have been uploaded. They are now being processed.<br/><br/>"
-                                        + "You may log out or continue doing work. You'll be notified<br/>"
-                                        + "when the import process has completed.</html>");
+                                "<html>Variants have been uploaded and are now being processed.<br/>"
+                                        + "You may view progress in the Server Log in the Task Manager<br/><br/>"
+                                        + "You may log out or continue doing work.</html>");
 
                         return null;
                     }

@@ -8,9 +8,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  *
@@ -50,9 +54,12 @@ class Jannovar {
 
         return jvFiles;
     }
-
-    private static String getJannovarDirectoryPath() {
-        return new File(DirectorySettings.getCacheDirectory().getPath(), "jannovar").getAbsolutePath();
+    
+    private static File getJannovarDataDirectory() {
+        File parent = new File(DirectorySettings.getCacheDirectory().getPath(), "jannovar");
+        File f = new File(parent,"data");
+        f.mkdirs();
+        return f;
     }
 
     /**
@@ -61,8 +68,22 @@ class Jannovar {
     private static boolean initialize() {
         // download the serizalized files, if needed
         if (!hasSerializedFile(serializationFileName)) {
-			String dir= getJannovarDirectoryPath() + File.separator + "data";
-			jannovar.Jannovar.main(new String[] {"-U", dir, "--create-refseq"});
+            LOG.info("Creating serialized RefSeq file...");
+            
+            // create the file in the current directory
+            jannovar.Jannovar.main(new String[]{"--create-refseq"});
+            
+            // move the file into the Jannovar directory
+            File dir = getJannovarDataDirectory();
+            dir.mkdirs();
+            try {
+                LOG.info("Copying " + serializationFileName + " to " + new File(dir,serializationFileName).getAbsolutePath());
+                IOUtils.copyFile(new File(serializationFileName), new File(dir,serializationFileName));
+                LOG.info("Done creating serialized RefSeq file");
+            } catch (IOException ex) {
+                LOG.info("Error creating serialized RefSeq file");
+                LOG.error(ex);
+            }
         }
         return true;
     }
@@ -71,11 +92,10 @@ class Jannovar {
      * Check if the Jannovar serialized annotation file has been downloaded.
      */
     private static boolean hasSerializedFile(String filename) {
-        File serFile = new File(Jannovar.getJannovarDirectoryPath(), filename);
+        File serFile = new File(Jannovar.getJannovarDataDirectory(), filename);
         return serFile.exists();
     }
 
-	
     /**
      * Uses Jannovar to create a new VCF file and sends that file to server. The
      * Jannovar VCF file is subsequently removed (treated as temporary data)
@@ -85,6 +105,8 @@ class Jannovar {
     private static File annotateVCFWithJannovar(File sourceVCF) throws JannovarException, IOException {
         /* Annotated VCF name as determined by Jannovar. */
         String outname = sourceVCF.getName();
+        
+        
         int i = outname.lastIndexOf("vcf");
         if (i < 0) {
             i = outname.lastIndexOf("VCF");
@@ -94,16 +116,17 @@ class Jannovar {
         } else {
             outname = outname.substring(0, i) + "jv.vcf";
         }
-        
-		File outFile= new File(outname);
-		
-		jannovar.Jannovar.main(new String[] {"-D", Jannovar.getJannovarDirectoryPath() 
-			+ File.separator + serializationFileName, "-V", sourceVCF.getAbsolutePath()});
 
-		/* Since we can't seem to specify the output directory for Jannovar
-		 * VCF files, once the file is created, move it to the temp directory. */
-		outFile.renameTo(new File(DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()),outname));
-		
+        File outFile = new File(outname);
+
+        jannovar.Jannovar.main(new String[]{
+            "-D", new File(getJannovarDataDirectory(),serializationFileName).getAbsolutePath(), 
+            "-V", sourceVCF.getAbsolutePath()});
+
+        /* Since we can't seem to specify the output directory for Jannovar
+         * VCF files, once the file is created, move it to the temp directory. */
+        outFile.renameTo(new File(DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), outname));
+
         LOG.info("[Jannovar] Wrote annotated VCF file to \"" + outFile.getAbsolutePath() + "\"");
 
         return outFile;

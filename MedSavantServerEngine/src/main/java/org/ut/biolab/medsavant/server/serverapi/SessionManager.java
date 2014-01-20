@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.serverapi.SessionManagerAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
 /**
  *
@@ -63,12 +64,14 @@ public class SessionManager extends MedSavantServerUnicastRemoteObject implement
     public synchronized String registerNewSession(String user, String password, String dbName) throws RemoteException, SQLException, Exception {
         String sessionID = nextSession();
         ConnectionController.registerCredentials(sessionID, user, password, dbName);
-        LOG.info("Registered session " + sessionID + " for " + user);
+        LOG.info("Registered session for " + user);
+        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessionID, LogManagerAdapter.LogType.INFO, "Registered session for " + user);
         return sessionID;
     }
 
     @Override
-    public void unregisterSession(String sessID) throws RemoteException, SQLException {
+    public void unregisterSession(String sessID) throws RemoteException, SQLException, SessionExpiredException {
+        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Unregistered session for " + SessionManager.getInstance().getUserForSession(sessID));
         ConnectionController.removeSession(sessID);
     }
 
@@ -104,7 +107,7 @@ public class SessionManager extends MedSavantServerUnicastRemoteObject implement
 
     public void terminateSessionsForDatabase(String dbname, final String message) {
 
-        System.out.println("Terminating sessions for database " + dbname);
+        LOG.info("Terminating sessions for database " + dbname);
 
         List<String> sessionIDsToTerminate = new ArrayList<String>();
 
@@ -125,11 +128,9 @@ public class SessionManager extends MedSavantServerUnicastRemoteObject implement
                 @Override
                 public void run() {
                     try {
-                        System.out.print("Terminating session " + sid + "...");
+                        LOG.info("Terminating session " + sid + "...");
                         SessionManager.getInstance().unregisterSession(sid);
-                        System.out.println("Complete");
                     } catch (Exception ex) {
-                        System.out.println("Failed");
                         LOG.error("Unable to terminate session for " + sid + ".", ex);
                     }
                 }

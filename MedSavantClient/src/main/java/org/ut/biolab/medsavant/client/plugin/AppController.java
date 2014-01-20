@@ -36,11 +36,11 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.util.ClientIOUtils;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.medsavant.shared.util.WebResources;
 
@@ -140,7 +140,7 @@ public class AppController extends Controller {
                     // by checking the version in plugin.xml.
                     //                  System.out.println("Showing dialog");
 //                    JOptionPane.showMessageDialog(null, String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr),"Plugins Not Loaded", JOptionPane.ERROR_MESSAGE);
-                    DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
+                    DialogUtils.displayMessage("Apps Not Loaded", String.format("<html>The following Apps could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
                 }
             }
         }
@@ -347,7 +347,7 @@ public class AppController extends Controller {
             srcDir = new File(com.apple.eio.FileManager.getPathToApplicationBundle() + "/Contents/Plugins");
             if (srcDir.exists()) {
                 try {
-                    ClientIOUtils.copyDir(srcDir, destDir);
+                    IOUtils.copyDir(srcDir, destDir);
                     return;
                 } catch (Exception ignored) {
                     // We should expect to see this when running in the debugger.
@@ -356,7 +356,7 @@ public class AppController extends Controller {
         }
         try {
             srcDir = new File("plugins");
-            ClientIOUtils.copyDir(srcDir, destDir);
+            IOUtils.copyDir(srcDir, destDir);
         } catch (Exception x) {
             LOG.error(String.format("Unable to copy builtin plugins from %s to %s.", srcDir.getAbsolutePath(), destDir), x);
         }
@@ -417,7 +417,7 @@ public class AppController extends Controller {
     public void installPlugin(File selectedFile) throws Throwable {
         File pluginFile = new File(DirectorySettings.getPluginsDirectory(), selectedFile.getName());
         LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
-        ClientIOUtils.copyFile(selectedFile, pluginFile);
+        IOUtils.copyFile(selectedFile, pluginFile);
         LOG.info("Getting plugin information...");
         AppDescriptor desc = addPlugin(pluginFile);
         LOG.info("Got plugin information");

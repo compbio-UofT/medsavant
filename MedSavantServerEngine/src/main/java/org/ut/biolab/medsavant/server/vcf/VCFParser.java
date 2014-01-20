@@ -96,7 +96,7 @@ public class VCFParser {
         while (true) {
 
             if ((nextLineString = r.readLine()) == null) {
-                System.out.println("reader returned null after " + numLinesWritten + " lines.");
+                LOG.info("Reader returned null after " + numLinesWritten + " lines.");
                 break;
             }
 
@@ -143,7 +143,7 @@ public class VCFParser {
         }
         out.close();
 
-        System.out.println("Read " + numRecords + " lines");
+        LOG.info("Read " + numRecords + " lines");
 
         return numLinesWritten;
     }
