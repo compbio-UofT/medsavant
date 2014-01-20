@@ -22,26 +22,26 @@ package org.ut.biolab.medsavant.client.clinic;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 /**
  * Section which displays information about the current project.
  *
  * @author tarkvara
  */
-public class ClinicSection extends MultiSection {
+public class ClinicSection extends MultiSectionApp {
 
-    private SubSection[] subSections;
+    private AppSubSection[] subSections;
 
     public ClinicSection() {
         super("Clinic");//ProjectController.getInstance().getCurrentProjectName());
     }
 
     @Override
-    public SubSection[] getSubSections() {
+    public AppSubSection[] getSubSections() {
         if (subSections == null) {
-            subSections = new SubSection[]{
+            subSections = new AppSubSection[]{
                 new ClinicSubSectionView(this)
             };
         }
@@ -53,11 +53,11 @@ public class ClinicSection extends MultiSection {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_CLINIC);
     }
 
-    private static class ClinicSubSectionView extends SubSection {
+    private static class ClinicSubSectionView extends AppSubSection {
 
         ClinicGalleryView gallery;
 
-        public ClinicSubSectionView(MultiSection parent) {
+        public ClinicSubSectionView(MultiSectionApp parent) {
             super(parent,"Clinic");
             gallery = new ClinicGalleryView();
         }

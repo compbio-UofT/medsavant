@@ -32,20 +32,20 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 
 /**
  *
  * @author tarkvara
  */
-public class GeneSetPage extends SubSection {
+public class GeneSetPage extends AppSubSection {
 
     private SplitScreenView view;
     private final GeneSetManagerAdapter manager;
 
-    public GeneSetPage(MultiSection parent) {
+    public GeneSetPage(MultiSectionApp parent) {
         super(parent, "Standard Gene Sets");
         manager = MedSavantClient.GeneSetManager;
     }

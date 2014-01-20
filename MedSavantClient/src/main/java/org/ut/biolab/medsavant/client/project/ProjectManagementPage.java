@@ -46,8 +46,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -55,13 +55,13 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class ProjectManagementPage extends SubSection {
+public class ProjectManagementPage extends AppSubSection {
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
 
     private ProjectController controller = ProjectController.getInstance();
     private SplitScreenView view;
 
-    public ProjectManagementPage(MultiSection parent) {
+    public ProjectManagementPage(MultiSectionApp parent) {
         super(parent, "Projects");
         controller.addListener(new Listener<ProjectEvent>() {
             @Override

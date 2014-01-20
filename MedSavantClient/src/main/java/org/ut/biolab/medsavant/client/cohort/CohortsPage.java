@@ -27,19 +27,19 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 
 /**
  *
  * @author mfiume
  */
-public class CohortsPage extends SubSection {
+public class CohortsPage extends AppSubSection {
 
     private SplitScreenView view;
 
-    public CohortsPage(MultiSection parent) {
+    public CohortsPage(MultiSectionApp parent) {
         super(parent, "Cohorts");
     }
 
@@ -60,8 +60,8 @@ public class CohortsPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         view.refresh();
     }
 }

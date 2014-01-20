@@ -26,18 +26,18 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 /**
  *
  * @author mfiume
  */
-public class OntologyPage extends SubSection {
+public class OntologyPage extends AppSubSection {
 
     private SplitScreenView view;
 
-    public OntologyPage(MultiSection parent) {
+    public OntologyPage(MultiSectionApp parent) {
         super(parent, "Ontologies");
     }
 

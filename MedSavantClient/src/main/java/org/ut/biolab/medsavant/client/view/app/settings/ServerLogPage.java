@@ -37,8 +37,8 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author mfiume
  */
-public class ServerLogPage extends SubSection {
+public class ServerLogPage extends AppSubSection {
 
     private static final Log LOG = LogFactory.getLog(ServerLogPage.class);
     private static final String CARDNAME_WAIT = "0";
@@ -69,7 +69,7 @@ public class ServerLogPage extends SubSection {
     private SearchableTablePanel annotationTable;
     private WaitPanel waitPanel;
 
-    public ServerLogPage(MultiSection parent) {
+    public ServerLogPage(MultiSectionApp parent) {
         super(parent, "Logs");
     }
 

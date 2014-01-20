@@ -25,26 +25,26 @@ import org.ut.biolab.medsavant.client.patient.IndividualsPage;
 import org.ut.biolab.medsavant.client.region.RegionPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 /**
  * Section which displays information about the current project.
  *
  * @author tarkvara
  */
-public class ProjectsSection extends MultiSection {
+public class ProjectsSection extends MultiSectionApp {
 
-    private SubSection[] subSections;
+    private AppSubSection[] subSections;
 
     public ProjectsSection() {
         super("Project");//ProjectController.getInstance().getCurrentProjectName());
     }
 
     @Override
-    public SubSection[] getSubSections() {
+    public AppSubSection[] getSubSections() {
         if (subSections == null) {
-            subSections = new SubSection[]{
+            subSections = new AppSubSection[]{
                 new ProjectSummaryPage(this),
                 new IndividualsPage(this),
                 new CohortsPage(this),

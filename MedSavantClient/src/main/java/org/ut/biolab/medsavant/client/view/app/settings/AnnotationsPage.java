@@ -48,8 +48,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import static org.ut.biolab.medsavant.client.view.util.DialogUtils.getFrontWindow;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -58,11 +58,11 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class AnnotationsPage extends SubSection {
+public class AnnotationsPage extends AppSubSection {
     private static final Log LOG = LogFactory.getLog(AnnotationsPage.class);
     private SplitScreenView view;
 
-    public AnnotationsPage(MultiSection parent) {
+    public AnnotationsPage(MultiSectionApp parent) {
         super(parent, "Annotations");
     }
 

@@ -31,21 +31,21 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.genetics.charts.ChartView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsChartPage extends SubSection {
+public class GeneticsChartPage extends AppSubSection {
 
     private JPanel view;
     private ChartView chartView;
     private boolean isLoaded = false;
 
-    public GeneticsChartPage(MultiSection parent) {
+    public GeneticsChartPage(MultiSectionApp parent) {
         super(parent, "Charts");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
@@ -104,7 +104,7 @@ public class GeneticsChartPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
+    public void viewWillLoad() {
         isLoaded = true;
     }
 

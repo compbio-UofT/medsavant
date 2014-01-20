@@ -35,22 +35,22 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 
 /**
  *
  * @author Andrew
  */
-public class VariantFilesPage extends SubSection {
+public class VariantFilesPage extends AppSubSection {
     static final Log LOG = LogFactory.getLog(VariantFilesPage.class);
 
     private SplitScreenView view;
     private boolean updateRequired = false;
     private boolean showPeekOnUnload = false;
 
-    public VariantFilesPage(MultiSection parent) {
+    public VariantFilesPage(MultiSectionApp parent) {
         super(parent, "Variant Files");
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
@@ -86,8 +86,8 @@ public class VariantFilesPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         showPeekOnUnload = ViewController.getInstance().isPeekRightShown();
         ViewController.getInstance().setPeekRightShown(false);
     }

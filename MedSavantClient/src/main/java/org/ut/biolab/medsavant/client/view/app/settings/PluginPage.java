@@ -33,8 +33,8 @@ import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.PluginEvent;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 
@@ -43,14 +43,14 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public class PluginPage extends SubSection {
+public class PluginPage extends AppSubSection {
     private static final Log LOG = LogFactory.getLog(PluginPage.class);
     private static AppController controller = AppController.getInstance();
 
     private MedSavantVariantSectionApp plugin;
     private final JPanel view;
 
-    public PluginPage(MultiSection parent, final MedSavantVariantSectionApp plugin) {
+    public PluginPage(MultiSectionApp parent, final MedSavantVariantSectionApp plugin) {
         super(parent, plugin.getTitle());
         view = new JPanel();
         view.setLayout(new GridBagLayout());
@@ -94,8 +94,8 @@ public class PluginPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         if (plugin != null) {
             ((MedSavantVariantSectionApp)plugin).viewDidLoad();
         }

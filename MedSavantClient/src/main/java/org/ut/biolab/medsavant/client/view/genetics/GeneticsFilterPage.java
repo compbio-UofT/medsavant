@@ -29,22 +29,22 @@ import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsFilterPage extends SubSection {
+public class GeneticsFilterPage extends AppSubSection {
 
     private static final Log LOG = LogFactory.getLog(GeneticsFilterPage.class);
 
     private JPanel view;
     private static SearchBar panel;
 
-    public GeneticsFilterPage(MultiSection parent) {
+    public GeneticsFilterPage(MultiSectionApp parent) {
         super(parent, "Search Bar");
 
         panel = SearchBar.getInstance();

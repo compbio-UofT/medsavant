@@ -37,8 +37,8 @@ import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
  *
  * @author mfiume
  */
-public class SpreadsheetPage extends SubSection implements Listener<FilterEvent> {
+public class SpreadsheetPage extends AppSubSection implements Listener<FilterEvent> {
 
     private static final Log LOG = LogFactory.getLog(SpreadsheetPage.class);
     private Thread viewPreparationThread;
@@ -65,7 +65,7 @@ public class SpreadsheetPage extends SubSection implements Listener<FilterEvent>
         }
     }
 
-    public SpreadsheetPage(MultiSection parent) {
+    public SpreadsheetPage(MultiSectionApp parent) {
         super(parent, "Spreadsheet");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
@@ -187,8 +187,8 @@ public class SpreadsheetPage extends SubSection implements Listener<FilterEvent>
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         tablePanel.setTableShowing(true);        
         if(inspectorPanel != null && this.detailView.isExpanded()){            
             inspectorPanel.refresh();

@@ -30,22 +30,22 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class AnalyticsPage extends SubSection {
+public class AnalyticsPage extends AppSubSection {
 
     private JPanel view;
     //private FamilyMattersOptionView fo;
     public static final String PAGE_NAME = "Analytics";
     private final AnalyticsController controller;
 
-    public AnalyticsPage(MultiSection parent) {
+    public AnalyticsPage(MultiSectionApp parent) {
         super(parent, PAGE_NAME);
         controller = AnalyticsController.getInstance();
     }
@@ -135,8 +135,8 @@ public class AnalyticsPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         if (selectedAnalysis != null) {
             selectedAnalysis.restart();
         }

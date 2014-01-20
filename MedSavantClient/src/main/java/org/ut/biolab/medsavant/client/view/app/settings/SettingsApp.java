@@ -1,54 +1,42 @@
 package org.ut.biolab.medsavant.client.view.app.settings;
 
 import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.view.app.MultiSectionDashboardApp;
+import org.ut.biolab.medsavant.client.geneset.GeneSetPage;
+import org.ut.biolab.medsavant.client.ontology.OntologyPage;
+import org.ut.biolab.medsavant.client.project.ProjectManagementPage;
+import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
+import org.ut.biolab.medsavant.client.user.UserManagementPage;
+import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.app.settings.ManageSection;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
 
 /**
  *
  * @author mfiume
  */
-public class SettingsApp extends MultiSectionDashboardApp {
+public class SettingsApp extends MultiSectionApp {
 
     public SettingsApp() {
-        super(new ManageSection());
+        super("Admin");
     }
 
-    @Override
-    public void viewWillUnload() {
-    }
-
-    @Override
-    public void viewWillLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-    }
-
-    @Override
-    public void viewDidLoad() {
+     @Override
+    public AppSubSection[] getSubSections() {
+        return new AppSubSection[] {
+            new UserManagementPage(this),
+            new ProjectManagementPage(this),
+            new VariantFilesPage(this),
+            new AnnotationsPage(this),
+            new OntologyPage(this),
+            new ReferenceGenomePage(this),
+            new GeneSetPage(this),
+            new ServerLogPage(this) };
     }
 
     @Override
     public ImageIcon getIcon() {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.APP_ADMIN);
-    }
-
-    @Override
-    public String getName() {
-        return "Settings";
-    }
-
-    @Override
-    public void didLogout() {
-    }
-
-    @Override
-    public void didLogin() {
     }
 
 }

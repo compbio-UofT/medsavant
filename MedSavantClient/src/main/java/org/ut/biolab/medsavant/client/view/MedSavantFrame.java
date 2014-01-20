@@ -78,7 +78,7 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Posit
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
@@ -182,7 +182,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
         Component dstComponent = null;
         Menu menu = ViewController.getInstance().getMenu();
-        for (SubSection sv : menu.subSectionViews) {
+        for (AppSubSection sv : menu.subSectionViews) {
             if (sv.getPageName().equalsIgnoreCase("Browser")) {
                 //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
                 dstComponent = menu.getSubSectionButton(sv);

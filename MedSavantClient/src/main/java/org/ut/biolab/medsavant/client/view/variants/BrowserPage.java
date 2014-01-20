@@ -57,8 +57,8 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory.StandardIcon;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
@@ -81,7 +81,7 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class BrowserPage extends SubSection {
+public class BrowserPage extends AppSubSection {
 
     private static final Log LOG = LogFactory.getLog(BrowserPage.class);
     private JPanel view;
@@ -106,7 +106,7 @@ public class BrowserPage extends SubSection {
     private ArrayList<String> sampleIdsHavingBams;
     private HashMap<String, String> dnaIDToURLMap;
 
-    public BrowserPage(MultiSection parent) {
+    public BrowserPage(MultiSectionApp parent) {
         super(parent, "Browser");
         instance = this;
 
@@ -377,8 +377,8 @@ public class BrowserPage extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
+    public void viewWillLoad() {
+        super.viewWillLoad();
         //MedSavantDataSource.setActive(true);
 
         genomeContainer.updateIfRequired();

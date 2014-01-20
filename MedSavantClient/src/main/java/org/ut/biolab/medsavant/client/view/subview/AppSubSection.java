@@ -43,9 +43,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public abstract class SubSection {
+public abstract class AppSubSection {
 
-    private final MultiSection parent;
+    private final MultiSectionApp parent;
     protected final String pageName;
     protected boolean loaded;
     private boolean updateRequired = true;
@@ -141,7 +141,7 @@ public abstract class SubSection {
         return updateRequired;
     }
 
-    public SubSection(MultiSection parent, String page) {
+    public AppSubSection(MultiSectionApp parent, String page) {
         this.parent = parent;
         pageName = page;
     }
@@ -184,14 +184,14 @@ public abstract class SubSection {
         return pageName;
     }
 
-    public MultiSection getParent() {
+    public MultiSectionApp getParent() {
         return parent;
     }
 
     /**
-     * Give derived classes a chance to initialise themselves after loading.
+     * Give derived classes a chance to initialise themselves before loading.
      */
-    public void viewDidLoad() {
+    public void viewWillLoad() {
         loaded = true;
     }
 
@@ -201,5 +201,17 @@ public abstract class SubSection {
     public void viewDidUnload() {
         loaded = false;
         ThreadController.getInstance().cancelWorkers(pageName);
+    }
+    
+    /**
+     * Provide cleanup on logout
+     */
+    public void didLogout() {
+    }
+
+    /**
+     * Provide response on login
+     */
+    public void didLogin() {
     }
 }

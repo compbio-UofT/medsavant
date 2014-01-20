@@ -24,17 +24,17 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 
 /**
  *
  * @author mfiume
  */
-public class IndividualsPage extends SubSection {
+public class IndividualsPage extends AppSubSection {
     private SplitScreenView view;
 
-    public IndividualsPage(MultiSection parent) {
+    public IndividualsPage(MultiSectionApp parent) {
         super(parent, "Patients");
     }
 

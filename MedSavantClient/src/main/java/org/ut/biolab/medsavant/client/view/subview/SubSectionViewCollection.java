@@ -40,20 +40,20 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SubSectionViewCollection extends SubSection {
+public class SubSectionViewCollection extends AppSubSection {
 
-    Map<String, SubSection> subsectionMap;
+    Map<String, AppSubSection> subsectionMap;
     private JPanel view;
     private List<Component> menuComponents = new ArrayList<Component>();
     private final ButtonGroup buttonGroup;
     private JPanel contentPanel;
-    private SubSection currentView;
+    private AppSubSection currentView;
     private String firstPageName;
     boolean firstPageShown = false;
 
-    public SubSectionViewCollection(MultiSection parent, String page) {
+    public SubSectionViewCollection(MultiSectionApp parent, String page) {
         super(parent, page);
-        subsectionMap = new HashMap<String, SubSection>();
+        subsectionMap = new HashMap<String, AppSubSection>();
 
         buttonGroup = new ButtonGroup();
 
@@ -70,7 +70,7 @@ public class SubSectionViewCollection extends SubSection {
         return arr;
     }
 
-    public void addSubSectionView(SubSection v) {
+    public void addSubSectionView(AppSubSection v) {
 
         this.subsectionMap.put(v.getPageName(), v);
 
@@ -172,7 +172,7 @@ public class SubSectionViewCollection extends SubSection {
         currentView = subsectionMap.get(pageName);
         contentPanel.removeAll();
         contentPanel.add(currentView.getView(), BorderLayout.CENTER);
-        currentView.viewDidLoad();
+        currentView.viewWillLoad();
     }
 
     @Override
@@ -181,19 +181,19 @@ public class SubSectionViewCollection extends SubSection {
     }
 
     @Override
-    public void viewDidLoad() {
+    public void viewWillLoad() {
         if (!firstPageShown && firstPageName != null) {
             setPage(firstPageName);
             firstPageShown = true;
         }
         if (currentView != null) {
-            currentView.viewDidLoad();
+            currentView.viewWillLoad();
         }
     }
 
     @Override
     public void viewDidUnload() {
-        for (SubSection v : subsectionMap.values()) {
+        for (AppSubSection v : subsectionMap.values()) {
             v.viewDidUnload();
         }
     }

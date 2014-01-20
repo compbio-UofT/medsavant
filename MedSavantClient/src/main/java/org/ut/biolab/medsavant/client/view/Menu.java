@@ -42,13 +42,13 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.project.ProjectEvent;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.client.view.app.VariantNavigatorApp;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
-import org.ut.biolab.medsavant.client.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection.DockState;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection.DockState;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -60,9 +60,9 @@ public class Menu extends JPanel {
 
     private static final String JOBS_BUTTON_TITLE = "Jobs";
     private static final ImageIcon JOBS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_SERVER);
-    private SubSection currentView;
+    private AppSubSection currentView;
     private final JPanel contentContainer;
-    List<SubSection> subSectionViews = new ArrayList<SubSection>();
+    List<AppSubSection> subSectionViews = new ArrayList<AppSubSection>();
     private final JPanel primaryMenu;
     private final JPanel secondaryMenu;
     private final JPanel tertiaryMenu;
@@ -71,7 +71,7 @@ public class Menu extends JPanel {
     private final JPanel tertiaryMenuPanelVisibilityContainer;
     private final JPanel tertiaryMenuPanelAccessoryContainer;
     private JPanel previousSectionPanel;
-    private Map<SubSection, SubSectionButton> map;
+    private Map<AppSubSection, SubSectionButton> map;
     private JButton userButton;
     private static final Log LOG = LogFactory.getLog(Menu.class);
     private UpdatesPanel updatesPanel = new UpdatesPanel();
@@ -81,7 +81,7 @@ public class Menu extends JPanel {
         updatesPanel.update();
     }
 
-    public JButton getSubSectionButton(SubSection ssv) {
+    public JButton getSubSectionButton(AppSubSection ssv) {
         return map.get(ssv);
     }
 
@@ -188,7 +188,7 @@ public class Menu extends JPanel {
         ProjectController.getInstance().addListener(new Listener<ProjectEvent>() {
             @Override
             public void handleEvent(ProjectEvent evt) {
-                if (!GeneticsSection.isInitialized && evt.getType() == ProjectEvent.Type.CHANGED) {
+                if (!VariantNavigatorApp.isInitialized && evt.getType() == ProjectEvent.Type.CHANGED) {
                     //once this section is initialized, referencecombobox fires
                     //referencechanged event on every project change
                     updateSections();
@@ -244,7 +244,7 @@ public class Menu extends JPanel {
         return tertiaryMenu;
     }
 
-    public void addSection(final MultiSection section) {
+    public void addSection(final MultiSectionApp section) {
 
         final JPanel sectionPanel = ViewUtil.getClearPanel();
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
@@ -283,7 +283,7 @@ public class Menu extends JPanel {
 
         ButtonGroup subSectionsGroup = new ButtonGroup();
 
-        for (SubSection v : section.getSubSections()) {
+        for (AppSubSection v : section.getSubSections()) {
             subSectionViews.add(v);
 
             SubSectionButton subSectionButton = new SubSectionButton(v, subSectionsGroup);
@@ -313,7 +313,7 @@ public class Menu extends JPanel {
         }
     }
 
-    public void switchToSubSection(SubSection view) {
+    public void switchToSubSection(AppSubSection view) {
         LOG.debug("Switching to subsection " + view.getPageName());
         if (view.getDockState() == DockState.UNDOCKED) {
             view.focusUndockedFrame();
@@ -325,7 +325,7 @@ public class Menu extends JPanel {
     /**
      * Refreshes the given content pane with content from the subsection view.
      */
-    public void refreshSubSection(JPanel contentPanel, SubSection v) {
+    public void refreshSubSection(JPanel contentPanel, AppSubSection v) {
         contentPanel.removeAll();
         contentPanel.add(v.getDockedView(), BorderLayout.CENTER);
         contentPanel.updateUI();
@@ -361,7 +361,7 @@ public class Menu extends JPanel {
         ViewController.getInstance().changeSubSectionTo(v);
     }
 
-    public void setContentTo(SubSection v) {
+    public void setContentTo(AppSubSection v) {
         if (currentView != v) {
             currentView = v;
             refreshSubSection(contentContainer, currentView);
@@ -393,7 +393,7 @@ public class Menu extends JPanel {
     }
 
     private void resetMap() {
-        map = new HashMap<SubSection, SubSectionButton>();
+        map = new HashMap<AppSubSection, SubSectionButton>();
     }
 
     private JPanel getLoginMenuItem() {
@@ -468,7 +468,7 @@ public class Menu extends JPanel {
 
         private final JPanel panel;
 
-        SectionButton(MultiSection v, JPanel p) {
+        SectionButton(MultiSectionApp v, JPanel p) {
             super(v.getName());
             panel = p;
 
@@ -496,10 +496,10 @@ public class Menu extends JPanel {
 
     private class SubSectionButton extends HoverButton {
 
-        private final SubSection view;
+        private final AppSubSection view;
         private final ButtonGroup group;
 
-        SubSectionButton(SubSection v, ButtonGroup g) {
+        SubSectionButton(AppSubSection v, ButtonGroup g) {
             super(v.getPageName());
             view = v;
             group = g;

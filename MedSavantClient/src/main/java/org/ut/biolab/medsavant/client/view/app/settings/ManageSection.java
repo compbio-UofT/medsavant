@@ -27,22 +27,22 @@ import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
 import org.ut.biolab.medsavant.client.user.UserManagementPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
 
 /**
  *
  * @author mfiume
  */
-public class ManageSection extends MultiSection {
+public class ManageSection extends MultiSectionApp {
 
     public ManageSection() {
         super("Admin");
     }
 
     @Override
-    public SubSection[] getSubSections() {
-        return new SubSection[] {
+    public AppSubSection[] getSubSections() {
+        return new AppSubSection[] {
             new UserManagementPage(this),
             new ProjectManagementPage(this),
             new VariantFilesPage(this),

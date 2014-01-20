@@ -39,8 +39,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSection;
-import org.ut.biolab.medsavant.client.view.subview.SubSection;
+import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -48,11 +48,11 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class UserManagementPage extends SubSection implements Listener<UserEvent> {
+public class UserManagementPage extends AppSubSection implements Listener<UserEvent> {
 
     private SplitScreenView view;
 
-    public UserManagementPage(MultiSection parent) {
+    public UserManagementPage(MultiSectionApp parent) {
         super(parent, "Users");
         UserController.getInstance().addListener(this);
     }
