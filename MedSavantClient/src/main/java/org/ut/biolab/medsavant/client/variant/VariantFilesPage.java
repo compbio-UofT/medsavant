@@ -84,12 +84,14 @@ public class VariantFilesPage extends AppSubSection {
 
     @Override
     public void viewWillLoad() {
+        System.out.println("Loading variant files page");
         super.viewWillLoad();
         update();
     }
 
     @Override
     public void viewDidUnload() {
+        System.out.println("Unloading variant files page");
         super.viewDidUnload();
     }
 
