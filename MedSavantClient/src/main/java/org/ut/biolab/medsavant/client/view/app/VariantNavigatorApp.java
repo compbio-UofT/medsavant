@@ -19,8 +19,6 @@ import org.ut.biolab.medsavant.client.view.genetics.GeneticsChartPage;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.genetics.SpreadsheetPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
 
 /**
  *

@@ -1162,58 +1162,24 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public SimpleVariantFile[] getUploadedFiles(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true));
-        TableSchema tagTable = MedSavantDatabase.VariantTagTableSchema;
-        TableSchema pendingTable = MedSavantDatabase.VariantpendingupdateTableSchema;
         TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
 
         SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
+        query.addFromTable(fileTable.getTable());
         query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(UPLOAD_ID), table.getDBColumn(FILE_ID));
+        query.addColumns(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME));
 
-        ResultSet idRs = ConnectionController.executeQuery(sessID, query.toString());
-
-        List<Integer> uplIDs = new ArrayList<Integer>();
-        List<Integer> fileIDs = new ArrayList<Integer>();
-        while (idRs.next()) {
-            uplIDs.add(idRs.getInt(1));
-            fileIDs.add(idRs.getInt(2));
-        }
-
-        if (uplIDs.isEmpty()) {
-            return new SimpleVariantFile[0];
-        }
-
-        Condition[] idConditions = new Condition[uplIDs.size()];
-        for (int i = 0; i < uplIDs.size(); i++) {
-            idConditions[i] = ComboCondition.and(
-                    BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uplIDs.get(i)),
-                    BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileIDs.get(i)));
-        }
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(tagTable.getTable());
-        q.addFromTable(pendingTable.getTable());
-        q.addFromTable(fileTable.getTable());
-        q.addColumns(
-                tagTable.getDBColumn(VariantTagColumns.UPLOAD_ID),
-                tagTable.getDBColumn(VariantTagColumns.TAGVALUE),
-                fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID),
-                fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME),
-                pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER));
-        q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VariantTagColumns.TAGKEY), VariantTag.UPLOAD_DATE));
-        q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VariantTagColumns.UPLOAD_ID), pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID)));
-        q.addCondition(BinaryCondition.equalTo(pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        q.addCondition(BinaryCondition.equalTo(pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-        q.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID)));
-        q.addCondition(ComboCondition.or(idConditions));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
+        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
+        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
+        
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+        
+        LOG.info("Getting variant tables: " + query.toString());
 
         List<SimpleVariantFile> result = new ArrayList<SimpleVariantFile>();
         while (rs.next()) {
-            result.add(new SimpleVariantFile(rs.getInt(1), rs.getInt(3), rs.getString(4), rs.getString(1), rs.getString(5)));
+            // upload, file, path
+            result.add(new SimpleVariantFile(rs.getInt(1), rs.getInt(2), rs.getString(3)));
         }
         return result.toArray(new SimpleVariantFile[0]);
     }
@@ -1364,13 +1330,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return rs.getInt(1);
     }
 
-    public static void addEntryToFileTable(String sid, int uploadId, int fileId, String fileName) throws SQLException, SessionExpiredException {
+    public static void addEntryToFileTable(String sid, int uploadId, int fileId, int projectID, int referenceID, String fileName) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
 
         InsertQuery q = new InsertQuery(table.getTable());
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
+        q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_PROJECT_ID), projectID);
+        q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceID);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), fileName);
 
         ConnectionController.executeUpdate(sid, q.toString());

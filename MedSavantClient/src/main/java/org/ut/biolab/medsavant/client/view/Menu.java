@@ -46,9 +46,9 @@ import org.ut.biolab.medsavant.client.view.app.VariantNavigatorApp;
 import org.ut.biolab.medsavant.client.view.component.HoverButton;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection.DockState;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection.DockState;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 

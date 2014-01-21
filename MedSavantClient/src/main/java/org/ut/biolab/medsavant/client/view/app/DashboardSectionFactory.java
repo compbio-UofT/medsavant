@@ -12,6 +12,8 @@ import org.ut.biolab.medsavant.client.clinic.GalleryItem;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
@@ -23,6 +25,8 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  * @author mfiume
  */
 public class DashboardSectionFactory {
+    private static AccountManagerApp accountManager;
+    private static TaskManagerApp taskManager;
 
     public static DashboardSection getAppSection() {
 
@@ -140,13 +144,24 @@ public class DashboardSectionFactory {
 
     public static DashboardSection getManagementSection() {
         DashboardSection s = new DashboardSection("Management Apps");
+        
+        if (accountManager == null) {
+            accountManager = new AccountManagerApp();     
+            AppDirectory.registerAccountManager(accountManager);
+        }
+        
+        if (taskManager == null) {
+            taskManager = new TaskManagerApp();
+            AppDirectory.registerTaskManager(taskManager);
+        }
 
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
         //s.addDashboardApp(new PhenotipsApp());
-
-
+        s.addDashboardApp(AppDirectory.getTaskManager());
+        s.addDashboardApp(AppDirectory.getAccountManager());
+        
         s.addDashboardApp(new SettingsApp());
         
         return s;

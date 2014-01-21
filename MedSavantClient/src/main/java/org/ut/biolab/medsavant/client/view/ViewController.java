@@ -27,8 +27,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import org.apache.commons.httpclient.NameValuePair;
 
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;

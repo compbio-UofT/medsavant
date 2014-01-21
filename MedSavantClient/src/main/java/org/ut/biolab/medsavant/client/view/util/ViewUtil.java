@@ -1018,7 +1018,7 @@ public final class ViewUtil {
     public static Color getSubtleTitleColor() {
         return new Color(114,114,114);
     }
-   
+
 
     /*public static void applyMenuStyleInset(JPanel p) {
      p.setBorder(ViewUtil.getMediumBorder());
@@ -1095,7 +1095,7 @@ public final class ViewUtil {
         return l;
     }
 
-    public static JLabel getEmphasizedHeaderLabel(String s) {
+    public static JLabel getEmphasizedLabel(String s) {
         JLabel sc = new JLabel(s);
         sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
         JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
@@ -1104,6 +1104,7 @@ public final class ViewUtil {
                 fColorScheme.getCategoryTextShadowColor());
         return l;
     }
+   
     
     public static JLabel getSubtleHeaderLabel(String s) {
         JLabel sc = new JLabel(s);

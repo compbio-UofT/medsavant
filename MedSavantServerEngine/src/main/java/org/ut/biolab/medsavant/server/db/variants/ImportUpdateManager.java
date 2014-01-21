@@ -74,7 +74,7 @@ public class ImportUpdateManager {
             annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, allTSVFiles, createSubdir(workingDirectory, "annotate_upload"));
 
             // do some accounting
-            addVariantFilesToDatabase(sessionID, updateID, vcfFiles);
+            addVariantFilesToDatabase(sessionID, updateID, projectID, referenceID, vcfFiles);
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
 
             if (publishUponCompletion) {
@@ -326,9 +326,9 @@ public class ImportUpdateManager {
         VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, subDump, tableNameSub);
     }
 
-    private static void addVariantFilesToDatabase(String sessionID, int updateID, File[] vcfFiles) throws SQLException, SessionExpiredException {
+    private static void addVariantFilesToDatabase(String sessionID, int updateID, int projectID, int referenceID, File[] vcfFiles) throws SQLException, SessionExpiredException {
         for (int i = 0; i < vcfFiles.length; i++) {
-            VariantManager.addEntryToFileTable(sessionID, updateID, i, vcfFiles[i].getAbsolutePath());
+            VariantManager.addEntryToFileTable(sessionID, updateID, i, projectID, referenceID, vcfFiles[i].getAbsolutePath());
         }
     }
 

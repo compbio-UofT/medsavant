@@ -46,8 +46,9 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -199,6 +200,7 @@ public class ProjectManagementPage extends AppSubSection {
         private DetailsWorker detailsWorker;
         private JPanel details;
         private CollapsiblePane infoPanel;
+        private final BlockingPanel blockingPanel;
 
         public ProjectsDetailedView() {
             super(pageName);
@@ -209,8 +211,9 @@ public class ProjectManagementPage extends AppSubSection {
             JPanel infoContainer = ViewUtil.getClearPanel();
             ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-            viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
+            blockingPanel = new BlockingPanel("No project selected",ViewUtil.getClearBorderlessScrollPane(infoContainer));
+            viewContainer.add(blockingPanel, BorderLayout.CENTER);
+            
             CollapsiblePanes panes = new CollapsiblePanes();
             panes.setOpaque(false);
             infoContainer.add(panes);
@@ -227,12 +230,17 @@ public class ProjectManagementPage extends AppSubSection {
             infoPanel.add(content, BorderLayout.CENTER);
 
             details = ViewUtil.getClearPanel();
-
-            content.add(details);
+            content.add(details, BorderLayout.CENTER);
+            
+            blockingPanel.block();
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
+            if (item.length == 0) {
+                blockingPanel.block();
+                return;
+            }
             projectName = (String) item[0];
             refreshSelectedProject();
         }
@@ -344,9 +352,8 @@ public class ProjectManagementPage extends AppSubSection {
             } catch (Exception ex) {
             }
 
-
             details.updateUI();
-
+            blockingPanel.unblock();
         }
 
         @Override

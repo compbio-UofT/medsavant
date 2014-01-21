@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import savant.plugin.PluginController;
 
 /**

@@ -35,8 +35,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 
 
 /**
@@ -72,8 +72,6 @@ public class VariantFilesPage extends AppSubSection {
                     new SimpleDetailedListModel<SimpleVariantFile>("Variant File") {
                         @Override
                         public SimpleVariantFile[] getData() throws Exception {
-
-
                             SimpleVariantFile[] files = MedSavantClient.VariantManager.getUploadedFiles(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
                             return files;
                         }
@@ -87,6 +85,7 @@ public class VariantFilesPage extends AppSubSection {
     @Override
     public void viewWillLoad() {
         super.viewWillLoad();
+        update();
     }
 
     @Override

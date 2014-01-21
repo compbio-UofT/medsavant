@@ -451,7 +451,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
 
         this.removeAll();
 
-        JLabel l = ViewUtil.getEmphasizedHeaderLabel("SEARCH CONDITIONS");
+        JLabel l = ViewUtil.getEmphasizedLabel("SEARCH CONDITIONS");
         p.add(l, "left");
 
         p.add(ViewUtil.getHelpButton("How to search", "Type a search condition into the search box, e.g. \"Chromosome\". "

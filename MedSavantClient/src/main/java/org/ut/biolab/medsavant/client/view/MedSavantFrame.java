@@ -78,13 +78,14 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Posit
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
@@ -320,8 +321,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         });
         fileMenu.add(appItem);
 
-       
-
         // Debug code that adds a 'Restart' function to the File menu.
         /*
          JMenuItem restartItem = new JMenuItem("Restart");
@@ -423,7 +422,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         JPanel waitPanel;
         view.add(waitPanel = new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
         waitPanel.setBackground(Color.white);
-        
+
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -441,24 +440,25 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
                 dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
-                //dash.addDashboardSection(DashboardSectionFactory.getAppSection());
-                //dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
+
+                // hide some apps from the history, since theyr'e embedded in the menu anyways
+                dash.blackListAppFromHistory(AppDirectory.getTaskManager());
+                dash.blackListAppFromHistory(AppDirectory.getAccountManager());
 
                 sessionDashboard = dash;
 
                 view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
                 switchToView(SESSION_VIEW_CARD_NAME);
-                
+
                 return null;
             }
         }.execute();
 
     }
-    
+
     public Dashboard getDashboard() {
         return sessionDashboard;
     }
-
 
     public final void switchToLoginView() {
         if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {

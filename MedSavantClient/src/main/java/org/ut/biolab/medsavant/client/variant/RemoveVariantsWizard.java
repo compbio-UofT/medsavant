@@ -95,7 +95,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         page.addText("This wizard will help you remove the following variant files from \nproject " + projectName + " and reference " + referenceName + ": ");
 
         for (SimpleVariantFile f : files) {
-            JLabel nameLabel = new JLabel(f.getName());
+            JLabel nameLabel = new JLabel(f.getPath());
             nameLabel.setFont(ViewUtil.getMediumTitleFont());
             page.addComponent(nameLabel);
         }

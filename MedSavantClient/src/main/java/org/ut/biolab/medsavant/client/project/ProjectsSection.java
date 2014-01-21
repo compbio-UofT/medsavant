@@ -25,8 +25,8 @@ import org.ut.biolab.medsavant.client.patient.IndividualsPage;
 import org.ut.biolab.medsavant.client.region.RegionPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 
 /**
  * Section which displays information about the current project.
