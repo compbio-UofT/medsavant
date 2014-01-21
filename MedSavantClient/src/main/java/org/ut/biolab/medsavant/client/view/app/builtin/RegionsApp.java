@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.shared.model.RegionSet;
  *
  * @author mfiume
  */
-class RegionsApp implements DashboardApp {
+public class RegionsApp implements DashboardApp {
 
     private SplitScreenView view;
 

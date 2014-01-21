@@ -6,7 +6,12 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.view.app.builtin.*;
+import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.VariantNavigatorApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.patients.PatientsApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.settings.SettingsApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
 
@@ -74,7 +79,6 @@ public class DashboardSectionFactory {
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
-        //s.addDashboardApp(new PhenotipsApp());
 
         s.addDashboardApp(new AppStoreApp());
 

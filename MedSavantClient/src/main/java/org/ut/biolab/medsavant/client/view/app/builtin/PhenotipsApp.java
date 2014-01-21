@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
  *
  * @author mfiume
  */
-class PhenotipsApp implements DashboardApp {
+public class PhenotipsApp implements DashboardApp {
 
     private JPanel view;
 
