@@ -2,9 +2,6 @@ package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.patient.IndividualDetailEditor;
-import org.ut.biolab.medsavant.client.patient.IndividualDetailedView;
-import org.ut.biolab.medsavant.client.patient.IndividualListModel;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.region.RegionDetailedListEditor;
 import org.ut.biolab.medsavant.client.region.RegionDetailedView;
