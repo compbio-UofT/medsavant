@@ -264,7 +264,7 @@ public class SearchBar extends JPanel {
         //JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(instead);
         //scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.setFocusable(true);
-        add(effectivenessPanel, BorderLayout.NORTH);
+        //add(effectivenessPanel, BorderLayout.NORTH);
         add(instead, BorderLayout.CENTER);
         add(controlbar.getComponent(), BorderLayout.SOUTH);
 

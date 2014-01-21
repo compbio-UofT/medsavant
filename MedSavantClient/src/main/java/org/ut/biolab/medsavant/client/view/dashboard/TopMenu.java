@@ -6,6 +6,7 @@
 
 package org.ut.biolab.medsavant.client.view.dashboard;
 
+import com.explodingpixels.macwidgets.MacWidgetFactory;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,6 +36,7 @@ class TopMenu extends JPanel {
         leftComponent.setLayout(new MigLayout("insets 0, nogrid"));
         
         centerComponent = ViewUtil.getClearPanel();
+        
         
         titleLabel = new JLabel("");
         titleLabel.setForeground(new Color(64,64,64));

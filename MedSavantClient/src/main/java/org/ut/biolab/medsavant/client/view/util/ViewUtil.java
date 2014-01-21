@@ -20,6 +20,8 @@
 package org.ut.biolab.medsavant.client.view.util;
 
 import com.explodingpixels.macwidgets.HudWindow;
+import com.explodingpixels.macwidgets.MacWidgetFactory;
+import com.explodingpixels.macwidgets.SourceListStandardColorScheme;
 import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -79,6 +81,8 @@ import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
  */
 public final class ViewUtil {
 
+    private static final SourceListStandardColorScheme fColorScheme = new SourceListStandardColorScheme();
+    
     public static Point getPositionRelativeTo(Component root, Component comp) {
         if (comp.equals(root)) {
             return new Point(0, 0);
@@ -1010,6 +1014,10 @@ public final class ViewUtil {
     public static Color getPrimaryMenuColor() {
         return new Color(221,221,221);
     }
+
+    public static Color getSubtleTitleColor() {
+        return new Color(114,114,114);
+    }
    
 
     /*public static void applyMenuStyleInset(JPanel p) {
@@ -1087,9 +1095,23 @@ public final class ViewUtil {
         return l;
     }
 
-    public static JLabel getDetailHeaderLabel(String s) {
-        JLabel l = getDetailLabel(s);
-        l.setFont(detailFontBold);
+    public static JLabel getEmphasizedHeaderLabel(String s) {
+        JLabel sc = new JLabel(s);
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
+                fColorScheme.getCategoryTextColor(),
+                fColorScheme.getCategoryTextColor(),
+                fColorScheme.getCategoryTextShadowColor());
+        return l;
+    }
+    
+    public static JLabel getSubtleHeaderLabel(String s) {
+        JLabel sc = new JLabel(s);
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
+                ViewUtil.getSubtleTitleColor(),
+                ViewUtil.getSubtleTitleColor(),
+                fColorScheme.getCategoryTextShadowColor());
         return l;
     }
 

@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -262,10 +261,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             populateTable(name, terms);
 
             Map<String, Set<String>> allGenes = new HashMap<String, Set<String>>();
-            // Expecting a GZIPped tab-delimited text file in GAF (GO Annotation File) format.
             // We are only interested in columns 2 (gene), 3 (qualifier), and 4 (GO term).
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(RemoteFileCache.getCacheFile(goToGeneData)))));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(RemoteFileCache.getCacheFile(goToGeneData))));
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {

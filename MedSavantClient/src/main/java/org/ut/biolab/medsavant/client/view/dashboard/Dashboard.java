@@ -160,9 +160,7 @@ public class Dashboard extends JPanel {
             }
 
             if (!s.getName().equals("Apps")) {
-                JLabel l = new JLabel(s.getName().toUpperCase());
-                l.setForeground(new Color(124,124,124));
-                l.setFont(ViewUtil.getSmallTitleFont());
+                JLabel l = ViewUtil.getSubtleHeaderLabel(s.getName().toUpperCase());
                 middlePane.add(l, "wrap, center");
             }
 
