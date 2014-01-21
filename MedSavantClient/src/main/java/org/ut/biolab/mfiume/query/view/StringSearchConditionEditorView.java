@@ -265,7 +265,7 @@ public class StringSearchConditionEditorView extends SearchConditionEditorView {
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
             p.add(Box.createHorizontalGlue());
-            p.add(new JLabel("This field is not populated"));
+            p.add(new JLabel("<html>All values are blank for this condition.</html>"));
             p.add(Box.createHorizontalGlue());
             this.add(p);
             return;

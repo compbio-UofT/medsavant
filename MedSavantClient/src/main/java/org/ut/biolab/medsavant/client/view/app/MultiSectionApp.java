@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.subview;
+package org.ut.biolab.medsavant.client.view.app;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -84,6 +84,7 @@ public abstract class MultiSectionApp implements DashboardApp {
 
                 @Override
                 public void stateChanged(ChangeEvent e) {
+                    System.out.println("Tab changed in multisection app");
                     if (currentSubSection != null) { currentSubSection.viewDidUnload(); }
                     currentSubSection = subsections[tabs.getSelectedIndex()];
                     currentSubSection.viewWillLoad();
