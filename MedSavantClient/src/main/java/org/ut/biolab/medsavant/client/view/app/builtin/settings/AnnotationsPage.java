@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.app.settings;
+package org.ut.biolab.medsavant.client.view.app.builtin.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

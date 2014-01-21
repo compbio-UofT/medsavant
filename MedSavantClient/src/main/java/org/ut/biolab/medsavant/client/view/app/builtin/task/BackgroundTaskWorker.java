@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.client.view.app.task;
+package org.ut.biolab.medsavant.client.view.app.builtin.task;
 
 import java.util.ArrayList;
 import java.util.Date;

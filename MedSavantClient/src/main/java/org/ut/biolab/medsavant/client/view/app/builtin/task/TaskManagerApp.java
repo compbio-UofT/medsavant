@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.app.task;
+package org.ut.biolab.medsavant.client.view.app.builtin.task;
 
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import java.awt.BorderLayout;
@@ -26,7 +26,7 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.app.task.TaskWorker.TaskStatus;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker.TaskStatus;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import java.awt.Component;
 import java.util.LinkedList;
@@ -14,7 +14,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.ut.biolab.medsavant.client.api.MedSavantVariantSectionApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.view.app.settings.PluginPage;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.settings.PluginPage;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsChartPage;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.genetics.SpreadsheetPage;

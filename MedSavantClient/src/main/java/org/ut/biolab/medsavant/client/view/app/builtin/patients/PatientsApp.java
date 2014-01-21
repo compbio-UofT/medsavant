@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app.patients;
+package org.ut.biolab.medsavant.client.view.app.builtin.patients;
 
 import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.cohort.CohortsPage;

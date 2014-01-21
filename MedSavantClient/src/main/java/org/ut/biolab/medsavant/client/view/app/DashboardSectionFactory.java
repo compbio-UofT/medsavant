@@ -1,24 +1,14 @@
 package org.ut.biolab.medsavant.client.view.app;
 
-import org.ut.biolab.medsavant.client.view.app.settings.SettingsApp;
-import org.ut.biolab.medsavant.client.view.app.RegionsApp;
-import org.ut.biolab.medsavant.client.view.app.patients.PatientsApp;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
-import org.ut.biolab.medsavant.client.clinic.GalleryItem;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.*;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
 /**
  *

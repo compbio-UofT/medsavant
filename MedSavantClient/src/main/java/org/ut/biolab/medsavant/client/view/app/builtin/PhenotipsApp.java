@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;

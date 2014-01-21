@@ -5,7 +5,7 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
-import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 
 /**

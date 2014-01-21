@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
 import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
-import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;

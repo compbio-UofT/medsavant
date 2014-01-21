@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app.settings;
+package org.ut.biolab.medsavant.client.view.app.builtin.settings;
 
 import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.geneset.GeneSetPage;
