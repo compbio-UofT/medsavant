@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.app.settings;
+package org.ut.biolab.medsavant.client.view.app.builtin.settings;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -33,12 +33,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 

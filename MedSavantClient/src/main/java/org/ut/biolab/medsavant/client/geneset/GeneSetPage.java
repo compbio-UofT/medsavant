@@ -32,8 +32,8 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 
 
 /**

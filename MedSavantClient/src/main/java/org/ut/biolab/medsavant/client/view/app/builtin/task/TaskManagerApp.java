@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.app.task;
+package org.ut.biolab.medsavant.client.view.app.builtin.task;
 
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import java.awt.BorderLayout;
@@ -12,17 +12,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.ListSelectionModel;
+import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.app.task.TaskWorker.TaskStatus;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker.TaskStatus;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
@@ -97,7 +101,6 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
 
             @Override
             public void run() {
-                System.out.println("Displaying message for task: " + message);
                 DialogUtils.displayMessage("Task Manager", message);
             }
 
@@ -219,7 +222,7 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
             JPanel view = new JPanel();
             view.setBackground(Color.white);
 
-            MigLayout l = new MigLayout("fillx, nogrid");
+            MigLayout l = new MigLayout("fillx, nogrid, insets 0");
             view.setLayout(l);
 
             JLabel taskTitle = ViewUtil.getLargeGrayLabel(t.getTaskName());
@@ -227,6 +230,10 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
 
             if (t.getCurrentStatus() != TaskStatus.PERSISTENT) {
                 view.add(new JLabel(t.getCurrentStatus().toString()));
+
+                if (t.getCurrentStatus() == TaskStatus.INPROGRESS) {
+                    view.add(ViewUtil.getIndeterminateProgressBar());
+                }
             }
 
             // add a button that launches the responsible app when pressed
@@ -242,7 +249,7 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
                 });
                 view.add(appButton);
             }
-            
+
             // add a refresh button
             if (t.getCurrentStatus() == TaskStatus.PERSISTENT) {
                 JButton refreshButton = new JButton("Refresh");
@@ -279,6 +286,7 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
             }
 
             StripyTable table = new StripyTable(tableData, new String[]{"Log"});
+            table.disableSelection();
             view.add(table.getTableHeader(), "newline, growx");
             view.add(ViewUtil.getClearBorderlessScrollPane(table), "newline 0, growx 1.0, height 100%");
 
@@ -289,6 +297,5 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
 
             this.updateUI();
         }
-
     }
 }

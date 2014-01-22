@@ -21,7 +21,9 @@ package org.ut.biolab.medsavant.client.view.component;
 
 import java.awt.CardLayout;
 import java.awt.Color;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -35,10 +37,10 @@ public final class BlockingPanel extends JPanel {
     private final WaitPanel blockCard;
 
 
-    public BlockingPanel(String blockMessage, JPanel content) {
+    public BlockingPanel(String blockMessage, JComponent content) {
         setLayout(cardLayout);
         blockCard = new WaitPanel(blockMessage);
-        blockCard.setTextColor(Color.gray);
+        blockCard.setTextColor(ViewUtil.getSubtleTitleColor());
         blockCard.setProgressBarVisible(false);
         add(blockCard,BLOCK_CARD_NAME);
         add(content,CONTENT_CARD_NAME);

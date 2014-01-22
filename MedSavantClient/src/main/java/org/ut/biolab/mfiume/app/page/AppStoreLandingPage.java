@@ -97,7 +97,6 @@ public class AppStoreLandingPage implements AppStorePage {
         }
 
         flowView.updateUI();
-        System.out.println("Done setting app info for " + info.size() + " apps");
     }
 
     @Override

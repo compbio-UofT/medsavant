@@ -22,21 +22,15 @@ package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import org.ut.biolab.medsavant.client.api.Listener;
 
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
-import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.controller.LocationController;
 import savant.util.Range;
@@ -102,7 +96,7 @@ public class BasicGeneSubInspector extends SubInspector implements Listener<Gene
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     LocationController.getInstance().setLocation(selectedGene.getChrom(), new Range((int) (selectedGene.getCodingStart() - 50), (int) (selectedGene.getCodingEnd() + 51)));
-                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
+                    AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });
 

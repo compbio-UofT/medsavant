@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.shared.model;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
@@ -29,40 +30,28 @@ public class SimpleVariantFile implements Serializable {
 
     private int uploadId;
     private int fileId;
-    private String name;
-    private String date;
-    private String user;
+    private String path;
 
-    public SimpleVariantFile(int uploadId, int fileId, String name, String date, String user){
+    public SimpleVariantFile(int uploadId, int fileId, String path){
         this.uploadId = uploadId;
         this.fileId = fileId;
-        this.name = name;
-        this.date = date;
-        this.user = user;
+        this.path = path;
     }
 
     public int getUploadId() {
         return uploadId;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDate() {
-        return date;
+    public String getPath() {
+        return path;
     }
 
     public int getFileId() {
         return fileId;
     }
 
-    public String getUser() {
-        return user;
-    }
-
     public String toString() {
-        return name;
+        return (new File(path)).getName();
     }
 
 }

@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app.settings;
+package org.ut.biolab.medsavant.client.view.app.builtin.settings;
 
 import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.geneset.GeneSetPage;
@@ -8,8 +8,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceGenomePage;
 import org.ut.biolab.medsavant.client.user.UserManagementPage;
 import org.ut.biolab.medsavant.client.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 
 /**
  *

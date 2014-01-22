@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.mfiume.query.QueryViewController;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
 
@@ -114,7 +115,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                  */
                 
                QueryUtils.addQueryOnRegions(regions, selectedRegions);
-               MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected genomic regions have been added to query.  Click 'Variants' to review and execute search.");
+               DialogUtils.displayMessage("Selected genomic regions have been added to query.  Click 'Variants' to review and execute search.");
             }
         });
         
@@ -149,7 +150,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
                     String description = StringConditionEncoder.getDescription(regionSetNames);
                                  
                     qvc.replaceFirstLevelItem("Region Set", encodedConditions, description);                                                                               
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected region sets have been added to query.  Click 'Variants' to review and execute search.");
+                    DialogUtils.displayMessage("Selected region sets have been added to query.  Click 'Variants' to review and execute search.");
 
                 }
             });

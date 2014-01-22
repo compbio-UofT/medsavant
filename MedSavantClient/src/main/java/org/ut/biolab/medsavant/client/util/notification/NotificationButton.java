@@ -34,7 +34,6 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -69,12 +68,10 @@ public class NotificationButton extends JPanel {
         this.notificationMenu.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
-                ViewController.getInstance().getMenu().repaint();
             }
 
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
-                ViewController.getInstance().getMenu().repaint();
             }
 
             @Override

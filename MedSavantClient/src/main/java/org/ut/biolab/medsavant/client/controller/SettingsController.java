@@ -220,15 +220,12 @@ public class SettingsController {
      */
     private void resetPersistenceMap() {
         this.persistenceMap.clear();
-        setValueSilent(KEY_VERSION,VersionSettings.getVersionString());
         resetSettingSilent(KEY_USERNAME);
         resetSettingSilent(KEY_PASSWORD);
         resetSettingSilent(KEY_REMEMBER_PASSWORD);
         resetSettingSilent(KEY_AUTOLOGIN);
         resetSettingSilent(KEY_DB_DRIVER);
-        //resetSettingSilent(KEY_DB_HOST);
         resetSettingSilent(KEY_DB_NAME);
-        //resetSettingSilent(KEY_DB_PORT);
         resetSettingSilent(KEY_SERVER_ADDRESS);
         resetSettingSilent(KEY_SERVER_PORT);
         savePersistenceMap();
@@ -274,6 +271,8 @@ public class SettingsController {
     public static String getDefaultValue(String key) {
         if (key.equals(KEY_USERNAME)) {
             return "";
+        } else if (key.equals(KEY_VERSION)) {
+            return VersionSettings.getVersionString();
         } else if (key.equals(KEY_PASSWORD)) {
             return "";
         } else if (key.equals(KEY_REMEMBER_PASSWORD)) {

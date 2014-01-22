@@ -24,8 +24,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -40,7 +38,6 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
@@ -149,7 +146,6 @@ public class AddPatientsForm extends JDialog {
     }
 
     private void close() {
-        ViewController.getInstance().refreshView();
         this.setVisible(false);
         this.dispose();
     }

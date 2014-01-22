@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
 import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
-import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
@@ -32,22 +32,8 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  */
 public class MenuFactory {
 
-    private static TaskManagerApp taskManager;
-    private static AccountManagerApp accountManager;
-
     public static JPopupMenu generateMenu() {
-        
-        if (accountManager == null) {
-            accountManager = new AccountManagerApp();
-            MedSavantFrame.getInstance().getDashboard().blackListAppFromHistory(accountManager);
-        }
-        
-        if (taskManager == null) {
-            taskManager = new TaskManagerApp();
-            MedSavantFrame.getInstance().getDashboard().blackListAppFromHistory(taskManager);
-            AppDirectory.registerTaskManager(taskManager);
-        }
-        
+
         JPopupMenu m = new JPopupMenu();
         
         m.add(getRecentAppsMenu());
@@ -65,10 +51,10 @@ public class MenuFactory {
         if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != null) {
             m.add(getDashboardMenuItem());
         }
-        if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != taskManager) {
+        if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != AppDirectory.getTaskManager()) {
             m.add(getTasksMenu());
         }
-        if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != accountManager) {
+        if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != AppDirectory.getAccountManager()) {
             m.add(getAccountMenu());
         }
         m.add(new JSeparator());
@@ -108,13 +94,11 @@ public class MenuFactory {
     }
 
     private static JMenuItem getAccountMenu() {
-        
-        return getMenuItemAppLauncherForApp(accountManager);
+        return getMenuItemAppLauncherForApp(AppDirectory.getAccountManager());
     }
 
     private static JMenuItem getTasksMenu() {
-        
-        return getMenuItemAppLauncherForApp(taskManager);
+        return getMenuItemAppLauncherForApp(AppDirectory.getTaskManager());
     }
 
     private static JMenuItem getLogoutItem() {
@@ -160,7 +144,6 @@ public class MenuFactory {
         });
 
         if (app instanceof DashboardApp) {
-            System.out.println(app.getName() + " is instance of Dashboard app");
             ImageIcon appicon = ((DashboardApp) app).getIcon();
             Image image = appicon.getImage().getScaledInstance(23, 23, Image.SCALE_SMOOTH);
             appLauncher.setIcon(new ImageIcon(image));

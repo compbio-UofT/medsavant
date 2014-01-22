@@ -78,13 +78,14 @@ import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Posit
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
@@ -143,109 +144,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             menu.add(debugItem);
         }
         return menu;
-    }
-
-    private final JMenu viewMenuMenu;
-
-    public void translationAnimation(Point src, Point dst, ImageIcon img, final String notificationMsg) {
-        if (src != null && dst != null) {
-            view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME) {
-                public void done() {
-                    if (notificationMsg != null) {
-                        notificationMessage(notificationMsg);
-                    }
-                }
-            });
-        }
-    }
-
-    public void translationAnimation(Component srcComponent, Component dstComponent, ImageIcon img, String notificationMsg) {
-        Point src = ViewUtil.getPositionRelativeTo(view, srcComponent);
-        Point dst = ViewUtil.getPositionRelativeTo(view, dstComponent);
-        translationAnimation(src, dst, img, notificationMsg);
-    }
-
-    public void animationFromMousePos(Component dstComponent, ImageIcon img, final String notificationMsg) {
-        translationAnimation(view, dstComponent, img, notificationMsg);
-    }
-
-    public void browserAnimationFromMousePos(final String notificationMsg) {
-
-        /*Point src = view.getMousePosition();
-         if(src == null){
-         return;
-         }
-
-         Point dst = null;
-         Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-         */
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
-        Component dstComponent = null;
-        Menu menu = ViewController.getInstance().getMenu();
-        for (AppSubSection sv : menu.subSectionViews) {
-            if (sv.getPageName().equalsIgnoreCase("Browser")) {
-                //dstComponent = getPositionRelativeTo(view, menu.getSubSectionButton(sv));
-                dstComponent = menu.getSubSectionButton(sv);
-                break;
-            }
-        }
-
-        animationFromMousePos(dstComponent, img, notificationMsg);
-        if (dstComponent != null) {
-            animationFromMousePos(dstComponent, img, notificationMsg);
-        }
-    }
-
-    public void notificationMessage(String notificationMsg) {
-        view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-    }
-
-    /**
-     * Creates a search animation from the current mouse position. i.e. creates
-     * an image that moves from the current mouse position to the 'Variants'
-     * button on the toolbar.
-     *
-     * Do not call until the previous animation thread is finished. This
-     * shouldn't happen as long as the animation time is short. (< 500ms ).
-     */
-    public void searchAnimationFromMousePos(final String notificationMsg) {
-        ImageIcon img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_SEARCH);
-        /*Point src = view.getMousePosition();
-         if(src == null){
-         return;
-         }
-
-         Point dst = null;
-         */
-        Component dstComponent = null;
-        Enumeration<AbstractButton> e = ViewController.getInstance().getMenu().primaryMenuButtons.getElements();
-        while (e.hasMoreElements()) {
-            AbstractButton b = e.nextElement();
-            if (b.getName().equalsIgnoreCase("Variants")) {
-                //dst = getPositionRelativeTo(view, b);
-                dstComponent = b;
-            }
-        }
-        animationFromMousePos(dstComponent, img, notificationMsg);
-        /*
-         if(dst != null){
-         //view.cancel();
-
-         view.animate(new IconTranslatorAnimation(img.getImage(), src, dst, SEARCH_ANIMATION_RUNTIME){
-         public void done(){
-         if(notificationMsg != null){
-         notificationMessage(notificationMsg);
-         //view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
-         }
-         }
-         });
-
-         }
-         */
-    }
-
-    public void searchAnimationFromMousePos() {
-        searchAnimationFromMousePos(null);
     }
 
     public static MedSavantFrame getInstance() {
@@ -320,8 +218,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         });
         fileMenu.add(appItem);
 
-       
-
         // Debug code that adds a 'Restart' function to the File menu.
         /*
          JMenuItem restartItem = new JMenuItem("Restart");
@@ -346,33 +242,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
 
         menuBar.add(fileMenu);
-
-        JMenu viewMenu = new JMenu("View");
-
-        viewMenuMenu = new JMenu("Menu");
-
-        JMenuItem togglePrimaryMenu = new JMenuItem("Primary Menu");
-        togglePrimaryMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                ViewController.getInstance().getMenu().setPrimaryMenuVisible(!ViewController.getInstance().getMenu().isPrimaryMenuVisible());
-            }
-        });
-        viewMenuMenu.add(togglePrimaryMenu);
-
-        JMenuItem toggleSecondaryMenu = new JMenuItem("Secondary Menu");
-        toggleSecondaryMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                ViewController.getInstance().getMenu().setSecondaryMenuVisible(!ViewController.getInstance().getMenu().isSecondaryMenuVisible());
-            }
-        });
-        viewMenuMenu.add(toggleSecondaryMenu);
-
-        viewMenu.add(viewMenuMenu);
-        viewMenuMenu.setEnabled(false);
-
-        menuBar.add(viewMenu);
 
         JMenu helpMenu = new JMenu("Help");
 
@@ -414,6 +283,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             switchToLoginView();
         }
     }
+    
+    public void notificationMessage(String notificationMsg) {
+        view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+    }
 
     public void switchToSessionView() {
         if (!LoginController.getInstance().isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) {
@@ -423,7 +296,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         JPanel waitPanel;
         view.add(waitPanel = new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
         waitPanel.setBackground(Color.white);
-        
+
         switchToView(WAIT_CARD_NAME);
 
         new MedSavantWorker<Void>("MedSavantFrame") {
@@ -441,24 +314,25 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
                 dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
-                //dash.addDashboardSection(DashboardSectionFactory.getAppSection());
-                //dash.addDashboardSection(DashboardSectionFactory.getBuiltInSection());
+
+                // hide some apps from the history, since theyr'e embedded in the menu anyways
+                dash.blackListAppFromHistory(AppDirectory.getTaskManager());
+                dash.blackListAppFromHistory(AppDirectory.getAccountManager());
 
                 sessionDashboard = dash;
 
                 view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
                 switchToView(SESSION_VIEW_CARD_NAME);
-                
+
                 return null;
             }
         }.execute();
 
     }
-    
+
     public Dashboard getDashboard() {
         return sessionDashboard;
     }
-
 
     public final void switchToLoginView() {
         if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {
@@ -503,11 +377,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         switch (evt.getType()) {
             case LOGGED_IN:
                 switchToSessionView();
-                viewMenuMenu.setEnabled(true);
                 break;
             case LOGGED_OUT:
                 switchToLoginView();
-                viewMenuMenu.setEnabled(false);
                 break;
         }
         if (queuedForExit) {

@@ -136,15 +136,15 @@ public class RegionWizard extends WizardDialog {
         }
     }
 
-    public RegionWizard(boolean imp) throws SQLException, RemoteException {
+    public RegionWizard(boolean doImportProcess) throws SQLException, RemoteException {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
-        this.importing = imp;
+        this.importing = doImportProcess;
         controller = RegionController.getInstance();
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
         //add pages
         PageList model = new PageList();
-        if (imp) {
+        if (doImportProcess) {
             model.append(getNamePage());
             model.append(getFilePage());
             model.append(getCreationPage());

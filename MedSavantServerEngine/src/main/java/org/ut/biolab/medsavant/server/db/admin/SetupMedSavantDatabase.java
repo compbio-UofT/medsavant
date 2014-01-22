@@ -357,6 +357,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     "CREATE TABLE  `" + MedSavantDatabase.VariantFileTableSchema.getTableName() + "` ("
                     + "`upload_id` int(11) NOT NULL,"
                     + "`file_id` int(11) NOT NULL,"
+                    + "`project_id` int(11) NOT NULL,"
+                    + "`reference_id` int(11) NOT NULL,"
                     + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL,"
                     + "UNIQUE KEY `unique` (`upload_id`,`file_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");

@@ -37,8 +37,8 @@ import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 

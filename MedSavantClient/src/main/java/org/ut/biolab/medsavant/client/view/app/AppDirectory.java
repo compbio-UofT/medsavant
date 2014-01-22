@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.client.view.app;
 
-import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 
 /**
  *
@@ -15,14 +14,31 @@ import org.ut.biolab.medsavant.client.view.app.task.TaskManagerApp;
 public class AppDirectory {
 
     private static TaskManagerApp taskManager;
-    
-    static void registerTaskManager(TaskManagerApp tm) {
-        taskManager = tm;
+    private static AccountManagerApp accountManager;
+
+    public static void launchApp(BuiltInApp builtInApp) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    public static enum BuiltInApp {
+        TASK_MANAGER,
+        ACCOUNT_MANAGER,
+        PATIENTS,
+        GENOME_BROWSER,
+        VARIANT_NAVIGATOR
+    };
 
     public static TaskManagerApp getTaskManager() {
+        if (taskManager == null) {
+            taskManager = new TaskManagerApp();
+        }
         return taskManager;
     }
-    
-    
+
+    public static AccountManagerApp getAccountManager() {
+        if (accountManager == null) {
+            accountManager = new AccountManagerApp();
+        }
+        return accountManager;
+    }
+
 }

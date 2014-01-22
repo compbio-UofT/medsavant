@@ -1,10 +1,7 @@
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.patient.IndividualDetailEditor;
-import org.ut.biolab.medsavant.client.patient.IndividualDetailedView;
-import org.ut.biolab.medsavant.client.patient.IndividualListModel;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.region.RegionDetailedListEditor;
 import org.ut.biolab.medsavant.client.region.RegionDetailedView;
@@ -18,7 +15,7 @@ import org.ut.biolab.medsavant.shared.model.RegionSet;
  *
  * @author mfiume
  */
-class RegionsApp implements DashboardApp {
+public class RegionsApp implements DashboardApp {
 
     private SplitScreenView view;
 

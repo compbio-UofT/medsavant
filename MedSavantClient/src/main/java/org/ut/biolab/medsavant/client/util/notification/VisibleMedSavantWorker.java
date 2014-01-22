@@ -29,14 +29,11 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.ViewController;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -103,9 +100,6 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
         closeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                NotificationButton nb = ViewController.getInstance().getMenu().getJobNotificationButton();
-                nb.removeNotificationView(view);
-
                 closeJob();
             }
         });
@@ -128,9 +122,6 @@ public abstract class VisibleMedSavantWorker<T> extends MedSavantWorker<T> imple
         view.add(ViewUtil.alignLeft(titleLabel));
         view.add(statusPanel);
         view.add(ViewUtil.alignRight(buttonBar));
-
-        NotificationButton button = ViewController.getInstance().getMenu().getJobNotificationButton();
-        button.addNotification(view);
 
         setStatus(JobStatus.NOT_STARTED);
     }

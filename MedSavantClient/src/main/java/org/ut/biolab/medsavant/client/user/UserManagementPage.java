@@ -39,8 +39,9 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
-import org.ut.biolab.medsavant.client.view.subview.AppSubSection;
+import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
+import org.ut.biolab.medsavant.client.view.app.AppSubSection;
+import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -157,6 +158,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
         private String name;
         private DetailsWorker worker;
         private CollapsiblePane infoPanel;
+        private final BlockingPanel blockingPanel;
 
         public UserDetailedView() {
             super(pageName);
@@ -167,7 +169,8 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             JPanel infoContainer = ViewUtil.getClearPanel();
             ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-            viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
+            blockingPanel = new BlockingPanel("No user selected",ViewUtil.getClearBorderlessScrollPane(infoContainer));
+            viewContainer.add(blockingPanel, BorderLayout.CENTER);
 
             CollapsiblePanes panes = new CollapsiblePanes();
             panes.setOpaque(false);
@@ -191,10 +194,18 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
             //content.add(details, BorderLayout.CENTER);
             content.add(details);
+            
+            blockingPanel.block();
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
+            
+            if (item.length == 0) {
+                blockingPanel.block();
+                return;
+            }
+            
             name = (String) item[0];
             infoPanel.setTitle(name);
 
@@ -228,7 +239,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             details.add(ViewUtil.getKeyValuePairList(values));
 
             details.updateUI();
-
+            blockingPanel.unblock();
         }
 
         @Override

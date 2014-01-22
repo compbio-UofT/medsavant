@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -42,7 +42,6 @@ import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.subview.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import org.ut.biolab.medsavant.client.view.variants.MedSavantDataSource;

@@ -164,7 +164,7 @@ public class QueryUtils {
             int fileId = file.getFileId();
             SearchConditionGroupItem fileGroup = new SearchConditionGroupItem(SearchConditionGroupItem.QueryRelation.OR, null, null);
 
-            String filename = (new File(file.getName())).getName();
+            String filename = (new File(file.getPath())).getName();
 
             fileGroup.setDescription(filename);
 

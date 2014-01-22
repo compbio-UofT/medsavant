@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.view.subview;
+package org.ut.biolab.medsavant.client.view.app;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -27,16 +27,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.client.util.ThreadController;
-import org.ut.biolab.medsavant.client.view.Menu;
-import org.ut.biolab.medsavant.client.view.ViewController;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -73,7 +69,6 @@ public abstract class AppSubSection {
         undockedFrame.dispose();
         undockedFrame = null;
         dockState = DockState.DOCKED;
-        ViewController.getInstance().refreshView();
     }
 
     private JFrame undock() {
@@ -98,9 +93,6 @@ public abstract class AppSubSection {
         cc.setLayout(new BorderLayout());
         undockedFrame.add(cc);
 
-        Menu menu = ViewController.getInstance().getMenu();
-        menu.refreshSubSection(cc, this);
-
         undockedFrame.pack();
         undockedFrame.setLocationRelativeTo(null);
         undockedFrame.setVisible(true);
@@ -108,7 +100,6 @@ public abstract class AppSubSection {
 
         dockState = DockState.UNDOCKED;
 
-        ViewController.getInstance().refreshView();
         return undockedFrame;
     }
 

@@ -76,19 +76,42 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>clirr-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Compare the current code against version 1.2 -->
-                    <comparisonVersion>1.2</comparisonVersion>
                     <!-- List of specific CLIRR excludes.
                          See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
                     -->    
                     <ignored>
+                        <!-- Remove the following ignores after each release. -->
                         <!-- Allow addition of new methods to the server api -->
                         <difference>
                             <className>**/org/ut/biolab/medsavant/shared/serverapi/*</className>
                             <differenceType>7012</differenceType>
                             <method>**</method>
                         </difference>
-                        <!-- Remove the following ignores after each release. -->
+                        <difference>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <differenceType>7002</differenceType>
+                            <method>java.util.List getAnnotationLog(java.lang.String, int, int)</method>
+                        </difference>
+                        <difference>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <differenceType>7002</differenceType>
+                            <method>int getAnnotationLogSize(java.lang.String)</method>
+                        </difference>
+                        <difference>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <differenceType>7002</differenceType>
+                            <method>java.util.List getClientLog(java.lang.String, int, int)</method>
+                        </difference>
+                        <difference>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <differenceType>7002</differenceType>
+                            <method>int getClientLogSize(java.lang.String)</method>
+                        </difference>
+                        <difference>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <differenceType>7002</differenceType>
+                            <method>void addLog(java.lang.String, java.lang.String, org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter$LogType, java.lang.String)</method>
+                        </difference>
                     </ignored>
                     <excludes>
                         <exclude>**/internal/**</exclude>

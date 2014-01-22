@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.client.view.app;
+package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
  *
  * @author mfiume
  */
-class PhenotipsApp implements DashboardApp {
+public class PhenotipsApp implements DashboardApp {
 
     private JPanel view;
 
