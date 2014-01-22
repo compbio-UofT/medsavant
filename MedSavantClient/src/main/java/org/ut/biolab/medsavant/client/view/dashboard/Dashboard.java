@@ -2,14 +2,8 @@ package org.ut.biolab.medsavant.client.view.dashboard;
 
 import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.PopupMenu;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -22,30 +16,25 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.javadev.AnimatingCardLayout;
-import org.javadev.effects.Animation;
-import org.javadev.effects.CubeAnimation;
-import org.javadev.effects.DashboardAnimation;
-import org.javadev.effects.FadeAnimation;
-import org.javadev.effects.RadialAnimation;
-import org.javadev.effects.SlideAnimation;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.app.AccountManagerApp;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.WrapLayout;
 
 /**
  *
  * @author mfiume
  */
-public class Dashboard extends JPanel {
+public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
+    private static Log LOG = LogFactory.getLog(Dashboard.class);
+    
     int appIconWidth = 128;
 
     private final ArrayList<DashboardSection> dashboardSections;
@@ -118,7 +107,6 @@ public class Dashboard extends JPanel {
 
     public void addDashboardSection(DashboardSection s) {
         this.dashboardSections.add(s);
-        //this.relayout();
     }
 
     private void relayout() {
@@ -155,6 +143,10 @@ public class Dashboard extends JPanel {
         //}
         for (DashboardSection s : this.dashboardSections) {
 
+            if (!s.isEnabled()) {
+                continue;
+            }
+            
             if (s.getApps().isEmpty()) {
                 continue;
             }
@@ -169,7 +161,13 @@ public class Dashboard extends JPanel {
             MigLayout layout = new MigLayout(String.format("gapx %d, gapy %d, wrap %d, insets 0", gapHorizontal, gapVertical, numIconsPerRow));
             appPlaceholder.setLayout(layout);
             for (DashboardApp launcher : s.getApps()) {
-                appPlaceholder.add(getRepresentationForLauncher(launcher));
+                try {
+                    LOG.info("Laying out " + launcher.toString());
+                    appPlaceholder.add(getRepresentationForLauncher(launcher));
+                } catch (Exception e) {
+                    LOG.error("Error creating launcher for app " + launcher.toString(),e);
+                    e.printStackTrace();
+                }
             }
             middlePane.add(appPlaceholder, String.format("wrap, gapy 5 %d",gapVertical));
         }
@@ -315,6 +313,11 @@ public class Dashboard extends JPanel {
 
     public void blackListAppFromHistory(LaunchableApp app) {
         appHistoryBlackList.add(app);
+    }
+
+    @Override
+    public void handleEvent(DashboardSection event) {
+        relayout();
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {

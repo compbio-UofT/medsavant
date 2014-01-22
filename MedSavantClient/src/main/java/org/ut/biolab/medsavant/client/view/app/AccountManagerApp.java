@@ -72,7 +72,7 @@ public class AccountManagerApp implements DashboardApp {
 
     @Override
     public String getName() {
-        return "Account";
+        return "My Account";
     }
 
     @Override

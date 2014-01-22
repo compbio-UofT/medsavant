@@ -3,7 +3,10 @@ package org.ut.biolab.medsavant.client.view.app;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
@@ -14,36 +17,13 @@ import org.ut.biolab.medsavant.client.view.app.builtin.settings.SettingsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
+import org.ut.biolab.medsavant.shared.model.UserLevel;
 
 /**
  *
  * @author mfiume
  */
 public class DashboardSectionFactory {
-    private static AccountManagerApp accountManager;
-    private static TaskManagerApp taskManager;
-
-    public static DashboardSection getAppSection() {
-
-        DashboardSection s = new DashboardSection("");
-
-        List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantClinicApp.class);
-
-        for (int i = 0; i < clinicApps.size(); i++) {
-            try {
-
-                final MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
-                for (int j = 0; j < 10; j++) {
-                    s.addDashboardApp(getDashboardAppFromMedSavantApp(app));
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return s;
-    }
 
     public static DashboardSection getUberSection() {
         DashboardSection s = new DashboardSection("Apps");
@@ -63,26 +43,12 @@ public class DashboardSectionFactory {
 
         s.addDashboardApp(new VariantNavigatorApp());
         s.addDashboardApp(new SavantApp());
-
         s.addDashboardApp(new AppStoreApp());
-
-
-        return s;
-    }
-
-    public static DashboardSection getBuiltInSection() {
-
-        DashboardSection s = new DashboardSection("Built-In Apps");
-
-        s.addDashboardApp(new VariantNavigatorApp());
-        s.addDashboardApp(new SavantApp());
         s.addDashboardApp(new PatientsApp());
         s.addDashboardApp(new RegionsApp());
-        s.addDashboardApp(new VCFImportApp());
+        s.addDashboardApp(AppDirectory.getTaskManager());
+        s.addDashboardApp(AppDirectory.getAccountManager());
 
-        s.addDashboardApp(new AppStoreApp());
-
-        s.addDashboardApp(new SettingsApp());
 
         return s;
     }
@@ -137,27 +103,16 @@ public class DashboardSectionFactory {
     }
 
     public static DashboardSection getManagementSection() {
-        DashboardSection s = new DashboardSection("Management Apps");
+        final DashboardSection s = new DashboardSection("Management Apps");
         
-        if (accountManager == null) {
-            accountManager = new AccountManagerApp();     
-            AppDirectory.registerAccountManager(accountManager);
-        }
+        // hide this section from the dashbord
+        s.setEnabled(LoginController.getInstance().getUserLevel() == UserLevel.ADMIN);
         
-        if (taskManager == null) {
-            taskManager = new TaskManagerApp();
-            AppDirectory.registerTaskManager(taskManager);
-        }
-
-        s.addDashboardApp(new PatientsApp());
-        s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(new VCFImportApp());
         //s.addDashboardApp(new PhenotipsApp());
-        s.addDashboardApp(AppDirectory.getTaskManager());
-        s.addDashboardApp(AppDirectory.getAccountManager());
         
         s.addDashboardApp(new SettingsApp());
-        
+
         return s;
     }
 

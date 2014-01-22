@@ -6,7 +6,6 @@
 package org.ut.biolab.medsavant.client.view.app;
 
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
-import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 
 /**
  *
@@ -17,20 +16,18 @@ public class AppDirectory {
     private static TaskManagerApp taskManager;
     private static AccountManagerApp accountManager;
 
-    static void registerTaskManager(TaskManagerApp tm) {
-        taskManager = tm;
-    }
-
     public static TaskManagerApp getTaskManager() {
+        if (taskManager == null) {
+            taskManager = new TaskManagerApp();
+        }
         return taskManager;
     }
 
     public static AccountManagerApp getAccountManager() {
+        if (accountManager == null) {
+            accountManager = new AccountManagerApp();
+        }
         return accountManager;
-    }
-
-    static void registerAccountManager(AccountManagerApp am) {
-        accountManager = am;
     }
 
 }
