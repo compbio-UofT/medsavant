@@ -35,9 +35,8 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
-import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticGeneInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
@@ -110,7 +109,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getPosition() - 20), (int) (selectedVariant.getPosition() + 21)));
-                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
+                    AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });
 
@@ -135,7 +134,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                             int response = DialogUtils.YES;
                             if (response == DialogUtils.YES) {
                                 BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
-                                MedSavantFrame.getInstance().browserAnimationFromMousePos("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
+                                DialogUtils.displayMessage("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                             }
                         }
                         

@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -194,7 +195,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
                 @Override
                 public void actionPerformed(ActionEvent e) {                    
                     QueryUtils.addQueryOnVariantFiles(files);                                                                                           
-                    MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected File has been added to query.  Click 'Variants' to review and execute search.");
+                    DialogUtils.displayMessage("Selected File has been added to query.  Click 'Variants' to review and execute search.");
                 }
             });
             

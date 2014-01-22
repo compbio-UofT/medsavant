@@ -16,6 +16,17 @@ public class AppDirectory {
     private static TaskManagerApp taskManager;
     private static AccountManagerApp accountManager;
 
+    public static void launchApp(BuiltInApp builtInApp) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public static enum BuiltInApp {
+        TASK_MANAGER,
+        ACCOUNT_MANAGER,
+        PATIENTS,
+        GENOME_BROWSER,
+        VARIANT_NAVIGATOR
+    };
+
     public static TaskManagerApp getTaskManager() {
         if (taskManager == null) {
             taskManager = new TaskManagerApp();

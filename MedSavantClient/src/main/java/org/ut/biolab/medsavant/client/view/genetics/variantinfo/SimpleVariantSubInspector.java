@@ -36,12 +36,11 @@ import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.controller.LocationController;
 import savant.util.Range;
@@ -108,7 +107,7 @@ public class SimpleVariantSubInspector extends SubInspector {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     LocationController.getInstance().setLocation(selectedVariant.chr, new Range((int) (selectedVariant.pos - 20), (int) (selectedVariant.pos + 21)));
-                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
+                    AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });
 

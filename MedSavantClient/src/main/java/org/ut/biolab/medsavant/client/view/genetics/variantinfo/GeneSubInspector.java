@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
-import org.ut.biolab.medsavant.client.view.ViewController;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticGeneInspector;
@@ -87,7 +87,7 @@ public class GeneSubInspector extends SubInspector implements Listener<Gene> {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     LocationController.getInstance().setLocation(selectedGene.getChrom(), new Range((int) (selectedGene.getCodingStart() - 20), (int) (selectedGene.getCodingEnd() + 21)));
-                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
+                    AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });
 

@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.mfiume.query.QueryViewController;
 //import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
@@ -77,7 +78,7 @@ public class PatientUtils implements BasicPatientColumns {
                  String description = StringConditionEncoder.getDescription(Arrays.asList(hospitalIDs));
                                  
                  qvc.replaceFirstLevelItem(BasicPatientColumns.HOSPITAL_ID.getAlias(), encodedConditions, description);
-                 MedSavantFrame.getInstance().searchAnimationFromMousePos("Selected Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");    
+                 DialogUtils.displayMessage("Selected Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");    
             }
         });
         popupMenu.add(filter1Item);
