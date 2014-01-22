@@ -63,13 +63,15 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import static java.lang.System.in;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -80,6 +82,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
@@ -109,18 +112,85 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     public static NotificationManagerAdapter NotificationManager;
     private static final Object managerLock = new Object();
     private static boolean initialized = false;
-    //change credentials as needed
-    private static String medSavantServerHost = "localhost";
-    private static int medSavantServerPort = 36850;
-    private static String username = "root";
-    private static String password = "savant12";
-    private static String db = "servlettest";
+
+    private static final String medSavantServerHost;
+    private static final int medSavantServerPort;
+    private static final String username;
+    private static final String password;
+    private static final String db;
     //Debug variable, for the test method.  Don't use for other purposes. 
     //(doesn't work for multiple users)
     private static Object lastReturnVal;
     private static String sessionId = null;
     private static final int RENEW_RETRY_TIME = 10000;
     private static int UPLOAD_BUFFER_SIZE = 4096;
+
+    static {
+        String host=null;
+        String uname = null;
+        String pass = null;
+        String dbase = null;
+        int p = -1;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            String ConfigFileLocation = (String) initialcontext.lookup("java:comp/env/MedSavantConfigFile");
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(ConfigFileLocation);
+            Properties props = new Properties();
+            props.load(in);
+            in.close();
+            
+            host = props.getProperty("host", "");
+            uname = props.getProperty("username", "");
+            pass = props.getProperty("password", "");
+            dbase = props.getProperty("db", "");
+            
+            String portStr = props.getProperty("port", "-1");
+            if (portStr == null) {
+                LOG.error("No port specified in configuration, cannot continue");
+                System.exit(1);
+                
+            }
+            p = Integer.parseInt(portStr);
+            if (p <= 0) {
+                LOG.error("Illegal port specified in configuration: " + portStr + ", cannot continue.");
+                System.exit(1);
+            }
+                      
+            if(uname.length() < 1){
+                LOG.error("No username specified in configuration file, cannot continue.");
+                System.exit(1);
+            }
+            if(pass.length() < 1){
+                LOG.error("No password specified in configuration file, cannot continue.");
+                System.exit(1);
+            }
+            if(dbase.length() < 1){
+                LOG.error("No database specified in configuration file, cannot continue.");
+                System.exit(1);
+            }
+            if(host.length() < 1){
+                LOG.error("No host specified in configuration file, cannot continue.");
+                System.exit(1);
+            }            
+        } catch (IOException iex) {
+            LOG.error("IO Exception reading config file, cannot continue: "+iex);
+            System.exit(1);
+        } catch (NamingException ne) {
+            LOG.error("Exception while loading config file, cannot continue: "+ne);
+            System.exit(1);
+        }
+        medSavantServerHost = host;
+        medSavantServerPort = p;
+        username = uname;
+        password = pass;
+        db = dbase;
+        
+        LOG.info("Configured with:");
+        LOG.info("Host = "+host);
+        LOG.info("Port = "+p);
+        LOG.info("Username = "+uname);
+        LOG.info("Database = "+db);       
+    }
 
     private class SimplifiedCondition {
 
@@ -270,8 +340,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             jsonArray = jse.getAsJsonArray();
         } else {
             throw new IllegalArgumentException("The json method arguments are not an array");
-        }        
-        
+        }
+
         Method selectedMethod = null;
 
         for (Method m : selectedAdapter.getType().getMethods()) {
@@ -289,7 +359,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         try {
             for (Type t : selectedMethod.getGenericParameterTypes()) {
-                System.out.println("Field "+i+" is "+t.toString()+" for method "+selectedMethod.toString());
+                System.out.println("Field " + i + " is " + t.toString() + " for method " + selectedMethod.toString());
                 methodArgs[i] = (i > 0) ? gson.fromJson(gArray.get(i - 1), t) : getSessionId();
                 ++i;
             }
@@ -451,7 +521,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                 });
     }
 
-    
     private static int copyStreamToServer(InputStream inputStream, String filename, long filesize) throws IOException, InterruptedException {
 
         int streamID = -1;
@@ -460,12 +529,12 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             streamID
                     = NetworkManager.openWriterOnServer(getSessionId(), filename, filesize);
             int numBytes;
-            byte[] buf = new byte[UPLOAD_BUFFER_SIZE];            
-            
-            while((numBytes = inputStream.read(buf)) != -1){                
+            byte[] buf = new byte[UPLOAD_BUFFER_SIZE];
+
+            while ((numBytes = inputStream.read(buf)) != -1) {
                 //System.out.println("Read " + numBytes +" bytes");                
-                NetworkManager.writeToServer(getSessionId(), streamID, ArrayUtils.subarray(buf, 0, numBytes));                
-            }            
+                NetworkManager.writeToServer(getSessionId(), streamID, ArrayUtils.subarray(buf, 0, numBytes));
+            }
         } finally {
             if (streamID >= 0) {
                 NetworkManager.closeWriterOnServer(getSessionId(), streamID);
@@ -481,9 +550,11 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private static Semaphore uploadSem = new Semaphore(1, true);
 
     private static class Upload {
+
         String fieldName;
         int streamId;
-        public Upload(String fieldName, int streamId){
+
+        public Upload(String fieldName, int streamId) {
             this.fieldName = fieldName;
             this.streamId = streamId;
         }
@@ -492,7 +563,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private static Upload[] handleUploads(FileItemIterator iter) throws FileUploadException, IOException, InterruptedException {
         List<Upload> uploads = new ArrayList<Upload>();
         try {
-            if (!uploadSem.tryAcquire()) {                
+            if (!uploadSem.tryAcquire()) {
                 throw new FileUploadException("Can't upload file: other uploads are in progress");
             }
             //uploadSem.acquire();
@@ -515,7 +586,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                     } else {
                         streamToUpload = item;
                     }
-                } else {                    
+                } else {
                     throw new IllegalArgumentException("Unrecognized file detected with field name " + name);
                 }
                 if (streamToUpload == null) {
@@ -528,14 +599,14 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                 //Do the upload
                 int streamId = copyStreamToServer(streamToUpload.openStream(), streamToUpload.getName(), filesize);
                 if (streamId >= 0) {
-                    uploads.add(new Upload(name, streamId));                    
+                    uploads.add(new Upload(name, streamId));
                 }
             }
 
-        } finally {            
+        } finally {
             uploadSem.release();
         }
-        return uploads.toArray(new Upload[uploads.size()]);        
+        return uploads.toArray(new Upload[uploads.size()]);
     }
 
     @Override
@@ -565,8 +636,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                 FileItemIterator iter = (new ServletFileUpload()).getItemIterator(req);
                 System.out.println("Handling upload");
                 Upload[] uploads = handleUploads(iter); //note this BLOCKS until upload is finished.
-                                
-                resp.getWriter().print(gson.toJson(uploads, uploads.getClass()));                                
+
+                resp.getWriter().print(gson.toJson(uploads, uploads.getClass()));
                 resp.getWriter().close();
 
             } else if (methodIndex < 0 || adapterIndex < 0) {
@@ -587,17 +658,16 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                 if (json_args == null) {
                     json_args = "[]";
                 }
-                
 
                 String ret = json_invoke(x[adapterIndex], x[methodIndex], json_args);
-                
+
                 resp.getWriter().print(ret);
                 resp.getWriter().close();
             }
         } catch (FileUploadException fue) {
             LOG.error(fue);
         } catch (IllegalArgumentException iae) {
-            LOG.error(iae);            
+            LOG.error(iae);
         } catch (InterruptedException iex) { //file upload cancelled.
             LOG.error(iex);
         }
