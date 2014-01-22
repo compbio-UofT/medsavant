@@ -112,6 +112,26 @@
                             <differenceType>7002</differenceType>
                             <method>void addLog(java.lang.String, java.lang.String, org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter$LogType, java.lang.String)</method>
                         </difference>
+                        <difference>
+                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
+                            <differenceType>7002</differenceType>
+                            <method>java.lang.String getDate()</method>
+                        </difference>
+                        <difference>
+                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
+                            <differenceType>7002</differenceType>
+                            <method>java.lang.String getName()</method>
+                        </difference>
+                        <difference>
+                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
+                            <differenceType>7002</differenceType>
+                            <method>java.lang.String getUser()</method>
+                        </difference>
+                        <difference>
+                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
+                            <differenceType>7004</differenceType>
+                            <method>SimpleVariantFile(int, int, java.lang.String, java.lang.String, java.lang.String)</method>
+                        </difference>
                     </ignored>
                     <excludes>
                         <exclude>**/internal/**</exclude>
