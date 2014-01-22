@@ -313,7 +313,7 @@ public class VCFImportApp implements DashboardApp {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                new BackgroundTaskWorker(instance) {
+                new BackgroundTaskWorker(instance,"VCF Import") {
 
                     @Override
                     protected Void doInBackground() throws Exception {
@@ -368,12 +368,20 @@ public class VCFImportApp implements DashboardApp {
 
                         this.setStatus(TaskStatus.FINISHED);
 
+                        return null;
+                    }
+
+                    @Override
+                    protected void showSuccess(Object result) {
                         AppDirectory.getTaskManager().showMessageForTask(this, 
                                 "<html>Variants have been uploaded and are now being processed.<br/>"
                                         + "You may view progress in the Server Log in the Task Manager<br/><br/>"
                                         + "You may log out or continue doing work.</html>");
+                    }
 
-                        return null;
+                    @Override
+                    protected void showFailure(Exception e) {
+                        AppDirectory.getTaskManager().showErrorForTask(this,e);
                     }
 
                 }.start();

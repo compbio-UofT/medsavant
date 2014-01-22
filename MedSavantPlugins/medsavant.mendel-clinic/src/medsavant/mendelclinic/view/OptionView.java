@@ -34,7 +34,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import medsavant.mendelclinic.controller.ApplicationWorker;
+import medsavant.mendelclinic.controller.MendelWorker;
 import medsavant.mendelclinic.model.Locks;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -46,11 +46,12 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ExportVCF;
-import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
 import medsavant.mendelclinic.view.OptionView.InheritanceStep.InheritanceModel;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -538,7 +539,7 @@ public class OptionView {
             freqTypeChoice.addItem("none");
             freqTypeChoice.addItem("at most");
             freqTypeChoice.addItem("at least");
-
+            
             freqTypeChoice.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     switch (freqTypeChoice.getSelectedIndex()) {
@@ -972,40 +973,20 @@ public class OptionView {
 
         view.add(Box.createVerticalStrut(10));
 
-
         JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                new VisibleMedSavantWorker<Object>(OptionView.class.getCanonicalName(), "Mendel #"+jobNumber++) {
+                new BackgroundTaskWorker<Void>("Mendel") {
                     MedSavantWorker currentWorker;
                     Locks.DialogLock dialogLock;
-                    @Override
-                    protected void showResults() {
-                        dialogLock.getResultsDialog().setTitle(this.getTitle());
-                        dialogLock.getResultsDialog().setVisible(true);
-                    }
 
                     @Override
-                    protected void jobDone() {
-                        super.jobDone();
-                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
-                        if (result == DialogUtils.YES) {
-                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                            dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
-                            dialogLock.getResultsDialog().setVisible(true);
-                        }
-                    }
-
-                    @Override
-                    protected Object runInBackground() throws Exception {
-
-
+                    protected Void doInBackground() throws Exception {
                         final Locks.FileResultLock fileLock = new Locks.FileResultLock();
                         dialogLock = new Locks.DialogLock();
-
 
                         // File retriever
                         currentWorker = getRetrieverWorker(this, fileLock);
@@ -1020,7 +1001,7 @@ public class OptionView {
                         System.out.println("Running algorithm on file " + fileLock.getFile().getAbsolutePath());
 
                         // Algorithm Runner
-                        currentWorker = getAlgorithmWorker(fileLock.getFile(), steps, zygosityStep, inheritanceStep, this, dialogLock);
+                        currentWorker = getAlgorithmWorker(this, fileLock.getFile(), steps, zygosityStep, inheritanceStep, this, dialogLock);
                         currentWorker.execute();
 
                         try {
@@ -1034,26 +1015,37 @@ public class OptionView {
 
                         return null;
                     }
-                }.execute();
+
+                    @Override
+                    protected void showSuccess(Void t) {
+                        this.setStatus(TaskWorker.TaskStatus.FINISHED);
+
+                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
+                        if (result == DialogUtils.YES) {
+                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                            dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
+                            dialogLock.getResultsDialog().setVisible(true);
+                        }
+                        
+                        dialogLock.getResultsDialog().setTitle("Mendel Results");
+                        dialogLock.getResultsDialog().setVisible(true);
+                    }
+                    
+                }.start();
             }
 
-            private MedSavantWorker getAlgorithmWorker(File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, VisibleMedSavantWorker j, Locks.DialogLock genericLock) {
-                ApplicationWorker w = new ApplicationWorker(steps, zygosityStep, model, file);
-                w.setUIComponents(j);
+            private MendelWorker getAlgorithmWorker(BackgroundTaskWorker tw, File file, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, BackgroundTaskWorker j, Locks.DialogLock genericLock) {
+                MendelWorker w = new MendelWorker(tw, steps, zygosityStep, model, file);
                 w.setCompletionLock(genericLock);
                 return w;
             }
 
-            private MedSavantWorker getRetrieverWorker(final VisibleMedSavantWorker m, final Locks.FileResultLock fileLock) {
-                return new MedSavantWorker<File>(OptionView.class.getCanonicalName()) {
-                    @Override
-                    protected void showProgress(double fract) {
-                        m.setProgress(fract);
-                    }
+            private MedSavantWorker getRetrieverWorker(final BackgroundTaskWorker m, final Locks.FileResultLock fileLock) {
+                return new MedSavantWorker<File>("Variant Download") {
 
                     @Override
                     protected void showSuccess(File result) {
-                        m.setStatusMessage("Complete");
+                        m.addLog("Variant Download Complete");
                         synchronized (fileLock) {
                             fileLock.setFile(result);
                             fileLock.notify();
@@ -1063,7 +1055,7 @@ public class OptionView {
                     @Override
                     protected File doInBackground() throws Exception {
 
-                        m.setStatusMessage("Retrieving Variants...");
+                        m.addLog("Retrieving Variants...");
 
                         String session = LoginController.getInstance().getSessionID();
                         int refID = ReferenceController.getInstance().getCurrentReferenceID();
@@ -1091,7 +1083,7 @@ public class OptionView {
                             File zipFile = new File(outdir, System.currentTimeMillis() + "-variantdump.tdf.zip");
 
                             System.out.println("Exporting to " + zipFile.getAbsolutePath());
-                            tdfFile = ExportVCF.exportTDF(zipFile, this);
+                            tdfFile = ExportVCF.exportTDF(zipFile);
                             System.out.println("Finished export");
 
                             // remove the old tdf file, it's out of date
@@ -1112,10 +1104,9 @@ public class OptionView {
 
 
                         int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
-                        m.setStatusMessage("Stripping file");
+                        m.addLog("Stripping file");
 
                         File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
-                        //File strippedFile = new File(tdfFile.getAbsolutePath() + ".awk");
                         System.out.println("Stripped file is " + strippedFile.getAbsolutePath());
 
                         return strippedFile;

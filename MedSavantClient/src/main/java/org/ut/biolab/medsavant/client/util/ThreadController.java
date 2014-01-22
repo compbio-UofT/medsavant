@@ -26,8 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker.JobStatus;
+import org.ut.biolab.medsavant.client.util.VisibleMedSavantWorker.JobStatus;
 
 /**
  * @author Andrew

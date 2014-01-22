@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.util.notification;
+package org.ut.biolab.medsavant.client.util;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

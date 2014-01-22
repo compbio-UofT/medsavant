@@ -1,5 +1,13 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package medsavant.mendelclinic.controller;
 
+import org.ut.biolab.medsavant.client.patient.PedigreeFields;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import medsavant.mendelclinic.model.Locks;
 import medsavant.mendelclinic.view.OptionView;
 import medsavant.mendelclinic.view.MendelPanel;
@@ -30,6 +38,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import medsavant.mendelclinic.controller.MendelWorker.SimplePatientSet;
 import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
@@ -41,14 +50,13 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import medsavant.mendelclinic.view.OptionView.IncludeExcludeStep;
 import medsavant.mendelclinic.view.OptionView.InheritanceStep;
 import medsavant.mendelclinic.view.OptionView.InheritanceStep.InheritanceModel;
 import medsavant.mendelclinic.view.OptionView.ZygosityStep;
-import org.ut.biolab.medsavant.client.util.notification.VisibleMedSavantWorker;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
@@ -59,44 +67,30 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
  *
  * @author mfiume
  */
-public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, ApplicationWorker.SimplePatientSet>> implements PedigreeFields {
+public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimplePatientSet>> implements PedigreeFields {
 
     private final List<IncludeExcludeStep> steps;
     private final File inFile;
-    //private JProgressBar progressBar;
-    //private JFrame frame;
-    //private JLabel label;
-    //private Notification jobModel;
-    private VisibleMedSavantWorker parentWorker;
     private Locks.DialogLock completionLock;
     private final InheritanceStep inheritanceStep;
     private final ZygosityStep zygosityStep;
+    private static int runNumer = 0;
+    private BackgroundTaskWorker taskWorker;
 
-    public ApplicationWorker(List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, File inFile) {
-        super("FamilyMatters");
+    
+    public MendelWorker(BackgroundTaskWorker taskWorker, List<IncludeExcludeStep> steps, ZygosityStep zygosityStep, InheritanceStep model, File inFile) {
+        super("Mendel " + (++runNumer));
+        this.taskWorker = taskWorker;
         this.steps = steps;
         this.zygosityStep = zygosityStep;
         this.inheritanceStep = model;
         this.inFile = inFile;
     }
-
-    public void setUIComponents(VisibleMedSavantWorker parentWorker) {
-        this.parentWorker = parentWorker;
-    }
-
-    public void setLabelText(String t) {
-        parentWorker.setStatusMessage(t);
-    }
-
-    @Override
-    protected void showProgress(double fract) {
-        parentWorker.setProgress(fract);
-    }
-
+  
     @Override
     protected void showSuccess(final TreeMap<MendelVariant, SimplePatientSet> result) {
 
-        setLabelText("Preparing results...");
+        taskWorker.addLog("Preparing results...");
 
         String pageName = MendelPanel.PAGE_NAME;
         String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
@@ -142,7 +136,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                                 geneStr});
 
                 }
-
+                
                 return rows;
             }
 
@@ -390,13 +384,13 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         int total = genes.size();
         double counter = 0.0;
 
+        taskWorker.addLog("Associating genes and variants...");
+        
         for (MendelGene g : genes) {
             //LOG.info("processing " + g.name);
 
             counter += 1;
             double p = counter * 100 / total;
-
-            setLabelText(Math.round(p) + "% done associating genes and variants...");
 
             if (!chromToVariantMap.containsKey(g.chr)) {
                 continue;
@@ -427,7 +421,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         return false;
     }
 
-    protected class SimplePatientSet extends HashSet<SimplePatient> {
+    public class SimplePatientSet extends HashSet<SimplePatient> {
 
         private final HashMap<String, SimplePatient> dnaIDs;
         boolean immutable = false;
@@ -861,16 +855,16 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         /**
          * Map variants to samples NB: keys in a TreeMap are sorted
          */
-        setLabelText("Parsing variants...");
+        taskWorker.addLog("Parsing variants...");
         variantToSampleMap = readVariantToSampleMap(inFile);
 
         // get sorted lists of variants and genes
         variants = new TreeSet<MendelVariant>(variantToSampleMap.keySet());
-        setLabelText("Parsing genes...");
+        taskWorker.addLog("Parsing genes...");
         genes = getGeneSet();
 
         // map variants to genes and vice versa
-        setLabelText("Associating variants with genes...");
+        taskWorker.addLog("Associating variants with genes...");
         genesToVariantsMap = associateGenesAndVariants(variants, genes);
 
         System.out.println("Number of variants (grouped by position):\t" + variants.size());
@@ -903,7 +897,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 System.out.println("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber);
                 System.out.println(criterion);
 
-                setLabelText("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "...");
+                taskWorker.addLog("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "...");
 
                 Set<String> setOfDNAIDs = criterion.getDNAIDs(); //TODO: write method
                 //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
@@ -911,14 +905,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 Set<MendelVariant> excludedVariantsFromThisStep = new HashSet<MendelVariant>();
 
                 int frequencyThreshold = getFrequencyThresholdForCriterion(criterion);
-
-                //bw.write("# threshold is " + frequencyThreshold + "\n");
-                //bw.write("# threshold type is " + criterion.getFrequencyType() + "\n");
-                //bw.write("# dna ids: " + setOfDNAIDs.size() + "\n");
-                //LOG.info("Threshold is " + frequencyThreshold);
-                //LOG.info("Threshold type is " + criterion.getFrequencyType());
-
-                //LOG.info("DNA IDs : " + setOfDNAIDs.size());
 
                 OptionView.IncludeExcludeCriteria.AggregationType at = criterion.getAggregationType();
                 if (at == OptionView.IncludeExcludeCriteria.AggregationType.Variant) {
@@ -959,13 +945,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 int numSeenBefore = excludedVariantsFromThisStep.size() - (afterNumExcluded - currentNumExcluded);
                 System.out.println(numSeenBefore + " of these were already excluded previously");
 
-                //bw.write("# " + numSeenBefore + " of these were already excluded previously\n");
-
-                //bw.write("# here are the excluded variants\n");
-                //for (MendelVariant v : excludedVariantsFromThisStep) {
-                //    bw.write("\tremoved at criteria " + criteriaNumber + " of step " + stepNumber + ": " + v.toString() + "\n");
-                //}
-
             }
 
             // remove variants
@@ -977,7 +956,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         getGeneToSampleMap(variantToSampleMap, allExcludedGenes);
 
         if (zygosityStep.isSet()) {
-            setLabelText("Running zygosity filter...");
+            taskWorker.addLog("Running zygosity filter...");
             System.out.println("Running zygosity filter...");
             Zygosity zyg = zygosityStep.getZygosity();
 
@@ -1018,7 +997,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
         InheritanceModel model = inheritanceStep.getInheritanceModel();
 
-        setLabelText("Running inheritance model " + model + "...");
+        taskWorker.addLog("Running inheritance model " + model + "...");
         System.out.println("Running inheritance model " + model + "...");
         System.out.println("VariantSampleMap keysize: "+variantToSampleMap.keySet().size());
         // adjust for inheritance model
@@ -1056,7 +1035,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         return variantToSampleMap;
     }
 
-    private List<SimpleFamily> getSimpleFamiliesFromIDs(Set<String> familyIDs) throws SQLException, RemoteException {
+    private List<SimpleFamily> getSimpleFamiliesFromIDs(Set<String> familyIDs) throws SQLException, RemoteException, SessionExpiredException {
         List<SimpleFamily> families = new ArrayList<SimpleFamily>();
         for (String familyID : familyIDs) {
             families.add(getSimpleFamilyFromID(familyID));
@@ -1064,7 +1043,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
         return families;
     }
 
-    private SimpleFamily getSimpleFamilyFromID(String familyID) throws SQLException, RemoteException {
+    private SimpleFamily getSimpleFamilyFromID(String familyID) throws SQLException, RemoteException, SessionExpiredException {
 
         try {
             List<Object[]> results = MedSavantClient.PatientManager.getFamily(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), familyID);
@@ -1089,17 +1068,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                         gender);
                 fam.addPerson(p);
             }
-
-            /*for (SimplePerson p : fam.getFamilyMembers()) {
-             if (p.getMomDNAID() != null) {
-             SimplePerson mother = fam.getPersonByID(p.getMomDNAID());
-             p.setMother(mother);
-             }
-             if (p.getDadDNAID() != null) {
-             SimplePerson father = fam.getPersonByID(p.getDadDNAID());
-             p.setMother(father);
-             }
-             }*/
 
             return fam;
 
@@ -1134,8 +1102,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
     public class SimplePerson {
 
-        //private SimplePerson mother;
-        //private SimplePerson father;
         private String momDNAID;
         private String dadDNAID;
         private String dnaID;
@@ -1286,11 +1252,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
 
             map.put(v, samples);
         }
-
-        //LOG.info("Protecting variant to sample map from modification");
-        //for (SimpleFamilyMattersVariant v : map.keySet()) {
-        //    map.get(v).makeImmutable();
-        //}
 
         return map;
     }
@@ -1480,18 +1441,6 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
             }
 
             keepThese.add(o);
-            //System.out.println("Keeping " + o + " - " + numberOfObjectsSamplesInCohort + " " + t + " " + frequencyThreshold);
-
-            /*
-             * DEBUG
-             *
-             if (o instanceof SimpleFamilyMattersGene) {
-             SimpleFamilyMattersGene g = (SimpleFamilyMattersGene) o;
-             if (g.name.equals("NOTCH2")) {
-             System.out.println(g + " has " + numberOfObjectsSamplesInCohort + " in cohort and is being kept");
-             }
-             }
-             */
 
             kept++;
         }
@@ -1561,50 +1510,7 @@ public class ApplicationWorker extends MedSavantWorker<TreeMap<MendelVariant, Ap
                 genes.remove(g);
             }
         }
-
-        /*
-         * DEBUG
-         *
-         for (SimpleFamilyMattersGene gene : geneToSampleMap.keySet()) {
-         if (gene.name.equals("NOTCH2")) {
-         System.out.println("Samples that have variants in NOTCH2");
-         for (SimplePatient p : geneToSampleMap.get(gene)) {
-         System.out.print(p + " ");
-         }
-         System.out.println();
-         }
-         }*/
-
         return geneToSampleMap;
     }
 
-    private Map<MendelGene, Set<MendelVariant>> mapVariantsToGenesAndViceVersa(Set<MendelVariant> variants) throws SQLException, RemoteException {
-        Collection<Gene> genes = GeneSetController.getInstance().getCurrentGenes();
-        Map<MendelGene, Set<MendelVariant>> genesToVariantsMap = new HashMap<MendelGene, Set<MendelVariant>>();
-
-        for (MendelVariant v : variants) {
-            for (Gene g : genes) {
-                if (v.chr.equals(g.getChrom()) && g.getStart() < v.pos && g.getEnd() > v.pos) {
-
-                    MendelGene sg = new MendelGene(g.getChrom(), g.getStart(), g.getEnd(), g.getName());
-                    v.addGene(sg);
-
-                    Set<MendelVariant> variantSet;
-                    if (genesToVariantsMap.containsKey(sg)) {
-                        variantSet = genesToVariantsMap.get(sg);
-                    } else {
-                        variantSet = new HashSet<MendelVariant>();
-                    }
-                    variantSet.add(v);
-                    genesToVariantsMap.put(sg, variantSet);
-                }
-            }
-        }
-
-        return genesToVariantsMap;
-    }
-
-    private int binarySearchToVariant(long end, List<MendelVariant> variants) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

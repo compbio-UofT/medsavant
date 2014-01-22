@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.util;
 
@@ -61,6 +61,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
  * @author Andrew
  */
 public class ExportVCF implements BasicVariantColumns {
+
     private static final Log LOG = LogFactory.getLog(ExportVCF.class);
 
     // important locations in intermediate file created pre-merge
@@ -84,17 +85,27 @@ public class ExportVCF implements BasicVariantColumns {
 
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; // and on
 
+    public static File exportTDF(File destFile) throws Exception {
+        return exportTDF(destFile, null);
+    }
+
+    public static File exportVCF(File destFile) throws Exception {
+         return exportVCF(destFile, null);
+    }
+
     public static File exportTDF(File destFile, MedSavantWorker worker) throws Exception {
         System.out.println("Requesting table export from server...");
-        int fileID =
-            MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
-                    .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), false, true);
-        if (worker.isCancelled()) {
-            throw new InterruptedException();
-        }
+        int fileID
+                = MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
+                        .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), false, true);
 
-        worker.showProgress(0.5);
+        if (worker != null) {
+            if (worker.isCancelled()) {
+                throw new InterruptedException();
+            }
+            worker.showProgress(0.5);
+        }
 
         System.out.println("Transferring export from server to " + destFile.getAbsolutePath() + " ...");
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
@@ -109,20 +120,25 @@ public class ExportVCF implements BasicVariantColumns {
             resultingFile = destFile;
         }
 
-        worker.showProgress(1);
+        if (worker != null) {
+            worker.showProgress(1);
+        }
 
         return resultingFile;
     }
 
-    public static void exportVCF(File destFile, MedSavantWorker worker) throws Exception {
-        int fileID =
-            MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
-                ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
-                    .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), true, false);
-        if (worker.isCancelled()) {
-            throw new InterruptedException();
+    public static File exportVCF(File destFile, MedSavantWorker worker) throws Exception {
+        int fileID
+                = MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                        ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
+                        .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), true, false);
+
+        if (worker != null) {
+            if (worker.isCancelled()) {
+                throw new InterruptedException();
+            }
+            worker.showProgress(0.5);
         }
-        worker.showProgress(0.5);
 
         LOG.info("Copying file " + fileID + " from sever to " + destFile.getAbsolutePath());
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
@@ -138,8 +154,8 @@ public class ExportVCF implements BasicVariantColumns {
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
         String[] customColumnNames = new String[table.getNumFields() - INDEX_OF_CUSTOM_INFO - 1];
         List<DbColumn> allColumns = table.getColumns();
-                 
-        for (int i = INDEX_OF_CUSTOM_INFO + 1; i < table.getNumFields(); i++) {                                                 
+
+        for (int i = INDEX_OF_CUSTOM_INFO + 1; i < table.getNumFields(); i++) {
             customColumnNames[i - 1 - INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
         }
         int infoMin = INDEX_OF_CUSTOM_INFO + 1;
@@ -149,7 +165,7 @@ public class ExportVCF implements BasicVariantColumns {
 
         double numSteps = ReferenceController.getInstance().getChromosomes().length * 6;
         String line;
-               
+
         while ((line = in.readLine()) != null) {
             // parse row         
             //String[] record = line.split(",");
@@ -157,16 +173,16 @@ public class ExportVCF implements BasicVariantColumns {
             String row = "";
 
             // dna id
-            String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);            
+            String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);
             row += dnaId + "\t";
             dnaIds.add(dnaId);
-            
+
             // genotype
             row += cleanField(record[BasicVariantColumns.INDEX_OF_GT]) + "\t";
-            
+
             // default fields
-            row +=
-                cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t"
+            row
+                    += cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t"
                     + cleanField(record[BasicVariantColumns.INDEX_OF_POSITION]) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_DBSNP_ID])) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_REF])) + "\t"
@@ -174,7 +190,6 @@ public class ExportVCF implements BasicVariantColumns {
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_QUAL])) + "\t"
                     + parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_FILTER])) + "\t";
 
-           
             // extra fields
             for (int j = infoMin; j < infoMax; j++) {
                 if (j < record.length) {
@@ -194,13 +209,17 @@ public class ExportVCF implements BasicVariantColumns {
                 out.put(chrom, writer);
                 chrs.add(chrom);
                 files.put(chrom, f);
-                worker.showProgress(files.size() / numSteps + 0.5);
+                if (worker != null) {
+                    worker.showProgress(files.size() / numSteps + 0.5);
+                }
             }
 
             // write record
             writer.write(row + "\n");
-            if (worker.isCancelled()) {
-                throw new InterruptedException();
+            if (worker != null) {
+                if (worker.isCancelled()) {
+                    throw new InterruptedException();
+                }
             }
         }
 
@@ -214,15 +233,24 @@ public class ExportVCF implements BasicVariantColumns {
         File temp1 = new File(DirectorySettings.getTmpDirectory() + File.separator + destFile.getName() + "_complete");
         for (int i = 0; i < files.size(); i++) {
             copyFile(files.get(chrs.get(i)), temp1, i != 0);
-            if (worker.isCancelled()) {
-                throw new InterruptedException();
+
+            if (worker != null) {
+                if (worker.isCancelled()) {
+                    throw new InterruptedException();
+                }
+                worker.showProgress((i + files.size()) / numSteps + 0.5);
             }
-            worker.showProgress((i + files.size()) / numSteps + 0.5);
         }
 
         // merge vcf to remove duplicates
         mergeVCF(temp1, destFile, dnaIds, customColumnNames);
-        worker.showProgress(1.0);
+
+        if (worker != null) {
+            worker.showProgress(1.0);
+
+        }
+        
+        return destFile;
     }
 
     private static String parseMandatoryField(String s) {
@@ -257,7 +285,7 @@ public class ExportVCF implements BasicVariantColumns {
      * Assumes rows in inFile are INTERMEDIATE format
      */
     private static void mergeVCF(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames)
-        throws Exception {
+            throws Exception {
 
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile, false));
@@ -312,7 +340,7 @@ public class ExportVCF implements BasicVariantColumns {
 
             // write records for previous position
             if (line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION])
-                || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])) {
+                    || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])) {
 
                 for (int i = 0; i < dnaIds.length; i++) {
 
@@ -439,7 +467,6 @@ public class ExportVCF implements BasicVariantColumns {
 
         // source
         // TODO
-
         // reference
         header += "##reference=" + ReferenceController.getInstance().getCurrentReferenceName() + "\n";
 
