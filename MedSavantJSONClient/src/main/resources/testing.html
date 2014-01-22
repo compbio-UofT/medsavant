@@ -1,0 +1,284 @@
+<HTML>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>       
+
+    <!-- Used to handle file uploads, see http://malsup.com/jquery/form/#ajaxForm -->
+    <script src="http://malsup.github.com/jquery.form.js"></script> 
+
+    <script language="javascript">
+        var DEFAULT_USERNAME_TAG = "Phenome_Central"; //used to tag uploaded variants.
+        
+        var pindex = 1;
+        var params = [];
+        var last;
+
+        //note: args MUST be an array of arguments, or an empty array 
+        //if there are no arguments.
+        var msInvoke = function(adapter, method, args, success_callback) {
+            var URL = "http://localhost:8090/medsavant-json-client/medsavant/" + adapter + "/" + method;
+            var jsonData = {"json": JSON.stringify(args)};
+            var el = document.getElementById('lastreq');
+            el.innerHTML = "<hr><b>Request</b><BR><PRE>" + "URL: " + URL + "\n" + " Params: " + JSON.stringify(jsonData) + "</PRE>";
+            el = document.getElementById("lastret");
+            el.innerHTML = "";
+            $.ajax({
+                type: "POST",
+                url: URL,
+                data: jsonData,
+                success: function(d) {
+                    success_callback(d);
+                },
+                dataType: "json",
+                error: function(o, s, t) {
+                    console.log("Error!: " + s + ": " + t + ", o=" + o);
+                }
+            });
+        };
+
+        var printResult = function(d) {
+            last = d;
+            var el = document.getElementById("lastret");
+            el.innerHTML = "<hr><b>Stringified JSON response: </b><br><PRE>" + JSON.stringify(d) + "</PRE>";
+        }
+
+
+        function go() {
+            var s = "";
+            var adapter = document.theform.adapter.value;
+            var method = document.theform.method.value;
+            ;
+            var e = document.getElementById("pspan");
+
+            var stringArray = new Array();
+
+            var k = 0;
+            s = "adapter: " + adapter + " method=" + method;
+            for (i = 0; i < e.childNodes.length; ++i) {
+                if (e.childNodes[i].type == "text") {
+                    var val = e.childNodes[i].value;
+                    if (val === "$LAST") {
+                        alert("Substituting (objectified version of) " + JSON.stringify(last) + " for $LAST");
+                        val = last;
+                    }
+                    stringArray[k++] = val;
+                }
+            }
+            var jsonData = {"json": JSON.stringify(stringArray)};
+
+            var e = document.getElementById("pspan");
+            var URL = "http://localhost:8090/medsavant-json-client/medsavant/" + adapter + "/" + method;
+            $.ajax({
+                type: "POST",
+                url: URL,
+                data: jsonData,
+                success: printResult,
+                dataType: "json",
+                error: function(o, s, t) {
+                    console.log(s + ": " + t);
+                }
+            });
+
+        }
+
+        function echoJson(s) {
+            alert("Got json " + s);
+        }
+
+        function addParam() {
+            var e = document.getElementById("pspan");
+            e.innerHTML += "<input type='text' name='p" + pindex + "'>";
+            pindex++;
+        }
+        function clearParams() {
+            var e = document.getElementById("pspan");
+            e.innerHTML = "";
+            pindex = 1;
+            params = [];
+        }
+
+        //note: first and third arguments are case sensitive.            
+        function MSCondition(projectIdv, referenceIdv, typev, methodv, leftv, rightv) {
+            this.projectId = projectIdv;
+            this.refId = referenceIdv;
+            this.type = typev;
+            this.method = methodv;
+            if (typev == "BinaryCondition") {
+                this.args = [leftv, rightv];
+            } else {
+                this.args = [leftv];
+            }
+        }
+
+        function demo() {
+            alert('list project names');
+            msInvoke('ProjectManager', 'getProjectNames', [], printResult);
+
+
+            alert('get project identifier corresponding to project named test');
+            var projectName = "test";
+            msInvoke('ProjectManager', 'getProjectID', [projectName], printResult);
+
+
+            alert('Get list of default fields for a patient');
+            msInvoke('PatientManager', 'getPatientFields', [1], printResult);
+
+
+            alert('Get list of custom fields for a patient.  Often blank.');
+            msInvoke('PatientManager', 'getCustomPatientFields', [1], printResult);
+
+            alert('List patients for project 1.');
+            msInvoke('PatientManager', 'getPatients', [1], printResult);
+
+            alert('Add a new patient.');
+            //Java method:  
+            //public void addPatient(String sessID, int projectId, List<CustomField> cols, List<String> values) 
+            //reconstruct 'cols' from return value of getPatientFields.                       
+            var patient_cols = [{"filterable": true, "alias": "Individual ID", "description": "", "name": "patient_id", "type": "INTEGER", "length": 11, "scale": 0, "autoIncrement": true, "nonNull": true, "primaryKey": true}, {"filterable": true, "alias": "Family ID", "description": "", "name": "family_id", "type": "VARCHAR", "length": 100, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "Hospital ID", "description": "", "name": "hospital_id", "type": "VARCHAR", "length": 100, "scale": 0, "autoIncrement": false, "nonNull": true, "primaryKey": false}, {"filterable": true, "alias": "ID of Mother", "description": "", "name": "idbiomom", "type": "VARCHAR", "length": 100, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "ID of Father", "description": "", "name": "idbiodad", "type": "VARCHAR", "length": 100, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "Gender", "description": "", "name": "gender", "type": "INTEGER", "length": 1, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "Affected", "description": "", "name": "affected", "type": "BOOLEAN", "length": 1, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "DNA ID(s)", "description": "", "name": "dna_ids", "type": "VARCHAR", "length": 1000, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "BAM URL(s)", "description": "", "name": "bam_url", "type": "VARCHAR", "length": 5000, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}, {"filterable": true, "alias": "Phenotypes", "description": "", "name": "phenotypes", "type": "VARCHAR", "length": 10000, "scale": 0, "autoIncrement": false, "nonNull": false, "primaryKey": false}];
+            var patient_values = [100, "100", "200", "300", "400", 1, 1, "dnaid", null, null];
+            var projectId = 1;
+            msInvoke('PatientManager', 'addPatient', [projectId, patient_cols, patient_values], printResult);
+
+
+            alert('List patients again, and get the id of the one we just added....');
+            msInvoke('PatientManager', 'getPatients', [1], function(d) {
+                printResult(d);
+                var patientId = d[d.length - 1][0];
+                alert('...now delete the patient with id ' + patientId);
+                //...Then delete the patient we just added.
+                msInvoke('PatientManager', 'removePatient', [projectId, [patientId]], printResult);
+            });
+
+
+            alert('Get the reference ids available for this project...');
+            msInvoke('ProjectManager', 'getReferenceIDsForProject', [projectId], function(d) {
+                printResult(d);
+                var refId = d[d.length - 1];
+
+                alert('...then list the first 10 heterozygous variants on chromosome 5 for this reference with id' + refId + " that have a non-null position (positions are always non null anyway)");
+                //Java method:
+                //public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit)
+
+                var chromCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "chrom", "chr5");
+                var hetCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "zygosity", "Hetero");
+                var posCondition = new MSCondition(projectId, refId, "UnaryCondition", "isNotNull", "position");
+                msInvoke('VariantManager', 'getVariants', [projectId, refId, [[chromCondition, hetCondition, posCondition]], 0, 10], printResult);
+            });
+        }
+
+
+
+        function variantImportProgressCheck() {
+            //Progress is tied only to the user's session, and the JSON client always uses
+            //the same session.
+            var oldHTML = ulform.innerHTML;
+            var uploadTimerDelay = 3000;
+            var da = ['.', '..', '...'];
+            var i = 0;
+            //we can cancel variant import by passing isCancelled=true at any time, but for this
+            //demo we don't ever cancel.
+            var isCancelled = false;
+
+            //Check progress every uploadTimerDelay ms.
+            var intervalId = setInterval(function() {
+                ulform.innerHTML = "IMPORTING VCF" + da[i++ % 3];                                
+                msInvoke('NetworkManager', 'CheckProgress', [isCancelled], function(progressStatus) {
+                    if (progressStatus !== null && progressStatus.fractionCompleted < 1.0) {
+                        //The fractionCompleted is indeterminate for importing variant, so no point displaying it.
+                        //however, it should be >=1.0 if import is finished.
+                        ulform.innerHTML += "<BR />Message: " + progressStatus.message+" # CheckProgress invocations: "+i;
+                    } else {
+                        ulform.innerHTML = "Variant import done.<BR>";
+                        ulform.innerHTML = oldHTML;
+                        clearInterval(intervalId);
+                    }
+                    printResult(progressStatus);
+                });
+                
+            }, uploadTimerDelay);
+        }
+
+        
+        //Default tags for uploaded variants.  At a minimum, they should include "Upload Date" and "Uploader".        
+        var getDefaultTags = function(username){                                  
+            var d = new Date();
+            return [["Upload Date", d.toString()], ["Uploader", username]];            
+        }
+        
+        var uploadCallback = function(returnVal, statusText) { //returnVal is deserialized JSON (i.e. an object)
+            
+            alert("Upload complete. Got stream id " + returnVal[0].streamId);
+            //TODO: Error checks
+            if (confirm("VCF is on server, but needs importing/annotating.  Do this now? (can take a while)")) {
+                var projectId = 1;
+                var refId = -1;
+                msInvoke('ProjectManager', 'getReferenceIDsForProject', [projectId], function(d) { //first get the ref Id we need.
+                    refId = d[d.length - 1];
+                    //Java method: uploadVariants(String sessId, int[] streamIDs, int projectId, int refId, String[] tags, boolean includeHomoRef, string email, boolean autoPublish, boolean preAnnotateWithJannovar);
+                    var uploads = returnVal;
+                    var streamIds = [uploads[0].streamId];
+                    var tags = getDefaultTags(DEFAULT_USERNAME_TAG);
+                    var includeHomoRef = false; //Whether or not to include variants matching the Ref - probably want this false.
+                    var email = ""; //email gets sent to this address when import is finished
+                    var autoPublish = true; //after variant import is finished, immediately make them available.  This will cancel any active sessions.
+                    var preAnnotateWithJannovar = false; //At the moment, Jannovar hangs for certain VCFs (bug reported, 21/01/2013).
+                    msInvoke('VariantManager', 'uploadTransferredVariants', [streamIds, projectId, refId, tags, includeHomoRef, email, autoPublish, preAnnotateWithJannovar]);
+                    variantImportProgressCheck();
+                });
+            }
+        }
+
+        // prepare the upload form when the DOM is ready 
+        $(document).ready(function() {            
+            var options = {
+                success: uploadCallback, // post-submit callback 
+                dataType: 'json'
+                        // other available options: 
+                        //url:       url         // override for form's 'action' attribute 
+                        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+                        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+                        //clearForm: true        // clear all form fields after successful submit 
+                        //resetForm: true        // reset the form after successful submit 
+
+                        // $.ajax options can be used here too, for example: 
+                        //timeout:   3000 
+            };
+
+            // bind form using 'ajaxForm' 
+            $('#uploadForm').ajaxForm(options);
+        });
+
+
+    </script>
+    <BODY>
+        <form name="theform" method="post">
+            <b>Method:<b><br>
+                    <input type="text" name="method" value="getProjectNames"><BR>
+                    <b>Adapter:</b><br>
+                    <input type="text" name="adapter" value="ProjectManager"><BR>
+                    <b>Parameters: </b><br>
+                    <span style="font-size: 8pt">(Use the case-sensitive string $LAST to refer to previous return value)</span><BR>
+                    <span id="pspan">
+                    </span>
+                    <input type="button" value="Add Param" onClick="javascript:addParam();"><BR>
+                    <input type="button" value="Clear Params" onClick="javascript:clearParams();"><BR>                                       
+                    <input type="button" value="Go" onClick="javascript:go()"><BR><BR>
+                    <input type="button" value="demo" onClick="javascript:demo();"><BR>
+                    </form>
+
+                    <hr>
+                    <div id="ulform">
+                        <!-- Uploads are handled via the 'UploadManager', specific to the medsavant json client, and not part of the medsavant server API -->
+                        <form id="uploadForm" action="http://localhost:8090/medsavant-json-client/UploadManager/upload" name="uploadForm" method="post" enctype="multipart/form-data">
+                            <!-- form field name for files must be prefaced with file_. Optionally, a separate form field size_ can be provided with the files size -->
+                            <!-- sizes are matched to files based on the suffix: i.e. size_XYZ denotes the filesize for the file given in field file_XYZ -->
+                            <!-- Providing file sizes are OPTIONAL, but the API methods that report file upload progress will not return correct progress -->
+                            <!-- estimates if the file size is omitted -->
+                            Upload a VCF: <input type="file" name="file_1">
+                            <input type="submit"> (Submit copies file to server, give it time...)
+                        </form>
+                    </div>
+                    <br>
+                    <div id="lastreq"></div>
+                    <div id="lastret"></div>
+
+                    </BODY>
+                    </HTML>

@@ -71,8 +71,10 @@ public class SessionManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public void unregisterSession(String sessID) throws RemoteException, SQLException, SessionExpiredException {
-        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Unregistered session for " + SessionManager.getInstance().getUserForSession(sessID));
-        ConnectionController.removeSession(sessID);
+        if(ConnectionController.sessionExists(sessID)){
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Unregistered session for " + SessionManager.getInstance().getUserForSession(sessID));        
+            ConnectionController.removeSession(sessID);
+        }
     }
 
     @Override

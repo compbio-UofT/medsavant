@@ -79,6 +79,7 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.lang3.ArrayUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
@@ -109,16 +110,17 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private static final Object managerLock = new Object();
     private static boolean initialized = false;
     //change credentials as needed
-    private static String medSavantServerHost = "l";
-    private static int medSavantServerPort = 0;
-    private static String username = "";
-    private static String password = "";
-    private static String db = "";
+    private static String medSavantServerHost = "localhost";
+    private static int medSavantServerPort = 36850;
+    private static String username = "root";
+    private static String password = "savant12";
+    private static String db = "servlettest";
     //Debug variable, for the test method.  Don't use for other purposes. 
     //(doesn't work for multiple users)
     private static Object lastReturnVal;
     private static String sessionId = null;
     private static final int RENEW_RETRY_TIME = 10000;
+    private static int UPLOAD_BUFFER_SIZE = 4096;
 
     private class SimplifiedCondition {
 
@@ -246,7 +248,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     public static String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException {
 
-
         adapter = adapter + "Adapter";
 
         Field selectedAdapter = null;
@@ -260,22 +261,18 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             throw new IllegalArgumentException("The adapter " + adapter + " does not exist");
         }
 
-
-
         JsonParser parser = new JsonParser();
         JsonArray gArray = parser.parse(jsonStr).getAsJsonArray();
         JsonElement jse = parser.parse(jsonStr);
         JsonArray jsonArray;
 
-
         if (jse.isJsonArray()) {
             jsonArray = jse.getAsJsonArray();
         } else {
             throw new IllegalArgumentException("The json method arguments are not an array");
-        }
-
+        }        
+        
         Method selectedMethod = null;
-
 
         for (Method m : selectedAdapter.getType().getMethods()) {
             if (m.getName().equalsIgnoreCase(method) && m.getGenericParameterTypes().length == (jsonArray.size() + 1)) {
@@ -292,7 +289,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         try {
             for (Type t : selectedMethod.getGenericParameterTypes()) {
-                //  System.out.println("Field "+i+" is "+t.toString()+" for method "+selectedMethod.toString());
+                System.out.println("Field "+i+" is "+t.toString()+" for method "+selectedMethod.toString());
                 methodArgs[i] = (i > 0) ? gson.fromJson(gArray.get(i - 1), t) : getSessionId();
                 ++i;
             }
@@ -436,41 +433,39 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private static void setExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(
                 new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        LOG.info("Global exception handler caught: " + t.getName() + ": " + e);
 
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException) e).getCause();
-                }
+                        if (e instanceof InvocationTargetException) {
+                            e = ((InvocationTargetException) e).getCause();
+                        }
 
-                if (e instanceof SessionExpiredException) {
-                    SessionExpiredException see = (SessionExpiredException) e;
-                    LOG.error("Session expired exception: " + see.toString());
-                    return;
-                }
-                e.printStackTrace();
-            }
-        });
+                        if (e instanceof SessionExpiredException) {
+                            SessionExpiredException see = (SessionExpiredException) e;
+                            LOG.error("Session expired exception: " + see.toString());
+                            return;
+                        }
+                        e.printStackTrace();
+                    }
+                });
     }
 
-     private static int copyStreamToServer(InputStream inputStream, String filename, long filesize) throws IOException, InterruptedException {
-        
-        int streamID = -1;        
+    
+    private static int copyStreamToServer(InputStream inputStream, String filename, long filesize) throws IOException, InterruptedException {
+
+        int streamID = -1;
 
         try {
-            streamID =
-                NetworkManager.openWriterOnServer(getSessionId(), filename, filesize);
-            
+            streamID
+                    = NetworkManager.openWriterOnServer(getSessionId(), filename, filesize);
             int numBytes;
-            byte[] buf = null;
-            while ((numBytes = Math.min(inputStream.available(), NetworkManagerAdapter.BLOCK_SIZE)) > 0) {
-                if (buf == null || numBytes != buf.length) {
-                    buf = new byte[numBytes];
-                }
-                inputStream.read(buf);
-                NetworkManager.writeToServer(getSessionId(), streamID, buf);
-            }
+            byte[] buf = new byte[UPLOAD_BUFFER_SIZE];            
+            
+            while((numBytes = inputStream.read(buf)) != -1){                
+                //System.out.println("Read " + numBytes +" bytes");                
+                NetworkManager.writeToServer(getSessionId(), streamID, ArrayUtils.subarray(buf, 0, numBytes));                
+            }            
         } finally {
             if (streamID >= 0) {
                 NetworkManager.closeWriterOnServer(getSessionId(), streamID);
@@ -482,62 +477,67 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         return streamID;
     }
-     
-     /*
+
     private static Semaphore uploadSem = new Semaphore(1, true);
-    
-    private class Upload{
-        FileItemStream item;
-        int filesize;
+
+    private static class Upload {
+        String fieldName;
+        int streamId;
+        public Upload(String fieldName, int streamId){
+            this.fieldName = fieldName;
+            this.streamId = streamId;
+        }
     }
-    
-    private static void handleUploads(FileItemIterator iter) throws FileUploadException, IOException, InterruptedException{        
-        try{
-            if(!uploadSem.tryAcquire()){
+
+    private static Upload[] handleUploads(FileItemIterator iter) throws FileUploadException, IOException, InterruptedException {
+        List<Upload> uploads = new ArrayList<Upload>();
+        try {
+            if (!uploadSem.tryAcquire()) {                
                 throw new FileUploadException("Can't upload file: other uploads are in progress");
             }
-            uploadSem.acquire();
+            //uploadSem.acquire();
             FileItemStream streamToUpload = null;
-            long filesize = 0;
-
-            Map<String, pUload> uploadMap = new HashMap<String, Upload>();
-            
+            long filesize = -1;
 
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 String name = item.getFieldName();
                 InputStream stream = item.openStream();
-
+                //System.out.println("Got file " + name);
                 if (item.isFormField()) {
-                    if(name.startsWith("size_")){
+                    if (name.startsWith("size_")) {
                         filesize = Long.parseLong(Streams.asString(stream));
-                        
+
                     }
-                } else if(name.startsWith("file_")){                
-                    if(streamToUpload != null){
+                } else if (name.startsWith("file_")) {
+                    if (streamToUpload != null) {
                         throw new IllegalArgumentException("More than one file detected -- only one file can be uploaded at a time");
-                    }else{
+                    } else {
                         streamToUpload = item;
                     }
-                }else{
-                    throw new IllegalArgumentException("Unrecognized file detected with field name "+name);
+                } else {                    
+                    throw new IllegalArgumentException("Unrecognized file detected with field name " + name);
+                }
+                if (streamToUpload == null) {
+                    throw new IllegalArgumentException("Can't begin upload - no files were detetected");
+                }
+                if (filesize == -1) {
+                    //System.out.println("No filesize given for file " + name);
+                }
+
+                //Do the upload
+                int streamId = copyStreamToServer(streamToUpload.openStream(), streamToUpload.getName(), filesize);
+                if (streamId >= 0) {
+                    uploads.add(new Upload(name, streamId));                    
                 }
             }
 
-            if(streamToUpload == null){
-                throw new IllegalArgumentException("Can't begin upload - no files were detetected");
-            }
-            if(filesize == 0){
-                throw new IllegalArgumentException("Can't begin upload - no file size is specified");
-            }
-
-            //Do the upload
-            int streamId = copyStreamToServer(streamToUpload.openStream(), streamToUpload.getName(), filesize );
-        }finally{
+        } finally {            
             uploadSem.release();
-        }                       
+        }
+        return uploads.toArray(new Upload[uploads.size()]);        
     }
-*/
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //format: ..../adapter/method
@@ -546,7 +546,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         String[] x = uri.split("/");
         int methodIndex;
         int adapterIndex;
-
 
         if (uri.endsWith("/")) {
             methodIndex = x.length - 2;
@@ -559,13 +558,17 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         resp.setContentType("text/x-json;charset=UTF-8");
         resp.setHeader("Cache-Control", "no-cache");
         try {
-            if (adapterIndex >= 0 && x[adapterIndex].equals("upload")) {
+            if (adapterIndex >= 0 && x[adapterIndex].equals("UploadManager") && x[methodIndex].equals("upload")) {
                 if (!ServletFileUpload.isMultipartContent(req)) {
                     throw new IllegalArgumentException(gson.toJson("File upload failed: content is not multipart", String.class));
                 }
                 FileItemIterator iter = (new ServletFileUpload()).getItemIterator(req);
-                
-                //handleUploads(iter);
+                System.out.println("Handling upload");
+                Upload[] uploads = handleUploads(iter); //note this BLOCKS until upload is finished.
+                                
+                resp.getWriter().print(gson.toJson(uploads, uploads.getClass()));                                
+                resp.getWriter().close();
+
             } else if (methodIndex < 0 || adapterIndex < 0) {
                 throw new IllegalArgumentException(gson.toJson("Malformed URL", String.class));
             } else {
@@ -580,21 +583,23 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                  }                
                  }
                  */
-
                 String json_args = req.getParameter(JSON_PARAM_NAME);
                 if (json_args == null) {
                     json_args = "[]";
                 }
-                //System.out.println("Got json args "+json_args);
+                
 
                 String ret = json_invoke(x[adapterIndex], x[methodIndex], json_args);
-
-                //LOG.info("Got ret " + ret);
+                
                 resp.getWriter().print(ret);
                 resp.getWriter().close();
             }
         } catch (FileUploadException fue) {
+            LOG.error(fue);
         } catch (IllegalArgumentException iae) {
+            LOG.error(iae);            
+        } catch (InterruptedException iex) { //file upload cancelled.
+            LOG.error(iex);
         }
     }
 

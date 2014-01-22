@@ -52,12 +52,15 @@ public interface VariantManagerAdapter extends Remote {
 
     /**
      * Check the status of a lengthy process, giving the user the option to cancel.
-     */
+     */   
     ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException, SessionExpiredException;
 
     //These methods modify the database, but nothing happens until publishVariants is called, at which point MedSavant exits anyway.
     public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
+    
+    //Synonym for uplaodVariants -- for compatibility with JSON client.
+    public int uploadTransferredVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
     public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public void publishVariants(String sessID, int projID) throws Exception;
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;

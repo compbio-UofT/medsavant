@@ -205,8 +205,14 @@ public class ConnectionController {
     }
 
     public static String getUserForSession(String sessID) {
-        synchronized (sessionPoolMap) {
+        synchronized (sessionPoolMap) {            
             return sessionPoolMap.get(sessID).getUser();
+        }
+    }
+    
+    public static boolean sessionExists(String sessID){
+        synchronized (sessionPoolMap) {            
+            return sessionPoolMap.containsKey(sessID);
         }
     }
 

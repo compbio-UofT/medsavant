@@ -216,6 +216,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     }
 
+    @Override
+    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
+        return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
+    }
     /**
      * Import variant files which have been transferred from a client.
      */
