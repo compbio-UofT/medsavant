@@ -148,16 +148,7 @@ public class AnnotationCursor {
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
-        }
-        // log
-        /*LOG.info("Setting up Annotation Cursor for " + annotation);
-         LOG.info("  has reference:\t" + annotationHasRef);
-         LOG.info("  has alternate:\t" + annotationHasAlt);
-         LOG.info("  is interval:\t" + isInterval);
-         LOG.info("  is end inclusive:\t" + isEndInclusive);
-         LOG.info("  references " + references.substring(2, references.length()));
-         */
-
+        }       
     }
     SimpleVariantRecord lastVariantAnnotated;
     SimpleAnnotationRecord lastAnnotationConsidered;
@@ -184,18 +175,15 @@ public class AnnotationCursor {
     //Annotates the first numRecords variant records given in 'records'.  
     //Precondition: All records have the same chromosome, and are ordered by position in ascending order.
     String[][] annotateVariants(SimpleVariantRecord[] records, long start, long end, int numRecords) {
-        int numAnnots = 0;
-        System.out.println("Annotating " + numRecords + " between " + start + " and " + end + " inclusive on chrom " + records[0].chrom);
-        //int queryStart = (int)start;
-        //int queryEnd = (int)Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
-
+        int numAnnots = 0;       
         long queryStart = start;
         long queryEnd = Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
 
         String[][] results = new String[numRecords][];
 
         do {
-            System.out.println("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
+            //LOG.info("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
+            
             //find all annotations that lie within the current basepair window.
             if (!canAnnotateThisChromosome(records[0].chrom)) {
                 return null;
@@ -206,7 +194,7 @@ public class AnnotationCursor {
                             (int) queryStart - 1, //this function returns annotations AFTER this position, so we need to have the -1
                             (int) queryEnd);
             if (it == null) {
-                System.out.println("Didn't find any annotations between " + (queryStart - 1) + " and " + queryEnd);
+                //LOG.info("Didn't find any annotations between " + (queryStart - 1) + " and " + queryEnd);
             } else {
                 try {
                     boolean first;
@@ -240,137 +228,19 @@ public class AnnotationCursor {
                         }
                         numAnnots++;
                     }
-                    System.out.println("\tProcessed " + numAnnots);
+                    //LOG.info("\tProcessed " + numAnnots);
                 } catch (IOException ioex) {
                     //TODO: Change.
                     LOG.error(ioex);
                 }
-            }
-            //previous range: 41981 - 51981
-            //queryStart += MAX_BASEPAIR_DISTANCE_IN_WINDOW; //41981 -> 51981
-            queryStart = queryEnd + 1; //41981 -> 51982
-            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end); //min(61981, 51981)????
+            }          
+            queryStart = queryEnd + 1; 
+            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
         } while (queryStart < queryEnd);
 
         return results;
     }
-
-    /**
-     * Retrieve the annotation for this variant, if any. If an annotation does
-     * not exist, an empty string array of size getNumNonDefaultFields will be
-     * returned.
-     *
-     * @param r The genomic variant to annotate
-     * @return An array of annotations
-     */
-    /*
-     String[] annotateVariant(SimpleVariantRecord r) throws IOException {
-
-     //if set, an annotation must overlap and not merely intersect a variant
-     //in order for that variant to be annotated.
-     boolean requireExactMatch = true;
-
-     // short circuit when there are gaps between the variant and the next
-     // annotation, return a blank annotation
-     if (lastAnnotationConsidered != null
-     && r.chrom.equals(lastAnnotationConsidered.chrom)
-     && r.end < lastAnnotationConsidered.start) {
-     lastVariantAnnotated = r;
-     lastResult = new String[getNumNonDefaultFields()]; // this annotation is empty
-     return lastResult;
-     }
-
-     // try to reuse the previous annotation
-     if (lastVariantAnnotated != null && lastVariantAnnotated.equals(r)) {
-     lastVariantAnnotated = r;
-     return lastResult; // resuse the last annotation
-     }
-
-     // the annotation
-     String[] result = new String[getNumNonDefaultFields()];
-
-     // check if there are annotations for this chromosome
-     if (canAnnotateThisChromosome(r.chrom)) {
-
-     // seek to the appropriate record by genetic position            
-     TabixReader.Iterator it = reader.query(
-     reader.chr2tid(r.chrom),
-     (int) r.start - 1, // the function returns matches AFTER
-     // this position, so we need to have the -1
-     Integer.MAX_VALUE);
-
-     int numberIntersectingThisVariant = 0;
-     int numberMatchingThisVariant = 0;
-
-     // loop until the annotations no longer intersect the variant
-     // intersect for positional annotations imply a exact match of chrom and pos
-     // intersect for interval annotations imply containment
-     while (true) {
-
-     // nothing there
-     if (it == null) {
-     //LOG.warn("NULL iterator; offending variant is " + r);
-     break;
-     }
-     String annotationLineString = it.next();
-     if (annotationLineString == null) {
-     //LOG.warn("NULL annotation; offending variant is " + r);
-     break;
-     }
-
-     // get the next annotation and parse it
-     //annotationLineString is NULL, nullPointerException!
-     String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineString).split(VariantManagerUtils.FIELD_DELIMITER, -1);
-     SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
-
-     // save this annotation
-     lastAnnotationConsidered = annotationRecord;
-
-
-     // does this annotation intersect the variant position
-     if (annotationRecord.intersectsPosition(r.chrom, r.start, r.end)) {
-
-     // keep track of intersections
-     numberIntersectingThisVariant++;
-
-     // if there is a match, add it to the results
-     if (requireExactMatch && annotationRecord.matchesVariant(r)) {
-
-     String prefix = "";
-
-     // the number of redundant and non-redundant columns
-     int numColumnsToCopy = getNumNonDefaultFields();
-     int numRedundantColumns = annotationLine.length - numColumnsToCopy;
-
-     // copy only the non-redundant columns
-     for (int i = 0; i < numColumnsToCopy; i++) {
-     // tricky, skip the redundant columns
-     result[i] = prefix + annotationLine[numRedundantColumns + i];
-     }
-
-
-     // track the number of matches
-     numberMatchingThisVariant++;
-     break;
-     }
-
-     // if the next annotation doesn't intersect, break out
-     } else {
-     break;
-     }
-     }
-
-     // log
-     //LOG.info(numberIntersectingThisVariant + " annotations intersecting variant");
-     //LOG.info(numberMatchingThisVariant + " annotations matching variant");
-     }
-
-     // save the result and return
-     lastVariantAnnotated = r;
-     lastResult = result;
-     return result;
-     }
-     */
+   
     /**
      * Get the number of fields (not including standard ones like chr, pos, ref,
      * alt)
@@ -539,7 +409,6 @@ public class AnnotationCursor {
 
         private boolean matchesVariant(SimpleVariantRecord r) {
             //return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end);
-
             return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
                     || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));
         }
