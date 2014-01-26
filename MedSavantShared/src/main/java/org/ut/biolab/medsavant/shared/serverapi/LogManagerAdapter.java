@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public interface LogManagerAdapter extends Remote {
 
-    public static enum LogType { INFO, ERROR, LOGIN, LOGOUT };
+    public static enum LogType { INFO, WARNING, ERROR, LOGIN, LOGOUT };
 
     public List<GeneralLog> getServerLog(String sid,int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
     public List<GeneralLog> getServerLogForUserWithSessionID(String sid, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;

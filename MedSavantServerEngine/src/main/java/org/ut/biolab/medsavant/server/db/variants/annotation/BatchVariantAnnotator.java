@@ -413,7 +413,7 @@ public class BatchVariantAnnotator {
 
     class VariantAnnotatorIOJob extends IOJob {
 
-        private final int VARIANT_WINDOW_SIZE = 5000;
+        private final int VARIANT_WINDOW_SIZE = 5000; //MAXIMUM size of variant window         
         private String[] inputLine;
         private int oldp = 0;
         private int numLines;
@@ -431,6 +431,8 @@ public class BatchVariantAnnotator {
         private long minStart = Integer.MAX_VALUE;
         private long maxEnd = 0;
         private int numFieldsInOutputFile = 0;
+
+        private int variantsAnnotated = 0;
 
         public VariantAnnotatorIOJob(AnnotationCursor[] cursors, CSVReader recordReader, CSVWriter recordWriter, int numLines, int numFieldsInOutputFile) {
             super("Variant annotator");
@@ -456,27 +458,44 @@ public class BatchVariantAnnotator {
             numVariantsInWindow = 0;
         }
 
-        private void annotateWindow() throws IllegalArgumentException {                        
-            int ofs = 0;
-            // perform each annotation, in turn
-            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {                
-                // get the annotation for this line
-                String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
-                // add it to the output buffer                    
-                for (int k = 0; k < annotationsForThisLine.length; ++k) { //for each row
-                    for (int l = 0; l < cursors[annotationIndex].getNumNonDefaultFields(); ++l) {                                                
-                        if (annotationsForThisLine[k] == null) {
-                            outputAnnotations[k][l + ofs] = "";
-                        } else {
-                            outputAnnotations[k][l + ofs] = annotationsForThisLine[k][l];
+        private void annotateWindow() throws IllegalArgumentException {
+            try {
+                int ofs = 0;
+                // perform each annotation, in turn
+                for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
+                    // get the annotation for this line
+                    String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
+                    if (annotationsForThisLine == null) {
+                        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                                sid,
+                                LogManagerAdapter.LogType.WARNING,
+                                inputTDFFile.getName() + "Cannot annotate chromosome " + variantWindow[0].chrom + " with annotation " + annotations[annotationIndex]);
+                    }
+                    // add it to the output buffer                    
+                    for (int k = 0; k < annotationsForThisLine.length; ++k) { //for each row
+                        for (int l = 0; l < cursors[annotationIndex].getNumNonDefaultFields(); ++l) {
+                            if (annotationsForThisLine[k] == null) {
+                                outputAnnotations[k][l + ofs] = "";
+                            } else {
+                                outputAnnotations[k][l + ofs] = annotationsForThisLine[k][l];
+                            }
                         }
                     }
+                    ofs += cursors[annotationIndex].getNumNonDefaultFields();
                 }
-                ofs += cursors[annotationIndex].getNumNonDefaultFields();
-            }
 
-            for (int i = 0; i < numVariantsInWindow; ++i) {
-                recordWriter.writeNext((String[]) ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));
+                for (int i = 0; i < numVariantsInWindow; ++i) {
+                    recordWriter.writeNext((String[]) ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));
+                }
+                variantsAnnotated += numVariantsInWindow;
+                SimpleVariantRecord lv = variantWindow[numVariantsInWindow - 1];
+
+                org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                        sid,
+                        LogManagerAdapter.LogType.INFO,
+                        inputTDFFile.getName() + ": Annotated " + variantsAnnotated + " variants so far.  Last variant considered: Chrom=" + lv.chrom + " Position=" + lv.start);
+            } catch (Exception ex) {
+                LOG.error("Couldn't communicate progress message to user: " + ex);
             }
         }
 
@@ -503,7 +522,7 @@ public class BatchVariantAnnotator {
                         maxEnd = Math.max(nextInputRecord.end, maxEnd);
                         inputLines[numVariantsInWindow] = inputLine;
                         currentChrom = nextInputRecord.chrom;
-                        
+
                         //sanity check
                         if (previousStart >= 0 && (nextInputRecord.start < previousStart)) {
                             //We should never allow the database to enter this unsorted state, so unless 
@@ -519,21 +538,22 @@ public class BatchVariantAnnotator {
                 }
 
                 annotateWindow();
-                               
+
                 resetWindow();
-                                                
+
                 numVariantsInWindow = 1;
                 variantWindow[0] = nextInputRecord;
+                inputLines[0] = inputLine;
                 currentChrom = nextInputRecord.chrom;
                 previousStart = chromMismatch ? -1 : nextInputRecord.start;
                 minStart = nextInputRecord.start;
-                maxEnd = nextInputRecord.end;                
-                chromMismatch = false;                
+                maxEnd = nextInputRecord.end;
+                chromMismatch = false;
 
-            } catch (IllegalArgumentException iex) {                
+            } catch (IllegalArgumentException iex) {
                 LOG.error(iex);
             }
 
-        }      
+        }
     }
 }

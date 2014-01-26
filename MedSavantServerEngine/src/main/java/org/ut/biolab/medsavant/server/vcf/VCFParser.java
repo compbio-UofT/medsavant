@@ -22,6 +22,7 @@ package org.ut.biolab.medsavant.server.vcf;
 import com.google.code.externalsorting.ExternalSort;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -35,6 +36,8 @@ import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
@@ -61,10 +64,13 @@ public class VCFParser {
     private static final int VCF_FORMAT_INDEX = 8;
     private static final int VCF_SAMPLE_START_INDEX = 9;
     private static final Pattern VCF_BADREF_REGEX = Pattern.compile("[^ACGTacgt]");
-    private static final Pattern VCF_SNP_REGEX = Pattern.compile("^[ACGT]");
+    private static final Pattern VCF_SNP_REGEX = Pattern.compile("^[ACGTacgt]");
     private static final Pattern VCF_BADALT_REGEX = VCF_BADREF_REGEX;
     private static final Pattern VCF_ALT_OLD_1000G_REGEX = Pattern.compile("^<.+>$");
-    private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.])[/|]([\\d.])");
+
+    //numbers or dots delimited by pipes or slashes.
+    //private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.\\.])([/|]([\\d.\\.]))*");
+    private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.])(([/|])([\\d.]))*");
     private int lineNumber = 0;
     private int numInvalidRef = 0;
     private int numInvalidAlt = 0;
@@ -79,6 +85,14 @@ public class VCFParser {
     private int numInvalidGT = 0;
     private int numHom = 0;
     private int numHet = 0;
+
+    private String sessID;
+    private File vcfFile;
+
+    public VCFParser(String sessID, File vcfFile) {
+        this.sessID = sessID;
+        this.vcfFile = vcfFile;
+    }
 
     public int getNumInvalidRef() {
         return numInvalidRef;
@@ -251,7 +265,7 @@ public class VCFParser {
                     }
                 }
                 numRecords++;
-            }
+            }//end else
         }
         out.close();
 
@@ -286,10 +300,29 @@ public class VCFParser {
                 String[] tokens1 = o1.split("\t");
                 String[] tokens2 = o2.split("\t");
 
-                String chr1 = tokens1[TDF_INDEX_OF_CHROM].substring(3);
-                String chr2 = tokens2[TDF_INDEX_OF_CHROM].substring(3);
+                String chr1 = tokens1[TDF_INDEX_OF_CHROM].toLowerCase();
+                String chr2 = tokens2[TDF_INDEX_OF_CHROM].toLowerCase();
+
+                //Removed these checks - assume chromosomes are quoted.
+                /*
+                 if(chr1.startsWith("\"") && chr1.endsWith("\"")){
+                 chr1 = chr1.substring(1, chr1.length()-1);                    
+                 }
+                 if(chr2.startsWith("\"") && chr2.endsWith("\"")){
+                 chr1 = chr1.substring(1, chr1.length()-1);                    
+                 }*/
+                chr1 = chr1.substring(1, chr1.length() - 1);
+                chr2 = chr2.substring(1, chr2.length() - 1);
+
+                if (chr1.startsWith("chr")) {
+                    chr1 = chr1.substring(3);
+                }
+                if (chr2.startsWith("chr")) {
+                    chr2 = chr2.substring(3);
+                }
+
                 if (chr1.equals(chr2)) {
-                    //strings are quoted.                
+                    //assume positions are also quoted
                     long pos1 = Long.parseLong(tokens1[TDF_INDEX_OF_STARTPOS].substring(1, tokens1[TDF_INDEX_OF_STARTPOS].length() - 1));
                     long pos2 = Long.parseLong(tokens2[TDF_INDEX_OF_STARTPOS].substring(1, tokens2[TDF_INDEX_OF_STARTPOS].length() - 1));
 
@@ -300,7 +333,8 @@ public class VCFParser {
                     } else {
                         return 0;
                     }
-                } else {                    
+                } else {
+                    
                     int c1 = NumberUtils.isDigits(chr1) ? Integer.parseInt(chr1) : (int) chr1.charAt(0);
                     int c2 = NumberUtils.isDigits(chr2) ? Integer.parseInt(chr2) : (int) chr2.charAt(0);
                     return (c1 < c2) ? -1 : ((c1 > c2) ? 1 : 0);
@@ -356,10 +390,32 @@ public class VCFParser {
         return result;
     }
 
-    private void vcf_warning(String msg) {
-        //For now, log warnings to file.  These should eventually be communicated to the user.
-        LOG.info("WARNING (line " + lineNumber + "): " + msg);
+    private void messageToUser(LogManagerAdapter.LogType logtype, String msg) {
+        try {
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+                    sessID,
+                    logtype,
+                    msg);
+            LOG.info("sessId=" + sessID + " " + msg);
+        } catch (RemoteException re) {
+            LOG.error(re);
+            LOG.error("WARNING: Couldn't log warning due to RemoteException.  Warning: " + msg);
+        } catch (SessionExpiredException see) {
+            LOG.error(see);
+            LOG.error("WARNING: Couldn't log warning due to SessionExpiredException.  Warning: " + msg);
+        }
     }
+
+    private void vcf_warning(String msg) {
+        String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
+        messageToUser(LogManagerAdapter.LogType.WARNING, warning);
+    }
+
+    //These variables control how bad refs are reported or handled.
+    private static final boolean TOOLONG_REFS_GIVE_WARNING = true;
+    private static final boolean UNRECOGNIZED_REFS_GIVE_WARNING = true; //only matters if above is true.
+    private static final boolean TOOLONG_ALTS_GIVE_WARNING = true;
+    private static final boolean UNRECOGNIZED_ALTS_GIVE_WARNING = true;
 
     private List<VariantRecord> parseRecord(String[] line, VCFHeader h) {
         int numMandatoryFields = VCFHeader.getNumMandatoryFields();
@@ -404,17 +460,24 @@ public class VCFParser {
             }
 
             boolean badRef = false;
-            if (VCF_BADREF_REGEX.matcher(ref).find()) {
-                if (ref.length() < 100) { //sometimes extremely long ref contains N nucleotides
-                    vcf_warning("Invalid reference ref allele record found in VCF4 file (ACGT expected, found " + ref + ") Setting ref as 0");
-                }
-                ref = "0";
-                badRef = true;
-            }
 
+            //If a ref is unrecognized or too long, we truncate it to 0 and store it anyway.
+            //(We never match on ref anyway)
             if (ref.length() > BasicVariantColumns.REF.getColumnLength()) {
-                vcf_warning("Detected reference allele with too many characters (maximum is " + BasicVariantColumns.REF.getColumnLength() + ", " + ref.length() + " detected).  Setting ref=0");
+                if (TOOLONG_REFS_GIVE_WARNING) {
+                    vcf_warning("Detected reference allele with too many characters (maximum is " + BasicVariantColumns.REF.getColumnLength() + ", " + ref.length() + " detected).  Setting ref=0");
+                }
                 badRef = true;
+                ref = "0";
+            } else if (VCF_BADREF_REGEX.matcher(ref).find()) { //Unrecognized ref                               
+                /*if (ref.length() < 100) { //sometimes extremely long ref contains N nucleotides
+                 vcf_warning("Invalid reference ref allele record found in VCF4 file (ACGT expected, found " + ref + ") Setting ref as 0");
+                 }*/
+
+                badRef = true;
+                if (UNRECOGNIZED_REFS_GIVE_WARNING) {
+                    vcf_warning("Unrecognized reference allele found in VCF4 file (ACGT expected, found " + ref + ") Storing anyway.");
+                }
             }
 
             String[] allAlt = altStr.split(","); //there may be multiple alternative alleles
@@ -424,17 +487,21 @@ public class VCFParser {
                     ++numInvalidRef;
                 }
 
+                //If the ALT sequence is too long, we can't store it, and truncate it down to 10 characters.
                 if (alt.length() > BasicVariantColumns.ALT.getColumnLength()) {
-                    vcf_warning("Skipping alternate allele with too many characters (maximum is " + BasicVariantColumns.ALT.getColumnLength() + ", " + alt.length() + " detected).  MedSavant does not yet support sequences of this size.");
+                    if (TOOLONG_ALTS_GIVE_WARNING) {
+                        vcf_warning("Skipping alternate allele with too many characters (maximum is " + BasicVariantColumns.ALT.getColumnLength() + ", " + alt.length() + " detected).  MedSavant does not yet support sequences of this size.  Storing first 10 characters");
+                    }
+                    alt = alt.substring(0, Math.min(10, BasicVariantColumns.ALT.getColumnLength()));
                     ++numInvalidAlt;
-                    continue;
-                }
+                    //   continue;
+                } else if (VCF_BADALT_REGEX.matcher(alt).find() && !VCF_ALT_OLD_1000G_REGEX.matcher(alt).find()) {//Old 1000g vcf file has <del> as alternative allele    
 
-                //Old 1000g vcf file has <del> as alternative allele    
-                if (VCF_BADALT_REGEX.matcher(alt).find() && !VCF_ALT_OLD_1000G_REGEX.matcher(alt).find()) {
-                    vcf_warning("Skipping invalid alt allele record (ACGT expected, found " + alt + ")");
+                    if (UNRECOGNIZED_ALTS_GIVE_WARNING) {
+                        vcf_warning("Unrecognized ALT allele detected (ACGT expected, found " + alt + ").  Storing anyway.");
+                    }
                     ++numInvalidAlt;
-                    continue;
+                    //continue;
                 }
 
                 boolean snp = false;
@@ -517,7 +584,8 @@ public class VCFParser {
                         String gt = chunk.split(":")[indexGT];
                         Matcher gtMatcher = VCF_GT_REGEX.matcher(gt);
                         if (!gtMatcher.find() || indexGT < 0) {
-                            vcf_warning("Invalid GT field found in VCF file: " + gt);
+
+                            vcf_warning("SKIPPED VARIANT. Invalid GT field (" + gt.substring(0, Math.min(10, gt.length())) + (gt.length() < 10 ? "" : "...") + ") found in VCF file. cannot determine genotype.");
                             ++numInvalidGT;
                             continue;
                         }

@@ -74,7 +74,7 @@ public class ImportUpdateManager {
             LOG.info("Working directory is " + workingDirectory.getAbsolutePath());
 
             // prepare for annotation
-            File[] importedTSVFiles = doConvertVCFToTSV(vcfFiles, updateID, includeHomozygousReferenceCalls, createSubdir(workingDirectory, "converted"));
+            File[] importedTSVFiles = doConvertVCFToTSV(sessionID, vcfFiles, updateID, includeHomozygousReferenceCalls, createSubdir(workingDirectory, "converted"));
             File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), false);
             File[] allTSVFiles = ArrayUtils.addAll(importedTSVFiles, existingTableAsTSV);
 
@@ -226,7 +226,7 @@ public class ImportUpdateManager {
     /**
      * PARSING
      */
-    public static File[] doConvertVCFToTSV(File[] vcfFiles, int updateID, boolean includeHomozygousReferenceCalls, File outDir) throws Exception {
+    public static File[] doConvertVCFToTSV(String sessID, File[] vcfFiles, int updateID, boolean includeHomozygousReferenceCalls, File outDir) throws Exception {
 
         LOG.info("Converting VCF files to TSV, working directory is " + outDir.getAbsolutePath());
 
@@ -236,7 +236,7 @@ public class ImportUpdateManager {
         int fileID = 0;
         for (File vcfFile : vcfFiles) {
             File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");            
-            threads.add(new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
+            threads.add(new VariantParser(sessID, vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
 
             //threads[fileID] = t;
             fileID++;

@@ -49,14 +49,14 @@ public class VariantParser implements Callable<Void> {
     private final int fileID;
     private boolean success = false;
     private Exception exception;
-
-    public VariantParser(File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
+    private String sessID;
+    public VariantParser(String sessID, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
         this.vcfFile = vcfFile;
         this.outFile = outFile;
         this.fileID = fileID;
         this.updateID = updateID;
         this.includeHomoRef = includeHomoRef;
-
+        this.sessID = sessID;
         if (IOUtils.isGZipped(vcfFile)) {
             reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(vcfFile)));
         } else {
@@ -84,7 +84,7 @@ public class VariantParser implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            VCFParser vcfParser = new VCFParser();
+            VCFParser vcfParser = new VCFParser(sessID, vcfFile);
             vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
             success = true;
         } catch (Exception e) {

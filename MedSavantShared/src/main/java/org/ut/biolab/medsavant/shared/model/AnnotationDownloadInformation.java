@@ -100,9 +100,9 @@ public class AnnotationDownloadInformation implements Serializable {
 
     /**
      * Static helper variables / methods
-     */
-//    private static final String databaseURL = "http://genomesavant.com/medsavant/serve/annotation/annotation.xml";
-    private static final String databaseURL = "http://compbio.cs.toronto.edu/savant/data/dropbox/annotationDirectory.xml";
+     */    
+    
+    private static final String databaseURL = "http://compbio.cs.toronto.edu/savant/data/dropbox/newAnnotationDirectory.xml";
     private static File downloadAnnotationDatabase() throws IOException {
         String targetFileName = "AnnotationDatabase.xml";
         File targetDir = DirectorySettings.getTmpDirectory();
