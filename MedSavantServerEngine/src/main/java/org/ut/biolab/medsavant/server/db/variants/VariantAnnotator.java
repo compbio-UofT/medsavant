@@ -145,6 +145,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
 
             EmailLogger.logByEmail("Error running annotator on " + inFile.getAbsolutePath(), "Here is the object: " + toString() + ". Here is the message: " + ExceptionUtils.getStackTrace(e));
             LOG.error(e);
+            e.printStackTrace();
             success = false;
             exception = e;
         }

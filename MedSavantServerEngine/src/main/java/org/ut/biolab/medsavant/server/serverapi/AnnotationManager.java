@@ -90,7 +90,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public boolean installAnnotationForProject(String sessionID, int currentProjectID, int transferID) throws RemoteException, SessionExpiredException, SQLException {
         try {
-            LOG.info("Insalling annotation transferred from client");
+            LOG.info("Installing annotation transferred from client");
             NetworkManager netMgr = NetworkManager.getInstance();
             File annotationFile = netMgr.getFileByTransferID(sessionID, transferID);
             File installPath = generateInstallationDirectory();
@@ -605,7 +605,10 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         while (true) {
             dir = new File(localDirectory.getAbsolutePath(), i + "");
             if (!dir.exists()) {
-                dir.mkdirs();
+                LOG.info("Creating installation directory: "+dir.getAbsolutePath());
+                if(!dir.mkdirs()){
+                    LOG.error("Couldn't create installation directory for annotation: "+dir.getAbsolutePath());
+                }
                 return dir;
             }
             i++;

@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.client.filter.Filter;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 
 /**
@@ -65,10 +66,18 @@ public abstract class RegionSetFilter extends Filter {
                 List<Range> ranges = rangeMap.get(chrom);
                 Condition[] rangeConditions = new Condition[ranges.size()];
                 for (int j = 0; j < ranges.size(); j++) {
+                    rangeConditions[j] = MiscUtils.getIntersectCondition(
+                            (int)ranges.get(j).getMin(), 
+                            (int)ranges.get(j).getMax(),  
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.START_POSITION), 
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.END_POSITION));
+                    /*
                     rangeConditions[j] = new RangeCondition(
                             ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.POSITION),
                             (long)ranges.get(j).getMin(),
                             (long)ranges.get(j).getMax());
+                    */
+                    
                 }
 
                 //add range conditions

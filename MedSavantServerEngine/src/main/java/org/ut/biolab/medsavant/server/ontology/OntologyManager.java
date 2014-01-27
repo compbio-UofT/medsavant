@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -253,17 +254,20 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      * @throws IOException
      */
     private void populateGOTables(String sessID, String name, URL oboData, URL goToGeneData) throws IOException, SQLException, SessionExpiredException {
+        LOG.info("Parsing OBO "+oboData);
         Map<String, OntologyTerm> terms = new OBOParser(OntologyType.GO).load(oboData);
-
+        
         connection = ConnectionController.connectPooled(sessID);
         LOG.info("Session " + sessID + " made connection");
         try {
             populateTable(name, terms);
 
             Map<String, Set<String>> allGenes = new HashMap<String, Set<String>>();
+            // Expecting a GZIPped tab-delimited text file in GAF (GO Annotation File) format.
             // We are only interested in columns 2 (gene), 3 (qualifier), and 4 (GO term).
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(RemoteFileCache.getCacheFile(goToGeneData))));
+            LOG.info("Reading annotation file "+goToGeneData+ " (Cache: "+RemoteFileCache.getCacheFile(goToGeneData)+")");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(RemoteFileCache.getCacheFile(goToGeneData)))));
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -465,24 +469,31 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     /**
      * Called from <code>createDatabase()</code> to create all the ontology tables on
-     * a background thread.
+     * a BLOCKING background thread.
      *
      * @param sessID
      */
-    public void populate(final String sessID) {
-        MedSavantServerEngine.submitLongJob(new Runnable(){        
-            @Override
-            public void run() {
-                try {
-                    LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
-                    addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
-                    addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
-                    addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
-                    SessionManager.getInstance().unregisterSession(sessID);
-                } catch (Exception ex) {
-                    LOG.error("Error populating ontology tables.", ex);
+    public void populate(final String sessID){
+        try{
+            MedSavantServerEngine.submitLongJob(new Runnable(){        
+                @Override
+                public void run(){
+                    try {
+                        LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
+                        LOG.info("Adding GO Ontology");
+                        addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
+                        LOG.info("Adding HPO Ontology");
+                        addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
+                        LOG.info("Adding OMIM Ontology");
+                        addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
+                        SessionController.getInstance().unregisterSession(sessID);
+                    } catch (Exception ex) {
+                        LOG.error("Error populating ontology tables.", ex);
+                    }
                 }
-            }
-        });
+            });
+        }catch(Exception ex){
+            LOG.error("Error populating ontology tables.", ex);
+        }
     }
 }

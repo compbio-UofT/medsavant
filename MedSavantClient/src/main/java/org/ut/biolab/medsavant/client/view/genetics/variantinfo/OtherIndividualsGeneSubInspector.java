@@ -65,17 +65,19 @@ public class OtherIndividualsGeneSubInspector extends OtherIndividualsSubInspect
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.Y_AXIS));
 
-        Set<VariantRecord> variantRecords = getVariantRecords(dnaID);
+        //dnaIDVariantMap.get(DNAId) -- all variants within gene corresponding to individual
+        Set<VariantRecord> variantRecords = getVariantRecords(dnaID); 
 
 
         Map<Long, Set<VariantRecord>> positionVariantMap = new TreeMap<Long, Set<VariantRecord>>();
         for (VariantRecord variantRecord : variantRecords) {
-            Set<VariantRecord> variantsAtPosition = positionVariantMap.get(variantRecord.getPosition());
+            //Get all variants at that overlap at that position, regardless of individual.
+            Set<VariantRecord> variantsAtPosition = positionVariantMap.get(variantRecord.getStartPosition());
             if (variantsAtPosition == null) {
                 variantsAtPosition = new HashSet<VariantRecord>();
             }
             variantsAtPosition.add(variantRecord);
-            positionVariantMap.put(variantRecord.getPosition(), variantsAtPosition);
+            positionVariantMap.put(variantRecord.getStartPosition(), variantsAtPosition);
         }
 
 
@@ -175,7 +177,7 @@ public class OtherIndividualsGeneSubInspector extends OtherIndividualsSubInspect
             @Override
             public Object[] getRow(Cohort cohort, String familyId, VariantRecord variantRecord) {
                 return new Object[]{
-                    variantRecord.getPosition(),
+                    variantRecord.getStartPosition(),
                     variantRecord.getRef(),
                     variantRecord.getAlt(),
                     variantRecord.getZygosity()

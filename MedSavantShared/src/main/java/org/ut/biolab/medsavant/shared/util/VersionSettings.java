@@ -60,7 +60,7 @@ public class VersionSettings {
         return getVersionString().toLowerCase().contains(BETA_VERSION.toLowerCase());
     }
 
-    public static String getVersionString() {
+    public static String getVersionString() {        
         String version = UNDEFINED_VERSION;
 
         Package aPackage = VersionSettings.class.getPackage();
@@ -70,11 +70,11 @@ public class VersionSettings {
                 version = aPackage.getSpecificationVersion();
             }
         }
-        if (version == null) {
-            version = UNDEFINED_VERSION;
+        if (version == null) {            
+            version = UNDEFINED_VERSION; 
         }
-
-        return version;
+        //Allow version to be overridden from command line. 
+        return System.getProperty("medsavant.version", version);                    
     }
 
     public static boolean isCompatible(URL url, String queryVersion, String hostVersion, boolean exactMatchByPass) throws SAXException, IOException {

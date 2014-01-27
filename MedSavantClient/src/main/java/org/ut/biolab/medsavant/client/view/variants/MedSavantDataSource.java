@@ -220,7 +220,12 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 Condition rangeCondition = ComboCondition.and(
                         new Condition[]{
                     BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), chrom),
-                    new RangeCondition(table.getDBColumn(BasicVariantColumns.POSITION.getColumnName()), range.getFrom(), range.getTo())});
+                    org.ut.biolab.medsavant.shared.util.MiscUtils.getIntersectCondition(
+                            (long) range.getFrom(),
+                            (long) range.getTo(),
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.START_POSITION),
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.END_POSITION))});
+                                        
                 Condition[][] conditions;
                 if (filterConditions.length == 0) {
                     conditions = new Condition[][]{new Condition[]{rangeCondition}};
@@ -252,7 +257,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 }
 
                 for (Object[] arr : filteredVariants) {
-                    Integer position = (Integer) arr[BasicVariantColumns.INDEX_OF_POSITION];
+                    Integer position = (Integer) arr[BasicVariantColumns.INDEX_OF_START_POSITION];
                     String refString = (String) arr[BasicVariantColumns.INDEX_OF_REF];
                     String key = position.toString() + refString;
                     MergedMedSavantVariantRecord m = recordMap.get(key);

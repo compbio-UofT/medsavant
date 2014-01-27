@@ -68,6 +68,11 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <dependency>
+                <groupId>com.google.code.externalsortinginjava</groupId>
+                <artifactId>externalsortinginjava</artifactId>
+                <version>0.1.8</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -129,6 +134,10 @@
                     <excludes>
                         <exclude>**/internal/**</exclude>
                         <exclude>**/test/**</exclude>
+                        <!-- Made some changes to support Indels -->
+                        <exclude>**/org/ut/biolab/medsavant/shared/format/BasicVariantColumns</exclude>
+                        <exclude>**/org/ut/biolab/medsavant/shared/vcf/VariantRecord</exclude>
+                        
                         <!-- Remove the following excludes after each release -->
                     </excludes>
                 </configuration>

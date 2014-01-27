@@ -29,13 +29,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.IOJob;
 import org.ut.biolab.medsavant.server.MedSavantIOController;
-import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
-import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
@@ -82,7 +81,6 @@ public class BatchVariantAnnotator {
         this.sid = sid;
         this.annotations = annotations;
     }
-
     private int PROGRESS_STEP_SIZE = 10;
 
     private int logProgress(int totalNumLinesRead, int numLines, int oldp) {
@@ -106,7 +104,7 @@ public class BatchVariantAnnotator {
                 sid,
                 LogManagerAdapter.LogType.INFO,
                 "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. "
-                        + annotations.length + " annotation(s) will be performed.");
+                + annotations.length + " annotation(s) will be performed.");
 
         LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
         //EmailLogger.logByEmail("Annotation started", "Annotation of " + inputTDFFile.getAbsolutePath() + " was started. " + annotations.length + " annotation(s) will be performed.");
@@ -180,43 +178,42 @@ public class BatchVariantAnnotator {
 
             //LOG.info("Reading from " + inputTDFFile.getAbsolutePath());
             //LOG.info("Writing to " + outputTDFFile.getAbsolutePath());
-
             // read the input, line by line
             String[] inputLine;
 
             MedSavantIOController.requestIO(new VariantAnnotatorIOJob(cursors, recordReader, recordWriter, numlines[0], numFieldsInOutputFile));
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
-                sid,
-                LogManagerAdapter.LogType.INFO,
-                "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
+                    sid,
+                    LogManagerAdapter.LogType.INFO,
+                    "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
 
             // report success
             LOG.info("Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
             //EmailLogger.logByEmail("Annotation completed", "Annotation of " + inputTDFFile.getAbsolutePath() + " completed. " + annotations.length + " annotations were performed.");
-        } catch(InterruptedException ie){
+        } catch (InterruptedException ie) {
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
-                sid,
-                LogManagerAdapter.LogType.ERROR,
-                "Error performing annotation(s). "+ ie.getLocalizedMessage());
+                    sid,
+                    LogManagerAdapter.LogType.ERROR,
+                    "Error performing annotation(s). " + ie.getLocalizedMessage());
 
-            LOG.error("performBatchAnnotationInParallell interrupted: "+ie);
-        }finally {
+            LOG.error("performBatchAnnotationInParallell interrupted: " + ie);
+        } finally {
             // clean up
-            try{
-            if (cursors != null) {
-                for (AnnotationCursor c : cursors) {
-                    c.cleanup();
+            try {
+                if (cursors != null) {
+                    for (AnnotationCursor c : cursors) {
+                        //c.cleanup();
+                    }
                 }
-            }
-            if (recordReader != null) {
-                recordReader.close();
-            }
-            if (recordWriter != null) {
-                recordWriter.close();
-            }
-            }catch(NullPointerException nex){
+                if (recordReader != null) {
+                    recordReader.close();
+                }
+                if (recordWriter != null) {
+                    recordWriter.close();
+                }
+            } catch (NullPointerException nex) {
                 LOG.error("Caught nullpointerexception ");
                 nex.printStackTrace();
             }
@@ -274,7 +271,6 @@ public class BatchVariantAnnotator {
         CSVReader reader = new CSVReader(new FileReader(file), VariantManagerUtils.FIELD_DELIMITER.charAt(0), CSVWriter.DEFAULT_QUOTE_CHARACTER, '\\');
 
         //LOG.info("Analyzing file to be annotated " + file.getAbsolutePath());
-
         // read the first line
         String[] next = reader.readNext();
         if (next == null) {
@@ -294,19 +290,33 @@ public class BatchVariantAnnotator {
     }
 
     /**
-     * Basic data structure for variants
+     * Basic data structure for variants stored in MedSavant database. Variants
+     * are imported from VCF4 files and stored in .avinput format within the
+     * database tables. To annotate these variants, they must be converted (via
+     * this class) to a format compatible with Annovar annotations.
+     *
+     * This class should ONLY be used for variants read from database tables,
+     * for the purposes of annotation.
+     *
+     * SimpleAnnotationRecord should be used to store annotations.
+     *
+     * @see SimpleAnnotationRecord
      */
-    public static class SimpleVariantRecord {
+    static class SimpleVariantRecord {
 
         // indexes of various columns in the input file
         // (there are a few) columns at the start pertaining to import / file ids
-        private static final int VARIANT_INDEX_OF_CHR = 4;
-        private static final int VARIANT_INDEX_OF_POS = 5;
-        private static final int VARIANT_INDEX_OF_REF = 7;
-        private static final int VARIANT_INDEX_OF_ALT = 8;
+        public static final int VARIANT_INDEX_OF_CHR = 4;
+        //private static final int VARIANT_INDEX_OF_POS = 5;
+        public static final int VARIANT_INDEX_OF_START = 5;
+        public static final int VARIANT_INDEX_OF_END = 6;
+        public static final int VARIANT_INDEX_OF_REF = 8;
+        public static final int VARIANT_INDEX_OF_ALT = 9;
         // basic variant fields
         public String chrom;
-        public int position;
+        //public int position;
+        public long start;
+        public long end;
         public String ref;
         public String alt;
 
@@ -316,7 +326,7 @@ public class BatchVariantAnnotator {
          *
          * @param line The array from which to make this record
          */
-        public SimpleVariantRecord(String[] line) {
+        public SimpleVariantRecord(String[] line) throws IllegalArgumentException {
             setFromLine(line);
         }
 
@@ -325,15 +335,29 @@ public class BatchVariantAnnotator {
          *
          * @param line The contents
          */
-        private void setFromLine(String[] line) {
+        private void setFromLine(String[] line) throws IllegalArgumentException {
             chrom = line[VARIANT_INDEX_OF_CHR];
-            try{
-                position = Integer.parseInt(line[VARIANT_INDEX_OF_POS]);
-            }catch(NumberFormatException nex){
-                throw new NumberFormatException("Position is not an integer. String was '"+line[VARIANT_INDEX_OF_POS]+"' Message: "+nex.getMessage()+"\n");
+            String startString = line[VARIANT_INDEX_OF_START];
+            String endString = line[VARIANT_INDEX_OF_END];
+            try {
+                start = Long.parseLong(startString);
+                end = Long.parseLong(endString);
+            } catch (NumberFormatException nex) {
+                throw new NumberFormatException("Start or End Position is not an integer. Strings were '" + line[VARIANT_INDEX_OF_START] + "', '" + line[VARIANT_INDEX_OF_END] + "' Message: " + nex.getMessage() + "\n");
             }
             ref = line[VARIANT_INDEX_OF_REF];
             alt = line[VARIANT_INDEX_OF_ALT];
+
+            //Convert .avinput format into the format that annovar annotations are stored in, 
+            //to enable direct comparisons.
+            if (start == end && ref.equals("-")) { //insertion
+                alt = "0" + alt;
+            } else if (alt.equals("-")) { //deletion
+                alt = Long.toString(end - start + 1);
+            } else if (end > start || start == end && alt.length() > 1) { //block substitution
+                alt = Long.toString((end - start + 1)) + alt;
+            }
+
         }
 
         /**
@@ -343,7 +367,7 @@ public class BatchVariantAnnotator {
          */
         @Override
         public String toString() {
-            return "SimpleVariantRecord{" + "chrom=" + chrom + ", position=" + position + ", ref=" + ref + ", alt=" + alt + '}';
+            return "SimpleVariantRecord{" + "chrom=" + chrom + ", start=" + start + ", ref=" + ref + ", alt=" + alt + '}';
         }
 
         @Override
@@ -358,7 +382,10 @@ public class BatchVariantAnnotator {
             if ((this.chrom == null) ? (other.chrom != null) : !this.chrom.equals(other.chrom)) {
                 return false;
             }
-            if (this.position != other.position) {
+            if (this.start != other.start) {
+                return false;
+            }
+            if (this.end != other.end) {
                 return false;
             }
             if ((this.ref == null) ? (other.ref != null) : !this.ref.equals(other.ref)) {
@@ -374,7 +401,10 @@ public class BatchVariantAnnotator {
         public int hashCode() {
             int hash = 5;
             hash = 79 * hash + (this.chrom != null ? this.chrom.hashCode() : 0);
-            hash = 79 * hash + this.position;
+
+            int low = (int) (this.start & 0xFFFFFFFFl);
+            hash = 79 * hash + (int) (this.start & 0xFFFFFFFFl) + (int) ((this.start >> 32) & 0xFFFFFFFFl);
+            hash = 79 * hash + (int) (this.end & 0xFFFFFFFFl) + (int) ((this.end >> 32) & 0xFFFFFFFFl);
             hash = 79 * hash + (this.ref != null ? this.ref.hashCode() : 0);
             hash = 79 * hash + (this.alt != null ? this.alt.hashCode() : 0);
             return hash;
@@ -383,19 +413,24 @@ public class BatchVariantAnnotator {
 
     class VariantAnnotatorIOJob extends IOJob {
 
+        private final int VARIANT_WINDOW_SIZE = 5000;
         private String[] inputLine;
         private int oldp = 0;
         private int numLines;
         // container for the components of the output line (original line, plus annotations)
-        private String[] outputLine;
+        private String[][] inputLines;
+        private String[][] outputAnnotations;
         // whatever chromosome we're at in the input file
         private String currentChrom = null;
-        private long previousPosition = -1;
-        private String previousRef = null;
-        private String previousAlt = null;
+        private long previousStart = -1;
         private AnnotationCursor[] cursors;
         private CSVReader recordReader;
         private CSVWriter recordWriter;
+        private int numVariantsInWindow = 0;
+        private SimpleVariantRecord[] variantWindow;
+        private long minStart = Integer.MAX_VALUE;
+        private long maxEnd = 0;
+        private int numFieldsInOutputFile = 0;
 
         public VariantAnnotatorIOJob(AnnotationCursor[] cursors, CSVReader recordReader, CSVWriter recordWriter, int numLines, int numFieldsInOutputFile) {
             super("Variant annotator");
@@ -403,109 +438,102 @@ public class BatchVariantAnnotator {
             this.recordReader = recordReader;
             this.recordWriter = recordWriter;
             this.numLines = numLines;
-            outputLine = new String[numFieldsInOutputFile];
+            this.numFieldsInOutputFile = numFieldsInOutputFile;
+
+            inputLines = new String[VARIANT_WINDOW_SIZE][];
+            variantWindow = new SimpleVariantRecord[VARIANT_WINDOW_SIZE];
         }
 
         @Override
         protected boolean continueIO() throws IOException {
-            inputLine = readNext(recordReader);
+            inputLine = readNext(recordReader); //read next input line from variant file.
             return inputLine != null;
+        }
+
+        private void resetWindow() {
+            minStart = Integer.MAX_VALUE;
+            maxEnd = 0;
+            numVariantsInWindow = 0;
+        }
+
+        private void annotateWindow() throws IllegalArgumentException {                        
+            int ofs = 0;
+            // perform each annotation, in turn
+            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {                
+                // get the annotation for this line
+                String[][] annotationsForThisLine = cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxEnd, numVariantsInWindow);
+                // add it to the output buffer                    
+                for (int k = 0; k < annotationsForThisLine.length; ++k) { //for each row
+                    for (int l = 0; l < cursors[annotationIndex].getNumNonDefaultFields(); ++l) {                                                
+                        if (annotationsForThisLine[k] == null) {
+                            outputAnnotations[k][l + ofs] = "";
+                        } else {
+                            outputAnnotations[k][l + ofs] = annotationsForThisLine[k][l];
+                        }
+                    }
+                }
+                ofs += cursors[annotationIndex].getNumNonDefaultFields();
+            }
+
+            for (int i = 0; i < numVariantsInWindow; ++i) {
+                recordWriter.writeNext((String[]) ArrayUtils.addAll(inputLines[i], outputAnnotations[i]));
+            }
+        }
+
+        @Override
+        protected void finish() {
+            annotateWindow();
         }
 
         @Override
         protected void doIO() throws IOException {
-            totalNumLinesRead++;
+            try {
+                //TODO: Log progress
+                boolean chromMismatch = false;
+                SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
 
-            oldp = logProgress(totalNumLinesRead, numLines, oldp);
-            // index into the output line
-            int j = 0;
-
-            // copy the input line
-            for (int i = 0; i < inputLine.length; i++) {
-                outputLine[j++] = inputLine[i];
-            }
-
-            // parse a simplified variant record from the line
-            SimpleVariantRecord nextInputRecord = new SimpleVariantRecord(inputLine);
-
-            // report whenever we get to the next chromosome
-            if (currentChrom == null || !currentChrom.equals(nextInputRecord.chrom)) {
-                currentChrom = nextInputRecord.chrom;
-                //LOG.info("Starting to annotate " + nextInputRecord.chrom + " at line " + totalNumLinesRead);
-                previousPosition = -1;
-                previousRef = null;
-                previousAlt = null;
-
-            } else {
-
-                /**
-                 * Check that records for a given chromosome are sorted by
-                 * position, ref, alt
-                 */
-                long currentPosition = nextInputRecord.position;
-                String currentRef = nextInputRecord.ref;
-                String currentAlt = nextInputRecord.alt;
-
-                if (currentPosition < previousPosition) {
-                    throw new IOException(nextInputRecord.toString() + " out of order. The previous position was " + previousPosition + " but this one is " + currentPosition + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
+                if (outputAnnotations == null) {
+                    outputAnnotations = new String[VARIANT_WINDOW_SIZE][numFieldsInOutputFile - inputLine.length];
                 }
-                if (currentPosition == previousPosition) {
 
-                    int refCompare;
-                    if (!isAStandardSingleNucleotide(currentRef)) { // ignore lines where ref is not a single nucleotide
-                        refCompare = 1;
+                if (numVariantsInWindow < VARIANT_WINDOW_SIZE) {
+                    if ((currentChrom == null) || currentChrom.equals(nextInputRecord.chrom)) { //npe                         )
+                        variantWindow[numVariantsInWindow] = nextInputRecord;
+                        minStart = Math.min(nextInputRecord.start, minStart);
+                        maxEnd = Math.max(nextInputRecord.end, maxEnd);
+                        inputLines[numVariantsInWindow] = inputLine;
+                        currentChrom = nextInputRecord.chrom;
+                        
+                        //sanity check
+                        if (previousStart >= 0 && (nextInputRecord.start < previousStart)) {
+                            //We should never allow the database to enter this unsorted state, so unless 
+                            //there's a bug or the database dump files are corrupt, this error shouldn't occur.
+                            throw new IOException("File is out of order, start position " + nextInputRecord.start + " is less than previous position " + previousStart + " on chromosome " + nextInputRecord.chrom + ".  The variant table may be invalid -- please contact the system administrator.");
+                        }
+                        previousStart = nextInputRecord.start;
+                        ++numVariantsInWindow;
+                        return;
                     } else {
-                        refCompare = currentRef.compareTo(previousRef);
-                    }
-
-                    if (refCompare < 0) {
-                        throw new IOException(nextInputRecord.toString() + " out of order. The previous ref was " + previousRef + " but this one is " + currentRef + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
-                    } else if (refCompare == 0) {
-
-                        int altCompare;
-                        if (!isAStandardSingleNucleotide(currentAlt)) { // ignore lines where alt is not a single nucleotide
-                            altCompare = 1;
-                        } else {
-                            altCompare = currentAlt.compareTo(previousAlt);
-                        }
-
-                        if (altCompare < 0) {
-                            throw new IOException(nextInputRecord.toString() + " out of order. The previous alt was " + previousAlt + " but this one is " + currentAlt + ". Input variant files must be sorted by chromosome, then by position, then by ref, then by alt.");
-                        }
+                        chromMismatch = true;
                     }
                 }
 
-                if (isAStandardSingleNucleotide(currentRef) && isAStandardSingleNucleotide(currentAlt)) {
-                    previousPosition = currentPosition;
-                    previousRef = currentRef;
-                    previousAlt = currentAlt;
-                }
+                annotateWindow();
+                               
+                resetWindow();
+                                                
+                numVariantsInWindow = 1;
+                variantWindow[0] = nextInputRecord;
+                currentChrom = nextInputRecord.chrom;
+                previousStart = chromMismatch ? -1 : nextInputRecord.start;
+                minStart = nextInputRecord.start;
+                maxEnd = nextInputRecord.end;                
+                chromMismatch = false;                
 
-                // previousPosition = currentPosition;
-                // previousRef = isAStandardSingleNucleotide(currentRef) ? currentRef : previousRef;
-                // previousAlt = isAStandardSingleNucleotide(currentAlt) ? currentAlt : previousAlt;
-
+            } catch (IllegalArgumentException iex) {                
+                LOG.error(iex);
             }
 
-            // perform each annotation, in turn
-
-            for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
-
-                // get the annotation for this line
-
-                String[] annotationForThisLine = cursors[annotationIndex].annotateVariant(nextInputRecord);
-
-
-                // add it to the output buffer
-                for (int k = 0; k < annotationForThisLine.length; k++) {
-                    outputLine[j++] = annotationForThisLine[k];
-                }
-
-            }
-
-
-            // write the output
-            recordWriter.writeNext(outputLine);
-        }
+        }      
     }
 }

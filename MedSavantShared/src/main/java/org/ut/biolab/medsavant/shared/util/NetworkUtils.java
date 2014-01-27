@@ -50,7 +50,7 @@ public class NetworkUtils {
     public static final int NONCRITICAL_CONNECT_TIMEOUT = 5000; //For non-critical network i/o, use shorter 5s timeouts.
     public static final int NONCRITICAL_READ_TIMEOUT = 5000;
     public static final int BUF_SIZE = 8192;         // 8kB buffer
-
+    public static final boolean ALLOW_URL_REDIRECTS = true;
     static {
         // Create a trust manager that does not validate certificate chains.
         TrustManager[] trustAllCerts = new TrustManager[] {
@@ -97,7 +97,7 @@ public class NetworkUtils {
         //conn.setReadTimeout(readTimeout);
         
        HttpURLConnection huc = (HttpURLConnection) url.openConnection();
-       HttpURLConnection.setFollowRedirects(false);
+       HttpURLConnection.setFollowRedirects(ALLOW_URL_REDIRECTS);
        huc.setConnectTimeout(connectTimeout);
        huc.setReadTimeout(readTimeout);
        huc.setRequestMethod("GET");
@@ -148,17 +148,20 @@ public class NetworkUtils {
      */
     public static File downloadFile(URL u, File destDir, String fileName) throws IOException {
         File f = new File(destDir, fileName != null ? fileName : MiscUtils.getFilenameFromPath(u.getPath()));
+        LOG.info("Downloading file "+u+" into directory "+f.getAbsolutePath());
 
         InputStream in = NetworkUtils.openStream(u);
         OutputStream out = new FileOutputStream(f);
         byte[] buf = new byte[BUF_SIZE];
         int bytesRead;
+        int totalRead = 0;
         while ((bytesRead = in.read(buf)) != -1) {
             out.write(buf, 0, bytesRead);
+            totalRead += bytesRead;
         }
         in.close();
         out.close();
-
+        LOG.info("Downloaded "+totalRead+" bytes");
         return f;
     }
 

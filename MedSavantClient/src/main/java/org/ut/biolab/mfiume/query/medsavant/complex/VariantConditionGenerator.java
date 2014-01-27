@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.swing.JPopupMenu;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
 import org.ut.biolab.mfiume.query.medsavant.MedSavantDatabaseNumberConditionValueGenerator;
@@ -161,7 +162,13 @@ public class VariantConditionGenerator implements ComprehensiveConditionGenerato
             valueGenerator = new StringConditionValueGenerator() {
                 @Override
                 public List<String> getStringValues() {
-                    return Arrays.asList(new String[]{"SNP", "Deletion", "Insertion", "Unknown", "Multiple"});
+                    
+                    List<String> vtList = new ArrayList(VariantRecord.VariantType.values().length);
+                    for(VariantType vt : VariantRecord.VariantType.values()){
+                        vtList.add(vt.toString());
+                    }
+                    return vtList;
+                    //return Arrays.asList(new String[]{"SNP", "Deletion", "Insertion", "Unknown", "Multiple"});
                 }
             };
 

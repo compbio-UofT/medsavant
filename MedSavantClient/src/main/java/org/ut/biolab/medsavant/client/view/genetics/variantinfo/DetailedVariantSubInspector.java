@@ -49,6 +49,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_START_POSITION;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
 import savant.util.Range;
@@ -177,7 +178,8 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                     (Integer) 0, // pipeline ID
                     (String) row[INDEX_OF_DNA_ID],
                     (String) row[INDEX_OF_CHROM],
-                    (Integer) row[INDEX_OF_POSITION],
+                    (Integer) row[INDEX_OF_START_POSITION],
+                    (Integer) row[INDEX_OF_END_POSITION],
                     (String) row[INDEX_OF_DBSNP_ID],
                     (String) row[INDEX_OF_REF],
                     (String) row[INDEX_OF_ALT],
@@ -217,7 +219,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
             genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getPosition() - 20), (int) (selectedVariant.getPosition() + 21)));
+                    LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getStartPosition() - 20), (int) (selectedVariant.getEndPosition() + 21)));
                     AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });

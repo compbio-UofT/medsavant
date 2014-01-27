@@ -160,6 +160,7 @@ public class FilterController extends Controller<FilterEvent> {
         return filterMap.get(queryID).get(title);
     }
 
+    /*
     public List<Filter> getFilters(int queryID) {
         List<Filter> qfs = new ArrayList<Filter>();
         RangeFilter rf = new RangeFilter() {
@@ -194,44 +195,17 @@ public class FilterController extends Controller<FilterEvent> {
         }
         return qfs;
     }
-
+*/
     public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
         return new Condition[] { this.newConditions };
     }
 
-    /*public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
-        List<Filter> filters = prioritizeFilters(getFilters(queryID));
-        Condition[] conditions = new Condition[filters.size()];
-        for (int i = 0; i < filters.size(); i++) {
-            conditions[i] = ComboCondition.or(filters.get(i).getConditions());
-        }
-        return conditions;
-    }*/
+   
 
     public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
         return new Condition[][] { new Condition[] { this.newConditions }};
     }
 
-    /*public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
-        Object[] keys = filterMap.keySet().toArray();
-        Condition[][] conditions = new Condition[keys.length][];
-        for (int i = 0; i < keys.length; i++) {
-            conditions[i] = getFilterConditions((Integer)keys[i]);
-        }
-        return conditions;
-    }*/
-
-    private List<Filter> prioritizeFilters(List<Filter> filters) {
-
-        List<Filter> result = new ArrayList<Filter>();
-        addFiltersToList(filters, result, BasicVariantColumns.CHROM.getColumnName());
-        addFiltersToList(filters, result, BasicVariantColumns.POSITION.getColumnName());
-        for (Filter f : filters) {
-            result.add(f);
-        }
-
-        return result;
-    }
 
     //add anything from filters with filterId to list
     private void addFiltersToList(List<Filter> filters, List<Filter> list, String filtID) {

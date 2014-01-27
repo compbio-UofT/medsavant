@@ -52,6 +52,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
@@ -73,6 +75,7 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
  */
 public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
 
+    private static final Log LOG = LogFactory.getLog(MedSavantServerEngine.class);
     //ssl/tls off by default.
     private static boolean require_ssltls = false;
     private static boolean require_client_auth = false;
@@ -268,7 +271,9 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         + "\t\temail - the email address to send important notifications\n"
                         + "\t\ttmp-dir - the directory to use for temporary files\n"
                         + "\t\tms-dir - the directory to use to store permanent files\n"
-                        + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')");
+                        + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')\n"
+                        + "\t\tkeyStore - full path to the key store\n"
+                        + "\t\tkeyStorePass - password for the key store\n");
                 return;
             }
 

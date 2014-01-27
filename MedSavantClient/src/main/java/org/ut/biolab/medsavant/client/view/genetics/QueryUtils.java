@@ -56,17 +56,24 @@ public class QueryUtils {
         chromItem.setDescription(gr.getChrom());
         chromItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{gr.getChrom()})));
 
-        SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
+        
+        SearchConditionItem startPosItem = new SearchConditionItem(BasicVariantColumns.START_POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
         startPosItem.setDescription(Long.toString(gr.getStart()) + " - " + Long.toString(gr.getEnd()));
         startPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd(), false));
+        
+        SearchConditionItem endPosItem = new SearchConditionItem(BasicVariantColumns.END_POSITION.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);
+        endPosItem.setDescription(Long.toString(gr.getStart()) + " - " + Long.toString(gr.getEnd()));
+        endPosItem.setSearchConditionEncoding(NumericConditionEncoder.encodeConditions(gr.getStart(), gr.getEnd(), false));
 
 
         if(setupViews){
             qvc.generateItemViewAndAddToGroup(chromItem, geneGroup);
             qvc.generateItemViewAndAddToGroup(startPosItem, geneGroup);
+            qvc.generateItemViewAndAddToGroup(endPosItem, geneGroup);
         }else{
             geneGroup.addItem(chromItem);
             geneGroup.addItem(startPosItem);
+            geneGroup.addItem(endPosItem);
         }
         if (alt != null) {
             SearchConditionItem altItem = new SearchConditionItem(BasicVariantColumns.ALT.getAlias(), SearchConditionGroupItem.QueryRelation.AND, geneGroup);

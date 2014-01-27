@@ -87,7 +87,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
     //public static boolean REMOVE_TMP_FILES = false;
-    static boolean REMOVE_WORKING_DIR = true;
+    static boolean REMOVE_WORKING_DIR = false;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
     }
@@ -463,7 +463,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
         if (orderedByPosition) {
-            query.addOrderings(table.getDBColumn(POSITION));
+            query.addOrderings(table.getDBColumn(START_POSITION), table.getDBColumn(END_POSITION));
         }
         String intoString
                 = "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
@@ -583,7 +583,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return getNumFilteredVariantsHelper(sid, tablename, conditions);
     }
 
-    public int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
+    public int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {        
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
         SelectQuery q = new SelectQuery();
@@ -627,8 +627,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public boolean willApproximateCountsForConditions(String sid, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
-        int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
+    public boolean willApproximateCountsForConditions(String sid, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {        
+        int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);        
         return total >= BIN_TOTAL_THRESHOLD;
     }
 
@@ -834,7 +834,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     /*
-     * Convenience method
+     * Convenience method.  Returns all variants whose START position lies within the given range.
+     * 
      */
     @Override
     public int getVariantCountInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, RemoteException, SessionExpiredException {
@@ -844,8 +845,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         Condition[] rangeConditions = new Condition[]{
             BinaryCondition.equalTo(table.getDBColumn(CHROM), chrom),
-            BinaryCondition.greaterThan(table.getDBColumn(POSITION), start, true),
-            BinaryCondition.lessThan(table.getDBColumn(POSITION), end, false)
+            BinaryCondition.greaterThan(table.getDBColumn(START_POSITION), start, true),
+            BinaryCondition.lessThan(table.getDBColumn(START_POSITION), end, false)
         };
 
         Condition[] c1 = new Condition[conditions.length];
@@ -881,7 +882,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         queryBase.addColumns(table.getDBColumn(CHROM));
 
-        String roundFunction = "ROUND(" + POSITION.getColumnName() + "/" + binsize + ",0)";
+        String roundFunction = "ROUND(" + START_POSITION.getColumnName() + "/" + binsize + ",0)";
 
         queryBase.addCustomColumns(FunctionCall.countAll());
         queryBase.addGroupings(table.getDBColumn(CHROM));
@@ -916,6 +917,39 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return results;
     }
 
+    /*
+     private boolean intersectsPosition(String chrom, long start, long end) {                        
+     if(this.chrom.equals(chrom)){                                
+     if(this.start < start){
+     if(this.end < start){
+     return false;
+     }else{ 
+     return true;
+     }                    
+     }else if(start < this.start){ //start >= start
+     if(end < this.end){
+     return false;
+     }else{
+     return true;
+     }
+     }
+     return true;                                
+                
+     }
+     return false;
+     }
+    
+    private Condition getIntersectCondition(int s_start, int s_end, DbColumn t_start, DbColumn t_end) {
+        return ComboCondition.and(
+                new BinaryCondition(BinaryCondition.Op.LESS_THAN_OR_EQUAL_TO, t_start, s_end),
+                new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t_end, s_start));
+    }
+*/
+    /**
+     *
+     * Returns a count of all patients that have a variant within the given
+     * range.
+     */
     @Override
     public int getPatientCountWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException, SessionExpiredException {
 
@@ -928,10 +962,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         addConditionsToQuery(q, conditions);
 
         Condition[] cond = new Condition[3];
-        cond[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(CHROM), chrom);
-        cond[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, table.getDBColumn(POSITION), start);
-        cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(POSITION), end);
-        q.addCondition(ComboCondition.and(cond));
+        //cond[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(CHROM), chrom);
+        //cond[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, table.getDBColumn(POSITION), start);
+        //cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(POSITION), end);
+        //q.addCondition(ComboCondition.and(cond));
+        q.addCondition(
+                ComboCondition.and(
+                new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(CHROM), chrom),
+                MiscUtils.getIntersectCondition(start, end, table.getDBColumn(START_POSITION), table.getDBColumn(END_POSITION))));
 
         String query = q.toString();
         query = query.replaceFirst("'", "").replaceFirst("'", "");
@@ -961,7 +999,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = getCustomTableSchema(sessID, projID, refID);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(DNA_ID), table.getDBColumn(CHROM), table.getDBColumn(POSITION));
+        query.addColumns(table.getDBColumn(DNA_ID), table.getDBColumn(CHROM), table.getDBColumn(START_POSITION));
         addConditionsToQuery(query, conditions);
         Condition[] dnaIdConditions = new Condition[dnaIds.size()];
         for (int i = 0; i < dnaIds.size(); i++) {

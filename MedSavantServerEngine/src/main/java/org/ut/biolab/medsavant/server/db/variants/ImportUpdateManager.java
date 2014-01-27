@@ -235,7 +235,7 @@ public class ImportUpdateManager {
         String stamp = System.nanoTime() + "";
         int fileID = 0;
         for (File vcfFile : vcfFiles) {
-            File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
+            File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");            
             threads.add(new VariantParser(vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
 
             //threads[fileID] = t;

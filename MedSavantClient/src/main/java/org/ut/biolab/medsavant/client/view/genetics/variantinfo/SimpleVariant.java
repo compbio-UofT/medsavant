@@ -27,15 +27,17 @@ import org.ut.biolab.medsavant.shared.model.GenomicRegion;
  */
 public class SimpleVariant {
 
-    long pos;
+    long start_pos;
+    long end_pos;
     String chr;
     String ref;
     String alt;
     String type;
 
-    public SimpleVariant(String chr, long pos, String ref, String alt, String type) {
+    public SimpleVariant(String chr, long start_pos, long end_pos, String ref, String alt, String type) {
         this.chr = chr;
-        this.pos = pos;
+        this.start_pos = start_pos;
+        this.end_pos = end_pos;
         this.ref = ref;
         this.alt = alt;
         this.type = type;
@@ -43,22 +45,23 @@ public class SimpleVariant {
 
     public GenomicRegion getGenomicRegion(String name){
         //GenomicRegion(String name, String chrom, int start, int end)             
-        return new GenomicRegion(name, chr, (int)pos, (int)pos);
+        return new GenomicRegion(name, chr, (int)start_pos, (int)end_pos);
     }
     
     public GenomicRegion getGenomicRegion(){
-        return getGenomicRegion("Chr: "+chr+"Pos: "+pos);
+        return getGenomicRegion("Chr: "+chr+"Pos: "+start_pos+"-"+end_pos);
     }
     
     @Override
     public String toString() {
-        return "SimpleVariant{" + "pos=" + pos + ", chr=" + chr + ", ref=" + ref + ", alt=" + alt + ", type=" + type + '}';
+        return "SimpleVariant{" + "startpos=" + start_pos + ", endpos="+end_pos+", chr=" + chr + ", ref=" + ref + ", alt=" + alt + ", type=" + type + '}';
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 37 * hash + (int) (this.pos ^ (this.pos >>> 32));
+        hash = 37 * hash + (int) (this.start_pos ^ (this.start_pos >>> 32));
+        hash = 37 * hash + (int) (this.end_pos ^ (this.end_pos >>> 32));
         hash = 37 * hash + (this.chr != null ? this.chr.hashCode() : 0);
         hash = 37 * hash + (this.ref != null ? this.ref.hashCode() : 0);
         hash = 37 * hash + (this.alt != null ? this.alt.hashCode() : 0);
@@ -75,7 +78,10 @@ public class SimpleVariant {
             return false;
         }
         final SimpleVariant other = (SimpleVariant) obj;
-        if (this.pos != other.pos) {
+        if (this.start_pos != other.start_pos) {
+            return false;
+        }
+        if (this.end_pos != other.end_pos) {
             return false;
         }
         if ((this.chr == null) ? (other.chr != null) : !this.chr.equals(other.chr)) {

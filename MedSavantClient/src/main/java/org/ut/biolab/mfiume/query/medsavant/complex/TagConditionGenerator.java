@@ -24,28 +24,23 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
-import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
 import org.ut.biolab.mfiume.query.value.StringConditionValueGenerator;
 import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
-import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 import org.ut.biolab.mfiume.query.view.StringSearchConditionEditorView;
 
 /**
@@ -136,10 +131,11 @@ public class TagConditionGenerator implements ComprehensiveConditionGenerator {
                 List<Range> ranges = rangeMap.get(chrom);
                 Condition[] rangeConditions = new Condition[ranges.size()];
                 for (int j = 0; j < ranges.size(); j++) {
-                    rangeConditions[j] = new RangeCondition(
-                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.POSITION),
-                            (long)ranges.get(j).getMin(),
-                            (long)ranges.get(j).getMax());
+                    rangeConditions[j] = MiscUtils.getIntersectCondition(
+                            (long) ranges.get(j).getMin(),
+                            (long) ranges.get(j).getMax(),
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.START_POSITION),
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.END_POSITION));
                 }
 
                 //add range conditions

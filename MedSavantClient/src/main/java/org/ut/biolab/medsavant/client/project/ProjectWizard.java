@@ -365,7 +365,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             variantFormatModel.addRow(new Object[]{CIGAR.getColumnName().toUpperCase(), CIGAR.getTypeString(), true, CIGAR.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{DB.getColumnName().toUpperCase(), DB.getTypeString(), true, DB.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{DP.getColumnName().toUpperCase(), DP.getTypeString(), true, DP.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{END.getColumnName().toUpperCase(), END.getTypeString(), true, END.getAlias(), ""});
+            //variantFormatModel.addRow(new Object[]{END.getColumnName().toUpperCase(), END.getTypeString(), true, END.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{H2.getColumnName().toUpperCase(), H2.getTypeString(), true, H2.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{MQ.getColumnName().toUpperCase(), MQ.getTypeString(), true, MQ.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{MQ0.getColumnName().toUpperCase(), MQ0.getTypeString(), true, MQ0.getAlias(), ""});
@@ -711,11 +711,15 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private int[] mergeAnnIDsWithDefaults(int[] annIDs, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException {
+        LOG.info("WARNING: Debug code, temporarily disabled default annotation installation, line 714 of ProjectWizard.java");
+        return annIDs;
+        /* UNCOMMENT THIS BEFORE COMMITTING
         int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getInstance().getSessionID(), projID, refID);
         Set<Integer> a = new HashSet<Integer>();
         a.addAll(Arrays.asList(ArrayUtils.toObject(annIDs)));
         a.addAll(Arrays.asList(ArrayUtils.toObject(defaults)));
         return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));
+       */
     }
 
     private void createNewProject() throws Exception {
