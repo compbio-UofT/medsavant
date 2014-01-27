@@ -92,6 +92,7 @@
                             <className>**/serverapi/LogManagerAdapter</className>
                             <method>java.util.List getAnnotationLog(java.lang.String, int, int)</method>
                         </difference>
+                        -->
                         <!-- Removing a method from a class
                         <difference>
                             <differenceType>7002</differenceType>
