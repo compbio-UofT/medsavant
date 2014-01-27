@@ -27,7 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -45,13 +45,13 @@ import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ALT_IDS;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.DEF;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ID;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.NAME;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.ONTOLOGY;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns.PARENTS;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
@@ -486,7 +486,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
                         LOG.info("Adding OMIM Ontology");
                         addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
-                        SessionController.getInstance().unregisterSession(sessID);
+                        SessionManager.getInstance().unregisterSession(sessID);
                     } catch (Exception ex) {
                         LOG.error("Error populating ontology tables.", ex);
                     }
@@ -495,5 +495,5 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         }catch(Exception ex){
             LOG.error("Error populating ontology tables.", ex);
         }
-    }
+    }    
 }

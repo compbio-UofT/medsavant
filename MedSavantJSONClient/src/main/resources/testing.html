@@ -1,4 +1,4 @@
-<HTML>
+<HTML>    
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>       
 
     <!-- Used to handle file uploads, see http://malsup.com/jquery/form/#ajaxForm -->
@@ -162,6 +162,23 @@
                 var posCondition = new MSCondition(projectId, refId, "UnaryCondition", "isNotNull", "position");
                 msInvoke('VariantManager', 'getVariants', [projectId, refId, [[chromCondition, hetCondition, posCondition]], 0, 10], printResult);
             });
+                       
+        }
+        
+        function getFilteredVariantsForPatient(projectId, refId, dnaId){            
+            
+            //First, only consider variants corresponding to a certain DNA ID.
+            var dnaIdCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "dna_id", dnaId);
+            
+            //Chrom=chr5
+            var chromCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "chrom", "chr5");
+            
+            //zygosity = hetero
+            var hetCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "zygosity", "Hetero");                 
+            
+            //Conditions are passed as row major matrix.  Within each row, conditions are ANDed together.  The rows are then
+            //OR'd together. 
+            msInvoke('VariantManager', 'getVariants', [projectId, refId, [[dnaIdCondition, chromCondition, hetCondition]], 0, 10], printResult);
         }
 
 
@@ -182,7 +199,7 @@
                 ulform.innerHTML = "IMPORTING VCF" + da[i++ % 3];                                
                 msInvoke('NetworkManager', 'CheckProgress', [isCancelled], function(progressStatus) {
                     if (progressStatus !== null && progressStatus.fractionCompleted < 1.0) {
-                        //The fractionCompleted is indeterminate for importing variant, so no point displaying it.
+                        //The fractionCompleted is indeterminate for importing variants, so no point displaying it.
                         //however, it should be >=1.0 if import is finished.
                         ulform.innerHTML += "<BR />Message: " + progressStatus.message+" # CheckProgress invocations: "+i;
                     } else {
@@ -216,7 +233,7 @@
                     var uploads = returnVal;
                     var streamIds = [uploads[0].streamId];
                     var tags = getDefaultTags(DEFAULT_USERNAME_TAG);
-                    var includeHomoRef = false; //Whether or not to include variants matching the Ref - probably want this false.
+                    var includeHomoRef = false;
                     var email = ""; //email gets sent to this address when import is finished
                     var autoPublish = true; //after variant import is finished, immediately make them available.  This will cancel any active sessions.
                     var preAnnotateWithJannovar = false; //At the moment, Jannovar hangs for certain VCFs (bug reported, 21/01/2013).
@@ -250,21 +267,25 @@
     </script>
     <BODY>
         <form name="theform" method="post">
-            <b>Method:<b><br>
+            <b><u>Method Tester</u></b><br>
+            <b>Method:</b><br>
                     <input type="text" name="method" value="getProjectNames"><BR>
                     <b>Adapter:</b><br>
                     <input type="text" name="adapter" value="ProjectManager"><BR>
                     <b>Parameters: </b><br>
                     <span style="font-size: 8pt">(Use the case-sensitive string $LAST to refer to previous return value)</span><BR>
                     <span id="pspan">
-                    </span>
+                    </span>                    
                     <input type="button" value="Add Param" onClick="javascript:addParam();"><BR>
                     <input type="button" value="Clear Params" onClick="javascript:clearParams();"><BR>                                       
-                    <input type="button" value="Go" onClick="javascript:go()"><BR><BR>
-                    <input type="button" value="demo" onClick="javascript:demo();"><BR>
-                    </form>
-
+                    <input type="button" value="Go" onClick="javascript:go()"><BR>
                     <hr>
+                    <b><u>Demos:</u></b><br>        
+                    <input type="button" value="demo" onClick="javascript:demo();"><BR>
+                    <input type="button" value="getFilteredPatientDemo" onClick="javascript:getFilteredVariantsForPatient(1,3,'GS000002143-ASM');"><BR>
+                    </form>
+                    <hr>
+                    <b><u>Upload Tester:</u></b>
                     <div id="ulform">
                         <!-- Uploads are handled via the 'UploadManager', specific to the medsavant json client, and not part of the medsavant server API -->
                         <form id="uploadForm" action="http://localhost:8090/medsavant-json-client/UploadManager/upload" name="uploadForm" method="post" enctype="multipart/form-data">
@@ -277,6 +298,8 @@
                         </form>
                     </div>
                     <br>
+                    <hr>
+                    <b><u>Last Request and Return Value:</u></b>
                     <div id="lastreq"></div>
                     <div id="lastret"></div>
 
