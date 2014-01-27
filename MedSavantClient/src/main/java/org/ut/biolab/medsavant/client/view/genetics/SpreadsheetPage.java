@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.util.PeekingPanelContainer;
 
 /**
  *
@@ -140,22 +141,17 @@ public class SpreadsheetPage extends AppSubSection implements Listener<FilterEve
                                 }
                             });
                             LOG.debug("Constructing detailView");
-                            detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, StaticInspectorPanel.INSPECTOR_WIDTH);
-                            detailView.setToggleBarVisible(false);
-
-                            tmpView.add(detailView, BorderLayout.EAST);
-                            //outerTablePanel = new JPanel();
-                            //outerTablePanel.setLayout(new BoxLayout(outerTablePanel, BoxLayout.Y_AXIS));
-
-                            //outerTablePanel.add(tablePanel);
-                            //tmpView.add(outerTablePanel, BorderLayout.CENTER);
+                            
                             tmpView.add(ssp, BorderLayout.CENTER);
+                            
+                            final PeekingPanelContainer ppc = new PeekingPanelContainer(tmpView);
+                            detailView = ppc.addPeekingPanel("Inspector", BorderLayout.EAST, inspectorPanel, false, ComprehensiveInspector.INSPECTOR_WIDTH);
 
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
                                     view.removeAll();
-                                    view.add(tmpView, BorderLayout.CENTER);
+                                    view.add(ppc, BorderLayout.CENTER);
                                     view.updateUI();
                                 }
                             });

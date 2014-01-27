@@ -63,7 +63,6 @@ public class VariantNavigatorApp extends MultiSectionApp {
 
         AppSubSection[] builtInSections = new AppSubSection[]{
             new SpreadsheetPage(this),
-            //new BrowserPage(this),
             new GeneticsChartPage(this)};
 
         return ArrayUtils.addAll(builtInSections, appSections.toArray(new AppSubSection[numApps]));
