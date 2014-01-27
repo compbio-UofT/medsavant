@@ -76,62 +76,54 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>clirr-maven-plugin</artifactId>
                 <configuration>
-                    <!-- List of specific CLIRR excludes.
-                         See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
-                    -->    
+                    <!-- We decided to not enforce compatibility between 1.1 and 1.2,
+                         so any Clirr enforcement should only happen after we release 1.2.
+                         Remove this setting after changing master to the next version (1.3 or 2.0 SNAPSHOT).
+                    -->
+                    <comparisonVersion>1.2</comparisonVersion>
                     <ignored>
-                        <!-- Remove the following ignores after each release. -->
-                        <!-- Allow addition of new methods to the server api -->
+                        <!-- List of specific API breakages to exclude.
+                             See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html
+                        -->
+                        <!-- Example settings: -->
+                        <!-- Adding a method to a class (7011) or interface (7012)
                         <difference>
-                            <className>**/org/ut/biolab/medsavant/shared/serverapi/*</className>
-                            <differenceType>7012</differenceType>
-                            <method>**</method>
-                        </difference>
-                        <difference>
+                            <differenceType>7011</differenceType>
                             <className>**/serverapi/LogManagerAdapter</className>
-                            <differenceType>7002</differenceType>
                             <method>java.util.List getAnnotationLog(java.lang.String, int, int)</method>
                         </difference>
+                        <!-- Removing a method from a class
                         <difference>
+                            <differenceType>7002</differenceType>
                             <className>**/serverapi/LogManagerAdapter</className>
-                            <differenceType>7002</differenceType>
-                            <method>int getAnnotationLogSize(java.lang.String)</method>
+                            <method>java.util.List getAnnotationLog(java.lang.String, int, int)</method>
                         </difference>
+                        -->
+                        <!-- Change the number of arguments of a method or constructor
                         <difference>
-                            <className>**/serverapi/LogManagerAdapter</className>
-                            <differenceType>7002</differenceType>
-                            <method>java.util.List getClientLog(java.lang.String, int, int)</method>
-                        </difference>
-                        <difference>
-                            <className>**/serverapi/LogManagerAdapter</className>
-                            <differenceType>7002</differenceType>
-                            <method>int getClientLogSize(java.lang.String)</method>
-                        </difference>
-                        <difference>
-                            <className>**/serverapi/LogManagerAdapter</className>
-                            <differenceType>7002</differenceType>
-                            <method>void addLog(java.lang.String, java.lang.String, org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter$LogType, java.lang.String)</method>
-                        </difference>
-                        <difference>
-                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
-                            <differenceType>7002</differenceType>
-                            <method>java.lang.String getDate()</method>
-                        </difference>
-                        <difference>
-                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
-                            <differenceType>7002</differenceType>
-                            <method>java.lang.String getName()</method>
-                        </difference>
-                        <difference>
-                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
-                            <differenceType>7002</differenceType>
-                            <method>java.lang.String getUser()</method>
-                        </difference>
-                        <difference>
-                            <className>**/org/ut/biolab/medsavant/shared/model/SimpleVariantFile</className>
                             <differenceType>7004</differenceType>
+                            <className>**/model/SimpleVariantFile</className>
                             <method>SimpleVariantFile(int, int, java.lang.String, java.lang.String, java.lang.String)</method>
                         </difference>
+                        -->
+                        <!-- Change the retun type of a method
+                        <difference>
+                            <differenceType>7006</differenceType>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <method>int getServerLogSize(java.lang.String sid)</method>
+                            <from>int</from>
+                            <to>long</to>
+                        </difference>
+                        -->
+                        <!-- Allowing the addition of any method to an interface
+                        <difference>
+                            <differenceType>7012</differenceType>
+                            <className>**/serverapi/LogManagerAdapter</className>
+                            <method>**</method>
+                        </difference>
+                        -->
+
+                        <!-- Add new ignores here, and remove the following ignores after each release. -->
                     </ignored>
                     <excludes>
                         <exclude>**/internal/**</exclude>
