@@ -216,8 +216,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     public void launchApp(LaunchableApp app) {
 
-        System.out.println("Launching app " + app.getName());
-
         if (history.contains(app)) {
             history.remove(app);
         }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -149,7 +150,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                     -1);
 
             //get BAM files
-            List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
+            Collection<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds).values();
 
             //genome version
             String genomeName = ReferenceController.getInstance().getCurrentReferenceName();

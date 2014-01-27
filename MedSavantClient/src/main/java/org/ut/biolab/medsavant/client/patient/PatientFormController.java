@@ -70,17 +70,8 @@ public class PatientFormController extends FormController {
                     validatedValues.remove(i);
                     validatedValues.add(i, null);
                 }
-                /* Uncomment to print out some debugging information
-                 CustomField field = fields.get(i);
-                 System.out.print(field.getColumnName()+"\t");
-                 if(val  != null){
-                 System.out.print(val);
-                 }
-                 System.out.println();
-                 */
             }
 
-            //UNCOMMENT WHEN READY TO DEPLOY
             MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(), fields, validatedValues);
             DialogUtils.displayMessage("Individual Added");            

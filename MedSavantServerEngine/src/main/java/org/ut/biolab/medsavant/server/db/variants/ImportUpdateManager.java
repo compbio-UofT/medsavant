@@ -20,28 +20,36 @@
 package org.ut.biolab.medsavant.server.db.variants;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.InCondition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
+import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -76,6 +84,9 @@ public class ImportUpdateManager {
             // do some accounting
             addVariantFilesToDatabase(sessionID, updateID, projectID, referenceID, vcfFiles);
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
+
+            // create patients for all DNA ids in this update
+            createPatientsForUpdate(sessionID, updateID, projectID, referenceID);
 
             if (publishUponCompletion) {
                 LOG.info("Publishing");
@@ -305,7 +316,7 @@ public class ImportUpdateManager {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
                     sessionID,
                     LogManagerAdapter.LogType.INFO,
-                  "Uploading " + annotatedTSVFiles.length + " TSV files");
+                    "Uploading " + annotatedTSVFiles.length + " TSV files");
         } catch (RemoteException ex) {
         } catch (SessionExpiredException ex) {
         }
@@ -329,6 +340,54 @@ public class ImportUpdateManager {
     private static void addVariantFilesToDatabase(String sessionID, int updateID, int projectID, int referenceID, File[] vcfFiles) throws SQLException, SessionExpiredException {
         for (int i = 0; i < vcfFiles.length; i++) {
             VariantManager.addEntryToFileTable(sessionID, updateID, i, projectID, referenceID, vcfFiles[i].getAbsolutePath());
+        }
+    }
+
+    private static void createPatientsForUpdate(String sessionID, int updateID, int projectID, int referenceID) throws RemoteException, SQLException, SessionExpiredException {
+
+        // get the table schema for the update
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionID,
+                ProjectManager.getInstance().getVariantTableName(sessionID, updateID, projectID, referenceID)
+        );
+
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.setIsDistinct(true);
+        query.addColumns(table.getDBColumn(BasicVariantColumns.DNA_ID.getColumnName()));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(BasicVariantColumns.UPLOAD_ID.getColumnName()), updateID));
+
+        List<String> dnaIDs = new ArrayList<String>();
+
+        LOG.info("Creating patient for update " + query.toString());
+        
+        ResultSet rs = ConnectionController.executeQuery(sessionID, query.toString());
+                
+        while (rs.next()) {
+            String dnaID = rs.getString(1);
+            dnaIDs.add(dnaID);
+        }
+
+        rs.close();
+        
+        // get a map of DNA ids to Hospital IDs
+        Map<String, String> dnaIDToHospitalIDMap = PatientManager.getInstance().getValuesFromDNAIDs(sessionID, projectID, BasicPatientColumns.HOSPITAL_ID.getColumnName(), dnaIDs);
+
+        LOG.info("Getting orphaned DNA IDs");
+        for (String dnaID : dnaIDs) {
+            if (dnaIDToHospitalIDMap.containsKey(dnaID)) {
+                LOG.info("Already a patient with DNA ID: " + dnaID);
+            } else {
+                LOG.info("No patient with DNA ID " + dnaID + ", creating one");
+                
+                // create a patient with Hospital ID equal to the DNA ID
+                List<CustomField> patientFields = new ArrayList<CustomField>();
+                List<String> fieldValues = new ArrayList<String>();
+                patientFields.add(PatientManager.HOSPITAL_ID);
+                fieldValues.add(dnaID);
+                patientFields.add(PatientManager.DNA_IDS);
+                fieldValues.add(dnaID);
+                PatientManager.getInstance().addPatient(sessionID, projectID, patientFields, fieldValues);
+            }
         }
     }
 

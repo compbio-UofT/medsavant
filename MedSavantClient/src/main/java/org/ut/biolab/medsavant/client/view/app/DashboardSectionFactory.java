@@ -6,7 +6,6 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
@@ -14,7 +13,6 @@ import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.VariantNavigatorApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.patients.PatientsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.settings.SettingsApp;
-import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
@@ -48,7 +46,6 @@ public class DashboardSectionFactory {
         s.addDashboardApp(new RegionsApp());
         s.addDashboardApp(AppDirectory.getTaskManager());
         s.addDashboardApp(AppDirectory.getAccountManager());
-
 
         return s;
     }
@@ -108,7 +105,7 @@ public class DashboardSectionFactory {
         // hide this section from the dashbord
         s.setEnabled(LoginController.getInstance().getUserLevel() == UserLevel.ADMIN);
         
-        s.addDashboardApp(new VCFImportApp());
+        s.addDashboardApp(new VCFUploadApp());
         //s.addDashboardApp(new PhenotipsApp());
         
         s.addDashboardApp(new SettingsApp());

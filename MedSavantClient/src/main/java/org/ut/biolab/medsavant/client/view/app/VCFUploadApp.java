@@ -56,9 +56,9 @@ import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
  *
  * @author mfiume
  */
-public class VCFImportApp implements DashboardApp {
+public class VCFUploadApp implements DashboardApp {
 
-    private static final Log LOG = LogFactory.getLog(VCFImportApp.class);
+    private static final Log LOG = LogFactory.getLog(VCFUploadApp.class);
     int containerWidth = 400;
     private static VariantManagerAdapter variantManager = MedSavantClient.VariantManager;
 
@@ -89,7 +89,7 @@ public class VCFImportApp implements DashboardApp {
     private JCheckBox annovarCheckbox;
     private PlaceHolderTextField emailPlaceholder;
 
-    public VCFImportApp() {
+    public VCFUploadApp() {
         filesToImport = new ArrayList<File>();
     }
 
@@ -177,12 +177,12 @@ public class VCFImportApp implements DashboardApp {
 
     @Override
     public String getName() {
-        return "VCF Import";
+        return "VCF Upload";
     }
 
     public static void main(String[] argv) {
         JFrame f = new JFrame();
-        VCFImportApp app = new VCFImportApp();
+        VCFUploadApp app = new VCFUploadApp();
         f.setPreferredSize(new Dimension(400, 400));
         f.setMinimumSize(new Dimension(400, 400));
         app.viewWillLoad();
@@ -306,14 +306,14 @@ public class VCFImportApp implements DashboardApp {
         container.add(bContainer, "wrap,center");
         container.add(settingsPanel, String.format("wrap, center, width %s", containerWidth));
 
-        final VCFImportApp instance = this;
+        final VCFUploadApp instance = this;
 
         importButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                new BackgroundTaskWorker(instance,"VCF Import") {
+                new BackgroundTaskWorker(instance,"Upload Variants") {
 
                     @Override
                     protected Void doInBackground() throws Exception {

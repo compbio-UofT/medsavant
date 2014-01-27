@@ -24,6 +24,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -35,16 +36,18 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class ProgressWheel extends JPanel {
 
     public ProgressWheel() {
-        Dimension d = new Dimension(23,23);
-        this.setPreferredSize(d);
-        this.setMaximumSize(d);
-        this.setMinimumSize(d);
+        
+        this.setLayout(new MigLayout("insets 3"));
+        //Dimension d = new Dimension(24,23);
+        //this.setPreferredSize(d);
+        //this.setMaximumSize(d);
+        //this.setMinimumSize(d);
         this.setBorder(null);
         this.setOpaque(false);
         ImageIcon waitGif = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.WAIT);
         ImagePanel p = new ImagePanel(waitGif.getImage(),24,8);
         p.setOpaque(false);
-        this.add(ViewUtil.centerVertically(p));
+        this.add(p,"height 23, center");
     }
 
     public void setComplete() {

@@ -195,7 +195,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
 
     @Override
     public String getTaskName() {
-        return taskName + ((owner == null) ? "" : "(" + owner.getName() + ")");
+        return taskName + ((owner == null) ? "" : " - " + owner.getName());
     }
 
     @Override

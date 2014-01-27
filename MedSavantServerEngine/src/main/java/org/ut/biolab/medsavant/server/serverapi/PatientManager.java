@@ -33,6 +33,7 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.apache.commons.logging.Log;
 import org.ut.biolab.medsavant.shared.db.MedSavantDatabaseExtras;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 
@@ -58,6 +59,8 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
  */
 public class PatientManager extends MedSavantServerUnicastRemoteObject implements PatientManagerAdapter, BasicPatientColumns {
 
+    Log LOG = org.apache.commons.logging.LogFactory.getLog(PatientManager.class);
+    
     private static PatientManager instance;
 
     private PatientManager() throws RemoteException, SessionExpiredException {
@@ -310,6 +313,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
+    
+    // TODO: write JavaDoc, variables names cols and values are meaningless
     @Override
     public void addPatient(String sid, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException {
 
@@ -564,12 +569,13 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public List<String> getValuesFromDNAIDs(String sessID, int projID, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException {
+    public Map<String,String> getValuesFromDNAIDs(String sessID, int projID, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException {
 
         String tablename = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn(DNA_IDS));
         query.addColumns(table.getDBColumn(columnNameB));
         Condition[] conditions = new Condition[ids.size()];
         for (int i = 0; i < ids.size(); i++) {
@@ -577,13 +583,12 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addCondition(ComboCondition.or(conditions));
 
-
         String s = query.toString();
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
-        List<String> result = new ArrayList<String>();
+        Map<String,String> result = new HashMap<String,String>();
         while (rs.next()) {
-            result.add(rs.getString(1));
+            result.put(rs.getString(1), rs.getString(2));
         }
 
         return result;

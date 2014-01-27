@@ -26,6 +26,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -49,17 +50,17 @@ public final class NotificationAnimation extends Animation {
     private Position position = null;
     
     private static final Position DEFAULT_POSITION = Position.TOP_CENTER;
-    private static final int MIN_DISTANCE_FROM_PANELEDGE = 10;
+    private static final int MIN_DISTANCE_FROM_PANELEDGE = 55;
     private static final int DEFAULT_STAYTIME = 6000;
     private static final int DEFAULT_FADETIME = 2000;
     private static final int AUTO_HEIGHT = -1;    
-    private static final int ROUNDRECT_ARCWIDTH = 25;
-    private static final int ROUNDRECT_ARCHEIGHT = 25;   
+    private static final int ROUNDRECT_ARCWIDTH = 0;//25;
+    private static final int ROUNDRECT_ARCHEIGHT = 0;//25;   
     
     private int margin_x = 10;
     private int margin_y = 10;
     private int x, y;
-    private int width = 300;
+    private int width;// = 300;
     private int height = AUTO_HEIGHT; 
     private final int containingPanelWidth;
     private final int containingPanelHeight;
@@ -81,6 +82,7 @@ public final class NotificationAnimation extends Animation {
         this.message = message;  
         this.containingPanelWidth = containingPanel.getWidth();
         this.containingPanelHeight = containingPanel.getHeight();
+        setDimensions(containingPanelWidth,AUTO_HEIGHT);
         setPosition(pos);
     }            
     
@@ -179,6 +181,9 @@ public final class NotificationAnimation extends Animation {
     //Returns the total height of the text.    
     private int drawString(Graphics2D g2d, String msg, boolean draw) {
         //figure x, y, width
+        
+        Font f = UIManager.getFont("Label.font").deriveFont(Font.BOLD,13.0f);
+        g2d.setFont(f);
         FontMetrics fm = g2d.getFontMetrics();
         int lineHeight = fm.getHeight();
         int msg_x = x + margin_x;
@@ -188,6 +193,7 @@ public final class NotificationAnimation extends Animation {
         int msg_width = width - 2 * margin_x;
 
     
+        g2d.setColor(new Color(49,112,143));
         String[] words = msg.split(" ");
 
         for (String word : words) {
@@ -222,7 +228,7 @@ public final class NotificationAnimation extends Animation {
             updateCoordsFromPosition();
         }
         
-        g2d.setColor(Color.BLACK);        
+        g2d.setColor(new Color(217,237,247));//new Color(217,83,78));//Color.BLACK);        
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);         
         g2d.fillRoundRect(x, y, w, h, ROUNDRECT_ARCWIDTH, ROUNDRECT_ARCHEIGHT);    

@@ -47,6 +47,7 @@ public interface ProjectManagerAdapter extends Remote {
     public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging) throws SQLException, RemoteException, SessionExpiredException;
     public String getVariantTableName(String sessID, int projID, int refID, boolean published) throws SQLException, RemoteException, SessionExpiredException;
     public String getVariantTableName(String sessID, int projID, int refID, boolean published, boolean sub) throws SQLException, RemoteException, SessionExpiredException;
+    public String getVariantTableName(String sessID, int updateID, int projectid, int refid) throws SQLException, SessionExpiredException, RemoteException;
     public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException, SessionExpiredException;
     public void removeProject(String sessID, String projectName) throws SQLException, RemoteException, SessionExpiredException;
     public void removeProject(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException;

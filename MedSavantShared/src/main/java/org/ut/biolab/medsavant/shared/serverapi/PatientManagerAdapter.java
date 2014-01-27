@@ -67,7 +67,7 @@ public interface PatientManagerAdapter extends Remote {
   
     public List<Object> getValuesFromField(String sessID, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDNAIDsFromField(String sessID, int projID, String columnNameA, List<Object> values) throws SQLException, RemoteException, SessionExpiredException;
-    public List<String> getValuesFromDNAIDs(String sessID, int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException;
+    public Map<String,String> getValuesFromDNAIDs(String sessID, int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getFamily(String sessID, int projectId, String family_id) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getFamilyOfPatient(String sessID, int projectId, int pid) throws SQLException, RemoteException, SessionExpiredException;
     public String getFamilyIDOfPatient(String sessID, int projectId, int pid) throws SQLException, RemoteException, SessionExpiredException;

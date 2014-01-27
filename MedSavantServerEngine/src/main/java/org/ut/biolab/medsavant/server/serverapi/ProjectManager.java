@@ -311,6 +311,9 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
         ConnectionController.executeUpdate(sessID, query.toString());
     }
+    
+    
+    
 
     /*
      * Get the name of the most up-to-date variant table, or the most up-to-date,
@@ -335,6 +338,28 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
+        if (rs.next()) {
+            return rs.getString(1);
+        } else {
+            return null;
+        }
+    }
+    
+    @Override
+    public String getVariantTableName(String sid, int updateID, int projectid, int refid) throws SQLException, SessionExpiredException {
+
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn((VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateID));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
+
+        LOG.info("Getting variant table for update with " + query.toString());
+        
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
