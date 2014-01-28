@@ -2,22 +2,21 @@
  <!DOCTYPE web-app
      PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
      "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
- 
+
 <web-app>
+    <!-- Path to config.properties file, within the servlet context -->
+    <context-param>
+        <param-name>MedSavantConfigFile</param-name>
+        <param-value>/config.properties</param-value>
+    </context-param>
+
     <servlet>
         <servlet-name>MedSavantServlet</servlet-name>
         <servlet-class>org.ut.biolab.medsavant.MedSavantServlet</servlet-class>
     </servlet>
- 
+
     <servlet-mapping>
         <servlet-name>MedSavantServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
-   
-     <!-- Path to config.properties file, within the servlet context -->
-    <env-entry>  
-        <env-entry-name>MedSavantConfigFile</env-entry-name>  
-        <env-entry-value>/config.properties</env-entry-value>  
-        <env-entry-type>java.lang.String</env-entry-type>  
-    </env-entry>   
 </web-app>
