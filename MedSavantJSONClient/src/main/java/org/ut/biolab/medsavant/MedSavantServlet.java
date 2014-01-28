@@ -19,7 +19,6 @@
  */
 package org.ut.biolab.medsavant;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -52,6 +51,7 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -754,20 +754,11 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             resp.setContentType("text/html;charset=UTF-8");
             resp.setHeader("Cache-Control", "no-cache");
             InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("/testing.html");
-            resp.getWriter().print(readText(input, "UTF-8"));
+            IOUtils.copy(input, resp.getOutputStream());
+            resp.getOutputStream().close();
         } else {
             resp.getWriter().print("Invalid");
+            resp.getWriter().close();
         }
-        resp.getWriter().close();
-    }
-
-    public static String readText(InputStream is, String charset) throws IOException
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] bytes = new byte[4096];
-        for (int len; (len = is.read(bytes)) > 0;) {
-            baos.write(bytes, 0, len);
-        }
-        return new String(baos.toByteArray(), charset);
     }
 }
