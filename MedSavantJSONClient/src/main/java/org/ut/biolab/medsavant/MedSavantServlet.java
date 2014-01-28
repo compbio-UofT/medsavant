@@ -288,31 +288,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         return null;
     }
 
-    private void test()
-    {
-        // A few simple tests.
-
-        String js = json_invoke("ProjectManager", "getProjectNames", "[\"\"]");
-        System.out.println("JS: " + js + "\n");
-        String firstProject = ((String[]) lastReturnVal)[0];
-
-        js = json_invoke("ProjectManager", "getProjectID", "[\"" + firstProject + "\"]");
-        System.out.println("JS: " + js + "\n");
-
-        int projId = ((Integer) lastReturnVal);
-
-        js = json_invoke("CohortManager", "getCohorts", "[\"" + projId + "\"]");
-        System.out.println("JS: " + js + "\n");
-
-        int cohortId = 1;
-        js = json_invoke("CohortManager", "getIndividualsInCohort", "[\"" + projId + "\", \"" + cohortId + "\"]");
-        System.out.println("JS: " + js + "\n");
-
-        js = json_invoke("PatientManager", "getPatientFields", "[\"" + projId + "\"]");
-        System.out.println("JS: " + js + "\n");
-
-    }
-
     public String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException
     {
 
@@ -720,5 +695,29 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         LOG.info("Port = " + p);
         LOG.info("Username = " + uname);
         LOG.info("Database = " + this.db);
+    }
+
+    private void test()
+    {
+        // A few simple tests.
+
+        String js = json_invoke("ProjectManager", "getProjectNames", "[\"\"]");
+        System.out.println("JS: " + js + "\n");
+        String firstProject = ((String[]) lastReturnVal)[0];
+
+        js = json_invoke("ProjectManager", "getProjectID", "[\"" + firstProject + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        int projId = ((Integer) lastReturnVal);
+
+        js = json_invoke("CohortManager", "getCohorts", "[\"" + projId + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        int cohortId = 1;
+        js = json_invoke("CohortManager", "getIndividualsInCohort", "[\"" + projId + "\", \"" + cohortId + "\"]");
+        System.out.println("JS: " + js + "\n");
+
+        js = json_invoke("PatientManager", "getPatientFields", "[\"" + projId + "\"]");
+        System.out.println("JS: " + js + "\n");
     }
 }
