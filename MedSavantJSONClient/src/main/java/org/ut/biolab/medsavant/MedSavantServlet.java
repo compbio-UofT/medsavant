@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.servlet.ServletException;
@@ -99,55 +97,70 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     private static final Log LOG = LogFactory.getLog(MedSavantServlet.class);
 
-    public static CohortManagerAdapter CohortManager;
+    @SuppressWarnings("unused")
+    private CohortManagerAdapter cohortManager;
 
-    public static PatientManagerAdapter PatientManager;
+    @SuppressWarnings("unused")
+    private PatientManagerAdapter patientManager;
 
-    public static CustomTablesAdapter CustomTablesManager;
+    @SuppressWarnings("unused")
+    private CustomTablesAdapter customTablesManager;
 
-    public static AnnotationManagerAdapter AnnotationManagerAdapter;
+    @SuppressWarnings("unused")
+    private AnnotationManagerAdapter annotationManagerAdapter;
 
-    public static GeneSetManagerAdapter GeneSetManager;
+    @SuppressWarnings("unused")
+    private GeneSetManagerAdapter geneSetManager;
 
-    public static LogManagerAdapter LogManager;
+    @SuppressWarnings("unused")
+    private LogManagerAdapter logManager;
 
-    public static NetworkManagerAdapter NetworkManager;
+    private NetworkManagerAdapter networkManager;
 
-    public static OntologyManagerAdapter OntologyManager;
+    @SuppressWarnings("unused")
+    private OntologyManagerAdapter ontologyManager;
 
-    public static ProjectManagerAdapter ProjectManager;
+    @SuppressWarnings("unused")
+    private ProjectManagerAdapter projectManager;
 
-    public static UserManagerAdapter UserManager;
+    @SuppressWarnings("unused")
+    private UserManagerAdapter userManager;
 
-    public static SessionManagerAdapter SessionManager;
+    private SessionManagerAdapter sessionManager;
 
-    public static SettingsManagerAdapter SettingsManager;
+    @SuppressWarnings("unused")
+    private SettingsManagerAdapter settingsManager;
 
-    public static RegionSetManagerAdapter RegionSetManager;
+    @SuppressWarnings("unused")
+    private RegionSetManagerAdapter regionSetManager;
 
-    public static ReferenceManagerAdapter ReferenceManager;
+    @SuppressWarnings("unused")
+    private ReferenceManagerAdapter referenceManager;
 
-    public static DBUtilsAdapter DBUtils;
+    @SuppressWarnings("unused")
+    private DBUtilsAdapter dbUtils;
 
-    public static SetupAdapter SetupManager;
+    @SuppressWarnings("unused")
+    private SetupAdapter setupManager;
 
-    public static VariantManagerAdapter VariantManager;
+    private VariantManagerAdapter variantManager;
 
-    public static NotificationManagerAdapter NotificationManager;
+    @SuppressWarnings("unused")
+    private NotificationManagerAdapter notificationManager;
 
     private static final Object managerLock = new Object();
 
     private static boolean initialized = false;
 
-    private static final String medSavantServerHost;
+    private String medSavantServerHost;
 
-    private static final int medSavantServerPort;
+    private int medSavantServerPort;
 
-    private static final String username;
+    private String username;
 
-    private static final String password;
+    private String password;
 
-    private static final String db;
+    private String db;
 
     // Debug variable, for the test method. Don't use for other purposes.
     // (doesn't work for multiple users)
@@ -158,73 +171,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private static final int RENEW_RETRY_TIME = 10000;
 
     private static int UPLOAD_BUFFER_SIZE = 4096;
-
-    static {
-        String host = null;
-        String uname = null;
-        String pass = null;
-        String dbase = null;
-        int p = -1;
-        try {
-            InitialContext initialcontext = new InitialContext();
-            String ConfigFileLocation = (String) initialcontext.lookup("java:comp/env/MedSavantConfigFile");
-            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(ConfigFileLocation);
-            Properties props = new Properties();
-            props.load(in);
-            in.close();
-
-            host = props.getProperty("host", "");
-            uname = props.getProperty("username", "");
-            pass = props.getProperty("password", "");
-            dbase = props.getProperty("db", "");
-
-            String portStr = props.getProperty("port", "-1");
-            if (portStr == null) {
-                LOG.error("No port specified in configuration, cannot continue");
-                System.exit(1);
-
-            }
-            p = Integer.parseInt(portStr);
-            if (p <= 0) {
-                LOG.error("Illegal port specified in configuration: " + portStr + ", cannot continue.");
-                System.exit(1);
-            }
-
-            if (uname.length() < 1) {
-                LOG.error("No username specified in configuration file, cannot continue.");
-                System.exit(1);
-            }
-            if (pass.length() < 1) {
-                LOG.error("No password specified in configuration file, cannot continue.");
-                System.exit(1);
-            }
-            if (dbase.length() < 1) {
-                LOG.error("No database specified in configuration file, cannot continue.");
-                System.exit(1);
-            }
-            if (host.length() < 1) {
-                LOG.error("No host specified in configuration file, cannot continue.");
-                System.exit(1);
-            }
-        } catch (IOException iex) {
-            LOG.error("IO Exception reading config file, cannot continue: " + iex);
-            System.exit(1);
-        } catch (NamingException ne) {
-            LOG.error("Exception while loading config file, cannot continue: " + ne);
-            System.exit(1);
-        }
-        medSavantServerHost = host;
-        medSavantServerPort = p;
-        username = uname;
-        password = pass;
-        db = dbase;
-
-        LOG.info("Configured with:");
-        LOG.info("Host = " + host);
-        LOG.info("Port = " + p);
-        LOG.info("Username = " + uname);
-        LOG.info("Database = " + db);
-    }
 
     private class SimplifiedCondition
     {
@@ -249,7 +195,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
                 // this should really be cached...
                 TableSchema tableSchema =
-                    VariantManager.getCustomTableSchema(getSessionId(), this.projectId, this.refId);
+                    MedSavantServlet.this.variantManager.getCustomTableSchema(getSessionId(), this.projectId,
+                        this.refId);
 
                 DbColumn col = tableSchema.getDBColumn(this.args[0]);
                 if (this.type.equals("BinaryCondition")) {
@@ -311,11 +258,11 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         gson = gsonBuilder.create();
     }
 
-    private static synchronized boolean renewSession()
+    private synchronized boolean renewSession()
     {
         try {
             sessionId = null;
-            sessionId = SessionManager.registerNewSession(username, password, db);
+            sessionId = this.sessionManager.registerNewSession(this.username, this.password, this.db);
             LOG.info("Renewed new session with id " + sessionId);
         } catch (Exception e) {
             // can't recover from this.
@@ -327,7 +274,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         return true;
     }
 
-    private static synchronized String getSessionId()
+    private synchronized String getSessionId()
     {
         try {
             if (sessionId == null) {
@@ -342,7 +289,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         return null;
     }
 
-    private static void test()
+    private void test()
     {
         // A few simple tests.
 
@@ -367,13 +314,13 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     }
 
-    public static String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException
+    public String json_invoke(String adapter, String method, String jsonStr) throws IllegalArgumentException
     {
 
         adapter = adapter + "Adapter";
 
         Field selectedAdapter = null;
-        for (Field f : MedSavantServlet.class.getFields()) {
+        for (Field f : MedSavantServlet.class.getDeclaredFields()) {
             if (f.getType().getSimpleName().equalsIgnoreCase(adapter)) {
                 selectedAdapter = f;
             }
@@ -422,7 +369,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         while (true) {
             try {
-                Object selectedAdapterInstance = selectedAdapter.get(null);
+                Object selectedAdapterInstance = selectedAdapter.get(this);
                 if (selectedAdapterInstance == null) {
                     throw new NullPointerException("Requested adapter " + selectedAdapter.getName()
                         + " was not initialized.");
@@ -450,19 +397,20 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     }
 
     @Override
-    public void init()
+    public void init() throws ServletException
     {
         LOG.info("MedSavant JSON Client/Server booted.");
         try {
-            initializeRegistry(medSavantServerHost, Integer.toString(medSavantServerPort));
+            loadConfiguration();
+            initializeRegistry(this.medSavantServerHost, Integer.toString(this.medSavantServerPort));
         } catch (Exception ex) {
             LOG.error(ex);
             ex.printStackTrace();
         }
     }
 
-    public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException,
-        NotBoundException, NoRouteToHostException, ConnectIOException
+    public void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException,
+        NoRouteToHostException, ConnectIOException
     {
 
         if (initialized) {
@@ -493,7 +441,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     }
 
-    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException,
+    private void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException,
         NoRouteToHostException, ConnectIOException
     {
         CustomTablesAdapter CustomTablesManager;
@@ -539,28 +487,28 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         }
 
         synchronized (managerLock) {
-            MedSavantServlet.CustomTablesManager = CustomTablesManager;
-            MedSavantServlet.AnnotationManagerAdapter = AnnotationManagerAdapter;
-            MedSavantServlet.CohortManager = CohortManager;
-            MedSavantServlet.GeneSetManager = GeneSetManager;
-            MedSavantServlet.LogManager = LogManager;
-            MedSavantServlet.NetworkManager = NetworkManager;
-            MedSavantServlet.OntologyManager = OntologyManager;
-            MedSavantServlet.PatientManager = PatientManager;
-            MedSavantServlet.ProjectManager = ProjectManager;
-            MedSavantServlet.UserManager = UserManager;
-            MedSavantServlet.SessionManager = SessionManager;
-            MedSavantServlet.SettingsManager = SettingsManager;
-            MedSavantServlet.RegionSetManager = RegionSetManager;
-            MedSavantServlet.ReferenceManager = ReferenceManager;
-            MedSavantServlet.DBUtils = DBUtils;
-            MedSavantServlet.SetupManager = SetupManager;
-            MedSavantServlet.VariantManager = VariantManager;
-            MedSavantServlet.NotificationManager = NotificationManager;
+            this.customTablesManager = CustomTablesManager;
+            this.annotationManagerAdapter = AnnotationManagerAdapter;
+            this.cohortManager = CohortManager;
+            this.geneSetManager = GeneSetManager;
+            this.logManager = LogManager;
+            this.networkManager = NetworkManager;
+            this.ontologyManager = OntologyManager;
+            this.patientManager = PatientManager;
+            this.projectManager = ProjectManager;
+            this.userManager = UserManager;
+            this.sessionManager = SessionManager;
+            this.settingsManager = SettingsManager;
+            this.regionSetManager = RegionSetManager;
+            this.referenceManager = ReferenceManager;
+            this.dbUtils = DBUtils;
+            this.setupManager = SetupManager;
+            this.variantManager = VariantManager;
+            this.notificationManager = NotificationManager;
         }
     }
 
-    private static void setExceptionHandler()
+    private void setExceptionHandler()
     {
         Thread.setDefaultUncaughtExceptionHandler(
             new Thread.UncaughtExceptionHandler()
@@ -584,24 +532,24 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             });
     }
 
-    private static int copyStreamToServer(InputStream inputStream, String filename, long filesize) throws IOException,
+    private int copyStreamToServer(InputStream inputStream, String filename, long filesize) throws IOException,
         InterruptedException
     {
 
         int streamID = -1;
 
         try {
-            streamID = NetworkManager.openWriterOnServer(getSessionId(), filename, filesize);
+            streamID = this.networkManager.openWriterOnServer(getSessionId(), filename, filesize);
             int numBytes;
             byte[] buf = new byte[UPLOAD_BUFFER_SIZE];
 
             while ((numBytes = inputStream.read(buf)) != -1) {
                 // System.out.println("Read " + numBytes +" bytes");
-                NetworkManager.writeToServer(getSessionId(), streamID, ArrayUtils.subarray(buf, 0, numBytes));
+                this.networkManager.writeToServer(getSessionId(), streamID, ArrayUtils.subarray(buf, 0, numBytes));
             }
         } finally {
             if (streamID >= 0) {
-                NetworkManager.closeWriterOnServer(getSessionId(), streamID);
+                this.networkManager.closeWriterOnServer(getSessionId(), streamID);
             }
             if (inputStream != null) {
                 inputStream.close();
@@ -627,7 +575,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         }
     }
 
-    private static Upload[] handleUploads(FileItemIterator iter) throws FileUploadException, IOException,
+    private Upload[] handleUploads(FileItemIterator iter) throws FileUploadException, IOException,
         InterruptedException
     {
         List<Upload> uploads = new ArrayList<Upload>();
@@ -760,5 +708,62 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             resp.getWriter().print("Invalid");
             resp.getWriter().close();
         }
+    }
+
+    private void loadConfiguration() throws ServletException
+    {
+        String host = null;
+        String uname = null;
+        String pass = null;
+        String dbase = null;
+        int p = -1;
+        try {
+            String ConfigFileLocation = getServletContext().getInitParameter("MedSavantConfigFile");
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(ConfigFileLocation);
+            Properties props = new Properties();
+            props.load(in);
+            in.close();
+
+            host = props.getProperty("host", "");
+            uname = props.getProperty("username", "");
+            pass = props.getProperty("password", "");
+            dbase = props.getProperty("db", "");
+
+            String portStr = props.getProperty("port", "-1");
+            if (portStr == null) {
+                LOG.error("No port specified in configuration, cannot continue");
+
+            }
+            p = Integer.parseInt(portStr);
+            if (p <= 0) {
+                throw new ServletException("Illegal port specified in configuration: " + portStr + ", cannot continue.");
+            }
+
+            if (uname.length() < 1) {
+                throw new ServletException("No username specified in configuration file, cannot continue.");
+            }
+            if (pass.length() < 1) {
+                throw new ServletException("No password specified in configuration file, cannot continue.");
+            }
+            if (dbase.length() < 1) {
+                throw new ServletException("No database specified in configuration file, cannot continue.");
+            }
+            if (host.length() < 1) {
+                throw new ServletException("No host specified in configuration file, cannot continue.");
+            }
+        } catch (IOException iex) {
+            throw new ServletException("IO Exception reading config file, cannot continue: " + iex);
+        }
+        this.medSavantServerHost = host;
+        this.medSavantServerPort = p;
+        this.username = uname;
+        this.password = pass;
+        this.db = dbase;
+
+        LOG.info("Configured with:");
+        LOG.info("Host = " + host);
+        LOG.info("Port = " + p);
+        LOG.info("Username = " + uname);
+        LOG.info("Database = " + this.db);
     }
 }
