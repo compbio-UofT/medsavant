@@ -381,10 +381,7 @@ public class AnnotationCursor {
             return this.alt == null || (this.alt != null && this.alt.equals(alt));
         }
 
-        private boolean intersectsPosition(String chrom, long start, long end) {
-            if (start == 52238) {
-                LOG.info("Variant: chrom=" + chrom + " start=" + start + " end=" + end + "; Annotation=" + this.chrom + " start=" + this.start + " end=" + this.end + " ref=" + this.ref + " alt=" + this.alt);
-            }
+        private boolean intersectsPosition(String chrom, long start, long end) {        
             if (this.chrom.equals(chrom)) {
                 if (this.start < start) {
                     if (this.end < start) {
