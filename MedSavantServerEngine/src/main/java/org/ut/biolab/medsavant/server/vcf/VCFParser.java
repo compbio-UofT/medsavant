@@ -63,11 +63,12 @@ public class VCFParser {
     private static final int VCF_INFO_INDEX = 7;
     private static final int VCF_FORMAT_INDEX = 8;
     private static final int VCF_SAMPLE_START_INDEX = 9;
-    private static final Pattern VCF_BADREF_REGEX = Pattern.compile("[^ACGTacgt]");
-    private static final Pattern VCF_SNP_REGEX = Pattern.compile("^[ACGTacgt]");
-    private static final Pattern VCF_BADALT_REGEX = VCF_BADREF_REGEX;
+    private static final Pattern VCF_BADREF_REGEX = Pattern.compile("[^ACGTNacgtn]");
+    private static final Pattern VCF_SNP_REGEX = Pattern.compile("^[ACGTNacgtn]");
+    private static final Pattern VCF_BADALT_REGEX = Pattern.compile("[^ACGTNacgtn:\\d\\[\\]]");
     private static final Pattern VCF_ALT_OLD_1000G_REGEX = Pattern.compile("^<.+>$");
 
+    private static final int LINES_PER_PROGRESSREPORT = 10000;
     //numbers or dots delimited by pipes or slashes.
     //private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.\\.])([/|]([\\d.\\.]))*");
     private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.])(([/|])([\\d.]))*");
@@ -334,7 +335,7 @@ public class VCFParser {
                         return 0;
                     }
                 } else {
-                    
+
                     int c1 = NumberUtils.isDigits(chr1) ? Integer.parseInt(chr1) : (int) chr1.charAt(0);
                     int c2 = NumberUtils.isDigits(chr2) ? Integer.parseInt(chr2) : (int) chr2.charAt(0);
                     return (c1 < c2) ? -1 : ((c1 > c2) ? 1 : 0);
@@ -490,22 +491,17 @@ public class VCFParser {
                 //If the ALT sequence is too long, we can't store it, and truncate it down to 10 characters.
                 if (alt.length() > BasicVariantColumns.ALT.getColumnLength()) {
                     if (TOOLONG_ALTS_GIVE_WARNING) {
-                        vcf_warning("Skipping alternate allele with too many characters (maximum is " + BasicVariantColumns.ALT.getColumnLength() + ", " + alt.length() + " detected).  MedSavant does not yet support sequences of this size.  Storing first 10 characters");
+                        vcf_warning("Skipping alternate allele with too many characters (maximum is "
+                                + BasicVariantColumns.ALT.getColumnLength() + ", " + alt.length()
+                                + " detected).  MedSavant does not yet support sequences of this size.  Storing first 10 characters");
                     }
                     alt = alt.substring(0, Math.min(10, BasicVariantColumns.ALT.getColumnLength()));
                     ++numInvalidAlt;
                     //   continue;
-                } else if (VCF_BADALT_REGEX.matcher(alt).find() && !VCF_ALT_OLD_1000G_REGEX.matcher(alt).find()) {//Old 1000g vcf file has <del> as alternative allele    
-
-                    if (UNRECOGNIZED_ALTS_GIVE_WARNING) {
-                        vcf_warning("Unrecognized ALT allele detected (ACGT expected, found " + alt + ").  Storing anyway.");
-                    }
-                    ++numInvalidAlt;
-                    //continue;
                 }
 
                 boolean snp = false;
-                if (ref.length() == alt.length() && VCF_SNP_REGEX.matcher(ref).find() && VCF_SNP_REGEX.matcher(alt).find()) {
+                if (ref.length() == alt.length() && VCF_SNP_REGEX.matcher(ref).matches() && VCF_SNP_REGEX.matcher(alt).matches()) {
                     snp = true;
                     ++numSnp;
                     //annovar counts base pair mismatches (e.g. AG, GA, CT, TC)
@@ -522,11 +518,11 @@ public class VCFParser {
                     ++numIndels;
                 }
 
-                String newAlt;
-                String newRef;
-                long newStart;
-                long newEnd;
-                VariantType variantType;
+                String newAlt = alt;
+                String newRef = ref;
+                long newStart = start;
+                long newEnd = start;
+                VariantType variantType = VariantType.Unknown;
 
                 if (alt.equals("<DEL>")) { //old 1000G vcf files have this.
                     newStart = start;
@@ -534,13 +530,23 @@ public class VCFParser {
                     newRef = ref;
                     newAlt = "-";
                     variantType = VariantType.Deletion;
-                } else if (snp) {
+                } else if ((alt.contains("[") || alt.contains("]"))) {  //Complex Rearrangement
+                    newStart = start;
+                    newEnd = start;
+                    newRef = ref;
+                    newAlt = alt;
+                    if (ref.length() == 1) {
+                        variantType = VariantType.Complex;
+                    } else {
+                        vcf_warning("Unrecognized complex rearrangement detected (ref length expected to be 1, found ref=" + ref + ".  Storing anyway.");                        
+                    }
+                } else if (snp) {   //SNP
                     newStart = start;
                     newEnd = start + ref.length() - 1;
                     newRef = ref;
                     newAlt = alt;
                     variantType = VariantType.SNP;
-                } else if (ref.length() >= alt.length()) { //deletion or block substitution
+                } else if (!badRef && ref.length() >= alt.length()) { //deletion or block substitution
                     String head = ref.substring(0, alt.length());
                     if (head.equals(alt)) {
                         newStart = start + head.length();
@@ -555,7 +561,12 @@ public class VCFParser {
                         newAlt = alt;
                         variantType = VariantType.InDel;
                     }
-                } else {// if(ref.length() < alt.length()){ //insertion or block substitution
+                } else if (VCF_BADALT_REGEX.matcher(alt).find()){
+                    if (UNRECOGNIZED_ALTS_GIVE_WARNING) {
+                        vcf_warning("Unrecognized ALT allele detected (ACGTN]:[ expected, found " + alt + ").  Storing anyway.");
+                    }
+                    ++numInvalidAlt;                                        
+                } else if(!badRef){// if(ref.length() < alt.length()){ //insertion or block substitution
                     String head = alt.substring(0, ref.length());
                     if (head.equals(ref)) {
                         newStart = start + ref.length() - 1;
@@ -563,12 +574,12 @@ public class VCFParser {
                         newRef = "-";
                         newAlt = alt.substring(ref.length());
                         variantType = VariantType.Insertion;
-                    } else {
-                        newStart = start;
-                        newEnd = start + ref.length() - 1;
-                        newRef = ref;
-                        newAlt = alt;
-                        variantType = VariantType.InDel;
+                    } else {                        
+                            newStart = start;
+                            newEnd = start + ref.length() - 1;
+                            newRef = ref;
+                            newAlt = alt;
+                            variantType = VariantType.InDel;                        
                     }
                 }
 
@@ -671,6 +682,10 @@ public class VCFParser {
             String badString = lStr.length() > 300 ? lStr.substring(0, 299) + "..." : lStr;
             LOG.error("Error parsing line " + badString + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
             ex.printStackTrace();
+        }
+        
+        if((lineNumber % LINES_PER_PROGRESSREPORT) == 0){
+            messageToUser(LogManagerAdapter.LogType.INFO, vcfFile.getName()+": Loaded "+lineNumber+" variants...");
         }
         return records;
     }

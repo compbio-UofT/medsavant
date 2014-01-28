@@ -31,7 +31,8 @@ public class VariantRecord implements Serializable {
 
     public static enum VariantType {
 
-        SNP, Insertion, Deletion, Various, Unknown, InDel;
+        //BND => complex rearrangement
+        SNP, Insertion, Deletion, Various, Unknown, InDel, Complex;
 
         public static VariantType getVariantType(int type) {
             switch (type) {
@@ -47,6 +48,8 @@ public class VariantRecord implements Serializable {
                     return Unknown;
                 case 5:
                     return InDel;
+                case 6: 
+                    return Complex;
                 default:
                     return Unknown;
             }
