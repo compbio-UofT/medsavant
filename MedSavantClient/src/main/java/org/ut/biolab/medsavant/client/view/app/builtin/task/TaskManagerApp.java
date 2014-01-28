@@ -292,9 +292,10 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
                 });
             }
 
-            Object[][] tableData = new Object[t.getLog().size()][];
+            List<String> log = t.getLog();
+            Object[][] tableData = new Object[log.size()][];
             int counter = 0;
-            for (String s : t.getLog()) {
+            for (String s : log) {
                 tableData[counter++] = new Object[]{s};
             }
 
