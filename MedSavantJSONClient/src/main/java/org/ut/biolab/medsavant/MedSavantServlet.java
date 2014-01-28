@@ -149,8 +149,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     @SuppressWarnings("unused")
     private NotificationManagerAdapter notificationManager;
 
-    private static final Object managerLock = new Object();
-
     private static boolean initialized = false;
 
     private String medSavantServerHost;
@@ -445,68 +443,24 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException,
         NoRouteToHostException, ConnectIOException
     {
-        CustomTablesAdapter CustomTablesManager;
-        AnnotationManagerAdapter AnnotationManagerAdapter;
-        CohortManagerAdapter CohortManager;
-        GeneSetManagerAdapter GeneSetManager;
-        LogManagerAdapter LogManager;
-        NetworkManagerAdapter NetworkManager;
-        OntologyManagerAdapter OntologyManager;
-        PatientManagerAdapter PatientManager;
-        ProjectManagerAdapter ProjectManager;
-        UserManagerAdapter UserManager;
-        SessionManagerAdapter SessionManager;
-        SettingsManagerAdapter SettingsManager;
-        RegionSetManagerAdapter RegionSetManager;
-        ReferenceManagerAdapter ReferenceManager;
-        DBUtilsAdapter DBUtils;
-        SetupAdapter SetupManager;
-        VariantManagerAdapter VariantManager;
-        NotificationManagerAdapter NotificationManager;
-
-        AnnotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
-        CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
-        LogManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
-        NetworkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
-        OntologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
-        PatientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
-        ProjectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
-        GeneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
-        ReferenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
-        RegionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
-        SessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
-        SettingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
-        UserManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
-        VariantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
-        DBUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
-        SetupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
-        CustomTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
-        NotificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
-
-        if (Thread.interrupted()) {
-            return;
-        }
-
-        synchronized (managerLock) {
-            this.customTablesManager = CustomTablesManager;
-            this.annotationManagerAdapter = AnnotationManagerAdapter;
-            this.cohortManager = CohortManager;
-            this.geneSetManager = GeneSetManager;
-            this.logManager = LogManager;
-            this.networkManager = NetworkManager;
-            this.ontologyManager = OntologyManager;
-            this.patientManager = PatientManager;
-            this.projectManager = ProjectManager;
-            this.userManager = UserManager;
-            this.sessionManager = SessionManager;
-            this.settingsManager = SettingsManager;
-            this.regionSetManager = RegionSetManager;
-            this.referenceManager = ReferenceManager;
-            this.dbUtils = DBUtils;
-            this.setupManager = SetupManager;
-            this.variantManager = VariantManager;
-            this.notificationManager = NotificationManager;
-        }
+        this.annotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
+        this.cohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
+        this.logManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
+        this.networkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
+        this.ontologyManager = (OntologyManagerAdapter) registry.lookup(ONTOLOGY_MANAGER);
+        this.patientManager = (PatientManagerAdapter) registry.lookup(PATIENT_MANAGER);
+        this.projectManager = (ProjectManagerAdapter) registry.lookup(PROJECT_MANAGER);
+        this.geneSetManager = (GeneSetManagerAdapter) registry.lookup(GENE_SET_MANAGER);
+        this.referenceManager = (ReferenceManagerAdapter) registry.lookup(REFERENCE_MANAGER);
+        this.regionSetManager = (RegionSetManagerAdapter) registry.lookup(REGION_SET_MANAGER);
+        this.sessionManager = (SessionManagerAdapter) registry.lookup(SESSION_MANAGER);
+        this.settingsManager = (SettingsManagerAdapter) registry.lookup(SETTINGS_MANAGER);
+        this.userManager = (UserManagerAdapter) registry.lookup(USER_MANAGER);
+        this.variantManager = (VariantManagerAdapter) registry.lookup(VARIANT_MANAGER);
+        this.dbUtils = (DBUtilsAdapter) registry.lookup(DB_UTIL_MANAGER);
+        this.setupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
+        this.customTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
+        this.notificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
     }
 
     private void setExceptionHandler()
