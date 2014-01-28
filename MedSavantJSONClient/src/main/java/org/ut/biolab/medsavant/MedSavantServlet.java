@@ -90,6 +90,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
 public class MedSavantServlet extends HttpServlet implements MedSavantServerRegistry
 {
+    private static final long serialVersionUID = -77006512859078222L;
 
     private static final Gson gson; // does not maintain state, can be static.
 
