@@ -70,6 +70,13 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         String fileName = (new File(name)).getName();
 
         File outFile = new File(DirectorySettings.getTmpDirectory(),fileName);
+        if(!outFile.canWrite()){
+            if(!outFile.getParentFile().mkdirs()){
+                String s = "Cannot write file "+outFile.getAbsolutePath()+" because parent directories could not be created.";
+                LOG.error(s);
+                throw new IOException(s);
+            }
+        }
         int i = 0;
         while (outFile.exists()) {
             i++;
