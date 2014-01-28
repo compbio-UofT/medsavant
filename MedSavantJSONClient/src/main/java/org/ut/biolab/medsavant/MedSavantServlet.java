@@ -412,7 +412,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         try {
             for (Type t : selectedMethod.getGenericParameterTypes()) {
-                System.out.println("Field " + i + " is " + t.toString() + " for method " + selectedMethod.toString());
+                LOG.debug("Field " + i + " is " + t.toString() + " for method " + selectedMethod.toString());
                 methodArgs[i] = (i > 0) ? gson.fromJson(gArray.get(i - 1), t) : getSessionId();
                 ++i;
             }
