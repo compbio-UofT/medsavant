@@ -439,11 +439,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         } finally {
             //remove VCF files.
             for(SimpleVariantFile svf : files){
-                File f = new File(svf.getName());                
+                File f = new File(svf.getPath());                
                 if(f.exists()){
                     f.delete();
                 }else{
-                    LOG.error("WARNING: Cannot remove .vcf file "+svf.getName()+" -- does not exist.");
+                    LOG.error("WARNING: Cannot remove .vcf file "+svf.getPath()+" -- does not exist.");
                 }
             }
         }
