@@ -14,7 +14,7 @@
         //note: args MUST be an array of arguments, or an empty array 
         //if there are no arguments.
         var msInvoke = function(adapter, method, args, success_callback) {
-            var URL = "http://localhost:8090/medsavant-json-client/medsavant/" + adapter + "/" + method;
+            var URL = "/medsavant-json-client/medsavant/" + adapter + "/" + method;
             var jsonData = {"json": JSON.stringify(args)};
             var el = document.getElementById('lastreq');
             el.innerHTML = "<hr><b>Request</b><BR><PRE>" + "URL: " + URL + "\n" + " Params: " + JSON.stringify(jsonData) + "</PRE>";
@@ -65,7 +65,7 @@
             var jsonData = {"json": JSON.stringify(stringArray)};
 
             var e = document.getElementById("pspan");
-            var URL = "http://localhost:8090/medsavant-json-client/medsavant/" + adapter + "/" + method;
+            var URL = "/medsavant-json-client/medsavant/" + adapter + "/" + method;
             $.ajax({
                 type: "POST",
                 url: URL,
@@ -288,7 +288,7 @@
                     <b><u>Upload Tester:</u></b>
                     <div id="ulform">
                         <!-- Uploads are handled via the 'UploadManager', specific to the medsavant json client, and not part of the medsavant server API -->
-                        <form id="uploadForm" action="http://localhost:8090/medsavant-json-client/UploadManager/upload" name="uploadForm" method="post" enctype="multipart/form-data">
+                        <form id="uploadForm" action="/medsavant-json-client/medsavant/UploadManager/upload" name="uploadForm" method="post" enctype="multipart/form-data">
                             <!-- form field name for files must be prefaced with file_. Optionally, a separate form field size_ can be provided with the files size -->
                             <!-- sizes are matched to files based on the suffix: i.e. size_XYZ denotes the filesize for the file given in field file_XYZ -->
                             <!-- Providing file sizes are OPTIONAL, but the API methods that report file upload progress will not return correct progress -->
