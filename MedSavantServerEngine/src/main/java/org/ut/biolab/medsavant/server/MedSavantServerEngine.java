@@ -59,7 +59,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
-import org.ut.biolab.medsavant.server.db.variants.VariantManager;
+import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.mail.Mail;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;

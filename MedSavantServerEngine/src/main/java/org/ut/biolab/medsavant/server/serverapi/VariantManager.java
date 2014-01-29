@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.server.db.variants;
+package org.ut.biolab.medsavant.server.serverapi;
 
 import org.ut.biolab.medsavant.shared.model.VariantTag;
 import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
@@ -58,6 +58,9 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.LockController;
+import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
+import org.ut.biolab.medsavant.server.db.variants.Jannovar;
+import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
@@ -89,7 +92,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
     //public static boolean REMOVE_TMP_FILES = false;
-    static boolean REMOVE_WORKING_DIR = true;
+    public static boolean REMOVE_WORKING_DIR = true;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
     }

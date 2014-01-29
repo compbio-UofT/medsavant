@@ -20,7 +20,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
  *
  * @author mfiume
  */
-class Jannovar {
+public class Jannovar {
 
     private static final Log LOG = LogFactory.getLog(Jannovar.class);
 

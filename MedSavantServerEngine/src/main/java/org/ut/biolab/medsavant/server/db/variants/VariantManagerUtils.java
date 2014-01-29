@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
+import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.io.*;
 import java.rmi.RemoteException;
