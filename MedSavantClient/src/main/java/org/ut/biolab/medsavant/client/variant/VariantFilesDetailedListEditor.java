@@ -54,10 +54,10 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
             // Check for existing unpublished changes to this project + reference.
             if (ProjectController.getInstance().promptForUnpublished()) {
                 // Get lock.
-                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                if (!MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
                     new ImportVariantsWizardWithAnnotation().setVisible(true);
                 } else {
-                    DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
+                    DialogUtils.displayMessage("Cannot Modify Project", "This project is currently locked for changes.\nTo unlock, see the Projects page in the Administration section.");
                 }
             }
         } catch (Exception ex) {
@@ -78,10 +78,10 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
-                        if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                        if (!MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
                             new RemoveVariantsWizard(files).setVisible(true);
                         } else {
-                            DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
+                            DialogUtils.displayMessage("Cannot Modify Project", "This project is currently locked for changes.\nTo unlock, see the Projects page in the Administration section.");
                         }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error getting database lock: %s", ex);

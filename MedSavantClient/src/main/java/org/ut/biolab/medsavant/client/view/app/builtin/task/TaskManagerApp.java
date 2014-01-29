@@ -69,9 +69,7 @@ public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
                 public Object[][] getList(int limit) throws Exception {
                     Object[][] results = new Object[tasks.size() + 1][];
                     int counter = 0;
-                    System.out.println("Enumerating tasks:");
                     for (TaskWorker t : tasks) {
-                        System.out.println("\tAdding task t " + t.toString());
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
                     TaskWorker t = new ServerLogTaskWorker();

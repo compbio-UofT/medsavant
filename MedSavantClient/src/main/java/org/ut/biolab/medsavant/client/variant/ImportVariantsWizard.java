@@ -445,22 +445,12 @@ public class ImportVariantsWizard extends WizardDialog {
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        /*try {
-                            if (!MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                                DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
-                                return;
-                            }
-                        } catch (Exception ex) {
-                           DialogUtils.displayError("Problem acquiring database lock", "The database could not be locked for changes.");
-                           return;
-                        }*/
 
                         LOG.info("Starting import worker");
                         workButton.setEnabled(false);
                         j.setVisible(true);
                         page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
 
                         new ProjectWorker<Void>("Importing variants", autoPublish.isSelected(), LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID()) {
                             private int fileIndex = 0;

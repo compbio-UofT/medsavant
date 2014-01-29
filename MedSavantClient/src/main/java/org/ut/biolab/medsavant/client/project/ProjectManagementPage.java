@@ -57,6 +57,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class ProjectManagementPage extends AppSubSection {
+
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
 
     private ProjectController controller = ProjectController.getInstance();
@@ -79,17 +80,17 @@ public class ProjectManagementPage extends AppSubSection {
         if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<String>("Projects") {
-                @Override
-                public String[] getData() throws Exception {
-                    return ProjectController.getInstance().getProjectNames();
-                }
-            },
+                        @Override
+                        public String[] getData() throws Exception {
+                            return ProjectController.getInstance().getProjectNames();
+                        }
+                    },
                     new ProjectsDetailedView(),
                     new ProjectDetailedListEditor());
         }
         return view;
     }
-    
+
     @Override
     public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
@@ -129,21 +130,14 @@ public class ProjectManagementPage extends AppSubSection {
                 int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.getInstance().getSessionID(), projName);
 
                 // Check for existing unpublished changes to this project.
-
                 if (ProjectController.getInstance().promptForUnpublished()) {
-                    try {
-                        // Get lock.
-                        if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
-                                LOG.info("Locked database for changes");
-                                ProjectWizard wiz = new ProjectWizard(projID, projName,
-                                        MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
-                                        MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
-                                wiz.setVisible(true);
-                        } else {
-                            DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
-                        }
-                    } catch (Exception ex) {
-                        ClientMiscUtils.reportError("Error getting database lock: %s", ex);
+                    if (!MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                        ProjectWizard wiz = new ProjectWizard(projID, projName,
+                                MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
+                                MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
+                        wiz.setVisible(true);
+                    } else {
+                        DialogUtils.displayMessage("Cannot Modify Project", "This project is currently locked for changes.\nTo unlock, see the Projects page in the Administration section.");
                     }
                 }
             } catch (Exception ex) {
@@ -203,9 +197,9 @@ public class ProjectManagementPage extends AppSubSection {
 
             viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
-            blockingPanel = new BlockingPanel("No user selected",ViewUtil.getClearBorderlessScrollPane(infoContainer));
+            blockingPanel = new BlockingPanel("No user selected", ViewUtil.getClearBorderlessScrollPane(infoContainer));
             viewContainer.add(blockingPanel, BorderLayout.CENTER);
-            
+
             CollapsiblePanes panes = new CollapsiblePanes();
             panes.setOpaque(false);
             infoContainer.add(panes);
@@ -224,18 +218,18 @@ public class ProjectManagementPage extends AppSubSection {
             details = ViewUtil.getClearPanel();
 
             content.add(details);
-            
+
             blockingPanel.block();
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
-            
+
             if (item.length == 0) {
                 blockingPanel.block();
                 return;
             }
-            
+
             projectName = (String) item[0];
             refreshSelectedProject();
         }
@@ -314,7 +308,7 @@ public class ProjectManagementPage extends AppSubSection {
                                         + "making changes. Are you sure you want to proceed?");
 
                                 if (result == DialogUtils.YES) {
-                                    MedSavantClient.SettingsManager.forceReleaseLockForProject(LoginController.getInstance().getSessionID(),ProjectController.getInstance().getCurrentProjectID());
+                                    MedSavantClient.SettingsManager.forceReleaseLockForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                                     refreshSelectedProject();
                                 }
                             } catch (Exception ex) {
@@ -333,7 +327,6 @@ public class ProjectManagementPage extends AppSubSection {
                 }
             } catch (Exception ex) {
             }
-
 
             details.updateUI();
             blockingPanel.unblock();
