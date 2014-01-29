@@ -33,6 +33,7 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
@@ -56,22 +57,22 @@ public interface VariantManagerAdapter extends Remote {
     ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException, SessionExpiredException;
 
     //These methods modify the database, but nothing happens until publishVariants is called, at which point MedSavant exits anyway.
-    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
-    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
+    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, LockException, Exception;
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, LockException, Exception;
     
     //Synonym for uplaodVariants -- for compatibility with JSON client.
-    public int uploadTransferredVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, Exception;
-    public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
-    public void publishVariants(String sessID, int projID) throws Exception;
-    public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
+    public int uploadTransferredVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, IOException, LockException, Exception;
+    public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws LockException, Exception;
+    public void publishVariants(String sessID, int projID) throws LockException, Exception;
+    public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws LockException, Exception;
 
     //for testing, unnecessary because medsavant exits anyway after publishing.
     @Modifier(type = VARIANT)
-    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, boolean autoPublish, String email) throws Exception;
+    public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields, boolean autoPublish, String email) throws LockException, Exception;
 
     //for testing, unnecessary because medsavant exits anyway after publishing.
     @Modifier(type = VARIANT)
-    public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception;
+    public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws LockException, Exception;
 
     //For testing.
     @Modifier(type = VARIANT)

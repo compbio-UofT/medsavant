@@ -23,11 +23,8 @@ import java.awt.Color;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.border.Border;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
 
 

@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view;
 
@@ -71,16 +71,13 @@ public class UpdatesPanel extends JPanel {
         final JButton button = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_NOTIFY));
 
         //numNotifications = new JLabel("0");
-
         buttonContainer = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(buttonContainer);
         buttonContainer.add(button);
         //buttonContainer.add(ViewUtil.getSmallSeparator());
         //buttonContainer.add(ViewUtil.centerVertically(numNotifications));
 
-
         //setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -88,22 +85,22 @@ public class UpdatesPanel extends JPanel {
             }
         });
 
-        button.addMouseListener(new MouseAdapter(){
+        button.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent me) {
-                super.mouseEntered(me); 
+                super.mouseEntered(me);
                 button.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                super.mouseExited(me); 
+                super.mouseExited(me);
                 button.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-            
+
         });
-        
+
         new PeriodicChecker(UPDATE_INTERVAL) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -176,7 +173,7 @@ public class UpdatesPanel extends JPanel {
     private void showPopup(final int start) {
         popup = new JPopupMenu();
         popup.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        
+
         if (notifications == null) {
             popup.add(new NotificationIcon(null, null));
         } else {
@@ -216,7 +213,7 @@ public class UpdatesPanel extends JPanel {
                     header.add(nextButton);
                 }
                 popup.add(createSeparator());
-                popup.add(header);                
+                popup.add(header);
             }
         }
 
@@ -291,32 +288,15 @@ public class UpdatesPanel extends JPanel {
 
                             p.setVisible(false);
 
-                            //get db lock
-                            try {
-                                if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                                    try {
-                                        if (ProjectController.getInstance().promptToPublish((ProjectDetails) n.getData())) {
-                                            removeNotification(n);
-                                        }
-                                    } finally {
-                                        try {
-                                            MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
-                                        } catch (Exception ex1) {
-                                            LOG.error("Error releasing database lock.", ex1);
-                                        }
-                                    }
-                                } else {
-                                    DialogUtils.displayMessage("Cannot make changes", "Another user is making changes to the database. You must wait until this user has finished. ");
-                                }
-                            } catch (Exception ex) {
-                                ClientMiscUtils.reportError("Error getting database lock: %s", ex);
+                            if (ProjectController.getInstance().promptToPublish((ProjectDetails) n.getData())) {
+                                removeNotification(n);
                             }
                         }
                     });
                     break;
             }
             add(new JLabel("<HTML>" + message + "</HTML>"), BorderLayout.CENTER);
-            
+
         }
     }
 }

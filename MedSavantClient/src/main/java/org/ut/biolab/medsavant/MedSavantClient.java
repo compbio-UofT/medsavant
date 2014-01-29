@@ -72,6 +72,7 @@ import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
@@ -415,6 +416,11 @@ public class MedSavantClient implements MedSavantServerRegistry {
                         if (e instanceof SessionExpiredException) {
                             SessionExpiredException see = (SessionExpiredException) e;
                             MedSavantExceptionHandler.handleSessionExpiredException(see);
+                            return;
+                        }
+                        
+                        if (e instanceof LockException) {
+                            DialogUtils.displayMessage("Cannot modify database", "<html>Another process is making changes.<br/>Please try again later.</html>");
                             return;
                         }
 

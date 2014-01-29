@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +35,7 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.exception.UnauthorizedException;
 import org.ut.biolab.medsavant.shared.serverapi.UserManagerAdapter;
 
 
@@ -180,9 +183,17 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             conn.close();
         }
     }
+    
+    @Override
+    public UserLevel getSessionUsersLevel(String sessID) throws SQLException, RemoteException, SessionExpiredException {
+        // username for this session
+        String name = SessionManager.getInstance().getUserForSession(sessID);
+        return getUserLevel(sessID, name);
+    }
 
     @Override
     public UserLevel getUserLevel(String sessID, String name) throws SQLException, SessionExpiredException {
+        
         if (userExists(sessID, name)) {
             // If the user can create other users, they're assumed to be admin.
             PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -213,5 +224,40 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
         
         conn.executeQuery("FLUSH PRIVILEGES");        
+    }
+
+    /**
+     * Check whether the user associated with the session
+     * is an administrator.
+     * @param sessionID The session to check.
+     * @return Whether the user associated with the session is an administrator.
+     */
+    public boolean isAdmin(String sessionID) throws SQLException, RemoteException, SessionExpiredException {
+        try {
+            return isAdmin(sessionID,false);
+        } catch (UnauthorizedException ex) {
+            // this will never happen because we specified not to throw exceptions above
+            return false;
+        }
+    }
+    
+    /**
+     * Check whether the user associated with the session
+     * is an administrator.
+     * @param sessionID The session to check.
+     * @param throwAccessDeniedIfNot Whether or not to throw an exception if the user is not an admin.
+     * @return Whether the user associated with the session is an administrator.
+     */
+    public boolean isAdmin(String sessionID, boolean throwUnauthorizedExceptionIfNot) throws SQLException, RemoteException, SessionExpiredException, UnauthorizedException {
+        boolean isAdmin = getSessionUsersLevel(sessionID) == UserLevel.ADMIN;
+        if (isAdmin) {
+            return true;
+        } else {
+            if (throwUnauthorizedExceptionIfNot) {
+                throw new UnauthorizedException("You do not have administrative privledges.");
+            } else {
+                return false;
+            }
+        }
     }
 }

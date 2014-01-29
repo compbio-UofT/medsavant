@@ -75,8 +75,4 @@ public class UserController extends Controller<UserEvent> {
             return null;
         }
     }
-
-    public void getUserLevel() {
-
-    }
 }

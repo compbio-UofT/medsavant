@@ -133,22 +133,12 @@ public class ProjectManagementPage extends AppSubSection {
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
-                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                            try {
+                        if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
                                 LOG.info("Locked database for changes");
                                 ProjectWizard wiz = new ProjectWizard(projID, projName,
                                         MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
                                         MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
                                 wiz.setVisible(true);
-
-                            } finally {
-                                try {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
-                                    LOG.info("Released lock");
-                                } catch (Exception ex1) {
-                                    LOG.error("Error releasing database lock.", ex1);
-                                }
-                            }
                         } else {
                             DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
                         }
@@ -324,7 +314,7 @@ public class ProjectManagementPage extends AppSubSection {
                                         + "making changes. Are you sure you want to proceed?");
 
                                 if (result == DialogUtils.YES) {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
+                                    MedSavantClient.SettingsManager.forceReleaseLockForProject(LoginController.getInstance().getSessionID(),ProjectController.getInstance().getCurrentProjectID());
                                     refreshSelectedProject();
                                 }
                             } catch (Exception ex) {
@@ -338,19 +328,6 @@ public class ProjectManagementPage extends AppSubSection {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
                     p.add(ViewUtil.alignLeft(new JLabel("The database is unlocked. Administrators can make changes.")));
-
-                    JButton b = new JButton("Lock");
-                    b.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent ae) {
-                            try {
-                                MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID());
-                                refreshSelectedProject();
-                            } catch (Exception ex) {
-                            }
-                        }
-                    });
-                    p.add(b);
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);
                 }

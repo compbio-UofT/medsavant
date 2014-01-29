@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.variant;
 
@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 
 /**
  *
@@ -52,23 +53,11 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
         try {
             // Check for existing unpublished changes to this project + reference.
             if (ProjectController.getInstance().promptForUnpublished()) {
-                try {
-                    // Get lock.
-                    if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                        try {
-                            new ImportVariantsWizardWithAnnotation().setVisible(true);
-                        } finally {
-                            try {
-                                MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
-                            } catch (Exception ex1) {
-                                VariantFilesPage.LOG.error("Error releasing database lock.", ex1);
-                            }
-                        }
-                    } else {
-                        DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
-                    }
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error getting database lock: %s", ex);
+                // Get lock.
+                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                    new ImportVariantsWizardWithAnnotation().setVisible(true);
+                } else {
+                    DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
                 }
             }
         } catch (Exception ex) {
@@ -80,7 +69,7 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
     public void deleteItems(List<Object[]> results) {
         List<SimpleVariantFile> files = new ArrayList<SimpleVariantFile>();
         for (Object[] f : results) {
-            files.add((SimpleVariantFile)f[0]);
+            files.add((SimpleVariantFile) f[0]);
         }
 
         if (!files.isEmpty()) {
@@ -89,19 +78,11 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                 if (ProjectController.getInstance().promptForUnpublished()) {
                     try {
                         // Get lock.
-                        if (MedSavantClient.SettingsManager.getDBLock(LoginController.getInstance().getSessionID())) {
-                            try {
-                                new RemoveVariantsWizard(files).setVisible(true);
-                            } finally {
-                                try {
-                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
-                                } catch (Exception ex1) {
-                                    VariantFilesPage.LOG.error("Error releasing database lock.", ex1);
-                                }
-                            }
+                        if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                            new RemoveVariantsWizard(files).setVisible(true);
                         } else {
                             DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
-                       }
+                        }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error getting database lock: %s", ex);
                     }

@@ -21,7 +21,6 @@ package org.ut.biolab.medsavant.client.region;
 
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;

@@ -541,10 +541,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                         LOG.info("Requesting modification from server");
                         modifyProject(true, true, true, this);
                         LOG.info("Modification complete");
-                        if (isAutoPublish()) {                            
-                            MedSavantClient.SettingsManager.releaseDBLock(LoginController.getInstance().getSessionID());
-                            LOG.info("Released lock");
-                        }
                         return null;
                     }
                 }.execute();

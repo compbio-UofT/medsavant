@@ -37,7 +37,10 @@ import org.ut.biolab.medsavant.shared.db.Settings;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.LockController;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.exception.UnauthorizedException;
 import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 
@@ -113,6 +116,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         conn.createStatement().executeUpdate(query.toString());
     }
 
+    /*
     @Override
     public synchronized boolean getDBLock(String sessID) throws SQLException, SessionExpiredException {
 
@@ -137,6 +141,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
             lockReleased = true;
         }
     }
+    *
 
     @Override
     public void releaseDBLock(String sessID) throws SQLException, SessionExpiredException {
@@ -149,6 +154,7 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
             }
         }
     }
+   */
 
 
     @Override
@@ -159,4 +165,17 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     public String getServerVersionWhenDatabaseCreated(String sessID) throws SQLException, SessionExpiredException {
        return getSetting(sessID,Settings.KEY_SERVER_VERSION);
     }
+    
+    @Override
+    public boolean isProjectLockedForChanges(int projectID) throws RemoteException, SessionExpiredException {
+        return LockController.getInstance().isLocked(projectID);
+    }
+    
+    @Override
+    public void forceReleaseLockForProject(String sessionID, int projectID) throws LockException, RemoteException, SessionExpiredException, UnauthorizedException, SQLException {
+        if (UserManager.getInstance().isAdmin(sessionID,true)) {
+            LockController.getInstance().releaseLock(projectID, true);
+        }
+    }
+    
 }

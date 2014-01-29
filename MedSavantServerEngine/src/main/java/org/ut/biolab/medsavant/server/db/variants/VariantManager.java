@@ -57,6 +57,7 @@ import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.db.LockController;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
@@ -65,6 +66,7 @@ import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.ChromosomeComparator;
@@ -104,8 +106,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * database will be logged out.
      */
     @Override
-    public void publishVariants(String sessID, int projectID) throws Exception {
+    public void publishVariants(String sessID, int projectID) throws Exception, LockException {
 
+        LockController.getInstance().requestLock(projectID);
+        
         LOG.info("Beginning publish of all tables for project " + projectID);
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -126,8 +130,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             }
 
             //publish
-            LOG.info("Releasing database lock.");
-            SettingsManager.getInstance().releaseDBLock(conn);
             LOG.info("Terminating active sessions");
             SessionManager.getInstance().terminateSessionsForDatabase(SessionManager.getInstance().getDatabaseForSession(sessID), "Administrator (" + SessionManager.getInstance().getUserForSession(sessID) + ") published new variants");
             LOG.info("Publishing tables");
@@ -140,6 +142,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Publish complete");
         } finally {
             conn.close();
+            LockController.getInstance().releaseLock(projectID);
         }
     }
 
@@ -148,14 +151,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * logged out.
      */
     @Override
-    public void publishVariants(String sessID, int projID, int refID, int updID) throws Exception {
+    public void publishVariants(String sessID, int projID, int refID, int updID) throws Exception, LockException {
+        
+         LockController.getInstance().requestLock(projID);
+        
         LOG.info("Publishing table. pid:" + projID + " refid:" + refID + " upid:" + updID);
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             LOG.info("Setting log status to published");
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updID, Status.PUBLISHED);
-            LOG.info("Releasing database lock.");
-            SettingsManager.getInstance().releaseDBLock(conn);
             LOG.info("Terminating active sessions");
             SessionManager.getInstance().terminateSessionsForDatabase(SessionManager.getInstance().getDatabaseForSession(sessID), "Administrator (" + SessionManager.getInstance().getUserForSession(sessID) + ") published new variants");
             LOG.info("Publishing table");
@@ -166,6 +170,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         } finally {
             conn.close();
+             LockController.getInstance().releaseLock(projID);
         }
     }
 
@@ -174,13 +179,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Remove an unpublished variant table.
      */
     @Override
-    public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception {
+    public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception, LockException {
+       
+        LockController.getInstance().requestLock(projectID);
+        
         LOG.info("Cancelling publish. pid:" + projectID + " refid:" + referenceID + " upid:" + updateID);
         ProjectManager.getInstance().removeTables(sid, projectID, referenceID, updateID, updateID);
         LOG.info("Cancel complete");
 
+        LockController.getInstance().releaseLock(projectID);
+        
         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sid, LogManagerAdapter.LogType.INFO, "Cancelled publish of " + ProjectManager.getInstance().getProjectName(sid, projectID));
-
     }
 
     /**
@@ -189,8 +198,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * method is used only by ProjectWizard.modifyProject().
      */
     @Override
-    public int updateTable(String userSessionID, int projID, int refID, int[] annotIDs, CustomField[] customFields, boolean autoPublish, String email) throws Exception {
+    public int updateTable(String userSessionID, int projID, int refID, int[] annotIDs, CustomField[] customFields, boolean autoPublish, String email) throws Exception, LockException {
 
+        LockController.getInstance().requestLock(projID);
+        
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         try {
@@ -211,21 +222,26 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.error(e);
             throw e;
         } finally {
+            
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
+            LockController.getInstance().releaseLock(projID);
+        
         }
 
     }
 
     @Override
-    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
+    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
         return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
     }
     /**
      * Import variant files which have been transferred from a client.
      */
     @Override
-    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
+    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
 
+        LockController.getInstance().requestLock(projID);
+        
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         try {
@@ -246,6 +262,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
         } finally {
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
+            LockController.getInstance().releaseLock(projID);
         }
     }
 
@@ -254,8 +271,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * of an entire directory.
      */
     @Override
-    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, SessionExpiredException, IOException, Exception {
+    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
 
+        LockController.getInstance().requestLock(projID);
+        
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         try {
@@ -284,6 +303,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
         } finally {
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
+            LockController.getInstance().releaseLock(projID);
         }
     }
 
@@ -295,21 +315,24 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    public int uploadVariants(String userSessionID, File[] vcfFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception {
+    public int uploadVariants(String userSessionID, File[] vcfFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
 
+        LockController.getInstance().requestLock(projectID);
+        
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
 
         EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
         try {
+            
             if (preAnnotateWithAnnovar) {
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with ANNOVAR");
                 vcfFiles = Jannovar.annotateVCFFiles(vcfFiles);
             }
+            
             int updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, autoPublish, vcfFiles, includeHomoRef, tags);
             EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
-
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
 
             return updateID;
@@ -325,13 +348,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             throw e;
         } finally {
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
+            LockController.getInstance().releaseLock(projectID);
         }
     }
 
     @Override
-    public int removeVariants(String userSessionID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception {
+    public int removeVariants(String userSessionID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception, LockException {
         LOG.info("Beginning removal of variants");
 
+        LockController.getInstance().requestLock(projID);
+        
         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing " + files.size() + " files");
 
         
@@ -439,13 +465,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         } finally {
             //remove VCF files.
             for(SimpleVariantFile svf : files){
-                File f = new File(svf.getPath());                
+                File f = new File(svf.getPath());
                 if(f.exists()){
                     f.delete();
                 }else{
                     LOG.error("WARNING: Cannot remove .vcf file "+svf.getPath()+" -- does not exist.");
                 }
             }
+            SessionManager.getInstance().unregisterSession(backgroundSessionID);
+            LockController.getInstance().releaseLock(projID);
         }
     }
 

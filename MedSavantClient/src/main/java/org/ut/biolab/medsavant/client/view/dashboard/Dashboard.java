@@ -162,7 +162,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             appPlaceholder.setLayout(layout);
             for (DashboardApp launcher : s.getApps()) {
                 try {
-                    LOG.info("Laying out " + launcher.toString());
                     appPlaceholder.add(getRepresentationForLauncher(launcher));
                 } catch (Exception e) {
                     LOG.error("Error creating launcher for app " + launcher.toString(),e);
