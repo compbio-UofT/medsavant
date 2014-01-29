@@ -244,7 +244,7 @@ public class VCFUploadApp implements DashboardApp {
 
         dragDropContainer.setLayout(dpMl);
 
-        RoundedPanel dp = new RoundedPanel(30);
+        RoundedPanel dp = new RoundedPanel(0);
         dp.setOpaque(false);
 
         dp.setBorderDashed(true);

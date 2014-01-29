@@ -33,6 +33,7 @@ import javax.swing.JPopupMenu;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -161,15 +162,24 @@ public class ProjectManagementPage extends AppSubSection {
             }
 
             if (result == DialogUtils.YES) {
+
+                boolean didRequestToRemoveCurrentProject = false;
+
                 for (Object[] v : items) {
                     String projectName = (String) v[keyIndex];
+                    if (projectName.equals(ProjectController.getInstance().getCurrentProjectName())) {
+                        didRequestToRemoveCurrentProject = true;
+                    }
                     controller.removeProject(projectName);
                 }
                 try {
-                    if (controller.getProjectNames().length == 0) {
+                    if (didRequestToRemoveCurrentProject) {
+                        DialogUtils.displayMessage("Successfully removed " + items.size() + " project(s).\n\n"
+                                + "The current project was removed.\nYou'll now be logged out.");
                         MedSavantFrame.getInstance().forceRestart();
+                    } else {
+                        DialogUtils.displayMessage("Successfully removed " + items.size() + " project(s)");
                     }
-                    DialogUtils.displayMessage("Successfully removed " + items.size() + " project(s)");
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Unable to get updated project list: %s.", ex);
                 }
@@ -292,11 +302,23 @@ public class ProjectManagementPage extends AppSubSection {
             }
 
             details.add(ViewUtil.getKeyValuePairList(values));
+
+            int projectID = projectDetails[0].getProjectID();
+            if (projectID == ProjectController.getInstance().getCurrentProjectID()) {
+                JPanel p = new JPanel();
+                ViewUtil.applyHorizontalBoxLayout(p);
+                p.add(new JLabel("This is the current project."));
+                p.add(Box.createHorizontalGlue());
+                details.add(Box.createVerticalStrut(10));
+                details.add(p);
+            }
+
             try {
-                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(projectID)) {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
-                    p.add(new JLabel("The database is locked. Administrators cannot make further changes."));
+
+                    p.add(new JLabel("This project is locked. Administrators cannot make further changes."));
                     JButton b = new JButton("Unlock");
                     b.addActionListener(new ActionListener() {
                         @Override
@@ -314,17 +336,17 @@ public class ProjectManagementPage extends AppSubSection {
                             }
                         }
                     });
-                    
+
                     JButton refreshButton = ViewUtil.getRefreshButton();
-                    
-                    
+
                     p.add(b);
+                    p.add(Box.createHorizontalGlue());
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);
                 } else {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
-                    p.add(ViewUtil.alignLeft(new JLabel("The database is unlocked. Administrators can make changes.")));
+                    p.add(ViewUtil.alignLeft(new JLabel("This project is unlocked. Administrators can make changes.")));
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);
                 }
