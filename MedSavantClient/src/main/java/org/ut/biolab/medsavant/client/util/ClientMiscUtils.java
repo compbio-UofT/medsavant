@@ -48,6 +48,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 import com.jidesoft.list.FilterableCheckBoxList;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 /**
  * @author Andrew
@@ -114,10 +115,10 @@ public class ClientMiscUtils extends MiscUtils {
             message = String.format(message, "server refused connection");
         } else if (t instanceof UnmarshalException) {
             message = String.format(message, "connection to server lost");
-            LoginController.getInstance().logout();
+            MedSavantFrame.getInstance().forceRestart();
         } else if (t instanceof NoSuchObjectException) {
             message = String.format(message, "server has been restarted");
-            LoginController.getInstance().logout();
+            MedSavantFrame.getInstance().forceRestart();
         } else {
             message = String.format(message, getMessage(t));
         }
@@ -134,7 +135,7 @@ public class ClientMiscUtils extends MiscUtils {
                 .displayErrorMessage(
                     "<html>It appears that the database structure has been modified.<br>Please log back in for the changes to take effect.</html>",
                     t);
-            LoginController.getInstance().logout();
+            MedSavantFrame.getInstance().forceRestart();
             return true;
         }
         return false;

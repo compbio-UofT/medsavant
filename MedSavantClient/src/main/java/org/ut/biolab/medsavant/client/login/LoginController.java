@@ -267,17 +267,16 @@ public class LoginController extends Controller<LoginEvent> {
 
     }
 
+    /**
+     * Logout
+     */
     public void logout() {
         try {
-            System.out.println("Logging out...");
+            LOG.info("Logging out...");
             setLoggedIn(false);
             AnalyticsAgent.onEndSession(true);
             this.unregister();
-            Thread.sleep(100);
         } catch (Exception ex) {
-        } finally {
-            System.out.println("Quitting...");
-            System.exit(0);
         }
     }
 
@@ -317,9 +316,6 @@ public class LoginController extends Controller<LoginEvent> {
                 if (projNames.length > 0) {
                     proj = projNames[0];
                 }
-                //} else {
-                //    MedSavantFrame.getInstance().requestClose();
-                //}
 
             } else {
                 DialogUtils.displayMessage("Welcome to MedSavant", "No projects have been started. Please contact your administrator.");

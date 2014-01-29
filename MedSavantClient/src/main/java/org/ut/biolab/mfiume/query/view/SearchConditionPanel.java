@@ -75,7 +75,7 @@ public class SearchConditionPanel extends JPanel{
         
         horizButtonPanel.setLayout(new BoxLayout(horizButtonPanel, BoxLayout.X_AXIS));        
         if (advancedMenu != null && (advancedMenu.getComponentCount() > 0)) {
-            final JButton gearButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
+            final JButton gearButton = ViewUtil.getConfigureButton();
             gearButton.setToolTipText("More Options");
             gearButton.addActionListener(new ActionListener() {
                 @Override

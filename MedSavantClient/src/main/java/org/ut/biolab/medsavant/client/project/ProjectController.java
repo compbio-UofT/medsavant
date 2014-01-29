@@ -367,8 +367,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             }else{
                 MedSavantClient.VariantManager.publishVariants(sessionID, projectID);
             }
-            MedSavantClient.quit(); 
-            //MedSavantClient.restart(null);
+            MedSavantFrame.getInstance().forceRestart(); 
         } catch (Exception e) {
             LOG.error(e);
         }

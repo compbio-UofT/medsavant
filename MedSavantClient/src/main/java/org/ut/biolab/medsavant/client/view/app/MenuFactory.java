@@ -107,7 +107,7 @@ public class MenuFactory {
         logoutItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                MedSavantFrame.getInstance().requestClose();
+                MedSavantFrame.getInstance().requestRestart();
             }
         });
 

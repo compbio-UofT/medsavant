@@ -64,6 +64,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
@@ -283,7 +284,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             switchToLoginView();
         }
     }
-    
+
     public void notificationMessage(String notificationMsg) {
         view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
     }
@@ -358,7 +359,46 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         currentCard = cardname;
     }
 
+    public void forceRestart() {
+        requestRestart(false);
+    }
+
+    public void requestRestart() {
+        requestRestart(true);
+    }
+
+    private void requestRestart(boolean askFirst) {
+        LOG.info("Asking to restart");
+        final LoginController controller = LoginController.getInstance();
+
+        if (controller.isLoggedIn()) {
+
+            boolean doAction;
+
+            if (askFirst) {
+                doAction = DialogUtils.askYesNo("Logout", "Are you sure you want to logout?") == DialogUtils.YES;
+            } else {
+                doAction = true;
+            }
+
+            if (doAction) {
+                controller.logout();
+                MedSavantClient.restart();
+                return;
+            }
+        }
+        LOG.info("Refusing to restart");
+    }
+
+    public void forceClose() {
+        requestClose(false);
+    }
+
     public void requestClose() {
+        requestClose(true);
+    }
+
+    private void requestClose(boolean askFirst) {
         LOG.info("Asking to quit");
         final LoginController controller = LoginController.getInstance();
 
@@ -366,9 +406,25 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         //if(ThreadController.getInstance().areJobsRunning()){
         //    jobsMsg = "Jobs are running.  If you quit, job progress will be lost. ";
         //}
-        if (!controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES) {
-            controller.logout();
+        boolean doAction;
+
+        if (askFirst) {
+            doAction = !controller.isLoggedIn() || DialogUtils.askYesNo("Quit MedSavant", "Are you sure you want to quit?") == DialogUtils.YES;
+        } else {
+            doAction = true;
         }
+
+        if (doAction) {
+            controller.logout();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+            LOG.info("System exiting");
+            System.exit(0);
+            return;
+        }
+
         LOG.info("Refusing to quit");
     }
 

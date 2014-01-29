@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
@@ -164,10 +165,9 @@ public class ProjectManagementPage extends AppSubSection {
                     String projectName = (String) v[keyIndex];
                     controller.removeProject(projectName);
                 }
-
                 try {
                     if (controller.getProjectNames().length == 0) {
-                        LoginController.getInstance().logout();
+                        MedSavantFrame.getInstance().forceRestart();
                     }
                     DialogUtils.displayMessage("Successfully removed " + items.size() + " project(s)");
                 } catch (Exception ex) {
@@ -296,8 +296,7 @@ public class ProjectManagementPage extends AppSubSection {
                 if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
-                    p.add(ViewUtil.alignLeft(new JLabel("The database is locked. Administrators cannot make further changes.")));
-
+                    p.add(new JLabel("The database is locked. Administrators cannot make further changes."));
                     JButton b = new JButton("Unlock");
                     b.addActionListener(new ActionListener() {
                         @Override
@@ -315,6 +314,10 @@ public class ProjectManagementPage extends AppSubSection {
                             }
                         }
                     });
+                    
+                    JButton refreshButton = ViewUtil.getRefreshButton();
+                    
+                    
                     p.add(b);
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);

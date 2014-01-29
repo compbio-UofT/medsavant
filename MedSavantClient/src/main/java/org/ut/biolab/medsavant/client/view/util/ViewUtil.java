@@ -65,6 +65,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -1009,6 +1010,14 @@ public final class ViewUtil {
 
     public static Color getSubtleTitleColor() {
         return new Color(114,114,114);
+    }
+
+    public static JButton getRefreshButton() {
+        return new JButton("Refresh");
+    }
+
+    public static JButton getConfigureButton() {
+        return ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
     }
 
 

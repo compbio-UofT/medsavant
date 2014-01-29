@@ -40,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -79,7 +80,7 @@ public class PillView extends JPanel {
     private boolean isSelected;
     private JLabel textLabel;
     private JLabel expandButton;
-    private JLabel editButton;
+    private JButton editButton;
     private JLabel infoButton;
     private String info;
     private final Component infoButtonPadding;
@@ -155,9 +156,7 @@ public class PillView extends JPanel {
         infoButtonPadding = Box.createHorizontalStrut(2);
         infoButtonPadding.setVisible(infoButton.isVisible());
 
-
-        ImageIcon ic = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE);
-        editButton = ViewUtil.createIconButton(ic);
+        editButton = ViewUtil.getConfigureButton();
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

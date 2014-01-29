@@ -77,7 +77,7 @@ public abstract class ProjectWorker<T> extends VisibleMedSavantWorker<T> {
         setStatusMessage(shortSuccessMessage);
         if (autoPublish) {
             DialogUtils.displayMessage(getLongSuccessMessage());
-            LoginController.getInstance().logout();
+            MedSavantFrame.getInstance().forceRestart();
         } else {
             MedSavantFrame.getInstance().notificationMessage(getLongSuccessMessage());
         }

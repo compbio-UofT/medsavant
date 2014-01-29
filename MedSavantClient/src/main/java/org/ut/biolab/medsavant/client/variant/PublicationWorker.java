@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 
 /**
@@ -57,7 +58,7 @@ public class PublicationWorker extends VariantWorker {
     protected Void doInBackground() throws Exception {
         // Publish.
         MedSavantClient.VariantManager.publishVariants(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), updateID);
-        LoginController.getInstance().logout();
+        MedSavantFrame.getInstance().forceRestart();
         return null;
     }
 

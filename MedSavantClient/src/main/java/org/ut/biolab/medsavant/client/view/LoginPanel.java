@@ -290,7 +290,7 @@ public class LoginPanel extends JPanel implements Listener<LoginEvent> {
         progressSigningIn = ViewUtil.getIndeterminateProgressBar();
         progressSigningIn.setVisible(false);
 
-        connectionSettingsButton = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));//new JButton("▼");//
+        connectionSettingsButton = ViewUtil.getConfigureButton();
         connectionSettingsButton.setToolTipText("Edit Connection Settings");
         connectionSettingsButton.setFocusable(false);
 

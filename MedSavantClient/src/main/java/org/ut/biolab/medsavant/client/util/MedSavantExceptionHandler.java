@@ -31,8 +31,12 @@ public class MedSavantExceptionHandler {
 
     public static boolean handleSessionExpiredException(SessionExpiredException e) {
         MedSavantFrame.getInstance().dispose();
-        DialogUtils.displayMessage("<html>Your session has expired.<br/>Please log in again.</html>");
-        MedSavantClient.quit();
+        int result = DialogUtils.askYesNo("Session Expired","Would you like to log in again?");
+        if (result == DialogUtils.YES) {
+            MedSavantFrame.getInstance().forceRestart();
+        } else {
+            MedSavantFrame.getInstance().forceClose();
+        }
         return false;
     }
 }

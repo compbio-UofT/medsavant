@@ -134,13 +134,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     /**
-     * Quits MedSavant
-     */
-    public static void quit() {
-        LoginController.getInstance().logout();
-    }
-
-    /**
      * Restarts MedSavant (This function has NOT been tested with Web Start)
      */
     public static void restart() {
@@ -151,13 +144,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
                  DialogUtils.displayMessage("MedSavant needs to restart.", msg);
                  }*/
                 Runtime.getRuntime().exec(restartCommand);
+                System.exit(0);
             } catch (IOException e) { //thrown by exec
-                DialogUtils.displayError("Error restarting MedSavant.  Please restart MedSavant manually.");
+                DialogUtils.displayError("Error restarting MedSavant. Please restart MedSavant manually.");
                 LOG.error(e);
             } catch (Exception e) {
                 LOG.error(e);
-            } finally {
-                LoginController.getInstance().logout();
             }
         }
     }
