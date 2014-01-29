@@ -299,7 +299,7 @@ public class ProjectManagementPage extends AppSubSection {
 
             details.add(ViewUtil.getKeyValuePairList(values));
             try {
-                if (MedSavantClient.SettingsManager.getSetting(LoginController.getInstance().getSessionID(), "db lock").equals("true")) {
+                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
                     p.add(ViewUtil.alignLeft(new JLabel("The database is locked. Administrators cannot make further changes.")));

@@ -21,8 +21,8 @@ package org.ut.biolab.medsavant.client.util;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import savant.api.util.DialogUtils;
 
 /**
  * @author mfiume
