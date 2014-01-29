@@ -182,7 +182,7 @@ public class IconFactory {
             case MENU_NOTIFY:
                 return getIcon(iconroot + "menu-notify.png");
             case CONFIGURE:
-                return getIcon(iconroot + "configure.png");
+                return getIcon(iconroot + "configure-light.png");
             case CHART_SMALL:
                 return getIcon(iconroot + "chart_1.png");
             case MORE:
