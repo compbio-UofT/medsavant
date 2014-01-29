@@ -91,7 +91,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int BIN_TOTAL_THRESHOLD = 1000000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
-    //public static boolean REMOVE_TMP_FILES = false;
     public static boolean REMOVE_WORKING_DIR = true;
 
     private VariantManager() throws RemoteException, SessionExpiredException {
@@ -432,7 +431,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //add entries to tablemap
             projMgr.addTableToMap(backgroundSessionID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
-
+            
             //cleanup
             LOG.info("Dropping old table(s)");
             int newestId = projMgr.getNewestUpdateID(backgroundSessionID, projID, refID, true);
@@ -440,8 +439,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             int maxId = newestId - 1;
             projMgr.removeTables(backgroundSessionID, projID, refID, minId, maxId);
 
-            //TODO: remove files
-            //TODO: server logs
+            // remove variant files from table
+            for (SimpleVariantFile f : files) {
+                removeEntryFromFileTable(backgroundSessionID, f.getUploadId(), f.getFileId());
+                //boolean didDelete = new File(f.getPath()).delete();
+                //LOG.info(String.format("Deleting variant file %s - %s",f.getPath(),didDelete ? "SUCCESS" : "FAIL"));
+            }
+            
             //set as pending
             AnnotationLogManager.getInstance().setAnnotationLogStatus(backgroundSessionID, updateId, Status.PENDING);
 
