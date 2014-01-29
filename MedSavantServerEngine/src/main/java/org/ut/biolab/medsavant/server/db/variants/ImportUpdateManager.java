@@ -79,22 +79,17 @@ public class ImportUpdateManager {
 
             //dump entire table.
             File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), true);
-                                                      
 
-            // annotate
             File workingDir = createSubdir(workingDirectory, "annotate_upload");
-            //annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, allTSVFiles, workingDir);
-            
+
             int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
             CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
             File[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, importedTSVFiles, workingDir);
-            //uploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, File[] annotatedTSVFiles, String workingDir) throws RemoteException, SessionExpiredException, SQLException{
             uploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, ArrayUtils.addAll(annotatedFiles, existingTableAsTSV), workingDir);
-            
+
             // do some accounting
             addVariantFilesToDatabase(sessionID, updateID, projectID, referenceID, vcfFiles);
             VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
-
 
             // create patients for all DNA ids in this update
             createPatientsForUpdate(sessionID, updateID, projectID, referenceID);
@@ -148,13 +143,9 @@ public class ImportUpdateManager {
     /**
      * Annotate using existing annotation / custom field sets
      */
-    
     private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
-        //int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
-        //CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
         File[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles, workingDir);
         uploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, annotatedFiles, workingDir);
-        //annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles, workingDir);
     }
 
     private static File[] annotateTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
@@ -170,7 +161,7 @@ public class ImportUpdateManager {
         LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
 
         ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
-       
+
         try {
             //get annotation information
             Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
@@ -184,8 +175,8 @@ public class ImportUpdateManager {
         }
     }
 
-    private static void uploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, File[] annotatedTSVFiles, File workingDir) throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException{
-         //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
+    private static void uploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, File[] annotatedTSVFiles, File workingDir) throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException {
+        //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
         String tableName = ProjectManager.getInstance().createVariantTable(
                 sessionID,
                 projectID,
@@ -207,60 +198,6 @@ public class ImportUpdateManager {
         dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
         setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
     }
-    /**
-     * Annotation with the given annotation / custom field sets
-     */
-    /*
-    @Deprecated
-    private static void annotateAndUploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir) throws Exception {
-
-        try {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
-                    sessionID,
-                    LogManagerAdapter.LogType.INFO,
-                    "Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
-        } catch (RemoteException ex) {
-        } catch (SessionExpiredException ex) {
-        }
-
-        LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
-
-        ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
-
-        //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
-        String tableName = ProjectManager.getInstance().createVariantTable(
-                sessionID,
-                projectID,
-                referenceID,
-                updateID,
-                annotationIDs,
-                true);
-
-        String tableNameSubset = ProjectManager.getInstance().createVariantTable(
-                sessionID,
-                projectID,
-                referenceID,
-                updateID,
-                annotationIDs,
-                false,
-                true);
-
-        try {
-            //get annotation information
-            Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
-
-            File[] splitTSVFiles = splitFilesByDNAAndFileID(tsvFiles, createSubdir(workingDir, "split"));
-            File[] annotatedTSVFiles = annotateTSVFiles(sessionID, splitTSVFiles, annotations, customFields, createSubdir(workingDir, "annotate"));
-            uploadTSVFiles(sessionID, annotatedTSVFiles, tableName, tableNameSubset, createSubdir(workingDir, "subset"));
-            registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
-            dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
-            setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-
-        } catch (Exception e) {
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
-            throw e;
-        }
-    }*/
 
     /**
      * PUBLICATION AND STATUS
