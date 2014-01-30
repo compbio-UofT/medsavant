@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.shared.util;
 
@@ -38,10 +38,16 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 /**
  * I/O-related utility methods. Functions for manipulating Savant files are in
@@ -52,7 +58,6 @@ import org.apache.commons.logging.LogFactory;
 public class IOUtils {
 
     private static final Log LOG = LogFactory.getLog(IOUtils.class);
-
 
     public static void copyFile(File srcFile, File destFile) throws IOException {
         if (srcFile.equals(destFile)) {
@@ -132,10 +137,10 @@ public class IOUtils {
         //File f = base.isDirectory() ? base : base.getParentFile();
         if (hasWorldExecute(f)) {
             /*f = f.getParentFile();
-            if (f == null) {
-                // Reached /
-                return;
-            }*/
+             if (f == null) {
+             // Reached /
+             return;
+             }*/
             return;
         }
         throw new IOException(f + " did not have execute permissions.");
@@ -174,6 +179,123 @@ public class IOUtils {
             return perm.charAt(8) == 'x';
         }
         return false;
+    }
+
+    private static List<File> unArchive(File dest, ArchiveInputStream ais) throws IOException {
+        List<File> files = new ArrayList<File>();
+        ArchiveEntry archiveEntry = ais.getNextEntry();
+        // tarIn is a TarArchiveInputStream
+        while (archiveEntry != null) {// create a file with the same name as the tarEntry            
+            File destPath = new File(dest, archiveEntry.getName());
+            
+            if (archiveEntry.isDirectory()) {
+                destPath.mkdirs();
+            } else {                
+                destPath.createNewFile();            
+                byte[] btoRead = new byte[1024];
+            
+                BufferedOutputStream bout
+                        = new BufferedOutputStream(new FileOutputStream(destPath));
+                
+                int len = 0;
+                while ((len = ais.read(btoRead)) != -1) {
+                    bout.write(btoRead, 0, len);
+                }
+
+                bout.close();
+                btoRead = null;
+                files.add(destPath);
+            }
+            
+            archiveEntry = ais.getNextEntry();
+        }
+        ais.close();
+        return files;
+    }
+
+    /**
+     * Strips the last extension from the filename corresponding to f, 
+     * and returns a new File for this new filename, or null if 
+     * the file was not found to have an extension.    
+     */
+    public static String stripExtension(File f){
+        String filename = f.getName();
+        for(int i = filename.length() - 1; i > 0; --i){
+            if(filename.charAt(i) == '.'){
+                return filename.substring(0, i);
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * @return true if the File is a compressed file, archive, or compressed archive.
+     */   
+    public static boolean isArchive(File f){
+        String n = f.getName().toLowerCase();
+        return n.endsWith(".zip") || n.endsWith(".bz2") || n.endsWith(".tgz") || n.endsWith(".gz") || n.endsWith(".tar");
+    }
+    
+    /**
+     * Decompresses/unarchives the file given by 'f' to the destination path
+     * given by dest, and returns a list of all the files contained within the archive.
+     * If the input file is compressed, but not archived, the destination filename will be 
+     * "dest/"+stripExtension(f.getName()).  If the input file is 
+     * not compressed or archived, the input file will be moved to the new location 
+     * given by dest, and returned in a one-element list.
+     * 
+     * Note the file given by f will be deleted.
+     *
+     * @return A list of files that were decompressed from the input file f, or
+     * a list containing the input file in its new location if the input file was not compressed/archived.
+     * @throws IOException 
+     * @see stripExtension
+     */
+    public static List<File> decompressAndDelete(File f, File dest) throws IOException {
+        String lcfn = f.getName().toLowerCase();
+        InputStream is = new BufferedInputStream(new FileInputStream(f));
+        List<File> files;
+
+        //Detect compression type.
+        if (lcfn.endsWith(".gz") || lcfn.endsWith(".tgz")) {
+            is = new GzipCompressorInputStream(is);
+        } else if (lcfn.endsWith(".bz2")) {
+            is = new BZip2CompressorInputStream(is);
+        }
+
+        //Detect archive type.
+        if (lcfn.endsWith(".tgz") || lcfn.endsWith(".tar.gz") || lcfn.endsWith(".tar") || lcfn.endsWith(".tar.bz2")) {
+            is = new TarArchiveInputStream(is);
+            files = unArchive(dest, (ArchiveInputStream)is);
+        } else if (lcfn.endsWith(".zip")) {
+            is = new ZipArchiveInputStream(is);
+            files = unArchive(dest, (ArchiveInputStream)is);
+        } else{
+            String filename = f.getName();
+            if (!(is instanceof BufferedInputStream)) {
+                filename = stripExtension(f);
+                if(filename == null){
+                    filename = f.getName()+".decompressed";
+                }
+            }
+            
+            File outputFile = new File(dest, filename);
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputFile));
+            if(!(is instanceof BufferedInputStream)){                
+                IOUtils.copyStream(is, bos);
+            }else{
+                f.renameTo(outputFile);
+            }
+            
+            bos.close();
+            files = new ArrayList<File>(1);
+            files.add(outputFile);            
+        } 
+        is.close();
+        if(f.exists()){
+            f.delete();
+        }
+        return files;
     }
 
     /**
@@ -240,6 +362,7 @@ public class IOUtils {
 
     }
 
+
     /**
      * Unzip a zip file
      *
@@ -289,9 +412,9 @@ public class IOUtils {
                 is.close();
             }
 
-            if (currentEntry.endsWith(".zip")) {
+            if (currentEntry.toLowerCase().endsWith(".zip") && isZipped(destFile)) {
                 // found a zip file, try to open
-                unzipFile(destFile, new File(destFile.getAbsolutePath()).getParent());
+                files.addAll(unzipFile(destFile, new File(destFile.getAbsolutePath()).getParent()));
             } else {
                 files.add(destFile);
             }
@@ -309,9 +432,9 @@ public class IOUtils {
 
     private static void zipRecursively(String path, File dir, ZipOutputStream out) throws IOException {
         for (File f : dir.listFiles()) {
-            writeFileToZipStream(path,f, out);
+            writeFileToZipStream(path, f, out);
             if (f.isDirectory()) {
-                zipRecursively(path + "/" + f.getName() + "/",f,out);
+                zipRecursively(path + "/" + f.getName() + "/", f, out);
             }
         }
     }

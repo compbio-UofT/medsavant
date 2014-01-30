@@ -65,7 +65,7 @@ public class ImportUpdateManager {
     /**
      * IMPORT FILES INTO AN EXISTING TABLE
      */
-    public static int doImport(String sessionID, int projectID, int referenceID, boolean publishUponCompletion, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
+    public static int doImport(String sessionID, int projectID, int referenceID, File[] vcfFiles, boolean includeHomozygousReferenceCalls, String[][] tags) throws IOException, SQLException, Exception {
 
         try {
             LOG.info("Starting import");
@@ -94,19 +94,14 @@ public class ImportUpdateManager {
             // create patients for all DNA ids in this update
             createPatientsForUpdate(sessionID, updateID, projectID, referenceID);
 
-            if (publishUponCompletion) {
-                LOG.info("Publishing");
-                publishLatestUpdate(sessionID, projectID);
-            } else {
-                LOG.info("Not publishing");
-            }
-
+          
             if (VariantManager.REMOVE_WORKING_DIR) {
                 LOG.info("Deleting workingDirectory " + workingDirectory);
                 MiscUtils.deleteDirectory(workingDirectory);
             }
 
             LOG.info("Finished import");
+           
 
             return updateID;
         } catch (Exception e) {
