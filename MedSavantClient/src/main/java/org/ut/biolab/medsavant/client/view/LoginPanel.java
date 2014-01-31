@@ -64,6 +64,7 @@ import org.ut.biolab.medsavant.shared.db.Settings;
  *
  * @author mfiume
  */
+@Deprecated
 public class LoginPanel extends JPanel implements Listener<LoginEvent> {
 
     private static final Log LOG = LogFactory.getLog(LoginView.class);

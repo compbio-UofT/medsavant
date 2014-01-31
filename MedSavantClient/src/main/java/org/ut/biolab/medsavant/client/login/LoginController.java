@@ -142,6 +142,8 @@ public class LoginController extends Controller<LoginEvent> {
         settings.setUsername(un);
         if (settings.getRememberPassword()) {
             settings.setPassword(pw);
+        }else{
+            settings.setPassword("");
         }
 
         //test connection

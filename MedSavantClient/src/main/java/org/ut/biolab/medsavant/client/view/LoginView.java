@@ -19,7 +19,6 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -27,15 +26,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.NoRouteToHostException;
-import java.rmi.ConnectIOException;
 import java.sql.SQLException;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -83,7 +81,8 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JXCollapsiblePane connectionSettings;
     private JLabel connectingToLabel;
     private JPanel progressPanel;
-
+    private JCheckBox rememberPasswordCheckbox;
+    
     public LoginView() {
         //this.setBackground(Color.white);
         int padding = 100;
@@ -166,13 +165,18 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private void initFromCache() {
         userField.setText(controller.getUserName());
         passwordField.setText(controller.getPassword());
-
+        
         SettingsController settings = SettingsController.getInstance();
         userField.setText(settings.getUsername());
         if (settings.getRememberPassword()) {
             passwordField.setText(settings.getPassword());
         }
 
+        if(passwordField.getPassword().length > 0){
+            rememberPasswordCheckbox.setEnabled(true);
+            rememberPasswordCheckbox.setSelected(true);
+        }
+        
         dbnameField.setText(settings.getDBName());
         portField.setText(settings.getServerPort());
         addressField.setText(settings.getServerAddress());
@@ -223,10 +227,17 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         //connectionSettingsButton.setText("▲");
     }
 
-    private void loginOnEnter(JTextField f) {
+    private void loginOnEnter(final JTextField f) {
         f.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent ke) {
+                if((userField.getText().length()) > 0 && (passwordField.getPassword().length > 0)){
+                   loginButton.setEnabled(true);
+                   rememberPasswordCheckbox.setEnabled(true);
+                }else{
+                   loginButton.setEnabled(false);
+                   rememberPasswordCheckbox.setEnabled(false);
+                }
             }
 
             @Override
@@ -265,7 +276,11 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             this.progressPanel.setVisible(true);
             loginButton.setEnabled(false);
 
-
+            if(rememberPasswordCheckbox.isSelected()){
+                settings.setRememberPassword(true);
+            }else{
+                settings.setRememberPassword(false);
+            }
             loginThread = new MedSavantWorker<Void>("LoginView") {
                 @Override
                 protected void showProgress(double fract) {
@@ -338,6 +353,10 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
 
         p.add(ViewUtil.centerHorizontally(userField));
         p.add(ViewUtil.centerHorizontally(passwordField));
+        rememberPasswordCheckbox = new JCheckBox("Remember Password");
+        rememberPasswordCheckbox.setEnabled(false);
+        p.add(ViewUtil.centerHorizontally(rememberPasswordCheckbox));
+        
         p.add(ViewUtil.centerHorizontally(loginButton));
         progressPanel = ViewUtil.getClearPanel();
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.Y_AXIS));
