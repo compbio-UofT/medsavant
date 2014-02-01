@@ -9,8 +9,8 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.patient.IndividualDetailEditor;
 import org.ut.biolab.medsavant.client.patient.IndividualDetailedView;
 import org.ut.biolab.medsavant.client.patient.IndividualListModel;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 
@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
  *
  * @author mfiume
  */
-public class PhenotipsApp implements DashboardApp {
+public class PhenotipsApp implements LaunchableApp {
 
     private JPanel view;
 

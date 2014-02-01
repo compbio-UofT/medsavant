@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
@@ -66,7 +66,7 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class SavantApp implements DashboardApp {
+public class SavantApp implements LaunchableApp {
     
     private String pageName = "Savant";
     private boolean initialized;

@@ -3,11 +3,15 @@ package org.ut.biolab.medsavant.client.view.dashboard;
 import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,6 +19,7 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -24,7 +29,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.javadev.AnimatingCardLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -34,7 +42,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     private static Log LOG = LogFactory.getLog(Dashboard.class);
-    
+
     int appIconWidth = 128;
 
     private final ArrayList<DashboardSection> dashboardSections;
@@ -53,7 +61,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     public Dashboard() {
 
-        history = new LimitedQueue<LaunchableApp>(5);
+        history = new LimitedQueue<LaunchableApp>(11);
         appHistoryBlackList = new HashSet<LaunchableApp>();
 
         this.setDoubleBuffered(true);
@@ -146,7 +154,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             if (!s.isEnabled()) {
                 continue;
             }
-            
+
             if (s.getApps().isEmpty()) {
                 continue;
             }
@@ -160,15 +168,15 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
             MigLayout layout = new MigLayout(String.format("gapx %d, gapy %d, wrap %d, insets 0", gapHorizontal, gapVertical, numIconsPerRow));
             appPlaceholder.setLayout(layout);
-            for (DashboardApp launcher : s.getApps()) {
+            for (final LaunchableApp launcher : s.getApps()) {
                 try {
-                    appPlaceholder.add(getRepresentationForLauncher(launcher));
+                    appPlaceholder.add(getRepresentationForLauncher(this, launcher, appIconWidth));
                 } catch (Exception e) {
-                    LOG.error("Error creating launcher for app " + launcher.toString(),e);
+                    LOG.error("Error creating launcher for app " + launcher.toString(), e);
                     e.printStackTrace();
                 }
             }
-            middlePane.add(appPlaceholder, String.format("wrap, gapy 5 %d",gapVertical));
+            middlePane.add(appPlaceholder, String.format("wrap, gapy 5 %d", gapVertical));
         }
 
         JScrollPane p = ViewUtil.getClearBorderlessScrollPane(middlePane);
@@ -176,20 +184,11 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         MenuFactory.generateMenu(); // initialize the Apps in the menus
 
-        final JButton menu = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BTN_MENU));
-        menu.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPopupMenu m = MenuFactory.generateMenu();
-                m.show(menu, 0, 55);
-            }
-
-        });
-
         homeMenu = new TopMenu();
-        homeMenu.addRightComponent(menu);
-
+        
+        homeMenu.addLeftComponent(getHomeButton());
+        //homeMenu.addRightComponent(getLogoutButton());
+        
         baseLayer.add(homeMenu, BorderLayout.NORTH);
 
         baseLayer.add(p, BorderLayout.CENTER);
@@ -230,31 +229,42 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         JPanel p = app.getView();
 
-        JButton home = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BTN_UPARROW));
-        home.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                goHome();
-            }
-        });
-
-        final JButton menu = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BTN_MENU));
-
-        menu.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPopupMenu m = MenuFactory.generateMenu();
-                m.show(menu, 0, 55);
-            }
-
-        });
-
         appTopMenu = new TopMenu();
-        appTopMenu.addLeftComponent(home);
-        appTopMenu.setTitle(app.getName());
-        appTopMenu.addRightComponent(menu);
+
+        final NavigationPanel navigationPanel = new NavigationPanel();
+        navigationPanel.setTitle(app.getName());
+        navigationPanel.setTitleClickAction(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPopupMenu m = MenuFactory.generatePrettyMenu();
+
+                //m.show(appTopMenu, 0, (int) (appTopMenu.getSize().getHeight()));
+                m.show(appTopMenu, (int) ((appTopMenu.getSize().getSize().getWidth() / 2) - (m.getPreferredSize().getWidth() / 2)), (int) (appTopMenu.getSize().getHeight()));
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+
+        appTopMenu.addLeftComponent(getHomeButton());
+        //appTopMenu.addLeftComponent(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "divider.png").getImage(), 1, 23));
+        appTopMenu.setCenterComponent(navigationPanel);
+        //appTopMenu.addRightComponent(getLogoutButton());
 
         appLayer.add(appTopMenu, BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
@@ -269,28 +279,50 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         appLayer.updateUI();
     }
 
-    private JPanel getRepresentationForLauncher(final DashboardApp launcher) {
+    public static JPanel getRepresentationForLauncher(String name, ImageIcon icon, int iconWidth, ActionListener actionListener) {
+        return getRepresentationForLauncher(name, icon, iconWidth, actionListener, false);
+    }
+
+    public static JPanel getRepresentationForLauncher(String name, ImageIcon icon, int iconWidth, ActionListener actionListener, boolean disableButton) {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        JButton button = ViewUtil.getIconButton(resizeIconTo(launcher.getIcon(), appIconWidth));
-        button.addActionListener(new ActionListener() {
+        JButton button = ViewUtil.getIconButton(resizeIconTo(icon, iconWidth));
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                launchApp(launcher);
-            }
-        });
+        button.addActionListener(actionListener);
 
         p.add(ViewUtil.centerHorizontally(button));
         p.add(Box.createVerticalStrut(3));
 
-        JLabel title = ViewUtil.getGrayLabel(launcher.getName());
-        p.add(ViewUtil.centerHorizontally(title));
+        if (iconWidth <= 64) {
+            JLabel title = ViewUtil.getGrayLabel(name);
+            title.setFont(new Font("Arial", disableButton ? Font.BOLD : Font.PLAIN, 12));
+            ViewUtil.ellipsizeLabel(title, iconWidth);
+            p.add(ViewUtil.centerHorizontally(title));
+            //button.setEnabled(!disableButton); // disable if selected
+
+            //button.setToolTipText(name);
+        } else {
+            JLabel title = ViewUtil.getGrayLabel(name);
+            title.setFont(new Font("Arial", disableButton ? Font.BOLD : Font.PLAIN, 18));
+            p.add(ViewUtil.centerHorizontally(title));
+        }
+
         return p;
     }
 
-    private ImageIcon resizeIconTo(ImageIcon icon, int itemSize) {
+    public static JPanel getRepresentationForLauncher(final Dashboard d, final LaunchableApp launcher, int iconWidth) {
+
+        return getRepresentationForLauncher(launcher.getName(), launcher.getIcon(), iconWidth, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                d.launchApp(launcher);
+            }
+        });
+    }
+
+    private static ImageIcon resizeIconTo(ImageIcon icon, int itemSize) {
         Image img = icon.getImage();
         Image newimg = img.getScaledInstance(itemSize, itemSize, java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(newimg);
@@ -315,6 +347,86 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     @Override
     public void handleEvent(DashboardSection event) {
         relayout();
+    }
+
+    private JLabel getHomeButton() {
+        JLabel homeLabel = new JLabel("MedSavant");
+        homeLabel.setFont(new Font("Helvetica Neue", Font.BOLD, 18));
+        homeLabel.setForeground(new Color(64,64,64));
+        homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        final ActionListener goHomeActionListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                goHome();
+            }
+        };
+        //home.addActionListener(goHomeActionListener);
+        homeLabel.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                goHomeActionListener.actionPerformed(null);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+        return homeLabel;
+    }
+
+    private JLabel getLogoutButton() {
+        JLabel label = new JLabel("Sign Out");
+        label.setFont(new Font("Helvetica Neue", Font.PLAIN, 16));
+        label.setForeground(new Color(64,64,64));
+
+        final ActionListener goHomeActionListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MedSavantFrame.getInstance().requestLogout();
+            }
+        };
+        label.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                goHomeActionListener.actionPerformed(null);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+        return label;
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {

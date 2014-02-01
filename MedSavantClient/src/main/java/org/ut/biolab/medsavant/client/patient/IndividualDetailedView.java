@@ -456,7 +456,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     }
 
     private JButton addIndividualsButton() {
-        JButton button = new JButton("Assign individual(s) to cohort");
+        JButton button = new JButton("Add individual to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.setOpaque(false);
         button.addActionListener(new ActionListener() {

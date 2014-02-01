@@ -201,14 +201,15 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             ViewUtil.applyVerticalBoxLayout(blockPanel);
 
             ringChart = new RingChart();
-            int ringDiameter = 300;
+            int ringDiameter = 200;
             ringChart.setMinimumSize(new Dimension(ringDiameter, ringDiameter));
             ringChart.setMaximumSize(new Dimension(ringDiameter, ringDiameter));
             ringChart.setPreferredSize(new Dimension(ringDiameter, ringDiameter));
             Ring r1 = new Ring();
             r1.addItem("Pass all filters", numPassingVariants, new Color(72, 181, 249));
             r1.addItem("Don't pass filters", ResultController.getInstance().getTotalVariantCount() - numPassingVariants, Color.gray);
-
+            r1.setRingWidth(4);
+            
             ringChart.setRings(Arrays.asList(r1));
 
             JButton b = ViewUtil.getSoftButton("Load Spreadsheet");

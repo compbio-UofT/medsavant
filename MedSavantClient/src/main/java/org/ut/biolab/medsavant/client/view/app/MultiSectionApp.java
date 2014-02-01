@@ -26,14 +26,14 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 
 /**
  *
  * @author mfiume
  */
-public abstract class MultiSectionApp implements DashboardApp {
+public abstract class MultiSectionApp implements LaunchableApp {
 
     private final String name;
     private JPanel view;

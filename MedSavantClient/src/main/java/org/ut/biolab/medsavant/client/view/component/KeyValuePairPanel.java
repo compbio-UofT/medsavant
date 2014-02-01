@@ -490,6 +490,7 @@ public class KeyValuePairPanel extends JPanel {
                  }*/
 
                 if (comp instanceof JLabel) {
+                    
                     while (avail < comp.getPreferredSize().width) {
                         String text = ((JLabel) comp).getText();
                         if (text.endsWith("…")) {

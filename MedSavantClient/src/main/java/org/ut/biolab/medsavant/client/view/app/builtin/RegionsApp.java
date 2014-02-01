@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.region.RegionDetailedListEditor;
 import org.ut.biolab.medsavant.client.region.RegionDetailedView;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
@@ -15,7 +15,7 @@ import org.ut.biolab.medsavant.shared.model.RegionSet;
  *
  * @author mfiume
  */
-public class RegionsApp implements DashboardApp {
+public class RegionsApp implements LaunchableApp {
 
     private SplitScreenView view;
 

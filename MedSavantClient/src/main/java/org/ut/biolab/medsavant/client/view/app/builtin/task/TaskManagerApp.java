@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker.TaskStatus;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class TaskManagerApp implements DashboardApp, Listener<TaskWorker> {
+public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
     private ArrayList<TaskWorker> tasks;
     private SplitScreenView container;

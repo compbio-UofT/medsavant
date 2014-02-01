@@ -175,7 +175,7 @@ public class LoginController extends Controller<LoginEvent> {
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
             }
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error logging in: %s", ex);
+            ClientMiscUtils.reportError("Error signing in: %s", ex);
             fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
         }
     }

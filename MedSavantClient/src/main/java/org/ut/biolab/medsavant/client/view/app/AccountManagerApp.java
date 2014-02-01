@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 
@@ -19,7 +19,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-public class AccountManagerApp implements DashboardApp {
+public class AccountManagerApp implements LaunchableApp {
 
     public AccountManagerApp() {
     }

@@ -12,24 +12,24 @@ import org.ut.biolab.medsavant.client.api.Listener;
 public class DashboardSection {
 
     private String name;
-    private ArrayList<DashboardApp> apps;
+    private ArrayList<LaunchableApp> apps;
     private boolean enabled;
 
     public DashboardSection(String name) {
         this.name = name;
         this.enabled = true;
-        this.apps = new ArrayList<DashboardApp>();
+        this.apps = new ArrayList<LaunchableApp>();
     }
 
     public String getName() {
         return name;
     }
 
-    public void addDashboardApp(DashboardApp app) {
+    public void addLaunchableApp(LaunchableApp app) {
         this.apps.add(app);
     }
 
-    public List<DashboardApp> getApps() {
+    public List<LaunchableApp> getApps() {
         return this.apps;
     }
 

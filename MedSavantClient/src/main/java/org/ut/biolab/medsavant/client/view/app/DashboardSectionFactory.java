@@ -13,7 +13,7 @@ import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.VariantNavigatorApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.patients.PatientsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.settings.SettingsApp;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dashboard.DashboardSection;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
@@ -32,26 +32,26 @@ public class DashboardSectionFactory {
             try {
                 final MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
 
-                s.addDashboardApp(getDashboardAppFromMedSavantApp(app));
+                s.addLaunchableApp(getLaunchableAppFromMedSavantApp(app));
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        s.addDashboardApp(new VariantNavigatorApp());
-        s.addDashboardApp(new SavantApp());
-        s.addDashboardApp(new AppStoreApp());
-        s.addDashboardApp(new PatientsApp());
-        s.addDashboardApp(new RegionsApp());
-        s.addDashboardApp(AppDirectory.getTaskManager());
-        s.addDashboardApp(AppDirectory.getAccountManager());
+        s.addLaunchableApp(new VariantNavigatorApp());
+        s.addLaunchableApp(new SavantApp());
+        s.addLaunchableApp(new AppStoreApp());
+        s.addLaunchableApp(new PatientsApp());
+        s.addLaunchableApp(new RegionsApp());
+        s.addLaunchableApp(AppDirectory.getTaskManager());
+        s.addLaunchableApp(AppDirectory.getAccountManager());
 
         return s;
     }
 
-    private static DashboardApp getDashboardAppFromMedSavantApp(final MedSavantClinicApp app) {
-        return new DashboardApp() {
+    private static LaunchableApp getLaunchableAppFromMedSavantApp(final MedSavantClinicApp app) {
+        return new LaunchableApp() {
 
             @Override
             public JPanel getView() {
@@ -105,10 +105,10 @@ public class DashboardSectionFactory {
         // hide this section from the dashbord
         s.setEnabled(LoginController.getInstance().getUserLevel() == UserLevel.ADMIN);
         
-        s.addDashboardApp(new VCFUploadApp());
-        //s.addDashboardApp(new PhenotipsApp());
+        s.addLaunchableApp(new VCFUploadApp());
+        //s.addLaunchableApp(new PhenotipsApp());
         
-        s.addDashboardApp(new SettingsApp());
+        s.addLaunchableApp(new SettingsApp());
 
         return s;
     }

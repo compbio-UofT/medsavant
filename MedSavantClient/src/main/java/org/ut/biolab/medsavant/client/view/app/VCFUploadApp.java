@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
-import org.ut.biolab.medsavant.client.view.dashboard.DashboardApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -48,7 +48,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
  *
  * @author mfiume
  */
-public class VCFUploadApp implements DashboardApp {
+public class VCFUploadApp implements LaunchableApp {
 
     private static final Log LOG = LogFactory.getLog(VCFUploadApp.class);
     int containerWidth = 400;
@@ -248,7 +248,7 @@ public class VCFUploadApp implements DashboardApp {
         dp.setBorder(BorderFactory.createEmptyBorder(topBorder, sideBorder, topBorder, sideBorder));
 
         dragDropContainer.add(dp);
-        JLabel l = new JLabel("Drag and drop .vcf (or .vcf.gz) files to import");
+        JLabel l = new JLabel("Drag and drop .vcf (or .vcf.gz) files to be uploaded");
         l.setForeground(new Color(100, 100, 100));
         dragDropContainer.add(l, "center");
 

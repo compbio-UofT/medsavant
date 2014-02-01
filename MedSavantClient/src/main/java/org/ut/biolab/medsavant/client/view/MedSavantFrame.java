@@ -156,7 +156,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     }
 
     private MedSavantFrame() {
-        super("MedSavant");
+        super("");
 
         setIconImage(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER).getImage());
 
@@ -317,8 +317,8 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
 
                 // hide some apps from the history, since theyr'e embedded in the menu anyways
-                dash.blackListAppFromHistory(AppDirectory.getTaskManager());
-                dash.blackListAppFromHistory(AppDirectory.getAccountManager());
+                //dash.blackListAppFromHistory(AppDirectory.getTaskManager());
+                //dash.blackListAppFromHistory(AppDirectory.getAccountManager());
 
                 sessionDashboard = dash;
 
@@ -363,7 +363,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         requestRestart(false);
     }
 
-    public void requestRestart() {
+    public void requestLogout() {
         requestRestart(true);
     }
 
@@ -376,7 +376,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             boolean doAction;
 
             if (askFirst) {
-                doAction = DialogUtils.askYesNo("Logout", "Are you sure you want to logout?") == DialogUtils.YES;
+                doAction = DialogUtils.askYesNo("Sign Out", "Are you sure you want to sign out?") == DialogUtils.YES;
             } else {
                 doAction = true;
             }

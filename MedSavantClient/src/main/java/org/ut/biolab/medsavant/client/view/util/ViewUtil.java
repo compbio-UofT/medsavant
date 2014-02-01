@@ -665,11 +665,15 @@ public final class ViewUtil {
 
         return output;
     }
-
+    
     public static JButton getIconButton(ImageIcon icon) {
+        return getIconButton(icon,30);
+    }
 
-        BufferedImage unselectedImage = makeRoundedCorner(makeBufferedImageFromIcon(icon), 30);
-        BufferedImage selectedImage = makeRoundedCorner(darkenImage(makeBufferedImageFromIcon(icon)), 30);
+    public static JButton getIconButton(ImageIcon icon, int cornerRadius) {
+
+        BufferedImage unselectedImage = makeRoundedCorner(makeBufferedImageFromIcon(icon), cornerRadius);
+        BufferedImage selectedImage = makeRoundedCorner(darkenImage(makeBufferedImageFromIcon(icon)), cornerRadius);
 
         final JButton button = new JButton(new ImageIcon(unselectedImage));
         button.setPressedIcon(new ImageIcon(selectedImage));
@@ -1018,6 +1022,25 @@ public final class ViewUtil {
 
     public static JButton getConfigureButton() {
         return ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
+    }
+
+    public static void ellipsizeLabel(JLabel label, int width) {
+        Font f = label.getFont();
+        FontMetrics fm = label.getFontMetrics(f);
+        
+        if (fm.stringWidth(label.getText()) <= width) {
+            return;
+        }
+        
+        label.setToolTipText(label.getText());
+        
+        while (fm.stringWidth(label.getText()) > width) {
+            String text = label.getText().replace("...", "");
+            text = text.substring(0, text.length()-1);
+            text = text.trim();
+            text = text + "...";
+            label.setText(text);
+        }
     }
 
 

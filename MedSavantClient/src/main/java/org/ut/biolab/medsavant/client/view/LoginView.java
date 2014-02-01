@@ -110,7 +110,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         userField.requestFocus();
         loginButton.setEnabled(true);
         this.progressSigningIn.setVisible(false);
-        this.loginButton.setText("Log In");
+        this.loginButton.setText("Sign In");
 
         // Exception may be null if we got here as a result of a failed version check.
         if (ex != null) {
@@ -259,7 +259,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         this.progressPanel.setVisible(false);
         this.progressSigningIn.setVisible(false);
         loginButton.setEnabled(true);
-        this.loginButton.setText("Log In");
+        this.loginButton.setText("Sign In");
     }
     private MedSavantWorker loginThread;
 
@@ -270,7 +270,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             settings.setServerAddress(addressField.getText());
             settings.setServerPort(portField.getText());
 
-            this.loginButton.setText("Logging in...");
+            this.loginButton.setText("Signing In...");
             //statusLabel.setText("Logging In...");
             this.progressSigningIn.setVisible(true);
             this.progressPanel.setVisible(true);
@@ -305,7 +305,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        loginButton = new JButton("Log In");
+        loginButton = new JButton("Sign In");
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
