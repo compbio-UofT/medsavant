@@ -171,34 +171,32 @@ public class MenuFactory {
         JPanel container = new JPanel();
         container.setBackground(Color.white);
 
-        JPanel p = new JPanel();
-        p.setBackground(Color.white);
+        
+        JPanel p1 = new JPanel();
+        p1.setBackground(Color.white);
 
-        //MigLayout l = new MigLayout(String.format("wrap %d, gapx 25, gapy 25, insets 25",numRecents));
-        MigLayout l = new MigLayout("gapx 25, gapy 25, insets 25 25 25 25");
-        p.setLayout(l);
+        MigLayout l1 = new MigLayout("gapx 25, gapy 25, insets 0 25 25 25, fillx, center"); // no top inset
+        p1.setLayout(l1);
 
         int iconWidth = 64;
 
-        
         int count = 0;
-        
+
         /*if (MedSavantFrame.getInstance().getDashboard().getCurrentApp() != null) {
-            count++;
-            ActionListener goHome = new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    MedSavantFrame.getInstance().getDashboard().goHome();
-                }
+         count++;
+         ActionListener goHome = new ActionListener() {
+         @Override
+         public void actionPerformed(ActionEvent e) {
+         MedSavantFrame.getInstance().getDashboard().goHome();
+         }
 
-            };
-            ImageIcon homeIcon = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD);
+         };
+         ImageIcon homeIcon = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD);
 
-            JPanel appPanel = Dashboard.getRepresentationForLauncher("Dashboard", homeIcon, iconWidth, closeMenuThenPerformAction(m, goHome));
-            p.add(appPanel);
-        }
-                */
-        
+         JPanel appPanel = Dashboard.getRepresentationForLauncher("Dashboard", homeIcon, iconWidth, closeMenuThenPerformAction(m, goHome));
+         p.add(appPanel);
+         }
+         */
         for (final LaunchableApp app : MedSavantFrame.getInstance().getDashboard().getLaunchHistory()) {
 
             ActionListener launchApp = new ActionListener() {
@@ -219,10 +217,20 @@ public class MenuFactory {
             }
 
             JPanel appPanel = Dashboard.getRepresentationForLauncher(app.getName(), app.getIcon(), iconWidth, closeMenuThenPerformAction(m, launchApp), selected);
-            p.add(appPanel);
+            p1.add(appPanel);
 
             count++;
         }
+        
+        JPanel p0 = new JPanel();
+        p0.setBackground(Color.white);
+        MigLayout l0 = new MigLayout("gapx 25, gapy 25, insets 15 25 5 25, fillx"); // small bottom inset, top is slightly smaller than others (visual centering)
+        p0.setLayout(l0);
+
+        JPanel labelContainer = ViewUtil.getClearPanel();
+        labelContainer.add(ViewUtil.getEmphasizedLabel("Recents".toUpperCase()));
+        
+        p0.add(labelContainer, "growx 1.0, center");
 
         int width
                 = 25 // inset left
@@ -237,8 +245,8 @@ public class MenuFactory {
 
         JScrollPane scroll;
 
-        //container.add(ViewUtil.getEmphasizedLabel("Recent Apps".toUpperCase()),"width 100%, wrap, center, gapy 0");
-        container.add(scroll = ViewUtil.getClearBorderlessScrollPane(p));
+        container.add(p0,"wrap, growx 1.0");
+        container.add(scroll = ViewUtil.getClearBorderlessScrollPane(p1),"growx 1.0, center");
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 

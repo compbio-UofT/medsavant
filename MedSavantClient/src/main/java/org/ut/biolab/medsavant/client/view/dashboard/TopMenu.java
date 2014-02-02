@@ -32,12 +32,12 @@ class TopMenu extends JPanel {
         this.setBorder(ViewUtil.getBottomLineBorder());
 
         leftComponent = ViewUtil.getClearPanel();
-        leftComponent.setLayout(new MigLayout("insets 0, nogrid"));
+        leftComponent.setLayout(new MigLayout("insets 0, nogrid, gapx 10"));
 
         centerComponent = ViewUtil.getClearPanel();
 
         rightComponent = ViewUtil.getClearPanel();
-        rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing"));
+        rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing, gapx 10"));
 
         layout = new MigLayout("gapx 0, gapy 0, insets 5 15 5 15, fillx, filly, height 40");
         this.setLayout(layout);

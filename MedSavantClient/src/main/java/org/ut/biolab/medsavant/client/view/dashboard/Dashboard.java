@@ -144,11 +144,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         baseLayer.setLayout(new BorderLayout());
 
-        //if (this.getParent() != null) {
-        //    System.out.println("Width of parent is " + this.getParent().getSize().width);
-        //} else {
-        //    System.out.println("Parent is null");
-        //}
         for (DashboardSection s : this.dashboardSections) {
 
             if (!s.isEnabled()) {
@@ -239,7 +234,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             public void mouseClicked(MouseEvent e) {
                 JPopupMenu m = MenuFactory.generatePrettyMenu();
 
-                //m.show(appTopMenu, 0, (int) (appTopMenu.getSize().getHeight()));
+                //m.show(appTopMenu, 115, (int) (appTopMenu.getSize().getHeight()));
                 m.show(appTopMenu, (int) ((appTopMenu.getSize().getSize().getWidth() / 2) - (m.getPreferredSize().getWidth() / 2)), (int) (appTopMenu.getSize().getHeight()));
             }
 
@@ -262,7 +257,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         });
 
         appTopMenu.addLeftComponent(getHomeButton());
-        //appTopMenu.addLeftComponent(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "divider.png").getImage(), 1, 23));
+        //appTopMenu.addLeftComponent(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "divider.png").getImage(), 2, 23));
         appTopMenu.setCenterComponent(navigationPanel);
         //appTopMenu.addRightComponent(getLogoutButton());
 
@@ -348,12 +343,28 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     public void handleEvent(DashboardSection event) {
         relayout();
     }
+    
+    /*private JButton getHomeButton() {
+        JButton b = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD),3);
+        b.addActionListener(new ActionListener() {
 
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goHome();
+            }
+            
+        });
+        return b;
+    }*/
+
+    
     private JLabel getHomeButton() {
         JLabel homeLabel = new JLabel("MedSavant");
         homeLabel.setFont(new Font("Helvetica Neue", Font.BOLD, 18));
         homeLabel.setForeground(new Color(64,64,64));
         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        ViewUtil.adjustForegroundColorOnMouseover(homeLabel,-25);
 
         final ActionListener goHomeActionListener = new ActionListener() {
 

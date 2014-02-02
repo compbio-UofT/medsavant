@@ -53,6 +53,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -1041,6 +1043,34 @@ public final class ViewUtil {
             text = text + "...";
             label.setText(text);
         }
+    }
+
+    public static void adjustForegroundColorOnMouseover(final JComponent l, int amount) {
+        final Color originalColor = l.getForeground();
+        final Color newColor = new Color(Math.min(originalColor.getRed() + amount, 255), Math.min(originalColor.getBlue() + amount, 255), Math.min(originalColor.getGreen() + amount, 255));
+        l.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                l.setForeground(newColor);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                l.setForeground(originalColor);
+            }
+        });
     }
 
 

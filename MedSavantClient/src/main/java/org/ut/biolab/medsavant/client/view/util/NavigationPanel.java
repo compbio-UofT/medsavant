@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 public class NavigationPanel extends JPanel {
 
     private final JLabel titleLabel;
-    private final ImagePanel downCaret;
+    //private final ImagePanel downCaret;
 
     public NavigationPanel() {
         this.setOpaque(false);
@@ -52,12 +52,13 @@ public class NavigationPanel extends JPanel {
         titleLabel = new JLabel();
         titleLabel.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         titleLabel.setVisible(false);
+        //titleLabel.setForeground(new Color(96,110,130));//new Color(67,138,218));
         titleLabel.setForeground(new Color(64, 64, 64));
 
         this.add(titleLabel);
-        this.add(downCaret = new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "upside-down-caret.png").getImage(), 9, 22), "gapx 0");
+        //this.add(downCaret = new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "upside-down-caret.png").getImage(), 9, 22), "gapx 0");
 
-        downCaret.setVisible(false);
+        //downCaret.setVisible(false);
     }
 
     public void setTitle(String title) {
@@ -78,18 +79,19 @@ public class NavigationPanel extends JPanel {
 
     public void setTitleClickAction(MouseListener mouseListener) {
 
-        downCaret.setVisible(true);
+        //downCaret.setVisible(true);
 
         for (MouseListener l : titleLabel.getMouseListeners()) {
             titleLabel.removeMouseListener(l);
-            downCaret.removeMouseListener(l);
+            //downCaret.removeMouseListener(l);
             this.removeMouseListener(l);
         }
         titleLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        downCaret.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        //downCaret.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        ViewUtil.adjustForegroundColorOnMouseover(titleLabel,-25);
 
         titleLabel.addMouseListener(mouseListener);
-        downCaret.addMouseListener(mouseListener);
         this.addMouseListener(mouseListener);
     }
 }
