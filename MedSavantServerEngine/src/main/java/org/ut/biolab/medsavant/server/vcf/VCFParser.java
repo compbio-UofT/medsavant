@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -448,6 +449,7 @@ public class VCFParser {
 
             String ref = line[VCF_REF_INDEX].toUpperCase();
             String altStr = line[VCF_ALT_INDEX].toUpperCase();
+
             long start = 0;
             try {
                 start = Long.parseLong(line[VCF_START_INDEX]);
@@ -488,101 +490,107 @@ public class VCFParser {
                     ++numInvalidRef;
                 }
 
-                //If the ALT sequence is too long, we can't store it, and truncate it down to 10 characters.
-                if (alt.length() > BasicVariantColumns.ALT.getColumnLength()) {
-                    if (TOOLONG_ALTS_GIVE_WARNING) {
-                        vcf_warning("Skipping alternate allele with too many characters (maximum is "
-                                + BasicVariantColumns.ALT.getColumnLength() + ", " + alt.length()
-                                + " detected).  MedSavant does not yet support sequences of this size.  Storing first 10 characters");
-                    }
-                    alt = alt.substring(0, Math.min(10, BasicVariantColumns.ALT.getColumnLength()));
-                    ++numInvalidAlt;
-                    //   continue;
-                }
-
+                //handle multi-allelic variants by deleting the common portion of substring.
+                boolean complex = (alt.contains("[") || alt.contains("]"));
                 boolean snp = false;
-                if (ref.length() == alt.length() && VCF_SNP_REGEX.matcher(ref).matches() && VCF_SNP_REGEX.matcher(alt).matches()) {
-                    snp = true;
-                    ++numSnp;
-                    //annovar counts base pair mismatches (e.g. AG, GA, CT, TC)
-                    if ((ref.equals("A") && alt.equals("G"))
-                            || (ref.equals("G") && alt.equals("A"))
-                            || (ref.equals("C") && alt.equals("T"))
-                            || (ref.equals("T") && alt.equals("C"))) {
-                        ++numTi;
-                    } else {
-                        ++numTv;
-                    }
-
-                } else {
-                    ++numIndels;
-                }
-
-                String newAlt = alt;
-                String newRef = ref;
-                long newStart = start;
-                long newEnd = start;
                 VariantType variantType = VariantType.Unknown;
+                long newStart = start;
+                String newRef;
+                String newAlt;
+                long newEnd;
 
-                if (alt.equals("<DEL>")) { //old 1000G vcf files have this.
-                    newStart = start;
-                    newEnd = start + ref.length() - 1;
-                    newRef = ref;
-                    newAlt = "-";
-                    variantType = VariantType.Deletion;
-                } else if ((alt.contains("[") || alt.contains("]"))) {  //Complex Rearrangement
-                    newStart = start;
-                    newEnd = start;
+                if (complex) { //complex rearrangement
                     newRef = ref;
                     newAlt = alt;
-                    if (ref.length() == 1) {
+                    newEnd = newStart;
+                    if (newRef.length() == 1) {
                         variantType = VariantType.Complex;
                     } else {
-                        vcf_warning("Unrecognized complex rearrangement detected (ref length expected to be 1, found ref=" + ref + ".  Storing anyway.");                        
+                        vcf_warning("Unrecognized complex rearrangement detected (ref length expected to be 1, found ref=" + newRef + ".  Storing anyway.");
                     }
-                } else if (snp) {   //SNP
-                    newStart = start;
-                    newEnd = start + ref.length() - 1;
-                    newRef = ref;
-                    newAlt = alt;
-                    variantType = VariantType.SNP;
-                } else if (!badRef && ref.length() >= alt.length()) { //deletion or block substitution
-                    String head = ref.substring(0, alt.length());
-                    if (head.equals(alt)) {
-                        newStart = start + head.length();
-                        newEnd = start + ref.length() - 1;
-                        newRef = ref.substring(alt.length());
+                } else {
+
+                    String prefix = StringUtils.getCommonPrefix(new String[]{ref, alt});
+                    newRef = ref.substring(prefix.length());
+                    newAlt = alt.substring(prefix.length());
+                    newStart += prefix.length();
+                    newEnd = newStart;
+
+                    //If the ALT sequence is too long, we can't store it, and truncate it down to 10 characters.
+                    if (newAlt.length() > BasicVariantColumns.ALT.getColumnLength()) {
+                        if (TOOLONG_ALTS_GIVE_WARNING) {
+                            vcf_warning("Skipping alternate allele with too many characters (maximum is "
+                                    + BasicVariantColumns.ALT.getColumnLength() + ", " + newAlt.length()
+                                    + " detected).  MedSavant does not yet support sequences of this size.  Storing first 10 characters");
+                        }
+                        newAlt = newAlt.substring(0, Math.min(10, BasicVariantColumns.ALT.getColumnLength()));
+                        ++numInvalidAlt;
+                        //   continue;
+                    }
+
+                    if (newRef.length() == newAlt.length() && VCF_SNP_REGEX.matcher(newRef).matches() && VCF_SNP_REGEX.matcher(newAlt).matches()) {
+                        snp = true;
+                        ++numSnp;
+                        //annovar counts base pair mismatches (e.g. AG, GA, CT, TC)
+                        if ((newRef.equals("A") && newAlt.equals("G"))
+                                || (newRef.equals("G") && newAlt.equals("A"))
+                                || (newRef.equals("C") && newAlt.equals("T"))
+                                || (newRef.equals("T") && newAlt.equals("C"))) {
+                            ++numTi;
+                        } else {
+                            ++numTv;
+                        }
+
+                    } else {
+                        ++numIndels;
+                    }
+
+                    ///??
+                    if (newAlt.equals("<DEL>")) { //old 1000G vcf files have this.
+                        newEnd = newStart + newRef.length() - 1;
                         newAlt = "-";
                         variantType = VariantType.Deletion;
-                    } else {
-                        newStart = start;
-                        newEnd = start + ref.length() - 1;
-                        newRef = ref;
-                        newAlt = alt;
-                        variantType = VariantType.InDel;
-                    }
-                } else if (VCF_BADALT_REGEX.matcher(alt).find()){
-                    if (UNRECOGNIZED_ALTS_GIVE_WARNING) {
-                        vcf_warning("Unrecognized ALT allele detected (ACGTN]:[ expected, found " + alt + ").  Storing anyway.");
-                    }
-                    ++numInvalidAlt;                                        
-                } else if(!badRef){// if(ref.length() < alt.length()){ //insertion or block substitution
-                    String head = alt.substring(0, ref.length());
-                    if (head.equals(ref)) {
-                        newStart = start + ref.length() - 1;
-                        newEnd = start + ref.length() - 1;
-                        newRef = "-";
-                        newAlt = alt.substring(ref.length());
-                        variantType = VariantType.Insertion;
-                    } else {                        
-                            newStart = start;
-                            newEnd = start + ref.length() - 1;
-                            newRef = ref;
-                            newAlt = alt;
-                            variantType = VariantType.InDel;                        
+                    } else if (snp) {   //SNP
+                        newEnd = newStart + newRef.length() - 1;
+                        variantType = VariantType.SNP;
+                    } else if (!badRef && newRef.length() >= newAlt.length()) { //deletion or block substitution
+                        String head = newRef.substring(0, newAlt.length());
+                        if (head.equals(newAlt)) {
+                            newEnd = newStart + newRef.length() - 1;
+                            newStart = newStart + head.length();
+                            newRef = newRef.substring(newAlt.length());
+                            newAlt = "-";
+                            variantType = VariantType.Deletion;
+                        } else {
+                            newEnd = newStart + newRef.length() - 1;
+                            variantType = VariantType.InDel;
+                        }
+                    } else if (VCF_BADALT_REGEX.matcher(newAlt).find()) {
+                        if (UNRECOGNIZED_ALTS_GIVE_WARNING) {
+                            vcf_warning("Unrecognized ALT allele detected (ACGTN]:[ expected, found " + alt + ").  Storing anyway.");
+                        }
+                        ++numInvalidAlt;
+                    } else if (!badRef) {// if(ref.length() < alt.length()){ //insertion or block substitution
+                    /*    String head = newAlt.substring(0, newRef.length());
+                         if (head.equals(newRef)) {
+                         newEnd = newStart + newRef.length() - 1;
+                         newStart = newStart + newRef.length() - 1;
+                         newAlt = newAlt.substring(newRef.length());
+                         newRef = "-";
+                         variantType = VariantType.Insertion;
+                         */
+                        if (newRef.length() == 0) { //insertion
+                            newRef = "-";
+                            newStart--;
+                            newEnd--;
+                            variantType = VariantType.Insertion;
+                        } else {
+                            newEnd = newStart + newRef.length() - 1;
+                            variantType = VariantType.InDel;
+                        }
                     }
                 }
-
+                
                 VariantRecord variantRecordTemplate = new VariantRecord(line, newStart, newEnd, newRef, newAlt, variantType);
 
                 int indexGT = getIndexGT(line); //index of GT in line
@@ -683,9 +691,9 @@ public class VCFParser {
             LOG.error("Error parsing line " + badString + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
             ex.printStackTrace();
         }
-        
-        if((lineNumber % LINES_PER_PROGRESSREPORT) == 0){
-            messageToUser(LogManagerAdapter.LogType.INFO, vcfFile.getName()+": Loaded "+lineNumber+" variants...");
+
+        if ((lineNumber % LINES_PER_PROGRESSREPORT) == 0) {
+            messageToUser(LogManagerAdapter.LogType.INFO, vcfFile.getName() + ": Loaded " + lineNumber + " variants...");
         }
         return records;
     }

@@ -80,12 +80,9 @@ public class NumericConditionEncoder {
 
 
     public static String encodeConditions(double low, double high, boolean includeNull) {
-
         String lowString = Double.toString(low);
         String highString = Double.toString(high);
-
-        System.out.println("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString + DELIM + includeNull);
-
+        //System.out.println("Encoding " + low + " " + high + "conditions as " + lowString + DELIM + highString + DELIM + includeNull);
         return lowString + DELIM + highString + DELIM + includeNull;
     }
 
