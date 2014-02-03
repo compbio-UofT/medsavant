@@ -23,16 +23,16 @@ import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class SimpleVariant {
 
-    long start_pos;
-    long end_pos;
-    String chr;
-    String ref;
-    String alt;
-    String type;
+    public long start_pos;
+    public long end_pos;
+    public String chr;
+    public String ref;
+    public String alt;
+    public String type;
 
     public SimpleVariant(String chr, long start_pos, long end_pos, String ref, String alt, String type) {
         this.chr = chr;
