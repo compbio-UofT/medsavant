@@ -90,7 +90,7 @@ public class DiscoveryFindings {
 		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names
 		header= getTableHeader();
 		effectIndex= header.indexOf(JANNOVAR_EFFECT);
-		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);
+		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);		
 		
 		// For variant DB lookup - zygosity values based on VariantRecord in org.ut.biolab.medsavant.shared.vcf
 		zygosityMap= new HashMap<String, String>();
@@ -306,6 +306,11 @@ public class DiscoveryFindings {
 	 */
 	public String getGeneSymbol(Object[] row) {
 		String geneSymbol= null;
+		
+		System.err.println("[TESTING]: " + Arrays.toString(row)); ////////////
+		System.err.println("[TESTING]: " + geneSymbolIndex); ////////////
+		System.err.println("[TESTING]: " + row[geneSymbolIndex]); ////////////
+		
 		String hgvsText= (String) row[geneSymbolIndex];
 			
 		Matcher geneSymbolMatcher= geneSymbolPattern.matcher(hgvsText);
@@ -324,7 +329,7 @@ public class DiscoveryFindings {
 	private List<Object[]> filterVariants(List<Object[]> input) {
 		List<Object[]> filtered= new LinkedList<Object[]>();
 		
-		for (Object[] row : input) {
+		for (Object[] row : input) {			
 			List<String> query= getClassification(getGeneSymbol(row), 
 					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], genePanel);
 			

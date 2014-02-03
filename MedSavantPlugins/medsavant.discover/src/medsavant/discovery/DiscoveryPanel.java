@@ -68,11 +68,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 import medsavant.discovery.localDB.DiscoveryDB;
 import medsavant.discovery.localDB.DiscoveryHSQLServer;
@@ -786,12 +783,13 @@ public class DiscoveryPanel extends JPanel {
 					SortableTable st= stp.getTable();
                     int selectedIndex= st.getSelectedRow();
 					String chr= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_CHROM);
-					long pos= ((Integer) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_POSITION)).longValue();
+					long start= ((Integer) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_START_POSITION)).longValue();
+					long end= ((Integer) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_END_POSITION)).longValue();
 					String ref= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_REF);
 					String alt= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_ALT);
 					String type= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_VARIANT_TYPE);
 					
-                    SimpleVariant v= new SimpleVariant(chr, pos, ref, alt, type);
+                    SimpleVariant v= new SimpleVariant(chr, start, end, ref, alt, type);
                     vip.setSimpleVariant(v);
 					
 					/* Create custom SubInspectors. */
@@ -808,7 +806,7 @@ public class DiscoveryPanel extends JPanel {
 					
 					
 					// TESTING
-					vsp.updateOtherIndividualsPane(chr, Long.toString(pos), ref, alt);
+					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
 					
                }
             }

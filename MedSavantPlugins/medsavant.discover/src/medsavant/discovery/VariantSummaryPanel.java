@@ -4,7 +4,6 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.net.URL;
@@ -24,6 +23,7 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
@@ -116,12 +116,9 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	/**
 	 * Update the other individuals pane to show all DNA IDs with this variant.
-	 * @param chr Chromosome string
-	 * @param position Start position as a string
-	 * @param ref Reference nucleotide[s] string
-	 * @param alt Alternate nucleotide[s] string
+	 * @param simpleVar The SimpleVariant object representing this variant.
 	 */
-	public void updateOtherIndividualsPane(String chr, String position, String ref, String alt) {
+	public void updateOtherIndividualsPane(SimpleVariant simpleVar) {
 		/* Clear the existing other individuals pane and put status bar. */
 		otherIndividualsPane.remove(dnaIDPanel);
 		ProgressWheel pw= new ProgressWheel();
@@ -129,7 +126,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		otherIndividualsPane.add(pw, "alignx center");
 		
 		/* Get the other individuals DNA IDs. */
-		List<String> dnaIDList= this.getAllDNAIDsForVariant(chr, position, ref, alt);
+		List<String> dnaIDList= this.getAllDNAIDsForVariant(simpleVar);
 		Collections.sort(dnaIDList); // sort the DNA IDs so that a user can scroll through quickly
 		
 		int totalDBPatients= 0;
@@ -158,22 +155,20 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	/**
 	 * Get a list of DNA IDs that have this variant.
-	 * @param chr Chromosome string
-	 * @param position Start position as a string
-	 * @param ref Reference nucleotide[s] string
-	 * @param alt Alternate nucleotide[s] string
+	 * @param simpleVar The SimpleVariant object representing this variant.
 	 * @return A list of DNA IDs (as strings) that have this variant.
 	 */
-	private List<String> getAllDNAIDsForVariant(String chr, String position, String ref, String alt) {
+	private List<String> getAllDNAIDsForVariant(SimpleVariant simpleVar) {
 		List<String> allDNAIDs= new LinkedList<String>();
 		
 		/* Create the ComboCondition to identify all individuals with this variant. */
 		ComboCondition cc= new ComboCondition(ComboCondition.Op.AND);
 
-		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.CHROM), chr));
-		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.POSITION), position));
-		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.REF), ref));
-		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.ALT), alt));
+		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.CHROM), simpleVar.chr));
+		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.START_POSITION), simpleVar.start_pos));
+		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.END_POSITION), simpleVar.end_pos));
+		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.REF), simpleVar.ref));
+		cc.addCondition(BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.ALT), simpleVar.alt));
 		
 		Condition[][] conditionMatrix= new Condition[1][1];
 		conditionMatrix[0][0]= cc;
