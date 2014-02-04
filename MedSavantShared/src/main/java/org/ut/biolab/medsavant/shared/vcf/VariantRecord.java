@@ -20,6 +20,7 @@
 package org.ut.biolab.medsavant.shared.vcf;
 
 import java.io.Serializable;
+import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -48,7 +49,7 @@ public class VariantRecord implements Serializable {
                     return Unknown;
                 case 5:
                     return InDel;
-                case 6: 
+                case 6:
                     return Complex;
                 default:
                     return Unknown;
@@ -151,17 +152,26 @@ public class VariantRecord implements Serializable {
             chrom = "chr" + s;
 
             if (!s.equalsIgnoreCase("x") && !s.equalsIgnoreCase("y") && !s.equalsIgnoreCase("m")) {
-                try {
+
+                if (NumberUtils.isNumber(s)) {
                     int x = Integer.parseInt(s);
                     if (x < 1 || x > 22) {
-                        throw new IllegalArgumentException("Invalid chromosome " + chrom);
+                        throw new IllegalArgumentException("Invalid chromosome " + chrom) {
+                            @Override
+                            public Throwable fillInStackTrace() {
+                                return this;
+                            }
+                        };
                     }
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalArgumentException("Invalid chromosome " + chrom);
+                }else{
+                    throw new IllegalArgumentException("Invalid chromosome "+chrom){
+                        @Override
+                        public Throwable fillInStackTrace(){ return this; }
+                    };
                 }
+
             }
         }
-
 
         dbSNPID = (String) parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);
 
@@ -247,7 +257,7 @@ public class VariantRecord implements Serializable {
 
         if (c == Long.class) {
             try {
-                return Long.parseLong(value);
+                return NumberUtils.isDigits(value) ? Long.parseLong(value) : null;
             } catch (Exception e) {
                 return null;
             }
@@ -255,7 +265,7 @@ public class VariantRecord implements Serializable {
 
         if (c == Float.class) {
             try {
-                return Float.parseFloat(value);
+                return NumberUtils.isNumber(value) ? Float.parseFloat(value) : null;
             } catch (Exception e) {
                 return null;
             }
@@ -268,7 +278,7 @@ public class VariantRecord implements Serializable {
 
         if (c == Integer.class) {
             try {
-                return Integer.parseInt(value);
+                return NumberUtils.isDigits(value) ? Integer.parseInt(value) : null;
             } catch (Exception e) {
                 return null;
             }
@@ -516,12 +526,16 @@ public class VariantRecord implements Serializable {
         chrom1 = chrom1.substring(3);
         chrom2 = chrom2.substring(3);
         try {
-            Integer a = Integer.parseInt(chrom1);
-            Integer b = Integer.parseInt(chrom2);
-            return a.compareTo(b);
+            if (NumberUtils.isNumber(chrom1) && NumberUtils.isNumber(chrom2)) {
+                Integer a = Integer.parseInt(chrom1);
+                Integer b = Integer.parseInt(chrom2);
+                return a.compareTo(b);
+            }
+
         } catch (NumberFormatException e) {
-            return chrom1.compareTo(chrom2);
+            //return chrom1.compareTo(chrom2);
         }
+        return chrom1.compareTo(chrom2);
     }
 
     /*
@@ -679,8 +693,8 @@ public class VariantRecord implements Serializable {
     private static String delim = "\t";
 
     public String toTabString(int uploadId, int fileId, int variantId) {
-        String s =
-                "\"" + getString(uploadId) + "\"" + delim
+        String s
+                = "\"" + getString(uploadId) + "\"" + delim
                 + "\"" + getString(fileId) + "\"" + delim
                 + "\"" + getString(variantId) + "\"" + delim
                 + "\"" + getString(this.dnaID) + "\"" + delim

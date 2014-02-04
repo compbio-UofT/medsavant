@@ -333,6 +333,7 @@ public class ProjectManagementPage extends AppSubSection {
                                     refreshSelectedProject();
                                 }
                             } catch (Exception ex) {
+                                LOG.error(ex);
                             }
                         }
                     });
