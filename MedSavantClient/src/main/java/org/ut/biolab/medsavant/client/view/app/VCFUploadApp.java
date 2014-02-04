@@ -114,7 +114,7 @@ public class VCFUploadApp implements LaunchableApp {
         p.setLayout(ml);
 
         p.add(ViewUtil.getSettingsHeaderLabel("Annotation"), "wrap");
-        p.add(annovarCheckbox = new JCheckBox("annotate variants using ANNOVAR"), "wrap");
+        p.add(annovarCheckbox = new JCheckBox("perform gene-based variant annotation"), "wrap");
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
 

@@ -82,6 +82,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
     private JLabel connectingToLabel;
     private JPanel progressPanel;
     private JCheckBox rememberPasswordCheckbox;
+	private JPanel p;
     
     public LoginView() {
         //this.setBackground(Color.white);
@@ -100,6 +101,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             case LOGGED_OUT:
                 break;
             case LOGIN_FAILED:
+				this.toggleSigninButton();
                 notifyOfUnsuccessfulLogin(event.getException());
                 break;
         }
@@ -187,7 +189,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         JXCollapsiblePane pan = new JXCollapsiblePane();//ViewUtil.getClearPanel();
         pan.setOpaque(false);
 
-        JPanel p = ViewUtil.getClearPanel();
+        p= ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
         p.setBorder(BorderFactory.createEmptyBorder());
 
@@ -258,9 +260,12 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         LoginController.getInstance().cancelCurrentLoginAttempt();
         this.progressPanel.setVisible(false);
         this.progressSigningIn.setVisible(false);
-        loginButton.setEnabled(true);
-        this.loginButton.setText("Sign In");
+        //loginButton.setEnabled(true);
+        //this.loginButton.setText("Sign In");
+		
+		this.toggleSigninButton(); // set button to login
     }
+	
     private MedSavantWorker loginThread;
 
     private void loginUsingEnteredUsernameAndPassword() {
@@ -270,11 +275,13 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
             settings.setServerAddress(addressField.getText());
             settings.setServerPort(portField.getText());
 
-            this.loginButton.setText("Signing In...");
+            //this.loginButton.setText("Signing In...");
             //statusLabel.setText("Logging In...");
             this.progressSigningIn.setVisible(true);
             this.progressPanel.setVisible(true);
-            loginButton.setEnabled(false);
+            //loginButton.setEnabled(false);
+			
+			this.toggleSigninButton(); // Set button to cancel
 
             if(rememberPasswordCheckbox.isSelected()){
                 settings.setRememberPassword(true);
@@ -361,17 +368,6 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         progressPanel = ViewUtil.getClearPanel();
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.Y_AXIS));
         progressPanel.add(ViewUtil.centerHorizontally(progressSigningIn));
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.setFocusable(false);
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                cancelCurrentLogin();
-            }
-        });
-
-        progressPanel.add(ViewUtil.centerHorizontally(cancelButton));
         progressPanel.setVisible(false);
         //p.add(ViewUtil.centerHorizontally(progressSigningIn));
         p.add(ViewUtil.centerHorizontally(progressPanel));
@@ -457,4 +453,33 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         });
 
     }
+	
+	
+	/** 
+	 * Toggle login button between login and cancel modes.
+	 */
+	private void toggleSigninButton() {
+		if (loginButton.getText().equals("Cancel")) {
+			loginButton.setText("Sign In");
+			loginButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					loginUsingEnteredUsernameAndPassword();
+				}
+			});
+		} else {
+			loginButton.setText("Cancel");
+			//loginButton.setFocusable(false);
+			loginButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					cancelCurrentLogin();
+				}
+			});
+		}
+		
+		p.updateUI();
+	}
+	
+	
 }

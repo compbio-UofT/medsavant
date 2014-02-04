@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -107,7 +108,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		otherIndividualsPane.setLayout(new MigLayout("alignx center"));
 		otherIndividualsPane.setStyle(CollapsiblePane.PLAIN_STYLE);
 		otherIndividualsPane.setFocusPainted(false);
-		otherIndividualsPane.collapse(true);
+		otherIndividualsPane.collapse(false); // expand the collapsible pane
 		otherIndividualsPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
 		
 		summaryPanel.add(otherIndividualsPane, "wrap");
@@ -118,38 +119,56 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Update the other individuals pane to show all DNA IDs with this variant.
 	 * @param simpleVar The SimpleVariant object representing this variant.
 	 */
-	public void updateOtherIndividualsPane(SimpleVariant simpleVar) {
+	public void updateOtherIndividualsPane(final SimpleVariant simpleVar) {
 		/* Clear the existing other individuals pane and put status bar. */
 		otherIndividualsPane.remove(dnaIDPanel);
-		ProgressWheel pw= new ProgressWheel();
+		final ProgressWheel pw= new ProgressWheel();
 		pw.setIndeterminate(true);
 		otherIndividualsPane.add(pw, "alignx center");
+		otherIndividualsPane.updateUI();
 		
-		/* Get the other individuals DNA IDs. */
-		List<String> dnaIDList= this.getAllDNAIDsForVariant(simpleVar);
-		Collections.sort(dnaIDList); // sort the DNA IDs so that a user can scroll through quickly
 		
-		int totalDBPatients= 0;
-		try {
-			totalDBPatients= MedSavantClient.PatientManager.getPatients(
-				LoginController.getInstance().getSessionID(),
-				ProjectController.getInstance().getCurrentProjectID()).size();
-		} catch (Exception e) {
-			LOG.error("Error processing total patient counter. " + e.toString());
-			e.printStackTrace();
-		}
+		/* Get the other individuals DNA IDs. */		
+		MedSavantWorker otherIndividualsThread= new MedSavantWorker<Void>("updateOtherIndividualsPane")
+		{
+			@Override
+			protected void showSuccess(Void result) {
+			}
+
+			@Override
+			protected Void doInBackground() throws Exception {
+				List<String> dnaIDList= getAllDNAIDsForVariant(simpleVar);
+				Collections.sort(dnaIDList); // sort the DNA IDs so that a user can scroll through quickly
+				
+				int totalDBPatients= 0;
+				try {
+					totalDBPatients= MedSavantClient.PatientManager.getPatients(
+						LoginController.getInstance().getSessionID(),
+						ProjectController.getInstance().getCurrentProjectID()).size();
+				} catch (Exception e) {
+					LOG.error("Error processing total patient counter. " + e.toString());
+					e.printStackTrace();
+				}
+				
+				/* Update the other individuals pane. */
+				dnaIDPanel= new JPanel(new MigLayout("alignx center, insets 0px"));
+				otherIndividualsPane.remove(pw);
+				
+				String individuals= " individual ";
+				if (dnaIDList.size() > 1) individuals= " individuals ";
+				otherIndividualsPane.setTitle(dnaIDList.size() + individuals +
+					"with this variant (" + totalDBPatients + " total)");
+				for (String dnaID : dnaIDList) {
+					dnaIDPanel.add(new JLabel(dnaID), "wrap");
+				}
+				otherIndividualsPane.add(dnaIDPanel);
+				otherIndividualsPane.updateUI();
+				
+				return null;
+			}
+		};
 		
-		/* Update the other individuals pane. */
-		dnaIDPanel= new JPanel(new MigLayout("alignx center, insets 0px"));
-		otherIndividualsPane.remove(pw);
-		otherIndividualsPane.collapse(false); // expand the collapsible pane
-		String individuals= " individual ";
-		if (dnaIDList.size() > 1) individuals= " individuals ";
-		otherIndividualsPane.setTitle(dnaIDList.size() + individuals +"with this variant");
-		for (String dnaID : dnaIDList) {
-			dnaIDPanel.add(new JLabel(dnaID), "wrap");
-		}
-		otherIndividualsPane.add(dnaIDPanel);
+		otherIndividualsThread.execute();
 	}
 	
 	

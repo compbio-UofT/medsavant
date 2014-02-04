@@ -131,39 +131,34 @@ public class HGMDSubInspector extends SubInspector {
 	private void getHGMDValues(List<String> header) {
 		resetHGMDFields();
 		
-		rsID= (String) currentLine[header.indexOf(HGMD_RSID_TEXT)];
-		if (rsID == null || rsID.equals("\\N"))
-			rsID= "";
+		rsID= "";
+		if (!(header.indexOf(HGMD_RSID_TEXT) == -1 || rsID == null || rsID.equals("\\N")))
+			rsID= (String) currentLine[header.indexOf(HGMD_RSID_TEXT)];
 			
-		omimID= (String) currentLine[header.indexOf(HGMD_OMIM_TEXT)];
-		if (omimID == null)
-			omimID= "";
+		omimID= "";
+		if (!(header.indexOf(HGMD_OMIM_TEXT) == -1 || omimID == null))
+			omimID= (String) currentLine[header.indexOf(HGMD_OMIM_TEXT)];
 		
-		pubmedID= (String) currentLine[header.indexOf(HGMD_PMID_TEXT)];
-		if (pubmedID == null)
-			pubmedID= "";
+		pubmedID= "";
+		if (!(header.indexOf(HGMD_PMID_TEXT) == -1 || pubmedID == null))
+			pubmedID= (String) currentLine[header.indexOf(HGMD_PMID_TEXT)];
 		
-		disease= (String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)];
-		if (disease == null)
-			disease= "";
-		else if (disease.length() > 15) // WORKAROUND - TESTING - FIX LATER /////////////////
-			disease= disease.substring(0, 15) + "...";
+		disease= "";
+		if (!(header.indexOf(HGMD_DISEASE_TEXT) == -1 || disease == null))
+			disease= ((String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)]).substring(0, 15) + "..."; // Current workaround
 				
-		accession= (String) currentLine[header.indexOf(HGMD_ACC_TEXT)];
-		if (accession == null)
-			accession= "";
+		accession= "";
+		if (!(header.indexOf(HGMD_ACC_TEXT) == -1 || accession == null))
+			accession= (String) currentLine[header.indexOf(HGMD_ACC_TEXT)];
 		
-		comments= (String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)];
-		if (comments == null)
-			comments= "";
-		else if (comments.length() > 15) // WORKAROUND - TESTING - FIX LATER /////////////////
-			comments= comments.substring(0, 15) + "...";
+		comments= "";
+		if (!(header.indexOf(HGMD_COMMENTS_TEXT) == -1 || comments == null))
+			comments= ((String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)]).substring(0, 15) + "..."; // Current workaround
 		
-		description= (String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)];
-		if (description == null)
-			description= "";
-		else if (description.length() > 15) // WORKAROUND - TESTING - FIX LATER /////////////////
-			description= description.substring(0, 15) + "...";
+		description= "";
+		if (!(header.indexOf(HGMD_DESCRIPTION_TEXT) == -1 || description == null))
+			description= ((String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)]).substring(0, 15) + "..."; // Current workaround;
+		
 	}
 	
 	

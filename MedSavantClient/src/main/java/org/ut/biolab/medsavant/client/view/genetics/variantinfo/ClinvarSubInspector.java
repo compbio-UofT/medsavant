@@ -109,12 +109,12 @@ public class ClinvarSubInspector extends SubInspector {
 		
 		
 		// Extract Clinvar details from table
-		if (currentLine[CLINVAR_RSID_INDEX] != null)
+		if (CLINVAR_RSID_INDEX != -1 && currentLine[CLINVAR_RSID_INDEX] != null)
 			rsID= (String) currentLine[CLINVAR_RSID_INDEX];
 		else
 			rsID= "";
 		
-		if (currentLine[CLINVAR_INFO_INDEX] != null)
+		if (CLINVAR_INFO_INDEX != -1 && currentLine[CLINVAR_INFO_INDEX] != null)
 			parseClinvarInfo((String) currentLine[CLINVAR_INFO_INDEX]);
 		else
 			resetClinvarFields();

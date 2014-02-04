@@ -307,10 +307,6 @@ public class DiscoveryFindings {
 	public String getGeneSymbol(Object[] row) {
 		String geneSymbol= null;
 		
-		System.err.println("[TESTING]: " + Arrays.toString(row)); ////////////
-		System.err.println("[TESTING]: " + geneSymbolIndex); ////////////
-		System.err.println("[TESTING]: " + row[geneSymbolIndex]); ////////////
-		
 		String hgvsText= (String) row[geneSymbolIndex];
 			
 		Matcher geneSymbolMatcher= geneSymbolPattern.matcher(hgvsText);
