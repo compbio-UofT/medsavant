@@ -17,7 +17,9 @@
  * MA 02110-1301  USA
  */
 
-package org.ut.biolab.medsavant.client.view.app.splash;
+package org.ut.biolab.medsavant.client.view.splash;
+
+import org.ut.biolab.medsavant.client.util.CryptoUtils;
 
 import java.io.Serializable;
 
@@ -25,19 +27,45 @@ import java.io.Serializable;
  * A class which stores MedSavant Server connection information
  * @author mfiume
  */
-class MedSavantServerInfo implements Serializable {
-    
+public class MedSavantServerInfo implements Serializable, Comparable<MedSavantServerInfo> {
+
     private String host;
     private int port;
     private String database;
     private String nickname;
     private String username;
     private String encodedPassword;
+    private boolean rememberPassword;
+    private boolean isEditable = true;
+
+    public MedSavantServerInfo() {
+        this("",0,"","Unnamed Server");
+    }
 
     public MedSavantServerInfo(String host, int port, String database, String nickname) {
+        System.out.println("Creating new server.!!!");
         this.host = host;
         this.port = port;
         this.database = database;
+        this.nickname = nickname;
+        this.username = "";
+        this.encodedPassword = "";
+        this.rememberPassword = false;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setDatabase(String database) {
+        this.database = database;
+    }
+
+    public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
@@ -45,8 +73,8 @@ class MedSavantServerInfo implements Serializable {
         this.username = username;
     }
 
-    public void setEncodedPassword(String encodedPassword) {
-        this.encodedPassword = encodedPassword;
+    public void setPassword(String password) {
+        this.encodedPassword = CryptoUtils.encrypt(password);
     }
     
     public String getHost() {
@@ -69,7 +97,33 @@ class MedSavantServerInfo implements Serializable {
         return username;
     }
 
-    public String getEncodedPassword() {
-        return encodedPassword;
+    public String getPassword() {
+        return CryptoUtils.decrypt(encodedPassword);
+    }
+
+    public boolean isRememberPassword() {
+        return rememberPassword;
+    }
+
+    public void setRememberPassword(boolean rememberPassword) {
+        this.rememberPassword = rememberPassword;
+    }
+
+    public boolean isEditable() {
+        return isEditable;
+    }
+
+    public void setEditable(boolean isEditable) {
+        this.isEditable = isEditable;
+    }
+
+    @Override
+    public String toString() {
+        return getNickname();
+    }
+
+    @Override
+    public int compareTo(MedSavantServerInfo o) {
+        return this.getNickname().compareTo(o.getNickname());
     }
 }

@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant;
 
+import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
@@ -182,8 +183,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         verifyJIDE();
         setLAF();
 
-        //required for FORGE plugin
-        //NativeInterface.open();
+        // initialize settings
         SettingsController.getInstance();
 
         Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
@@ -222,16 +222,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame.setLocationRelativeTo(null);
         frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setPreferredSize(frame.getSize());
-        
-        // old technique to maximize which resulted in maximize animation showing
-        //frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
+
+        //SplashFrame loginFrame = new SplashFrame();
+        //loginFrame.setVisible(true);
 
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
-
-        //reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t)
-        //required for FORGE plugin
-        //NativeInterface.runEventPump();
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {

@@ -19,7 +19,6 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -30,8 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.javadev.AnimatingCardLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -54,8 +52,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     private final String APP_LAYER = "1";
     private final AnimatingCardLayout cardLayout;
 
-    private TopMenu appTopMenu;
-    private TopMenu homeMenu;
+    private NiceMenu appTopMenu;
+    private NiceMenu homeMenu;
     private final LimitedQueue<LaunchableApp> history;
     private final HashSet<LaunchableApp> appHistoryBlackList;
 
@@ -179,7 +177,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         MenuFactory.generateMenu(); // initialize the Apps in the menus
 
-        homeMenu = new TopMenu();
+        homeMenu = new NiceMenu();
         
         homeMenu.addLeftComponent(getHomeButton());
         //homeMenu.addRightComponent(getLogoutButton());
@@ -224,7 +222,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         JPanel p = app.getView();
 
-        appTopMenu = new TopMenu();
+        appTopMenu = new NiceMenu();
 
         final NavigationPanel navigationPanel = new NavigationPanel();
         navigationPanel.setTitle(app.getName());
@@ -361,7 +359,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     private JLabel getHomeButton() {
         JLabel homeLabel = new JLabel("MedSavant");
         homeLabel.setFont(new Font("Helvetica Neue", Font.BOLD, 18));
-        homeLabel.setForeground(new Color(64,64,64));
+        homeLabel.setForeground(ViewUtil.getSemiBlackColor());
         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         ViewUtil.adjustForegroundColorOnMouseover(homeLabel,-25);
@@ -404,7 +402,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     private JLabel getLogoutButton() {
         JLabel label = new JLabel("Sign Out");
         label.setFont(new Font("Helvetica Neue", Font.PLAIN, 16));
-        label.setForeground(new Color(64,64,64));
+        label.setForeground(ViewUtil.getSemiBlackColor());
 
         final ActionListener goHomeActionListener = new ActionListener() {
 

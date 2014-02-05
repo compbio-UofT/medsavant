@@ -94,7 +94,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
             p.setLayout(new MigLayout());
             JLabel l = new JLabel(item[0].toString());
             l.setFont(ViewUtil.getBigTitleFont());
-            l.setForeground(new Color(64,64,64));
+            l.setForeground(ViewUtil.getSemiBlackColor());
             p.add(l);
             
             detailView.add(p, BorderLayout.NORTH);
