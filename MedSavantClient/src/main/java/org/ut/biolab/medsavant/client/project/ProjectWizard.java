@@ -373,6 +373,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             variantFormatModel.addRow(new Object[]{SB.getColumnName().toUpperCase(), SB.getTypeString(), true, SB.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{SOMATIC.getColumnName().toUpperCase(), SOMATIC.getTypeString(), true, SOMATIC.getAlias(), ""});
             variantFormatModel.addRow(new Object[]{VALIDATED.getColumnName().toUpperCase(), VALIDATED.getTypeString(), true, VALIDATED.getAlias(), ""});
+			variantFormatModel.addRow(new Object[]{JANNOVAR_EFFECT.getColumnName().toUpperCase(), JANNOVAR_EFFECT.getTypeString(), JANNOVAR_EFFECT.isFilterable(), JANNOVAR_EFFECT.getAlias(), ""});
+			variantFormatModel.addRow(new Object[]{JANNOVAR_SYMBOL.getColumnName().toUpperCase(), JANNOVAR_SYMBOL.getTypeString(), JANNOVAR_SYMBOL.isFilterable(), JANNOVAR_SYMBOL.getAlias(), ""});
         }
 
         table.setModel(variantFormatModel);

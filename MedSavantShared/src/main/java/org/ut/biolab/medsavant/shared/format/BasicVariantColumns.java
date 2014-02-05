@@ -82,6 +82,8 @@ public interface BasicVariantColumns {
     public static final CustomField SB = new CustomField("sb", ColumnType.FLOAT, -1, false, false, false, null, true, "Strand Bias", "");
     public static final CustomField SOMATIC = new CustomField("somatic", ColumnType.BOOLEAN, 1, false, false, false, null, true, "Somatic", "");
     public static final CustomField VALIDATED = new CustomField("validated", ColumnType.BOOLEAN, 1, false, false, false, null, true, "Validated", "");
+	public static final CustomField JANNOVAR_EFFECT= new CustomField("EFFECT", ColumnType.VARCHAR, 100, false, false, false, null, true, "jannovar effect", "Nature of the variant on a gene");
+	public static final CustomField JANNOVAR_SYMBOL= new CustomField("HGVS", ColumnType.VARCHAR, 2000, false, false, false, null, false, "jannovar gene symbol", "Specific genes and effects of this variant");
 
     public static CustomField[] REQUIRED_VARIANT_FIELDS = new CustomField[] {//end position?
         UPLOAD_ID, FILE_ID, VARIANT_ID, DNA_ID, CHROM, START_POSITION, END_POSITION, DBSNP_ID, REF, ALT, QUAL, FILTER, VARIANT_TYPE, ZYGOSITY, GT, CUSTOM_INFO

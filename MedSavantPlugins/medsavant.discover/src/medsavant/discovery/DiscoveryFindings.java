@@ -45,8 +45,8 @@ public class DiscoveryFindings {
 	public static final String ALL_GENE_PANEL= "All genes";
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
-	private final String JANNOVAR_EFFECT= "jannovar effect";
-	private final String JANNOVAR_GENE= "jannovar gene symbol";
+	private final String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getAlias();
+	private final String JANNOVAR_GENE= BasicVariantColumns.JANNOVAR_SYMBOL.getAlias();
 	private final String STOPGAIN= "STOPGAIN";
 	private final String FRAMESHIFTS= "FS_%";
 	private final String SPLICING= "SPLICING";
