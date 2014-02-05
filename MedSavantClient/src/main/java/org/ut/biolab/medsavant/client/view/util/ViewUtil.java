@@ -61,6 +61,9 @@ import java.util.List;
 import java.util.Locale;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import eu.hansolo.custom.SteelCheckBox;
+import eu.hansolo.tools.ColorDef;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
@@ -76,8 +79,20 @@ import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
  */
 public final class ViewUtil {
 
+    // detail colors
+    public final static Color detailForeground = new Color(10, 10, 10);
+    public final static Color detailSelectedBackground = new Color(92, 168, 229);
+
+    // row colors
+    public final static Color evenRowColor = new Color(250,250,250);
+    public final static Color oddRowColor = new Color(242, 245, 249);
+
     private static final SourceListStandardColorScheme fColorScheme = new SourceListStandardColorScheme();
-    
+
+    // detail fonts
+    public static Font detailFontPlain = new Font(getDefaultFontFamily(),Font.PLAIN,12);
+    public static Font detailFontBold = new Font(getDefaultFontFamily(),Font.BOLD,12);
+
     public static Point getPositionRelativeTo(Component root, Component comp) {
         if (comp.equals(root)) {
             return new Point(0, 0);
@@ -96,39 +111,10 @@ public final class ViewUtil {
         return c;
     }
 
-    public static String ellipsizeListAfter(List<String> objects, int threshold) {
-
-        int counter = 0;
-        String gString = "";
-
-        for (Object o : objects) {
-            counter++;
-            if (counter <= threshold) {
-                gString += o == null ? "<null>" : o.toString() + " ";
-            }
-        }
-
-        gString = gString.trim();
-        gString = gString.replaceAll(" ", ", ");
-
-        if (counter > threshold) {
-            gString = gString + " and " + (counter - threshold) + " more...";
-        }
-
-        return gString;
-    }
-
     public static JButton createHyperLinkButton(String string) {
         JideButton b = new JideButton(string);
         b.setButtonStyle(JideButton.HYPERLINK_STYLE);
         return b;
-    }
-
-    public static JideSplitButton createJideSplitButton(String name) {
-        final JideSplitButton button = new JideSplitButton(name);
-        button.setForegroundOfState(ThemePainter.STATE_DEFAULT, Color.BLACK);
-        //button.setIcon(icon);
-        return button;
     }
 
     public static Border getTinyBorder() {
@@ -143,20 +129,8 @@ public final class ViewUtil {
         return new EmptyBorder(5, 5, 5, 5);
     }
 
-    public static Border getMediumTopBorder() {
-        return new EmptyBorder(0, 5, 5, 0);
-    }
-
-    public static Border getBottomBorder() {
-        return new MatteBorder(1, 0, 0, 0, Color.lightGray);
-    }
-
     public static Border getBigBorder() {
         return new EmptyBorder(10, 10, 10, 10);
-    }
-
-    public static Border getTopHeavyBorder() {
-        return new EmptyBorder(30, 10, 30, 10);
     }
 
     public static Border getMediumTopHeavyBorder() {
@@ -167,35 +141,20 @@ public final class ViewUtil {
         return new EmptyBorder(25, 25, 25, 25);
     }
 
-    public static Border getGiganticBorder() {
-        return new EmptyBorder(100, 100, 100, 100);
-    }
-
     public static Font getBigTitleFont() {
-        return new Font("Arial", Font.BOLD, 18);
+        return new Font(getDefaultFontFamily(), Font.BOLD, 18);
     }
 
     public static Font getMediumTitleFont() {
-        return new Font("Arial", Font.BOLD, 13);
+        return new Font(getDefaultFontFamily(), Font.BOLD, 13);
     }
 
     public static Font getSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 11);
+        return new Font(getDefaultFontFamily(), Font.PLAIN, 11);
     }
 
     public static Font getTinyTitleFont() {
-        return new Font("Arial", Font.PLAIN, 9);
-    }
-
-    public static Color getDarkColor() {
-        return new Color(20, 20, 20);
-    }
-
-    public static JLabel getDetailLabel(String txt) {
-        JLabel l = new JLabel(txt);
-        l.setFont(detailFontPlain);
-        l.setForeground(detailForeground);
-        return l;
+        return new Font(getDefaultFontFamily(), Font.PLAIN, 9);
     }
 
     public static JPanel getTertiaryBannerPanel() {
@@ -210,53 +169,6 @@ public final class ViewUtil {
 
         p.setBorder(ViewUtil.getSmallBorder());
 
-        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-
-        return p;
-    }
-
-    public static JPanel getPrimaryBannerPanel() {
-        JPanel p = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-
-                Color top = new Color(220, 220, 220);
-                Color bottom = new Color(220, 220, 220);
-
-                //Color top = new Color(227, 227, 227);
-                //Color bottom = new Color(179, 179, 179);
-                GradientPaint p = new GradientPaint(0, 0, top, 0, 50, bottom);
-                ((Graphics2D) g).setPaint(p);
-                g.fillRect(0, 0, this.getWidth(), this.getHeight());
-            }
-        };
-
-        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-
-        return p;
-    }
-
-    public static JPanel getQuaternaryBannerPanel() {
-        JPanel p = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-                GradientPaint p = new GradientPaint(0, 0, Color.lightGray, 0, 30, Color.white);
-                ((Graphics2D) g).setPaint(p);
-                g.fillRect(0, 0, this.getWidth(), this.getHeight());
-            }
-        };
-
-        p.setBorder(ViewUtil.getSmallBorder());
-
-        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-
-        return p;
-    }
-
-    public static JPanel getSeparatorBannerPanel() {
-        JPanel p = new JPanel();
-        p.setOpaque(true);
-        p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.gray));
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 
         return p;
@@ -279,16 +191,8 @@ public final class ViewUtil {
         return p;
     }
 
-    public static Component getSmallSeparator() {
-        return Box.createRigidArea(new Dimension(2, 1));
-    }
-
     public static Component getMediumSeparator() {
         return Box.createRigidArea(new Dimension(5, 1));
-    }
-
-    public static Component getLargeSeparator() {
-        return Box.createRigidArea(new Dimension(15, 1));
     }
 
     public static Component getSmallVerticalSeparator() {
@@ -297,10 +201,6 @@ public final class ViewUtil {
 
     public static Border getTinyLineBorder() {
         return new LineBorder(Color.lightGray, 1);
-    }
-
-    public static Border getTinyLeftLineBorder() {
-        return BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray);
     }
 
     public static Border getThickLeftLineBorder() {
@@ -315,20 +215,12 @@ public final class ViewUtil {
         return BorderFactory.createMatteBorder(0, 0, 0, 1, Color.lightGray);
     }
 
-    /*
-     public static Border getBottomLineBorder() {
-     return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
-     }*/
     public static Border getBottomLineBorder() {
         return BorderFactory.createMatteBorder(0, 0, 1, 0, Color.lightGray);
     }
 
     public static Border getSideLineBorder() {
         return BorderFactory.createMatteBorder(0, 1, 0, 1, Color.lightGray);
-    }
-
-    public static Border getEndzoneLineBorder() {
-        return BorderFactory.createMatteBorder(1, 0, 1, 0, Color.lightGray);
     }
 
     public static Color getTertiaryMenuColor() {
@@ -339,46 +231,8 @@ public final class ViewUtil {
         return new Color(214,221,230);
     }
 
-    public static Color getLightColor() {
-        return new Color(200, 200, 200);
-    }
-
-    public static Color getMidColor() {
-        return new Color(60, 60, 60);
-    }
-
-    public static Color getBGColor() {
-        return new Color(255, 255, 255);
-    }
-
-    public static Color getMenuColor() {
-        return new Color(217, 222, 229);
-    }
-
-    public static JPanel getDropDownPanel(String str, boolean isSelected, boolean cellHasFocus) {
-
-        JPanel p;
-        if (isSelected) {
-            p = ViewUtil.getSecondaryBannerPanel();
-        } else {
-            p = new JPanel();
-            p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-            p.setBorder(ViewUtil.getSmallBorder());
-            //p.setBackground(Color.white);
-            //p.setBorder(ViewUtil.getTinyLineBorder());
-        }
-        JLabel l = new JLabel(str);
-        //l.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        l.setOpaque(false);
-        p.add(l);
-        return p;
-    }
-
-    public static JLabel getWhiteLabel(String string) {
-        JLabel l = new JLabel(string);
-        l.setForeground(Color.white);
-        return l;
-
+    public static Color getSemiBlackColor() {
+        return new Color(64, 64, 64);
     }
 
     public static JLabel getTitleLabel(String string) {
@@ -388,37 +242,8 @@ public final class ViewUtil {
         return l;
     }
 
-    public static JLabel getHeaderLabel(String str) {
-        JLabel l = new JLabel(str);
-        l.setFont(new Font(getDefaultFontFamily(), Font.PLAIN, 15));
-        l.setForeground(Color.white);
-        return l;
-    }
-
-    public static JLabel getMenuSectionLabel(String string) {
-        JLabel l = new JLabel(string.toUpperCase());
-        l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, 14));
-        l.setForeground(new Color(20, 20, 20));
-        return l;
-    }
-
-    public static JLabel getMenuSubsectionLabel(String string) {
-        JLabel l = new JLabel(string);
-        l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 13));
-        l.setForeground(new Color(70, 70, 70));
-        return l;
-    }
-
     public static String getDefaultFontFamily() {
-        return "Tahoma";
-    }
-
-    private static String getSecondaryFontFamily() {
-        return "Arial";
-    }
-
-    public static Border getMenuItemBorder() {
-        return new EmptyBorder(1, 10, 1, 10);
+        return "Helvetica Neue";
     }
 
     public static JPanel alignLeft(Component c) {
@@ -429,45 +254,12 @@ public final class ViewUtil {
         return aligned;
     }
 
-    public static JPanel alignTop(Component c) {
-        JPanel aligned = ViewUtil.getClearPanel();
-        aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
-        aligned.add(c);
-        aligned.add(Box.createHorizontalGlue());
-        return aligned;
-    }
-
-    /*
-     public static JPanel alignTop(Component c) {
-     JPanel aligned = ViewUtil.getClearPanel();
-     aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
-     aligned.add(c);
-     aligned.add(Box.createHorizontalGlue());
-     return aligned;
-     }
-
-     public static JPanel alignBottom(Component c) {
-     JPanel aligned = ViewUtil.getClearPanel();
-     aligned.setLayout(new BoxLayout(aligned, BoxLayout.Y_AXIS));
-     aligned.add(Box.createHorizontalGlue());
-     aligned.add(c);
-     return aligned;
-     }
-     */
     public static JPanel alignRight(Component c) {
         JPanel aligned = ViewUtil.getClearPanel();
         aligned.setLayout(new BoxLayout(aligned, BoxLayout.X_AXIS));
         aligned.add(Box.createHorizontalGlue());
         aligned.add(c);
         return aligned;
-    }
-
-    public static Border getMediumSideBorder() {
-        return BorderFactory.createEmptyBorder(0, 5, 0, 5);
-    }
-
-    public static Border getLargeSideBorder() {
-        return BorderFactory.createEmptyBorder(0, 10, 0, 10);
     }
 
     public static JScrollPane getClearBorderedScrollPane(Container c) {
@@ -504,17 +296,10 @@ public final class ViewUtil {
         return l;
     }
 
-    /*
-     public static Paint getChartPaint(Container c) {
-     return new GradientPaint(0,c.getHeight()-100,Color.white,0,c.getHeight(),Color.gray);//new Color(200,200,200));
-     }
-     *
-     */
     public static JPanel getSubBannerPanel(String title) {
         JPanel p = new JPanel();
         setBoxXLayout(p);
         p.setBackground(new Color(245, 245, 245));
-        //p.setBorder(new CompoundBorder(ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
         p.setBorder(BorderFactory.createTitledBorder(title));
         return p;
     }
@@ -525,15 +310,6 @@ public final class ViewUtil {
 
     public static void setBoxYLayout(JPanel p) {
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-    }
-
-    public static JPanel getMessagePanel(String string) {
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.add(Box.createVerticalGlue());
-        p.add(ViewUtil.getCenterAlignedComponent(new JLabel(string)));
-        p.add(Box.createVerticalGlue());
-        return p;
     }
 
     public static JPanel getMessagePanelBig(String string) {
@@ -553,21 +329,6 @@ public final class ViewUtil {
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
     }
 
-    public static Border getLeftLineBorder() {
-        return BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray),
-                BorderFactory.createEmptyBorder(0, 5, 0, 0));
-    }
-
-    public static JPanel centerVertically(JComponent c) {
-        JPanel p = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(p);
-        p.add(Box.createHorizontalGlue());
-        p.add(c);
-        p.add(Box.createHorizontalGlue());
-        return p;
-    }
-
     public static JPanel centerHorizontally(JComponent c) {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
@@ -576,11 +337,6 @@ public final class ViewUtil {
         p.add(Box.createHorizontalGlue());
         return p;
     }
-
-    public static int getBreathingPadding() {
-        return 20;
-    }
-    static int secPad = 2;
 
     public static JButton getSoftButton(String string) {
         JButton b = new JButton(string);
@@ -621,8 +377,16 @@ public final class ViewUtil {
     public static JButton getTexturedButton(ImageIcon icon) {
         JButton button = new JButton(icon);
         ViewUtil.makeSmall(button);
+        button.setFocusable(false);
         button.putClientProperty("JButton.buttonType", "textured");
         //button.putClientProperty( "JButton.segmentPosition", "only" );
+        return button;
+    }
+
+    public static JButton getTexturedButton(String s) {
+        JButton button = new JButton(s);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "textured");
         return button;
     }
 
@@ -738,6 +502,7 @@ public final class ViewUtil {
 
     public static JToggleButton getTexturedToggleButton(ImageIcon icon) {
         JToggleButton button = new JToggleButton(icon);
+        button.setFocusable(false);
         ViewUtil.makeSmall(button);
         button.putClientProperty("JButton.buttonType", "textured");
         return button;
@@ -745,7 +510,7 @@ public final class ViewUtil {
 
     public static JToggleButton getTexturedToggleButton(String s) {
         JToggleButton button = new JToggleButton(s);
-        ViewUtil.makeSmall(button);
+        button.setFocusable(false);
         button.putClientProperty("JButton.buttonType", "textured");
         return button;
     }
@@ -797,55 +562,9 @@ public final class ViewUtil {
         return l;
     }
 
-    public static JComponent getComponentOfSameSize(final JComponent c) {
-        final JPanel p = new JPanel();
-        p.setBackground(Color.red);
-        p.setPreferredSize(c.getPreferredSize());
-
-        c.addComponentListener(new ComponentListener() {
-            private void resize() {
-                p.setPreferredSize(c.getSize());
-                p.setMaximumSize(c.getSize());
-                p.setMinimumSize(c.getSize());
-            }
-
-            @Override
-            public void componentResized(ComponentEvent ce) {
-                resize();
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent ce) {
-                resize();
-            }
-
-            @Override
-            public void componentShown(ComponentEvent ce) {
-                resize();
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent ce) {
-                resize();
-            }
-        });
-
-        return p;
-    }
-
     public static ProgressWheel getIndeterminateProgressBar() {
-
         ProgressWheel w = new ProgressWheel();
         return w;
-
-        /*
-         JProgressBar b = new JProgressBar();
-         b.setIndeterminate(true);
-         if (ClientMiscUtils.MAC) {
-         b.putClientProperty("JProgressBar.style", "circular");
-         }
-         return b;
-         */
     }
 
     public static void setFontSize(JLabel label, int i) {
@@ -1006,7 +725,7 @@ public final class ViewUtil {
     public static JLabel getLargeGrayLabel(String n) {
         JLabel l = new JLabel(n);
         l.setFont(ViewUtil.getBigTitleFont());
-        l.setForeground(new Color(64,64,64));
+        l.setForeground(ViewUtil.getSemiBlackColor());
         return l;
     }
 
@@ -1073,11 +792,18 @@ public final class ViewUtil {
         });
     }
 
+    public static Font getBigInputFont() {
+        return new Font("Helvetica Neue", Font.PLAIN, 18);
+    }
 
-    /*public static void applyMenuStyleInset(JPanel p) {
-     p.setBorder(ViewUtil.getMediumBorder());
-     p.setBackground(new Color(100,100,100));
-     }*/
+    public static SteelCheckBox getSwitchCheckBox(String text) {
+        SteelCheckBox cb = new SteelCheckBox();
+        //cb.setSelectedColor(ColorDef.BLUE);
+        //cb.setColored(true);
+        cb.setText(text);
+        return cb;
+    }
+
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 
         public DetailListCellRenderer() {
@@ -1105,18 +831,6 @@ public final class ViewUtil {
             }
             return this;
         }
-    }
-    private static final ListCellRenderer listCellRenderer = new DetailListCellRenderer();
-
-    public static JList getDetailList(DefaultListModel lm) {
-
-        JList list = new JList(lm);
-        list.setCellRenderer(listCellRenderer);
-
-        list = (JList) ViewUtil.clear(list);
-        list.setForeground(ViewUtil.detailForeground);
-        list.setFont(ViewUtil.detailFontPlain);
-        return list;
     }
 
     public static String numToString(float num) {
@@ -1158,7 +872,16 @@ public final class ViewUtil {
                 fColorScheme.getCategoryTextShadowColor());
         return l;
     }
-   
+
+    public static JLabel getEmphasizedSemiBlackLabel(String s) {
+        JLabel sc = new JLabel(s);
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
+                getSemiBlackColor(),
+                getSemiBlackColor(),
+                new Color(255,255,255,0));
+        return l;
+    }
     
     public static JLabel getSubtleHeaderLabel(String s) {
         JLabel sc = new JLabel(s);
@@ -1217,13 +940,6 @@ public final class ViewUtil {
 
         return h1;
     }
-    public final static Font detailFontBold = new Font((new JLabel()).getFont().getFamily(), Font.BOLD, 14);
-    public final static Font detailFontPlain = new Font((new JLabel()).getFont().getFamily(), Font.PLAIN, 14);
-    public final static Color detailForeground = new Color(10, 10, 10);
-    public final static Color detailBackground = Color.white;
-    public final static Color detailSelectedBackground = new Color(92, 168, 229);
-    public final static Color evenRowColor = new Color(250,250,250);
-    public final static Color oddRowColor = new Color(242, 245, 249);//new Color(235,235,235);
 
     public static JPanel getKeyValuePairList(String[][] keyPairs) {
 
@@ -1300,16 +1016,6 @@ public final class ViewUtil {
         return b;
     }
 
-    /*public static JButton createIconButton(ImageIcon i) {
-     JButton b = new JButton();
-     b.setBorder(null);
-     b.setBorderPainted(false);
-     b.setOpaque(false);
-     b.setPreferredSize(new Dimension(i.getIconWidth(),i.getIconHeight()));
-     b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-     b.setIcon(i);
-     return b;
-     }*/
     public static JLabel createLabelButton(String text) {
         JLabel b = new JLabel(text);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));

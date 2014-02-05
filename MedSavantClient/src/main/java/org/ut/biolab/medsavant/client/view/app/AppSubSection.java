@@ -19,8 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -89,7 +88,7 @@ public abstract class AppSubSection {
 
 
         JPanel cc = new JPanel();
-        cc.setBackground(ViewUtil.getBGColor());
+        cc.setBackground(Color.white);
         cc.setLayout(new BorderLayout());
         undockedFrame.add(cc);
 

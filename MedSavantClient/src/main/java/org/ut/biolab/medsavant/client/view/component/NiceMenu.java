@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.client.view.dashboard;
+package org.ut.biolab.medsavant.client.view.component;
 
 import com.explodingpixels.macwidgets.MacWidgetFactory;
 import java.awt.Color;
@@ -19,17 +19,31 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class TopMenu extends JPanel {
+public class NiceMenu extends JPanel {
 
     private final MigLayout layout;
     private final JPanel leftComponent;
     private final JPanel centerComponent;
     private final JPanel rightComponent;
 
-    public TopMenu() {
+    public enum MenuLocation {
+        TOP,
+        BOTTOM
+    }
+
+    public NiceMenu() {
+        this(MenuLocation.TOP);
+    }
+
+    public NiceMenu(MenuLocation location) {
 
         this.setBackground(ViewUtil.getPrimaryMenuColor());
-        this.setBorder(ViewUtil.getBottomLineBorder());
+
+        if (location == MenuLocation.TOP) {
+            this.setBorder(ViewUtil.getBottomLineBorder());
+        } else {
+            this.setBorder(ViewUtil.getTopLineBorder());
+        }
 
         leftComponent = ViewUtil.getClearPanel();
         leftComponent.setLayout(new MigLayout("insets 0, nogrid, gapx 10"));
@@ -39,7 +53,7 @@ class TopMenu extends JPanel {
         rightComponent = ViewUtil.getClearPanel();
         rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing, gapx 10"));
 
-        layout = new MigLayout("gapx 0, gapy 0, insets 5 15 5 15, fillx, filly, height 40");
+        layout = new MigLayout("gapx 0, gapy 0, insets 5, fillx, filly");
         this.setLayout(layout);
 
         this.add(leftComponent, "width 20%");
@@ -48,20 +62,20 @@ class TopMenu extends JPanel {
 
     }
 
-    void addLeftComponent(JComponent c) {
+    public void addLeftComponent(JComponent c) {
         leftComponent.add(c, "left");
     }
 
-    void addRightComponent(JComponent c) {
+    public void addRightComponent(JComponent c) {
         rightComponent.add(c, "right");
     }
 
-    void setCenterComponent(JComponent c) {
+    public  void setCenterComponent(JComponent c) {
         centerComponent.removeAll();
         centerComponent.add(c, "center");
     }
 
-    void setTitle(String title) {
+    public void setTitle(String title) {
         centerComponent.removeAll();
 
         JLabel titleLabel = new JLabel("");
