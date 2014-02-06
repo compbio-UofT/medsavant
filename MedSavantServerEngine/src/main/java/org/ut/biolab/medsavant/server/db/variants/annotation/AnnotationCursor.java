@@ -236,6 +236,7 @@ public class AnnotationCursor {
             }          
             queryStart = queryEnd + 1; 
             queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
+            //LOG.info("queryStart="+queryStart+" queryEnd="+queryEnd);
         } while (queryStart < queryEnd);
 
         return results;

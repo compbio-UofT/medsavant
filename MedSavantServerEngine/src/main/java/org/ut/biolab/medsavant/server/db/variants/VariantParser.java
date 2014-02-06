@@ -87,6 +87,8 @@ public class VariantParser implements Callable<Void> {
             VCFParser vcfParser = new VCFParser(sessID, vcfFile);
             vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
             success = true;
+            
+            LOG.info("VCF file "+vcfFile+" was successfully imported.");
         } catch (Exception e) {
             EmailLogger.logByEmail("Error running parser on " + vcfFile.getAbsolutePath(), "Here is the object: " + toString() + ". Here is the message: " + ExceptionUtils.getStackTrace(e));
             LOG.error(e);

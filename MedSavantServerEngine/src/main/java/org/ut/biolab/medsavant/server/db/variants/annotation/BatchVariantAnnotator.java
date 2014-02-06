@@ -413,7 +413,8 @@ public class BatchVariantAnnotator {
 
     class VariantAnnotatorIOJob extends IOJob {
 
-        private final int VARIANT_WINDOW_SIZE = 5000; //MAXIMUM size of variant window         
+        private final int VARIANT_WINDOW_SIZE = 1; //MAXIMUM size of variant window -- revisit for next RC
+        private final int NUM_VARIANTS_BEFORE_MSG = 10000;
         private String[] inputLine;
         private int oldp = 0;
         private int numLines;
@@ -490,10 +491,12 @@ public class BatchVariantAnnotator {
                 variantsAnnotated += numVariantsInWindow;
                 SimpleVariantRecord lv = variantWindow[numVariantsInWindow - 1];
 
+                if(variantsAnnotated % NUM_VARIANTS_BEFORE_MSG == 0){
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
                         sid,
                         LogManagerAdapter.LogType.INFO,
                         inputTDFFile.getName() + ": Annotated " + variantsAnnotated + " variants so far.  Last variant considered: Chrom=" + lv.chrom + " Position=" + lv.start);
+                }
             } catch (Exception ex) {
                 LOG.error("Couldn't communicate progress message to user: " + ex);
             }

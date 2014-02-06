@@ -245,8 +245,10 @@ public class VCFParser {
                     LOG.error("Erroneous line: " + nextLineString);
                     throw new IOException(ex);
                 }
+                                
                 //add records to tdf
                 for (VariantRecord v : records) {
+                  
                     if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
                         if (previousChrom.equals(v.getChrom()) && v.getStartPosition() < previousPosition) {
                             if (outOfOrderHandle == null) {
@@ -259,11 +261,13 @@ public class VCFParser {
                         } else {
                             out.write(v.toTabString(updateId, fileId, variantId));
                             out.write("\r\n");
+                            previousPosition = v.getStartPosition();
+                            previousChrom = v.getChrom();
                         }
                         numLinesWritten++;
                         variantId++;
-                        previousPosition = v.getStartPosition();
-                        previousChrom = v.getChrom();
+                        //previousPosition = v.getStartPosition();
+                        //previousChrom = v.getChrom();
                     }
                 }
                 numRecords++;
