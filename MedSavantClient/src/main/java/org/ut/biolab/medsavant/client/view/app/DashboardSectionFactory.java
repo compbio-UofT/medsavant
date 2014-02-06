@@ -39,11 +39,11 @@ public class DashboardSectionFactory {
             }
         }
 
-        s.addLaunchableApp(new VariantNavigatorApp());
-        s.addLaunchableApp(new SavantApp());
-        s.addLaunchableApp(new AppStoreApp());
-        s.addLaunchableApp(new PatientsApp());
-        s.addLaunchableApp(new RegionsApp());
+        s.addLaunchableApp(AppDirectory.getVariantNavigator());
+        s.addLaunchableApp(AppDirectory.getGenomeBrowser());
+        s.addLaunchableApp(AppDirectory.getAppStoreApp());
+        s.addLaunchableApp(AppDirectory.getPatientsApp());
+        s.addLaunchableApp(AppDirectory.getRegionsApp());
         s.addLaunchableApp(AppDirectory.getTaskManager());
         s.addLaunchableApp(AppDirectory.getAccountManager());
 

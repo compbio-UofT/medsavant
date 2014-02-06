@@ -5,7 +5,13 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.VariantNavigatorApp;
+import org.ut.biolab.medsavant.client.view.app.builtin.patients.PatientsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskManagerApp;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 
 /**
  *
@@ -15,17 +21,90 @@ public class AppDirectory {
 
     private static TaskManagerApp taskManager;
     private static AccountManagerApp accountManager;
+    private static SavantApp genomeBrowser;
+    private static VariantNavigatorApp variantNavigator;
+    private static PatientsApp patients;
+    private static RegionsApp regions;
+    private static AppStoreApp appStore;
 
-    public static void launchApp(BuiltInApp builtInApp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     public static enum BuiltInApp {
         TASK_MANAGER,
         ACCOUNT_MANAGER,
         PATIENTS,
+        REGIONS,
         GENOME_BROWSER,
-        VARIANT_NAVIGATOR
+        VARIANT_NAVIGATOR,
+        APP_STORE
     };
+
+    public static void launchApp(BuiltInApp builtInApp) {
+
+        LaunchableApp app = null;
+
+        switch (builtInApp) {
+            case TASK_MANAGER:
+                app = taskManager;
+                break;
+            case ACCOUNT_MANAGER:
+                app = accountManager;
+                break;
+            case GENOME_BROWSER:
+                app = genomeBrowser;
+                break;
+            case PATIENTS:
+                app = patients;
+                break;
+            case REGIONS:
+                app = regions;
+                break;
+            case VARIANT_NAVIGATOR:
+                app = variantNavigator;
+                break;
+            case APP_STORE:
+                app = appStore;
+                break;
+        }
+
+        // launch the app
+        if (app != null) {
+            MedSavantFrame.getInstance().getDashboard().launchApp(app);
+        }
+    }
+
+    static VariantNavigatorApp getVariantNavigator() {
+        if (variantNavigator == null) {
+            variantNavigator = new VariantNavigatorApp();
+        }
+        return variantNavigator;
+    }
+
+    static AppStoreApp getAppStoreApp() {
+        if (appStore == null) {
+            appStore = new AppStoreApp();
+        }
+        return appStore;
+    }
+
+    static PatientsApp getPatientsApp() {
+        if (patients == null) {
+            patients = new PatientsApp();
+        }
+        return patients;
+    }
+
+    static RegionsApp getRegionsApp() {
+        if (regions == null) {
+            regions = new RegionsApp();
+        }
+        return regions;
+    }
+
+    static SavantApp getGenomeBrowser() {
+        if (genomeBrowser == null) {
+            genomeBrowser = new SavantApp();
+        }
+        return genomeBrowser;
+    }
 
     public static TaskManagerApp getTaskManager() {
         if (taskManager == null) {
@@ -34,7 +113,7 @@ public class AppDirectory {
         return taskManager;
     }
 
-    public static AccountManagerApp getAccountManager() {
+    static AccountManagerApp getAccountManager() {
         if (accountManager == null) {
             accountManager = new AccountManagerApp();
         }

@@ -28,6 +28,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -157,9 +158,10 @@ public class PillView extends JPanel {
         infoButtonPadding.setVisible(infoButton.isVisible());
 
         editButton = ViewUtil.getConfigureButton();
-        editButton.addMouseListener(new MouseAdapter() {
+        editButton.addActionListener(new ActionListener() {
+
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 if (dialogGenerator != null) {
                     showDialog(instance.getLocationOnScreen());
                 } else if (popupGenerator != null) {
