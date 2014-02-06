@@ -202,7 +202,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeColonSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException, SessionExpiredException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
@@ -235,8 +235,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
                 // We treat nulls and empty strings as being interchangeable.
                 set.add("");
             } else {
-                if (explodeCommaSeparatedValues) {
-                    String[] vals = val.split(",");
+                if (explodeColonSeparatedValues) {
+                    String[] vals = val.split(";");
                     for (int i = 0; i < vals.length; i++) {
                         vals[i] = vals[i].trim();
                     }

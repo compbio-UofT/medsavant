@@ -23,6 +23,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -36,6 +37,8 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
@@ -43,6 +46,7 @@ import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
 import org.ut.biolab.medsavant.client.view.variants.MedSavantDataSource;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -212,13 +216,16 @@ public class SavantApp implements LaunchableApp {
          });
          */
         JPanel pluginToolbar = savantInstance.getPluginToolbar();
+        pluginToolbar.setLayout(new MigLayout("insets 0"));
 
         // Removed temporarily 06-08-2013, in preparation for 1.1 release.
         // pluginToolbar.add(button);
         try {
 
             String buttonStyle = "segmentedCapsule";
-            JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BAMFILE));
+            
+            JButton dnaButton = ViewUtil.getTexturedButton("Open Patient BAMs");
+            //JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BAMFILE));
             dnaButton.setToolTipText("Open BAM File(s)");
             dnaButton.putClientProperty("JButton.buttonType", buttonStyle);
             dnaButton.putClientProperty("JButton.segmentPosition", "only");
@@ -247,6 +254,8 @@ public class SavantApp implements LaunchableApp {
                     }
                 }
             });
+            
+            ViewUtil.makeMini(dnaButton);
 
             pluginToolbar.add(dnaButton);
             pluginToolbar.setVisible(true);

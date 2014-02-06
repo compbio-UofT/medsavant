@@ -46,12 +46,12 @@ public class NiceMenu extends JPanel {
         }
 
         leftComponent = ViewUtil.getClearPanel();
-        leftComponent.setLayout(new MigLayout("insets 0, nogrid, gapx 10"));
+        leftComponent.setLayout(new MigLayout("insets 0, nogrid, gapx 10, hidemode 3"));
 
         centerComponent = ViewUtil.getClearPanel();
 
         rightComponent = ViewUtil.getClearPanel();
-        rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing, gapx 10"));
+        rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing, gapx 10, hidemode 3"));
 
         layout = new MigLayout("gapx 0, gapy 0, insets 5, fillx, filly");
         this.setLayout(layout);
@@ -83,6 +83,8 @@ public class NiceMenu extends JPanel {
         titleLabel.setForeground(new Color(64, 64, 64));
         titleLabel.setFont(ViewUtil.getBigTitleFont());
         setCenterComponent(titleLabel);
+
+        this.invalidate();
     }
 
 }

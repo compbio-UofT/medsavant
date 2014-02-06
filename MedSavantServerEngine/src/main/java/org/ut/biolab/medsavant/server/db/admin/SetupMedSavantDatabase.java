@@ -242,6 +242,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`filterable` tinyint(1) NOT NULL,"
                     + "`alias` varchar(200) COLLATE latin1_bin NOT NULL,"
                     + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
+                    + "`tags` varchar(500) COLLATE latin1_bin NOT NULL,"                            
                     + "PRIMARY KEY (`annotation_id`,`position`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
