@@ -44,6 +44,10 @@ import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -173,12 +177,17 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
      }
      */
-    public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc) throws SQLException, SessionExpiredException {
+    public static void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filterable, String alias, String desc, Set<String> tags) throws SQLException, SessionExpiredException {
 
         LOG.debug("Adding annotation format for " + colName);
 
         // remove non-alphanumeric characters from the proposed column name
         colName = colName.replaceAll("[^A-Za-z0-9]", "");
+        
+        String tagStr = "";
+        for(String tag : tags){
+            tagStr = ","+tag;
+        }
 
         InsertQuery query = MedSavantDatabase.AnnotationFormatTableSchema.insert(ANNOTATION_ID, annotID,
                 AnnotationFormatColumns.POSITION, pos,
@@ -186,7 +195,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 AnnotationFormatColumns.COLUMN_TYPE, colType,
                 AnnotationFormatColumns.FILTERABLE, filterable,
                 AnnotationFormatColumns.ALIAS, alias,
-                AnnotationFormatColumns.DESCRIPTION, desc);
+                AnnotationFormatColumns.DESCRIPTION, desc,
+                AnnotationFormatColumns.TAGS, ((tagStr.length() > 0) ? tagStr.substring(1) : ""));
 
         Connection c = ConnectionController.connectPooled(sessID);
         c.createStatement().executeUpdate(query.toString());
@@ -244,7 +254,9 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     field.getAttribute("type"),
                     field.getAttribute("filterable").equals("true"),
                     field.getAttribute("alias"),
-                    field.getAttribute("description"));
+                    field.getAttribute("description"),
+                    field.getAttribute("tags"),
+                    false);
         }
 
         return new AnnotationFormat(
@@ -413,6 +425,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                     rs2.getBoolean(AnnotationFormatColumns.FILTERABLE.getColumnName()),
                     rs2.getString(AnnotationFormatColumns.ALIAS.getColumnName()),
                     rs2.getString(AnnotationFormatColumns.DESCRIPTION.getColumnName()),
+                    rs2.getString(AnnotationFormatColumns.TAGS.getColumnName()),
                     false)); //not null = false so that nulls represent missing values.
         }
 
@@ -632,7 +645,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 format.hasRef(),
                 format.hasAlt(),
                 AnnotationType.toInt(format.getType()),
-                format.isEndInclusive());
+                format.isEndInclusive()
+                );
 
         //populate
         Connection conn = ConnectionController.connectPooled(sessionID);
@@ -640,7 +654,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         int i = 0;
         for (CustomField a : format.getCustomFields()) {
-            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
+            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getTypeString(), a.isFilterable(), a.getAlias(), a.getDescription(), a.getTags());
         }
         conn.commit();
         conn.setAutoCommit(true);
@@ -680,5 +694,58 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             return null;
         }
 
+    }
+    
+    @Override
+    public Set<String> getAnnotationTags(String sessID) throws SQLException, RemoteException, SessionExpiredException{        
+        TableSchema annFormatTable = MedSavantDatabase.AnnotationFormatTableSchema;
+        SelectQuery query2 = new SelectQuery();
+        query2.addFromTable(annFormatTable.getTable());
+        query2.addColumns(annFormatTable.getDBColumn(AnnotationFormatColumns.TAGS.getColumnName()));
+        query2.setIsDistinct(true);
+        
+        ResultSet rs2 = ConnectionController.executeQuery(sessID, query2.toString());       
+        
+        Set<String> tags = new HashSet<String>();
+        while (rs2.next()) {
+            String tagStr = rs2.getString(AnnotationFormatColumns.TAGS.getColumnName());
+            String[] tagArray = tagStr.split(CustomField.TAG_DELIMITER);
+            for(String tag : tagArray){
+                tags.add(tag);
+            }            
+        }
+        rs2.close();
+        return tags;
+    }
+    
+    @Override
+    public Map<String, Set<CustomField>> getAnnotationFieldsByTag(String sessionId, boolean includeUndefined) throws SQLException, RemoteException,  SessionExpiredException{
+        final String UNDEFINED_TAG = "UNDEFINED"; //do not change
+        
+        Map<String, Set<CustomField>> amap = new HashMap<String, Set<CustomField>>();
+        
+
+        Annotation[] annotations = getAnnotations(sessionId);
+        for(Annotation annotation : annotations){
+            AnnotationFormat af = getAnnotationFormat(sessionId, annotation.getID());
+            CustomField[] customFields = af.getCustomFields();
+            for(CustomField customField : customFields){                
+                Set<String> tags = customField.getTags();
+                if(tags.isEmpty() && includeUndefined){
+                    tags.add(UNDEFINED_TAG);
+                }                
+                for(String tag : tags){
+                    Set<CustomField> cs = amap.get(tag);
+                    if(cs == null){
+                        cs = new HashSet<CustomField>();                        
+                    }
+                    cs.add(customField);
+                    amap.put(tag, cs);                    
+                }
+                
+               
+            }            
+        }
+        return amap;
     }
 }

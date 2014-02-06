@@ -131,7 +131,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
      * successful completion.
      */
     public static Future submitLongJob(Runnable r) {
-        return shortThreadPool.submit(r);
+        return longThreadPool.submit(r);
     }
 
     /**

@@ -49,6 +49,7 @@ public class MedSavantDatabase {
         static final ColumnDef FILTERABLE = new ColumnDef("filterable", ColumnType.BOOLEAN, 1);
         static final ColumnDef ALIAS = new ColumnDef("alias", ColumnType.VARCHAR, 200);
         static final ColumnDef DESCRIPTION = new ColumnDef("description", ColumnType.VARCHAR, 500);
+        static final ColumnDef TAGS = new ColumnDef("tags", ColumnType.VARCHAR, 500);
     }
 
     public static class ChromosomeTableSchema extends TableSchema {
