@@ -20,10 +20,14 @@
 package org.ut.biolab.medsavant.client.view.splash;
 
 import com.explodingpixels.macwidgets.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
@@ -48,6 +52,8 @@ public class SplashFrame extends JFrame {
     private final JPanel primaryPanel;
 
     private final LoginComponent loginComponent;
+    private final ServerManagementComponent serverManager;
+
 
     public SplashFrame() {
         
@@ -59,6 +65,8 @@ public class SplashFrame extends JFrame {
         primaryPanel = new JPanel();
 
         loginComponent = new LoginComponent();
+        serverManager = new ServerManagementComponent();
+
         setPrimaryPanel(loginComponent);
 
         this.add(primaryPanel, "width 100%, growy 1.0, growx 1.0");
@@ -154,14 +162,16 @@ public class SplashFrame extends JFrame {
             panel.add(addServerButton = ViewUtil.getSoftButton("add a server"));
             panel.add(new JLabel("to connect to."));
 
+
             addServerButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    setPrimaryPanel(new EditServerComponent());
+                    serverManager.setMode(ServerManagementComponent.ADD_MODE);
+                    setPrimaryPanel(serverManager);
                 }
             });
 
-            welcomeLabel.setFont(new Font("Helvetica Neue", Font.PLAIN, 20));
+            welcomeLabel.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
 
             return panel;
         }
@@ -214,32 +224,28 @@ public class SplashFrame extends JFrame {
             panel.setLayout(new MigLayout("gapy 5, wrap 1, insets 0"));
 
             serverNameLabel = ViewUtil.getSoftButton("");
-            panel.add(new JLabel("Connect to"),"split, aligny base");
-            panel.add(serverNameLabel, "aligny base");
+            panel.add(new JLabel("Connect to"),"split");
+            panel.add(serverNameLabel, "wrap");
 
-            JButton connectionSettingsButton;
-            panel.add(connectionSettingsButton = ViewUtil.getConfigureButton(), "split, gapy 10, wrap");
-            connectionSettingsButton.setToolTipText("Server Settings");
-            connectionSettingsButton.addActionListener(new ActionListener() {
+            serverNameLabel.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (ServerController.getInstance().getCurrentServer() != null) {
-                        setPrimaryPanel(new EditServerComponent(ServerController.getInstance().getCurrentServer()));
-                    }
+                    serverManager.setMode(ServerManagementComponent.NORMAL_MODE);
+                    setPrimaryPanel(serverManager);
                 }
             });
 
             //panel.add(ViewUtil.getEmphasizedLabel("Login".toUpperCase()), "wrap");
             usernameField = new PlaceHolderTextField();
             usernameField.setPlaceholder("Username");
-            usernameField.setFont(new Font("Helvetica Neue", Font.PLAIN, 20));
+            usernameField.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
             usernameField.setForeground(ViewUtil.getSemiBlackColor());
             usernameField.setColumns(14);
             panel.add(usernameField, "wrap");
 
             passwordField = new PlaceHolderPasswordField();
             passwordField.setPlaceholder("Password");
-            passwordField.setFont(new Font("Helvetica Neue", Font.PLAIN, 20));
+            passwordField.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
             passwordField.setForeground(ViewUtil.getSemiBlackColor());
             passwordField.setColumns(14);
             panel.add(passwordField, "wrap");
@@ -259,9 +265,6 @@ public class SplashFrame extends JFrame {
                     // login , present errors
 
                     isLoggingIn = true;
-
-
-
                     setPageAppropriately();
                 }
             });
@@ -282,12 +285,37 @@ public class SplashFrame extends JFrame {
 
     }
 
-    private class EditServerComponent extends JPanel {
+    private class ServerManagementComponent extends JPanel {
 
-        private final JPanel p;
-        private final NiceMenu m;
-        private final MedSavantServerInfo server;
+        private int mode;
+        private SourceListModel listModel;
+        private SourceList sourceList;
+        private NiceMenu topMenu;
+
+        private NiceMenu bottomMenu;
+        private JButton adminButton;
+        private JButton adminCancelButton;
+        private JButton createDBButton;
+        private JButton deleteDBButton;
+        private JButton cancelButton;
+        private JButton saveButton;
+        private JButton addButton;
+        private JButton chooseButton;
+        private JButton removeButton;
+
+        private final static int NORMAL_MODE = 0;
+        private final static int ADMIN_MODE = 1;
+        private final static int EDIT_MODE = 2;
+        private final static int ADD_MODE = 3;
+        private Component[] adminComponents;
+        private Component[] normalComponents;
+        private Component[] editComponents;
+
+        // edit form
         private NiceForm form;
+
+        // whether this edits an existing server or adds a new one
+        private boolean isAdding;
 
         // fields in this form
         private NiceFormField nameField;
@@ -298,59 +326,200 @@ public class SplashFrame extends JFrame {
         private NiceFormField passwordField;
         private NiceFormField rememberPasswordField;
 
-        public EditServerComponent() {
-            this(new MedSavantServerInfo(), true);
+        // server to edit
+        private MedSavantServerInfo server;
+
+        // forms
+        private JPanel editForm;
+        private JPanel adminForm;
+        private JPanel normalForm;
+        private JPanel serverInfoContainer;
+
+        public ServerManagementComponent(){
+            initUI();
+            mode = EDIT_MODE;
+            refreshUI();
         }
 
-        public EditServerComponent(MedSavantServerInfo server) {
-            this(server, false);
+        public void setMode(int mode) {
+            this.mode = mode;
+            refreshUI();
         }
 
-        private EditServerComponent(MedSavantServerInfo info, final boolean isNew) {
+        private void refreshUI() {
+
+            hideComponents(adminComponents, editComponents, normalComponents);
+            switch (mode) {
+                case NORMAL_MODE:
+                    showComponents(normalComponents);
+                    updateNormalForm();
+                    topMenu.setTitle("Server Management");
+                    break;
+                case EDIT_MODE:
+                    isAdding = false;
+                    updateEditForm();
+                    showComponents(editComponents);
+                    topMenu.setTitle("Edit Server");
+                    break;
+                case ADD_MODE:
+                    isAdding = true;
+                    setServerToEdit(new MedSavantServerInfo());
+                    updateEditForm();
+                    showComponents(editComponents);
+                    topMenu.setTitle("Add Server");
+                    break;
+                case ADMIN_MODE:
+                    showComponents(adminComponents);
+                    updateAdminForm();
+                    topMenu.setTitle("Server Administration");
+                    break;
+            }
+        }
 
 
-            this.setLayout(new BorderLayout());
-            this.setBackground(Color.white);
 
-            m = new NiceMenu();
+        private void showComponents(Component[]... components) {
+            setVisibilityForComponents(true,components);
+        }
 
-            if (isNew) {
-                m.setTitle("Add Server");
-            } else {
-                m.setTitle("Edit Server Settings");
+        private void hideComponents(Component[]... components) {
+            setVisibilityForComponents(false, components);
+        }
+
+        private void setVisibilityForComponents(boolean visible, Component[]... components) {
+            for (Component[] cs : components) {
+                for (Component c : cs) {
+                    c.setVisible(visible);
+                }
             }
 
-            m.addRightComponent(ViewUtil.getHelpButton(
-                    "Adding a server",
-                    "To use MedSavant, you must connect to a server." +
-                            " Your administrator will provide you with information required too add a server."));
+            this.invalidate();
+        }
 
-            this.add(m,BorderLayout.NORTH);
+        private void setServerToEdit(MedSavantServerInfo server) {
+            this.server = server;
+        }
 
-            JPanel centerContainer = ViewUtil.getClearPanel();
-            centerContainer.setLayout(new MigLayout("wrap 1, center, hidemode 3, fillx, filly"));
+        private void initUI() {
 
-            p = ViewUtil.getClearPanel();
-            this.add(centerContainer,BorderLayout.CENTER);
+            this.setBackground(Color.white);
+            this.setLayout(new BorderLayout());
 
-            centerContainer.add(p);
-
-            final NiceMenu bottomMenu = new NiceMenu(NiceMenu.MenuLocation.BOTTOM);
-
+            /**
+             * MENUS
+             */
+            topMenu = new NiceMenu();
+            bottomMenu = new NiceMenu(NiceMenu.MenuLocation.BOTTOM);
+            
+            this.add(topMenu,BorderLayout.NORTH);
             this.add(bottomMenu,BorderLayout.SOUTH);
 
-            JButton cancelButton = ViewUtil.getTexturedButton("Cancel");
-            cancelButton.setFocusable(false);
 
-            cancelButton.addActionListener(new ActionListener() {
+            /**
+             * CENTRAL CONTAINER
+             */
+            JPanel container = ViewUtil.getClearPanel();
+            container.setLayout(new MigLayout("insets 0, fillx, filly, center, hidemode 3"));
+
+            editForm = ViewUtil.getClearPanel();
+            adminForm = ViewUtil.getClearPanel();
+            normalForm = ViewUtil.getClearPanel();
+
+            container.add(editForm, "growx 1.0, growy 1.0");
+            container.add(adminForm, "growx 1.0, growy 1.0");
+            container.add(normalForm, "growx 1.0, growy 1.0");
+
+            this.add(container, BorderLayout.CENTER);
+
+            /**
+             * NORMAL FORM
+             */
+
+            normalForm.setLayout(new MigLayout("insets 0, fillx, filly, center, hidemode 3, gapx 0, gapy 0"));
+            listModel = new SourceListModel();
+
+            sourceList = new SourceList(listModel);
+            sourceList.getComponent().setBorder(ViewUtil.getRightLineBorder());
+
+            normalForm.add(sourceList.getComponent(), "width 250, growy 1.0");
+
+            serverInfoContainer = ViewUtil.getClearPanel();
+
+            normalForm.add(serverInfoContainer,"growx 1.0, growy 1.0");
+
+            /**
+             * EDIT FORM
+             * refreshes everything dynamically
+             */
+
+            /**
+             * ADMIN FORM
+             * refreshes everything dynamically
+             */
+
+            /**
+             * BUTTONS
+             */
+            // admin buttons
+            bottomMenu.addLeftComponent(createDBButton = ViewUtil.getTexturedButton("Create Database"));
+            bottomMenu.addLeftComponent(deleteDBButton = ViewUtil.getTexturedButton("Delete Database"));
+            bottomMenu.addRightComponent(adminCancelButton = ViewUtil.getTexturedButton("Cancel"));
+            adminComponents = new Component[] { adminForm, adminCancelButton, createDBButton, deleteDBButton };
+
+            // editing buttons
+            bottomMenu.addRightComponent(cancelButton = ViewUtil.getTexturedButton("Cancel"));
+            bottomMenu.addRightComponent(saveButton = ViewUtil.getTexturedButton("Save"));
+            editComponents = new Component[] { editForm, cancelButton, saveButton };
+
+            // normal
+            topMenu.addLeftComponent(adminButton = ViewUtil.getTexturedButton("Admin"));
+            bottomMenu.addLeftComponent(addButton = ViewUtil.getTexturedButton("Add"));
+            bottomMenu.addLeftComponent(removeButton = ViewUtil.getTexturedButton("Remove"));
+            bottomMenu.addRightComponent(chooseButton = ViewUtil.getTexturedButton("Done"));
+            normalComponents = new Component[] { normalForm, addButton, adminButton, removeButton, chooseButton };
+
+            /**
+             * NORMAL BUTTON ACTIONS
+             */
+            addButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    setMode(ADD_MODE);
+                }
+            });
+
+            chooseButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    loginComponent.setPageAppropriately();
                     setPrimaryPanel(loginComponent);
                 }
             });
 
-            JButton saveButton = ViewUtil.getTexturedButton("Save");
-            saveButton.setFocusable(false);
+            /**
+             * NORMAL BUTTON ACTIONS
+             */
+            addButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setMode(ADD_MODE);
+                }
+            });
+
+            /**
+             * ADMIN BUTTON ACTIONS
+             */
+
+            adminCancelButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setMode(NORMAL_MODE);
+                }
+            });
+
+            /**
+             * EDIT BUTTON ACTIONS
+             */
 
             saveButton.addActionListener(new ActionListener() {
                 @Override
@@ -373,7 +542,7 @@ public class SplashFrame extends JFrame {
                             server.setPassword(password);
                             server.setRememberPassword(rememberPass);
 
-                            if (isNew) {
+                            if (isAdding) {
                                 if (!ServerController.getInstance().isServerNamed(name)) {
                                     ServerController.getInstance().addServer(server);
                                 } else {
@@ -385,73 +554,53 @@ public class SplashFrame extends JFrame {
                             setPrimaryPanel(loginComponent);
                         }
                     }
+
+                    setMode(NORMAL_MODE);
                 }
             });
-
-            //JPanel buttonContainer = new JPanel();//ViewUtil.getClearPanel();
-            //buttonContainer.setBackground(new Color(221,221,221));
-            //buttonContainer.setLayout(new MigLayout("fillx, alignx trailing, insets 5"));
-
-            final JToggleButton adminButton = ViewUtil.getTexturedToggleButton("Admin");
-            m.addLeftComponent(adminButton);
-
-
-            final NiceMenu adminMenu = new NiceMenu(NiceMenu.MenuLocation.BOTTOM);
-
-            adminMenu.addRightComponent(ViewUtil.getTexturedButton("Create Database"));
-            adminMenu.addRightComponent(ViewUtil.getTexturedButton("Delete Database"));
-
-            final EditServerComponent instance = this;
 
             adminButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    boolean isInAdminMode = adminButton.isSelected();
-
-                    if (isInAdminMode) {
-                        instance.remove(bottomMenu);
-                        instance.add(adminMenu, BorderLayout.SOUTH);
-                    } else {
-                        instance.remove(adminMenu);
-                        instance.add(bottomMenu,BorderLayout.SOUTH);
-                    }
-
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            instance.invalidate();
-                            instance.updateUI();
-                        }
-                    });
+                    setMode(ADMIN_MODE);
                 }
             });
 
-            if (!isNew) {
-                JButton deleteButton = ViewUtil.getTexturedButton("Forget this server");
-                deleteButton.setFocusable(false);
-                deleteButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ServerController.getInstance().removeServer(server);
-                        setPrimaryPanel(loginComponent);
-                    }
-                });
-                bottomMenu.addLeftComponent(deleteButton);
-            }
-
-            bottomMenu.addRightComponent(cancelButton);
-            bottomMenu.addRightComponent(saveButton);
-
-            this.server = info;
-
-            refreshUI();
+            cancelButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setMode(NORMAL_MODE);
+                }
+            });
         }
 
-        private void refreshUI() {
-            p.removeAll();
+        private void updateAdminForm() {
+        }
 
-            p.setLayout(new MigLayout("insets 30 60 30 30, center, filly"));
+        private void updateNormalForm() {
+
+            // remove all existing categories
+            while (!listModel.getCategories().isEmpty()) {
+                listModel.removeCategoryAt(0);
+            }
+
+            SourceListCategory category = new SourceListCategory("Servers");
+            listModel.addCategory(category);
+
+
+            List<MedSavantServerInfo> servers = ServerController.getInstance().getServers();
+
+            for (MedSavantServerInfo server : servers) {
+                SourceListItem item = new SourceListItem(server.getNickname());
+                listModel.addItemToCategory(item,category);
+            }
+
+        }
+
+        private void updateEditForm() {
+
+            editForm.removeAll();
+            editForm.setLayout(new MigLayout("center, fillx, filly"));
 
             NiceFormModel model = new NiceFormModel();
 
@@ -465,7 +614,7 @@ public class SplashFrame extends JFrame {
 
             form = new NiceForm(model);
 
-            p.add(form,"center");
+            editForm.add(form);
         }
     }
 }

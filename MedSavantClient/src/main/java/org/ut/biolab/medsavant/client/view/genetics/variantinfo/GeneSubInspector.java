@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticVariant
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
+
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;

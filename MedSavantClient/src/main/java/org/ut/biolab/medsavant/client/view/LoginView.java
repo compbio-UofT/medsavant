@@ -113,6 +113,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         loginButton.setEnabled(true);
         this.progressSigningIn.setVisible(false);
         this.loginButton.setText("Sign In");
+        
 
         // Exception may be null if we got here as a result of a failed version check.
         if (ex != null) {
@@ -313,6 +314,7 @@ public class LoginView extends JPanel implements Listener<LoginEvent> {
         ViewUtil.applyVerticalBoxLayout(p);
 
         loginButton = new JButton("Sign In");
+        loginButton.setFocusable(false);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {

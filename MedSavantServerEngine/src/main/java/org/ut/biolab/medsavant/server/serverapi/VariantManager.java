@@ -371,12 +371,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //clean up.
             for (File f : vcfFiles) {
-
+                f = new File(f.getAbsolutePath());
                 File d = new File(f.getParent());
                 if (f.exists()) {
                     f.delete();
                 }
-
                 if (d.exists() && d.isDirectory() && d.getName().contains("_extracted_")) {
                     d.delete();
                 }
