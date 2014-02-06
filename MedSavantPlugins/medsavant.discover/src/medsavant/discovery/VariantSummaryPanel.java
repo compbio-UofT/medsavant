@@ -125,7 +125,8 @@ public class VariantSummaryPanel extends JScrollPane {
 		final ProgressWheel pw= new ProgressWheel();
 		pw.setIndeterminate(true);
 		otherIndividualsPane.add(pw, "alignx center");
-		otherIndividualsPane.updateUI();
+		//otherIndividualsPane.updateUI(); // causes random NullPointerExceptions; use revalidate() instead
+		otherIndividualsPane.revalidate();
 		
 		
 		/* Get the other individuals DNA IDs. */		
@@ -162,7 +163,8 @@ public class VariantSummaryPanel extends JScrollPane {
 					dnaIDPanel.add(new JLabel(dnaID), "wrap");
 				}
 				otherIndividualsPane.add(dnaIDPanel);
-				otherIndividualsPane.updateUI();
+				//otherIndividualsPane.updateUI(); // causes random NullPointerExceptions; use revalidate() instead
+				otherIndividualsPane.revalidate();
 				
 				return null;
 			}

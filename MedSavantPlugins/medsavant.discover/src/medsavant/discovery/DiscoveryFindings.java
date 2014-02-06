@@ -76,7 +76,7 @@ public class DiscoveryFindings {
 	
 	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);
 	private Pattern truncationPattern= Pattern.compile("STOPGAIN|FS_\\w+|SPLICING", Pattern.CASE_INSENSITIVE);
-	private Pattern geneSymbolPattern= Pattern.compile("^([^(]+)");
+	private Pattern geneSymbolPattern= Pattern.compile("^([^:]+)");
 	private Pattern formatFieldPattern= Pattern.compile(";?FORMAT=([^;]*AD[^;]*);?", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
 	private Pattern sampleInfoFieldPattern= Pattern.compile(";?SAMPLE_INFO=([^;]+);?", Pattern.CASE_INSENSITIVE);
 	

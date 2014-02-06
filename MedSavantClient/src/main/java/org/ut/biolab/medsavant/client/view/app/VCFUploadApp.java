@@ -332,7 +332,7 @@ public class VCFUploadApp implements LaunchableApp {
 
                         this.addLog("Queuing background import job...");
 
-                        this.addLog("Annotating with ANNOVAR: " + annovarCheckbox.isSelected());
+                        this.addLog("Annotating with Jannovar: " + annovarCheckbox.isSelected());
                         this.addLog("Emailing notifications to: " + emailPlaceholder.getText());
 
                         final BackgroundTaskWorker instance = this;

@@ -281,7 +281,7 @@ public class DiscoveryPanel extends JPanel {
 				if (operator.equals(DiscoveryPanel.LIKE_KEYWORD)) {
 					/* Special case: For the LIKE operator, a "%" wildcard is 
 					 * appended to the end of the text from the text field. */
-					c= BinaryCondition.like(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText() + "%");
+					c= BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText() + "%");
 				} else if (operator.equals(DiscoveryPanel.EQUALS_KEYWORD)) {
 					c= BinaryCondition.equalTo(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
 				} else if (operator.equals(DiscoveryPanel.LESS_KEYWORD)) {
@@ -1077,7 +1077,7 @@ public class DiscoveryPanel extends JPanel {
 			
 			for (String m : mutations) {
 				mutationComboCondition.addCondition(
-					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+					BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
 			}
 			
 			newComboCondition.addCondition(mutationComboCondition);
