@@ -74,7 +74,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         this.columnName = colName;
         this.alias = alias;
 
-        allowInexactMatch = colName.equals(PHENOTYPES.getColumnName());
+        allowInexactMatch = t == WhichTable.PATIENT;  //colName.equals(PHENOTYPES.getColumnName());
 
         // don't cache patient fields; they may change
         final boolean useCache = t == WhichTable.VARIANT;

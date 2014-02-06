@@ -351,10 +351,13 @@ public class KeyValuePairPanel extends JPanel {
         }
 
         JLabel c = new JLabel(value);
-        if (splitCommas && value.indexOf(',') > 0) {
-            // For comma-separated lists, we want the text to be multi-line HTML.
-            value = "<html>" + value.replace(",", "<br>") + "</html>";
+        if (splitCommas && 
+                ((value.indexOf(',') > 0) || value.indexOf(';') > 0)) {
+            // For comma-separated and colon-separated lists, we want the text to be multi-line HTML.
+            value = "<html>" + value.replace(",", "<br/>").replace(";", "<br/>") + "</html>";
+            
         }
+        System.out.println("Split vals to " + value);
         c.setToolTipText(value);
         setValue(key, c);
     }

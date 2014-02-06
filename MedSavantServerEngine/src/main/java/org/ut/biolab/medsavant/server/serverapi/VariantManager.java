@@ -362,7 +362,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             if (preAnnotateWithAnnovar) {
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with ANNOVAR");
-                vcfFiles = Jannovar.annotateVCFFiles(vcfFiles);
+                vcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(userSessionID, referenceID)).annotateVCFFiles(vcfFiles);
             }
 
             int updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, tags);
