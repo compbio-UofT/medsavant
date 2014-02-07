@@ -44,6 +44,7 @@ import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
+import com.jidesoft.chart.render.LinePieLabelRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
@@ -55,7 +56,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
@@ -273,7 +273,24 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
 
         AbstractPieSegmentRenderer rpie = new DefaultPieSegmentRenderer();
         chart.setPieSegmentRenderer(rpie);
-
+        
+        //Makes a box with fill color 255,255,255,0 and put a label with a black
+        //font in that box.  The box is positioned directly over the corresponding pie slice.
+        /*
+        SimplePieLabelRenderer plr = new SimplePieLabelRenderer();
+        plr.setLabelColor(Color.BLACK);
+        plr.setBackground(new Color(0,0,0,0));
+        rpie.setPieLabelRenderer(plr);
+        */
+        
+        //....alternatively, the below draws a line from the pie wedge to the label.
+        //see http://www.jidesoft.com/javadoc/com/jidesoft/chart/render/LinePieLabelRenderer.html
+        LinePieLabelRenderer plr = new LinePieLabelRenderer();
+        plr.setLabelColor(Color.black);
+        plr.setLineColor(Color.black); //see also plr.setLineStroke        
+        rpie.setPieLabelRenderer(plr);
+        
+        
         DefaultBarRenderer rbar = new DefaultBarRenderer();
         chart.setBarRenderer(rbar);
 
@@ -346,7 +363,9 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
         chart.getXAxis().setTickLabelRotation(1.57079633);
 
         if (isPie) {
+            System.out.println("Setting chart type to pie");
             chart.setChartType(ChartType.PIE);
+            chart.getXAxis().getLabel().setColor(Color.BLUE);
         }
 
         // This adds zooming cababilities to bar charts, not great though
