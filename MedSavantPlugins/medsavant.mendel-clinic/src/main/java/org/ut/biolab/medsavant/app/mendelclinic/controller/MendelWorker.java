@@ -433,10 +433,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         }else{
             return false;
         }
-        //if (g.chr.equals(v.chr) && g.start <= v.start_pos && v.start_pos <= g.end) {
-          //  return true;
-        //}
-        //return false;
+        
+        //return (g.chr.equals(v.chr) && g.start <= v.start_pos && v.start_pos <= g.end);            
     }
 
     public class SimplePatientSet extends HashSet<SimplePatient> {

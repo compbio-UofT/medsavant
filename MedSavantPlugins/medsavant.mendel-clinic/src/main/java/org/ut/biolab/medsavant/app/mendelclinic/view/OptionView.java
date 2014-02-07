@@ -1102,8 +1102,9 @@ public class OptionView {
 
                         filtersChangedSinceLastDump = false;
 
+    // line in format: "8243_0000","chr17","6115", "6115", "G","C","SNP","Hetero"
 
-                        int[] columnsToKeep = new int[]{3, 4, 5, 7, 8, 11, 12};
+                        int[] columnsToKeep = new int[]{3, 4, 5, 6, 8, 9, 12, 13};
                         m.addLog("Stripping file");
 
                         File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);

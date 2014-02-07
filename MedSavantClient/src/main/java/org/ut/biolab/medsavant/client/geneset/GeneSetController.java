@@ -95,7 +95,7 @@ public class GeneSetController {
                 return null;
             }
             for (Gene g: rawGenes) {
-                genes.put(g.getName(), g);
+                genes.put(g.getName().toUpperCase(), g);
             }
         }
         return genes.values();
@@ -103,6 +103,6 @@ public class GeneSetController {
 
     public Gene getGene(String name) throws SQLException, RemoteException {
         getCurrentGenes();
-        return genes.get(name);
+        return genes.get(name.toUpperCase());
     }
 }
