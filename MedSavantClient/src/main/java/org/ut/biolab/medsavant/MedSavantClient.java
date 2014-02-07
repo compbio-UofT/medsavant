@@ -19,7 +19,6 @@
  */
 package org.ut.biolab.medsavant;
 
-import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
@@ -54,10 +53,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.net.NoRouteToHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.net.ssl.SSLHandshakeException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.UIDefaults;
@@ -67,7 +66,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
-import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -102,7 +100,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static NotificationManagerAdapter NotificationManager;
     public static boolean initialized = false;
     private static MedSavantFrame frame;
-    private static String restartCommand;
+    //private static String restartCommand;
+    private static String[] restartCommand;
     private static boolean restarting = false;
     private static final Object managerLock = new Object();
 
@@ -144,6 +143,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 /*  if (msg != null) {
                  DialogUtils.displayMessage("MedSavant needs to restart.", msg);
                  }*/
+                System.out.println("Restarting with "+restartCommand[0]);
                 Runtime.getRuntime().exec(restartCommand);
                 System.exit(0);
             } catch (IOException e) { //thrown by exec
@@ -156,19 +156,21 @@ public class MedSavantClient implements MedSavantServerRegistry {
     }
 
     public static void setRestartCommand(String[] args) {
-        StringBuilder cmd = new StringBuilder();
-        cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");
+        List<String> restartCommandList = new ArrayList<String>();
+        
+        String launcher = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        restartCommandList.add(launcher);
         for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
-            cmd.append(jvmArg + " ");
+            restartCommandList.add(jvmArg);            
         }
-        cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
-        cmd.append(MedSavantClient.class.getName()).append(" ");
-        for (String arg : args) {
-            cmd.append(arg).append(" ");
+        restartCommandList.add("-cp");
+        restartCommandList.add(ManagementFactory.getRuntimeMXBean().getClassPath());
+        restartCommandList.add(MedSavantClient.class.getName());
+        for (String arg : args){
+            restartCommandList.add(arg);
         }
-        restartCommand = cmd.toString();
-        //LOG.debug("Got restartCommand " + restartCommand);
-        //System.out.println("Got resetart Command "+restartCommand);
+        
+        restartCommand = restartCommandList.toArray(new String[restartCommandList.size()]);        
     }
 
     static public void main(String args[]) {
