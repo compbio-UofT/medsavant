@@ -503,8 +503,11 @@ public class BatchVariantAnnotator {
         }
 
         @Override
-        protected void finish() {
+        protected void finish() throws IOException {
             annotateWindow();
+            for(AnnotationCursor cursor : cursors){
+                cursor.cleanup();
+            }
         }
 
         @Override

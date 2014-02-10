@@ -180,18 +180,13 @@ public class VCFParser {
      * @throws IOException
      */
     public int parseVariantsFromReader(BufferedReader r, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
-
         VCFHeader header = null;
-
         String nextLineString;
         int numRecords = 0;
 
-        long previousPosition = -1;
-        String previousChrom = "";
 
         final String outOfOrderFilename = outfile.getAbsolutePath() + "_ooo";
-        BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
-        BufferedWriter outOfOrderHandle = null;
+        BufferedWriter outOfOrderHandle = new BufferedWriter(new FileWriter(outOfOrderFilename, true));
 
         int variantId = 0;
         int numLinesWritten = 0;
@@ -245,42 +240,24 @@ public class VCFParser {
                     LOG.error("Erroneous line: " + nextLineString);
                     throw new IOException(ex);
                 }
-                                
+
                 //add records to tdf
                 for (VariantRecord v : records) {
-                  
                     if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
-                        if (previousChrom.equals(v.getChrom()) && v.getStartPosition() < previousPosition) {
-                            if (outOfOrderHandle == null) {
-                                outOfOrderHandle = new BufferedWriter(new FileWriter(outOfOrderFilename, true));
-                            }
-
-                            outOfOrderHandle.write(v.toTabString(updateId, fileId, variantId));
-                            outOfOrderHandle.write("\r\n");
-                            //out of order!
-                        } else {
-                            out.write(v.toTabString(updateId, fileId, variantId));
-                            out.write("\r\n");
-                            previousPosition = v.getStartPosition();
-                            previousChrom = v.getChrom();
-                        }
+                        outOfOrderHandle.write(v.toTabString(updateId, fileId, variantId));
+                        outOfOrderHandle.write("\r\n");
                         numLinesWritten++;
                         variantId++;
-                        //previousPosition = v.getStartPosition();
-                        //previousChrom = v.getChrom();
                     }
                 }
                 numRecords++;
             }//end else
         }
-        out.close();
 
-        if (outOfOrderHandle != null) {
-            outOfOrderHandle.close();
-            LOG.info("Some variants were out of order, sorting and merging...");
-            //sort the out of order file.            
-            mergeUnsortedTDFIntoSortedTDF(outOfOrderFilename, outfile);
-        }
+        outOfOrderHandle.close();
+
+        LOG.info("sorting out of order handle");
+        sortTDF(outOfOrderFilename, outfile);
 
         return numLinesWritten;
     }
@@ -292,11 +269,9 @@ public class VCFParser {
     private final static int TDF_INDEX_OF_STARTPOS = 5;
 
     //Uses ExternalSort so that it can be used with very large files.    
-    static void mergeUnsortedTDFIntoSortedTDF(String unsortedTDF, File sortedTDF) throws IOException {
+    static void sortTDF(String unsortedTDF, File sortedTDF) throws IOException {
         final boolean eliminateDuplicateRows = false;
-        final int numHeaderLinesToExcludeFromSort = 0;
-        //should stay false, due to batch.add(sortedTDF).  (can't mix gzipped
-        //and non-gzipped files).
+        final int numHeaderLinesToExcludeFromSort = 0;      
         final boolean useGzipForTmpFiles = false;
 
         //Sorts by chromosome, then position.
@@ -360,8 +335,8 @@ public class VCFParser {
                 numHeaderLinesToExcludeFromSort,
                 useGzipForTmpFiles);
 
-        //Merge the temporary files with each other and with sortedTDF
-        batch.add(sortedTDF);
+        //Merge the temporary files with each other
+        //batch.add(sortedTDF);
         String finalOutputFileName = sortedTDF.getCanonicalPath();
         File outputFile = new File(finalOutputFileName + "_MERGED");
 
@@ -370,6 +345,8 @@ public class VCFParser {
 
         if (!outputFile.renameTo(sortedTDF)) {
             throw new IOException("Can't rename merged file " + outputFile.getCanonicalPath() + " to " + sortedTDF.getCanonicalPath());
+        } else {
+            LOG.info("Outputted sorted TDF file to " + sortedTDF);
         }
     }
 
@@ -594,7 +571,7 @@ public class VCFParser {
                         }
                     }
                 }
-                
+
                 VariantRecord variantRecordTemplate = new VariantRecord(line, newStart, newEnd, newRef, newAlt, variantType);
 
                 int indexGT = getIndexGT(line); //index of GT in line

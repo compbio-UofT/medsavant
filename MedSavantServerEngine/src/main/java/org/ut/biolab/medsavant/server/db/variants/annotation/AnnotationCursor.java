@@ -68,6 +68,12 @@ public class AnnotationCursor {
     private int int_annot_index_of_end = 2;
     private boolean ref0_logged = false;
 
+     SimpleVariantRecord lastVariantAnnotated;
+    SimpleAnnotationRecord lastAnnotationConsidered;
+    String[] lastResult;
+    private final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 10000;
+    private final boolean REQUIRE_EXACT_MATCH = true;
+    
     /**
      * A file reader and cursor to be used to help in the annotation process
      *
@@ -80,6 +86,7 @@ public class AnnotationCursor {
         TabixReader headerReader = new TabixReader(annotation.getDataPath());
         String header = headerReader.readLine().trim();
         headerReader.cleanup();
+        
 
         reader = new TabixReader(annotation.getDataPath());
 
@@ -150,11 +157,7 @@ public class AnnotationCursor {
             references += ", " + s;
         }       
     }
-    SimpleVariantRecord lastVariantAnnotated;
-    SimpleAnnotationRecord lastAnnotationConsidered;
-    String[] lastResult;
-    private final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 10000;
-    private final boolean REQUIRE_EXACT_MATCH = true;
+   
 
     private String[] getVariantAnnotationString(SimpleVariantRecord variant, SimpleAnnotationRecord annotation, String[] annotationLine) {
         String prefix = "";
@@ -180,9 +183,9 @@ public class AnnotationCursor {
         long queryEnd = Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
 
         String[][] results = new String[numRecords][];
-
-        do {
-            //LOG.info("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
+        //LOG.info("queryStart="+queryStart+" queryEnd="+queryEnd);
+        do {            
+          //  LOG.info("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
             
             //find all annotations that lie within the current basepair window.
             if (!canAnnotateThisChromosome(records[0].chrom)) {
@@ -406,9 +409,9 @@ public class AnnotationCursor {
         }
 
         private boolean matchesVariant(SimpleVariantRecord r) {
-            //return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end);
-            return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
-                    || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));
+            return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end) && matchesAlt(r.alt);
+            /*return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
+                    || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));*/
         }
     }
 

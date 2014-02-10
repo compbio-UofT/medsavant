@@ -22,7 +22,7 @@ public abstract class IOJob {
         return name;
     }
     
-    protected void finish(){
+    protected void finish() throws IOException{
         
     }
     
