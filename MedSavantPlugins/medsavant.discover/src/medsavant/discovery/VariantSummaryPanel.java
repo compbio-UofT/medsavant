@@ -50,8 +50,14 @@ public class VariantSummaryPanel extends JScrollPane {
 	private int PANE_HEIGHT= 20; // minimum, but it'll stretch down - may need to change later
 	
 	
+	private String currentGeneSymbol;
+	private JLabel titleLabel;
 	private CollapsiblePane otherIndividualsPane;
 	private JPanel dnaIDPanel= new JPanel();
+	private CollapsiblePane clinvarPane;
+	private CollapsiblePane cgdPane;
+	private CollapsiblePane hgmdPane;
+			
 	
 	/**
 	 * Create a new scrollable VariantSummaryPanel.
@@ -62,12 +68,23 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.setViewportView(summaryPanel);
 		
 		summaryPanel.setLayout(new MigLayout("gapy 10"));
-		JLabel t= new JLabel(title);
-		t.setFont(new Font(t.getFont().getName(), Font.BOLD, 25));
-		summaryPanel.add(t, "alignx center, span");
+		titleLabel= new JLabel(title);
+		titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
+		summaryPanel.add(titleLabel, "alignx center, span");
 		summaryPanel.add(new JLabel(" "), "wrap");
 		
 		this.autoSize(PANE_WIDTH, PANE_HEIGHT, PANE_WIDTH_OFFSET);
+	}
+	
+	
+	/**
+	 * Update the title for the VariantSummaryPanel.
+	 * @param geneSymbol The new title string
+	 */
+	public void updateGeneSymbol(String geneSymbol) {
+		titleLabel.setText(geneSymbol);
+		currentGeneSymbol= geneSymbol;
+		summaryPanel.revalidate();
 	}
 	
 	
@@ -89,6 +106,14 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add a clinvar pane to the VariantSummaryPanel.
 	 */
 	public void addClinvarPane() {
+		clinvarPane= new CollapsiblePane("Clinvar details");
+		clinvarPane.setLayout(new MigLayout("alignx center"));
+		clinvarPane.setStyle(CollapsiblePane.PLAIN_STYLE);
+		clinvarPane.setFocusPainted(false);
+		clinvarPane.collapse(false); // expand the collapsible pane
+		clinvarPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		
+		summaryPanel.add(clinvarPane, "wrap");
 	}
 	
 	
@@ -96,6 +121,30 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add an HGMD pane to the VariantSummaryPanel.
 	 */
 	public void addHGMDPane() {
+		hgmdPane= new CollapsiblePane("HGMD details");
+		hgmdPane.setLayout(new MigLayout("alignx center"));
+		hgmdPane.setStyle(CollapsiblePane.PLAIN_STYLE);
+		hgmdPane.setFocusPainted(false);
+		hgmdPane.collapse(false); // expand the collapsible pane
+		hgmdPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		
+		summaryPanel.add(hgmdPane, "wrap");
+	}
+	
+	
+	/**
+	 * Add a CGD pane to the VariantSummaryPanel.
+	 */
+	public void addCGDPane() {
+		cgdPane= new CollapsiblePane("Clinical Genomics Database (CGD) details");
+		cgdPane.setLayout(new MigLayout("alignx center"));
+		cgdPane.setStyle(CollapsiblePane.PLAIN_STYLE);
+		cgdPane.setFocusPainted(false);
+		cgdPane.collapse(false); // expand the collapsible pane
+		cgdPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		
+		summaryPanel.add(cgdPane, "wrap");
+		summaryPanel.revalidate();
 	}
 	
 	

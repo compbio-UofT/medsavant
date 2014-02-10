@@ -4,9 +4,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
-import com.jidesoft.grid.SortableTable;
 import java.rmi.RemoteException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import medsavant.discovery.localDB.DiscoveryDB;
+import medsavant.discovery.localDB.DiscoveryDBFunctions;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
@@ -64,8 +62,8 @@ public class DiscoveryFindings {
 	private int coverageThreshold;
 	private double hetRatio;
 	private double alleleFrequencyThreshold;
-	private Map<String, String> zygosityMap;
 	private String genePanel= ALL_GENE_PANEL;
+	private boolean isCancelled= false;
 	
 	private List<Object[]> allVariants= null;
 	public TableSchema ts;
@@ -92,10 +90,6 @@ public class DiscoveryFindings {
 		effectIndex= header.indexOf(JANNOVAR_EFFECT);
 		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);		
 		
-		// For variant DB lookup - zygosity values based on VariantRecord in org.ut.biolab.medsavant.shared.vcf
-		zygosityMap= new HashMap<String, String>();
-		zygosityMap.put("HomoAlt", "hom");
-		zygosityMap.put("Hetero", "het");
 		
 		try {
 			// Get gender info
@@ -284,7 +278,7 @@ public class DiscoveryFindings {
 		/* Get variants in chunks based on a request limit offset to save memory. */
 		int position= 0;
 		List<Object[]> currentVariants= null;
-		while (currentVariants == null || currentVariants.size() != 0 ){			
+		while ((currentVariants == null || currentVariants.size() != 0) && !isCancelled) {
 			currentVariants= vma.getVariants(LoginController.getInstance().getSessionID(),
 				ProjectController.getInstance().getCurrentProjectID(),
 				ReferenceController.getInstance().getCurrentReferenceID(),
@@ -293,6 +287,9 @@ public class DiscoveryFindings {
 			allVariants.addAll(filterVariants(currentVariants));
 			position += DB_VARIANT_REQUEST_LIMIT;
 		}
+		
+		// toggle the cancel
+		if (isCancelled) isCancelled= false;
 		
 		
 		/* Identify potential compound hets. */
@@ -326,14 +323,15 @@ public class DiscoveryFindings {
 		List<Object[]> filtered= new LinkedList<Object[]>();
 		
 		for (Object[] row : input) {			
-			List<String> query= getClassification(getGeneSymbol(row), 
-					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], genePanel);
+			List<String> query= DiscoveryDBFunctions.getClassification(getGeneSymbol(row), 
+					(String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY], genePanel, GENDER);
 			
 			String classification= query.get(0);
 			String inheritance= query.get(1);
 
-			if (genePanel.equals(ALL_GENE_PANEL) || 
-				(inheritance != null && !inheritance.equals("") && coverageAndRatioPass(row, true))) {
+			if ((genePanel.equals(ALL_GENE_PANEL) || 
+					(inheritance != null && !inheritance.equals(""))) 
+					&& coverageAndRatioPass(row, true)) {
 						
 				List<Object> listRow= new ArrayList<Object>(Arrays.asList(row));
 				listRow.add(inheritance);
@@ -360,7 +358,7 @@ public class DiscoveryFindings {
 		boolean result= false;
 		
 		String info_field= (String) row[BasicVariantColumns.INDEX_OF_CUSTOM_INFO];
-	
+		
 		Matcher dp4Matcher= dp4Pattern.matcher(info_field);
 		Matcher formatFieldMatcher= formatFieldPattern.matcher(info_field);
 		Matcher sampleInfoFieldMatcher= sampleInfoFieldPattern.matcher(info_field);		
@@ -432,61 +430,6 @@ public class DiscoveryFindings {
 		}
 		
 		return header;
-	}
-	
-	
-	/** Get the variant classification.
-	 * Variant can be classified as: disease, complex, potential compound het
-	 * or carrier.
-	 * @return a list containing the disease classification and inheritance
-	 */
-	private List<String> getClassification(String geneSymbol, String zygosity, String panel) {
-		String classification= null;
-		String inheritance= null;
-		String queryAddition= "";
-		
-		if (panel.equals("ACMG")) {
-			queryAddition= "AND C.gene in (SELECT gene FROM acmg) ";
-		}
-		
-		// MUST use single quotes for HyperSQL (hsql) SQL syntax
-		String sql=	"SELECT D.classification, S.synonym, C.* " +
-					"FROM CGD C, disease_classification D, CGD_synonym S " +
-					"WHERE C.gene LIKE '" + geneSymbol + "' " + 
-					queryAddition +
-					"	AND C.inheritance = S.inheritance " +
-					"	AND S.synonym = D.inheritance " +
-					"	AND D.zygosity LIKE '" + zygosityMap.get(zygosity) + "' " +
-					"	AND (D.gender LIKE '" + GENDER + "' OR D.gender LIKE 'both') ";
-		
-		ResultSet rs;
-		try {
-			rs= DiscoveryDB.executeQuery(sql);
-		
-			int rowCount= 0;
-			while (rs.next()) {
-				/* There should only be a single result from this query. */
-				if (rowCount > 1)
-					System.err.println(">1 row found for query: " + sql);
-				
-				/* First and only element is the inheritance, as specified in sql above. */
-				List temp= DiscoveryDB.getRowAsList(rs);
-				classification= (String) temp.get(0);
-				inheritance= (String) temp.get(1);
-				
-				rowCount++;
-			}
-		} catch (SQLException e) {
-			System.out.println("This was just executed: " + sql);
-			e.printStackTrace();
-		}
-		
-		
-		List<String> output= new ArrayList<String>();
-		output.add(classification);
-		output.add(inheritance);
-		
-		return output;
 	}
 	
 	
@@ -575,4 +518,19 @@ public class DiscoveryFindings {
 		this.genePanel= panelString;
 	}
 	
+	
+	/**
+	 * Cancel the current Discovery variants query and filtering.
+	 */
+	public void setCancelled() {
+		this.isCancelled= true;
+	}
+	
+	
+	/**
+	 * Get current gender.
+	 */
+	public String getGender() {
+		return this.GENDER;
+	}
 }

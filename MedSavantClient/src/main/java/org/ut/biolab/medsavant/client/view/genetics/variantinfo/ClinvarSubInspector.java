@@ -27,8 +27,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class ClinvarSubInspector extends SubInspector {
 	
 	private static final String URL_CHARSET = "UTF-8";
-	private final String CLINVAR_RSID_TEXT= "clinvar_20131105b, rsID";
-	private final String CLINVAR_INFO_TEXT= "clinvar_20131105b, info";
+	private final String CLINVAR_RSID_TEXT= "Clinvar, rsID";
+	private final String CLINVAR_INFO_TEXT= "Clinvar, info";
 	private final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
 	private final String baseClinvarUrl= "http://www.ncbi.nlm.nih.gov/clinvar/";
 	private final String baseOMIMUrl= "http://www.omim.org/entry/";

@@ -693,6 +693,7 @@ public class DiscoveryPanel extends JPanel {
 					MSWorker.cancel(true);
 					analyzeButton.setEnabled(false);
 					progressLabel.setText("Cancelling Analysis");
+					discFind.setCancelled();
 				}
 			}
 		};
@@ -809,6 +810,8 @@ public class DiscoveryPanel extends JPanel {
 					
 					
 					// TESTING
+					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
+					vsp.addCGDPane();
 					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
 					
                }
