@@ -4,6 +4,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.swing.JideButton;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.net.URL;
@@ -15,6 +16,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import medsavant.discovery.localDB.DiscoveryDBFunctions;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +27,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -67,7 +71,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.setBorder(BorderFactory.createEmptyBorder());
 		this.setViewportView(summaryPanel);
 		
-		summaryPanel.setLayout(new MigLayout("gapy 10"));
+		summaryPanel.setLayout(new MigLayout("gapy 0px"));
 		titleLabel= new JLabel(title);
 		titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
 		summaryPanel.add(titleLabel, "alignx center, span");
@@ -106,12 +110,40 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add a clinvar pane to the VariantSummaryPanel.
 	 */
 	public void addClinvarPane() {
-		clinvarPane= new CollapsiblePane("Clinvar details");
-		clinvarPane.setLayout(new MigLayout("alignx center"));
-		clinvarPane.setStyle(CollapsiblePane.PLAIN_STYLE);
-		clinvarPane.setFocusPainted(false);
-		clinvarPane.collapse(false); // expand the collapsible pane
-		clinvarPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		clinvarPane= getCollapsiblePane("Clinvar details");
+		
+		summaryPanel.add(clinvarPane, "wrap");
+	}
+	
+	
+	/**
+	 * Update the clinvar pane.
+	 * @param csi The ClinvarSubInspector
+	 */
+	public void updateClinvarPane(ClinvarSubInspector csi) {
+		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+		summaryPanel.remove(clinvarPane);
+		
+		clinvarPane= getCollapsiblePane("Clinvar details");
+		
+		JTextArea diseaseText= new JTextArea(csi.getDisease());
+		diseaseText.setLineWrap(true);
+		diseaseText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+		diseaseText.setMinimumSize(new Dimension(PANE_WIDTH / 2, diseaseText.getPreferredSize().height));
+		diseaseText.setBackground(summaryPanel.getBackground());
+		
+		clinvarPane.add(getBoldLabel("Disease"));
+		clinvarPane.add(diseaseText, "wrap");
+		clinvarPane.add(getBoldLabel("dbSNP ID"));
+		clinvarPane.add(new JideButton(csi.getRsID()), "wrap");
+		clinvarPane.add(getBoldLabel("OMIM ID"));
+		clinvarPane.add(new JideButton(csi.getOmimID()), "wrap");
+		clinvarPane.add(getBoldLabel("OMIM Allelic Variant"));
+		clinvarPane.add(new JideButton(csi.getOmimAllelicVariantID()), "wrap");
+		clinvarPane.add(getBoldLabel("Clinvar accession"));
+		clinvarPane.add(new JideButton(csi.getClinvarAccession()), "wrap");
+		clinvarPane.add(getBoldLabel("Clinical significance"));
+		clinvarPane.add(new JLabel(csi.getClnSig()), "wrap");
 		
 		summaryPanel.add(clinvarPane, "wrap");
 	}
@@ -121,12 +153,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add an HGMD pane to the VariantSummaryPanel.
 	 */
 	public void addHGMDPane() {
-		hgmdPane= new CollapsiblePane("HGMD details");
-		hgmdPane.setLayout(new MigLayout("alignx center"));
-		hgmdPane.setStyle(CollapsiblePane.PLAIN_STYLE);
-		hgmdPane.setFocusPainted(false);
-		hgmdPane.collapse(false); // expand the collapsible pane
-		hgmdPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		hgmdPane= getCollapsiblePane("HGMD details");
 		
 		summaryPanel.add(hgmdPane, "wrap");
 	}
@@ -136,15 +163,49 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add a CGD pane to the VariantSummaryPanel.
 	 */
 	public void addCGDPane() {
-		cgdPane= new CollapsiblePane("Clinical Genomics Database (CGD) details");
-		cgdPane.setLayout(new MigLayout("alignx center"));
-		cgdPane.setStyle(CollapsiblePane.PLAIN_STYLE);
-		cgdPane.setFocusPainted(false);
-		cgdPane.collapse(false); // expand the collapsible pane
-		cgdPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		cgdPane= getCollapsiblePane("Clinical Genomics Database (CGD) details");
 		
 		summaryPanel.add(cgdPane, "wrap");
-		summaryPanel.revalidate();
+	}
+	
+	
+	/**
+	 * Update the CGD pane.
+	 * @param zygosity String for zygosity
+	 * @param gender String for gender
+	 * @param classification Classification as determined by another program (required to deal with compound hets).
+	 */
+	public void updateCGDPane(String zygosity, String gender, String classification){
+		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+		summaryPanel.remove(cgdPane);
+
+		cgdPane= getCollapsiblePane("Clinical Genomics Database (CGD) details");
+		
+		/* Get the CGD annotation. */
+		List<String> variantClassification= DiscoveryDBFunctions.getClassification(currentGeneSymbol, zygosity, "", gender);
+		String inheritance= variantClassification.get(1);
+		String disease= DiscoveryDBFunctions.getDisease(currentGeneSymbol);
+		
+		/* If there is no CGD annotation, collapse the pane. */
+		if (classification == null) cgdPane.collapse(true);
+						
+		cgdPane.add(getBoldLabel("Classification"));
+		cgdPane.add(new JLabel(classification), "wrap");
+		cgdPane.add(getBoldLabel("Inheritance"));
+		cgdPane.add(new JLabel(inheritance), "wrap");
+		cgdPane.add(getBoldLabel("Disease"));
+		
+		JTextArea diseaseText= new JTextArea(disease);
+		diseaseText.setLineWrap(true);
+		diseaseText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+		diseaseText.setMinimumSize(new Dimension(PANE_WIDTH / 2, diseaseText.getPreferredSize().height));
+		diseaseText.setBackground(summaryPanel.getBackground());
+		cgdPane.add(diseaseText, "wrap");
+		
+		summaryPanel.add(cgdPane, "wrap");
+		
+		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
+		summaryPanel.updateUI();
 	}
 	
 	
@@ -153,12 +214,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * DB who have this variant.
 	 */
 	public void addOtherIndividualsPane() {
-		otherIndividualsPane= new CollapsiblePane("Individuals with this variant");
-		otherIndividualsPane.setLayout(new MigLayout("alignx center"));
-		otherIndividualsPane.setStyle(CollapsiblePane.PLAIN_STYLE);
-		otherIndividualsPane.setFocusPainted(false);
-		otherIndividualsPane.collapse(false); // expand the collapsible pane
-		otherIndividualsPane.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		otherIndividualsPane= getCollapsiblePane("Individuals with this variant");
 		
 		summaryPanel.add(otherIndividualsPane, "wrap");
 	}
@@ -287,4 +343,30 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.setPreferredSize(new Dimension(summaryPanel.getMinimumSize().width, summaryPanel.getMaximumSize().height));
 	}
 	
+	
+	/**
+	 * Get a new CollapsiblePane with the preferred presets.
+	 * @param title Title of the pane
+	 */
+	private CollapsiblePane getCollapsiblePane(String title) {
+		CollapsiblePane p= new CollapsiblePane(title);
+		p.setLayout(new MigLayout("alignx center"));
+		p.setStyle(CollapsiblePane.PLAIN_STYLE);
+		p.setFocusPainted(false);
+		p.collapse(false); // expand the collapsible pane
+		p.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));
+		
+		return p;
+	}
+	
+	
+	/**
+	 * Create a bold label with the specified text
+	 * @param labelText The JLabel text
+	 */
+	private JLabel getBoldLabel(String labelText) {
+		JLabel boldLabel= new JLabel(labelText);
+		boldLabel.setFont(new Font(boldLabel.getFont().getName(), Font.BOLD, boldLabel.getFont().getSize()));
+		return boldLabel;				
+	}
 }

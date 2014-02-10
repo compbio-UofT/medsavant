@@ -145,7 +145,7 @@ public class HGMDSubInspector extends SubInspector {
 		
 		disease= "";
 		if (!(header.indexOf(HGMD_DISEASE_TEXT) == -1 || disease == null))
-			disease= ((String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)]).substring(0, 15) + "..."; // Current workaround
+			disease= (String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)];
 				
 		accession= "";
 		if (!(header.indexOf(HGMD_ACC_TEXT) == -1 || accession == null))
@@ -153,11 +153,11 @@ public class HGMDSubInspector extends SubInspector {
 		
 		comments= "";
 		if (!(header.indexOf(HGMD_COMMENTS_TEXT) == -1 || comments == null))
-			comments= ((String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)]).substring(0, 15) + "..."; // Current workaround
+			comments= (String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)];
 		
 		description= "";
 		if (!(header.indexOf(HGMD_DESCRIPTION_TEXT) == -1 || description == null))
-			description= ((String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)]).substring(0, 15) + "..."; // Current workaround;
+			description= (String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)];
 		
 	}
 	

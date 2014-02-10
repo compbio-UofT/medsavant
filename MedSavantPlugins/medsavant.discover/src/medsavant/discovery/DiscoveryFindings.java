@@ -533,4 +533,23 @@ public class DiscoveryFindings {
 	public String getGender() {
 		return this.GENDER;
 	}
+	
+	/**
+	 * Get the zygosity for the variant represented by the line.
+	 * @param line Line from the output table
+	 */
+	public String getZygosity(Object[] line) {
+		return (String) line[BasicVariantColumns.INDEX_OF_ZYGOSITY];
+	}
+	
+	
+	/**
+	 * Get the classification for the variant represented by the line.
+	 * @param line Line from the output table
+	 */
+	public String getClassification(Object[] line) {
+		return (String) line[CLASSIFICATION_INDEX];
+	}
+	
+	
 }

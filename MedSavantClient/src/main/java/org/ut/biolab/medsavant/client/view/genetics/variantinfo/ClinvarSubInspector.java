@@ -184,10 +184,7 @@ public class ClinvarSubInspector extends SubInspector {
 		// Convert all "_" to spaces, "|" to "; " and "\x2c" to ","
 		disease= disease.replaceAll("_", " ");
 		disease= disease.replaceAll("\\|", "; ");
-		disease= disease.replaceAll("\\x2c", ", ");
-		if (disease.length() > 15)
-			disease= disease.substring(0, 15) + "..."; // TESTING for now
-		
+		disease= disease.replaceAll("\\x2c", ", ");		
 		
 		/* Extract the Clivar accession */
 		Pattern accessionPattern= Pattern.compile(";?CLNACC=([^;]+);?", Pattern.CASE_INSENSITIVE);
@@ -306,4 +303,56 @@ public class ClinvarSubInspector extends SubInspector {
 
 		return ncbiButton;
     }
+	
+	
+	/**
+	 * Get the rsID for this variant.
+	 */
+	public String getRsID() {
+		return this.rsID;
+	}
+	
+	
+	/**
+	 * Get the [code-translated] clinical significance for this variant.
+	 */
+	public String getClnSig() {
+		String clnSigTranslation= "";
+		if (variantClinicalSignificance.containsKey(clnSig))
+			clnSigTranslation= (String) variantClinicalSignificance.get(clnSig);
+		return clnSigTranslation;
+	}
+	
+	
+	/**
+	 * Get the omimID for this variant.
+	 */
+	public String getOmimID() {
+		return this.omimID;
+	}
+	
+	
+	/**
+	 * Get the omim allelic variant ID for this variant.
+	 */
+	public String getOmimAllelicVariantID() {
+		return this.omimAllelicVariantID;
+	}
+	
+	
+	/**
+	 * Get the disease for this variant.
+	 */
+	public String getDisease() {
+		return this.disease;
+	}
+	
+	
+	/**
+	 * Get the clinvar accession for this variant.
+	 */
+	public String getClinvarAccession() {
+		return this.accession;
+	}
+	
 }

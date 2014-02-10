@@ -23,7 +23,7 @@ public class DiscoveryDBFunctions {
 	 * For variant DB lookup - Assign zygosity values based on VariantRecord in org.ut.biolab.medsavant.shared.vcf.
 	 */
 	private static void initZygosityMap() {
-		if (zygosityMap.size() == 0) {
+		if (zygosityMap == null) {
 			zygosityMap= new HashMap<String, String>();
 			zygosityMap.put("HomoAlt", "hom");
 			zygosityMap.put("Hetero", "het");
@@ -35,7 +35,7 @@ public class DiscoveryDBFunctions {
 	 * Variant can be classified as: disease, complex, potential compound het
 	 * or carrier.
 	 * @param geneSymbol The gene symbol string
-	 * @param zygosity zygosity string (either "het" or "hom")
+	 * @param zygosity zygosity string (either "Hetero" or "HomoAlt", in accordance with MedSavant syntax)
 	 * @param panel Currently limited to "ACMG" or ""
 	 * @param gender gender string (either "m" or "f")
 	 * @return a list containing the disease classification and inheritance
