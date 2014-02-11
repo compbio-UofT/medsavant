@@ -50,7 +50,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -379,7 +381,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             initializeRegistry(this.medSavantServerHost, Integer.toString(this.medSavantServerPort));
         } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
+            throw new ServletException("Failed to initialize the medsavant JSON client: " + ex.getMessage());
         }
     }
 
@@ -493,7 +495,6 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     private static class Upload
     {
-
         String fieldName;
 
         int streamId;
@@ -659,30 +660,29 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             pass = props.getProperty("password", "");
             dbase = props.getProperty("db", "");
 
-            String portStr = props.getProperty("port", "-1");
-            if (portStr == null) {
+            String portStr = props.getProperty("port", "");
+            if (StringUtils.isBlank(portStr) || !NumberUtils.isNumber(portStr)) {
                 LOG.error("No port specified in configuration, cannot continue");
-
             }
             p = Integer.parseInt(portStr);
             if (p <= 0) {
                 throw new ServletException("Illegal port specified in configuration: " + portStr + ", cannot continue.");
             }
 
-            if (uname.length() < 1) {
+            if (StringUtils.isBlank(uname)) {
                 throw new ServletException("No username specified in configuration file, cannot continue.");
             }
-            if (pass.length() < 1) {
+            if (StringUtils.isBlank(pass)) {
                 throw new ServletException("No password specified in configuration file, cannot continue.");
             }
-            if (dbase.length() < 1) {
+            if (StringUtils.isBlank(dbase)) {
                 throw new ServletException("No database specified in configuration file, cannot continue.");
             }
-            if (host.length() < 1) {
+            if (StringUtils.isBlank(host)) {
                 throw new ServletException("No host specified in configuration file, cannot continue.");
             }
         } catch (IOException iex) {
-            throw new ServletException("IO Exception reading config file, cannot continue: " + iex);
+            throw new ServletException("IO Exception reading config file, cannot continue: " + iex.getMessage());
         }
         this.medSavantServerHost = host;
         this.medSavantServerPort = p;
