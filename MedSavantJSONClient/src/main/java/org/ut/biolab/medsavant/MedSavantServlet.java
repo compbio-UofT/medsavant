@@ -648,8 +648,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         String dbase = null;
         int p = -1;
         try {
-            String ConfigFileLocation = getServletContext().getInitParameter("MedSavantConfigFile");
-            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(ConfigFileLocation);
+            String configFileLocation = getServletContext().getInitParameter("MedSavantConfigFile");
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(configFileLocation);
             Properties props = new Properties();
             props.load(in);
             in.close();
