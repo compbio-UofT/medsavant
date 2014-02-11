@@ -397,6 +397,9 @@ public class DiscoveryFindings {
 			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
 			String[] adDelimited= formatFieldText.split(":");
 			int adIndex= Arrays.asList(adDelimited).indexOf("AD");
+			
+			System.out.println("[TESTING]: " + Arrays.toString(row));
+			
 			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
 			int refCount= Integer.parseInt(adCoverageDelimited[0]);
 			int altCount= Integer.parseInt(adCoverageDelimited[1]);

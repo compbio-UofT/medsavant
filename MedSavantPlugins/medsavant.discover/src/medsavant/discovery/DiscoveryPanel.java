@@ -97,6 +97,7 @@ import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -504,6 +505,7 @@ public class DiscoveryPanel extends JPanel {
 		vsp.addOtherIndividualsPane();
 		vsp.addCGDPane();
 		vsp.addClinvarPane();
+		vsp.addHGMDPane();
 			
 		
 		/* Final window layout along with size preferences. */
@@ -811,8 +813,9 @@ public class DiscoveryPanel extends JPanel {
 						workview.getSize().height));					
 					vip.updateUI();
 					
+					///// NEED TO REMOVE VIP ONCE VSP IS 100% operational
 					
-					// TESTING ///////////////////////////////
+					/* Update the Variant Summary Panel. */
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
 					vsp.updateCGDPane(discFind.getZygosity(line), discFind.getGender(), discFind.getClassification(line));
 					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
@@ -820,7 +823,10 @@ public class DiscoveryPanel extends JPanel {
 					csi.getInfoPanel(); // set this to avoid null values, but we're not using it.
 					csi.setVariantLine(line, discFind.header);
 					vsp.updateClinvarPane(csi);
-					
+					HGMDSubInspector hsi= new HGMDSubInspector();
+					hsi.getInfoPanel(); // set this to avoid null values, but we're not using it.
+					hsi.setVariantLine(line, discFind.header);
+					vsp.updateHGMDPane(hsi);
                }
             }
         });

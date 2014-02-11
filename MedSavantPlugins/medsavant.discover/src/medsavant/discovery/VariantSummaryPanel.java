@@ -4,14 +4,20 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.JideButton;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,9 +31,11 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -45,6 +53,10 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	private final static int DB_VARIANT_REQUEST_LIMIT= 5000;
 	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
+	private final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
+	private final String baseClinvarUrl= "http://www.ncbi.nlm.nih.gov/clinvar/";
+	private final String baseOMIMUrl= "http://www.omim.org/entry/";
+	private final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
 	
 	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 	private VariantManagerAdapter vma= MedSavantClient.VariantManager;
@@ -53,7 +65,6 @@ public class VariantSummaryPanel extends JScrollPane {
 	private int PANE_WIDTH_OFFSET= 20;
 	private int PANE_HEIGHT= 20; // minimum, but it'll stretch down - may need to change later
 	
-	
 	private String currentGeneSymbol;
 	private JLabel titleLabel;
 	private CollapsiblePane otherIndividualsPane;
@@ -61,6 +72,9 @@ public class VariantSummaryPanel extends JScrollPane {
 	private CollapsiblePane clinvarPane;
 	private CollapsiblePane cgdPane;
 	private CollapsiblePane hgmdPane;
+	private String CGDPaneTitle= "Clinical Genomics Database (CGD) details";
+	private String clinvarPaneTitle= "Clinvar details";
+	private String HGMDPaneTitle= "HGMD details";
 			
 	
 	/**
@@ -110,7 +124,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add a clinvar pane to the VariantSummaryPanel.
 	 */
 	public void addClinvarPane() {
-		clinvarPane= getCollapsiblePane("Clinvar details");
+		clinvarPane= getCollapsiblePane(clinvarPaneTitle);
 		
 		summaryPanel.add(clinvarPane, "wrap");
 	}
@@ -124,24 +138,45 @@ public class VariantSummaryPanel extends JScrollPane {
 		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
 		summaryPanel.remove(clinvarPane);
 		
-		clinvarPane= getCollapsiblePane("Clinvar details");
+		clinvarPane= getCollapsiblePane(clinvarPaneTitle);
 		
-		JTextArea diseaseText= new JTextArea(csi.getDisease());
+		String disease= csi.getDisease();
+		// Convert all "_" to spaces, "|" to "; " and "\x2c" to ","
+		disease= disease.replaceAll("_", " ");
+		disease= disease.replaceAll("\\|", "; ");
+		disease= disease.replaceAll("\\\\x2c", ",");
+		
+		JTextArea diseaseText= new JTextArea(disease);
 		diseaseText.setLineWrap(true);
 		diseaseText.setWrapStyleWord(true); // wrap after words, so as not to break words up
 		diseaseText.setMinimumSize(new Dimension(PANE_WIDTH / 2, diseaseText.getPreferredSize().height));
 		diseaseText.setBackground(summaryPanel.getBackground());
 		
+		// Process the omim allelic variant text for URL
+		String omimAllelicVariantID_url= csi.getOmimAllelicVariantID().replaceAll("\\.", "#");		
+		
+		// Process the Clinvar accession text (get the root) for URL
+		Matcher m= Pattern.compile("([^\\.]+)\\.").matcher(csi.getClinvarAccession());
+		String accessionRoot= "";
+		if (m.find())
+			accessionRoot= m.group(1);
+		
+		/* Collapse the pane if the Clinvar entry is empty. Treat it as empty
+		 * if both dbSNP AND clinvar accession are empty. */
+		if (csi.getRsID().equals("") && csi.getClinvarAccession().equals(""))
+			clinvarPane.collapse(true);
+		
+		// Add labels and buttons to the pane
 		clinvarPane.add(getBoldLabel("Disease"));
 		clinvarPane.add(diseaseText, "wrap");
 		clinvarPane.add(getBoldLabel("dbSNP ID"));
-		clinvarPane.add(new JideButton(csi.getRsID()), "wrap");
+		clinvarPane.add(getURLButton(csi.getRsID(), baseDBSNPUrl, csi.getRsID(), true), "wrap");
 		clinvarPane.add(getBoldLabel("OMIM ID"));
-		clinvarPane.add(new JideButton(csi.getOmimID()), "wrap");
+		clinvarPane.add(getURLButton(csi.getOmimID(), baseOMIMUrl, csi.getOmimID(), true), "wrap");
 		clinvarPane.add(getBoldLabel("OMIM Allelic Variant"));
-		clinvarPane.add(new JideButton(csi.getOmimAllelicVariantID()), "wrap");
+		clinvarPane.add(getURLButton(csi.getOmimAllelicVariantID(), baseOMIMUrl, omimAllelicVariantID_url, false), "wrap");
 		clinvarPane.add(getBoldLabel("Clinvar accession"));
-		clinvarPane.add(new JideButton(csi.getClinvarAccession()), "wrap");
+		clinvarPane.add(getURLButton(csi.getClinvarAccession(), baseClinvarUrl, accessionRoot, true), "wrap");
 		clinvarPane.add(getBoldLabel("Clinical significance"));
 		clinvarPane.add(new JLabel(csi.getClnSig()), "wrap");
 		
@@ -153,7 +188,22 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add an HGMD pane to the VariantSummaryPanel.
 	 */
 	public void addHGMDPane() {
-		hgmdPane= getCollapsiblePane("HGMD details");
+		hgmdPane= getCollapsiblePane(HGMDPaneTitle);
+		
+		summaryPanel.add(hgmdPane, "wrap");
+	}
+	
+	
+	/**
+	 * Update the HGMD pane.
+	 * @param hsi The HGMDSubInspector
+	 */
+	public void updateHGMDPane(HGMDSubInspector hsi) {
+		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+		summaryPanel.remove(hgmdPane);
+		
+		hgmdPane= getCollapsiblePane(HGMDPaneTitle);
+		
 		
 		summaryPanel.add(hgmdPane, "wrap");
 	}
@@ -163,7 +213,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add a CGD pane to the VariantSummaryPanel.
 	 */
 	public void addCGDPane() {
-		cgdPane= getCollapsiblePane("Clinical Genomics Database (CGD) details");
+		cgdPane= getCollapsiblePane(CGDPaneTitle);
 		
 		summaryPanel.add(cgdPane, "wrap");
 	}
@@ -179,7 +229,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
 		summaryPanel.remove(cgdPane);
 
-		cgdPane= getCollapsiblePane("Clinical Genomics Database (CGD) details");
+		cgdPane= getCollapsiblePane(CGDPaneTitle);
 		
 		/* Get the CGD annotation. */
 		List<String> variantClassification= DiscoveryDBFunctions.getClassification(currentGeneSymbol, zygosity, "", gender);
@@ -368,5 +418,43 @@ public class VariantSummaryPanel extends JScrollPane {
 		JLabel boldLabel= new JLabel(labelText);
 		boldLabel.setFont(new Font(boldLabel.getFont().getName(), Font.BOLD, boldLabel.getFont().getSize()));
 		return boldLabel;				
+	}
+	
+	
+	/**
+	 * Create a button that opens a URL in a web browser when clicked.
+	 * @param buttonText Button text
+	 * @param baseURL URL linked from the button
+	 * @param appendToURL Append text to the URL
+	 * @param doEncode encode the text using the UTF-8
+	 * @return a JideButton that opens the URL in a web browser
+	 */
+	private JideButton getURLButton(String buttonText, final String baseURL, 
+		final String appendToURL, final boolean doEncode) {
+		
+		final String URL_CHARSET = "UTF-8";
+		
+		JideButton urlButton= new JideButton(buttonText);
+		urlButton.setButtonStyle(ButtonStyle.HYPERLINK_STYLE);	
+		urlButton.setToolTipText("Lookup " + buttonText + " on the web");
+		urlButton.addActionListener(new ActionListener() 
+		{
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				try {
+					URL url;
+					if (doEncode)
+						url = new URL(baseURL + URLEncoder.encode(appendToURL, URL_CHARSET));
+					else
+						url = new URL(baseURL + appendToURL);
+					
+					java.awt.Desktop.getDesktop().browse(url.toURI());
+				} catch (Exception ex) {
+					ClientMiscUtils.reportError("Problem launching website: %s", ex);
+				}
+			}
+		});
+		
+		return urlButton;
 	}
 }

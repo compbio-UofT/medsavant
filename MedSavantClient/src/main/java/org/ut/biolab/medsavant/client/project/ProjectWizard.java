@@ -67,7 +67,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
- * @author Andrew
+ * @author Andrew, rammar
  */
 public class ProjectWizard extends WizardDialog implements BasicPatientColumns, BasicVariantColumns {
 
@@ -375,6 +375,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             variantFormatModel.addRow(new Object[]{VALIDATED.getColumnName().toUpperCase(), VALIDATED.getTypeString(), true, VALIDATED.getAlias(), ""});
 			variantFormatModel.addRow(new Object[]{JANNOVAR_EFFECT.getColumnName().toUpperCase(), JANNOVAR_EFFECT.getTypeString(), JANNOVAR_EFFECT.isFilterable(), JANNOVAR_EFFECT.getAlias(), ""});
 			variantFormatModel.addRow(new Object[]{JANNOVAR_SYMBOL.getColumnName().toUpperCase(), JANNOVAR_SYMBOL.getTypeString(), JANNOVAR_SYMBOL.isFilterable(), JANNOVAR_SYMBOL.getAlias(), ""});
+			variantFormatModel.addRow(new Object[]{FORMAT.getColumnName().toUpperCase(), FORMAT.getTypeString(), FORMAT.isFilterable(), FORMAT.getAlias(), ""});
+			variantFormatModel.addRow(new Object[]{SAMPLE_INFO.getColumnName().toUpperCase(), SAMPLE_INFO.getTypeString(), SAMPLE_INFO.isFilterable(), SAMPLE_INFO.getAlias(), ""});
         }
 
         table.setModel(variantFormatModel);

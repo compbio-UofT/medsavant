@@ -148,7 +148,7 @@ public class ClinvarSubInspector extends SubInspector {
 			getKeyValuePairPanelButton(KEY_CLINVAR_ACC, baseClinvarUrl, accessionRoot, true));
 		
 		p.setValue(KEY_CLINVAR_SRC, omimAllelicVariantID);
-		String omimAllelicVariantID_url= omimAllelicVariantID.replaceAll("\\.", "#");		
+		String omimAllelicVariantID_url= omimAllelicVariantID.replaceAll("\\.", "#");
 		buttonNumber= 0;
 		p.setAdditionalColumn(KEY_CLINVAR_SRC, buttonNumber++, KeyValuePairPanel.getCopyButton(KEY_CLINVAR_SRC, p));
 		p.setAdditionalColumn(KEY_CLINVAR_SRC, buttonNumber++, 

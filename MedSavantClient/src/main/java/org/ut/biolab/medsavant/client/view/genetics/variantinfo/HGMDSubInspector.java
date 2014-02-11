@@ -210,4 +210,60 @@ public class HGMDSubInspector extends SubInspector {
 		return ncbiButton;
     }
 	
+	
+	/** 
+	 * Get the rsID for this variant.
+	 */
+	public String getRsID() {
+		return this.rsID;
+	}
+	
+	
+	/**
+	 * Get the omimID for this variant.
+	 */
+	public String getOmimID() {
+		return this.omimID;
+	}
+	
+	
+	/**
+	 * Get the disease for this variant.
+	 */
+	public String getDisease() {
+		return this.disease;
+	}	
+	
+
+	/**
+	 * Get the HGMD accession for this variant.
+	 */
+	public String getHGMDAccession() {
+		return this.accession;
+	}	
+	
+	
+	/**
+	 * Get the Pubmed ID for this variant.
+	 */
+	public String getPubmedID() {
+		return this.pubmedID;
+	}
+	
+	
+	/**
+	 * Get the HGMD comments for this variant.
+	 */
+	public String getHGMDComments() {
+		return this.comments;
+	}
+	
+	
+	/**
+	 * Get the HGMD description for this variant.
+	 */
+	public String getHGMDDescription() {
+		return this.description;
+	}
+	
 }
