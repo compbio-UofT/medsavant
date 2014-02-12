@@ -171,7 +171,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		clinvarPane.add(diseaseText, "wrap");
 		clinvarPane.add(getBoldLabel("dbSNP ID"));
 		clinvarPane.add(getURLButton(csi.getRsID(), baseDBSNPUrl, csi.getRsID(), true), "wrap");
-		clinvarPane.add(getBoldLabel("OMIM ID"));
+		clinvarPane.add(getBoldLabel("OMIM"));
 		clinvarPane.add(getURLButton(csi.getOmimID(), baseOMIMUrl, csi.getOmimID(), true), "wrap");
 		clinvarPane.add(getBoldLabel("OMIM Allelic Variant"));
 		clinvarPane.add(getURLButton(csi.getOmimAllelicVariantID(), baseOMIMUrl, omimAllelicVariantID_url, false), "wrap");
@@ -204,6 +204,33 @@ public class VariantSummaryPanel extends JScrollPane {
 		
 		hgmdPane= getCollapsiblePane(HGMDPaneTitle);
 		
+		// use JTextAreas when text runs over one line
+		JTextArea diseaseText= new JTextArea(hsi.getDisease());
+		diseaseText.setLineWrap(true);
+		diseaseText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+		diseaseText.setMinimumSize(new Dimension(PANE_WIDTH / 2, diseaseText.getPreferredSize().height));
+		diseaseText.setBackground(summaryPanel.getBackground());
+		
+		JTextArea commentsText= new JTextArea(hsi.getHGMDComments());
+		commentsText.setLineWrap(true);
+		commentsText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+		commentsText.setMinimumSize(new Dimension(PANE_WIDTH / 2, commentsText.getPreferredSize().height));
+		commentsText.setBackground(summaryPanel.getBackground());
+		
+		/* Collapse the pane if the HGMD entry is empty. Treat it as empty
+		 * if both disease AND omimid are empty. */
+		if (hsi.getDisease().equals("") && hsi.getOmimID().equals(""))
+			hgmdPane.collapse(true);
+		
+		// Add labels and buttons to the pane
+		hgmdPane.add(getBoldLabel("Disease"));
+		hgmdPane.add(diseaseText, "wrap");
+		hgmdPane.add(getBoldLabel("OMIM"));
+		hgmdPane.add(getURLButton(hsi.getOmimID(), baseOMIMUrl, hsi.getOmimID(), true), "wrap");
+		hgmdPane.add(getBoldLabel("Pubmed"));
+		hgmdPane.add(getURLButton(hsi.getPubmedID(), basePubmedUrl, hsi.getPubmedID(), true), "wrap");
+		hgmdPane.add(getBoldLabel("HGMD comments"));
+		hgmdPane.add(commentsText);
 		
 		summaryPanel.add(hgmdPane, "wrap");
 	}
