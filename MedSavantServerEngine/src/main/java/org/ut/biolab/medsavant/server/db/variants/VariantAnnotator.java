@@ -25,12 +25,13 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.db.variants.annotation.BatchVariantAnnotator;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
@@ -41,7 +42,7 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
  *
  * @author mfiume
  */
-public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
+public class VariantAnnotator extends MedSavantServerJob implements BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantAnnotator.class);
     private final File inFile;
@@ -53,7 +54,8 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
     private Exception exception;
     private boolean success;
 
-    public VariantAnnotator(String sessID, File inputFile, File outFile, Annotation[] annotations, CustomField[] customFields) throws FileNotFoundException, IOException {
+    public VariantAnnotator(String sessID, MedSavantServerJob parentJob, File inputFile, File outFile, Annotation[] annotations, CustomField[] customFields) throws FileNotFoundException, IOException {        
+        super(SessionManager.getInstance().getUserForSession(sessID), "VariantAnnotator", parentJob);
         this.inFile = inputFile;
         this.outFile = outFile;
         this.customFields = customFields;
@@ -75,7 +77,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
     }
 
     @Override
-    public Void call() {
+    public boolean run() {
 
         List<String> filesUsed = new ArrayList<String>();
         try {
@@ -94,6 +96,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
             } catch (SessionExpiredException ex) {
             }
 
+            getJobProgress().setMessage("Making room for annotations...");
             //add custom fields
             if (customFields.length > 0) {
                 //LOG.info("Adding " + customFields.length + " custom VCF fields");
@@ -104,6 +107,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
                 workingFilePath = customFieldFilename;
             }
 
+            getJobProgress().setMessage("Annotating...");
             //annotate
             if (annotations.length > 0) {
                 //LOG.info("\tDEBUG: annotations.length is > 0: annotations.length="+annotations.length);
@@ -111,7 +115,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
                 filesUsed.add(annotatedFilename);
                 long startTime = System.currentTimeMillis();
 
-                BatchVariantAnnotator bva = new BatchVariantAnnotator(new File(workingFilePath), new File(annotatedFilename), annotations, sessID);
+                BatchVariantAnnotator bva = new BatchVariantAnnotator(this.getJobProgress(), new File(workingFilePath), new File(annotatedFilename), annotations, sessID);
                 bva.performBatchAnnotationInParallel();
 
                 long endTime = System.currentTimeMillis();
@@ -153,7 +157,7 @@ public class VariantAnnotator implements BasicVariantColumns, Callable<Void> {
         //cleanup
         System.gc();
 
-        return null;
+        return success;
 
     }
 }

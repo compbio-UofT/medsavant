@@ -12,17 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.ListSelectionModel;
-import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
@@ -67,13 +63,16 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
-                    Object[][] results = new Object[tasks.size() + 1][];
+                    Object[][] results = new Object[tasks.size() + 2][];
                     int counter = 0;
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
                     TaskWorker t = new ServerLogTaskWorker();
                     results[counter] = new Object[]{t.getTaskName(), t};
+                    counter++;
+                    t = new ServerJobMonitorTaskWorker();
+                    results[counter] = new Object[]{t.getTaskName(), t};                    
                     return results;
                 }
 
@@ -178,13 +177,14 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             detailedView.updateView(t);
         }
     }
-
+    
     class TaskDetailedView extends DetailedView {
-
+        private static final int REFRESH_DELAY = 2000;
         private TaskWorker selectedWorker;
-
+        private Timer refreshTimer;        
         public TaskDetailedView() {
             super("Task Manager");
+            refreshTimer = null;
         }
 
         @Override
@@ -215,6 +215,10 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
         private void updateView(final TaskWorker t) {
 
+            if(refreshTimer != null){
+                refreshTimer.stop();
+                refreshTimer = null;
+            }
             // show a block panel
             if (t == null) {
                 this.removeAll();
@@ -262,17 +266,28 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             }
 
             // add a refresh button
-            if (t.getCurrentStatus() == TaskStatus.PERSISTENT) {
+            if (t.getCurrentStatus() == TaskStatus.PERSISTENT || t.getCurrentStatus() == TaskStatus.PERSISTENT_AUTOREFRESH) {
                 JButton refreshButton = new JButton("Refresh");
-                refreshButton.addActionListener(new ActionListener() {
+                ActionListener al = new ActionListener() {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         detailedView.updateView(t);
                     }
 
-                });
+                };
+                
+                refreshButton.addActionListener(al);
                 view.add(refreshButton);
+                if(t.getCurrentStatus() == TaskStatus.PERSISTENT_AUTOREFRESH){
+                    refreshTimer = new Timer(REFRESH_DELAY, al);
+                    SwingUtilities.invokeLater(new Runnable(){
+                        @Override
+                        public void run(){
+                            refreshTimer.start();
+                        }
+                    });
+                }
             }
 
             // add a cancel button

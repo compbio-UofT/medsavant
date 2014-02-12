@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
@@ -529,7 +530,12 @@ public class VariantManagerUtils {
 
     static int MAX_FILES = 20;
 
-    public static File[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields) throws Exception {
+    /**
+     * This function can BLOCK for a long time.
+     * @return
+     * @throws Exception 
+     */
+    public static File[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, MedSavantServerJob parentJob) throws Exception {
 
         LOG.info("Annotating " + tsvFiles.length + " TSV files");
 
@@ -542,22 +548,24 @@ public class VariantManagerUtils {
         } catch (SessionExpiredException ex) {
         }
 
-        List<VariantAnnotator> annotationThreads = new ArrayList<VariantAnnotator>(tsvFiles.length);
+        List<MedSavantServerJob> annotationThreads = new ArrayList<MedSavantServerJob>(tsvFiles.length);
 
         for (int i = 0; i < tsvFiles.length; i++) {
             File toAnnotate = tsvFiles[i];
             String outFile = toAnnotate + "_annotated";
             //LOG.info("\tDEBUG: Adding annotation thread on file "+outFile);
-            annotationThreads.add(new VariantAnnotator(sessID, toAnnotate, new File(outFile), annotations, customFields));
+            annotationThreads.add(new VariantAnnotator(sessID, parentJob, toAnnotate, new File(outFile), annotations, customFields));
         }
         //LOG.info("DEBUG: Using executor service to invoke "+annotationThreads.size()+" threads");
-        MedSavantServerEngine.getLongExecutorService().invokeAll(annotationThreads);
+        //MedSavantServerEngine.getLongExecutorService().invokeAll(annotationThreads);
+        MedSavantServerEngine.submitLongJobsAndWait(annotationThreads);
         //LOG.info("DEBUG: All annotation threads done");
 
         File[] annotatedTsvFiles = new File[annotationThreads.size()];
 
         int i = 0;
-        for (VariantAnnotator t : annotationThreads) {
+        for (MedSavantServerJob msj : annotationThreads) {
+            VariantAnnotator t = (VariantAnnotator)msj;
             File f = new File(t.getOutputFilePath());
             annotatedTsvFiles[i++] = f;
 

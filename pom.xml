@@ -557,7 +557,7 @@
     <module>MedSavantShared</module>
     <module>MedSavantServerEngine</module>
     <module>MedSavantClient</module>
+    <module>MedSavantJSONClient</module>
     <module>distribution</module>
-    <module>edu.toronto.cs.medsavant_medsavant-JSON_jar_1.1-SNAPSHOT</module>
   </modules>
 </project>

@@ -24,8 +24,8 @@ import java.rmi.RemoteException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
-import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
@@ -44,4 +44,6 @@ public interface LogManagerAdapter extends Remote {
     //public void addLog(String sid, LogType t, String description) throws RemoteException, SessionExpiredException;
     
     public Date getDateOfLastServerLog(String sid) throws SQLException, RemoteException, SessionExpiredException;
+    
+    public List<MedSavantServerJobProgress> getJobProgressForUserWithSessionID(String sid) throws SQLException, RemoteException, SessionExpiredException;
 }

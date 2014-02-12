@@ -21,8 +21,8 @@ package org.ut.biolab.medsavant.server.db.variants.annotation;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.broad.tabix.TabixReader;
@@ -53,8 +53,7 @@ public class AnnotationCursor {
     private final boolean isEndInclusive;
     // the number of fields (not including standard ones like chr, pos, ref, alt)
     private final int numNonDefaultFields;
-    // a delimiter for cases where multiple annotations can be provided for a single variant
-    private final char MULTI_ANNOTATION_DELIM = ',';
+
     // the annotation to apply
     private final Annotation annotation;
     //Setup default column indices for required columns.  These can be overridden
@@ -66,7 +65,15 @@ public class AnnotationCursor {
     private int int_annot_index_of_chr = 0;
     private int int_annot_index_of_start = 1;
     private int int_annot_index_of_end = 2;
-    private boolean ref0_logged = false;
+
+    SimpleVariantRecord lastVariantAnnotated;
+    SimpleAnnotationRecord lastAnnotationConsidered;
+    String[] lastResult;
+
+    public static final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 20000;
+
+    //If the variant density in the variantWindow is <= than this, just seek to each annotation separately.   
+    private static final double DENSITY_THRESHOLD = 10.0f / MAX_BASEPAIR_DISTANCE_IN_WINDOW;
 
     /**
      * A file reader and cursor to be used to help in the annotation process
@@ -148,13 +155,8 @@ public class AnnotationCursor {
         String references = "";
         for (String s : reader.getReferenceNames()) {
             references += ", " + s;
-        }       
+        }
     }
-    SimpleVariantRecord lastVariantAnnotated;
-    SimpleAnnotationRecord lastAnnotationConsidered;
-    String[] lastResult;
-    private final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 10000;
-    private final boolean REQUIRE_EXACT_MATCH = true;
 
     private String[] getVariantAnnotationString(SimpleVariantRecord variant, SimpleAnnotationRecord annotation, String[] annotationLine) {
         String prefix = "";
@@ -174,74 +176,66 @@ public class AnnotationCursor {
 
     //Annotates the first numRecords variant records given in 'records'.  
     //Precondition: All records have the same chromosome, and are ordered by position in ascending order.
-    String[][] annotateVariants(SimpleVariantRecord[] records, long start, long end, int numRecords) {
-        int numAnnots = 0;       
-        long queryStart = start;
-        long queryEnd = Math.min(start + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
+    boolean annotateVariants(List<SimpleVariantRecord> variantWindow, long minStart, long maxEnd, int annotationIndex) throws Exception {
+        if (!canAnnotateThisChromosome(variantWindow.get(0).chrom)) {
+            //this chromosome can't be annotated.
+            return false;
+        }
 
-        String[][] results = new String[numRecords][];
-
-        do {
-            //LOG.info("\tProcessing range " + queryStart + " - " + queryEnd + " inclusive.");
-            
-            //find all annotations that lie within the current basepair window.
-            if (!canAnnotateThisChromosome(records[0].chrom)) {
-                return null;
-            }
-
-            TabixReader.Iterator it
-                    = reader.query(reader.chr2tid(records[0].chrom),
-                            (int) queryStart - 1, //this function returns annotations AFTER this position, so we need to have the -1
-                            (int) queryEnd);
-            if (it == null) {
-                //LOG.info("Didn't find any annotations between " + (queryStart - 1) + " and " + queryEnd);
-            } else {
-                try {
-                    boolean first;
-                    int vi = 0;
-                    int l = 0;
-                    while (it.hasNext()) { //For each annotation in start + min(start+max_base_pair_distance_in_window, end)
-                        String annotationLineStr = (String) it.next();
-                        String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
-                        SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
-                        first = true;
-                        while (vi < numRecords) { //for each variant                           
-                            if (annotationRecord.intersectsPosition(records[vi].chrom, records[vi].start, records[vi].end)) {
-                                if (!REQUIRE_EXACT_MATCH || annotationRecord.matchesVariant(records[vi])) {
-                                    results[vi] = getVariantAnnotationString(records[vi], annotationRecord, annotationLine);
-                                    //results.add(getVariantAnnotationString(records[vi], annotationRecord, annotationLine));
-                                }
-                                //If this is the first annotation that intersects a variant, we're guaranteed
-                                //the future annotations don't need to consider variants to the left of the current
-                                //variant index, vi.
-                                if (first) {
-                                    first = false;
-                                    l = vi;
-                                }
-                            }
-
-                            if (records[vi].start > annotationRecord.end) {
-                                vi = l;
-                                break;
-                            }
-                            vi++;
-                        }
-                        numAnnots++;
-                    }
-                    //LOG.info("\tProcessed " + numAnnots);
-                } catch (IOException ioex) {
-                    //TODO: Change.
-                    LOG.error(ioex);
+        //Annotates variants by separately seeking annotations for each variant.  Usually slow unless
+        //variants are very sparse.
+        if (((double) variantWindow.size() / MAX_BASEPAIR_DISTANCE_IN_WINDOW) <= DENSITY_THRESHOLD) {
+            for (SimpleVariantRecord svr : variantWindow) {
+                TabixReader.Iterator annotationIt = reader.query(reader.chr2tid(variantWindow.get(0).chrom),
+                        (int)svr.start-1, //this function returns annotations AFTER this position, so we need to have the -1
+                        (int)svr.end);
+                if(annotationIt == null){
+                    continue;
                 }
-            }          
-            queryStart = queryEnd + 1; 
-            queryEnd = Math.min(queryStart + MAX_BASEPAIR_DISTANCE_IN_WINDOW, end);
-            //LOG.info("queryStart="+queryStart+" queryEnd="+queryEnd);
-        } while (queryStart < queryEnd);
+                while (annotationIt.hasNext()) {
+                    String annotationLineStr = (String) annotationIt.next();
+                    String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
+                    SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
+                    if (annotationRecord.matchesVariant(svr)) {
+                        svr.annotate(annotationIndex, getVariantAnnotationString(svr, annotationRecord, annotationLine));
+                    }
+                }
+            }
+            return true;
+        }
 
-        return results;
+        //Annotates variants by reading in all annotations in the region delimited by the variantWindow 
+        //(only uses one seek).  Faster if variants are dense.
+        TabixReader.Iterator annotationIt
+                = reader.query(reader.chr2tid(variantWindow.get(0).chrom),
+                        (int) Math.max(0, minStart - 1), //this function returns annotations AFTER this position, so we need to have the -1
+                        (int) maxEnd);
+
+        if (annotationIt == null) { //no annotations in this range.
+            return true;
+        }
+
+        int variantWindowIndex = 0;
+        while (annotationIt.hasNext()) { //For each annotation in start + min(start+max_base_pair_distance_in_window, end)
+            String annotationLineStr = (String) annotationIt.next();
+            String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
+            SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
+
+            ListIterator<SimpleVariantRecord> variantWindowIt = variantWindow.listIterator(variantWindowIndex);
+            while (variantWindowIt.hasNext()) {
+                SimpleVariantRecord variantRecord = variantWindowIt.next();
+                if (annotationRecord.matchesVariant(variantRecord)) {
+                    //annotate
+                    variantRecord.annotate(annotationIndex, getVariantAnnotationString(variantRecord, annotationRecord, annotationLine));
+                } else if (variantRecord.start > annotationRecord.end) {
+                    variantWindowIndex = variantWindowIt.previousIndex();
+                    break;
+                }
+            }
+        }
+        return true;
     }
-   
+
     /**
      * Get the number of fields (not including standard ones like chr, pos, ref,
      * alt)
@@ -305,6 +299,7 @@ public class AnnotationCursor {
      */
     Annotation getAnnotation() {
         return annotation;
+
     }
 
     private class SimpleAnnotationRecord {
@@ -382,7 +377,7 @@ public class AnnotationCursor {
             return this.alt == null || (this.alt != null && this.alt.equals(alt));
         }
 
-        private boolean intersectsPosition(String chrom, long start, long end) {        
+        private boolean intersectsPosition(String chrom, long start, long end) {
             if (this.chrom.equals(chrom)) {
                 if (this.start < start) {
                     if (this.end < start) {
@@ -406,9 +401,9 @@ public class AnnotationCursor {
         }
 
         private boolean matchesVariant(SimpleVariantRecord r) {
-            //return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end);
-            return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
-                    || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));
+            return this.chrom.equals(r.chrom) && (this.start == r.start) && (this.end == r.end) && matchesAlt(r.alt);
+            /*return (isInterval && intersectsPosition(r.chrom, r.start, r.end))
+             || (!isInterval && intersectsPosition(r.chrom, r.start, r.end) && matchesRef(r.ref) && matchesAlt(r.alt));*/
         }
     }
 

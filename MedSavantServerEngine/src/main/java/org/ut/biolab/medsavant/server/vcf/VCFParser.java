@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
@@ -50,7 +51,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
  * @author mfiume
  */
 public class VCFParser {
-
+    
     private static final Log LOG = LogFactory.getLog(VCFParser.class);
     private static final String HEADER_CHARS = "#";
     private static final String COMMENT_CHARS = "##";
@@ -68,8 +69,8 @@ public class VCFParser {
     private static final Pattern VCF_SNP_REGEX = Pattern.compile("^[ACGTNacgtn]");
     private static final Pattern VCF_BADALT_REGEX = Pattern.compile("[^ACGTNacgtn:\\d\\[\\]]");
     private static final Pattern VCF_ALT_OLD_1000G_REGEX = Pattern.compile("^<.+>$");
-
-    private static final int LINES_PER_PROGRESSREPORT = 10000;
+    
+    private static final int LINES_PER_PROGRESSREPORT = 50000;
     //numbers or dots delimited by pipes or slashes.
     //private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.\\.])([/|]([\\d.\\.]))*");
     private static final Pattern VCF_GT_REGEX = Pattern.compile("([\\d.])(([/|])([\\d.]))*");
@@ -87,80 +88,83 @@ public class VCFParser {
     private int numInvalidGT = 0;
     private int numHom = 0;
     private int numHet = 0;
-
+    
     private String sessID;
     private File vcfFile;
-
-    public VCFParser(String sessID, File vcfFile) {
+    
+    private MedSavantServerJobProgress jobProgress;
+    
+    public VCFParser(String sessID, File vcfFile, MedSavantServerJobProgress jobProgress) {
         this.sessID = sessID;
         this.vcfFile = vcfFile;
+        this.jobProgress = jobProgress;
     }
-
+    
     public int getNumInvalidRef() {
         return numInvalidRef;
     }
-
+    
     public int getNumInvalidAlt() {
         return numInvalidAlt;
     }
-
+    
     public int getNumSnp() {
         return numSnp;
     }
-
+    
     public int getNumTi() {
         return numTi;
     }
-
+    
     public int getNumTv() {
         return numTv;
     }
-
+    
     public int getNumIndels() {
         return numIndels;
     }
-
+    
     public int getNumSnp1() {
         return numSnp1;
     }
-
+    
     public int getNumTi1() {
         return numTi1;
     }
-
+    
     public int getNumTv1() {
         return numTv1;
     }
-
+    
     public int getNumIndels1() {
         return numIndels1;
     }
-
+    
     public int getNumInvalidGT() {
         return numInvalidGT;
     }
-
+    
     public int getNumHom() {
         return numHom;
     }
-
+    
     public int getNumHet() {
         return numHet;
     }
-
+    
     public int parseVariantsFromReader(BufferedReader r, File outfile, int updateId, int fileId) throws IOException {
         return parseVariantsFromReader(r, outfile, updateId, fileId, false);
     }
-
+    
     private Map<String, BufferedWriter> chromOutOfOrderFileMap = new HashMap<String, BufferedWriter>();
-
+    
     private void writeOutOfOrderLine(String chrom, String[] line, String prefix) throws IOException {
         BufferedWriter handle = chromOutOfOrderFileMap.get(chrom);
         if (handle == null) {
             handle = new BufferedWriter(new FileWriter(prefix + "_" + chrom, true));
             chromOutOfOrderFileMap.put(chrom, handle);
         }
-
+        
     }
 
     /**
@@ -180,24 +184,18 @@ public class VCFParser {
      * @throws IOException
      */
     public int parseVariantsFromReader(BufferedReader r, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
-
         VCFHeader header = null;
-
         String nextLineString;
         int numRecords = 0;
-
-        long previousPosition = -1;
-        String previousChrom = "";
-
+        
         final String outOfOrderFilename = outfile.getAbsolutePath() + "_ooo";
-        BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
-        BufferedWriter outOfOrderHandle = null;
-
+        BufferedWriter outOfOrderHandle = new BufferedWriter(new FileWriter(outOfOrderFilename, true));
+        
         int variantId = 0;
         int numLinesWritten = 0;
-
+        
         while (true) {
-
+            
             if ((nextLineString = r.readLine()) == null) {
                 LOG.info("Reader returned null after " + numLinesWritten + " lines.");
                 break;
@@ -209,13 +207,15 @@ public class VCFParser {
             if (nextLineString.length() == 0) {
                 continue;
             }
-
+            
+            String s = "Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...";
+            jobProgress.setMessage(vcfFile.getName() + " - " + s);
             if (numRecords % 100000 == 0 && numRecords != 0) {
-                LOG.info("Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...");
+                LOG.info(s);
             }
-
+            
             String[] nextLine = nextLineString.split("\t");
-
+            
             if (nextLine[0].startsWith(COMMENT_CHARS)) {
                 //Check for VCF vesion 4.
                 Matcher vcf_format_matcher = VCF_FORMAT_REGEX.matcher(nextLineString);
@@ -229,7 +229,7 @@ public class VCFParser {
                 // header line
                 header = parseHeader(nextLine);
             } else {
-
+                
                 if (header == null) {
                     throw new IOException("Cannot parse headless VCF file");
                 }
@@ -245,58 +245,38 @@ public class VCFParser {
                     LOG.error("Erroneous line: " + nextLineString);
                     throw new IOException(ex);
                 }
-                                
+
                 //add records to tdf
                 for (VariantRecord v : records) {
-                  
                     if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
-                        if (previousChrom.equals(v.getChrom()) && v.getStartPosition() < previousPosition) {
-                            if (outOfOrderHandle == null) {
-                                outOfOrderHandle = new BufferedWriter(new FileWriter(outOfOrderFilename, true));
-                            }
-
-                            outOfOrderHandle.write(v.toTabString(updateId, fileId, variantId));
-                            outOfOrderHandle.write("\r\n");
-                            //out of order!
-                        } else {
-                            out.write(v.toTabString(updateId, fileId, variantId));
-                            out.write("\r\n");
-                            previousPosition = v.getStartPosition();
-                            previousChrom = v.getChrom();
-                        }
+                        outOfOrderHandle.write(v.toTabString(updateId, fileId, variantId));
+                        outOfOrderHandle.write("\r\n");
                         numLinesWritten++;
                         variantId++;
-                        //previousPosition = v.getStartPosition();
-                        //previousChrom = v.getChrom();
                     }
                 }
                 numRecords++;
             }//end else
         }
-        out.close();
-
-        if (outOfOrderHandle != null) {
-            outOfOrderHandle.close();
-            LOG.info("Some variants were out of order, sorting and merging...");
-            //sort the out of order file.            
-            mergeUnsortedTDFIntoSortedTDF(outOfOrderFilename, outfile);
-        }
-
+        
+        outOfOrderHandle.close();
+        jobProgress.setMessage("Sorting variants...");
+        LOG.info("sorting out of order handle");
+        sortTDF(outOfOrderFilename, outfile);
+        
         return numLinesWritten;
     }
-
+    
     private final static int EXTERNALSORT_MAX_TMPFILES = 128;
     private final static Charset EXTERNALSORT_CHARSET = Charset.defaultCharset();
-
+    
     private final static int TDF_INDEX_OF_CHROM = 4;
     private final static int TDF_INDEX_OF_STARTPOS = 5;
 
     //Uses ExternalSort so that it can be used with very large files.    
-    static void mergeUnsortedTDFIntoSortedTDF(String unsortedTDF, File sortedTDF) throws IOException {
+    static void sortTDF(String unsortedTDF, File sortedTDF) throws IOException {
         final boolean eliminateDuplicateRows = false;
-        final int numHeaderLinesToExcludeFromSort = 0;
-        //should stay false, due to batch.add(sortedTDF).  (can't mix gzipped
-        //and non-gzipped files).
+        final int numHeaderLinesToExcludeFromSort = 0;        
         final boolean useGzipForTmpFiles = false;
 
         //Sorts by chromosome, then position.
@@ -305,7 +285,7 @@ public class VCFParser {
             public int compare(String o1, String o2) {
                 String[] tokens1 = o1.split("\t");
                 String[] tokens2 = o2.split("\t");
-
+                
                 String chr1 = tokens1[TDF_INDEX_OF_CHROM].toLowerCase();
                 String chr2 = tokens2[TDF_INDEX_OF_CHROM].toLowerCase();
 
@@ -319,19 +299,19 @@ public class VCFParser {
                  }*/
                 chr1 = chr1.substring(1, chr1.length() - 1);
                 chr2 = chr2.substring(1, chr2.length() - 1);
-
+                
                 if (chr1.startsWith("chr")) {
                     chr1 = chr1.substring(3);
                 }
                 if (chr2.startsWith("chr")) {
                     chr2 = chr2.substring(3);
                 }
-
+                
                 if (chr1.equals(chr2)) {
                     //assume positions are also quoted
                     long pos1 = Long.parseLong(tokens1[TDF_INDEX_OF_STARTPOS].substring(1, tokens1[TDF_INDEX_OF_STARTPOS].length() - 1));
                     long pos2 = Long.parseLong(tokens2[TDF_INDEX_OF_STARTPOS].substring(1, tokens2[TDF_INDEX_OF_STARTPOS].length() - 1));
-
+                    
                     if (pos1 < pos2) {
                         return -1;
                     } else if (pos1 > pos2) {
@@ -340,7 +320,7 @@ public class VCFParser {
                         return 0;
                     }
                 } else {
-
+                    
                     int c1 = NumberUtils.isDigits(chr1) ? Integer.parseInt(chr1) : (int) chr1.charAt(0);
                     int c2 = NumberUtils.isDigits(chr2) ? Integer.parseInt(chr2) : (int) chr2.charAt(0);
                     return (c1 < c2) ? -1 : ((c1 > c2) ? 1 : 0);
@@ -360,19 +340,21 @@ public class VCFParser {
                 numHeaderLinesToExcludeFromSort,
                 useGzipForTmpFiles);
 
-        //Merge the temporary files with each other and with sortedTDF
-        batch.add(sortedTDF);
+        //Merge the temporary files with each other
+        //batch.add(sortedTDF);
         String finalOutputFileName = sortedTDF.getCanonicalPath();
         File outputFile = new File(finalOutputFileName + "_MERGED");
-
+        
         ExternalSort.mergeSortedFiles(batch, outputFile, comparator, EXTERNALSORT_CHARSET,
                 eliminateDuplicateRows, false, useGzipForTmpFiles);
-
+        
         if (!outputFile.renameTo(sortedTDF)) {
             throw new IOException("Can't rename merged file " + outputFile.getCanonicalPath() + " to " + sortedTDF.getCanonicalPath());
+        } else {
+            LOG.info("Outputted sorted TDF file to " + sortedTDF);
         }
     }
-
+    
     static BufferedReader openFile(File vcf) throws FileNotFoundException, IOException {
         if (vcf.getAbsolutePath().endsWith(".gz")) {
             return new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(vcf)));
@@ -380,7 +362,7 @@ public class VCFParser {
             return new BufferedReader(new FileReader(vcf));
         }
     }
-
+    
     private VCFHeader parseHeader(String[] headerLine) {
         VCFHeader result = new VCFHeader();
         // has genotype information
@@ -392,10 +374,10 @@ public class VCFParser {
                 }
             }
         }
-
+        
         return result;
     }
-
+    
     private void messageToUser(LogManagerAdapter.LogType logtype, String msg) {
         try {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
@@ -411,7 +393,7 @@ public class VCFParser {
             LOG.error("WARNING: Couldn't log warning due to SessionExpiredException.  Warning: " + msg);
         }
     }
-
+    
     private void vcf_warning(String msg) {
         String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
         messageToUser(LogManagerAdapter.LogType.WARNING, warning);
@@ -422,7 +404,7 @@ public class VCFParser {
     private static final boolean UNRECOGNIZED_REFS_GIVE_WARNING = true; //only matters if above is true.
     private static final boolean TOOLONG_ALTS_GIVE_WARNING = true;
     private static final boolean UNRECOGNIZED_ALTS_GIVE_WARNING = true;
-
+    
     private List<VariantRecord> parseRecord(String[] line, VCFHeader h) {
         int numMandatoryFields = VCFHeader.getNumMandatoryFields();
 
@@ -430,14 +412,14 @@ public class VCFParser {
         if (line[VCF_INFO_INDEX].startsWith("\"") && line[VCF_INFO_INDEX].endsWith("\"")) {
             line[VCF_INFO_INDEX] = line[VCF_INFO_INDEX].substring(1, line[VCF_INFO_INDEX].length() - 1);
         }
-
+        
         List<String> infos = new ArrayList<String>();
         List<String> ids;
-
+        
         for (int i = numMandatoryFields; i < line.length; i++) {
             infos.add(line[i]);
         }
-
+        
         if (infos.isEmpty()) {
             infos.add(".");
             ids = new ArrayList<String>();
@@ -445,15 +427,15 @@ public class VCFParser {
         } else {
             ids = h.getGenotypeLabels();
         }
-
+        
         List<VariantRecord> records = new ArrayList<VariantRecord>();
-
+        
         int triedIndex = 0;
         try {
-
+            
             String ref = line[VCF_REF_INDEX].toUpperCase();
             String altStr = line[VCF_ALT_INDEX].toUpperCase();
-
+            
             long start = 0;
             try {
                 start = Long.parseLong(line[VCF_START_INDEX]);
@@ -461,11 +443,11 @@ public class VCFParser {
                 vcf_warning("Invalid (non-numeric) start position detected in VCF4 file: " + line[VCF_START_INDEX]);
                 return null;
             }
-
+            
             if (altStr.equals(".")) { //no real variant call was made at this position
                 return null;
             }
-
+            
             boolean badRef = false;
 
             //If a ref is unrecognized or too long, we truncate it to 0 and store it anyway.
@@ -480,13 +462,13 @@ public class VCFParser {
                 /*if (ref.length() < 100) { //sometimes extremely long ref contains N nucleotides
                  vcf_warning("Invalid reference ref allele record found in VCF4 file (ACGT expected, found " + ref + ") Setting ref as 0");
                  }*/
-
+                
                 badRef = true;
                 if (UNRECOGNIZED_REFS_GIVE_WARNING) {
                     vcf_warning("Unrecognized reference allele found in VCF4 file (ACGT expected, found " + ref + ") Storing anyway.");
                 }
             }
-
+            
             String[] allAlt = altStr.split(","); //there may be multiple alternative alleles
 
             for (String alt : allAlt) { //process each alternative allele                    
@@ -502,7 +484,7 @@ public class VCFParser {
                 String newRef;
                 String newAlt;
                 long newEnd;
-
+                
                 if (complex) { //complex rearrangement
                     newRef = ref;
                     newAlt = alt;
@@ -513,7 +495,7 @@ public class VCFParser {
                         vcf_warning("Unrecognized complex rearrangement detected (ref length expected to be 1, found ref=" + newRef + ".  Storing anyway.");
                     }
                 } else {
-
+                    
                     String prefix = StringUtils.getCommonPrefix(new String[]{ref, alt});
                     newRef = ref.substring(prefix.length());
                     newAlt = alt.substring(prefix.length());
@@ -531,7 +513,7 @@ public class VCFParser {
                         ++numInvalidAlt;
                         //   continue;
                     }
-
+                    
                     if (newRef.length() == newAlt.length() && VCF_SNP_REGEX.matcher(newRef).matches() && VCF_SNP_REGEX.matcher(newAlt).matches()) {
                         snp = true;
                         ++numSnp;
@@ -544,7 +526,7 @@ public class VCFParser {
                         } else {
                             ++numTv;
                         }
-
+                        
                     } else {
                         ++numIndels;
                     }
@@ -596,18 +578,18 @@ public class VCFParser {
                 }
                 
                 VariantRecord variantRecordTemplate = new VariantRecord(line, newStart, newEnd, newRef, newAlt, variantType);
-
+                
                 int indexGT = getIndexGT(line); //index of GT in line
 
                 for (int i = 0; i < ids.size(); i++) { //for each sample.                   
                     VariantRecord sampleVariantRecord = new VariantRecord(variantRecordTemplate);
-
+                    
                     if (indexGT >= 0) {
                         String chunk = line[numMandatoryFields + i + 1];
                         String gt = chunk.split(":")[indexGT];
                         Matcher gtMatcher = VCF_GT_REGEX.matcher(gt);
                         if (!gtMatcher.find() || indexGT < 0) {
-
+                            
                             vcf_warning("SKIPPED VARIANT. Invalid GT field (" + gt.substring(0, Math.min(10, gt.length())) + (gt.length() < 10 ? "" : "...") + ") found in VCF file. cannot determine genotype.");
                             ++numInvalidGT;
                             continue;
@@ -649,7 +631,7 @@ public class VCFParser {
                             ++numHom;
                         }
                     }
-
+                    
                     if (snp) {
                         ++numSnp1;
                         //annovar counts base pair mismatches (e.g. AG, GA, CT, TC)
@@ -661,13 +643,13 @@ public class VCFParser {
                         } else {
                             ++numTv1;
                         }
-
+                        
                     } else {
                         ++numIndels1;
                     }
-
+                    
                     triedIndex = 0;
-
+                    
                     String id = ids.get(i);
                     sampleVariantRecord.setDnaID(id);
 
@@ -678,7 +660,7 @@ public class VCFParser {
                         sampleVariantRecord.setSampleInformation(format, sampleInfo);
                     } catch (Exception e) {
                     }
-
+                    
                     records.add(sampleVariantRecord);
                 }
             }
@@ -695,13 +677,13 @@ public class VCFParser {
             LOG.error("Error parsing line " + badString + ": " + ex.getClass() + " " + MiscUtils.getMessage(ex));
             ex.printStackTrace();
         }
-
+        
         if ((lineNumber % LINES_PER_PROGRESSREPORT) == 0) {
             messageToUser(LogManagerAdapter.LogType.INFO, vcfFile.getName() + ": Loaded " + lineNumber + " variants...");
         }
         return records;
     }
-
+    
     private static int getIndexGT(String[] line) {
         if (line.length >= VCFHeader.getNumMandatoryFields() + 1) {
             String[] list = line[VCFHeader.getNumMandatoryFields()].trim().split(":");
@@ -713,13 +695,13 @@ public class VCFParser {
         }
         return -1;
     }
-
+    
     private static Zygosity calculateZygosity(String gt) {
         String[] split = gt.split("/|\\\\|\\|"); // splits on / or \ or |
         if (split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) {
             return null;
         }
-
+        
         try {
             if (split[0].equals(".") || split[1].equals(".")) {
                 return Zygosity.Missing;
