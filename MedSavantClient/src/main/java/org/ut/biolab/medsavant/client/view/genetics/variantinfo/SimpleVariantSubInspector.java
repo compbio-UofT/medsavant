@@ -106,7 +106,7 @@ public class SimpleVariantSubInspector extends SubInspector {
             genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    LocationController.getInstance().setLocation(selectedVariant.chr, new Range((int) (selectedVariant.start_pos - 20), (int) (selectedVariant.end_pos + 21)));
+                    LocationController.getInstance().setLocation(selectedVariant.getChromosome(), new Range((int) (selectedVariant.getStartPosition() - 20), (int) (selectedVariant.getEndPosition() + 21)));
                     AppDirectory.launchApp(AppDirectory.BuiltInApp.GENOME_BROWSER);
                 }
             });
@@ -185,8 +185,8 @@ public class SimpleVariantSubInspector extends SubInspector {
             List<Gene> intersectingGenes = new ArrayList<Gene>();
 
             for (Gene g : genes) {
-                if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.chr))
-                        && MiscUtils.doesIntersect((int)r.start_pos, (int)r.end_pos, g.getStart(), g.getEnd())){
+                if (MiscUtils.homogenizeSequence(g.getChrom()).equals(MiscUtils.homogenizeSequence(r.getChromosome()))
+                        && MiscUtils.doesIntersect((int)r.getStartPosition(), (int)r.getEndPosition(), g.getStart(), g.getEnd())){
                     intersectingGenes.add(g);
                 }
             }
@@ -280,11 +280,11 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         selectedVariant = r;
-        p.setValue(KEY_POSITION, r.chr + ":" + ViewUtil.numToString(r.start_pos)+" - "+r.end_pos);
-        p.setValue(KEY_REF, r.ref);
-        p.setValue(KEY_ALT, r.alt);
+        p.setValue(KEY_POSITION, r.getChromosome() + ":" + ViewUtil.numToString(r.getStartPosition())+" - "+r.getEndPosition());
+        p.setValue(KEY_REF, r.getReference());
+        p.setValue(KEY_ALT, r.getAlternate());
 
-        p.setValue(KEY_TYPE, checkNull(r.type));
+        p.setValue(KEY_TYPE, checkNull(r.getType()));
 
         p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
 

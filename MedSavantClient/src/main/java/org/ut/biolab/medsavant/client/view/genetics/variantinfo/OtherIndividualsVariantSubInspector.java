@@ -113,7 +113,7 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
     @Override
     protected synchronized List<Object[]> getQueryResults(){
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
-        List<Object[]> results = qvc.restrictToRegion(currentVariant.getGenomicRegion(), currentVariant.alt, MAXIMIUM_VARIANTS_TO_FETCH);
+        List<Object[]> results = qvc.restrictToRegion(currentVariant.getGenomicRegion(), currentVariant.getAlternate(), MAXIMIUM_VARIANTS_TO_FETCH);
         return results;
     }
 
