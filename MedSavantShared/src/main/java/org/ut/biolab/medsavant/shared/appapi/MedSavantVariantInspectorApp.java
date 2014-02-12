@@ -17,33 +17,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.plugin;
+package org.ut.biolab.medsavant.shared.appapi;
 
-import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
+import javax.swing.JPanel;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
- * Base class for all Savant plugins.  Not much here yet.
+ * Plugin which displays its contents in a JPanel managed by the Savant user-interface.
+ * The canonical example is our own data table plugin.
  *
- * @author tarkvara
+ * @author mfiume
  */
-public abstract class MedSavantApp {
+public abstract class MedSavantVariantInspectorApp extends MedSavantApp {
 
-    private AppDescriptor descriptor;
+    public abstract void setVariantRecord(VariantRecord r);
+    
+    public abstract String getName();
+    public abstract JPanel getInfoPanel();
 
-    public AppDescriptor getDescriptor() {
-        return descriptor;
-    }
 
-    /**
-     * Called by the PluginController after instantiating the plugin.
-     * @param desc descriptor from which this plugin was created
-     */
-    public void setDescriptor(AppDescriptor desc) {
-        descriptor = desc;
-    }
-
-    public String getTitle() {
-        return descriptor.getName();
-    }
 }

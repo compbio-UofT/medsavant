@@ -19,6 +19,8 @@
  */
 package org.ut.biolab.medsavant.client.plugin;
 
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
+
 
 /**
  * Event which is fired by the PluginController when our plugin list changes.

@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.plugin.PluginVersionException;
 /**
  * Plugin description read from the plugin.xml file.
  *
@@ -112,7 +113,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
      * Bare-bones set of tags we need to recognise in plugin.xml in order to
      * identify plugins.
      */
-    private enum PluginXMLElement {
+    public enum PluginXMLElement {
 
         PLUGIN,
         ATTRIBUTE,
@@ -125,7 +126,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
      * Bare-bones set of attributes we need to recognise in plugin.xml in order
      * to identify plugins.
      */
-    private enum PluginXMLAttribute {
+    public enum PluginXMLAttribute {
 
         ID,
         NAME,
@@ -176,9 +177,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     final String sdkVersion;
     final File file;
     final Category category;
-    private static XMLStreamReader reader;
+    
 
-    private AppDescriptor(String className,  String version, String name, String sdkVersion, String category, File file) {
+    public AppDescriptor(String className,  String version, String name, String sdkVersion, String category, File file) {
         this.className = className;
 
         this.version = version;
@@ -226,133 +227,5 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
         return (name + version).compareTo(t.name + t.version);
     }
 
-    public static AppDescriptor fromFile(File f) throws PluginVersionException {
-        try {
-            JarFile jar = new JarFile(f);
-            ZipEntry entry = jar.getEntry("plugin.xml");
-            if (entry != null) {
-                InputStream entryStream = jar.getInputStream(entry);
-                reader = XMLInputFactory.newInstance().createXMLStreamReader(entryStream);
-                String className = null;
-                String id = null;
-                String version = null;
-                String sdkVersion = null;
-                String name = null;
-                String category = Category.UTILITY.toString();
-                String currentElement = null;
-                String currentText = "";
-                do {
-                    switch (reader.next()) {
-                        case XMLStreamConstants.START_ELEMENT:
-                            switch (readElement()) {
-                                case PLUGIN:
-                                    className = readAttribute(PluginXMLAttribute.CLASS);
-
-                                    //category can be specified as an attribute or <property>.
-                                    category = readAttribute(PluginXMLAttribute.CATEGORY);
-                                    break;
-
-                                case ATTRIBUTE:
-                                    if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
-                                        sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
-                                    }
-                                    break;
-
-                                case PARAMETER:
-                                    if ("name".equals(readAttribute(PluginXMLAttribute.ID))) {
-                                        name = readAttribute(PluginXMLAttribute.VALUE);
-                                    }
-                                    break;
-
-                                case PROPERTY:
-                                    if ("name".equals(readAttribute(PluginXMLAttribute.NAME))) {
-                                        name = readAttribute(PluginXMLAttribute.VALUE);
-                                        if (name == null) {
-                                            currentElement = "name";
-                                        }
-                                    }
-
-                                    if ("version".equals(readAttribute(PluginXMLAttribute.NAME))) {
-                                        version = readAttribute(PluginXMLAttribute.VALUE);
-                                        if (version == null) {
-                                            currentElement = "version";
-                                        }
-                                    }
-
-                                    if ("sdk-version".equals(readAttribute(PluginXMLAttribute.NAME))) {
-                                        sdkVersion = readAttribute(PluginXMLAttribute.VALUE);
-                                        if (sdkVersion == null) {
-                                            currentElement = "sdk-version";
-                                        }
-                                    }
-
-                                    if ("category".equals(readAttribute(PluginXMLAttribute.NAME))) {
-                                        category = readAttribute(PluginXMLAttribute.VALUE);
-                                        if (category == null) {
-                                            currentElement = "category";
-                                        }
-                                    }
-
-                                    break;
-                            }
-                            break;
-
-                        case XMLStreamConstants.CHARACTERS:
-                            if (reader.isWhiteSpace()) {
-                                break;
-                            } else if (currentElement != null) {
-                                currentText += reader.getText().trim().replace("\t", "");
-                            }
-                            break;
-
-                        case XMLStreamConstants.END_ELEMENT:
-                            if (readElement() == PluginXMLElement.PROPERTY) {
-                                if (currentElement != null && currentText.length() > 0) {
-                                    if (currentElement.equals("name")) {
-                                        name = currentText;
-                                    } else if (currentElement.equals("sdk-version")) {
-                                        sdkVersion = currentText;
-                                    }else if(currentElement.equals("category")){
-                                        category = currentText;
-                                    }else if(currentElement.equals("version")){
-                                        version = currentText;
-                                    }
-                                }
-                                currentText = "";
-                                currentElement = null;
-                            }
-                            break;
-
-                        case XMLStreamConstants.END_DOCUMENT:
-                            reader.close();
-                            reader = null;
-                            break;
-                    }
-                } while (reader != null);
-
-                System.out.println(className + " " + name + " " + version);
-
-                if (className != null && name != null && version != null) {
-                    return new AppDescriptor(className, version, name, sdkVersion, category, f);
-                }
-            }
-        } catch (Exception x) {
-            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
-        }
-        throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
-    }
-
-    private static PluginXMLElement readElement() {
-        try {
-            String elemName = reader.getLocalName().toUpperCase();
-            return Enum.valueOf(PluginXMLElement.class, elemName);
-        } catch (IllegalArgumentException ignored) {
-            // Any elements not in our enum will just be ignored.
-            return PluginXMLElement.IGNORED;
-        }
-    }
-
-    private static String readAttribute(PluginXMLAttribute attr) {
-        return reader.getAttributeValue(null, attr.toString().toLowerCase());
-    }
+   
 }

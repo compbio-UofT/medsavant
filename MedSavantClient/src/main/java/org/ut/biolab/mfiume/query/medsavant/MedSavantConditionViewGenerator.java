@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantSearchApp;
+import org.ut.biolab.medsavant.client.appapi.MedSavantVariantSearchApp;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
@@ -49,6 +49,7 @@ import org.ut.biolab.mfiume.query.medsavant.complex.RegionSetConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.TagConditionGenerator;
 import org.ut.biolab.mfiume.query.medsavant.complex.VariantConditionGenerator;
 import org.ut.biolab.mfiume.query.value.DatabaseConditionGenerator;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionItemView;
 
 /**
@@ -134,8 +135,29 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
         
         // plugin
         MedSavantVariantSearchApp[] searchApps = loadSearchApps();
-        for (MedSavantVariantSearchApp searchApp : searchApps) {
-            ComprehensiveConditionGenerator generator = searchApp.getSearchConditionGenerator();
+        for (final MedSavantVariantSearchApp searchApp : searchApps) {
+            ComprehensiveConditionGenerator generator = new ComprehensiveConditionGenerator() {
+
+                @Override
+                public String getName() {
+                    return searchApp.getName();
+                }
+
+                @Override
+                public String category() {
+                    return searchApp.category();
+                }
+
+                @Override
+                public Condition getConditionsFromEncoding(String encoding) throws Exception {
+                    return searchApp.getConditionsFromEncoding(encoding);
+                }
+
+                @Override
+                public SearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
+                    return searchApp.getViewGeneratorForItem(item);
+                }
+            };
             conditionGenerators.put(generator.getName(), generator);
         }
 

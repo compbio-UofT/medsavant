@@ -84,7 +84,8 @@ public class NiceMenu extends JPanel {
         titleLabel.setFont(ViewUtil.getBigTitleFont());
         setCenterComponent(titleLabel);
 
-        this.invalidate();
+        centerComponent.invalidate();
+        centerComponent.updateUI();
     }
 
 }

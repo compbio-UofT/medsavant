@@ -21,16 +21,13 @@ package org.ut.biolab.medsavant.client.clinic;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
-import org.ut.biolab.medsavant.client.view.app.AppSubSection;
-import savant.plugin.PluginController;
 
 /**
  *
@@ -50,11 +47,11 @@ public class ClinicGalleryView extends GalleryView {
 
     private List<GalleryItem> initGalleryItems() {
         List<GalleryItem> items = new ArrayList<GalleryItem>();
-        List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantClinicApp.class);
+        List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantDashboardApp.class);
 
         for (int i = 0; i < clinicApps.size(); i++) {
             try {
-                MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
+                MedSavantDashboardApp app = (MedSavantDashboardApp) clinicApps.get(i);
                 items.add(new GalleryItem(app.getIcon(), app.getContent(),app.getTitle()));
             } catch (Exception e) { e.printStackTrace(); }
         }

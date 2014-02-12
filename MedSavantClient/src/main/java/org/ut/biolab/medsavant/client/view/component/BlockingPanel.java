@@ -39,14 +39,16 @@ public final class BlockingPanel extends JPanel {
 
     public BlockingPanel(String blockMessage, JComponent content) {
         setLayout(cardLayout);
+        this.setOpaque(false);
         blockCard = new WaitPanel(blockMessage);
+        blockCard.setOpaque(false);
         blockCard.setTextColor(ViewUtil.getSubtleTitleColor());
         blockCard.setProgressBarVisible(false);
         add(blockCard,BLOCK_CARD_NAME);
         add(content,CONTENT_CARD_NAME);
         block();
     }
-
+    
     public void block() {
         showCard(BLOCK_CARD_NAME);
     }

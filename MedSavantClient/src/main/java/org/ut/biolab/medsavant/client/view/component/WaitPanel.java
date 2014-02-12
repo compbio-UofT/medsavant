@@ -45,13 +45,10 @@ public class WaitPanel extends JPanel {
 
     public WaitPanel(String message) {
 
-        Color c = getBackground();
-        if (c == null) {
-            c = Color.WHITE;
-        }
+        //this.setOpaque(false);
+        Color c = Color.WHITE;
         setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 215));
 
-        setOpaque(false);
         setBorder(ViewUtil.getHugeBorder());
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         prog = ViewUtil.getIndeterminateProgressBar();
@@ -127,12 +124,13 @@ public class WaitPanel extends JPanel {
         statusLabel.setForeground(c);
     }
 
+    /*
     @Override
     public void paintComponent(Graphics g){
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
-    }
+    }*/
 
     public synchronized void setStatus(String status) {
         statusLabel.setText(status);

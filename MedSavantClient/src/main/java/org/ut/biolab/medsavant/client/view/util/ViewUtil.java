@@ -142,7 +142,7 @@ public final class ViewUtil {
     }
 
     public static Font getBigTitleFont() {
-        return new Font(getDefaultFontFamily(), Font.BOLD, 18);
+        return new Font(getDefaultFontFamily(), Font.PLAIN, 18);
     }
 
     public static Font getMediumTitleFont() {
@@ -369,6 +369,7 @@ public final class ViewUtil {
 
     public static JToggleButton getSoftToggleButton(String string) {
         JToggleButton b = new JToggleButton(string);
+        b.setFocusable(false);
         b.putClientProperty("JButton.buttonType", "segmentedRoundRect");
         b.putClientProperty("JButton.segmentPosition", "only");
         return b;
@@ -793,12 +794,15 @@ public final class ViewUtil {
     }
 
     public static Font getBigInputFont() {
-        return new Font("Helvetica Neue", Font.PLAIN, 18);
+        return new Font(getDefaultFontFamily(), Font.PLAIN, 16);
     }
 
+    public static SteelCheckBox getSwitchCheckBox() {
+        return getSwitchCheckBox(" ");
+    }
     public static SteelCheckBox getSwitchCheckBox(String text) {
         SteelCheckBox cb = new SteelCheckBox();
-        //cb.setSelectedColor(ColorDef.BLUE);
+        //cb.setSelectedColor(ColorDef.JUG_GREEN);
         //cb.setColored(true);
         cb.setText(text);
         return cb;

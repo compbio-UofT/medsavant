@@ -17,23 +17,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.api;
-
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+package org.ut.biolab.medsavant.shared.appapi;
 
 
 /**
- * Plugin which displays its contents in a JPanel managed by the Savant user-interface.
- * The canonical example is our own data table plugin.
+ * Base class for all Savant plugins.  Not much here yet.
  *
- * @author mfiume
+ * @author tarkvara
  */
-public abstract class MedSavantVariantInspectorApp extends MedSavantApp {
+public abstract class MedSavantApp {
 
-    public abstract void setVariantRecord(VariantRecord r);
-    public abstract SubInspector getSubInspector();
-
+    public abstract String getTitle();
 }

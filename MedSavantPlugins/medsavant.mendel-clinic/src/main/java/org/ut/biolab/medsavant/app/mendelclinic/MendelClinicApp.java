@@ -18,14 +18,14 @@ package org.ut.biolab.medsavant.app.mendelclinic;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.app.mendelclinic.view.MendelPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 
 /**
  * Demonstration plugin to show how to do a simple panel.
  *
  * @author tarkvara
  */
-public class MendelClinicApp extends MedSavantClinicApp {
+public class MendelClinicApp extends MedSavantDashboardApp {
 
     private MendelPanel fmp;
 

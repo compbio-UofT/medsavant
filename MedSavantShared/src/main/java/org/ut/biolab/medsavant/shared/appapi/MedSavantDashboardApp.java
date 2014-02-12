@@ -17,27 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.api;
+package org.ut.biolab.medsavant.shared.appapi;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
-import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
-
-
 /**
- * Plugin which implements filtering.
  *
  * @author mfiume
  */
-public abstract class MedSavantVariantSearchApp extends MedSavantApp {
+public abstract class MedSavantDashboardApp extends MedSavantApp {
 
-    /**
-     * This method is called once during the lifecycle of each instance of the plugin
-     * filter to give the filter instance a chance to set up.
-     */
-    public abstract void init();
+    public abstract ImageIcon getIcon();
+    public abstract JPanel getContent();
 
-    public abstract ComprehensiveConditionGenerator getSearchConditionGenerator();
+    public abstract void viewDidLoad();
+    public abstract void viewDidUnload();
 
 }

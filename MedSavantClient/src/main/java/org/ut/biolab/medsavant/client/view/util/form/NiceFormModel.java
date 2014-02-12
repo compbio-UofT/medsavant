@@ -9,15 +9,15 @@ import java.util.ArrayList;
 */
 public class NiceFormModel {
 
-    private final ArrayList<NiceFormField> fields;
+    private final ArrayList<NiceFormFieldGroup> groups;
     private Listener<NiceFormModel> listener;
 
     public NiceFormModel() {
-        this.fields = new ArrayList<NiceFormField>();
+        this.groups = new ArrayList<NiceFormFieldGroup>();
     }
 
-    public void addField(NiceFormField field) {
-        this.fields.add(field);
+    public void addGroup(NiceFormFieldGroup group) {
+        this.groups.add(group);
 
         if (listener != null) {
             listener.handleEvent(this);
@@ -28,7 +28,7 @@ public class NiceFormModel {
         this.listener = l;
     }
 
-    public ArrayList<NiceFormField> getFields() {
-        return fields;
+    public ArrayList<NiceFormFieldGroup> getGroups() {
+        return groups;
     }
 }

@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.plugin;
 
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 import java.io.*;
@@ -26,10 +27,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -366,7 +371,7 @@ public class AppController extends Controller {
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
         MedSavantApp plugin = (MedSavantApp) pluginClass.newInstance();
-        plugin.setDescriptor(desc);
+        //plugin.setDescriptor(desc);
         loadedPlugins.put(desc.getID(), plugin);
         LOG.debug(String.format("Firing LOADED event to %s listeners.", listeners.size()));
         fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID()));
@@ -378,7 +383,7 @@ public class AppController extends Controller {
      */
     public AppDescriptor addPlugin(File f) throws PluginVersionException {
         LOG.info(String.format("Loading plugin from %s", f.getAbsolutePath()));
-        AppDescriptor desc = AppDescriptor.fromFile(f);
+        AppDescriptor desc = getDescriptorFromFile(f); // AppDescriptor.fromFile(f);
         if (desc != null) {
             LOG.debug(String.format("Found usable %s in %s.", desc, f.getName()));
             AppDescriptor existingDesc = knownPlugins.get(desc.getID());
@@ -451,6 +456,139 @@ public class AppController extends Controller {
         }
         return false;
         
+    }
+    
+
+     public AppDescriptor getDescriptorFromFile(File f) throws PluginVersionException {
+        XMLStreamReader reader;
+         
+        try {
+            JarFile jar = new JarFile(f);
+            ZipEntry entry = jar.getEntry("plugin.xml");
+            if (entry != null) {
+                InputStream entryStream = jar.getInputStream(entry);
+                reader = XMLInputFactory.newInstance().createXMLStreamReader(entryStream);
+                String className = null;
+                String id = null;
+                String version = null;
+                String sdkVersion = null;
+                String name = null;
+                String category = AppDescriptor.Category.UTILITY.toString();
+                String currentElement = null;
+                String currentText = "";
+                do {
+                    switch (reader.next()) {
+                        case XMLStreamConstants.START_ELEMENT:
+                            switch (readElement(reader)) {
+                                case PLUGIN:
+                                    className = readAttribute(reader, AppDescriptor.PluginXMLAttribute.CLASS);
+
+                                    //category can be specified as an attribute or <property>.
+                                    category = readAttribute(reader, AppDescriptor.PluginXMLAttribute.CATEGORY);
+                                    break;
+
+                                case ATTRIBUTE:
+                                    if ("sdk-version".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.ID))) {
+                                        sdkVersion = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
+                                    }
+                                    break;
+
+                                case PARAMETER:
+                                    if ("name".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.ID))) {
+                                        name = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
+                                    }
+                                    break;
+
+                                case PROPERTY:
+                                    if ("name".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.NAME))) {
+                                        name = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
+                                        if (name == null) {
+                                            currentElement = "name";
+                                        }
+                                    }
+
+                                    if ("version".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.NAME))) {
+                                        version = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
+                                        if (version == null) {
+                                            currentElement = "version";
+                                        }
+                                    }
+
+                                    if ("sdk-version".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.NAME))) {
+                                        sdkVersion = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
+                                        if (sdkVersion == null) {
+                                            currentElement = "sdk-version";
+                                        }
+                                    }
+
+                                    if ("category".equals(readAttribute(reader,AppDescriptor.PluginXMLAttribute.NAME))) {
+                                        category = readAttribute(reader,AppDescriptor.PluginXMLAttribute.VALUE);
+                                        if (category == null) {
+                                            currentElement = "category";
+                                        }
+                                    }
+
+                                    break;
+                            }
+                            break;
+
+                        case XMLStreamConstants.CHARACTERS:
+                            if (reader.isWhiteSpace()) {
+                                break;
+                            } else if (currentElement != null) {
+                                currentText += reader.getText().trim().replace("\t", "");
+                            }
+                            break;
+
+                        case XMLStreamConstants.END_ELEMENT:
+                            if (readElement(reader) == AppDescriptor.PluginXMLElement.PROPERTY) {
+                                if (currentElement != null && currentText.length() > 0) {
+                                    if (currentElement.equals("name")) {
+                                        name = currentText;
+                                    } else if (currentElement.equals("sdk-version")) {
+                                        sdkVersion = currentText;
+                                    }else if(currentElement.equals("category")){
+                                        category = currentText;
+                                    }else if(currentElement.equals("version")){
+                                        version = currentText;
+                                    }
+                                }
+                                currentText = "";
+                                currentElement = null;
+                            }
+                            break;
+
+                        case XMLStreamConstants.END_DOCUMENT:
+                            reader.close();
+                            reader = null;
+                            break;
+                    }
+                } while (reader != null);
+
+                System.out.println(className + " " + name + " " + version);
+
+                if (className != null && name != null && version != null) {
+                    return new AppDescriptor(className, version, name, sdkVersion, category, f);
+                }
+            }
+        } catch (Exception x) {
+            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
+        }
+        throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
+    }
+
+    private static AppDescriptor.PluginXMLElement readElement(XMLStreamReader reader) {
+        try {
+            String elemName = reader.getLocalName().toUpperCase();
+            return Enum.valueOf(AppDescriptor.PluginXMLElement.class, elemName);
+        } catch (IllegalArgumentException ignored) {
+            // Any elements not in our enum will just be ignored.
+            return AppDescriptor.PluginXMLElement.IGNORED;
+        }
+    }
+
+    private static String readAttribute(XMLStreamReader reader, AppDescriptor.PluginXMLAttribute attr) {
+        return reader.getAttributeValue(null, attr.toString().toLowerCase());
     }
     
     class PluginLoader extends URLClassLoader {

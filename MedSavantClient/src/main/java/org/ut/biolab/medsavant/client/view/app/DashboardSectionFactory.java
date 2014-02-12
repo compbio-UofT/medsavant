@@ -4,10 +4,10 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.plugin.AppController;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.VariantNavigatorApp;
@@ -26,11 +26,11 @@ public class DashboardSectionFactory {
     public static DashboardSection getUberSection() {
         DashboardSection s = new DashboardSection("Apps");
 
-        List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantClinicApp.class);
+        List<MedSavantApp> clinicApps = AppController.getInstance().getPluginsOfClass(MedSavantDashboardApp.class);
 
         for (int i = 0; i < clinicApps.size(); i++) {
             try {
-                final MedSavantClinicApp app = (MedSavantClinicApp) clinicApps.get(i);
+                final MedSavantDashboardApp app = (MedSavantDashboardApp) clinicApps.get(i);
 
                 s.addLaunchableApp(getLaunchableAppFromMedSavantApp(app));
 
@@ -50,7 +50,7 @@ public class DashboardSectionFactory {
         return s;
     }
 
-    private static LaunchableApp getLaunchableAppFromMedSavantApp(final MedSavantClinicApp app) {
+    private static LaunchableApp getLaunchableAppFromMedSavantApp(final MedSavantDashboardApp app) {
         return new LaunchableApp() {
 
             @Override

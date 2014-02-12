@@ -22,6 +22,7 @@ package org.ut.biolab.medsavant.client.view.list;
 import com.explodingpixels.macwidgets.MacIcons;
 import com.explodingpixels.macwidgets.SourceList;
 import com.explodingpixels.macwidgets.SourceListCategory;
+import com.explodingpixels.macwidgets.SourceListClickListener;
 import com.explodingpixels.macwidgets.SourceListContextMenuProvider;
 import com.explodingpixels.macwidgets.SourceListControlBar;
 import com.explodingpixels.macwidgets.SourceListDarkColorScheme;
@@ -72,12 +73,12 @@ public class ListView extends JPanel {
     Object[][] data;
     private final JPanel showCard;
     private final JLabel errorMessage;
-    ListViewTablePanel stp;
     //private int limit = 10000;
-    private SourceList sourceList;
-    private final SourceListModel listModel;
+    SourceList sourceList;
+    final SourceListModel listModel;
     private HashMap<SourceListItem, Integer> itemToIndexMap;
     private final SourceListControlBar controlBar;
+    private String selectedItemMemory;
 
     public ListView(String page, DetailedListModel model, DetailedView view, DetailedListEditor editor) {
         pageName = page;
@@ -96,10 +97,9 @@ public class ListView extends JPanel {
         listModel = new SourceListModel();
 
         sourceList = new SourceList(listModel);
-        
+
         //sourceList.
         //sourceList.setColorScheme(new CustomColorScheme());
-
         controlBar = new SourceListControlBar();
         sourceList.installSourceListControlBar(controlBar);
 
@@ -111,7 +111,9 @@ public class ListView extends JPanel {
                     detailedEditor.addItems();
                     // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
                     if (LoginController.getInstance().isLoggedIn()) {
-                        refreshList();
+                        if (detailedEditor.doesRefreshAfterAdding()) {
+                            refreshList();
+                        }
                     }
                 }
 
@@ -119,11 +121,11 @@ public class ListView extends JPanel {
         }
 
         if (detailedEditor.doesImplementDeleting()) {
-            controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
+
+            final Runnable removeServer = new Runnable() {
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
-
+                public void run() {
                     SourceListItem item = sourceList.getSelectedItem();
                     if (item == null) {
                         return;
@@ -134,21 +136,65 @@ public class ListView extends JPanel {
                     if (selectedIndex == null) {
                         return;
                     }
-                    
+
                     List<Object[]> selectedObjects = new ArrayList<Object[]>();
                     selectedObjects.add(data[selectedIndex]);
                     detailedEditor.deleteItems(selectedObjects);
+
                     // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
                     if (LoginController.getInstance().isLoggedIn()) {
-                        refreshList();
+                        if (detailedEditor.doesRefreshAfterDeleting()) {
+                            refreshList();
+                        }
                     }
                 }
 
+            };
+
+            sourceList.addSourceListClickListener(new SourceListClickListener() {
+
+                @Override
+                public void sourceListItemClicked(SourceListItem sli, SourceListClickListener.Button button, int i) {
+                    if (button == SourceListClickListener.Button.RIGHT) {
+
+                        final JPopupMenu m = new JPopupMenu();
+
+                        JMenuItem removeButton = new JMenuItem("Remove");
+                        removeButton.addActionListener(new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                m.setVisible(false);
+                                removeServer.run();
+                            }
+
+                        });
+
+                        //Point listPosition = sourceList.getComponent().getLocationOnScreen();
+                        //m.setLocation(listPosition.x, listPosition.y);
+                        m.add(removeButton);
+
+                        m.setVisible(true);
+                    }
+                }
+
+                @Override
+                public void sourceListCategoryClicked(SourceListCategory slc, SourceListClickListener.Button button, int i) {
+                }
+
+            });
+
+            controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    removeServer.run();
+                }
             });
         }
 
         if (detailedEditor.doesImplementEditing()) {
-            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT), new ActionListener() {
+            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GEAR), new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -161,7 +207,9 @@ public class ListView extends JPanel {
                     int selectedIndex = itemToIndexMap.get(item);
 
                     detailedEditor.editItem(data[selectedIndex]);
-                    refreshList();
+                    if (detailedEditor.doesRefreshAfterEditing()) {
+                        refreshList();
+                    }
                 }
 
             });
@@ -193,7 +241,7 @@ public class ListView extends JPanel {
 
             });
         }
-        
+
         if (detailedEditor.doesImplementLoading()) {
             controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR), new ActionListener() {
 
@@ -206,7 +254,7 @@ public class ListView extends JPanel {
                     }
 
                     int selectedIndex = itemToIndexMap.get(item);
-                    
+
                     List<Object[]> selectedObjects = new ArrayList<Object[]>();
                     selectedObjects.add(data[selectedIndex]);
 
@@ -247,6 +295,9 @@ public class ListView extends JPanel {
                     return;
                 }
 
+                selectedItemMemory = sli.getText();
+                System.out.println("Remembering " + selectedItemMemory);
+
                 Integer index = itemToIndexMap.get(sli);
                 if (index == null) {
                     detailedView.setSelectedItem(new Object[]{});
@@ -267,109 +318,6 @@ public class ListView extends JPanel {
 
         add(errorPanel, CARD_ERROR);
 
-        /*
-
-         buttonPanel = ViewUtil.getClearPanel();
-         buttonPanel.setLayout(new GridBagLayout());
-         GridBagConstraints gbc = new GridBagConstraints();
-         gbc.gridx = GridBagConstraints.RELATIVE;
-         gbc.gridy = 0;
-         gbc.insets = new Insets(3, 3, 3, 3);
-
-         if (detailedEditor.doesImplementAdding()) {
-
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
-         butt.setToolTipText("Add");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         detailedEditor.addItems();
-         // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
-         if (LoginController.getInstance().isLoggedIn()) {
-         refreshList();
-         }
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-
-         if (detailedEditor.doesImplementImporting()) {
-
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT));
-         butt.setToolTipText("Import");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         detailedEditor.importItems();
-         refreshList();
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-
-         if (detailedEditor.doesImplementExporting()) {
-
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT));
-         butt.setToolTipText("Export");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         detailedEditor.exportItems();
-         refreshList();
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-
-         if (detailedEditor.doesImplementDeleting()) {
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
-         butt.setToolTipText("Remove selected");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         detailedEditor.deleteItems(selectionGrabber.getSelectedItems());
-         // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
-         if (LoginController.getInstance().isLoggedIn()) {
-         refreshList();
-         }
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-
-         if (detailedEditor.doesImplementEditing()) {
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT));
-         butt.setToolTipText("Edit selected");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         if (selectionGrabber.getSelectedItems().size() > 0) {
-         detailedEditor.editItem(selectionGrabber.getSelectedItems().get(0));
-         refreshList();
-         } else {
-         DialogUtils.displayMessage("Please choose one item to edit.");
-         }
-         }
-         });
-         buttonPanel.add(butt, gbc);
-         }
-
-         // Only for SavedFiltersPanel
-         if (detailedEditor.doesImplementLoading()) {
-         JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR));
-         butt.setToolTipText("Load selected");
-         butt.addMouseListener(new MouseAdapter() {
-         @Override
-         public void mousePressed(MouseEvent e) {
-         detailedEditor.loadItems(selectionGrabber.getSelectedItems());
-         }
-         });
-
-         gbc.gridwidth = GridBagConstraints.REMAINDER;
-         gbc.anchor = GridBagConstraints.EAST;
-         buttonPanel.add(butt, gbc);
-         }
-         */
         showWaitCard();
         fetchList();
     }
@@ -404,6 +352,8 @@ public class ListView extends JPanel {
     }
 
     void refreshList() {
+        System.out.println("Refreshing list");
+
         showWaitCard();
         fetchList();
     }
@@ -456,12 +406,12 @@ public class ListView extends JPanel {
         if (!listModel.getCategories().isEmpty()) {
             listModel.removeCategoryAt(0);
         }
-        
+
         String categoryName = pageName;
         if (data.length > 10) {
             categoryName += " (" + data.length + ")";
         }
-        
+
         SourceListCategory category = new SourceListCategory(categoryName);
         listModel.addCategory(category);
 
@@ -469,15 +419,48 @@ public class ListView extends JPanel {
         int counter = 0;
         SourceListItem item;
 
+        SourceListItem itemToSelect = null;
+
+        System.out.println("Updating index map");
         for (Object[] row : data) {
+
             String label = row[visibleColumn].toString();
             listModel.addItemToCategory(item = new SourceListItem(label), category);
+
             itemToIndexMap.put(item, counter++);
+
+            if (item.getText().equals(selectedItemMemory)) {
+                itemToSelect = item;
+            }
         }
-        
+
+        if (itemToSelect != null) {
+            System.out.println("Reselecting " + selectedItemMemory);
+            sourceList.setSelectedItem(itemToSelect);
+        } else {
+            System.out.println("Could not reselect " + selectedItemMemory);
+        }
+
         // need to add an item otherwise the category title doesn't display
         if (data.length == 0) {
             listModel.addItemToCategory(item = new SourceListItem(""), category);
+        }
+    }
+
+    void selectItemWithKey(String key) {
+
+        System.out.println("Remembering " + key);
+        this.selectedItemMemory = key;
+
+        try {
+            for (SourceListItem i : listModel.getCategories().get(0).getItems()) {
+                if (i.getText().equals(key)) {
+                    sourceList.setSelectedItem(i);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

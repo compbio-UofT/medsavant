@@ -39,6 +39,7 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.splash.MedSavantServerInfo;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.medsavant.shared.util.WebResources;
@@ -188,6 +189,10 @@ public class LoginController extends Controller<LoginEvent> {
         }
     }
 
+    public synchronized void login(MedSavantServerInfo server) {
+        login(server.getUsername(), server.getPassword(), server.getDatabase(), server.getHost(), server.getPort() + "");
+    }
+    
     public synchronized void login(final String un, final String pw, final String dbname, final String serverAddress, final String serverPort) {
         //init registry
         try {
@@ -209,27 +214,7 @@ public class LoginController extends Controller<LoginEvent> {
 
                             cancelCurrentLoginAttempt();
                         }
-                    } /*catch (RemoteException rex) { // Server doesn't immediately refuse connection, but times out.
-                     if (!this.isCancelled()) {
-                     throw rex;
-                     }
-                     } catch (NotBoundException nbex) {
-                     if (!this.isCancelled()) {
-                     throw nbex;
-                     }
-
-                     } catch (final NoRouteToHostException nrex) {
-                     if (!this.isCancelled()) {
-                     SwingUtilities.invokeLater(new Runnable() {
-                     @Override
-                     public void run() {
-                     fireEvent(new LoginEvent(nrex));
-                     }
-                     });
-                     //   DialogUtils.displayError("Can't connect", "Can't connect to the server at "+serverAddress+":"+serverPort);
-                     cancelCurrentLoginAttempt();
-                     }
-                     }*/
+                    }
 
                     return null;
                 }
@@ -343,4 +328,6 @@ public class LoginController extends Controller<LoginEvent> {
     public String getDatabaseName() {
         return this.dbname;
     }
+
+    
 }

@@ -15,10 +15,12 @@ import java.util.List;
  */
 public class ServerController {
 
-    private final ArrayList<Listener> listeners;
+    private final ArrayList<Listener<ServerController>> listeners;
     Log LOG = LogFactory.getLog(ServerController.class);
 
     List<MedSavantServerInfo> servers;
+    MedSavantServerInfo tmpServer;
+    
     private String SERVER_FILE_NAME = ".servers";
 
     private static String KEY_SETTING_LASTSERVER_NICKNAME = "server-nickname";
@@ -35,7 +37,7 @@ public class ServerController {
 
     private ServerController() {
 
-        listeners = new ArrayList<Listener>();
+        listeners = new ArrayList<Listener<ServerController>>();
         loadServers();
 
         String serverNickName = SettingsController.getInstance().getValue(KEY_SETTING_LASTSERVER_NICKNAME);
@@ -64,6 +66,7 @@ public class ServerController {
     }
 
     private void notifyListeners() {
+        LOG.info("Notifying listeners");
         for (Listener l : listeners) {
             l.handleEvent(null);
         }
@@ -89,21 +92,36 @@ public class ServerController {
         servers.add(server);
         saveServers();
     }
-
-    private synchronized void saveServers() {
+    
+    public void addTemporaryServer(MedSavantServerInfo server) {
+        tmpServer = server;
+        saveServers();
+    }
+    
+    public synchronized void saveServers() {
 
         LOG.info("Serializing " + servers.size() + " servers");
         FileOutputStream fileout = null;
         ObjectOutputStream out = null;
+        
+        // remove passwords before saving
+        List<MedSavantServerInfo> serversWithPasswordsRemoved = new ArrayList<MedSavantServerInfo>();
+        for (MedSavantServerInfo s : servers) {
+            MedSavantServerInfo clone = new MedSavantServerInfo(s);
+            if (!clone.isRememberPassword()) {
+                clone.setPassword("");
+            }
+            serversWithPasswordsRemoved.add(clone);
+        }
 
         try {
             fileout = new FileOutputStream(getServerFile());
             out = new ObjectOutputStream(fileout);
-            out.writeObject(servers);
+            out.writeObject(serversWithPasswordsRemoved);
             out.close();
             fileout.close();
 
-            LOG.info("Saved " + servers.size() + " servers");
+            LOG.info("Saved " + serversWithPasswordsRemoved.size() + " servers");
         } catch (Exception ex) {
             LOG.error("Problem saving servers", ex);
         } finally {
@@ -117,7 +135,7 @@ public class ServerController {
             }
         }
 
-
+        notifyListeners();
     }
 
     private synchronized void loadServers() {
@@ -166,34 +184,29 @@ public class ServerController {
 
         LOG.info("Removing server " + server.getNickname() + " count is " + servers.size());
 
-        for (MedSavantServerInfo s : servers) {
-            boolean equal = s == server;
-            LOG.info(s.getNickname() + " vs " + server.getNickname() + " = " + equal);
-        }
-
         servers.remove(server);
-
-        printServers();
-
+        
         if (currentServer == server) {
             setCurrentServer(null);
         }
 
         saveServers();
     }
-
-    private void printServers() {
-        LOG.info("Servers:");
+    
+    public MedSavantServerInfo getServerNamed(String name) {
         for (MedSavantServerInfo s : servers) {
-            LOG.info("\t" + s.getNickname());
+            if (s.getNickname().equals(name)) {
+                return s;
+            }
         }
+        return null;
     }
 
     public MedSavantServerInfo getCurrentServer() {
         return currentServer;
     }
 
-    public void addListener(Listener serverListener) {
+    public void addListener(Listener<ServerController> serverListener) {
         listeners.add(serverListener);
     }
 
@@ -202,11 +215,6 @@ public class ServerController {
     }
 
     public boolean isServerNamed(String name) {
-        for (MedSavantServerInfo s : servers) {
-            if (s.getNickname().equals(name)) {
-                return true;
-            }
-        }
-        return false;
+        return getServerNamed(name) != null;
     }
 }

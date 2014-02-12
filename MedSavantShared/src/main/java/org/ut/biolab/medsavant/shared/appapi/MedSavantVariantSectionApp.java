@@ -17,21 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.api;
+package org.ut.biolab.medsavant.shared.appapi;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+
 
 /**
  *
  * @author mfiume
  */
-public abstract class MedSavantClinicApp extends MedSavantApp {
+public abstract class MedSavantVariantSectionApp extends MedSavantApp {
 
-    public abstract ImageIcon getIcon();
-    public abstract JPanel getContent();
+    /**
+     * This method is called once during application life cycle to allow a third-party
+     * plugin to initialize and show itself.
+     */
+    public abstract void init(JPanel panel);
 
     public abstract void viewDidLoad();
     public abstract void viewDidUnload();

@@ -17,13 +17,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.api;
+package org.ut.biolab.medsavant.shared.appapi;
 
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.shared.model.Gene;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -35,6 +32,8 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 public abstract class MedSavantGeneInspectorApp extends MedSavantApp {
 
     public abstract void setGene(Gene g);
-    public abstract SubInspector getSubInspector();
+
+    public abstract String getName();
+    public abstract JPanel getInfoPanel();
 
 }

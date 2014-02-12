@@ -22,13 +22,14 @@ package org.ut.biolab.medsavant.client.view.genetics.inspector;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.api.MedSavantGeneInspectorApp;
-import org.ut.biolab.medsavant.client.api.MedSavantVariantInspectorApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantGeneInspectorApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantVariantInspectorApp;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
-import org.ut.biolab.medsavant.client.plugin.MedSavantApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
@@ -178,8 +179,20 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createAppVariantInspectors) {
             loadVariantInspectorApps();
-            for (MedSavantVariantInspectorApp app : appVariantInspectors) {
-                variantCollapsibleInspector.addSubInspector(app.getSubInspector());                
+            for (final MedSavantVariantInspectorApp app : appVariantInspectors) {
+                variantCollapsibleInspector.addSubInspector(new SubInspector() {
+
+                    @Override
+                    public String getName() {
+                        return app.getName();
+                    }
+
+                    @Override
+                    public JPanel getInfoPanel() {
+                        return app.getInfoPanel();
+                    }
+                    
+                });                
             }
         }
 
@@ -210,8 +223,20 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
 
         if (createAppGeneInspectors) {
             loadGeneInspectorApps();
-            for (MedSavantGeneInspectorApp app : appGeneInspectors) {
-                geneCollapsibleInspector.addSubInspector(app.getSubInspector());                
+            for (final MedSavantGeneInspectorApp app : appGeneInspectors) {
+                geneCollapsibleInspector.addSubInspector(new SubInspector() {
+
+                    @Override
+                    public String getName() {
+                        return app.getName();
+                    }
+
+                    @Override
+                    public JPanel getInfoPanel() {
+                        return app.getInfoPanel();
+                    }
+                    
+                });                
             }
         }
 

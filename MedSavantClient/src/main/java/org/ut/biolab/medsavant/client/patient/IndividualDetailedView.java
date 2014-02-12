@@ -289,7 +289,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         for (int i = 0; i < list.length; i++) {
             Object[] o = list[i];
             if (o != null && o.length >= 1 && (Integer) o[0] == patID) {
-                parent.selectInterval(i, i);
+                parent.selectItemAtIndex(i, 0);
                 return;
             }
         }

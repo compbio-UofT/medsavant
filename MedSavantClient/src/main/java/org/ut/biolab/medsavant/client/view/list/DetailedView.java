@@ -44,7 +44,8 @@ public abstract class DetailedView extends JPanel {
     public DetailedView(String page) {
         pageName = page;
         setPreferredSize(new Dimension(9999, 350));
-        setOpaque(false);
+        setOpaque(true);
+        this.setBackground(Color.white);
         setLayout(new BorderLayout());
 
         contentPanel = new JPanel();
@@ -60,6 +61,7 @@ public abstract class DetailedView extends JPanel {
         bottomPanel.add(glue);
 
         add(bottomPanel, BorderLayout.SOUTH);
+        bottomPanel.setVisible(true);
     }
 
     public abstract void setSelectedItem(Object[] selectedRow);
@@ -79,6 +81,7 @@ public abstract class DetailedView extends JPanel {
     public void addBottomComponent(Component c) {
         bottomPanel.add(c);
         bottomPanel.add(glue);
+        bottomPanel.setVisible(true);
     }
 
     public String getPageName() {

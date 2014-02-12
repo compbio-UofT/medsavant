@@ -70,6 +70,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -99,7 +100,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static VariantManagerAdapter VariantManager; //proxy
     public static NotificationManagerAdapter NotificationManager;
     public static boolean initialized = false;
-    private static MedSavantFrame frame;
+    //private static MedSavantFrame frame;
     //private static String restartCommand;
     private static String[] restartCommand;
     private static boolean restarting = false;
@@ -220,15 +221,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
             }
         }
 
-        frame = MedSavantFrame.getInstance();
-        frame.setLocationRelativeTo(null);
-        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-        frame.setPreferredSize(frame.getSize());
+        SplashFrame loginFrame = new SplashFrame();
+        loginFrame.setVisible(true);
 
-        //SplashFrame loginFrame = new SplashFrame();
-        //loginFrame.setVisible(true);
-
-        frame.setVisible(true);
+        //frame.setVisible(true);
         LOG.info("MedSavant booted.");
     }
 

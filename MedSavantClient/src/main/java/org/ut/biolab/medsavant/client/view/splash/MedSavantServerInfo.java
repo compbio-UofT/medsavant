@@ -27,7 +27,7 @@ import java.io.Serializable;
  * A class which stores MedSavant Server connection information
  * @author mfiume
  */
-public class MedSavantServerInfo implements Serializable, Comparable<MedSavantServerInfo> {
+public final class MedSavantServerInfo implements Serializable, Comparable<MedSavantServerInfo> {
 
     private String host;
     private int port;
@@ -43,7 +43,6 @@ public class MedSavantServerInfo implements Serializable, Comparable<MedSavantSe
     }
 
     public MedSavantServerInfo(String host, int port, String database, String nickname) {
-        System.out.println("Creating new server.!!!");
         this.host = host;
         this.port = port;
         this.database = database;
@@ -51,6 +50,14 @@ public class MedSavantServerInfo implements Serializable, Comparable<MedSavantSe
         this.username = "";
         this.encodedPassword = "";
         this.rememberPassword = false;
+    }
+    
+    public MedSavantServerInfo(MedSavantServerInfo server) {
+        this(server.host,server.port,server.database,server.nickname);
+        this.setEditable(server.isEditable);
+        this.setUsername(server.username);
+        this.setPassword(CryptoUtils.decrypt(server.encodedPassword));
+        this.setRememberPassword(server.rememberPassword);
     }
 
     public void setHost(String host) {
