@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
@@ -475,9 +476,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      */
     public void populate(final String sessID){
         try{
-            MedSavantServerEngine.submitLongJob(new Runnable(){        
+            MedSavantServerEngine.submitShortJob(new MedSavantServerJob(SessionManager.getInstance().getUserForSession(sessID), "Ontology Populator", null){        
                 @Override
-                public void run(){
+                public boolean run(){
                     try {
                         LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
                         LOG.info("Adding GO Ontology");
@@ -487,13 +488,15 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                         LOG.info("Adding OMIM Ontology");
                         addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
                         SessionManager.getInstance().unregisterSession(sessID);
+                        return true;
                     } catch (Exception ex) {
                         LOG.error("Error populating ontology tables.", ex);
+                        return false;
                     }
                 }
             });
         }catch(Exception ex){
-            LOG.error("Error populating ontology tables.", ex);
+            LOG.error("Error populating ontology tables.", ex);            
         }
     }    
 }

@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -64,6 +66,8 @@ import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.mail.Mail;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_LONGJOB;
+import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_SHORTJOB;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -119,6 +123,12 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         return shortThreadPool.submit(r);
     }
 
+    
+    public static Future submitShortJob(MedSavantServerJob msj) {
+        msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
+        return shortThreadPool.submit(msj);
+    }
+
     /**
      * Submits and runs the current job using the long job executor service, and
      * immediately returns. Only MAX_THREADS of long jobs can be executing
@@ -130,15 +140,54 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
      * the 'get' method of Future will BLOCK. get() will return null upon
      * successful completion.
      */
-    public static Future submitLongJob(Runnable r) {
+    public static Future submitLongJobOld(Runnable r) {
         return longThreadPool.submit(r);
     }
 
+    public static Future submitLongJob(MedSavantServerJob msj) {
+        msj.setScheduleStatus(SCHEDULED_AS_LONGJOB);
+        return longThreadPool.submit(msj);
+    }
+
+    public static List<Future<Void>> submitShortJobs(List<MedSavantServerJob> msjs) throws InterruptedException {
+        for (MedSavantServerJob j : msjs) {
+            j.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
+        }
+        return shortThreadPool.invokeAll(msjs);
+    }
+
+    public static List<Future<Void>> submitLongJobs(List<MedSavantServerJob> msjs) throws InterruptedException {
+        for (MedSavantServerJob j : msjs) {
+            j.setScheduleStatus(SCHEDULED_AS_LONGJOB);
+        }
+        return longThreadPool.invokeAll(msjs);
+    }
+
+    /**
+     * Submits long jobs and blocks waiting for completion.  Make sure to only call this from another short or long job!
+     * This function does not perform error checking: if you want to know if a job at index i was successful, invoke
+     * returnVal.get(i).get(); and catch the ExecutionException
+     * @param msjs
+     * @return 
+     * @throws InterruptedException 
+     * @see ExecutionException
+     */
+    public static List<Future<Void>> submitLongJobsAndWait(List<MedSavantServerJob> msjs) throws InterruptedException{
+        List<Future<Void>> jobs = submitLongJobs(msjs);        
+        for(Future<Void> job : jobs){
+            try{
+                job.get();               
+            }catch(ExecutionException ex){
+                
+            }
+        }
+        return jobs;
+    }
     /**
      * @return The executor service used for short jobs. An unlimited number of
      * short jobs can run simultaneously.
      */
-    public static ExecutorService getShortExecutorService() {
+    public static ExecutorService getShortExecutorServiceOld() {
         return shortThreadPool;
     }
 
@@ -146,7 +195,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
      * @return The executor service used for long jobs. Only MAX_THREADS long
      * jobs can run simultaneously.
      */
-    public static ExecutorService getLongExecutorService() {
+    public static ExecutorService getLongExecutorServiceOld() {
         return longThreadPool;
     }
 
@@ -345,7 +394,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             }
 
                         } catch (Exception e) {
-                            System.err.println("ERROR: Could not load properties file " + configFileName+", "+e);
+                            System.err.println("ERROR: Could not load properties file " + configFileName + ", " + e);
                         }
                         break;
                     case 'h':

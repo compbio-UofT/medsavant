@@ -747,7 +747,9 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
                     Map<Object, List<String>> m = MedSavantClient.PatientManager.getDNAIDsForValues(sessionID, ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.FAMILY_ID.getColumnName());
                     for (Map.Entry<Object, List<String>> e : m.entrySet()) {
                         for (String dnaId : e.getValue()) {
-                            addFamilyToDnaId((String) e.getKey(), dnaId);
+                            if(((String)e.getKey()).trim().length() > 0){ 
+                                addFamilyToDnaId((String) e.getKey(), dnaId);
+                            }
                             if (Thread.interrupted()) {
                                 return;
                             }

@@ -25,12 +25,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.Callable;
 import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
+import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.vcf.VCFParser;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
@@ -38,7 +39,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
  *
  * @author mfiume
  */
-public class VariantParser implements Callable<Void> {
+public class VariantParser extends MedSavantServerJob{
 
     private static final Log LOG = LogFactory.getLog(VariantParser.class);
     private final boolean includeHomoRef;
@@ -50,7 +51,8 @@ public class VariantParser implements Callable<Void> {
     private boolean success = false;
     private Exception exception;
     private String sessID;
-    public VariantParser(String sessID, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
+    public VariantParser(String sessID, MedSavantServerJob parentJob, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
+        super(SessionManager.getInstance().getUserForSession(sessID), "VariantLoader", parentJob);
         this.vcfFile = vcfFile;
         this.outFile = outFile;
         this.fileID = fileID;
@@ -82,20 +84,21 @@ public class VariantParser implements Callable<Void> {
     }
 
     @Override
-    public Void call() {
+    public boolean run() {
         try {
-            VCFParser vcfParser = new VCFParser(sessID, vcfFile);
+            VCFParser vcfParser = new VCFParser(sessID, vcfFile, getJobProgress());
             vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
             success = true;
             
             LOG.info("VCF file "+vcfFile+" was successfully imported.");
+            return true;
         } catch (Exception e) {
             EmailLogger.logByEmail("Error running parser on " + vcfFile.getAbsolutePath(), "Here is the object: " + toString() + ". Here is the message: " + ExceptionUtils.getStackTrace(e));
             LOG.error(e);
             success = false;
             exception = e;
         }
-        return null;
+        return false;
         //TODO: should we delete vcf file?
     }
 }

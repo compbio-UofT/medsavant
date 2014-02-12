@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
@@ -31,21 +31,18 @@ import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ProjectTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ServerLogTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
-
 
 /**
  *
@@ -67,23 +64,22 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         return instance;
     }
 
-
     @Override
     public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException, SessionExpiredException {
-        return getServerLogForUser(sid,null,start,limit);
+        return getServerLogForUser(sid, null, start, limit);
     }
 
     @Override
     public int getServerLogSize(String sid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
-        return getLogSize(sid,table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
+        return getLogSize(sid, table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
     private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException, SessionExpiredException {
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addCustomColumns(FunctionCall.countAll());
-        if(c != null){
+        if (c != null) {
             query.addCondition(c);
         }
 
@@ -137,7 +133,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
 
     @Override
     public List<GeneralLog> getServerLogForUserWithSessionID(String sid, int start, int limit) throws SQLException, RemoteException, SessionExpiredException {
-        return getServerLogForUser(sid, SessionManager.getInstance().getUserForSession(sid),start,limit);
+        return getServerLogForUser(sid, SessionManager.getInstance().getUserForSession(sid), start, limit);
     }
 
     private List<GeneralLog> getServerLogForUser(String sid, String userForSession, int start, int limit) throws SQLException, SessionExpiredException {
@@ -161,5 +157,11 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
                     rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
         }
         return result;
+    }
+
+    @Override
+    public List<MedSavantServerJobProgress> getJobProgressForUserWithSessionID(String sid) throws SQLException, RemoteException, SessionExpiredException {
+        String userId = SessionManager.getInstance().getUserForSession(sid);
+        return MedSavantServerJob.getJobProgressesForUser(userId);
     }
 }
