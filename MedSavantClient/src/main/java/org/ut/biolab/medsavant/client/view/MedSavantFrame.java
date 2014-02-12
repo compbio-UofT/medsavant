@@ -294,8 +294,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
             return;
         }
 
-        JPanel waitPanel;
-        view.add(waitPanel = new WaitPanel("Preparing Session"), WAIT_CARD_NAME);
+        WaitPanel waitPanel;
+        view.add(waitPanel = new WaitPanel(""), WAIT_CARD_NAME);
+        waitPanel.setProgressBarVisible(false);
         waitPanel.setBackground(Color.white);
 
         switchToView(WAIT_CARD_NAME);
