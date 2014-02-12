@@ -18,6 +18,14 @@
  */
 package org.ut.biolab.medsavant.client.view.splash;
 
+import com.apple.eawt.AboutHandler;
+import com.apple.eawt.AppEvent.AboutEvent;
+import com.apple.eawt.AppEvent.PreferencesEvent;
+import com.apple.eawt.AppEvent.QuitEvent;
+import com.apple.eawt.Application;
+import com.apple.eawt.PreferencesHandler;
+import com.apple.eawt.QuitHandler;
+import com.apple.eawt.QuitResponse;
 import com.explodingpixels.macwidgets.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,17 +38,23 @@ import java.util.List;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
+import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.controller.ServerController;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.login.LoginEvent;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
@@ -53,6 +67,8 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormField;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormFieldGroup;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormModel;
+import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.mfiume.app.jAppStore;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
@@ -61,17 +77,24 @@ import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
  */
 public class SplashFrame extends JFrame {
 
+    private static Log LOG = LogFactory.getLog(SplashFrame.class);
+    
     private final JPanel primaryPanel;
+    private jAppStore appStore;
 
     private final LoginComponent loginComponent;
     private final ServerManagementComponent serverManager;
 
     public SplashFrame() {
 
+        if (ClientMiscUtils.MAC) {
+            customizeForMac();
+        }
+
+        this.setTitle("MedSavant");
         this.setResizable(false);
         this.setBackground(Color.white);
 
-        MacUtils.makeWindowLeopardStyle(this.getRootPane());
         this.setLayout(new MigLayout("filly, insets 0, gapx 0, height 530, width 750, hidemode 3"));
 
         primaryPanel = new JPanel();
@@ -82,6 +105,43 @@ public class SplashFrame extends JFrame {
         setPrimaryPanel(loginComponent);
 
         this.add(primaryPanel, "width 100%, growy 1.0, growx 1.0");
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+
+        menuBar.add(fileMenu);
+
+        JMenuItem dbManagementItem = new JMenuItem("Database Management");
+        dbManagementItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog adminDialog = new AdminDialog();
+                adminDialog.setVisible(true);
+            }
+        });
+        fileMenu.add(dbManagementItem);
+
+        JMenuItem appItem = new JMenuItem("App Store");
+        appItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+                showAppStore();
+            }
+
+            private void showAppStore() {
+                if (appStore == null) {
+                    final MedSavantAppFetcher maf = new MedSavantAppFetcher();
+                    final MedSavantAppInstaller mai = new MedSavantAppInstaller();
+
+                    appStore = new jAppStore("MedSavant App Store", maf, mai);
+                }
+                appStore.showStore();
+            }
+        });
+        fileMenu.add(appItem);
+        this.setJMenuBar(menuBar);
 
         this.pack();
         this.setLocationRelativeTo(null);
@@ -183,8 +243,6 @@ public class SplashFrame extends JFrame {
 
         private void showServerInfo(final MedSavantServerInfo server) {
 
-            System.out.println("Showing info for server: " + server.getNickname());
-
             this.server = server;
 
             this.removeAll();
@@ -240,7 +298,6 @@ public class SplashFrame extends JFrame {
                     if (didSave) {
                         String name = form.getValueForStringField(nameField);
                         serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-                        System.out.println("Trying to remember " + name);
                         serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
                     }
                 }
@@ -440,6 +497,35 @@ public class SplashFrame extends JFrame {
             this.setBackground(Color.white);
             this.setLayout(new MigLayout("fillx, filly, insets 0, center"));
 
+            LOG.info("Subscribing to login events");
+            LoginController.getInstance().addListener(new Listener<LoginEvent>() {
+
+                @Override
+                public void handleEvent(LoginEvent event) {
+
+                    switch (event.getType()) {
+                        case LOGGED_IN:
+                            MedSavantFrame frame = MedSavantFrame.getInstance();
+                            frame.switchToSessionView();
+                            frame.setLocationRelativeTo(null);
+                            frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+                            frame.setPreferredSize(frame.getSize());
+                            frame.setVisible(true);
+                            closeSplashFrame();
+
+                            break;
+                        case LOGGED_OUT:
+                            MedSavantFrame frame2 = MedSavantFrame.getInstance();
+                            frame2.setVisible(false);
+                            break;
+                    }
+
+                    isLoggingIn = false;
+                    setPageAppropriately();
+                }
+
+            });
+            
             JPanel container = ViewUtil.getClearPanel();
             container.setLayout(new MigLayout());
 
@@ -468,33 +554,7 @@ public class SplashFrame extends JFrame {
 
             this.add(container, "center, growx 1.0");
 
-            LoginController.getInstance().addListener(new Listener<LoginEvent>() {
-
-                @Override
-                public void handleEvent(LoginEvent event) {
-
-                    switch (event.getType()) {
-                        case LOGGED_IN:
-                            MedSavantFrame frame = MedSavantFrame.getInstance();
-                            frame.switchToSessionView();
-                            frame.setLocationRelativeTo(null);
-                            frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-                            frame.setPreferredSize(frame.getSize());
-                            frame.setVisible(true);
-                            closeSplashFrame();
-
-                            break;
-                        case LOGGED_OUT:
-                            MedSavantFrame frame2 = MedSavantFrame.getInstance();
-                            frame2.setVisible(false);
-                            break;
-                    }
-
-                    isLoggingIn = false;
-                    setPageAppropriately();
-                }
-
-            });
+            
         }
 
         @Override
@@ -502,12 +562,34 @@ public class SplashFrame extends JFrame {
             setPageAppropriately();
         }
 
+        boolean isFirstTime = true;
+
         private void setPageAppropriately() {
+
+            // try auto logging in the first time
+            if (isFirstTime) {
+
+                boolean isBootingFromLogout = SettingsController.getInstance().getBoolean("BootFromLogout", false);
+                SettingsController.getInstance().setBoolean("BootFromLogout", false);
+
+                // don't auto login if we're coming from a logout
+                if (!isBootingFromLogout) {
+                    if (SettingsController.getInstance().getAutoLogin()) {
+                        MedSavantServerInfo server = ServerController.getInstance().getCurrentServer();
+                        if (server != null) {
+                            if (server.isRememberPassword() && !server.getUsername().isEmpty() && !server.getPassword().isEmpty()) {
+                                loginUsingEnteredUsernameAndPassword(server);
+                            }
+                        }
+                    }
+                }
+            }
+
+            isFirstTime = false;
 
             if (isLoggingIn) {
                 setPage(LOGGING_IN_PAGE);
             } else if (ServerController.getInstance().getServers().isEmpty()) {
-                System.out.println("NO SERVERS!>>!");
                 setPage(NO_SERVER_ATALL_PAGE);
             } else {
                 setServer(ServerController.getInstance().getCurrentServer());
@@ -548,6 +630,7 @@ public class SplashFrame extends JFrame {
 
             JButton cancelButton;
             panel.add(cancelButton = new JButton("Cancel"), "growx 1.0, right");
+            cancelButton.setFocusable(false);
 
             cancelButton.addActionListener(new ActionListener() {
                 @Override
@@ -654,21 +737,9 @@ public class SplashFrame extends JFrame {
             signInButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // save username
-                    server.setUsername(usernameField.getText());
 
-                    // save password
-                    server.setPassword(new String(passwordField.getPassword()));
+                    doSignIntoServer(server);
 
-                    // save remember
-                    server.setRememberPassword(rememberPasswordCheckbox.isSelected());
-
-                    ServerController.getInstance().saveServers();
-
-                    // login , present errors
-                    isLoggingIn = true;
-                    loginUsingEnteredUsernameAndPassword(server);
-                    setPageAppropriately();
                 }
 
             });
@@ -678,7 +749,26 @@ public class SplashFrame extends JFrame {
             return panel;
         }
 
+        private void doSignIntoServer(MedSavantServerInfo server) {
+            // save username
+            server.setUsername(usernameField.getText());
+
+            // save password
+            server.setPassword(new String(passwordField.getPassword()));
+
+            // save remember
+            server.setRememberPassword(rememberPasswordCheckbox.isSelected());
+
+            ServerController.getInstance().saveServers();
+
+            // login , present errors
+            loginUsingEnteredUsernameAndPassword(server);
+            setPageAppropriately();
+        }
+
         private void loginUsingEnteredUsernameAndPassword(final MedSavantServerInfo server) {
+
+            isLoggingIn = true;
 
             loginThread = new MedSavantWorker<Void>("LoginView") {
                 @Override
@@ -835,6 +925,86 @@ public class SplashFrame extends JFrame {
 
         private void refreshList() {
             normalSplitScreen.refresh();
+        }
+    }
+
+    private void customizeForMac() {
+
+        try {
+            MacUtils.makeWindowLeopardStyle(this.getRootPane());
+            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
+
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
+
+            batchApplyProperty(new String[]{
+                "Button.font",
+                "ToggleButton.font",
+                "RadioButton.font",
+                "CheckBox.font",
+                "ColorChooser.font",
+                "ComboBox.font",
+                "Label.font",
+                "List.font",
+                "MenuBar.font",
+                "MenuItem.font",
+                "RadioButtonMenuItem.font",
+                "CheckBoxMenuItem.font",
+                "Menu.font",
+                "PopupMenu.font",
+                "OptionPane.font",
+                "Panel.font",
+                "ProgressBar.font",
+                "ScrollPane.font",
+                "Viewport.font",
+                "TabbedPane.font",
+                "Table.font",
+                "TableHeader.font",
+                "TextField.font",
+                "PasswordField.font",
+                "TextArea.font",
+                "TextPane.font",
+                "EditorPane.font",
+                "TitledBorder.font",
+                "ToolBar.font",
+                "ToolTip.font",
+                "Tree.font"}, new Font("HelveticaNeue-Light", Font.PLAIN, 13));
+
+            System.setProperty("awt.useSystemAAFontSettings", "on");
+            System.setProperty("swing.aatext", "true");
+
+            UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
+            //com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
+            Application macOSXApplication = Application.getApplication();
+            macOSXApplication.setAboutHandler(new AboutHandler() {
+                @Override
+                public void handleAbout(AboutEvent evt) {
+                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "MedSavant "
+                            + VersionSettings.getVersionString()
+                            + "\nCreated by Biolab at University of Toronto.");
+                }
+            });
+            macOSXApplication.setPreferencesHandler(new PreferencesHandler() {
+                @Override
+                public void handlePreferences(PreferencesEvent pe) {
+                    DialogUtils.displayMessage("Preferences available for Administrators only");
+                }
+            });
+            macOSXApplication.setQuitHandler(new QuitHandler() {
+                @Override
+                public void handleQuitRequestWith(QuitEvent evt, QuitResponse resp) {
+                    MedSavantFrame.getInstance().requestClose();
+                    resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
+                }
+            });
+        } catch (Throwable x) {
+            System.err.println("Warning: MedSavant requires Java for Mac OS X 10.6 Update 3 (or later).\nPlease check Software Update for the latest version.");
+        }
+    }
+
+    private void batchApplyProperty(String[] propn, Object o) {
+        for (String s : propn) {
+            UIManager.put(s, o);
         }
     }
 

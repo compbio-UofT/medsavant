@@ -80,10 +80,11 @@ public class LoginController extends Controller<LoginEvent> {
                     new NameValuePair("login-event", loggedIn ? "LoggedIn" : "LoggedOut"));
         } catch (Exception e) {
         }
-
+        
         Thread t = new Thread() {
             @Override
             public void run() {
+                
                 synchronized (EVENT_LOCK) {
                     LoginController.this.loggedIn = loggedIn;
 
@@ -93,7 +94,7 @@ public class LoginController extends Controller<LoginEvent> {
                         unregister();
                         fireEvent(new LoginEvent(LoginEvent.Type.LOGGED_OUT));
                     }
-
+                    
                     if (!loggedIn) {
                         if (!SettingsController.getInstance().getRememberPassword()) {
                             password = "";
@@ -155,10 +156,11 @@ public class LoginController extends Controller<LoginEvent> {
             return;
         }
 
-        //check db version
+        //check server version
         try {
-            String clientVersion = VersionSettings.getVersionString(); // TODO: implement database version check
+            String clientVersion = VersionSettings.getVersionString();
             String serverVersion = MedSavantClient.SettingsManager.getServerVersion();
+            
             if (!VersionSettings.isClientCompatibleWithServer(clientVersion, serverVersion)) {
                 DialogUtils.displayMessage("Version Mismatch", "<html>Your client version (" + clientVersion + ") is not compatible with the server (" + serverVersion + ").<br>Visit " + WebResources.URL + " to get the correct version.</html>");
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
@@ -167,10 +169,14 @@ public class LoginController extends Controller<LoginEvent> {
         } catch (Exception ex) {
             LOG.error("Error comparing versions.", ex);
             ex.printStackTrace();
-            DialogUtils.displayError("Error Comparing Versions", "<html>We could not determine compatibility between MedSavant and your database.<br>Please ensure that your versions are compatible before continuing.</html>");
+            DialogUtils.displayMessage("Problem Comparing Versions", 
+                    "<html>We could not determine compatibility between MedSavant and your database.<br>"
+                            + "Please ensure that your versions are compatible before continuing.</html>");
         }
         try {
+            LOG.info("Setting up project");
             if (setProject()) {
+                LOG.info("Finalizing login");
                 setLoggedIn(true);
             } else {
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
@@ -185,6 +191,7 @@ public class LoginController extends Controller<LoginEvent> {
 
     public void cancelCurrentLoginAttempt() { //idempotent
         if (currentLoginThread != null) {
+            LOG.info("Cancelling sign in");
             currentLoginThread.cancel(true);
         }
     }
@@ -202,6 +209,7 @@ public class LoginController extends Controller<LoginEvent> {
                 @Override
                 protected Void doInBackground() {
                     try {
+                        LOG.info("Initializing registry");
                         MedSavantClient.initializeRegistry(serverAddress, serverPort);
                     } catch (final Exception ex) { //server isn't running medsavant, or is down.
                         if (!this.isCancelled()) {
@@ -222,6 +230,7 @@ public class LoginController extends Controller<LoginEvent> {
                 @Override
                 protected void showSuccess(Void result) {
                     if (this.isCancelled()) {
+                        LOG.info("Signed in, but cancelled");
                         return;
                     }
                     try {
@@ -232,7 +241,7 @@ public class LoginController extends Controller<LoginEvent> {
                         userName = un;
                         password = pw;
                         if (!LoginController.getInstance().isLoggedIn()) {
-
+                            
                             finishLogin(un, pw);
                         }
                         semLogin.release();

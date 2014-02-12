@@ -83,9 +83,12 @@ public class VersionSettings {
 
         if (exactMatchByPass) {
             if (hostVersion.equals(queryVersion)) {
+                LOG.info("Client and server versions match exactly");
                 return true;
             }
         }
+        
+        LOG.info("Client and server versions aren't an exact match, looking up compatibility...");
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder;

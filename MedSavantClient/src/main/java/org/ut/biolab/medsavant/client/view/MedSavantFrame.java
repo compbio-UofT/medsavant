@@ -158,6 +158,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     private MedSavantFrame() {
         super("");
 
+        MacUtils.makeWindowLeopardStyle(this.getRootPane());
+        UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
+
         setIconImage(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MENU_USER).getImage());
 
         setLayout(new BorderLayout());
@@ -179,46 +182,13 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
         add(view, BorderLayout.CENTER);
 
-        if (ClientMiscUtils.MAC) {
-            customizeForMac();
-        }
-
         LOG.info("Loading apps...");
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
         JMenuBar menuBar = new JMenuBar();
+
         JMenu fileMenu = new JMenu("File");
-
-        JMenuItem pluginsItem = new JMenuItem("Plugins…");
-        pluginsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                PluginManagerDialog.getInstance().setVisible(true);
-            }
-        });
-        //fileMenu.add(pluginsItem);
-
-        JMenuItem dbManagementItem = new JMenuItem("Database Management");
-        dbManagementItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                JDialog adminDialog = new AdminDialog();
-                adminDialog.setVisible(true);
-            }
-        });
-        fileMenu.add(dbManagementItem);
-
-        JMenuItem appItem = new JMenuItem("App Store");
-        appItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                showAppStore();
-            }
-        });
-        fileMenu.add(appItem);
-
         // Debug code that adds a 'Restart' function to the File menu.
         /*
          JMenuItem restartItem = new JMenuItem("Restart");
@@ -232,6 +202,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
          */
         //fileMenu.add(manageDBItem);
         if (!ClientMiscUtils.MAC) {
+
             JMenuItem closeItem = new JMenuItem("Exit");
             closeItem.addActionListener(new ActionListener() {
                 @Override
@@ -240,7 +211,17 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 }
             });
             fileMenu.add(closeItem);
+
         }
+
+        JMenuItem signOutButton = new JMenuItem("Sign Out");
+        signOutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                instance.requestLogout();
+            }
+        });
+        fileMenu.add(signOutButton);
 
         menuBar.add(fileMenu);
 
@@ -320,7 +301,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 // hide some apps from the history, since theyr'e embedded in the menu anyways
                 //dash.blackListAppFromHistory(AppDirectory.getTaskManager());
                 //dash.blackListAppFromHistory(AppDirectory.getAccountManager());
-
                 sessionDashboard = dash;
 
                 view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
@@ -442,87 +422,6 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         if (queuedForExit) {
             AnalyticsAgent.onEndSession(true);
             System.exit(0);
-        }
-    }
-
-    private void customizeForMac() {
-
-        try {
-            MacUtils.makeWindowLeopardStyle(this.getRootPane());
-            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
-
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
-
-            batchApplyProperty(new String[]{
-                "Button.font",
-                "ToggleButton.font",
-                "RadioButton.font",
-                "CheckBox.font",
-                "ColorChooser.font",
-                "ComboBox.font",
-                "Label.font",
-                "List.font",
-                "MenuBar.font",
-                "MenuItem.font",
-                "RadioButtonMenuItem.font",
-                "CheckBoxMenuItem.font",
-                "Menu.font",
-                "PopupMenu.font",
-                "OptionPane.font",
-                "Panel.font",
-                "ProgressBar.font",
-                "ScrollPane.font",
-                "Viewport.font",
-                "TabbedPane.font",
-                "Table.font",
-                "TableHeader.font",
-                "TextField.font",
-                "PasswordField.font",
-                "TextArea.font",
-                "TextPane.font",
-                "EditorPane.font",
-                "TitledBorder.font",
-                "ToolBar.font",
-                "ToolTip.font",
-                "Tree.font"}, new Font("HelveticaNeue-Light", Font.PLAIN, 13));
-
-            System.setProperty("awt.useSystemAAFontSettings", "on");
-            System.setProperty("swing.aatext", "true");
-
-            UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
-//            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
-            Application macOSXApplication = Application.getApplication();
-            macOSXApplication.setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AboutEvent evt) {
-                    JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant "
-                            + VersionSettings.getVersionString()
-                            + "\nCreated by Biolab at University of Toronto.");
-                }
-            });
-            macOSXApplication.setPreferencesHandler(new PreferencesHandler() {
-                @Override
-                public void handlePreferences(PreferencesEvent pe) {
-                    DialogUtils.displayMessage("Preferences available for Administrators only");
-                }
-            });
-            macOSXApplication.setQuitHandler(new QuitHandler() {
-                @Override
-                public void handleQuitRequestWith(QuitEvent evt, QuitResponse resp) {
-                    System.out.println("Requesting close...");
-                    instance.requestClose();
-                    resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
-                }
-            });
-        } catch (Throwable x) {
-            System.err.println("Warning: MedSavant requires Java for Mac OS X 10.6 Update 3 (or later).\nPlease check Software Update for the latest version.");
-        }
-    }
-
-    private void batchApplyProperty(String[] propn, Object o) {
-        for (String s : propn) {
-            UIManager.put(s, o);
         }
     }
 

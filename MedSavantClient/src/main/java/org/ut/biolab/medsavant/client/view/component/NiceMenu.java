@@ -53,7 +53,8 @@ public class NiceMenu extends JPanel {
         rightComponent = ViewUtil.getClearPanel();
         rightComponent.setLayout(new MigLayout("insets 0, nogrid, alignx trailing, gapx 10, hidemode 3"));
 
-        layout = new MigLayout("gapx 0, gapy 0, insets 5, fillx, filly");
+        layout = new MigLayout("gapx 0, gapy 0, fillx, filly " + ((location == MenuLocation.TOP) ? ", height 44, insets 5 15 5 15" : ", insets 5"));
+        
         this.setLayout(layout);
 
         this.add(leftComponent, "width 20%");

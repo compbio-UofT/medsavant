@@ -296,7 +296,6 @@ public class ListView extends JPanel {
                 }
 
                 selectedItemMemory = sli.getText();
-                System.out.println("Remembering " + selectedItemMemory);
 
                 Integer index = itemToIndexMap.get(sli);
                 if (index == null) {
@@ -352,8 +351,6 @@ public class ListView extends JPanel {
     }
 
     void refreshList() {
-        System.out.println("Refreshing list");
-
         showWaitCard();
         fetchList();
     }
@@ -421,7 +418,6 @@ public class ListView extends JPanel {
 
         SourceListItem itemToSelect = null;
 
-        System.out.println("Updating index map");
         for (Object[] row : data) {
 
             String label = row[visibleColumn].toString();
@@ -435,10 +431,7 @@ public class ListView extends JPanel {
         }
 
         if (itemToSelect != null) {
-            System.out.println("Reselecting " + selectedItemMemory);
             sourceList.setSelectedItem(itemToSelect);
-        } else {
-            System.out.println("Could not reselect " + selectedItemMemory);
         }
 
         // need to add an item otherwise the category title doesn't display
@@ -449,7 +442,6 @@ public class ListView extends JPanel {
 
     void selectItemWithKey(String key) {
 
-        System.out.println("Remembering " + key);
         this.selectedItemMemory = key;
 
         try {

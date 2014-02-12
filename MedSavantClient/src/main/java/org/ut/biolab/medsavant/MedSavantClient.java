@@ -144,6 +144,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 /*  if (msg != null) {
                  DialogUtils.displayMessage("MedSavant needs to restart.", msg);
                  }*/
+                SettingsController.getInstance().setBoolean("BootFromLogout", true);
                 System.out.println("Restarting with "+restartCommand[0]);
                 Runtime.getRuntime().exec(restartCommand);
                 System.exit(0);
@@ -221,11 +222,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
             }
         }
 
+        LOG.info("MedSavant booted");
+        
         SplashFrame loginFrame = new SplashFrame();
         loginFrame.setVisible(true);
 
-        //frame.setVisible(true);
-        LOG.info("MedSavant booted.");
+        
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
@@ -233,7 +235,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
         if (initialized) {
             return;
         }
-
+        
+        
         int port = (new Integer(serverPort)).intValue();
 
         Registry registry;
