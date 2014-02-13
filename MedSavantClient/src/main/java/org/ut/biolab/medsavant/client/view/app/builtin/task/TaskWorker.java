@@ -72,7 +72,7 @@ public interface TaskWorker  {
                 return "Persistent";
             }
         },
-        PERSISTENT_AUTOREFRESH{
+        PERSISTENT_AUTOREFRESH {
             @Override
             public String toString(){
                 return "Persistent";

@@ -63,14 +63,18 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
-                    Object[][] results = new Object[tasks.size() + 2][];
+                    Object[][] results = new Object[tasks.size() + 2][]; // 2 default entries
                     int counter = 0;
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
+                    
+                    // server general log
                     TaskWorker t = new ServerLogTaskWorker();
                     results[counter] = new Object[]{t.getTaskName(), t};
                     counter++;
+                    
+                    // server job log
                     t = new ServerJobMonitorTaskWorker();
                     results[counter] = new Object[]{t.getTaskName(), t};                    
                     return results;
@@ -243,7 +247,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             JLabel taskTitle = ViewUtil.getLargeGrayLabel(t.getTaskName());
             view.add(taskTitle, "wrap");
 
-            if (t.getCurrentStatus() != TaskStatus.PERSISTENT) {
+            if (t.getCurrentStatus() != TaskStatus.PERSISTENT && t.getCurrentStatus() != TaskStatus.PERSISTENT_AUTOREFRESH) {
                 view.add(new JLabel(t.getCurrentStatus().toString()));
 
                 if (t.getCurrentStatus() == TaskStatus.INPROGRESS) {
