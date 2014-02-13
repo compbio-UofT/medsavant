@@ -62,7 +62,7 @@ public class AnnotationFormat implements Serializable {
         this.type = type;
         this.isEndInclusive = isEndInclusive;
     }
-
+      
     public int getNumNonDefaultFields(){
         return fields.length;
     }

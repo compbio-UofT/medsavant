@@ -186,7 +186,7 @@ public class VariantManagerUtils {
             }
 
             // write line to chunk file
-            bw.write(line + "\n");
+            bw.write(line + "\r\n");
 
             // close and upload this output file
             if (lineNumber % chunkSize == 0) {
@@ -198,10 +198,10 @@ public class VariantManagerUtils {
                         + "INTO TABLE " + tableName + " "
                         + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
                         + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
-                        //+ " LINES TERMINATED BY '\\r\\n'";
+                        + " LINES TERMINATED BY '\\r\\n'"
                         + ";";
 
-                //LOG.info(query);
+              //  LOG.info(query);
                 Statement s = c.createStatement();
                 s.setQueryTimeout(30 * 60); // 30 minutes
                 s.execute(query);
@@ -221,12 +221,12 @@ public class VariantManagerUtils {
                     + "INTO TABLE " + tableName + " "
                     + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
                     + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
-                    //+ " LINES TERMINATED BY '\\r\\n'"
+                    + " LINES TERMINATED BY '\\r\\n'"
                     + ";";
 
             LOG.info("Closing and uploading last partial file " + currentOutputPath);
 
-            //LOG.info(query);
+            LOG.info(query);
             Statement s = c.createStatement();
             s.setQueryTimeout(60 * 60); // 1 hour
             s.execute(query);

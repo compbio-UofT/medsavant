@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.server.db.variants.annotation.BatchVariantAnnotat
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
+import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
@@ -50,10 +51,8 @@ public class AnnotationCursor {
     // does this annotation refer to positions or intervals
     private final boolean isInterval;
     // are the endpoints inclusive (only relevant for interval annotations)
-    private final boolean isEndInclusive;
-    // the number of fields (not including standard ones like chr, pos, ref, alt)
-    private final int numNonDefaultFields;
-
+    //private final boolean isEndInclusive;
+    
     // the annotation to apply
     private final Annotation annotation;
     //Setup default column indices for required columns.  These can be overridden
@@ -72,8 +71,7 @@ public class AnnotationCursor {
 
     public static final int MAX_BASEPAIR_DISTANCE_IN_WINDOW = 20000;
 
-    //If the variant density in the variantWindow is <= than this, just seek to each annotation separately.   
-    private static final double DENSITY_THRESHOLD = 10.0f / MAX_BASEPAIR_DISTANCE_IN_WINDOW;
+    private final AnnotationFormat annotationFormat;
 
     /**
      * A file reader and cursor to be used to help in the annotation process
@@ -103,18 +101,18 @@ public class AnnotationCursor {
 
             for (int i = parts.length - 1; i >= 0; --i) {
                 parts[i] = parts[i].replace("#", "").trim().toUpperCase();
-                if (parts[i].equals("CHR") || parts[i].equals("CHROM")) {
+                if (parts[i].equalsIgnoreCase("CHR") || parts[i].equalsIgnoreCase("CHROM")) {
                     pos_annot_index_of_chr = int_annot_index_of_chr = i;
-                } else if (parts[i].equals("START")) {
+                } else if (parts[i].equalsIgnoreCase("START")) {
                     int_annot_index_of_start = i;
                     pos_annot_index_of_pos = i;
-                } else if (parts[i].equals("END")) {
-                    int_annot_index_of_end = i;
-                } else if (parts[i].equals("REF")) {
+                } else if (parts[i].equalsIgnoreCase("END")) {
+                    int_annot_index_of_end = i;                    
+                } else if (parts[i].equalsIgnoreCase("REF")) {
                     pos_annot_index_of_ref = i;
-                } else if (parts[i].equals("ALT")) {
+                } else if (parts[i].equalsIgnoreCase("ALT")) {
                     pos_annot_index_of_alt = i;
-                } else if (parts[i].equals("POSITION")) {
+                } else if (parts[i].equalsIgnoreCase("POSITION")) {
                     pos_annot_index_of_pos = i;
                 }
             }
@@ -146,37 +144,46 @@ public class AnnotationCursor {
         }
 
         this.annotation = annotation;
-        annotationHasRef = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasRef();
-        annotationHasAlt = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).hasAlt();
-        isInterval = annotation.isInterval();
-        isEndInclusive = annotation.isEndInclusive();
-        numNonDefaultFields = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID()).getNumNonDefaultFields();
-
-        String references = "";
-        for (String s : reader.getReferenceNames()) {
-            references += ", " + s;
-        }
+        annotationFormat = AnnotationManager.getInstance().getAnnotationFormat(sid, annotation.getID());        
+        annotationHasRef = annotationFormat.hasRef();
+        annotationHasAlt = annotationFormat.hasAlt();
+        isInterval = annotation.isInterval();        
     }
 
-    private String[] getVariantAnnotationString(SimpleVariantRecord variant, SimpleAnnotationRecord annotation, String[] annotationLine) {
+    private String[] getVariantAnnotationString(String[] annotationLine) {
+        
+        
         String prefix = "";
         String[] result = new String[getNumNonDefaultFields()];
-
-        // the number of redundant and non-redundant columns
-        int numColumnsToCopy = getNumNonDefaultFields();
-        int numRedundantColumns = annotationLine.length - numColumnsToCopy;
-
-        // copy only the non-redundant columns
-        for (int i = 0; i < numColumnsToCopy; i++) {
-            // tricky, skip the redundant columns
-            result[i] = prefix + annotationLine[numRedundantColumns + i];
+        
+        int numNonDefaultFields = annotationFormat.getNumNonDefaultFields();        
+        int numDefaultFields = 2; //chromosome and position are ALWAYS present.
+        
+        if(annotationFormat.hasRef()){
+            numDefaultFields++;
+        }
+        
+        if(annotationFormat.hasAlt()){
+            numDefaultFields++;
+        }
+        
+        //annotation has an end position
+        if(int_annot_index_of_end != -1){
+            numDefaultFields++;
+        }
+                
+        for (int i = 0; i < numNonDefaultFields; ++i){            
+            result[i] = prefix;
+            if((numDefaultFields+i) < annotationLine.length){
+                result[i] += annotationLine[numDefaultFields + i];
+            }                        
         }
         return result;
     }
-
+    
     //Annotates the first numRecords variant records given in 'records'.  
     //Precondition: All records have the same chromosome, and are ordered by position in ascending order.
-    boolean annotateVariants(List<SimpleVariantRecord> variantWindow, long minStart, long maxEnd, int annotationIndex) throws Exception {
+    boolean annotateVariants(List<SimpleVariantRecord> variantWindow, long minStart, long maxEnd, int annotationIndex, boolean isLowDensity) throws Exception {
         if (!canAnnotateThisChromosome(variantWindow.get(0).chrom)) {
             //this chromosome can't be annotated.
             return false;
@@ -184,7 +191,7 @@ public class AnnotationCursor {
 
         //Annotates variants by separately seeking annotations for each variant.  Usually slow unless
         //variants are very sparse.
-        if (((double) variantWindow.size() / MAX_BASEPAIR_DISTANCE_IN_WINDOW) <= DENSITY_THRESHOLD) {
+        if (isLowDensity) {
             for (SimpleVariantRecord svr : variantWindow) {
                 TabixReader.Iterator annotationIt = reader.query(reader.chr2tid(variantWindow.get(0).chrom),
                         (int)svr.start-1, //this function returns annotations AFTER this position, so we need to have the -1
@@ -197,13 +204,14 @@ public class AnnotationCursor {
                     String[] annotationLine = removeNewLinesAndCarriageReturns(annotationLineStr).split(VariantManagerUtils.FIELD_DELIMITER, -1);
                     SimpleAnnotationRecord annotationRecord = new SimpleAnnotationRecord(annotationLine);
                     if (annotationRecord.matchesVariant(svr)) {
-                        svr.annotate(annotationIndex, getVariantAnnotationString(svr, annotationRecord, annotationLine));
+                        svr.annotate(annotationIndex, getVariantAnnotationString(annotationLine));
                     }
                 }
             }
+        
             return true;
         }
-
+        
         //Annotates variants by reading in all annotations in the region delimited by the variantWindow 
         //(only uses one seek).  Faster if variants are dense.
         TabixReader.Iterator annotationIt
@@ -226,7 +234,7 @@ public class AnnotationCursor {
                 SimpleVariantRecord variantRecord = variantWindowIt.next();
                 if (annotationRecord.matchesVariant(variantRecord)) {
                     //annotate
-                    variantRecord.annotate(annotationIndex, getVariantAnnotationString(variantRecord, annotationRecord, annotationLine));
+                    variantRecord.annotate(annotationIndex, getVariantAnnotationString( annotationLine));
                 } else if (variantRecord.start > annotationRecord.end) {
                     variantWindowIndex = variantWindowIt.previousIndex();
                     break;
@@ -243,7 +251,7 @@ public class AnnotationCursor {
      * @return the number of non default fields
      */
     public int getNumNonDefaultFields() {
-        return numNonDefaultFields;
+        return annotationFormat.getNumNonDefaultFields();
     }
 
     /**
