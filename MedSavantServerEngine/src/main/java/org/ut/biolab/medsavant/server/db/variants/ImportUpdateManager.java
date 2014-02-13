@@ -122,7 +122,8 @@ public class ImportUpdateManager {
         };
         //Although importing takes a long time, the outer 'import' job doesn't that much work,
         //and mostly waits on other threads.
-        MedSavantServerEngine.submitShortJob(importJob).get();
+        //MedSavantServerEngine.submitShortJob(importJob).get();
+        MedSavantServerEngine.runJobInCurrentThread(importJob);
         
         return updateID;
     }
@@ -155,7 +156,8 @@ public class ImportUpdateManager {
                 return true;
             }
         };
-        MedSavantServerEngine.submitShortJob(updateJob).get();
+        //MedSavantServerEngine.submitShortJob(updateJob).get();
+        MedSavantServerEngine.runJobInCurrentThread(updateJob);
         return updateID;
     }
 
