@@ -215,7 +215,6 @@ public class DiscoveryPanel extends JPanel {
 	private JButton cgdHelp;
 	private JLabel cgdDateLabel;
 	private SplitScreenPanel ssp;
-	private ComprehensiveInspector vip;
 	private JButton addFilterButton;
 	private JPanel patientPanel;
 	private JLabel fetchLimitLabel;
@@ -497,16 +496,7 @@ public class DiscoveryPanel extends JPanel {
 		patientJSP.setMinimumSize(new Dimension(patientPanel.getMinimumSize().width + PANE_WIDTH_OFFSET, PANE_HEIGHT));
 		patientJSP.setPreferredSize(new Dimension(patientPanel.getMinimumSize().width, patientPanel.getMaximumSize().height));
 		patientJSP.setBorder(BorderFactory.createEmptyBorder());
-		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		
-		/* Set up the gene and variant inspectors. */
-		ssp= new SplitScreenPanel(variantPane);
-        vip= new ComprehensiveInspector();
-		vip.addClinvarSubInspector();
-		vip.addHGMDSubInspector();
-		vip.addOtherIndividualsVariantSubInspector(ssp);
-		vip.addSocialSubInspector();
-		
+		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);		
 		
 		/* Set up the variant summary panel. */
 		vsp= new VariantSummaryPanel("Variant Summary");
@@ -567,14 +557,6 @@ public class DiscoveryPanel extends JPanel {
 			collapsibleSettings.getMaximumSize().height)); // also set the max size for this Pane
 		patientPanel.setMinimumSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
 		variantPane.setPreferredSize(variantPane.getMaximumSize()); // Needs changing - try MigLayout features
-		vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH, 700)); //Needs to be updated - is modified further down below.
-		
-		vip.addSelectionListener(new Listener<Object>() {
-			@Override
-			public void handleEvent(Object event) {
-				stp.getTable().clearSelection();
-			}
-        });
     }
 	
 	
@@ -808,22 +790,10 @@ public class DiscoveryPanel extends JPanel {
 					String alt= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_ALT);
 					String type= (String) st.getModel().getValueAt(selectedIndex, BasicVariantColumns.INDEX_OF_VARIANT_TYPE);
 					
-                    SimpleVariant v= new SimpleVariant(chr, start, end, ref, alt, type);
-                    vip.setSimpleVariant(v);
 					
-					/* Create custom SubInspectors. */
 					Object[] line= new Object[discFind.header.size()];
 					for (int index= 0; index != discFind.header.size(); ++index)
 						line[index]= st.getModel().getValueAt(selectedIndex, index);
-					vip.setVariantLine(line, discFind.header);
-					
-					// Set the size here, once workview has a non 0,0 dimension
-					// LIKELY needs to CHANGE later
-					vip.setMinimumSize(new Dimension(ComprehensiveInspector.INSPECTOR_WIDTH,
-						workview.getSize().height));					
-					vip.updateUI();
-					
-					///// NEED TO REMOVE VIP ONCE VSP IS 100% operational
 					
 					/* Update the Variant Summary Panel. */
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
