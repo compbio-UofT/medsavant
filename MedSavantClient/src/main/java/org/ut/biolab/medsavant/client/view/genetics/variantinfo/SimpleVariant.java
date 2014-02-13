@@ -27,12 +27,12 @@ import org.ut.biolab.medsavant.shared.model.GenomicRegion;
  */
 public class SimpleVariant {
 
-    public long start_pos;
-    public long end_pos;
-    public String chr;
-    public String ref;
-    public String alt;
-    public String type;
+    private final long start_pos;
+    private final long end_pos;
+    private final String chr;
+    private final String ref;
+    private final String alt;
+    private final String type;
 
     public SimpleVariant(String chr, long start_pos, long end_pos, String ref, String alt, String type) {
         this.chr = chr;
@@ -43,6 +43,30 @@ public class SimpleVariant {
         this.type = type;
     }
 
+    public long getStartPosition() {
+        return start_pos;
+    }
+
+    public long getEndPosition() {
+        return end_pos;
+    }
+
+    public String getChromosome() {
+        return chr;
+    }
+
+    public String getReference() {
+        return ref;
+    }
+
+    public String getAlternate() {
+        return alt;
+    }
+
+    public String getType() {
+        return type;
+    }
+    
     public GenomicRegion getGenomicRegion(String name){
         //GenomicRegion(String name, String chrom, int start, int end)             
         return new GenomicRegion(name, chr, (int)start_pos, (int)end_pos);

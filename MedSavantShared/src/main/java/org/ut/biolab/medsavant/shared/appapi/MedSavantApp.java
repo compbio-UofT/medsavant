@@ -21,7 +21,7 @@ package org.ut.biolab.medsavant.shared.appapi;
 
 
 /**
- * Base class for all Savant plugins.  Not much here yet.
+ * Base class for all MedSavant apps
  *
  * @author tarkvara
  */

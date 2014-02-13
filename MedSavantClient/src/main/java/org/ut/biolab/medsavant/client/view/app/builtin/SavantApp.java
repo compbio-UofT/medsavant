@@ -272,7 +272,7 @@ public class SavantApp implements LaunchableApp {
                 trackAdditionLock.acquire();
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
-                view.add(new WaitPanel("Preparing Savant Genome Browser..."));
+                view.add(new WaitPanel("Starting Genome Browser"));
 
                 Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
                 genomeContainer = new GenomeContainer(pageName, chroms); // what's the first param for?

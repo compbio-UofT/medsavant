@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
@@ -61,7 +62,7 @@ public class VCFUploadApp implements LaunchableApp {
         @Override
         public boolean accept(File f) {
             if (f.isFile()) {
-                if (f.getAbsolutePath().endsWith(".vcf") || IOUtils.isArchive(f)){
+                if (f.getAbsolutePath().endsWith(".vcf") || IOUtils.isArchive(f)) {
                     return true;
                 }
             }
@@ -74,7 +75,7 @@ public class VCFUploadApp implements LaunchableApp {
         }
     };
 
-    private JXCollapsiblePane settingsPanel;
+    private JPanel settingsPanel;
     private JButton importButton;
     private JXCollapsiblePane dragDropContainer;
     private CardLayout cardLayout;
@@ -96,6 +97,7 @@ public class VCFUploadApp implements LaunchableApp {
         if (view == null) {
             view = new JPanel();
 
+            view.setBackground(Color.white);
             view.setLayout(new BorderLayout());
 
             JPanel settingsCard = getSettingsPanel();
@@ -105,11 +107,13 @@ public class VCFUploadApp implements LaunchableApp {
 
     private void initSettingsPanel() {
 
-        settingsPanel = new JXCollapsiblePane();
-        settingsPanel.setCollapsed(true);
+        settingsPanel = ViewUtil.getClearPanel();
+        settingsPanel.setVisible(false);
         //settingsPanel.setOpaque(false);
 
         JPanel p = ViewUtil.getSubBannerPanel("");
+        //p.setOpaque(false);
+        p.setBackground(Color.white);
         MigLayout ml = new MigLayout("inset 10");
         p.setLayout(ml);
 
@@ -125,6 +129,7 @@ public class VCFUploadApp implements LaunchableApp {
         p.add(ViewUtil.getSettingsHelpLabel("Email notifications are sent upon completion"), "wrap");
         p.add(emailPlaceholder, "wrap, growx 1.0");
 
+        settingsPanel.setBorder(BorderFactory.createEmptyBorder());
         settingsPanel.add(p);
 
     }
@@ -226,15 +231,19 @@ public class VCFUploadApp implements LaunchableApp {
         settingsCard.setLayout(new BorderLayout());
 
         JPanel container = ViewUtil.getClearPanel();
-        MigLayout layout = new MigLayout("insets 30 200 30 200, fillx");
+        MigLayout layout = new MigLayout("insets 30 200 30 200, fillx, hidemode 3");
         container.setLayout(layout);
 
         dragDropContainer = new JXCollapsiblePane();
-        MigLayout dpMl = new MigLayout("wrap 1");
 
-        dragDropContainer.setLayout(dpMl);
+        dragDropContainer.getContentPane().setBackground(Color.white);
+        MigLayout dpMl = new MigLayout("wrap 1, center");
+
+        dragDropContainer.getContentPane().setLayout(dpMl);
 
         RoundedPanel dp = new RoundedPanel(0);
+        dp.setLayout(new MigLayout("wrap 1, center"));
+        dp.setBackground(Color.white);
         dp.setOpaque(false);
 
         dp.setBorderDashed(true);
@@ -242,19 +251,38 @@ public class VCFUploadApp implements LaunchableApp {
 
         ImagePanel ip = new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT_VCF).getImage(), 300, 200);
 
+        dp.add(ip);
+
         dp.setFocusable(false);
         int topBorder = 0;
         int sideBorder = 50;
         dp.setBorder(BorderFactory.createEmptyBorder(topBorder, sideBorder, topBorder, sideBorder));
 
-        dragDropContainer.add(dp);
         JLabel l = new JLabel("Drag and drop .vcf (or .vcf.gz) files to be uploaded");
         l.setForeground(new Color(100, 100, 100));
-        dragDropContainer.add(l, "center");
+        dp.add(l);
+
+        dragDropContainer.add(dp);
+
+        dragDropContainer.add(l = new JLabel("or"),"center");
+        l.setForeground(new Color(100, 100, 100));
+        JButton chooseButton = new JButton("Choose...");
+        chooseButton.setFocusable(false);
+        dragDropContainer.add(chooseButton,"center");
+        
+        chooseButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File[] files = DialogUtils.chooseFilesForOpen("Choose Variant Files", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                for (File f : files) {
+                    addFileToImport(f);
+                }
+            }
+            
+        });
 
         container.add(dragDropContainer, "center, wrap");
-
-        dp.add(ip);
 
         new FileDrop(dp, new FileDrop.Listener() {
             public void filesDropped(java.io.File[] files) {
@@ -274,13 +302,13 @@ public class VCFUploadApp implements LaunchableApp {
 
         initSettingsPanel();
 
-        container.add(settingsPanel, String.format("wrap, center, width %s", containerWidth));
+        container.add(settingsPanel, "wrap, center, width 100%");
 
         advancedOptionsButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                settingsPanel.setCollapsed(!settingsPanel.isCollapsed());
+                settingsPanel.setVisible(!settingsPanel.isVisible());
             }
 
         });
@@ -305,7 +333,7 @@ public class VCFUploadApp implements LaunchableApp {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                new BackgroundTaskWorker(instance,"Upload Variants") {
+                new BackgroundTaskWorker(instance, "Upload Variants") {
 
                     @Override
                     protected Void doInBackground() throws Exception {
@@ -365,15 +393,15 @@ public class VCFUploadApp implements LaunchableApp {
 
                     @Override
                     protected void showSuccess(Object result) {
-                        AppDirectory.getTaskManager().showMessageForTask(this, 
+                        AppDirectory.getTaskManager().showMessageForTask(this,
                                 "<html>Variants have been uploaded and are now being processed.<br/>"
-                                        + "You may view progress in the Server Log in the Task Manager<br/><br/>"
-                                        + "You may log out or continue doing work.</html>");
+                                + "You may view progress in the Server Log in the Task Manager<br/><br/>"
+                                + "You may log out or continue doing work.</html>");
                     }
 
                     @Override
                     protected void showFailure(Exception e) {
-                        AppDirectory.getTaskManager().showErrorForTask(this,e);
+                        AppDirectory.getTaskManager().showErrorForTask(this, e);
                     }
 
                 }.start();

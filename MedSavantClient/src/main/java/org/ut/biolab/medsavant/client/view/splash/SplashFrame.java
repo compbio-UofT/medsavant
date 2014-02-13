@@ -286,6 +286,7 @@ public class SplashFrame extends JFrame {
             editPanel.setLayout(new MigLayout("insets 0, fillx, alignx trailing"));
 
             chooseButton = ViewUtil.getTexturedButton("Connect");
+            
             cancelButton = ViewUtil.getTexturedButton("Cancel");
             saveButton = ViewUtil.getTexturedButton("Save");
 
