@@ -156,6 +156,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
             return null;
         } catch (Exception ex) {
             jobProgress.setMessage("Aborted due to error: " + ex.getMessage());
+            ex.printStackTrace();
             setScheduleStatus(ScheduleStatus.CANCELLED);
             throw (ex);
         } finally {

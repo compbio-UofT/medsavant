@@ -108,6 +108,11 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         shortThreadPool = Executors.newCachedThreadPool();
     }
 
+    public static Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception{
+        msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
+        return msj.call();
+    }
+            
     /**
      * Submits and runs the current job using the short job executor service,
      * and immediately returns. An unlimited number of short jobs can be
