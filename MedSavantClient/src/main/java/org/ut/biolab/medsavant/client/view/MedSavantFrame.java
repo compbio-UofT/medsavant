@@ -296,7 +296,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
-                dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
+                //dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
 
                 // hide some apps from the history, since theyr'e embedded in the menu anyways
                 //dash.blackListAppFromHistory(AppDirectory.getTaskManager());
