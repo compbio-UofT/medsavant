@@ -34,6 +34,8 @@ import java.awt.Toolkit;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.List;
 import javax.swing.*;
 
@@ -69,7 +71,6 @@ import org.ut.biolab.medsavant.client.view.util.form.NiceFormFieldGroup;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormModel;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.mfiume.app.jAppStore;
-import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
 /**
  *
@@ -688,13 +689,36 @@ public class SplashFrame extends JFrame {
             usernameField.setForeground(ViewUtil.getSemiBlackColor());
             usernameField.setColumns(14);
             panel.add(usernameField, "wrap");
-
+			usernameField.addKeyListener(new KeyListener()
+				{	
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if (e.getKeyCode() == KeyEvent.VK_ENTER)
+							doSignIntoServer(server);
+					}
+					@Override public void keyReleased(KeyEvent e) {}
+					@Override public void keyTyped(KeyEvent e) {}
+				}
+			);
+			
+			
             passwordField = new PlaceHolderPasswordField();
             passwordField.setPlaceholder("Password");
             passwordField.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
             passwordField.setForeground(ViewUtil.getSemiBlackColor());
             passwordField.setColumns(14);
             panel.add(passwordField, "wrap");
+			passwordField.addKeyListener(new KeyListener()
+				{	
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if (e.getKeyCode() == KeyEvent.VK_ENTER)
+							doSignIntoServer(server);
+					}
+					@Override public void keyReleased(KeyEvent e) {}
+					@Override public void keyTyped(KeyEvent e) {}
+				}
+			);
 
             rememberPasswordCheckbox = new JCheckBox("Remember Password");
             rememberPasswordCheckbox.setFocusable(false);

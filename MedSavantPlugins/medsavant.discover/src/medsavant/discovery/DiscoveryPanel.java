@@ -151,8 +151,8 @@ public class DiscoveryPanel extends JPanel {
 	private static final String RIGHT_HIDE_STRING= ">>";
 	
 	private final int TOP_MARGIN= 0;
-	private final int SIDE_MARGIN= 5;
-	private final int BOTTOM_MARGIN= 5;
+	private final int SIDE_MARGIN= 0;
+	private final int BOTTOM_MARGIN= 0;
 	private final int TEXT_AREA_WIDTH= 70;
 	private final int TEXT_AREA_HEIGHT= 25;
 	private final int PANE_WIDTH= 380;
@@ -401,6 +401,12 @@ public class DiscoveryPanel extends JPanel {
 		
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
+		JPanel initVariantPane= new JPanel();
+		JLabel initVariantPaneLabel= new JLabel("Select patient ID to see variants.");
+		initVariantPane.setLayout(new MigLayout("", "center", "center"));
+		initVariantPane.add(initVariantPaneLabel);
+		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.ITALIC, 16));
+		variantPane.setViewportView(initVariantPane);
 		
 		chooseAFColumns= new JButton("Choose Allelle Frequency DBs");
 		chooseAFColumnsHelp= ViewUtil.getHelpButton("Allele Frequency Database selector", 
@@ -438,6 +444,7 @@ public class DiscoveryPanel extends JPanel {
 		JPanel resetPanel= new JPanel();
 		resetPanel.setLayout(new MigLayout("insets 2 6 2 6")); // top left bottom right
 		resetPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+		resetPanel.setBackground(ViewUtil.getSidebarColor());
 		JButton reset= new JButton("Restore defaults");
 		reset.addActionListener(new ActionListener() 
 		{
@@ -467,13 +474,15 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Progress bar panel. */
 		progressPanel= new JPanel(new MigLayout("", "center", ""));
+		progressPanel.setBackground(ViewUtil.getSidebarColor());
 		progressPanel.add(ringChart, "wrap");
 		progressPanel.add(progressLabel, "gapy 25, wrap");
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
-		patientPanel= new JPanel();		
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));	
+		patientPanel= new JPanel();
+		patientPanel.setBackground(ViewUtil.getSidebarColor());
+		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
 		patientPanel.add(collapsible, "wrap, gapy 20px");
@@ -513,7 +522,8 @@ public class DiscoveryPanel extends JPanel {
 		Container contentPane= rootPane.getContentPane();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
 		workview= new RoundedPanel(10);
-		workview.setLayout(new MigLayout("", "", "top"));
+		workview.setBackground(ViewUtil.getSidebarColor());
+		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
 		workview.add(patientJSP);
 		workview.add(variantPane);
 		workview.add(vsp);
@@ -1116,13 +1126,15 @@ public class DiscoveryPanel extends JPanel {
 		
 		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
-		leftHideButton.setForeground(Color.GRAY);
+		leftHideButton.setForeground(Color.DARK_GRAY);
+		leftHideButton.setBackground(ViewUtil.getSidebarColor());
 		leftHideButton.setSize(leftHideButton.getMinimumSize());
 		leftHideButton.setLocation(0, 0);
 		
 		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
-		rightHideButton.setForeground(Color.GRAY);
+		rightHideButton.setForeground(Color.DARK_GRAY);
+		rightHideButton.setBackground(ViewUtil.getSidebarColor());
 		rightHideButton.setSize(rightHideButton.getMinimumSize());
 		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
 		

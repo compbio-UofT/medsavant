@@ -1,9 +1,8 @@
 package medsavant.pgx;
 
-import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 
 
 /**
@@ -11,7 +10,7 @@ import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
  *
  * @author rammar
  */
-public class PGXApp extends MedSavantClinicApp {
+public class PGXApp extends MedSavantDashboardApp {
 
     private static final String iconroot= "/medsavant/pgx/icon/";
     

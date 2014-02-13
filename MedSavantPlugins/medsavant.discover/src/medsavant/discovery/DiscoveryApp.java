@@ -1,17 +1,11 @@
 package medsavant.discovery;
 
-import java.sql.SQLException;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.client.api.MedSavantClinicApp;
+import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 
 
-/**
- * Demonstration plugin to show how to do a simple panel.
- *
- * @author rammar
- */
-public class DiscoveryApp extends MedSavantClinicApp {
+public class DiscoveryApp extends MedSavantDashboardApp {
 
     private static final String iconroot= "/medsavant/discovery/icon/";
     

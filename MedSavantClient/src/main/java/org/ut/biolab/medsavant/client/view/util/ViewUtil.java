@@ -1083,4 +1083,13 @@ public final class ViewUtil {
             c.putClientProperty("JButton.segmentPosition", position);
         }
     }
+	
+	/**
+	 * Get the sidebar color.
+	 * @return the sidebar color
+	 */
+	public static Color getSidebarColor() {
+		return fColorScheme.getActiveBackgroundColor();
+	}
+	
 }

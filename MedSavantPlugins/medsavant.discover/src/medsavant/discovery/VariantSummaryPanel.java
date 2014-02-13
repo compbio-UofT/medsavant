@@ -6,6 +6,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.JideButton;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -37,6 +38,7 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
@@ -86,6 +88,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.setViewportView(summaryPanel);
 		
 		summaryPanel.setLayout(new MigLayout("gapy 0px"));
+		//summaryPanel.setBackground(ViewUtil.getSidebarColor());
 		titleLabel= new JLabel(title);
 		titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
 		summaryPanel.add(titleLabel, "alignx center, span");
