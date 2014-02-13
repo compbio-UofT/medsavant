@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.IOJob;
 import org.ut.biolab.medsavant.server.MedSavantIOController;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
+import static org.ut.biolab.medsavant.server.db.variants.annotation.AnnotationCursor.MAX_BASEPAIR_DISTANCE_IN_WINDOW;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -484,6 +485,13 @@ public class BatchVariantAnnotator {
         private int vps = -1;
         private long startTime = 0;
         private String vstr = "";
+        
+        private int numLd = 0;
+        private int numHd = 0;
+        //If the variant density in the variantWindow is <= than this, use unoptimized annotation
+        //(seek to each annotation separately)
+        private static final double DENSITY_THRESHOLD = 10.0f / MAX_BASEPAIR_DISTANCE_IN_WINDOW;
+    
         public VariantAnnotatorIOJob(AnnotationCursor[] cursors, CSVReader recordReader, CSVWriter recordWriter, int numLines, int numFieldsInOutputFile) {
             super("Variant annotator");
             LOG.info("Annotation started...");
@@ -499,6 +507,10 @@ public class BatchVariantAnnotator {
             //variantWindow = new SimpleVariantRecord[VARIANT_WINDOW_SIZE];
         }
         
+         boolean isLowDensity(List<SimpleVariantRecord> variantWindow){
+            return (variantWindow.size() / (double)MAX_BASEPAIR_DISTANCE_IN_WINDOW) <= DENSITY_THRESHOLD;
+        }
+        
         @Override
         protected boolean continueIO() throws IOException {
             inputLine = readNext(recordReader); //read next input line from variant file.
@@ -512,10 +524,17 @@ public class BatchVariantAnnotator {
                 }
                 
                 int ofs = 0;
+                
+                boolean ld = isLowDensity(variantWindow);
+                if(ld){
+                    numLd++;
+                }else{
+                    numHd++;
+                }
                 // perform each annotation, in turn
                 for (int annotationIndex = 0; annotationIndex < annotations.length; annotationIndex++) {
                     // get the annotation for this line
-                    if (!cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxStart, annotationIndex)) {
+                    if (!cursors[annotationIndex].annotateVariants(variantWindow, minStart, maxStart, annotationIndex,ld)) {
                         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
                                 sid,
                                 LogManagerAdapter.LogType.WARNING,
@@ -549,19 +568,20 @@ public class BatchVariantAnnotator {
                 
                 SimpleVariantRecord lv = variantWindow.get(variantWindow.size() - 1);
                                                         
-                String s = inputTDFFile.getName() + ": Annotated " + variantsAnnotated + " variants so far.  Last variant considered: Chrom=" + lv.chrom + " Position=" + lv.start;
+                String s = inputTDFFile.getName() + ": Annotated " + variantsAnnotated + " variants so far (#sparse/dense regions="+numLd+"/"+numHd+").  Chrom=" + lv.chrom + " Position=" + lv.start;
                 
                 if ((Math.floor(variantsAnnotated / (double) NUM_VARIANTS_BEFORE_MSG) - Math.floor(previous / (double) NUM_VARIANTS_BEFORE_MSG)) >= 1) {
 //                    String s = inputTDFFile.getName() + ": Annotated " + variantsAnnotated + " variants so far.  Last variant considered: Chrom=" + lv.chrom + " Position=" + lv.start;                                       
 
                     if(prevVariantsAnnotated > 0){
-                        vps = (int)Math.round((variantsAnnotated - prevVariantsAnnotated) /  ((System.currentTimeMillis() - startTime)/1000.0));
+                        vps = (int)Math.round((variantsAnnotated - prevVariantsAnnotated) /  ((System.currentTimeMillis() - startTime)/1000.0));                        
                     }                    
-                    prevVariantsAnnotated = variantsAnnotated;
-                    startTime = System.currentTimeMillis();
-                    if(vps > 0){
-                        vstr = " ("+vps+" variants/sec)";
+                  
+                    if(vps > 0){                        
+                        vstr = " ("+vps+" variants/sec)";                        
                     }
+                      prevVariantsAnnotated = variantsAnnotated;
+                    startTime = System.currentTimeMillis();
                     org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
                             sid,
                             LogManagerAdapter.LogType.INFO,
@@ -573,6 +593,7 @@ public class BatchVariantAnnotator {
                 
             } catch (Exception ex) {
                 LOG.error("Couldn't communicate progress message to user: " + ex);
+                ex.printStackTrace();
             }
         }
         

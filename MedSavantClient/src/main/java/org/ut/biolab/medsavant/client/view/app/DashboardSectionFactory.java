@@ -45,6 +45,12 @@ public class DashboardSectionFactory {
         s.addLaunchableApp(AppDirectory.getPatientsApp());
         s.addLaunchableApp(AppDirectory.getRegionsApp());
         s.addLaunchableApp(AppDirectory.getTaskManager());
+        
+        if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
+            s.addLaunchableApp(new VCFUploadApp());
+            s.addLaunchableApp(new SettingsApp());
+        }
+        
         s.addLaunchableApp(AppDirectory.getAccountManager());
 
         return s;
@@ -105,10 +111,10 @@ public class DashboardSectionFactory {
         // hide this section from the dashbord
         s.setEnabled(LoginController.getInstance().getUserLevel() == UserLevel.ADMIN);
         
-        s.addLaunchableApp(new VCFUploadApp());
+        //s.addLaunchableApp(new VCFUploadApp());
         //s.addLaunchableApp(new PhenotipsApp());
         
-        s.addLaunchableApp(new SettingsApp());
+        //s.addLaunchableApp(new SettingsApp());
 
         return s;
     }
