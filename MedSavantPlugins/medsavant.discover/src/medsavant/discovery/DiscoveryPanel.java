@@ -308,6 +308,11 @@ public class DiscoveryPanel extends JPanel {
 		//view.setBorder(BorderFactory.createLineBorder(Color.RED));
 		view.setBorder(BorderFactory.createEmptyBorder(TOP_MARGIN, SIDE_MARGIN, BOTTOM_MARGIN, SIDE_MARGIN));
 		
+		// main view
+		workview= new RoundedPanel(10);
+		workview.setBackground(ViewUtil.getSidebarColor());
+		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
+		
 		choosePatientButton= new JideButton("Choose Patient");
 		choosePatientButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
 		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
@@ -401,10 +406,11 @@ public class DiscoveryPanel extends JPanel {
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
 		JPanel initVariantPane= new JPanel();
-		JLabel initVariantPaneLabel= new JLabel("Select patient ID to see variants.");
-		initVariantPane.setLayout(new MigLayout("", "center", "center"));
+		JLabel initVariantPaneLabel= new JLabel("Choose patient to see genomic variants.");
+		initVariantPane.setLayout(new MigLayout("align 50% 50%"));
 		initVariantPane.add(initVariantPaneLabel);
-		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.ITALIC, 16));
+		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.PLAIN, 14));
+		initVariantPaneLabel.setForeground(Color.DARK_GRAY);
 		variantPane.setViewportView(initVariantPane);
 		
 		chooseAFColumns= new JButton("Choose Allelle Frequency DBs");
@@ -443,7 +449,7 @@ public class DiscoveryPanel extends JPanel {
 		JPanel resetPanel= new JPanel();
 		resetPanel.setLayout(new MigLayout("insets 2 6 2 6")); // top left bottom right
 		resetPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		resetPanel.setBackground(ViewUtil.getSidebarColor());
+		resetPanel.setBackground(workview.getBackground());
 		JButton reset= new JButton("Restore defaults");
 		reset.addActionListener(new ActionListener() 
 		{
@@ -473,15 +479,15 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Progress bar panel. */
 		progressPanel= new JPanel(new MigLayout("", "center", ""));
-		progressPanel.setBackground(ViewUtil.getSidebarColor());
+		progressPanel.setBackground(workview.getBackground());
 		progressPanel.add(ringChart, "wrap");
 		progressPanel.add(progressLabel, "gapy 25, wrap");
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
 		patientPanel= new JPanel();
-		patientPanel.setBackground(ViewUtil.getSidebarColor());
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));
+		patientPanel.setBackground(workview.getBackground());
+		patientPanel.setLayout(new MigLayout("insets 10 10 0 0, gapy 0px")); // create a bit of inset spacing top and left
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
 		patientPanel.add(collapsible, "wrap, gapy 20px");
@@ -511,13 +517,11 @@ public class DiscoveryPanel extends JPanel {
 		rootPane= new JRootPane();
 		Container contentPane= rootPane.getContentPane();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
-		workview= new RoundedPanel(10);
-		workview.setBackground(ViewUtil.getSidebarColor());
-		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
 		workview.add(patientJSP);
 		workview.add(variantPane);
-		workview.add(vsp);
 		contentPane.add(workview);
+		
+		/*
 		// Draw hide buttons once the component has been shown or resized
 		// because the JLayeredPane from the JRootPane doesn't have a layout to
 		// dynamically resize itself.
@@ -537,6 +541,7 @@ public class DiscoveryPanel extends JPanel {
 				@Override public void componentHidden(ComponentEvent ce) {}
 			}
 		);
+		*/
 		
 		
 		/* Add the UI to the main app panel. */
@@ -767,7 +772,7 @@ public class DiscoveryPanel extends JPanel {
 	/**
 	 * Update the variantPane with the set of variants.
 	 */
-	private void updateVariantPane() {
+	private void updateVariantPane() {	
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
 			stp= discFind.getTableOutput(null);
 		} else {
@@ -780,6 +785,15 @@ public class DiscoveryPanel extends JPanel {
 		stp.scrollSafeSelectAction(new Runnable() {
             @Override
             public void run() {
+				/* Add the variant summary panel and hide buttons once the table
+				 * is presented to the user and a variant has been selected. */
+				if (vsp.getParent() != workview) {
+					workview.add(vsp);
+					workview.revalidate();
+
+					drawHideButtons();
+				}
+				
                 if (stp.getTable().getSelectedRow() != -1) {
 					SortableTable st= stp.getTable();
                     int selectedIndex= st.getSelectedRow();
@@ -821,6 +835,7 @@ public class DiscoveryPanel extends JPanel {
 	private JPanel addFilterPanel(final String name) {
 		final JPanel j= new JPanel();
 		j.setLayout(new MigLayout("insets 0px"));
+		j.setBackground(workview.getBackground());
 		
 		// CollapsiblePane for the filter
 		final CollapsiblePane collapsible= new CollapsiblePane(name);
@@ -1097,14 +1112,14 @@ public class DiscoveryPanel extends JPanel {
 		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
 		leftHideButton.setForeground(Color.DARK_GRAY);
-		leftHideButton.setBackground(ViewUtil.getSidebarColor());
+		leftHideButton.setBackground(workview.getBackground());
 		leftHideButton.setSize(leftHideButton.getMinimumSize());
 		leftHideButton.setLocation(0, 0);
 		
 		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
 		rightHideButton.setForeground(Color.DARK_GRAY);
-		rightHideButton.setBackground(ViewUtil.getSidebarColor());
+		rightHideButton.setBackground(workview.getBackground());
 		rightHideButton.setSize(rightHideButton.getMinimumSize());
 		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
 		
