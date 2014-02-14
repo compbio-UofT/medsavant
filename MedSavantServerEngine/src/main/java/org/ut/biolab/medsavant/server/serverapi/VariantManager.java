@@ -19,7 +19,6 @@
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
-import org.ut.biolab.medsavant.shared.model.VariantTag;
 import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
@@ -42,12 +41,10 @@ import jannovar.exception.JannovarException;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assert;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTagColumns;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -62,14 +59,8 @@ import org.ut.biolab.medsavant.server.db.LockController;
 import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
 import org.ut.biolab.medsavant.server.db.variants.Jannovar;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
-import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
-import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
-import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
-import org.ut.biolab.medsavant.server.serverapi.NetworkManager;
-import org.ut.biolab.medsavant.server.serverapi.PatientManager;
-import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
-import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
+import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
@@ -315,6 +306,38 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return f.getName().toLowerCase().endsWith(".vcf");
     }
 
+    private boolean isInDirectory(File inputFile, File directory) throws IOException{        
+        if(inputFile.isDirectory() && inputFile.getAbsolutePath().equals(directory.getAbsolutePath())){
+            return true;
+        }
+        
+        File parent = inputFile.getParentFile();
+        while(parent != null){
+            if(parent.getCanonicalPath().equals(directory.getCanonicalPath())){
+                return true;
+            }        
+            parent = parent.getParentFile();
+        }
+        
+        return false;
+    }
+    
+    private File getVCFDestination(final File inputFile, int projectID){
+        //Get destination file
+        File gd = DirectorySettings.getGenoTypeDirectory(projectID);
+        if(!gd.exists()){
+            gd.mkdirs();
+        }        
+        File dest = new File(gd, inputFile.getName());
+                
+        int prefix = 0;
+        while (dest.exists()) {
+            dest = new File(gd, prefix + "_" + inputFile.getName());            
+            prefix++;
+        }
+        
+        return dest;
+    }
     /**
      * Start the upload process for new vcf files. Will result in the creation
      * of a new, unpublished, up-to-date variant table.
@@ -329,9 +352,28 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
-        List<File> vcfFileList = new ArrayList(inputFiles.length);
-        try {         
-            for (File inputFile : inputFiles) {
+        try {
+            List<File> vcfFileList = new ArrayList(inputFiles.length);
+            
+            for (File inputFile : inputFiles) {            
+                //If input file is a vcf file, MOVE it to the destination unless it is outside the
+                //tmp directory, then just keep it where it is.
+                if (isVCF41File(inputFile)) {                    
+                    if(isInDirectory(inputFile, DirectorySettings.getTmpDirectory())){
+                        File dest = getVCFDestination(inputFile, projectID);
+                        if(!inputFile.renameTo(dest)){
+                            throw new IOException("Can't move VCF file to genotype storage.");
+                        }
+                        LOG.info("Moved input VCF "+inputFile+" to "+dest);                                
+                        inputFile = dest;                                                
+                    }else{
+                        LOG.info("VCF file "+inputFile+" was not found in server tmp directory -- keeping it where it is.");
+                    }
+                    vcfFileList.add(inputFile);
+                    continue;
+                }
+                
+                //Otherwise if it's a zip file, extract it to a temporary '_extracted_' folder.
                 int i = 0;
                 File outputDir = new File(inputFile.getParent() + File.separator + inputFile.getName() + "_extracted_" + i);
                 while (outputDir.exists()) {
@@ -348,6 +390,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 List<File> files = IOUtils.decompressAndDelete(inputFile, outputDir);
                 for (File putativeVCF : files) {
                     if (isVCF41File(putativeVCF)) {
+                        File dest = getVCFDestination(putativeVCF, projectID);
+                        if(!putativeVCF.renameTo(dest)){
+                            throw new IOException("Can't move VCF file in compressed file to genotype storage.");
+                        }
+                        LOG.info("Moved input VCF "+putativeVCF+" contained in compressed file to "+dest);
+                        putativeVCF = dest;
                         vcfFileList.add(putativeVCF);
                     } else {
                         LOG.error("Unrecognized file " + putativeVCF + " -- skipping");
@@ -357,6 +405,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             }
 
             File[] vcfFiles = vcfFileList.toArray(new File[vcfFileList.size()]);
+            
             EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
 
@@ -370,16 +419,18 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
 
             //clean up.
-            for (File f : vcfFiles) {
-                f = new File(f.getAbsolutePath());
-                File d = new File(f.getParent());
-                if (f.exists()) {
-                    f.delete();
-                }
-                if (d.exists() && d.isDirectory() && d.getName().contains("_extracted_")) {
-                    d.delete();
-                }
-            }
+            //never delete vcf files
+            /*
+             for (File f : vcfFiles) {
+             f = new File(f.getAbsolutePath());
+             File d = new File(f.getParent());
+             if (f.exists()) {
+             f.delete();
+             }
+             if (d.exists() && d.isDirectory() && d.getName().contains("_extracted_")) {
+             d.delete();
+             }
+             }*/
             if (autoPublish) {
                 LOG.info("Publishing");
                 VariantManager.getInstance().publishVariants(backgroundSessionID, projectID);

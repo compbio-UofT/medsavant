@@ -57,6 +57,15 @@ public class DirectorySettings {
         return result;
     }
 
+    public static File getGenoTypeDirectory(){
+        return new File(getMedSavantDirectory().getAbsolutePath()+File.separator+"genotypes");
+    }
+    
+    public static File getGenoTypeDirectory(int projectId){
+        return new File(getGenoTypeDirectory(), "project_"+projectId);
+        //return new File(getMedSavantDirectory().getAbsolutePath()+File.pathSeparator+"genotypes"+File.pathSeparator+"project_"+projectId);
+    }
+    
     public static File getTmpDirectory() {
         return tmpDir;
     }
