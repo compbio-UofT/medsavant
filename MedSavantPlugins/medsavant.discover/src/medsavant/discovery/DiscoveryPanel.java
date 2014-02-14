@@ -314,17 +314,19 @@ public class DiscoveryPanel extends JPanel {
 		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
 		
 		choosePatientButton= new JideButton("Choose Patient");
-		choosePatientButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+		choosePatientButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
+		choosePatientButton.setOpaque(true);
 		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
 			Font.PLAIN, 18));
 		choosePatientButton.addActionListener(getChoosePatientButtonAL());
 				
 		analyzeButton= new JideButton(analyzeButtonDefaultText);
-		analyzeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+		analyzeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
 		analyzeButton.setFont(new Font(analyzeButton.getFont().getName(),
 			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		analyzeButton.setVisible(false);
+		analyzeButton.setOpaque(true);
 		analyzeButton.addActionListener(getAnalyzeButtonAL()); // to run the analysis
 		
 		Dimension textFieldDimension= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
@@ -520,28 +522,6 @@ public class DiscoveryPanel extends JPanel {
 		workview.add(patientJSP);
 		workview.add(variantPane);
 		contentPane.add(workview);
-		
-		/*
-		// Draw hide buttons once the component has been shown or resized
-		// because the JLayeredPane from the JRootPane doesn't have a layout to
-		// dynamically resize itself.
-		rootPane.addComponentListener(
-			new ComponentListener() {
-				@Override
-				public void componentShown(ComponentEvent ce) {
-					drawHideButtons();
-				}
-				
-				@Override
-				public void componentResized(ComponentEvent ce) {
-					drawHideButtons();
-				}
-				
-				@Override public void componentMoved(ComponentEvent ce) {}
-				@Override public void componentHidden(ComponentEvent ce) {}
-			}
-		);
-		*/
 		
 		
 		/* Add the UI to the main app panel. */
@@ -792,6 +772,27 @@ public class DiscoveryPanel extends JPanel {
 					workview.revalidate();
 
 					drawHideButtons();
+					
+					/* Redraw hide buttons once the component has been shown or 
+					 * resized because the JLayeredPane from the JRootPane doesn't
+					 * have a layout to dynamically resize itself.
+					 * Add this listener down here, so buttons aren't drawn at startup. */
+					rootPane.addComponentListener(
+						new ComponentListener() {
+							@Override
+							public void componentShown(ComponentEvent ce) {
+								//drawHideButtons(); // commented out - no longer draw upon loading of rootPane
+							}
+
+							@Override
+							public void componentResized(ComponentEvent ce) {
+								drawHideButtons();
+							}
+
+							@Override public void componentMoved(ComponentEvent ce) {}
+							@Override public void componentHidden(ComponentEvent ce) {}
+						}
+					);
 				}
 				
                 if (stp.getTable().getSelectedRow() != -1) {

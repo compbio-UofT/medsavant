@@ -657,6 +657,7 @@ public class VCFParser {
                     try {
                         String format = line[VCFHeader.getNumMandatoryFields()].trim();
                         String sampleInfo = line[numMandatoryFields + i + 1];
+						sampleInfo= sampleInfo.replace(";", ",");
                         sampleVariantRecord.setSampleInformation(format, sampleInfo);
                     } catch (Exception e) {
                     }

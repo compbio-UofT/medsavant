@@ -399,7 +399,7 @@ public class DiscoveryFindings {
 			String formatFieldText= formatFieldMatcher.group(1);
 			
 			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
-			String[] adDelimited= formatFieldText.split(":");
+			String[] adDelimited= formatFieldText.split(":");			
 			int adIndex= Arrays.asList(adDelimited).indexOf("AD");
 			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
 			int refCount= Integer.parseInt(adCoverageDelimited[0]);
