@@ -522,8 +522,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                             String.class));
                 }
 
-                FileItemIterator iter = (new ServletFileUpload()).getItemIterator(req);
-                System.out.println("Handling upload");
+                FileItemIterator iter = (new ServletFileUpload()).getItemIterator(req);                
                 Upload[] uploads = handleUploads(iter); // note this BLOCKS until upload is finished.
                 resp.getWriter().print(gson.toJson(uploads, uploads.getClass()));
                 resp.getWriter().close();

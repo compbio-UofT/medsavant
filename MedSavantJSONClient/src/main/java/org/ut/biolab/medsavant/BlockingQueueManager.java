@@ -38,11 +38,9 @@ public class BlockingQueueManager {
 
                     boolean locked = false;
                     do {
-                        try {
-                            System.out.println("Invoking "+mi+" from queue");
+                        try {                            
                             mi.invoke(true);
-                        } catch (LockException le) {                                                     
-                            System.out.println("Caught lockException for "+mi+", retrying...");
+                        } catch (LockException le) {                                                                                 
                             //Database is locked (e.g. someone else is modifying
                             //the database).  Try again in POLL_INTERVAL ms.
                             locked = true;   
