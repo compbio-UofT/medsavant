@@ -129,14 +129,15 @@ public class ProjectManagementPage extends AppSubSection {
         public void editItem(Object[] items) {
             try {
                 String projName = (String) items[0];
-                int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.getInstance().getSessionID(), projName);
+                String sessionID = LoginController.getInstance().getSessionID();
+                int projID = MedSavantClient.ProjectManager.getProjectID(sessionID, projName);
 
                 // Check for existing unpublished changes to this project.
                 if (ProjectController.getInstance().promptForUnpublished()) {
-                    if (!MedSavantClient.SettingsManager.isProjectLockedForChanges(ProjectController.getInstance().getCurrentProjectID())) {
+                    if (!MedSavantClient.SettingsManager.isProjectLockedForChanges(sessionID, ProjectController.getInstance().getCurrentProjectID())) {
                         ProjectWizard wiz = new ProjectWizard(projID, projName,
-                                MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getInstance().getSessionID(), projID),
-                                MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projID));
+                                MedSavantClient.PatientManager.getCustomPatientFields(sessionID, projID),
+                                MedSavantClient.ProjectManager.getProjectDetails(sessionID, projID));
                         wiz.setVisible(true);
                     } else {
                         DialogUtils.displayMessage("Cannot Modify Project", "This project is currently locked for changes.\nTo unlock, see the Projects page in the Administration section.");
@@ -313,8 +314,10 @@ public class ProjectManagementPage extends AppSubSection {
                 details.add(p);
             }
 
+            String sessionID = LoginController.getInstance().getSessionID();
+
             try {
-                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(projectID)) {
+                if (MedSavantClient.SettingsManager.isProjectLockedForChanges(sessionID, projectID)) {
                     JPanel p = new JPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
 

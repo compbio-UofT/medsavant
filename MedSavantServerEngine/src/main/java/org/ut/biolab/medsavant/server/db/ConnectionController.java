@@ -200,6 +200,9 @@ public class ConnectionController {
 
     public static String getDBName(String sessID) {
         synchronized (sessionPoolMap) {
+            if(sessionPoolMap.get(sessID) == null){
+                throw new IllegalArgumentException("Can't fetch database name -- session expired or unregistered.");
+            }
             return sessionPoolMap.get(sessID).getDBName();
         }
     }

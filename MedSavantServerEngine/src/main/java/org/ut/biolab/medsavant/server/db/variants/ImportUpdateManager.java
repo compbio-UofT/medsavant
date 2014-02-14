@@ -74,11 +74,12 @@ public class ImportUpdateManager {
     public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] vcfFiles, final boolean includeHomozygousReferenceCalls, final String[][] tags) throws IOException, SQLException, Exception {
 
         String userId = SessionManager.getInstance().getUserForSession(sessionID);
+        final String database = SessionManager.getInstance().getDatabaseForSession(sessionID);
         DateFormat dateFormat = new SimpleDateFormat("MMM dd - HH:mm:ss");
         final String existingVariantTableName = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true);
         final int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.ADD_VARIANTS);
         //Create a dummy job to contain all the sub jobs (threads).
-        MedSavantServerJob importJob = new MedSavantServerJob(userId, "VCF Import, " + dateFormat.format(new Date()), null) {
+        MedSavantServerJob importJob = new MedSavantServerJob(userId, database+": VCF Import, " + dateFormat.format(new Date()), null) {
             @Override
             public boolean run() throws Exception {
 
@@ -136,8 +137,9 @@ public class ImportUpdateManager {
         DateFormat dateFormat = new SimpleDateFormat("MMM dd - HH:mm:ss");
         final String existingVariantTableName = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true);
         final int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessionID, projectID, referenceID, AnnotationLog.Action.UPDATE_TABLE);
+        final String database = SessionManager.getInstance().getDatabaseForSession(sessionID);
         //Create a dummy job to contain all the sub jobs (threads).
-        MedSavantServerJob updateJob = new MedSavantServerJob(userId, "VCF Update - " + dateFormat.format(new Date()), null) {
+        MedSavantServerJob updateJob = new MedSavantServerJob(userId, database+": VCF Update - " + dateFormat.format(new Date()), null) {
             @Override
             public boolean run() throws Exception {                
                 String existingVariantTableName = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true);
