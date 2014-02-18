@@ -88,19 +88,21 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
+import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
+import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 
 
 /**
@@ -458,6 +460,7 @@ public class DiscoveryPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				resetProperties();
+				MedSavantFrame.getInstance().forceRestart();
 			}
 		}
 		);
@@ -1042,6 +1045,47 @@ public class DiscoveryPanel extends JPanel {
 				}
 			}
 		);
+		
+		
+		///// TESTING Gene panels box
+		/*
+		final GenesConditionGenerator gcg= new GenesConditionGenerator();
+		final SearchConditionItem sci= new SearchConditionItem("", null);
+		final SearchConditionEditorView scev= gcg.getViewGeneratorForItem(sci);
+		SearchConditionPanel scp= new SearchConditionPanel(scev, null);
+		
+		JButton OKButton = new JButton("OK");
+		OKButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//save changes: this saves the users selections so next time the dialog pops up, those
+				//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
+				//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
+				if (scev.saveChanges()) {
+					try {
+						String encodedSearch = sci.getSearchConditionEncoding();
+						Condition c = gcg.getConditionsFromEncoding(encodedSearch);
+						//this condition can be used to query for
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						System.err.println(ex);
+					}
+				}
+			}
+
+		});
+
+		scp.getButtonPanel();
+		scp.getButtonPanel().add(OKButton);
+		
+		JPanel outerPanel= new JPanel();
+		outerPanel.setLayout(new MigLayout());
+		outerPanel.add(scp);
+		
+		collapsibleGene.add(outerPanel, "wrap");
+		*/
+		/////////////////////
+		
 		
 		collapsibleGene.add(geneButton);
 		collapsibleGene.add(genePanelComboBox);
