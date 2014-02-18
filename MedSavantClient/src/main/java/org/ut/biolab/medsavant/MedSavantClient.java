@@ -75,6 +75,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
@@ -222,8 +223,14 @@ public class MedSavantClient implements MedSavantServerRegistry {
             }
         }
 
-        LOG.info("MedSavant booted");
         
+        //Setup temporary directories
+        String username = System.getProperty("user.name");
+        DirectorySettings.setTmpDirectory((new File(System.getProperty("java.io.tmpdir"), "msavant_"+username)).getAbsolutePath());
+        DirectorySettings.setMedSavantDirectory((new File(System.getProperty("user.home"), MiscUtils.WINDOWS ? "medsavant" : ".medsavant")).getAbsolutePath());
+        
+        
+        LOG.info("MedSavant booted");        
         SplashFrame loginFrame = new SplashFrame();
         loginFrame.setVisible(true);
 

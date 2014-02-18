@@ -303,29 +303,18 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //For now, check is simple.
         return f.getName().toLowerCase().endsWith(".vcf");
     }
-
-    private boolean isInDirectory(File inputFile, File directory) throws IOException {
-        if (inputFile.isDirectory() && inputFile.getAbsolutePath().equals(directory.getAbsolutePath())) {
-            return true;
-        }
-
-        File parent = inputFile.getParentFile();
-        while (parent != null) {
-            if (parent.getCanonicalPath().equals(directory.getCanonicalPath())) {
-                return true;
-            }
-            parent = parent.getParentFile();
-        }
-
-        return false;
-    }
-
-    private File getVCFDestination(final File inputFile, int projectID) {
+   
+    public static File getVCFDestinationDir(String database, int projectID) {
         //Get destination file
-        File gd = DirectorySettings.getGenoTypeDirectory(projectID);
+        File gd = DirectorySettings.getGenoTypeDirectory(database, projectID);
         if (!gd.exists()) {
             gd.mkdirs();
         }
+        return gd;
+    }
+
+    public static File getVCFDestination(final File inputFile, String database, int projectID) {
+        File gd = getVCFDestinationDir(database, projectID);
         File dest = new File(gd, inputFile.getName());
 
         int prefix = 0;
@@ -345,7 +334,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    public int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
+    public int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar) throws Exception, LockException {
 
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projectID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
@@ -358,8 +347,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 //If input file is a vcf file, MOVE it to the destination unless it is outside the
                 //tmp directory, then just keep it where it is.
                 if (isVCF41File(inputFile)) {
-                    if (isInDirectory(inputFile, DirectorySettings.getTmpDirectory())) {
-                        File dest = getVCFDestination(inputFile, projectID);
+                    if (IOUtils.isInDirectory(inputFile, DirectorySettings.getTmpDirectory())) {
+                        File dest = getVCFDestination(inputFile, database, projectID);
                         if (!inputFile.renameTo(dest)) {
                             throw new IOException("Can't move VCF file to genotype storage.");
                         }
@@ -389,7 +378,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 List<File> files = IOUtils.decompressAndDelete(inputFile, outputDir);
                 for (File putativeVCF : files) {
                     if (isVCF41File(putativeVCF)) {
-                        File dest = getVCFDestination(putativeVCF, projectID);
+                        File dest = getVCFDestination(putativeVCF, database, projectID);
                         if (!putativeVCF.renameTo(dest)) {
                             throw new IOException("Can't move VCF file in compressed file to genotype storage.");
                         }
@@ -401,6 +390,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                         putativeVCF.delete();
                     }
                 }
+                outputDir.delete();
             }
 
             File[] vcfFiles = vcfFileList.toArray(new File[vcfFileList.size()]);
@@ -408,15 +398,27 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
 
-            if (preAnnotateWithAnnovar) {
-                org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with ANNOVAR");
-                vcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(userSessionID, referenceID)).annotateVCFFiles(vcfFiles);
+            File[] janVcfFiles = vcfFiles;
+            int updateID = -1;
+            try {
+                if (preAnnotateWithJannovar) {
+                    org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with ANNOVAR");
+                    janVcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(userSessionID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID);
+                }
+
+                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, janVcfFiles, includeHomoRef, tags);
+                addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
+                EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
+                org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
+            } finally {
+                if(preAnnotateWithJannovar){
+                    for(File f : janVcfFiles){
+                        File p = f.getParentFile();
+                        f.delete();
+                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
+                    }
+                }
             }
-
-            int updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, tags);
-            EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
-
             //clean up.
             //never delete vcf files
             /*
@@ -453,11 +455,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
+    public static void addVariantFilesToDatabase(String sessionID, int updateID, int projectID, int referenceID, File[] vcfFiles) throws SQLException, SessionExpiredException {
+        for (int i = 0; i < vcfFiles.length; i++) {
+            addEntryToFileTable(sessionID, updateID, i, projectID, referenceID, vcfFiles[i].getAbsolutePath());
+        }
+    }
+
     @Override
     public int removeVariants(String userSessionID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception, LockException {
         LOG.info("Beginning removal of variants");
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
+        LockController.getInstance().requestLock(database, projID);
 
         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing " + files.size() + " files");
 
@@ -466,16 +474,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //add log
         LOG.info("Adding log and generating update id");
         int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(backgroundSessionID, projID, refID, org.ut.biolab.medsavant.shared.model.AnnotationLog.Action.REMOVE_VARIANTS);
-
+        //generate directory
+        LOG.info("Generating base directory");
+        File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         try {
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
 
             EmailLogger.logByEmail("Removal started", "Removal started. " + files.size() + " files(s) will be removed. You will be notified again upon completion.", email);
 
-            //generate directory
-            LOG.info("Generating base directory");
-            File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
             LOG.info("Base directory: " + baseDir.getCanonicalPath());
             Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
             p.waitFor();
@@ -568,12 +575,28 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //remove VCF files.
             for (SimpleVariantFile svf : files) {
                 File f = new File(svf.getPath());
-                if (f.exists()) {
-                    f.delete();
+                if (f.exists()){
+                    if(IOUtils.isInDirectory(f, DirectorySettings.getTmpDirectory())) {
+                        File p = f.getParentFile();
+                        f.delete();
+                        IOUtils.deleteEmptyParents(p, DirectorySettings.getTmpDirectory());
+                    }else if(IOUtils.isInDirectory(f, DirectorySettings.getGenoTypeDirectory())){
+                        File p = f.getParentFile();
+                        f.delete();
+                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
+                    }else{
+                        LOG.info("Not removing .vcf file "+svf.getPath()+" -- not in a MedSavant directory.");
+                    }
                 } else {
-                    LOG.error("WARNING: Cannot remove .vcf file " + svf.getPath() + " -- does not exist.");
+                    LOG.info("Not removing .vcf file " + svf.getPath() + " -- does not exist on file system.");
                 }
             }
+
+            //remove working directory
+            if (VariantManager.REMOVE_WORKING_DIR) {
+                MiscUtils.deleteDirectory(baseDir);
+            }
+
             LockController.getInstance().releaseLock(database, projID);
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
         }
@@ -588,43 +611,47 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir.getCanonicalPath());
         p.waitFor();
-
         String filename = ProjectManager.getInstance().getProjectName(backgroundSessionID, projID).replace(" ", "") + "-varexport-" + System.currentTimeMillis() + ".tdf";
         File file = new File(baseDir, filename);
+        File zipFile = null;
+        try {
+            LOG.info("Exporting variants to " + file.getAbsolutePath());
 
-        LOG.info("Exporting variants to " + file.getAbsolutePath());
+            long start = System.currentTimeMillis();
+            TableSchema table = CustomTables.getInstance().getCustomTableSchema(backgroundSessionID, ProjectManager.getInstance().getVariantTableName(backgroundSessionID, projID, refID, true));
+            SelectQuery query = new SelectQuery();
+            query.addFromTable(table.getTable());
+            query.addAllColumns();
+            addConditionsToQuery(query, conditions);
+            if (orderedByPosition) {
+                query.addOrderings(table.getDBColumn(START_POSITION), table.getDBColumn(END_POSITION));
+            }
+            String intoString
+                    = "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
+                    + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' " //+ " LINES TERMINATED BY '\\r\\n' ";
+                    ;
+            String queryString = query.toString().replace("FROM", intoString + "FROM");
 
-        long start = System.currentTimeMillis();
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(backgroundSessionID, ProjectManager.getInstance().getVariantTableName(backgroundSessionID, projID, refID, true));
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        addConditionsToQuery(query, conditions);
-        if (orderedByPosition) {
-            query.addOrderings(table.getDBColumn(START_POSITION), table.getDBColumn(END_POSITION));
-        }
-        String intoString
-                = "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' " //+ " LINES TERMINATED BY '\\r\\n' ";
-                ;
-        String queryString = query.toString().replace("FROM", intoString + "FROM");
+            LOG.info(queryString);
+            ConnectionController.executeQuery(backgroundSessionID, queryString);
 
-        LOG.info(queryString);
-        ConnectionController.executeQuery(backgroundSessionID, queryString);
+            if (zipOutputFile) {
+                LOG.info("Zipping export...");
+                zipFile = new File(file.getAbsoluteFile() + ".zip");
+                IOUtils.zipFile(file, zipFile);
+            }
+            LOG.info("Done exporting variants to " + file.getAbsolutePath());
+            LOG.info("Export took " + ((System.currentTimeMillis() - start) / 1000) + " seconds");
 
-        LOG.info("Done exporting variants to " + file.getAbsolutePath());
-        LOG.info("Export took " + ((System.currentTimeMillis() - start) / 1000) + " seconds");
-
-        if (zipOutputFile) {
-            LOG.info("Zipping export...");
-            File zipFile = new File(file.getAbsoluteFile() + ".zip");
-            IOUtils.zipFile(file, zipFile);
-            boolean deleted = file.delete();
-            LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-            file = zipFile;
-            LOG.info("Done zipping");
+        } finally {
+            if (zipOutputFile) {
+                boolean deleted = file.delete();
+                LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+                file = zipFile;
+                LOG.info("Done zipping");
+            }
         }
 
         // add file to map and send the id back 

@@ -59,6 +59,51 @@ public class IOUtils {
 
     private static final Log LOG = LogFactory.getLog(IOUtils.class);
 
+    /**
+     * 
+     * @param inputFile - the file to check
+     * @param directory - the directory to test for.
+     * @return true if 'directory' is an ancestor of 'inputFile', false otherwise.
+     * @throws IOException 
+     */
+    public static boolean isInDirectory(File inputFile, File directory) throws IOException {
+        if (inputFile.isDirectory() && inputFile.getAbsolutePath().equals(directory.getAbsolutePath())) {
+            return true;
+        }
+
+        File parent = inputFile.getParentFile();
+        while (parent != null) {
+            if (parent.getCanonicalPath().equals(directory.getCanonicalPath())) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+
+        return false;
+    }
+    
+    /**
+     * Deletes the directory p, recursing upwards through the directory tree and deleting all empty
+     * parent directories until it reaches the ancestor directory 'stopAtDir'. Immediately returns
+     * if 'stopAtDir' is not an ancestor of p.  
+     * 
+     * @param p - The nested directory to delete.
+     * @param stopAtDir - the ancestor directory to stop at (this directory will NOT be deleted, even if empty).
+     * @throws IOException 
+     */
+    public static void deleteEmptyParents(File p, File stopAtDir) throws IOException{
+        if(!isInDirectory(p, stopAtDir)){
+            return;
+        }
+        if(p != null && p.isDirectory() && !p.getAbsolutePath().equals(stopAtDir.getAbsolutePath())){
+            if(p.listFiles().length == 0){
+                File parent = p.getParentFile();
+                p.delete();
+                deleteEmptyParents(parent, stopAtDir);
+            }
+        }  
+    }    
+    
     public static void copyFile(File srcFile, File destFile) throws IOException {
         if (srcFile.equals(destFile)) {
             return;

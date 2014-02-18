@@ -106,8 +106,11 @@ public class AnnotationDownloadInformation implements Serializable {
     private static File downloadAnnotationDatabase() throws IOException {
         String targetFileName = "AnnotationDatabase.xml";
         File targetDir = DirectorySettings.getTmpDirectory();
+        File tgt = new File(targetDir, targetFileName);
+        //if(!tgt.exists()){         
         NetworkUtils.downloadFile(new URL(databaseURL), targetDir, targetFileName);
-        return new File(targetDir, targetFileName);
+        //}
+        return tgt;
     }
 
     public static List<AnnotationDownloadInformation> getDownloadableAnnotations(String versionName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {

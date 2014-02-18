@@ -495,6 +495,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 System.out.println("ERROR: Directories created inside " + cacheDir + " do not have appropriate permissions (require rwx)");
                 passed = false;
             }
+            cacheNow.delete();
         } catch (IOException ex) {
             System.out.println("ERROR: Couldn't create directory inside " + cacheDir.getAbsolutePath());
             passed = false;
@@ -506,6 +507,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 System.out.println("ERROR: Directories created inside " + tmpDir + " do not have appropriate permissions (require rwx)");
                 passed = false;
             }
+            tmpNow.delete();
         } catch (IOException ex) {
             System.out.println("ERROR: Couldn't create directory inside " + tmpDir.getAbsolutePath());
             passed = false;

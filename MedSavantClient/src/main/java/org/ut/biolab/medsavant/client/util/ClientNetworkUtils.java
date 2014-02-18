@@ -123,13 +123,13 @@ public class ClientNetworkUtils extends NetworkUtils {
     }
 
     /**
-     * Copy a file from the server. The provided <code>streamID</code> will have been assigned during an earlier server
+     * Copy a file from the server, and then delete it from the server. The provided <code>streamID</code> will have been assigned during an earlier server
      * call, so this method is not responsible for opening the stream.
      * 
      * @param streamID assigned by server
      * @param destFile path to file where we're dumping server output
      */
-    public static void copyFileFromServer(int streamID, File destFile) throws IOException, InterruptedException {
+    public static void moveFileFromServer(int streamID, File destFile) throws IOException, InterruptedException {
         NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
 
         OutputStream stream = null;
