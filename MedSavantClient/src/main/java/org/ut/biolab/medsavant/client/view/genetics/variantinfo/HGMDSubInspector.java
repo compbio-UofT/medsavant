@@ -132,33 +132,60 @@ public class HGMDSubInspector extends SubInspector {
 		resetHGMDFields();
 		
 		rsID= "";
-		if (!(header.indexOf(HGMD_RSID_TEXT) == -1 || rsID == null || rsID.equals("\\N")))
-			rsID= (String) currentLine[header.indexOf(HGMD_RSID_TEXT)];
+		if (header.indexOf(HGMD_RSID_TEXT) != -1) {
+			String rsIDTemp= (String) currentLine[header.indexOf(HGMD_RSID_TEXT)];
+			if (rsIDTemp != null && !rsIDTemp.equals("\\N")) {
+				rsID= rsIDTemp;
+			}
+		}
 			
 		omimID= "";
-		if (!(header.indexOf(HGMD_OMIM_TEXT) == -1 || omimID == null))
-			omimID= (String) currentLine[header.indexOf(HGMD_OMIM_TEXT)];
+		if (header.indexOf(HGMD_OMIM_TEXT) != -1) {
+			Integer omimIDTemp= (Integer) currentLine[header.indexOf(HGMD_OMIM_TEXT)];
+			if (omimIDTemp != null) {
+				omimID= omimIDTemp.toString();
+			}
+		}
 		
 		pubmedID= "";
-		if (!(header.indexOf(HGMD_PMID_TEXT) == -1 || pubmedID == null))
-			pubmedID= (String) currentLine[header.indexOf(HGMD_PMID_TEXT)];
+		if (header.indexOf(HGMD_PMID_TEXT) != -1) {
+			String pubmedIDTemp= (String) currentLine[header.indexOf(HGMD_PMID_TEXT)];
+			if (pubmedIDTemp != null) {
+				pubmedID= pubmedIDTemp;
+			}
+		}
 		
-		disease= "";
-		if (!(header.indexOf(HGMD_DISEASE_TEXT) == -1 || disease == null))
-			disease= (String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)];
+		disease= "";	
+		if (header.indexOf(HGMD_DISEASE_TEXT) != -1) {
+			String diseaseTemp= (String) currentLine[header.indexOf(HGMD_DISEASE_TEXT)];
+			if (diseaseTemp != null) {
+				disease= diseaseTemp;
+			}
+		}
 				
 		accession= "";
-		if (!(header.indexOf(HGMD_ACC_TEXT) == -1 || accession == null))
-			accession= (String) currentLine[header.indexOf(HGMD_ACC_TEXT)];
+		if (header.indexOf(HGMD_ACC_TEXT) != -1) {
+			String accessionTemp= (String) currentLine[header.indexOf(HGMD_ACC_TEXT)];
+			if (accessionTemp != null) {
+				accession= accessionTemp;
+			}
+		}
 		
 		comments= "";
-		if (!(header.indexOf(HGMD_COMMENTS_TEXT) == -1 || comments == null))
-			comments= (String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)];
+		if (header.indexOf(HGMD_COMMENTS_TEXT) != -1) {
+			String commentsTemp= (String) currentLine[header.indexOf(HGMD_COMMENTS_TEXT)];
+			if (commentsTemp != null) {
+				comments= commentsTemp;
+			}
+		}
 		
 		description= "";
-		if (!(header.indexOf(HGMD_DESCRIPTION_TEXT) == -1 || description == null))
-			description= (String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)];
-		
+		if (header.indexOf(HGMD_DESCRIPTION_TEXT) != -1) {
+			String descriptionTemp= (String) currentLine[header.indexOf(HGMD_DESCRIPTION_TEXT)];
+			if (descriptionTemp != null) {
+				description= descriptionTemp;
+			}
+		}
 	}
 	
 	

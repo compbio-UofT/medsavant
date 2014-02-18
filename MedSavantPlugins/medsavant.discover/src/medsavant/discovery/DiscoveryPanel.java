@@ -88,14 +88,13 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
-import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
@@ -228,6 +227,8 @@ public class DiscoveryPanel extends JPanel {
 	private JideButton leftHideButton= new JideButton(LEFT_HIDE_STRING);
 	private JideButton rightHideButton= new JideButton(RIGHT_HIDE_STRING);
 	private VariantSummaryPanel vsp;
+	private int patientPanelInsertPosition= 2;
+	private JLabel errorLabel;
     
 	
 	public DiscoveryPanel() {
@@ -308,18 +309,25 @@ public class DiscoveryPanel extends JPanel {
 		//view.setBorder(BorderFactory.createLineBorder(Color.RED));
 		view.setBorder(BorderFactory.createEmptyBorder(TOP_MARGIN, SIDE_MARGIN, BOTTOM_MARGIN, SIDE_MARGIN));
 		
+		// main view
+		workview= new RoundedPanel(10);
+		workview.setBackground(ViewUtil.getSidebarColor());
+		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
+		
 		choosePatientButton= new JideButton("Choose Patient");
-		choosePatientButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+		choosePatientButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
+		choosePatientButton.setOpaque(true);
 		choosePatientButton.setFont(new Font(choosePatientButton.getFont().getName(),
 			Font.PLAIN, 18));
 		choosePatientButton.addActionListener(getChoosePatientButtonAL());
 				
 		analyzeButton= new JideButton(analyzeButtonDefaultText);
-		analyzeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+		analyzeButton.setButtonStyle(JideButton.TOOLBAR_STYLE);
 		analyzeButton.setFont(new Font(analyzeButton.getFont().getName(),
 			Font.BOLD, 14));
 		analyzeButton.setEnabled(false); // cannot click until valid DNA ID is selected
 		analyzeButton.setVisible(false);
+		analyzeButton.setOpaque(true);
 		analyzeButton.addActionListener(getAnalyzeButtonAL()); // to run the analysis
 		
 		Dimension textFieldDimension= new Dimension(TEXT_AREA_WIDTH, TEXT_AREA_HEIGHT);
@@ -395,16 +403,19 @@ public class DiscoveryPanel extends JPanel {
 		pw.setIndeterminate(true);
 		pw.setVisible(false);
 		
+		errorLabel= new JLabel();
+		
 		afChooser= new CheckBoxList(getDbColumnList());
 		afChooser.addCheckBoxListSelectedValues(chooserAFArray);
 		
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
 		JPanel initVariantPane= new JPanel();
-		JLabel initVariantPaneLabel= new JLabel("Select patient ID to see variants.");
-		initVariantPane.setLayout(new MigLayout("", "center", "center"));
+		JLabel initVariantPaneLabel= new JLabel("Choose patient to see genomic variants.");
+		initVariantPane.setLayout(new MigLayout("align 50% 50%"));
 		initVariantPane.add(initVariantPaneLabel);
-		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.ITALIC, 16));
+		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.PLAIN, 14));
+		initVariantPaneLabel.setForeground(Color.DARK_GRAY);
 		variantPane.setViewportView(initVariantPane);
 		
 		chooseAFColumns= new JButton("Choose Allelle Frequency DBs");
@@ -443,13 +454,14 @@ public class DiscoveryPanel extends JPanel {
 		JPanel resetPanel= new JPanel();
 		resetPanel.setLayout(new MigLayout("insets 2 6 2 6")); // top left bottom right
 		resetPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-		resetPanel.setBackground(ViewUtil.getSidebarColor());
+		resetPanel.setBackground(workview.getBackground());
 		JButton reset= new JButton("Restore defaults");
 		reset.addActionListener(new ActionListener() 
 		{
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				resetProperties();
+				MedSavantFrame.getInstance().forceRestart();
 			}
 		}
 		);
@@ -473,15 +485,15 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Progress bar panel. */
 		progressPanel= new JPanel(new MigLayout("", "center", ""));
-		progressPanel.setBackground(ViewUtil.getSidebarColor());
+		progressPanel.setBackground(workview.getBackground());
 		progressPanel.add(ringChart, "wrap");
 		progressPanel.add(progressLabel, "gapy 25, wrap");
 		progressPanel.add(pw);
 		
 		/* Patient selection panel. */
 		patientPanel= new JPanel();
-		patientPanel.setBackground(ViewUtil.getSidebarColor());
-		patientPanel.setLayout(new MigLayout("insets 0px, gapy 0px"));
+		patientPanel.setBackground(workview.getBackground());
+		patientPanel.setLayout(new MigLayout("insets 10 10 0 0, gapy 0px")); // create a bit of inset spacing top and left
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
 		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
 		patientPanel.add(collapsible, "wrap, gapy 20px");
@@ -511,32 +523,9 @@ public class DiscoveryPanel extends JPanel {
 		rootPane= new JRootPane();
 		Container contentPane= rootPane.getContentPane();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.X_AXIS));
-		workview= new RoundedPanel(10);
-		workview.setBackground(ViewUtil.getSidebarColor());
-		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
 		workview.add(patientJSP);
 		workview.add(variantPane);
-		workview.add(vsp);
 		contentPane.add(workview);
-		// Draw hide buttons once the component has been shown or resized
-		// because the JLayeredPane from the JRootPane doesn't have a layout to
-		// dynamically resize itself.
-		rootPane.addComponentListener(
-			new ComponentListener() {
-				@Override
-				public void componentShown(ComponentEvent ce) {
-					drawHideButtons();
-				}
-				
-				@Override
-				public void componentResized(ComponentEvent ce) {
-					drawHideButtons();
-				}
-				
-				@Override public void componentMoved(ComponentEvent ce) {}
-				@Override public void componentHidden(ComponentEvent ce) {}
-			}
-		);
 		
 		
 		/* Add the UI to the main app panel. */
@@ -676,6 +665,7 @@ public class DiscoveryPanel extends JPanel {
 						protected void showSuccess(Object t) {	
 						/* All updates to display should happen here to be run. */
 							updateVariantPane();
+							errorStatusReport();
 							analyzeButton.setText(analyzeButtonDefaultText);
 							analysisRunning= false;
 						}
@@ -717,7 +707,7 @@ public class DiscoveryPanel extends JPanel {
 						new MouseListener() {
 							@Override
 							public void mousePressed(MouseEvent me) {
-								patientPanel.add(addFilterPanel(filter.getText()), "wrap", 2);
+								patientPanel.add(addFilterPanel(filter.getText()), "wrap", patientPanelInsertPosition);
 							}
 							// remaining methods included but do nothing
 							@Override public void mouseExited(MouseEvent me) {}
@@ -767,7 +757,7 @@ public class DiscoveryPanel extends JPanel {
 	/**
 	 * Update the variantPane with the set of variants.
 	 */
-	private void updateVariantPane() {
+	private void updateVariantPane() {	
 		if (properties.getProperty("sortable_table_panel_columns") == null) {
 			stp= discFind.getTableOutput(null);
 		} else {
@@ -780,6 +770,37 @@ public class DiscoveryPanel extends JPanel {
 		stp.scrollSafeSelectAction(new Runnable() {
             @Override
             public void run() {
+				/* Add the variant summary panel and hide buttons once the table
+				 * is presented to the user and a variant has been selected. Also
+				 * check that the user hasn't already hidden the summary panel. */
+				if (vsp.getParent() != workview && !rightHideButton.getText().equals(LEFT_HIDE_STRING)) {
+					workview.add(vsp);
+					workview.revalidate();
+
+					drawHideButtons();
+					
+					/* Redraw hide buttons once the component has been shown or 
+					 * resized because the JLayeredPane from the JRootPane doesn't
+					 * have a layout to dynamically resize itself.
+					 * Add this listener down here, so buttons aren't drawn at startup. */
+					rootPane.addComponentListener(
+						new ComponentListener() {
+							@Override
+							public void componentShown(ComponentEvent ce) {
+								//drawHideButtons(); // commented out - no longer draw upon loading of rootPane
+							}
+
+							@Override
+							public void componentResized(ComponentEvent ce) {
+								drawHideButtons();
+							}
+
+							@Override public void componentMoved(ComponentEvent ce) {}
+							@Override public void componentHidden(ComponentEvent ce) {}
+						}
+					);
+				}
+				
                 if (stp.getTable().getSelectedRow() != -1) {
 					SortableTable st= stp.getTable();
                     int selectedIndex= st.getSelectedRow();
@@ -821,6 +842,7 @@ public class DiscoveryPanel extends JPanel {
 	private JPanel addFilterPanel(final String name) {
 		final JPanel j= new JPanel();
 		j.setLayout(new MigLayout("insets 0px"));
+		j.setBackground(workview.getBackground());
 		
 		// CollapsiblePane for the filter
 		final CollapsiblePane collapsible= new CollapsiblePane(name);
@@ -1027,6 +1049,47 @@ public class DiscoveryPanel extends JPanel {
 			}
 		);
 		
+		
+		///// TESTING Gene panels box
+		/*
+		final GenesConditionGenerator gcg= new GenesConditionGenerator();
+		final SearchConditionItem sci= new SearchConditionItem("", null);
+		final SearchConditionEditorView scev= gcg.getViewGeneratorForItem(sci);
+		SearchConditionPanel scp= new SearchConditionPanel(scev, null);
+		
+		JButton OKButton = new JButton("OK");
+		OKButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//save changes: this saves the users selections so next time the dialog pops up, those
+				//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
+				//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
+				if (scev.saveChanges()) {
+					try {
+						String encodedSearch = sci.getSearchConditionEncoding();
+						Condition c = gcg.getConditionsFromEncoding(encodedSearch);
+						//this condition can be used to query for
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						System.err.println(ex);
+					}
+				}
+			}
+
+		});
+
+		scp.getButtonPanel();
+		scp.getButtonPanel().add(OKButton);
+		
+		JPanel outerPanel= new JPanel();
+		outerPanel.setLayout(new MigLayout());
+		outerPanel.add(scp);
+		
+		collapsibleGene.add(outerPanel, "wrap");
+		*/
+		/////////////////////
+		
+		
 		collapsibleGene.add(geneButton);
 		collapsibleGene.add(genePanelComboBox);
 		
@@ -1097,14 +1160,14 @@ public class DiscoveryPanel extends JPanel {
 		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
 		leftHideButton.setForeground(Color.DARK_GRAY);
-		leftHideButton.setBackground(ViewUtil.getSidebarColor());
+		leftHideButton.setBackground(workview.getBackground());
 		leftHideButton.setSize(leftHideButton.getMinimumSize());
 		leftHideButton.setLocation(0, 0);
 		
 		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
 		rightHideButton.setForeground(Color.DARK_GRAY);
-		rightHideButton.setBackground(ViewUtil.getSidebarColor());
+		rightHideButton.setBackground(workview.getBackground());
 		rightHideButton.setSize(rightHideButton.getMinimumSize());
 		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
 		
@@ -1431,4 +1494,29 @@ public class DiscoveryPanel extends JPanel {
 		
 		return results;
 	}
+	
+	
+	/**
+	 * Status bar to report potential errors in the processing of the current 
+	 * patient. If there are no errors, no status is output. Unlike the progress
+	 * status, this one is reported at the top of the patient panel, to increase
+	 * the likelihood that it is seen by the user.
+	 */
+	private void errorStatusReport() {	
+		if (discFind.getGender().equals(ClientMiscUtils.GENDER_UNKNOWN)) {
+			patientPanelInsertPosition= 3; // push further buttons down
+			
+			if (errorLabel.getParent() != patientPanel) {
+				errorLabel.setText("Patient gender is " + ClientMiscUtils.GENDER_UNKNOWN);
+				errorLabel.setForeground(Color.RED);
+				errorLabel.setFont(new Font(errorLabel.getFont().getName(), Font.PLAIN, 15));
+				patientPanel.add(errorLabel, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
+			}
+		} else {
+			patientPanelInsertPosition= 2; // back to original value
+			if (errorLabel != null)
+				patientPanel.remove(errorLabel);
+		}
+	}
+	
 }

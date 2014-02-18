@@ -108,7 +108,7 @@ public class ExportVCF implements BasicVariantColumns {
         }
 
         System.out.println("Transferring export from server to " + destFile.getAbsolutePath() + " ...");
-        ClientNetworkUtils.copyFileFromServer(fileID, destFile);
+        ClientNetworkUtils.moveFileFromServer(fileID, destFile);
         System.out.println("Table transferred");
 
         File resultingFile;
@@ -141,7 +141,7 @@ public class ExportVCF implements BasicVariantColumns {
         }
 
         LOG.info("Copying file " + fileID + " from sever to " + destFile.getAbsolutePath());
-        ClientNetworkUtils.copyFileFromServer(fileID, destFile);
+        ClientNetworkUtils.moveFileFromServer(fileID, destFile);
         LOG.info("Done copying file to " + destFile);
 
         // maintain lists of chrs, dnaids, ...

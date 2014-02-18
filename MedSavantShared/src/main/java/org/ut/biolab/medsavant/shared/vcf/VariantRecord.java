@@ -33,7 +33,7 @@ public class VariantRecord implements Serializable {
     public static enum VariantType {
 
         //BND => complex rearrangement
-        SNP, Insertion, Deletion, Various, Unknown, InDel, Complex;
+        SNP, Insertion, Deletion, Various, Unknown, InDel, Complex, HomoRef;
 
         public static VariantType getVariantType(int type) {
             switch (type) {
@@ -51,6 +51,8 @@ public class VariantRecord implements Serializable {
                     return InDel;
                 case 6:
                     return Complex;
+                case 7:
+                    return HomoRef;
                 default:
                     return Unknown;
             }
@@ -151,6 +153,8 @@ public class VariantRecord implements Serializable {
             String s = MiscUtils.homogenizeSequence(chrom);
             chrom = "chr" + s;
 
+            //Comment out chromosome check
+            /*
             if (!s.equalsIgnoreCase("x") && !s.equalsIgnoreCase("y") && !s.equalsIgnoreCase("m")) {
 
                 if (NumberUtils.isNumber(s)) {
@@ -170,7 +174,7 @@ public class VariantRecord implements Serializable {
                     };
                 }
 
-            }
+            }*/
         }
 
         dbSNPID = (String) parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);

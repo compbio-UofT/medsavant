@@ -280,7 +280,7 @@ public class VCFUploadApp implements LaunchableApp {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                File[] files = DialogUtils.chooseFilesForOpen("Choose Variant Files", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                File[] files = DialogUtils.chooseFilesForOpen("Choose Variant Files", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz", "vcf.bz2"}), null);
                 for (File f : files) {
                     addFileToImport(f);
                 }

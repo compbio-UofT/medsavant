@@ -22,7 +22,6 @@ package org.ut.biolab.medsavant.server.serverapi;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  *
@@ -102,9 +101,18 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void writeToServer(String sessID, int transferID, byte[] buf) throws IOException, InterruptedException {
         InboundStreamInfo info = inboundMap.get(sessID + transferID);
-        info.stream.write(buf);
-        info.bytesWritten += buf.length;
-        makeProgress(sessID, String.format("Uploading %s to server...", info.sourceName), (double) info.bytesWritten / info.length);
+        try{            
+            info.stream.write(buf);
+            info.bytesWritten += buf.length;
+            makeProgress(sessID, String.format("Uploading %s to server...", info.sourceName), (double) info.bytesWritten / info.length);
+        }catch(IOException iex){
+            try{
+                info.stream.close();
+            }catch(IOException e){}
+            info.stream = null;
+            info.file.delete();
+            throw(iex);
+        }
     }
 
     /**
@@ -174,10 +182,16 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         }
         return null;
     }
-
+           
+    private void deleteEmptyParents(File p) throws IOException{
+        IOUtils.deleteEmptyParents(p, DirectorySettings.getTmpDirectory());
+    }
+    
     /**
      * Close the stream. We don't need the <code>StreamInfo</code> any more, so
-     * we remove it from the map.
+     * we remove it from the map.  Deletes the file corresponding to this stream, and all
+     * levels of parent, grandparent, etc. directories that are empty.  It will never delete
+     * the top level DirectorySettings.getTmpDirectory()
      *
      * @param sessID uniquely identifies the client
      * @param transferID identifies the stream which is being closed
@@ -185,7 +199,12 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void closeReaderOnServer(String sessID, int transferID) throws IOException {
         OutboundStreamInfo info = outboundMap.remove(sessID + transferID);
-        info.stream.close();
+        info.stream.close();        
+        File parent = info.file.getParentFile();
+        info.file.delete();
+        deleteEmptyParents(parent);
+        
+              
     }
 
     /**

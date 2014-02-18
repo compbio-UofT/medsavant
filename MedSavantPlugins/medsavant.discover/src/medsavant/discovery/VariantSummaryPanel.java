@@ -77,6 +77,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	private String CGDPaneTitle= "Clinical Genomics Database (CGD) details";
 	private String clinvarPaneTitle= "Clinvar details";
 	private String HGMDPaneTitle= "HGMD details";
+	private MedSavantWorker otherIndividualsThread;
 			
 	
 	/**
@@ -106,20 +107,6 @@ public class VariantSummaryPanel extends JScrollPane {
 		titleLabel.setText(geneSymbol);
 		currentGeneSymbol= geneSymbol;
 		summaryPanel.revalidate();
-	}
-	
-	
-	/**
-	 * Adds a custom annotation to the summary panel.
-	 * @param annotation
-	 * @param value
-	 * @param optionalURL 
-	 */
-	public void addAnnotation(String annotation, String value, URL optionalURL) {
-		JLabel annoLabel= new JLabel(annotation);
-		JLabel valueLabel= new JLabel(value);
-		summaryPanel.add(annoLabel, "alignx left");
-		summaryPanel.add(valueLabel, "wrap");
 	}
 	
 	
@@ -307,6 +294,11 @@ public class VariantSummaryPanel extends JScrollPane {
 	public void updateOtherIndividualsPane(final SimpleVariant simpleVar) {
 		/* Clear the existing other individuals pane and put status bar. */
 		otherIndividualsPane.remove(dnaIDPanel);
+		
+		/* Cancel the thread if it already exists, because it's about to be replaced. */
+		if (otherIndividualsThread != null)
+			otherIndividualsThread.cancel(true);
+		
 		final ProgressWheel pw= new ProgressWheel();
 		pw.setIndeterminate(true);
 		otherIndividualsPane.add(pw, "alignx center");
@@ -315,7 +307,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		
 		
 		/* Get the other individuals DNA IDs. */		
-		MedSavantWorker otherIndividualsThread= new MedSavantWorker<Void>("updateOtherIndividualsPane")
+		otherIndividualsThread= new MedSavantWorker<Void>("updateOtherIndividualsPane")
 		{
 			@Override
 			protected void showSuccess(Void result) {
@@ -343,13 +335,18 @@ public class VariantSummaryPanel extends JScrollPane {
 				String individuals= " individual ";
 				if (dnaIDList.size() > 1) individuals= " individuals ";
 				otherIndividualsPane.setTitle(dnaIDList.size() + individuals +
-					"with this variant (" + totalDBPatients + " total)");
+					"with this variant (" + totalDBPatients + " individuals in database)");
 				for (String dnaID : dnaIDList) {
 					dnaIDPanel.add(new JLabel(dnaID), "wrap");
 				}
-				otherIndividualsPane.add(dnaIDPanel);
-				//otherIndividualsPane.updateUI(); // causes random NullPointerExceptions; use revalidate() instead
-				otherIndividualsPane.revalidate();
+				
+				/* Only proceed to add the panel if the user hasn't already clicked
+				 * on another variant which is currently loading. */
+				if (!this.isCancelled()) {
+					otherIndividualsPane.add(dnaIDPanel);
+					//otherIndividualsPane.updateUI(); // causes random NullPointerExceptions; use revalidate() instead
+					otherIndividualsPane.revalidate();
+				}
 				
 				return null;
 			}
@@ -486,5 +483,28 @@ public class VariantSummaryPanel extends JScrollPane {
 		});
 		
 		return urlButton;
+	}
+	
+	
+	/**
+	 * Adds a custom panel to the summary panel.
+	 * @param custom Title of custom pane
+	 * @return The new custom CollapsiblePane to be modified.
+	 */
+	public CollapsiblePane addCustomAnnotation(String custom) {
+		CollapsiblePane customPane= getCollapsiblePane(custom);
+		
+		summaryPanel.add(customPane, "wrap");
+		
+		return customPane;
+	}
+	
+	
+	/**
+	 * Get the parent summary panel for the VariantSummaryPanel. 
+	 * @return The summary panel
+	 */
+	public JPanel getSummaryPanel() {
+		return summaryPanel;
 	}
 }

@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -24,21 +25,21 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  * @author mfiume
  */
 public class Jannovar {
+
     private String reference;
-   
-    
+
     // use the reference to url map when Jannovar links break
     // TODO: have the map be compiled from an xml file hosted online, to support changes after deployment
     {
-        referenceToRefSeqSerURL = new HashMap<String,URL>();
+        referenceToRefSeqSerURL = new HashMap<String, URL>();
         try {
             referenceToRefSeqSerURL.put("hg19", new URL("http://genomesavant.com/p/medsavant/serve/annotation/jannovar/refseq_hg19.ser"));
         } catch (MalformedURLException ex) {
         }
     }
 
-    private static Map<String,URL> referenceToRefSeqSerURL;
-    
+    private static Map<String, URL> referenceToRefSeqSerURL;
+
     private static final Log LOG = LogFactory.getLog(Jannovar.class);
 
     private static SerializationManager sManager = new SerializationManager();
@@ -46,11 +47,11 @@ public class Jannovar {
     private static String dirPath;
     private static ArrayList<TranscriptModel> transcriptModelList = null;
     //private static final String serializationFileName = ;
-    
+
     public Jannovar(String reference) {
         this.reference = reference;
     }
-    
+
     /**
      * The main entry point to this class
      *
@@ -58,31 +59,32 @@ public class Jannovar {
      * @return An array of files that have been annotated with Jannovar
      * @throws JannovarException
      */
-    public File[] annotateVCFFiles(File[] vcfFiles) throws JannovarException, IOException {
+    public File[] annotateVCFFiles(File[] vcfFiles, String database, int projectID) throws JannovarException, IOException {
 
         initialize();
 
         File[] jvFiles = new File[vcfFiles.length];
 
         int counter = 0;
+        File destDir = VariantManager.getVCFDestinationDir(database, projectID);
 
         // annotate each file
         for (File file : vcfFiles) {
             LOG.info("Annotating " + file.getAbsolutePath() + " with Jannovar");
-            jvFiles[counter++] = annotateVCFWithJannovar(file);
+            jvFiles[counter++] = annotateVCFWithJannovar(file, destDir);
             LOG.info("Done annotating " + file.getAbsolutePath() + " with Jannovar");
         }
 
         return jvFiles;
     }
-    
+
     private File getJannovarDataDirectory() {
         File parent = new File(DirectorySettings.getCacheDirectory().getPath(), "jannovar");
-        File f = new File(parent,"data");
+        File f = new File(parent, "data");
         f.mkdirs();
         return f;
     }
-    
+
     private File getRefSeqSerializedFile() {
         return new File(getJannovarDataDirectory(), "refseq_" + reference + ".ser");
     }
@@ -95,7 +97,7 @@ public class Jannovar {
         // download the serizalized files, if needed
         if (!hasSerializedFile()) {
             LOG.info("Creating serialized RefSeq file...");
-            
+
             // use the reference to url map when Jannovar links break
             // TODO: have the map be compiled from an xml file hosted online, to support changes after deployment
             if (referenceToRefSeqSerURL.containsKey(reference)) {
@@ -103,7 +105,7 @@ public class Jannovar {
                 NetworkUtils.downloadFile(referenceToRefSeqSerURL.get(reference), getJannovarDataDirectory(), "refseq_" + reference + ".ser");
             } else {
                 LOG.info("Compiling serialized file with Jannovar");
-                jannovar.Jannovar.main(new String[]{"--create-refseq","-d", getJannovarDataDirectory().getAbsolutePath()});
+                jannovar.Jannovar.main(new String[]{"--create-refseq", "-d", getJannovarDataDirectory().getAbsolutePath()});
             }
         }
         return true;
@@ -122,10 +124,11 @@ public class Jannovar {
      *
      * Code modified from Jannovar class.
      */
-    private File annotateVCFWithJannovar(File sourceVCF) throws JannovarException, IOException {
+    private File annotateVCFWithJannovar(File sourceVCF, File destDir) throws JannovarException, IOException {
         /* Annotated VCF name as determined by Jannovar. */
+             
         String outname = sourceVCF.getName();
-        
+
         int i = outname.lastIndexOf("vcf");
         if (i < 0) {
             i = outname.lastIndexOf("VCF");
@@ -136,12 +139,12 @@ public class Jannovar {
             outname = outname.substring(0, i) + "jv.vcf";
         }
 
-        File outFile = new File(outname);
+        File outFile = new File(destDir, outname);        
 
         jannovar.Jannovar.main(new String[]{
-            "-D", getRefSeqSerializedFile().getAbsolutePath(), 
+            "-D", getRefSeqSerializedFile().getAbsolutePath(),
             "-V", sourceVCF.getAbsolutePath(),
-            "-O", sourceVCF.getParent()
+            "-O", outFile.getAbsolutePath()
         });
 
         LOG.info("[Jannovar] Wrote annotated VCF file to \"" + sourceVCF.getParent() + "/" + outFile.getAbsolutePath() + "\"");

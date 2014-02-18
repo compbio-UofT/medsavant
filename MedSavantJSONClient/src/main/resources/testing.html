@@ -194,6 +194,12 @@
             //demo we don't ever cancel.
             var isCancelled = false;
 
+
+            //Note that methods that change the variant database use locking on the server side, and it's possible
+            //that we're locked out.  In that case, the method will be enqueued and the below WILL NOT WORK.  
+            //(can't check progress on a job that isn't running yet)
+            
+                                    
             //Check progress every uploadTimerDelay ms.
             var intervalId = setInterval(function() {
                 ulform.innerHTML = "IMPORTING VCF" + da[i++ % 3];
@@ -297,7 +303,7 @@
                             <input type="submit"> (Submit copies file to server, give it time...)
                         </form>
                     </div>
-                    <br>
+                    <br>                   
                     <hr>
                     <b><u>Last Request and Return Value:</u></b>
                     <div id="lastreq"></div>

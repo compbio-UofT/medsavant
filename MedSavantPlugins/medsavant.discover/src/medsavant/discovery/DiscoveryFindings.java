@@ -48,8 +48,6 @@ public class DiscoveryFindings {
 	private final String STOPGAIN= "STOPGAIN";
 	private final String FRAMESHIFTS= "FS_%";
 	private final String SPLICING= "SPLICING";
-	private final String CLINVAR_COLUMN= "clinvar_20131105b, info";
-	private final String HGMD_COLUMN= "hgmd_pro_allmut, gene";
 	
 	private String GENDER= null;
 	private ComboCondition currentCC= new ComboCondition(ComboCondition.Op.AND);
@@ -71,12 +69,12 @@ public class DiscoveryFindings {
 	private int effectIndex;
 	private int geneSymbolIndex;
 	private int af1000gIndex;
+	private int INDEX_OF_FORMAT;
+	private int INDEX_OF_SAMPLE_INFO;
 	
-	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);
-	private Pattern truncationPattern= Pattern.compile("STOPGAIN|FS_\\w+|SPLICING", Pattern.CASE_INSENSITIVE);
+	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);	
 	private Pattern geneSymbolPattern= Pattern.compile("^([^:]+)");
-	private Pattern formatFieldPattern= Pattern.compile(";?FORMAT=([^;]*AD[^;]*);?", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
-	private Pattern sampleInfoFieldPattern= Pattern.compile(";?SAMPLE_INFO=([^;]+);?", Pattern.CASE_INSENSITIVE);
+	private Pattern formatFieldPattern= Pattern.compile("([^;]*AD[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
 	
 	/** Initialize DiscoveryFindings object for the given patient DNA ID.
 	 * @param dnaID	Patient's DNA ID
@@ -89,7 +87,8 @@ public class DiscoveryFindings {
 		header= getTableHeader();
 		effectIndex= header.indexOf(JANNOVAR_EFFECT);
 		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);		
-		
+		INDEX_OF_FORMAT= header.indexOf(BasicVariantColumns.FORMAT.getAlias());
+		INDEX_OF_SAMPLE_INFO= header.indexOf(BasicVariantColumns.SAMPLE_INFO.getAlias());
 		
 		try {
 			// Get gender info
@@ -279,13 +278,18 @@ public class DiscoveryFindings {
 		int position= 0;
 		List<Object[]> currentVariants= null;
 		while ((currentVariants == null || currentVariants.size() != 0) && !isCancelled) {
-			currentVariants= vma.getVariants(LoginController.getInstance().getSessionID(),
-				ProjectController.getInstance().getCurrentProjectID(),
-				ReferenceController.getInstance().getCurrentReferenceID(),
-				conditionMatrix,
-				position, DB_VARIANT_REQUEST_LIMIT);
-			allVariants.addAll(filterVariants(currentVariants));
-			position += DB_VARIANT_REQUEST_LIMIT;
+			try {
+				currentVariants= vma.getVariants(LoginController.getInstance().getSessionID(),
+					ProjectController.getInstance().getCurrentProjectID(),
+					ReferenceController.getInstance().getCurrentReferenceID(),
+					conditionMatrix,
+					position, DB_VARIANT_REQUEST_LIMIT);
+				allVariants.addAll(filterVariants(currentVariants));
+				position += DB_VARIANT_REQUEST_LIMIT;
+			} catch (Exception e) {
+				e.printStackTrace();
+				isCancelled= true;
+			}
 		}
 		
 		// toggle the cancel
@@ -358,10 +362,11 @@ public class DiscoveryFindings {
 		boolean result= false;
 		
 		String info_field= (String) row[BasicVariantColumns.INDEX_OF_CUSTOM_INFO];
+		String format_field= (String) row[INDEX_OF_FORMAT];
+		String sampleInfoFieldText= (String) row[INDEX_OF_SAMPLE_INFO];
 		
 		Matcher dp4Matcher= dp4Pattern.matcher(info_field);
-		Matcher formatFieldMatcher= formatFieldPattern.matcher(info_field);
-		Matcher sampleInfoFieldMatcher= sampleInfoFieldPattern.matcher(info_field);		
+		Matcher formatFieldMatcher= formatFieldPattern.matcher(format_field);
 		
 		/* Process DP4 or AD or AO text (from VCF INFO or Format columns) if present. */
 		if (dp4Matcher.find()) { // NOTE: need to run find() to get group() below
@@ -389,14 +394,13 @@ public class DiscoveryFindings {
 				result= true;
 			} 
 			
-		} else if (formatFieldMatcher.find() && sampleInfoFieldMatcher.find()) { // NOTE: need to run find() to get group() below
+		} else if (formatFieldMatcher.find()) { // NOTE: need to run find() to get group() below
 			
 			String formatFieldText= formatFieldMatcher.group(1);
-			String sampleInfoFieldText= sampleInfoFieldMatcher.group(1);
 			
 			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
-			String[] adDelimited= formatFieldText.split(":");
-			int adIndex= Arrays.asList(adDelimited).indexOf("AD");			
+			String[] adDelimited= formatFieldText.split(":");			
+			int adIndex= Arrays.asList(adDelimited).indexOf("AD");
 			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
 			int refCount= Integer.parseInt(adCoverageDelimited[0]);
 			int altCount= Integer.parseInt(adCoverageDelimited[1]);

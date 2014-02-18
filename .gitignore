@@ -79,3 +79,5 @@ MedSavantPlugins/medsavant.mendel-clinic/nbproject/private/private.properties
 MedSavantPlugins/medsavant.mendel-clinic/nbproject/project.properties
 
 MedSavantPlugins/medsavant.mendel-clinic/nbproject/private/private.xml
+
+MedSavantJSONClient/src/main/resources/config.properties

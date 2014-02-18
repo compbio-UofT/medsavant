@@ -452,7 +452,7 @@ public class SplashFrame extends JFrame {
 
             for (Object[] o : items) {
                 MedSavantServerInfo server = (MedSavantServerInfo) o[1];
-                int result = DialogUtils.askYesNo("Remove Server", String.format("Relly remove %s?", server.getNickname()));
+                int result = DialogUtils.askYesNo("Remove Server", String.format("Really remove %s?", server.getNickname()));
                 if (result == DialogUtils.YES) {
                     ServerController.getInstance().removeServer(server);
                 }

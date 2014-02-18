@@ -167,14 +167,14 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
     }
     
     @Override
-    public boolean isProjectLockedForChanges(int projectID) throws RemoteException, SessionExpiredException {
-        return LockController.getInstance().isLocked(projectID);
+    public boolean isProjectLockedForChanges(String sessionID, int projectID) throws RemoteException, SessionExpiredException {
+        return LockController.getInstance().isLocked(SessionManager.getInstance().getDatabaseForSession(sessionID), projectID);
     }
     
     @Override
     public void forceReleaseLockForProject(String sessionID, int projectID) throws LockException, RemoteException, SessionExpiredException, UnauthorizedException, SQLException {
         if (UserManager.getInstance().isAdmin(sessionID,true)) {
-            LockController.getInstance().releaseLock(projectID, true);
+            LockController.getInstance().releaseLock(SessionManager.getInstance().getDatabaseForSession(sessionID),projectID, true);
         }
     }
     

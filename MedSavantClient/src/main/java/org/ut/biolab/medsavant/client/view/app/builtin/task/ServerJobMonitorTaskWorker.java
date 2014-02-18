@@ -29,9 +29,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
  *
@@ -118,33 +120,13 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
                 return new ArrayList<GeneralLog>(1);
             } else {
                 return getSortedChildren(mjps, 0);
-            }
-            //List<String> results = new ArrayList<String>(mjps.size()); //nullpointerexception
-            //Map<Integer, Map<Integer, String>> km = new TreeMap<Integer, Map<Integer, String>>();
-            //int jid = 0;
-
-            //updateMap(km, mjps, 0, 0);
-            /*for (MedSavantJobProgress mjp : mjps) {
-             ScheduleStatus status = mjp.getStatus();
-             Map<Integer, String> jm = km.get(status);
-             if (jm == null) {
-             jm = new TreeMap<Integer, String>();
-             }
-
-             int level = status.ordinal() * 10000;
-
-             jm.put(jid, "(" + status + ") " + jid + ". " + mjp.getJobName() + " - " + mjp.getMessage());
-             km.put(status, jm);
-             jid++;
-             }*/
-            /*  for (Map.Entry<Integer, Map<Integer, String>> entry : km.entrySet()) {
-             for (Map.Entry<Integer, String> entry2 : entry.getValue().entrySet()) {
-             System.out.println("Adding "+entry2.getValue()+" with rank "+entry.getKey());
-             results.add(entry2.getValue());
-             }
-             }
-             return results;*/
-        } catch (Exception ex) {
+            }          
+        } catch(SessionExpiredException see){
+            List<GeneralLog> nl = new ArrayList<GeneralLog>(1);
+            nl.add(new GeneralLog("Session Expired - please quit and login again"));
+            MedSavantExceptionHandler.handleSessionExpiredException(see);
+            return nl; //maybe unreachable, depending on implementation of above.
+        }catch (Exception ex) {
             String s = "Error retrieving task information";
             List<GeneralLog> r = new ArrayList<GeneralLog>(1);
             r.add(new GeneralLog(null, s, null));
