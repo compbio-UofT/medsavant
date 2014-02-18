@@ -52,7 +52,7 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar</artifactId>
-            <version>0.6</version>
+            <version>0.6-beta-2</version>
         </dependency>
         <dependency>
             <groupId>gnu.getopt</groupId>
