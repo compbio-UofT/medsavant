@@ -57,38 +57,39 @@ public class LockControllerTest {
     @Test
     public void testLock() {
 
+        final String dummyDB = "dummyDB";
         // initially unlocked
-        assertFalse(LockController.getInstance().isLocked(0));
+        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
         
         boolean didFail = false;
         
         // request lock
         try {
-            LockController.getInstance().requestLock(0);
+            LockController.getInstance().requestLock(dummyDB, 0);
         } catch (LockException e) {
             didFail = true;
         }
         assertFalse(didFail);
         
         // now locked
-        assertTrue(LockController.getInstance().isLocked(0));
+        assertTrue(LockController.getInstance().isLocked(dummyDB, 0));
 
         // unlock
         didFail = false;
         try {
-            LockController.getInstance().releaseLock(0);
+            LockController.getInstance().releaseLock(dummyDB, 0);
         } catch (LockException e) {
             didFail = true;
         }
         assertFalse(didFail);
         
         // now unlocked
-        assertFalse(LockController.getInstance().isLocked(0));
+        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
         
         // request 2 locks
         try {
-            LockController.getInstance().requestLock(0);
-            LockController.getInstance().requestLock(0);
+            LockController.getInstance().requestLock(dummyDB, 0);
+            LockController.getInstance().requestLock(dummyDB, 0);
         } catch (LockException e) {
             didFail = true;
         }
@@ -97,26 +98,26 @@ public class LockControllerTest {
         // unlock once
         didFail = false;
         try {
-            LockController.getInstance().releaseLock(0);
+            LockController.getInstance().releaseLock(dummyDB, 0);
         } catch (LockException e) {
             didFail = true;
         }
         assertFalse(didFail);
         
         // still locked
-        assertTrue(LockController.getInstance().isLocked(0));
+        assertTrue(LockController.getInstance().isLocked(dummyDB, 0));
         
         // unlock once more
         didFail = false;
         try {
-            LockController.getInstance().releaseLock(0);
+            LockController.getInstance().releaseLock(dummyDB, 0);
         } catch (LockException e) {
             didFail = true;
         }
         assertFalse(didFail);
         
         // now unlocked
-        assertFalse(LockController.getInstance().isLocked(0));
+        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
         
     }
     

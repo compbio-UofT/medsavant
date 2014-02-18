@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public class MedSavantExceptionHandler {
 
-    public static boolean handleSessionExpiredException(SessionExpiredException e) {
+    public static synchronized boolean handleSessionExpiredException(SessionExpiredException e) {
         MedSavantFrame.getInstance().dispose();
         int result = DialogUtils.askYesNo("Session Expired","Would you like to log in again?");
         if (result == DialogUtils.YES) {

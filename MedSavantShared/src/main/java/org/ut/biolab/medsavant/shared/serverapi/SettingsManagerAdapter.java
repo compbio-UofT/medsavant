@@ -41,7 +41,7 @@ public interface SettingsManagerAdapter extends Remote {
     //public void releaseDBLock(String sid) throws SQLException, RemoteException, SessionExpiredException;
     public String getServerVersion() throws RemoteException, SessionExpiredException;
 
-    public boolean isProjectLockedForChanges(int projectID) throws RemoteException, SessionExpiredException;
+    public boolean isProjectLockedForChanges(String database, int projectID) throws RemoteException, SessionExpiredException;
     public void forceReleaseLockForProject(String sessionID, int projectID) throws RemoteException, SessionExpiredException, SQLException, LockException, UnauthorizedException;
     
 }
