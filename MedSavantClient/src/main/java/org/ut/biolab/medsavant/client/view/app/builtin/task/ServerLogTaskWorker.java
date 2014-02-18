@@ -39,15 +39,14 @@ class ServerLogTaskWorker implements TaskWorker {
     }
 
     @Override
-    public List<String> getLog() {
-        List<String> results = new ArrayList<String>();
+    public List<GeneralLog> getLog() {
+        List<GeneralLog> results;
         try {
-            List<GeneralLog> logs = MedSavantClient.LogManager.getServerLogForUserWithSessionID(LoginController.getSessionID(), 0, 500);
-            for (GeneralLog l : logs) {
-                results.add(l.getTimestamp() + " - " + l.getDescription());
-            }
+            results = MedSavantClient.LogManager.getServerLogForUserWithSessionID(LoginController.getSessionID(), 0, 500);
+
         } catch (Exception ex) {
-            results.add("Error retrieving logs");
+            results = new ArrayList<GeneralLog>();
+            results.add(new GeneralLog("Error retrieving logs"));
             Logger.getLogger(ServerLogTaskWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
         return results;

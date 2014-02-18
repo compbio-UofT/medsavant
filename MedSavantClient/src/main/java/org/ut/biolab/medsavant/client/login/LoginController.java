@@ -235,15 +235,15 @@ public class LoginController extends Controller<LoginEvent> {
                     }
                     try {
                         semLogin.acquire();
+                        
                         getInstance().serverAddress = serverAddress;
                         getInstance().dbname = dbname;
                         //register session
                         userName = un;
                         password = pw;
-                        if (!LoginController.getInstance().isLoggedIn()) {
-                            
-                            finishLogin(un, pw);
-                        }
+                        
+                        finishLogin(un, pw);
+                        
                         semLogin.release();
                     } catch (Exception ex) {
                         LOG.info("Aborted login...");

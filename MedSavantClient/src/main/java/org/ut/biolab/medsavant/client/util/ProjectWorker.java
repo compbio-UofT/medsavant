@@ -79,7 +79,7 @@ public abstract class ProjectWorker<T> extends VisibleMedSavantWorker<T> {
             DialogUtils.displayMessage(getLongSuccessMessage());
             MedSavantFrame.getInstance().forceRestart();
         } else {
-            MedSavantFrame.getInstance().notificationMessage(getLongSuccessMessage());
+            MedSavantFrame.getInstance().showNotficationMessage(getLongSuccessMessage());
         }
     }
 }

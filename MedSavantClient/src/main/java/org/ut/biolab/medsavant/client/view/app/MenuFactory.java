@@ -197,6 +197,7 @@ public class MenuFactory {
          p.add(appPanel);
          }
          */
+        
         for (final LaunchableApp app : MedSavantFrame.getInstance().getDashboard().getLaunchHistory()) {
 
             ActionListener launchApp = new ActionListener() {

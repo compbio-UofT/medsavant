@@ -29,16 +29,23 @@ import javax.swing.JPanel;
  * @author mfiume
  */
 public class ImagePanel extends JPanel {
-    private final Image image;
+    private Image image;
 
-    public ImagePanel(Image im, int width, int height) {
+    public ImagePanel(Image im, int width, int height, boolean smoothing) {
         this.image = im;
+        if (smoothing) {
+            this.image = image.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING); 
+        }
         Dimension dim = new Dimension(width,height);
         this.setMaximumSize(dim);
         this.setMinimumSize(dim);
         this.setPreferredSize(dim);
         this.setBorder(null);
         this.setOpaque(false);
+    }
+    
+    public ImagePanel(Image im, int width, int height) {
+        this(im,width,height,true);
     }
     
     @Override

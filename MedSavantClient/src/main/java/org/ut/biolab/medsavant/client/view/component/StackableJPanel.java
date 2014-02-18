@@ -17,7 +17,7 @@
  * MA 02110-1301  USA
  */
 
-package org.ut.biolab.medsavant.client.view;
+package org.ut.biolab.medsavant.client.view.component;
 
 import javax.swing.JPanel;
 
@@ -25,13 +25,20 @@ import javax.swing.JPanel;
  *
  * @author mfiume
  */
-public class NotificationPanel extends JPanel {
-    
-    public NotificationPanel() {
-        
+public class StackableJPanel extends JPanel {
+   
+    public StackableJPanel() {
+        this.setOpaque(false);
     }
     
-    public static void main(String[] argv) {
-        
+    private StackableJPanelContainer parentContainer;
+    
+    void setParentContainer(StackableJPanelContainer p) {
+        this.parentContainer = p;
     }
+    
+    void popThis() {
+        this.parentContainer.remove(this);
+    }
+    
 }

@@ -21,6 +21,7 @@ package org.ut.biolab.medsavant.shared.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  *
@@ -33,6 +34,14 @@ public class GeneralLog implements Serializable {
     private String description;
     private Timestamp timestamp;
 
+    public GeneralLog(String description) {
+        this(null, description);
+    }
+    
+    public GeneralLog(String event, String description) {
+        this(null, event, description, new java.sql.Timestamp(new Date().getTime()));
+    }
+    
     public GeneralLog(String event, String description, Timestamp timestamp) {
         this(null, event, description, timestamp);
     }

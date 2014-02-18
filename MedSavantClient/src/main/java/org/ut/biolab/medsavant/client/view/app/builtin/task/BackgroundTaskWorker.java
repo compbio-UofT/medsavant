@@ -8,16 +8,14 @@ package org.ut.biolab.medsavant.client.view.app.builtin.task;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.util.ThreadController;
+import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
 /**
  *
@@ -27,10 +25,11 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
 
     private static final int MAX_MEDSAVANT_WORKER_THREADS = 20;
 
-    List<String> taskLog;
+    List<GeneralLog> taskLog;
     boolean preventsQuit;
     private Date startDate;
     private Date stopDate;
+    private double taskProgress = -1; // indefinite when -1
     private TaskStatus status;
     private final LaunchableApp owner;
     private String completionMessage;
@@ -39,7 +38,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
     private SwingWorker<T, Object> worker;
     private String taskName;
 
-    String getStatus() {
+    public String getStatus() {
         return status.toString();
     }
 
@@ -49,24 +48,9 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
      * @param s A string to log
      */
     public void addLog(String s) {
-        taskLog.add((new Date().toString() + " - " + s));
+        taskLog.add(new GeneralLog(s));
         taskUpdated();
     }
-
-    /**
-     * Update the last log. Usefule when presenting progress.
-     *
-     * @param s A string to log, overwriting the previous
-     *
-    public void addLogInline(String s) {
-        if (taskLog.isEmpty()) {
-            addLog(s);
-            return;
-        }
-        taskLog.remove(taskLog.size() - 1);
-        taskLog.add((new Date().toString() + " - " + s));
-        taskUpdated();
-    }*/
 
     /**
      * Get the log
@@ -74,7 +58,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
      * @return A list of string logs
      */
     @Override
-    public List<String> getLog() {
+    public List<GeneralLog> getLog() {
         return taskLog;
     }
 
@@ -96,9 +80,9 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
         this.status = taskStatus;
         taskUpdated();
     }
-    
+
     public BackgroundTaskWorker(LaunchableApp owner, String taskName) {
-        taskLog = new ArrayList<String>();
+        taskLog = new ArrayList<GeneralLog>();
         this.owner = owner;
         this.taskName = taskName;
         listeners = new ArrayList<Listener<TaskWorker>>();
@@ -106,10 +90,9 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
         setStatus(TaskStatus.UNSTARTED);
         AppDirectory.getTaskManager().submitTask(this);
     }
-    
 
     public BackgroundTaskWorker(String taskName) {
-        this(null,taskName);
+        this(null, taskName);
     }
 
     /**
@@ -177,8 +160,9 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
     protected abstract void showSuccess(T result);
 
     /**
-     * Display exceptions that occur while running the task. Should
-     * be overridden.
+     * Display exceptions that occur while running the task. Should be
+     * overridden.
+     *
      * @param e The exception thrown while running the task.
      */
     protected void showFailure(final Exception e) {
@@ -195,7 +179,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
 
     @Override
     public String getTaskName() {
-        return taskName + ((owner == null) ? "" : " - " + owner.getName());
+        return taskName; //+ ((owner == null) ? "" : " - " + owner.getName());
     }
 
     @Override
@@ -205,12 +189,55 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
 
     @Override
     public double getTaskProgress() {
-        return 0.0;
+        return taskProgress;
+    }
+
+    /**
+     * The progress for this task. -1 if indefinite, between 0 and 1 for percent
+     * completion.
+     *
+     * @param taskProgress
+     */
+    public void setTaskProgress(double taskProgress) {
+        this.taskProgress = taskProgress;
+        taskUpdated();
     }
 
     @Override
     public LaunchableApp getOwner() {
         return this.owner;
+    }
+
+    public GeneralLog getLastLog() {
+        if (this.taskLog.isEmpty()) {
+            return null;
+        }
+        return this.getLog().get(this.getLog().size() - 1);
+    }
+
+    public NotificationsPanel.Notification getNotificationForWorker() {
+        
+        final BackgroundTaskWorker instance = this;
+        final NotificationsPanel.Notification n = new NotificationsPanel.Notification();
+        n.setName(instance.getTaskName());
+        n.setIcon(instance.getOwner().getIcon());
+        instance.addListener(new Listener<TaskWorker>() {
+
+            @Override
+            public void handleEvent(TaskWorker event) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        n.setDescription(instance.getLastLog().getDescription());
+                        n.setProgress(instance.getTaskProgress());
+                    }
+
+                });
+            }
+
+        });
+        return n;
     }
 
 }

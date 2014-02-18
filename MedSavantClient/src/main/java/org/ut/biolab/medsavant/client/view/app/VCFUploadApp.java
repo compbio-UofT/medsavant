@@ -23,17 +23,22 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
+import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
@@ -41,6 +46,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -264,12 +270,12 @@ public class VCFUploadApp implements LaunchableApp {
 
         dragDropContainer.add(dp);
 
-        dragDropContainer.add(l = new JLabel("or"),"center");
+        dragDropContainer.add(l = new JLabel("or"), "center");
         l.setForeground(new Color(100, 100, 100));
         JButton chooseButton = new JButton("Choose...");
         chooseButton.setFocusable(false);
-        dragDropContainer.add(chooseButton,"center");
-        
+        dragDropContainer.add(chooseButton, "center");
+
         chooseButton.addActionListener(new ActionListener() {
 
             @Override
@@ -279,7 +285,7 @@ public class VCFUploadApp implements LaunchableApp {
                     addFileToImport(f);
                 }
             }
-            
+
         });
 
         container.add(dragDropContainer, "center, wrap");
@@ -337,7 +343,22 @@ public class VCFUploadApp implements LaunchableApp {
 
                     @Override
                     protected Void doInBackground() throws Exception {
-                        this.addLog("Started import");
+
+                        final BackgroundTaskWorker instance = this;
+
+                        this.addLog("Upload started");
+                        
+                        final Notification notification = this.getNotificationForWorker();
+                        notification.setShowsProgress(true);
+                        
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                               
+                                MedSavantFrame.getInstance().showNotification(notification);
+                            }
+                        });
 
                         File[] copyOfFilesToImport = new File[filesToImport.size()];
                         int counter = 0;
@@ -350,11 +371,14 @@ public class VCFUploadApp implements LaunchableApp {
 
                         int fileIndex = 0;
 
+                        int numFiles = copyOfFilesToImport.length;
+                        
                         for (File file : copyOfFilesToImport) {
                             LOG.info("Created input stream for file");
                             this.addLog("Uploading " + file.getName() + "...");
-                            //progressLabel.setText("Uploading " + file.getName() + " to server...");
                             transferIDs[fileIndex++] = ClientNetworkUtils.copyFileToServer(file);
+                            this.setTaskProgress(((double)fileIndex)/numFiles);
+                            
                         }
                         this.addLog("Done uploading variants");
 
@@ -362,9 +386,8 @@ public class VCFUploadApp implements LaunchableApp {
 
                         this.addLog("Annotating with Jannovar: " + annovarCheckbox.isSelected());
                         this.addLog("Emailing notifications to: " + emailPlaceholder.getText());
-
-                        final BackgroundTaskWorker instance = this;
-                        new Thread(new Runnable() {
+                        
+                        Thread t = new Thread(new Runnable() {
 
                             @Override
                             public void run() {
@@ -375,14 +398,25 @@ public class VCFUploadApp implements LaunchableApp {
                                             ProjectController.getInstance().getCurrentProjectID(),
                                             ReferenceController.getInstance().getCurrentReferenceID(),
                                             new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
+                                    succeeded();
                                 } catch (Exception ex) {
                                     LOG.error(ex);
                                     instance.addLog("Error: " + ex.getMessage());
                                     instance.setStatus(TaskStatus.ERROR);
+                                    AppDirectory.getTaskManager().showErrorForTask(instance, ex);
                                 }
                             }
 
-                        }).start();
+                            private void succeeded() {
+                                 AppDirectory.getTaskManager().showMessageForTask(instance,
+                                "<html>Variants have been uploaded and are now being processed.<br/>"
+                                + "You may view progress in the Server Log in the Task Manager<br/><br/>"
+                                + "You may log out or continue doing work.</html>");
+                            }
+
+                        });
+
+                        t.start();
 
                         this.addLog("Done");
 
@@ -393,15 +427,10 @@ public class VCFUploadApp implements LaunchableApp {
 
                     @Override
                     protected void showSuccess(Object result) {
-                        AppDirectory.getTaskManager().showMessageForTask(this,
-                                "<html>Variants have been uploaded and are now being processed.<br/>"
-                                + "You may view progress in the Server Log in the Task Manager<br/><br/>"
-                                + "You may log out or continue doing work.</html>");
                     }
 
                     @Override
                     protected void showFailure(Exception e) {
-                        AppDirectory.getTaskManager().showErrorForTask(this, e);
                     }
 
                 }.start();

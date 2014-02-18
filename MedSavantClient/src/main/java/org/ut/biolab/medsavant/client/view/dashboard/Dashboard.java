@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.client.view.dashboard;
 
 import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -26,7 +27,6 @@ import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.javadev.AnimatingCardLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.NiceMenu;
@@ -50,7 +50,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     private final String BASE_LAYER = "0";
     private final String APP_LAYER = "1";
-    private final AnimatingCardLayout cardLayout;
+    private final CardLayout cardLayout;
 
     private NiceMenu appTopMenu;
     private NiceMenu homeMenu;
@@ -66,9 +66,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         this.setBackground(Color.white);
 
-        //Animation anim = new SlideAnimation();
-        //anim.setAnimationDuration(100);
-        cardLayout = new AnimatingCardLayout();
+        cardLayout = new CardLayout();
 
         this.setLayout(cardLayout);
 
@@ -100,15 +98,12 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
             @Override
             public void componentShown(ComponentEvent e) {
-                //relayout();
             }
 
             @Override
             public void componentHidden(ComponentEvent e) {
             }
-
         });
-
     }
 
     public void addDashboardSection(DashboardSection s) {
@@ -127,16 +122,14 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         int widthOfContainer = this.getParent().getSize().width;
 
-        int centralWidth = Math.min(widthOfContainer / 2, 900);
+        int centralWidth = Math.min(widthOfContainer / 2, 1000); // TODO: centralize width for other apps to use
 
         int numIconsPerRow = (centralWidth + gapHorizontal) / (appIconWidth + gapHorizontal);
-        //System.out.println("Num icons " + numIconsPerRow + " width " + widthOfContainer + " left " + leftInset);
 
         int leftInset = widthOfContainer / 2 - (numIconsPerRow * (appIconWidth + gapHorizontal)) / 2;
-        int rightInset = 0;//centralWidth/2;
+        int rightInset = 0;
 
         middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
-        //"gapy 30, insets 100 0 100 0"));
 
         baseLayer.setOpaque(true);
 
@@ -189,8 +182,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }
 
     public void goHome() {
-        //System.out.println("Going home");
-        //MedSavantFrame.getInstance().setTitle("MedSavant");
 
         if (previousApp != null) {
             previousApp.viewWillUnload();
@@ -206,7 +197,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }
 
     public void launchApp(LaunchableApp app) {
-
+        
         if (history.contains(app)) {
             history.remove(app);
         }
@@ -232,7 +223,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             public void mouseClicked(MouseEvent e) {
                 JPopupMenu m = MenuFactory.generatePrettyMenu();
 
-                //m.show(appTopMenu, 115, (int) (appTopMenu.getSize().getHeight()));
                 m.show(appTopMenu, (int) ((appTopMenu.getSize().getSize().getWidth() / 2) - (m.getPreferredSize().getWidth() / 2)), (int) (appTopMenu.getSize().getHeight()));
             }
 
@@ -297,6 +287,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             //button.setToolTipText(name);
         } else {
             JLabel title = ViewUtil.getGrayLabel(name);
+            ViewUtil.ellipsizeLabel(title, iconWidth);
             title.setFont(new Font("Arial", disableButton ? Font.BOLD : Font.PLAIN, 18));
             p.add(ViewUtil.centerHorizontally(title));
         }
@@ -322,10 +313,12 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }
 
     public List<LaunchableApp> getLaunchHistory() {
+        
         List<LaunchableApp> list = new ArrayList<LaunchableApp>(history.size());
         for (LaunchableApp e : history) {
             list.add(0, e);
         }
+        
         return list;
     }
 
@@ -358,7 +351,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     
     private JLabel getHomeButton() {
         JLabel homeLabel = new JLabel("MedSavant");
-        homeLabel.setFont(new Font("Helvetica Neue", Font.BOLD, 18));
+        homeLabel.setFont(ViewUtil.getBigTitleFont());
         homeLabel.setForeground(ViewUtil.getSemiBlackColor());
         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         

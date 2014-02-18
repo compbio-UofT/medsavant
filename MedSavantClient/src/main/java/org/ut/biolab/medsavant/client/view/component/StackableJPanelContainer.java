@@ -20,11 +20,13 @@ package org.ut.biolab.medsavant.client.view.component;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Stack;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -37,15 +39,17 @@ import net.miginfocom.swing.MigLayout;
  * the panel.
  * @author mfiume
  */
-public class JPanelStack extends JPanel {
+public class StackableJPanelContainer extends JPanel {
 
     private final Stack<JPanel> panels;
     private final JLayeredPane layeredPane;
 
-    public JPanelStack() {
+    public StackableJPanelContainer() {
 
+        this.setOpaque(false);
+        
         layeredPane = new JLayeredPane();
-        layeredPane.setOpaque(true);
+        layeredPane.setOpaque(false);
 
         this.setLayout(new BorderLayout());
         this.add(layeredPane, BorderLayout.CENTER);
@@ -82,29 +86,48 @@ public class JPanelStack extends JPanel {
             setBounds(p);
         }
     }
+    
+    public static int counter;
 
-    public void push(JPanel p) {
-
-        layeredPane.add(p, new Integer(panels.size()));
+    
+    @Override
+    public Component add(Component c) {
+        throw new UnsupportedOperationException("Cannot add to StackableJPanelContainer, use push instead");
+    }  
+    
+     public void push(JPanel p) {
+        push(StackableJPanelFactory.convertComponentToStackablePanel(p));
+    }
+    
+    public void push(StackableJPanel p) {
+        
+        p.setParentContainer(this);
+        layeredPane.add(p, new Integer(counter++));
         panels.push(p);
         setBounds(p);
-        System.out.println("Added panel to the stack, total = " + panels.size());
+        this.updateUI();
     }
 
     public void pop() {
-        layeredPane.remove(panels.pop());
+        remove(panels.peek());
+    }
+    
+    public void remove(StackableJPanel p) {
+        layeredPane.remove(p);
+        panels.remove(p);
+        this.updateUI();
     }
 
     public static void main(String[] argv) {
 
-        JPanelStack pstack = new JPanelStack();
+        StackableJPanelContainer pstack = new StackableJPanelContainer();
 
-        JPanel p = new JPanel();
+        StackableJPanel p = new StackableJPanel();
         p.setBackground(Color.red);
         p.add(new JButton("I'm on the first layer"));
 
         pstack.push(p);
-        p = new JPanel();
+        p = new StackableJPanel();
         p.setOpaque(false);
         p.setLayout(new MigLayout("fillx, filly, center"));
         p.add(new JButton("I'm on the second layer"));

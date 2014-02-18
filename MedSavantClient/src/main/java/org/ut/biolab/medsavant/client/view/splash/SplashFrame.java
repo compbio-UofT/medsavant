@@ -89,9 +89,9 @@ public class SplashFrame extends JFrame {
     public SplashFrame() {
 
         if (ClientMiscUtils.MAC) {
-            customizeForMac();
+            MacUtils.makeWindowLeopardStyle(this.getRootPane());
         }
-
+        
         this.setTitle("MedSavant");
         this.setResizable(false);
         this.setBackground(Color.white);
@@ -507,8 +507,16 @@ public class SplashFrame extends JFrame {
 
                     switch (event.getType()) {
                         case LOGGED_IN:
+                            
+                            LOG.info("Checking login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
+                            
+                            // don't log in if the cancel button was pressed
+                            if (loginThread.isCancelled() || !isLoggingIn) {
+                                return;
+                            }
+                            
                             MedSavantFrame frame = MedSavantFrame.getInstance();
-                            frame.switchToSessionView();
+                            frame.initializeSessionView();
                             frame.setLocationRelativeTo(null);
                             frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
                             frame.setPreferredSize(frame.getSize());
@@ -639,6 +647,11 @@ public class SplashFrame extends JFrame {
                 public void actionPerformed(ActionEvent e) {
                     isLoggingIn = false;
                     loginThread.cancel(true);
+                    
+                    LoginController.getInstance().cancelCurrentLoginAttempt();
+                    
+                    LOG.info("After clicking cancel login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
+
                     setPageAppropriately();
                 }
             });
@@ -683,7 +696,6 @@ public class SplashFrame extends JFrame {
                 }
             });
 
-            //panel.add(ViewUtil.getEmphasizedLabel("Login".toUpperCase()), "wrap");
             usernameField = new PlaceHolderTextField();
             usernameField.setPlaceholder("Username");
             usernameField.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
@@ -793,6 +805,10 @@ public class SplashFrame extends JFrame {
 
         private void loginUsingEnteredUsernameAndPassword(final MedSavantServerInfo server) {
 
+            if (isLoggingIn) {
+                return;
+            }
+            
             isLoggingIn = true;
 
             loginThread = new MedSavantWorker<Void>("LoginView") {
@@ -810,6 +826,9 @@ public class SplashFrame extends JFrame {
                     return null;
                 }
             };
+            
+            LOG.info("Before executing login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
+            
             loginThread.execute();
         }
 
@@ -953,85 +972,7 @@ public class SplashFrame extends JFrame {
         }
     }
 
-    private void customizeForMac() {
-
-        try {
-            MacUtils.makeWindowLeopardStyle(this.getRootPane());
-            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
-
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
-
-            batchApplyProperty(new String[]{
-                "Button.font",
-                "ToggleButton.font",
-                "RadioButton.font",
-                "CheckBox.font",
-                "ColorChooser.font",
-                "ComboBox.font",
-                "Label.font",
-                "List.font",
-                "MenuBar.font",
-                "MenuItem.font",
-                "RadioButtonMenuItem.font",
-                "CheckBoxMenuItem.font",
-                "Menu.font",
-                "PopupMenu.font",
-                "OptionPane.font",
-                "Panel.font",
-                "ProgressBar.font",
-                "ScrollPane.font",
-                "Viewport.font",
-                "TabbedPane.font",
-                "Table.font",
-                "TableHeader.font",
-                "TextField.font",
-                "PasswordField.font",
-                "TextArea.font",
-                "TextPane.font",
-                "EditorPane.font",
-                "TitledBorder.font",
-                "ToolBar.font",
-                "ToolTip.font",
-                "Tree.font"}, new Font("HelveticaNeue-Light", Font.PLAIN, 13));
-
-            System.setProperty("awt.useSystemAAFontSettings", "on");
-            System.setProperty("swing.aatext", "true");
-
-            UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
-            //com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
-            Application macOSXApplication = Application.getApplication();
-            macOSXApplication.setAboutHandler(new AboutHandler() {
-                @Override
-                public void handleAbout(AboutEvent evt) {
-                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "MedSavant "
-                            + VersionSettings.getVersionString()
-                            + "\nCreated by Biolab at University of Toronto.");
-                }
-            });
-            macOSXApplication.setPreferencesHandler(new PreferencesHandler() {
-                @Override
-                public void handlePreferences(PreferencesEvent pe) {
-                    DialogUtils.displayMessage("Preferences available for Administrators only");
-                }
-            });
-            macOSXApplication.setQuitHandler(new QuitHandler() {
-                @Override
-                public void handleQuitRequestWith(QuitEvent evt, QuitResponse resp) {
-                    MedSavantFrame.getInstance().requestClose();
-                    resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
-                }
-            });
-        } catch (Throwable x) {
-            System.err.println("Warning: MedSavant requires Java for Mac OS X 10.6 Update 3 (or later).\nPlease check Software Update for the latest version.");
-        }
-    }
-
-    private void batchApplyProperty(String[] propn, Object o) {
-        for (String s : propn) {
-            UIManager.put(s, o);
-        }
-    }
+   
 
     public static void main(String[] a) {
         SplashFrame loginFrame = new SplashFrame();

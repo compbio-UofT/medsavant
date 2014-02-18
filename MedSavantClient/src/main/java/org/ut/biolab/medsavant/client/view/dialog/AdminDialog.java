@@ -164,13 +164,13 @@ public class AdminDialog extends JDialog {
 
 
         if (addressAdminField.getText().isEmpty()) {
-            MedSavantFrame.getInstance().notificationMessage("Server address required");
+            MedSavantFrame.getInstance().showNotficationMessage("Server address required");
             addressAdminField.requestFocus();
             return false;
         }
 
         if (portAdminField.getText().isEmpty()) {
-            MedSavantFrame.getInstance().notificationMessage("Server port required");
+            MedSavantFrame.getInstance().showNotficationMessage("Server port required");
             portAdminField.requestFocus();
             return false;
         }
@@ -178,25 +178,25 @@ public class AdminDialog extends JDialog {
         try {
             Integer.parseInt(portAdminField.getText());
         } catch (Exception e) {
-            MedSavantFrame.getInstance().notificationMessage("Invalid port number");
+            DialogUtils.displayMessage("Invalid port number");
             portAdminField.requestFocus();
             return false;
         }
 
         if (dbnameAdminField.getText().isEmpty()) {
-            MedSavantFrame.getInstance().notificationMessage("Database name required");
+             DialogUtils.displayMessage("Database name required");
             dbnameAdminField.requestFocus();
             return false;
         }
 
         if (userAdminField.getText().isEmpty()) {
-            MedSavantFrame.getInstance().notificationMessage("Username required");
+             DialogUtils.displayMessage("Username required");
             userAdminField.requestFocus();
             return false;
         }
 
         if (passwordAdminField.getText().isEmpty()) {
-            MedSavantFrame.getInstance().notificationMessage("Password required");
+             DialogUtils.displayMessage("Password required");
             passwordAdminField.requestFocus();
             return false;
         }

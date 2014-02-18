@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 
 /**
@@ -78,8 +79,8 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
      jid++;
      }
      }*/
-    private List<String> getSortedChildren(List<MedSavantServerJobProgress> mjps, int level) {
-        List<String> output = new LinkedList<String>();
+    private List<GeneralLog> getSortedChildren(List<MedSavantServerJobProgress> mjps, int level) {
+        List<GeneralLog> output = new LinkedList<GeneralLog>();
         Map<Integer, List<MedSavantServerJobProgress>> m = new TreeMap<Integer, List<MedSavantServerJobProgress>>();
         for (MedSavantServerJobProgress p : mjps) {
             List<MedSavantServerJobProgress> l = m.get(p.getStatus().ordinal());
@@ -99,7 +100,7 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
                 }else{
                     msg = " - "+msg;
                 }
-                output.add(tabStr + "(" + mjp.getStatus() + ") " + jid + ". " + mjp.getJobName() + msg);
+                output.add(new GeneralLog(null, tabStr + "(" + mjp.getStatus() + ") " + jid + ". " + mjp.getJobName() + msg, null));
                 if (mjp.childJobProgresses != null && !mjp.childJobProgresses.isEmpty()) {
                     output.addAll(getSortedChildren(mjp.childJobProgresses, level + 1));
                 }
@@ -110,11 +111,11 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
     }
 
     @Override
-    public List<String> getLog() {
+    public List<GeneralLog> getLog() {
         try {            
             List<MedSavantServerJobProgress> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(LoginController.getSessionID());
             if (mjps == null) {
-                return new ArrayList<String>(1);
+                return new ArrayList<GeneralLog>(1);
             } else {
                 return getSortedChildren(mjps, 0);
             }
@@ -145,8 +146,8 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
              return results;*/
         } catch (Exception ex) {
             String s = "Error retrieving task information";
-            List<String> r = new ArrayList<String>(1);
-            r.add(s);
+            List<GeneralLog> r = new ArrayList<GeneralLog>(1);
+            r.add(new GeneralLog(null, s, null));
             Logger.getLogger(ServerJobMonitorTaskWorker.class.getName()).log(Level.SEVERE, null, ex);
             return r;
         }

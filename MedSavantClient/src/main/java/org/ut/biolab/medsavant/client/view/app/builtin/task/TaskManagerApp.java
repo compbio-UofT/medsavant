@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -32,6 +33,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
 /**
  *
@@ -155,12 +157,6 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
         t.addListener(this);
 
         container.refresh();
-
-        int result = DialogUtils.askYesNo("Task Submitted", "View in Task Manager?");
-
-        if (result == DialogUtils.YES) {
-            MedSavantFrame.getInstance().getDashboard().launchApp(this);
-        }
     }
 
     @Override
@@ -309,11 +305,14 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
                 });
             }
 
-            List<String> log = t.getLog();
+            List<GeneralLog> log = t.getLog();
             Object[][] tableData = new Object[log.size()][];
             int counter = 0;
-            for (String s : log) {
-                tableData[counter++] = new Object[]{s};
+            for (GeneralLog s : log) {
+                tableData[counter++] = new Object[]{
+                    // a timestamped string
+                    (s.getTimestamp() == null ? "" : new Date(s.getTimestamp().getTime()).toLocaleString() + " - ") 
+                        + s.getDescription()};
             }
 
             StripyTable table = new StripyTable(tableData, new String[]{"Log"});

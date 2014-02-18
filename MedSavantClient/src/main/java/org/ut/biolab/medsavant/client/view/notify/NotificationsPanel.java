@@ -1,0 +1,342 @@
+/*
+ * Copyright (C) 2014 University of Toronto, Computational Biology Lab.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
+package org.ut.biolab.medsavant.client.view.notify;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+
+/**
+ * A container for notifications that indicate a process' status
+ * @author mfiume
+ */
+public class NotificationsPanel extends JPanel {
+
+    private Log LOG = LogFactory.getLog(NotificationsPanel.class);
+    
+    int verticalOffset = 44;
+    int inset = 10;
+    int gap = 10;
+    
+    private final ArrayList<Notification> notifications;
+    private final HashMap<Notification, NotificationPanel> map;
+    private JPanel npanelContainer;
+
+    public NotificationsPanel() {
+        notifications = new ArrayList<Notification>();
+        map = new HashMap<Notification, NotificationPanel>();
+        initUI();
+    }
+
+    public void addNotification(Notification n) {
+        notifications.add(n);
+        NotificationPanel notificationPanel = new NotificationPanel(n);
+        notificationPanel.setParent(this);
+        map.put(n, notificationPanel);
+        updateView();
+    }
+
+    public void removeNotification(Notification n) {
+        notifications.remove(n);
+        map.remove(n);
+        updateView();
+    }
+
+    public static void main(String[] argv) {
+        JFrame f = new JFrame();
+        NotificationsPanel p = new NotificationsPanel();
+        for (int i = 0; i < 4; i++) {
+            Notification n = new Notification();
+            n.setName("Hello World " + i);
+            p.addNotification(n);
+        }
+        f.add(p);
+        f.show();
+    }
+
+    double duration = 1.0;
+    int travelDistance = 400;
+
+    private void initUI() {
+        this.setOpaque(false);
+        
+        this.setLayout(new BorderLayout());
+        npanelContainer = ViewUtil.getClearPanel();
+        
+        npanelContainer.setLayout(new MigLayout(String.format("insets %d %d %d %d, gapy %d, fillx, alignx trailing, wrap",this.verticalOffset+inset,inset,inset,inset,gap)));
+        
+        this.add(npanelContainer,BorderLayout.EAST);
+    }
+
+    private void updateView() {
+        npanelContainer.removeAll();
+        for (Notification n : notifications) {
+            npanelContainer.add(map.get(n));
+        }
+        npanelContainer.updateUI();
+    }
+
+    /**
+     * A notification to be shown in the notification panel
+     */
+    public static class Notification {
+
+        private ImageIcon icon;
+        private String name = "";
+        private String description = "";
+        private double progress = -1;
+        private boolean showsProgress = false;
+        private boolean isIndeterminateProgress = false;
+        private boolean timesout = false;
+        private boolean canClose = true;
+        private String actionName = "";
+        private ActionListener action;
+        private Listener<Notification> listener;
+
+        public Notification() {
+        }
+
+        public String getName() {
+            return name;
+        }
+        
+        public double getProgress() {
+            return progress;
+        }
+
+        public boolean isShowsProgress() {
+            return showsProgress;
+        }
+
+        public boolean isIsIndeterminateProgress() {
+            return isIndeterminateProgress;
+        }
+
+        public boolean isTimesout() {
+            return timesout;
+        }
+
+        public boolean isCanClose() {
+            return canClose;
+        }
+
+        public String getActionName() {
+            return actionName;
+        }
+
+        public ActionListener getAction() {
+            return action;
+        }
+
+        public ImageIcon getIcon() {
+            return icon;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+            updateListener();
+        }
+        
+        public void setIcon(ImageIcon icon) {
+            this.icon = icon;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+            updateListener();
+        }
+
+        public void setProgress(double progress) {
+            this.progress = progress;
+            updateListener();
+        }
+
+        public void setShowsProgress(boolean showsProgress) {
+            this.showsProgress = showsProgress;
+            updateListener();
+        }
+
+        public void setIsIndeterminateProgress(boolean isIndeterminateProgress) {
+            this.isIndeterminateProgress = isIndeterminateProgress;
+            updateListener();
+        }
+
+        public void setTimesout(boolean timesout) {
+            this.timesout = timesout;
+            updateListener();
+        }
+
+        public void setCanClose(boolean canClose) {
+            this.canClose = canClose;
+            updateListener();
+        }
+
+        public void setAction(String actionName, ActionListener action) {
+            this.action = action;
+            this.actionName = actionName;
+            updateListener();
+        }
+
+        private void addListener(Listener<Notification> listener) {
+            this.listener = listener;
+        }
+
+        private void updateListener() {
+            if (listener != null) {
+                listener.handleEvent(this);
+            }
+        }
+
+    }
+
+    private static class NotificationPanel extends JPanel implements Listener<Notification> {
+
+        int height = 70;
+        int leftWidth = 65;
+        int middleWidth = 140;
+        int rightWidth = 55;
+        
+        int insets = 3;
+        int innerinsets = 2;
+        
+        //int width = 280;
+        
+        private final Notification notification;
+        private JLabel nameLabel;
+        private JLabel subTextLabel;
+        private JButton closeButton;
+        private NotificationsPanel parentPanel;
+        private JProgressBar progress;
+        
+        private Color subTextErrorColor = Color.red;
+        private Color subTextNormalColor; // a light gray, set later
+
+        public NotificationPanel(Notification n) {
+
+            this.notification = n;
+            n.addListener(this);
+
+            initUI();
+            refreshUI();
+        }
+        
+        void setParent(NotificationsPanel parent) {
+            this.parentPanel = parent;
+        }
+
+        @Override
+        public void handleEvent(Notification event) {
+            refreshUI();
+        }
+
+        private void refreshUI() {
+            nameLabel.setText(notification.getName());
+            
+            // set the subtext color to red if the description contains the word "error"
+            subTextLabel.setText(notification.getDescription());
+            subTextLabel.setForeground(notification.getDescription().toLowerCase().contains("error") ? subTextErrorColor : subTextNormalColor);
+            
+            closeButton.setVisible(notification.isCanClose());
+            
+            ViewUtil.ellipsizeLabel(nameLabel, middleWidth-2*innerinsets);
+            ViewUtil.ellipsizeLabel(subTextLabel, middleWidth-2*innerinsets);
+            
+            if (notification.isShowsProgress()) {
+                progress.setVisible(true);
+                progress.setValue((int) (notification.getProgress()*100));
+            }
+            
+            this.updateUI();
+        }
+
+        private void initUI() {
+            this.setOpaque(false);
+            JPanel p = ViewUtil.getSemiTransparentPanel(Color.white, 0.95f, 10, new Color(230,230,230));
+            ViewUtil.consumeMouseEventsForComponent(p);
+            p.setLayout(new MigLayout(String.format("fillx, insets %d, height %d",insets, height)));
+
+            this.setLayout(new BorderLayout());
+            this.add(p,BorderLayout.CENTER);
+
+            JPanel leftSide = ViewUtil.getClearPanel();
+            JPanel middle = ViewUtil.getClearPanel();
+            JPanel rightSide = ViewUtil.getClearPanel();
+            
+            leftSide.setLayout(new MigLayout(String.format("width %d, insets %d, hidemode 3", leftWidth, innerinsets)));
+            middle.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, fillx, wrap, gapy 2", middleWidth, innerinsets)));
+            rightSide.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, wrap", rightWidth, innerinsets)));
+            
+            p.add(leftSide);
+            p.add(middle);
+            p.add(rightSide);
+           
+            nameLabel = ViewUtil.getSettingsHeaderLabel("");
+            subTextLabel = ViewUtil.getSettingsHelpLabel("");
+            
+            closeButton = ViewUtil.getTexturedButton("Close");
+            closeButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (parentPanel != null) {
+                        parentPanel.removeNotification(notification);
+                    }
+                }
+                
+            });
+            
+            progress = (JProgressBar) ViewUtil.makeMini(new JProgressBar());
+            
+            middle.add(nameLabel, "growx 1.0");
+            middle.add(subTextLabel);
+            middle.add(progress,"width 100%, hidemode 3");
+            
+            subTextNormalColor = subTextLabel.getForeground();
+            
+            progress.setVisible(false);
+            
+            rightSide.add(closeButton);
+            
+            if (notification.getIcon() != null) {
+                leftSide.removeAll();
+                int dim = Math.min(height-2*insets-2*innerinsets, leftWidth-2*innerinsets);
+                leftSide.add(new ImagePanel(notification.getIcon().getImage(),dim,dim));
+            }
+        }
+    }
+}

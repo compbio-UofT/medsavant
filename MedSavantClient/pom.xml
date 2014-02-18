@@ -205,6 +205,11 @@
             <artifactId>forms</artifactId>
             <version>1.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>emailme-netdisk</groupId>
+            <artifactId>absolutelayout</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>

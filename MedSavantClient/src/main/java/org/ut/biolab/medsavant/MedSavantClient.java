@@ -19,6 +19,12 @@
  */
 package org.ut.biolab.medsavant;
 
+import com.apple.eawt.AboutHandler;
+import com.apple.eawt.AppEvent;
+import com.apple.eawt.Application;
+import com.apple.eawt.PreferencesHandler;
+import com.apple.eawt.QuitHandler;
+import com.apple.eawt.QuitResponse;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
@@ -46,7 +52,8 @@ import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
-import java.awt.Toolkit;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -59,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import javax.net.ssl.SSLHandshakeException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
+import javax.swing.JOptionPane;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.InsetsUIResource;
@@ -66,12 +74,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.SettingsController;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
@@ -145,7 +155,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                  DialogUtils.displayMessage("MedSavant needs to restart.", msg);
                  }*/
                 SettingsController.getInstance().setBoolean("BootFromLogout", true);
-                System.out.println("Restarting with "+restartCommand[0]);
+                System.out.println("Restarting with " + restartCommand[0]);
                 Runtime.getRuntime().exec(restartCommand);
                 System.exit(0);
             } catch (IOException e) { //thrown by exec
@@ -159,20 +169,20 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     public static void setRestartCommand(String[] args) {
         List<String> restartCommandList = new ArrayList<String>();
-        
+
         String launcher = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         restartCommandList.add(launcher);
         for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
-            restartCommandList.add(jvmArg);            
+            restartCommandList.add(jvmArg);
         }
         restartCommandList.add("-cp");
         restartCommandList.add(ManagementFactory.getRuntimeMXBean().getClassPath());
         restartCommandList.add(MedSavantClient.class.getName());
-        for (String arg : args){
+        for (String arg : args) {
             restartCommandList.add(arg);
         }
-        
-        restartCommand = restartCommandList.toArray(new String[restartCommandList.size()]);        
+
+        restartCommand = restartCommandList.toArray(new String[restartCommandList.size()]);
     }
 
     static public void main(String args[]) {
@@ -223,11 +233,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
         }
 
         LOG.info("MedSavant booted");
-        
+
         SplashFrame loginFrame = new SplashFrame();
         loginFrame.setVisible(true);
 
-        
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
@@ -235,8 +244,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         if (initialized) {
             return;
         }
-        
-        
+
         int port = (new Integer(serverPort)).intValue();
 
         Registry registry;
@@ -331,6 +339,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
     private static void setLAF() {
         try {
 
+            if (ClientMiscUtils.MAC) {
+                customizeForMac();
+            }
+
             // UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel"); //Metal works with sliders.
             //UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //GTK doesn't work with sliders.
             //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel"); //Nimbus doesn't work with sliders.
@@ -386,6 +398,86 @@ public class MedSavantClient implements MedSavantServerRegistry {
         }
 
     }
+    
+     private static void customizeForMac() {
+
+        try {
+            
+            UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
+
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
+
+            batchApplyProperty(new String[]{
+                "Button.font",
+                "ToggleButton.font",
+                "RadioButton.font",
+                "CheckBox.font",
+                "ColorChooser.font",
+                "ComboBox.font",
+                "Label.font",
+                "List.font",
+                "MenuBar.font",
+                "MenuItem.font",
+                "RadioButtonMenuItem.font",
+                "CheckBoxMenuItem.font",
+                "Menu.font",
+                "PopupMenu.font",
+                "OptionPane.font",
+                "Panel.font",
+                "ProgressBar.font",
+                "ScrollPane.font",
+                "Viewport.font",
+                "TabbedPane.font",
+                "Table.font",
+                "TableHeader.font",
+                "TextField.font",
+                "PasswordField.font",
+                "TextArea.font",
+                "TextPane.font",
+                "EditorPane.font",
+                "TitledBorder.font",
+                "ToolBar.font",
+                "ToolTip.font",
+                "Tree.font"}, new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 13));
+
+            System.setProperty("awt.useSystemAAFontSettings", "on");
+            System.setProperty("swing.aatext", "true");
+
+            UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
+            //com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
+            Application macOSXApplication = Application.getApplication();
+            macOSXApplication.setAboutHandler(new AboutHandler() {
+                @Override
+                public void handleAbout(AppEvent.AboutEvent evt) {
+                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "MedSavant "
+                            + VersionSettings.getVersionString()
+                            + "\nCreated by Biolab at University of Toronto.");
+                }
+            });
+            macOSXApplication.setPreferencesHandler(new PreferencesHandler() {
+                @Override
+                public void handlePreferences(AppEvent.PreferencesEvent pe) {
+                    DialogUtils.displayMessage("Preferences available for Administrators only");
+                }
+            });
+            macOSXApplication.setQuitHandler(new QuitHandler() {
+                @Override
+                public void handleQuitRequestWith(AppEvent.QuitEvent evt, QuitResponse resp) {
+                    MedSavantFrame.getInstance().requestClose();
+                    resp.cancelQuit();      // If user accepted close request, System.exit() was called and we never get here.
+                }
+            });
+        } catch (Throwable x) {
+            System.err.println("Warning: MedSavant requires Java for Mac OS X 10.6 Update 3 (or later).\nPlease check Software Update for the latest version.");
+        }
+    }
+
+    private static void batchApplyProperty(String[] propn, Object o) {
+        for (String s : propn) {
+            UIManager.put(s, o);
+        }
+    }
 
     private static void verifyJIDE() {
         com.jidesoft.utils.Lm.verifyLicense("Marc Fiume", "Savant Genome Browser", "1BimsQGmP.vjmoMbfkPdyh0gs3bl3932");
@@ -407,7 +499,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                             MedSavantExceptionHandler.handleSessionExpiredException(see);
                             return;
                         }
-                        
+
                         if (e instanceof LockException) {
                             DialogUtils.displayMessage("Cannot modify database", "<html>Another process is making changes.<br/>Please try again later.</html>");
                             return;

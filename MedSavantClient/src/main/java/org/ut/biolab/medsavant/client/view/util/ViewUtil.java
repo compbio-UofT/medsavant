@@ -64,6 +64,8 @@ import javax.swing.event.ChangeListener;
 
 import eu.hansolo.custom.SteelCheckBox;
 import eu.hansolo.tools.ColorDef;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
@@ -84,14 +86,14 @@ public final class ViewUtil {
     public final static Color detailSelectedBackground = new Color(92, 168, 229);
 
     // row colors
-    public final static Color evenRowColor = new Color(250,250,250);
+    public final static Color evenRowColor = new Color(250, 250, 250);
     public final static Color oddRowColor = new Color(242, 245, 249);
 
     private static final SourceListStandardColorScheme fColorScheme = new SourceListStandardColorScheme();
 
     // detail fonts
-    public static Font detailFontPlain = new Font(getDefaultFontFamily(),Font.PLAIN,12);
-    public static Font detailFontBold = new Font(getDefaultFontFamily(),Font.BOLD,12);
+    public static Font detailFontPlain = new Font(getDefaultFontFamily(), Font.PLAIN, 12);
+    public static Font detailFontBold = new Font(getDefaultFontFamily(), Font.BOLD, 12);
 
     public static Point getPositionRelativeTo(Component root, Component comp) {
         if (comp.equals(root)) {
@@ -142,19 +144,19 @@ public final class ViewUtil {
     }
 
     public static Font getBigTitleFont() {
-        return new Font(getDefaultFontFamily(), Font.PLAIN, 18);
+        return ViewUtil.getDefaultFont(Font.PLAIN, 18);
     }
 
     public static Font getMediumTitleFont() {
-        return new Font(getDefaultFontFamily(), Font.BOLD, 13);
+        return ViewUtil.getDefaultFont(Font.BOLD, 13);
     }
 
     public static Font getSmallTitleFont() {
-        return new Font(getDefaultFontFamily(), Font.PLAIN, 11);
+        return ViewUtil.getDefaultFont(Font.PLAIN, 11);
     }
 
     public static Font getTinyTitleFont() {
-        return new Font(getDefaultFontFamily(), Font.PLAIN, 9);
+        return ViewUtil.getDefaultFont(Font.PLAIN, 9);
     }
 
     public static JPanel getTertiaryBannerPanel() {
@@ -228,7 +230,7 @@ public final class ViewUtil {
     }
 
     public static Color getSecondaryMenuColor() {
-        return new Color(214,221,230);
+        return new Color(214, 221, 230);
     }
 
     public static Color getSemiBlackColor() {
@@ -243,7 +245,7 @@ public final class ViewUtil {
     }
 
     public static String getDefaultFontFamily() {
-        return "Helvetica Neue";
+        return "HelveticaNeue";//"MyriadPro-Regular";//"AppleGothic";//"Helvetica Neue";
     }
 
     public static JPanel alignLeft(Component c) {
@@ -432,9 +434,9 @@ public final class ViewUtil {
 
         return output;
     }
-    
+
     public static JButton getIconButton(ImageIcon icon) {
-        return getIconButton(icon,30);
+        return getIconButton(icon, 30);
     }
 
     public static JButton getIconButton(ImageIcon icon, int cornerRadius) {
@@ -716,7 +718,7 @@ public final class ViewUtil {
         return l;
     }
 
-    public static Component getSettingsHelpLabel(String name) {
+    public static JLabel getSettingsHelpLabel(String name) {
         JLabel l = new JLabel(name);
         l.setFont(ViewUtil.getSmallTitleFont());
         l.setForeground(new Color(150, 150, 150));
@@ -731,11 +733,11 @@ public final class ViewUtil {
     }
 
     public static Color getPrimaryMenuColor() {
-        return new Color(221,221,221);
+        return new Color(221, 221, 221);
     }
 
     public static Color getSubtleTitleColor() {
-        return new Color(114,114,114);
+        return new Color(114, 114, 114);
     }
 
     public static JButton getRefreshButton() {
@@ -749,16 +751,20 @@ public final class ViewUtil {
     public static void ellipsizeLabel(JLabel label, int width) {
         Font f = label.getFont();
         FontMetrics fm = label.getFontMetrics(f);
+
+        if (label.getText() == null || label.getText().isEmpty()) {
+            return;
+        }
         
         if (fm.stringWidth(label.getText()) <= width) {
             return;
         }
-        
+
         label.setToolTipText(label.getText());
-        
+
         while (fm.stringWidth(label.getText()) > width) {
             String text = label.getText().replace("...", "");
-            text = text.substring(0, text.length()-1);
+            text = text.substring(0, text.length() - 1);
             text = text.trim();
             text = text + "...";
             label.setText(text);
@@ -800,12 +806,91 @@ public final class ViewUtil {
     public static SteelCheckBox getSwitchCheckBox() {
         return getSwitchCheckBox(" ");
     }
+
     public static SteelCheckBox getSwitchCheckBox(String text) {
         SteelCheckBox cb = new SteelCheckBox();
         //cb.setSelectedColor(ColorDef.JUG_GREEN);
         //cb.setColored(true);
         cb.setText(text);
         return cb;
+    }
+    
+    public static JPanel getSemiTransparentPanel(final Color color, final float alpha) {
+        return getSemiTransparentPanel(color,alpha,0,null);
+    }
+
+    public static JPanel getSemiTransparentPanel(final Color color, final float alpha, final int cornerRadius, final Color borderColor) {
+        
+        JPanel p = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)); // turn on opacity
+                g.setColor(color);
+                
+                Graphics2D g2d = (Graphics2D)g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), cornerRadius, cornerRadius);
+                
+                
+                if (color != null) {
+                    g2d.setColor(borderColor);
+                    g2d.drawRoundRect(0, 0, this.getWidth()-1, this.getHeight()-1, cornerRadius, cornerRadius);
+                }
+            }
+        };
+        
+        
+        p.setOpaque(false);
+        return p;
+    }
+
+    public static void consumeMouseEventsForComponent(Component p) {
+        p.addMouseWheelListener(new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                e.consume();
+            }
+            
+        });
+        
+        p.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                e.consume();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                e.consume();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                e.consume();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                e.consume();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                e.consume();
+            }
+            
+        });
+    }
+    
+    public static Font getDefaultFont(int size) {
+        return getDefaultFont(Font.PLAIN,size);
+    }
+    
+    public static Font getDefaultFont(int style,int size) {
+        return new Font(ViewUtil.getDefaultFontFamily(),style, size);
     }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
@@ -869,7 +954,7 @@ public final class ViewUtil {
 
     public static JLabel getEmphasizedLabel(String s) {
         JLabel sc = new JLabel(s);
-        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 11.0f));
         JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
                 fColorScheme.getCategoryTextColor(),
                 fColorScheme.getCategoryTextColor(),
@@ -879,17 +964,17 @@ public final class ViewUtil {
 
     public static JLabel getEmphasizedSemiBlackLabel(String s) {
         JLabel sc = new JLabel(s);
-        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 11.0f));
         JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
                 getSemiBlackColor(),
                 getSemiBlackColor(),
-                new Color(255,255,255,0));
+                new Color(255, 255, 255, 0));
         return l;
     }
-    
+
     public static JLabel getSubtleHeaderLabel(String s) {
         JLabel sc = new JLabel(s);
-        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD,11.0f));
+        sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 11.0f));
         JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
                 ViewUtil.getSubtleTitleColor(),
                 ViewUtil.getSubtleTitleColor(),
@@ -1083,13 +1168,23 @@ public final class ViewUtil {
             c.putClientProperty("JButton.segmentPosition", position);
         }
     }
-	
-	/**
-	 * Get the sidebar color.
-	 * @return the sidebar color
-	 */
-	public static Color getSidebarColor() {
-		return fColorScheme.getActiveBackgroundColor();
-	}
-	
+
+    /**
+     * Get the sidebar color.
+     *
+     * @return the sidebar color
+     */
+    public static Color getSidebarColor() {
+        return fColorScheme.getActiveBackgroundColor();
+    }
+    
+    /**
+     * Get the iconic color used in the MedSavant logo.
+     *
+     * @return the iconic color used in the MedSavant logo
+     */
+    public static Color getMedSavantBlueColor() {
+        return new Color(57,124,193);
+    }
+
 }

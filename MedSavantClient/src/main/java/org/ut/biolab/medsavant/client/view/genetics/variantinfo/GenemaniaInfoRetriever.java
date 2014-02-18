@@ -157,7 +157,7 @@ public class GenemaniaInfoRetriever {
         @Override
         public void jobDone() {
             super.jobDone();
-            MedSavantFrame.getInstance().notificationMessage("GeneMANIA has finished downloading, and is ready to use!");
+            MedSavantFrame.getInstance().showNotficationMessage("GeneMANIA has finished downloading, and is ready to use.");
         }
     }
 

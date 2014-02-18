@@ -3,80 +3,88 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.client.view.app.builtin.task;
 
+import java.util.Date;
 import java.util.List;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
 /**
  *
  * @author mfiume
  */
-public interface TaskWorker  {
+public interface TaskWorker {
 
     String getTaskName();
+
     TaskStatus getCurrentStatus();
-    List<String> getLog();
+
+    List<GeneralLog> getLog();
+
     double getTaskProgress();
+
     void cancel();
+
     void addListener(Listener<TaskWorker> w);
+
     LaunchableApp getOwner();
-    
+
     public enum TaskStatus {
+
         UNSTARTED {
 
-            @Override
-            public String toString() {
-                return "Not started";
-            }
-            
-        },
+                    @Override
+                    public String toString() {
+                        return "Not started";
+                    }
+
+                },
         INPROGRESS {
 
-            @Override
-            public String toString() {
-                return "Running";
-            }
-            
-        },
+                    @Override
+                    public String toString() {
+                        return "Running";
+                    }
+
+                },
         FINISHED {
 
-            @Override
-            public String toString() {
-                return "Done";
-            }
-            
-        },
+                    @Override
+                    public String toString() {
+                        return "Done";
+                    }
+
+                },
         CANCELLED {
 
-            @Override
-            public String toString() {
-                return "Cancelled";
-            }
-            
-        },
+                    @Override
+                    public String toString() {
+                        return "Cancelled";
+                    }
+
+                },
         ERROR {
 
-            @Override
-            public String toString() {
-                return "Error";
-            }
-            
-        }, 
+                    @Override
+                    public String toString() {
+                        return "Error";
+                    }
+
+                },
         PERSISTENT {
 
-            @Override
-            public String toString() {
-                return "Persistent";
-            }
-        },
+                    @Override
+                    public String toString() {
+                        return "Persistent";
+                    }
+                },
         PERSISTENT_AUTOREFRESH {
-            @Override
-            public String toString(){
-                return "Persistent";
-            }
-        }
+                    @Override
+                    public String toString() {
+                        return "Persistent";
+                    }
+                }
     }
 }

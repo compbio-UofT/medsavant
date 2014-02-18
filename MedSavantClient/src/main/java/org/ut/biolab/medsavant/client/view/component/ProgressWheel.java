@@ -45,7 +45,7 @@ public class ProgressWheel extends JPanel {
         this.setBorder(null);
         this.setOpaque(false);
         ImageIcon waitGif = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.WAIT);
-        ImagePanel p = new ImagePanel(waitGif.getImage(),24,8);
+        ImagePanel p = new ImagePanel(waitGif.getImage(),24,8, false);
         p.setOpaque(false);
         this.add(p,"height 23, center");
     }

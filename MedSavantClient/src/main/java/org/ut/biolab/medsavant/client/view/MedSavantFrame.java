@@ -19,46 +19,24 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.Dashboard;
-import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
-import org.ut.biolab.medsavant.client.view.animation.AnimatablePanel;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import com.apple.eawt.AboutHandler;
-import com.apple.eawt.AppEvent.AboutEvent;
-import com.apple.eawt.AppEvent.PreferencesEvent;
-import com.apple.eawt.AppEvent.QuitEvent;
-import com.apple.eawt.Application;
-import com.apple.eawt.PreferencesHandler;
-import com.apple.eawt.QuitHandler;
-import com.apple.eawt.QuitResponse;
 import com.explodingpixels.macwidgets.MacUtils;
-import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Point;
 import java.net.URI;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.AbstractButton;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -66,58 +44,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 
-import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
-import org.ut.biolab.medsavant.client.plugin.PluginManagerDialog;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.animation.IconTranslatorAnimation;
-import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation;
-import org.ut.biolab.medsavant.client.view.animation.NotificationAnimation.Position;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.app.jAppStore;
-import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
-import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
-import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
-import org.ut.biolab.medsavant.shared.model.OntologyType;
-import org.ut.biolab.medsavant.shared.util.VersionSettings;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.complex.ComprehensiveConditionGenerator;
-import org.ut.biolab.mfiume.query.medsavant.complex.OntologyConditionGenerator;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
-import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
-import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
+import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
 
 /**
  *
  * @author mfiume
  */
-public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
+public class MedSavantFrame extends JFrame {
 
     private static Log LOG = LogFactory.getLog(MedSavantFrame.class);
-    private static final String LOGIN_CARD_NAME = "login";
-    private static final String SESSION_VIEW_CARD_NAME = "main";
-    private static final String WAIT_CARD_NAME = "wait";
-    private static final long SEARCH_ANIMATION_RUNTIME = 350;
     private static MedSavantFrame instance;
-    private AnimatablePanel view;
-    private CardLayout viewCardLayout;
+    private StackableJPanelContainer view;
     private Dashboard sessionDashboard;
-    private LoginView loginView;
-    private String currentCard;
-    private boolean queuedForExit = false;
-    private int textFieldAdminColumns = 20;
-    private jAppStore appStore;
     private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
 
     private static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
@@ -150,10 +98,10 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     public static MedSavantFrame getInstance() {
         if (instance == null) {
             instance = new MedSavantFrame();
-            LoginController.getInstance().addListener(instance);
         }
         return instance;
     }
+    private NotificationsPanel notificationPanel;
 
     private MedSavantFrame() {
         super("");
@@ -166,13 +114,9 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(550, 550));
 
-        view = new AnimatablePanel();
+        view = new StackableJPanelContainer();
         view.setDoubleBuffered(true);
-        //view = new JPanel();
         view.setBackground(new Color(217, 222, 229));
-        viewCardLayout = new CardLayout();
-        view.setLayout(viewCardLayout);
-        //view.setBorder(BorderFactory.createLineBorder(Color.red, 2));
 
         UIManager.put("ToolTip.background", Color.black);
         UIManager.put("ToolTip.foreground", Color.white);
@@ -189,18 +133,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
-        // Debug code that adds a 'Restart' function to the File menu.
-        /*
-         JMenuItem restartItem = new JMenuItem("Restart");
-         restartItem.addActionListener(new ActionListener() {
-         @Override
-         public void actionPerformed(ActionEvent ae) {
-         MedSavantClient.restart();
-         }
-         });
-         fileMenu.add(restartItem);
-         */
-        //fileMenu.add(manageDBItem);
+
         if (!ClientMiscUtils.MAC) {
 
             JMenuItem closeItem = new JMenuItem("Exit");
@@ -253,35 +186,31 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
                 requestClose();
             }
         });
-
-        SettingsController settings = SettingsController.getInstance();
-        if (settings.getAutoLogin()) {
-            LoginController.getInstance().login(settings.getUsername(),
-                    settings.getPassword(),
-                    settings.getDBName(),
-                    settings.getServerAddress(),
-                    settings.getServerPort());
-        } else {
-            switchToLoginView();
-        }
+        
+        initializeSessionView();
+    }
+    
+    public void showNotification(Notification n) {
+        notificationPanel.addNotification(n);
     }
 
-    public void notificationMessage(String notificationMsg) {
-        view.animate(new NotificationAnimation(notificationMsg, view, Position.TOP_CENTER));
+    public void showNotficationMessage(String notificationMsg) {
+        Notification n = new Notification();
+        n.setName(notificationMsg);
+        notificationPanel.addNotification(n);
     }
 
-    public void switchToSessionView() {
-        if (!LoginController.getInstance().isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) {
-            return;
-        }
+    public void initializeSessionView() {
 
-        WaitPanel waitPanel;
-        view.add(waitPanel = new WaitPanel(""), WAIT_CARD_NAME);
-        waitPanel.setProgressBarVisible(false);
-        waitPanel.setBackground(Color.white);
-
-        switchToView(WAIT_CARD_NAME);
-
+        final JPanel dashBoardContainer = ViewUtil.getClearPanel();
+        view.push(dashBoardContainer);
+        
+        notificationPanel = new NotificationsPanel();
+        view.push(notificationPanel);
+        
+        //bannerNotficationsPanel = new BannerNotificationsPanel();
+        //view.push(bannerNotficationsPanel);
+        
         new MedSavantWorker<Void>("MedSavantFrame") {
             @Override
             protected void showProgress(double fract) {
@@ -296,15 +225,11 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
-                //dash.addDashboardSection(DashboardSectionFactory.getManagementSection());
 
-                // hide some apps from the history, since theyr'e embedded in the menu anyways
-                //dash.blackListAppFromHistory(AppDirectory.getTaskManager());
-                //dash.blackListAppFromHistory(AppDirectory.getAccountManager());
                 sessionDashboard = dash;
-
-                view.add(sessionDashboard, SESSION_VIEW_CARD_NAME);
-                switchToView(SESSION_VIEW_CARD_NAME);
+                dashBoardContainer.setLayout(new BorderLayout());
+                dashBoardContainer.add(dash,BorderLayout.CENTER);
+                dashBoardContainer.updateUI();
 
                 return null;
             }
@@ -315,31 +240,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
     public Dashboard getDashboard() {
         return sessionDashboard;
     }
-
-    public final void switchToLoginView() {
-        if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) {
-            return;
-        }
-        if (sessionDashboard != null) {
-            view.remove(sessionDashboard);
-        }
-
-        if (loginView != null) {
-            LoginController.getInstance().removeListener(loginView);
-        }
-        loginView = new LoginView();
-        LoginController.getInstance().addListener(loginView);
-        view.add(loginView, LOGIN_CARD_NAME);
-
-        switchToView(LOGIN_CARD_NAME);
-
-    }
-
-    private void switchToView(String cardname) {
-        viewCardLayout.show(view, cardname);
-        currentCard = cardname;
-    }
-
+    
     public void forceRestart() {
         requestRestart(false);
     }
@@ -407,33 +308,5 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
         }
 
         LOG.info("Refusing to quit");
-    }
-
-    @Override
-    public void handleEvent(LoginEvent evt) {
-        switch (evt.getType()) {
-            case LOGGED_IN:
-                switchToSessionView();
-                break;
-            case LOGGED_OUT:
-                switchToLoginView();
-                break;
-        }
-        if (queuedForExit) {
-            AnalyticsAgent.onEndSession(true);
-            System.exit(0);
-        }
-    }
-
-    void showAppStore() {
-
-        if (appStore == null) {
-            final MedSavantAppFetcher maf = new MedSavantAppFetcher();
-            final MedSavantAppInstaller mai = new MedSavantAppInstaller();
-
-            appStore = new jAppStore("MedSavant App Store", maf, mai);
-        }
-        appStore.showStore();
-
     }
 }
