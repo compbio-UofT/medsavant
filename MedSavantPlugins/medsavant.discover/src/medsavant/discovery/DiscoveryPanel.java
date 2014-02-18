@@ -89,6 +89,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
@@ -99,10 +100,6 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
-import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
-import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 
 
 /**
@@ -230,6 +227,8 @@ public class DiscoveryPanel extends JPanel {
 	private JideButton leftHideButton= new JideButton(LEFT_HIDE_STRING);
 	private JideButton rightHideButton= new JideButton(RIGHT_HIDE_STRING);
 	private VariantSummaryPanel vsp;
+	private int patientPanelInsertPosition= 2;
+	private JLabel errorLabel;
     
 	
 	public DiscoveryPanel() {
@@ -403,6 +402,8 @@ public class DiscoveryPanel extends JPanel {
 		pw= new ProgressWheel();
 		pw.setIndeterminate(true);
 		pw.setVisible(false);
+		
+		errorLabel= new JLabel();
 		
 		afChooser= new CheckBoxList(getDbColumnList());
 		afChooser.addCheckBoxListSelectedValues(chooserAFArray);
@@ -664,6 +665,7 @@ public class DiscoveryPanel extends JPanel {
 						protected void showSuccess(Object t) {	
 						/* All updates to display should happen here to be run. */
 							updateVariantPane();
+							errorStatusReport();
 							analyzeButton.setText(analyzeButtonDefaultText);
 							analysisRunning= false;
 						}
@@ -705,7 +707,7 @@ public class DiscoveryPanel extends JPanel {
 						new MouseListener() {
 							@Override
 							public void mousePressed(MouseEvent me) {
-								patientPanel.add(addFilterPanel(filter.getText()), "wrap", 2);
+								patientPanel.add(addFilterPanel(filter.getText()), "wrap", patientPanelInsertPosition);
 							}
 							// remaining methods included but do nothing
 							@Override public void mouseExited(MouseEvent me) {}
@@ -769,8 +771,9 @@ public class DiscoveryPanel extends JPanel {
             @Override
             public void run() {
 				/* Add the variant summary panel and hide buttons once the table
-				 * is presented to the user and a variant has been selected. */
-				if (vsp.getParent() != workview) {
+				 * is presented to the user and a variant has been selected. Also
+				 * check that the user hasn't already hidden the summary panel. */
+				if (vsp.getParent() != workview && !rightHideButton.getText().equals(LEFT_HIDE_STRING)) {
 					workview.add(vsp);
 					workview.revalidate();
 
@@ -1491,4 +1494,29 @@ public class DiscoveryPanel extends JPanel {
 		
 		return results;
 	}
+	
+	
+	/**
+	 * Status bar to report potential errors in the processing of the current 
+	 * patient. If there are no errors, no status is output. Unlike the progress
+	 * status, this one is reported at the top of the patient panel, to increase
+	 * the likelihood that it is seen by the user.
+	 */
+	private void errorStatusReport() {	
+		if (discFind.getGender().equals(ClientMiscUtils.GENDER_UNKNOWN)) {
+			patientPanelInsertPosition= 3; // push further buttons down
+			
+			if (errorLabel.getParent() != patientPanel) {
+				errorLabel.setText("Patient gender is " + ClientMiscUtils.GENDER_UNKNOWN);
+				errorLabel.setForeground(Color.RED);
+				errorLabel.setFont(new Font(errorLabel.getFont().getName(), Font.PLAIN, 15));
+				patientPanel.add(errorLabel, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
+			}
+		} else {
+			patientPanelInsertPosition= 2; // back to original value
+			if (errorLabel != null)
+				patientPanel.remove(errorLabel);
+		}
+	}
+	
 }

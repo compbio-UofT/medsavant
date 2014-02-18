@@ -110,20 +110,6 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	
 	/**
-	 * Adds a custom annotation to the summary panel.
-	 * @param annotation
-	 * @param value
-	 * @param optionalURL 
-	 */
-	public void addAnnotation(String annotation, String value, URL optionalURL) {
-		JLabel annoLabel= new JLabel(annotation);
-		JLabel valueLabel= new JLabel(value);
-		summaryPanel.add(annoLabel, "alignx left");
-		summaryPanel.add(valueLabel, "wrap");
-	}
-	
-	
-	/**
 	 * Add a clinvar pane to the VariantSummaryPanel.
 	 */
 	public void addClinvarPane() {
@@ -486,5 +472,28 @@ public class VariantSummaryPanel extends JScrollPane {
 		});
 		
 		return urlButton;
+	}
+	
+	
+	/**
+	 * Adds a custom panel to the summary panel.
+	 * @param custom Title of custom pane
+	 * @return The new custom CollapsiblePane to be modified.
+	 */
+	public CollapsiblePane addCustomAnnotation(String custom) {
+		CollapsiblePane customPane= getCollapsiblePane(custom);
+		
+		summaryPanel.add(customPane, "wrap");
+		
+		return customPane;
+	}
+	
+	
+	/**
+	 * Get the parent summary panel for the VariantSummaryPanel. 
+	 * @return The summary panel
+	 */
+	public JPanel getSummaryPanel() {
+		return summaryPanel;
 	}
 }
