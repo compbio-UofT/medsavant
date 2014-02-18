@@ -153,6 +153,8 @@ public class VariantRecord implements Serializable {
             String s = MiscUtils.homogenizeSequence(chrom);
             chrom = "chr" + s;
 
+            //Comment out chromosome check
+            /*
             if (!s.equalsIgnoreCase("x") && !s.equalsIgnoreCase("y") && !s.equalsIgnoreCase("m")) {
 
                 if (NumberUtils.isNumber(s)) {
@@ -172,7 +174,7 @@ public class VariantRecord implements Serializable {
                     };
                 }
 
-            }
+            }*/
         }
 
         dbSNPID = (String) parse(CLASS_OF_DBSNPID, line[FILE_INDEX_OF_DBSNPID]);
