@@ -88,12 +88,12 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     //amount is exceeded, the method call will block until a thread
     //becomes available.
     //(see submitLongJob)
-    private static final int MAX_THREADS = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+    private static int maxThreads = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
     private static final int MAX_THREAD_KEEPALIVE_TIME = 1440; //in minutes
 
     //Maximum number of IO-heavy jobs that can be run simultaneously.
     //(see MedSavantIOScheduler)  Should be <= MAX_THREADS.
-    public static final int MAX_IO_JOBS = MAX_THREADS;
+    public static final int MAX_IO_JOBS = maxThreads;
     public static boolean USE_INFINIDB_ENGINE = false;
     int listenOnPort;
     String thisAddress;
@@ -102,8 +102,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     private static ExecutorService longThreadPool;
     private static ExecutorService shortThreadPool;
 
-    static {
-        longThreadPool = Executors.newFixedThreadPool(MAX_THREADS);
+    private static void initThreadPools(){
+        longThreadPool = Executors.newFixedThreadPool(maxThreads);
         ((ThreadPoolExecutor) longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
         shortThreadPool = Executors.newCachedThreadPool();
     }
@@ -241,7 +241,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                 + "  SERVER ADDRESS: " + thisAddress + "\n"
                 + "  LISTENING ON PORT: " + listenOnPort + "\n"
                 + "  EXPORT PORT: " + MedSavantServerUnicastRemoteObject.getExportPort() + "\n"
-                + "  MAX THREADS: " + MAX_THREADS + "\n"
+                + "  MAX THREADS: " + maxThreads + "\n"
                 + " MAX IO THREADS: " + MAX_IO_JOBS + "\n");
 
         //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
@@ -327,7 +327,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         + "\t\tms-dir - the directory to use to store permanent files\n"
                         + "\t\tencryption - indicate whether encryption should be disabled ('disabled'), enabled without requiring a client certificate ('no_client_auth'), or enabled with requirement for a client certificate ('with_client_auth')\n"
                         + "\t\tkeyStore - full path to the key store\n"
-                        + "\t\tkeyStorePass - password for the key store\n");
+                        + "\t\tkeyStorePass - password for the key store\n"
+                        + "\t\tmax-threads - maximum number of allowed ");
                 return;
             }
 
@@ -345,6 +346,9 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             }
                             if (prop.containsKey("db-password")) {
                                 password = prop.getProperty("db-password");
+                            }
+                            if(prop.containsKey("max-threads")){
+                                maxThreads = Integer.parseInt(prop.getProperty("max-threads"));
                             }
                             if (prop.containsKey("db-host")) {
                                 host = prop.getProperty("db-host");
@@ -426,7 +430,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         System.out.print("getopt() returned " + c + "\n");
                 }
             }
-
+            initThreadPools();
             new MedSavantServerEngine(host, port, user, password);
         } catch (Exception e) {
             e.printStackTrace();
