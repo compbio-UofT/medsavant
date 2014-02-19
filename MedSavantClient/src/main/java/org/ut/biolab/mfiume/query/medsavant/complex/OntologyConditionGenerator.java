@@ -103,7 +103,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
             }
             try {                
                 mapLock.acquire();
-                
+                final OntologySearchConditionEditorView instance = this;
                 this.refresher = new MedSavantWorker<Void>("Ontology") {
                     @Override
                     protected Void doInBackground() throws Exception {
@@ -156,6 +156,8 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
                                             
                                         });
                                         lbl.add(menu);
+                                        instance.revalidate();
+                                        instance.repaint();
                                     }
                                 });
                             }
