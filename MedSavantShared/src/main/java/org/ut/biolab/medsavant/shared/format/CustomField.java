@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.shared.db.ColumnType;
  */
 public class CustomField extends ColumnDef implements Serializable {
 
+    public static final String ALLELE_FREQUENCY_TAG = "Allele Frequency";
     public static final String TAG_DELIMITER = ",";
     private final boolean filterable;
     private final String alias;
