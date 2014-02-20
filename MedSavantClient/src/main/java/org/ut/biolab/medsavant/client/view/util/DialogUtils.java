@@ -120,7 +120,7 @@ public class DialogUtils {
                 JButton reportButton = new JButton("Report Issue");
                 ((JComponent) optionPane.getComponent(optionPane.getComponentCount()-1)).add(reportButton);
 
-                final JDialog dialog = optionPane.createDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow(), "Error encountered");
+                final JDialog dialog = optionPane.createDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow(), title);
                 cancelButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
@@ -341,7 +341,7 @@ public class DialogUtils {
     }
 
     public static void displayErrorMessage(String msg, Throwable t) {
-        JOptionPane.showMessageDialog(getFrontWindow(), msg, "Database Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(getFrontWindow(), msg, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     /**

@@ -66,7 +66,6 @@ public class ServerController {
     }
 
     private void notifyListeners() {
-        LOG.info("Notifying listeners");
         for (Listener l : listeners) {
             l.handleEvent(null);
         }

@@ -95,6 +95,8 @@ public class SplashFrame extends JFrame {
         this.setTitle("MedSavant");
         this.setResizable(false);
         this.setBackground(Color.white);
+        
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         this.setLayout(new MigLayout("filly, insets 0, gapx 0, height 530, width 750, hidemode 3"));
 
@@ -528,6 +530,10 @@ public class SplashFrame extends JFrame {
                             MedSavantFrame frame2 = MedSavantFrame.getInstance();
                             frame2.setVisible(false);
                             break;
+                        case LOGIN_FAILED:
+                            DialogUtils.displayException("Login Failed", event.getException().getLocalizedMessage(), event.getException());
+                            event.getException().printStackTrace();
+                            break;
                     }
 
                     isLoggingIn = false;
@@ -826,8 +832,6 @@ public class SplashFrame extends JFrame {
                     return null;
                 }
             };
-            
-            LOG.info("Before executing login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
             
             loginThread.execute();
         }

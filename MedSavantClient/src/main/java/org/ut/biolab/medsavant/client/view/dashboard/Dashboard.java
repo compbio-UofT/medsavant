@@ -279,7 +279,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         if (iconWidth <= 64) {
             JLabel title = ViewUtil.getGrayLabel(name);
-            title.setFont(new Font("Arial", disableButton ? Font.BOLD : Font.PLAIN, 12));
+            title.setFont(new Font(ViewUtil.getDefaultFontFamily(), disableButton ? Font.BOLD : Font.PLAIN, 12));
             ViewUtil.ellipsizeLabel(title, iconWidth);
             p.add(ViewUtil.centerHorizontally(title));
             //button.setEnabled(!disableButton); // disable if selected
@@ -288,7 +288,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         } else {
             JLabel title = ViewUtil.getGrayLabel(name);
             ViewUtil.ellipsizeLabel(title, iconWidth);
-            title.setFont(new Font("Arial", disableButton ? Font.BOLD : Font.PLAIN, 18));
+            title.setFont(new Font(ViewUtil.getDefaultFontFamily(), disableButton ? Font.BOLD : Font.PLAIN, 15));
             p.add(ViewUtil.centerHorizontally(title));
         }
 
