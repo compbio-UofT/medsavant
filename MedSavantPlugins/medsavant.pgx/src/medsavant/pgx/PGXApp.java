@@ -29,7 +29,7 @@ public class PGXApp extends MedSavantDashboardApp {
      */
     @Override
     public String getTitle() {
-        return "Pharmacogenomics";
+        return "PharmacoGx";
     }
 
     @Override

@@ -99,7 +99,12 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspec
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
+import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
+import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 
 
 /**
@@ -1050,43 +1055,66 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		
-		///// TESTING Gene panels box
-		/*
-		final GenesConditionGenerator gcg= new GenesConditionGenerator();
-		final SearchConditionItem sci= new SearchConditionItem("", null);
-		final SearchConditionEditorView scev= gcg.getViewGeneratorForItem(sci);
-		SearchConditionPanel scp= new SearchConditionPanel(scev, null);
+		/* Custome gene panel entry using a GenesConditionGenerator. */
+		JPanel customGenePanelEntry = new JPanel();
+		customGenePanelEntry.setLayout(new BoxLayout(customGenePanelEntry, BoxLayout.Y_AXIS));
 		
+		final SearchConditionItem sci= new SearchConditionItem("", null);
+		
+		/* Replace 'OntologyConditionGenerator' with 'GenesConditionGenerator' to try out the gene query pane. */
+		//final ComprehensiveConditionGenerator ccg = new OntologyConditionGenerator(OntologyType.HPO);
+		final GenesConditionGenerator ccg = new GenesConditionGenerator();
+		
+		final SearchConditionEditorView scev= ccg.getViewGeneratorForItem(sci);
+		final SearchConditionPanel scp = new SearchConditionPanel(scev, null);
+
 		JButton OKButton = new JButton("OK");
+		JButton cancelButton = new JButton("Cancel");
+
 		OKButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//save changes: this saves the users selections so next time the dialog pops up, those
-				//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
-				//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
-				if (scev.saveChanges()) {
-					try {
-						String encodedSearch = sci.getSearchConditionEncoding();
-						Condition c = gcg.getConditionsFromEncoding(encodedSearch);
-						//this condition can be used to query for
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						System.err.println(ex);
+				try {
+					//save changes: this saves the users selections so next time the dialog pops up, those
+					//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
+					//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
+					if (scev.saveChanges()) {
+						try {
+							String encodedSearch = sci.getSearchConditionEncoding();
+							LOG.info("Restoring encoded search "+encodedSearch);
+							Condition c = ccg.getConditionsFromEncoding(encodedSearch);
+							LOG.info("Got condition " + c.toString());
+							//this condition can be used to query for
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							System.err.println(ex);
+						}
 					}
+				} catch (IllegalArgumentException ex) {
+					DialogUtils.displayError(ex.getMessage());
 				}
 			}
 
 		});
 
-		scp.getButtonPanel();
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//add code to cancel
+			}
+		});
+
+		scev.setBackground(workview.getBackground());
+		scev.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+		scp.setBorder(BorderFactory.createLineBorder(Color.RED));
+		
+		scp.getButtonPanel().add(cancelButton);
 		scp.getButtonPanel().add(OKButton);
 		
-		JPanel outerPanel= new JPanel();
-		outerPanel.setLayout(new MigLayout());
-		outerPanel.add(scp);
+		scp.loadEditorViewInBackground(null);
+		customGenePanelEntry.add(scp);
+		collapsibleGene.add(customGenePanelEntry, "span");
 		
-		collapsibleGene.add(outerPanel, "wrap");
-		*/
 		/////////////////////
 		
 		
