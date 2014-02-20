@@ -105,6 +105,7 @@ import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
+import org.ut.biolab.mfiume.query.view.JScrollMenu;
 
 
 /**
@@ -704,7 +705,7 @@ public class DiscoveryPanel extends JPanel {
 			@Override
 			public void actionPerformed (ActionEvent e) {
 				JPopupMenu popupMenu= new JPopupMenu();
-				JMenu filterMenu= new JMenu(addFilterButton.getText());
+				JScrollMenu filterMenu= new JScrollMenu(addFilterButton.getText());
 
 				for (Object columnName : getDbColumnList()) {
 					final JMenuItem filter= new JMenuItem((String) columnName);
@@ -1164,7 +1165,11 @@ public class DiscoveryPanel extends JPanel {
 			
 			for (String m : mutations) {
 				mutationComboCondition.addCondition(
-					BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+					/* In the interest of efficiency, use Like instead of iLike 
+					 * here, just make sure the case of the Jannovar annotations
+					 * and the mutations stored here match. */
+					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+					//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
 			}
 			
 			newComboCondition.addCondition(mutationComboCondition);
