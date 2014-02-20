@@ -257,8 +257,8 @@ public class SavantApp implements LaunchableApp {
             
             ViewUtil.makeMini(dnaButton);
 
-            pluginToolbar.add(dnaButton);
-            pluginToolbar.setVisible(true);
+            //pluginToolbar.add(dnaButton);
+            //pluginToolbar.setVisible(true);
 
         } catch (Exception e) {
             LOG.error("ERROR ", e);

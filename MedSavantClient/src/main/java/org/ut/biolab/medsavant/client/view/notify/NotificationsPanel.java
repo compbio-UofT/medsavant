@@ -123,6 +123,7 @@ public class NotificationsPanel extends JPanel {
         private String actionName = "";
         private ActionListener action;
         private Listener<Notification> listener;
+        private boolean isClosed = false;
 
         public Notification() {
         }
@@ -222,6 +223,11 @@ public class NotificationsPanel extends JPanel {
             }
         }
 
+        public void close() {
+            isClosed = true;
+            updateListener();
+        }
+
     }
 
     private static class NotificationPanel extends JPanel implements Listener<Notification> {
@@ -245,6 +251,7 @@ public class NotificationsPanel extends JPanel {
         
         private Color subTextErrorColor = Color.red;
         private Color subTextNormalColor; // a light gray, set later
+        private ActionListener closeActionListener;
 
         public NotificationPanel(Notification n) {
 
@@ -265,6 +272,11 @@ public class NotificationsPanel extends JPanel {
         }
 
         private void refreshUI() {
+            
+            if (notification.isClosed) {
+                closeActionListener.actionPerformed(null);
+            }
+            
             nameLabel.setText(notification.getName());
             
             // set the subtext color to red if the description contains the word "error"
@@ -308,8 +320,7 @@ public class NotificationsPanel extends JPanel {
             nameLabel = ViewUtil.getSettingsHeaderLabel("");
             subTextLabel = ViewUtil.getSettingsHelpLabel("");
             
-            closeButton = ViewUtil.getTexturedButton("Close");
-            closeButton.addActionListener(new ActionListener() {
+            closeActionListener = new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -318,7 +329,11 @@ public class NotificationsPanel extends JPanel {
                     }
                 }
                 
-            });
+            };
+            
+            closeButton = ViewUtil.getTexturedButton("Close");
+            closeButton.addActionListener(closeActionListener);
+            
             
             progress = (JProgressBar) ViewUtil.makeMini(new JProgressBar());
             

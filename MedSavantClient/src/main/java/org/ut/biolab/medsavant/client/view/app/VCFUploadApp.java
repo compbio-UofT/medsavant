@@ -347,15 +347,14 @@ public class VCFUploadApp implements LaunchableApp {
                         final BackgroundTaskWorker instance = this;
 
                         this.addLog("Upload started");
-                        
+
                         final Notification notification = this.getNotificationForWorker();
                         notification.setShowsProgress(true);
-                        
+
                         SwingUtilities.invokeLater(new Runnable() {
 
                             @Override
                             public void run() {
-                               
                                 MedSavantFrame.getInstance().showNotification(notification);
                             }
                         });
@@ -372,13 +371,13 @@ public class VCFUploadApp implements LaunchableApp {
                         int fileIndex = 0;
 
                         int numFiles = copyOfFilesToImport.length;
-                        
+
                         for (File file : copyOfFilesToImport) {
                             LOG.info("Created input stream for file");
                             this.addLog("Uploading " + file.getName() + "...");
                             transferIDs[fileIndex++] = ClientNetworkUtils.copyFileToServer(file);
-                            this.setTaskProgress(((double)fileIndex)/numFiles);
-                            
+                            this.setTaskProgress(((double) fileIndex) / numFiles);
+
                         }
                         this.addLog("Done uploading variants");
 
@@ -386,7 +385,7 @@ public class VCFUploadApp implements LaunchableApp {
 
                         this.addLog("Annotating with Jannovar: " + annovarCheckbox.isSelected());
                         this.addLog("Emailing notifications to: " + emailPlaceholder.getText());
-                        
+
                         Thread t = new Thread(new Runnable() {
 
                             @Override
@@ -408,10 +407,23 @@ public class VCFUploadApp implements LaunchableApp {
                             }
 
                             private void succeeded() {
-                                 AppDirectory.getTaskManager().showMessageForTask(instance,
-                                "<html>Variants have been uploaded and are now being processed.<br/>"
-                                + "You may view progress in the Server Log in the Task Manager<br/><br/>"
-                                + "You may log out or continue doing work.</html>");
+                                LOG.info("Uplaod succeeded");
+
+                                
+                                
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        LOG.info("Uplaod succeeded");
+                                        AppDirectory.getTaskManager().showMessageForTask(instance,
+                                                "<html>Variants have completed being imported.<br/>"
+                                                        + "As a result, you must login again.</html>");
+                                        MedSavantFrame.getInstance().requestLogout();
+                                    }
+
+                                });
+                                
                             }
 
                         });
@@ -421,6 +433,20 @@ public class VCFUploadApp implements LaunchableApp {
                         this.addLog("Done");
 
                         this.setStatus(TaskStatus.FINISHED);
+
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                LOG.info("Uplaod succeeded");
+                                AppDirectory.getTaskManager().showMessageForTask(instance,
+                                        "<html>Variants have been uploaded and are now being processed.<br/>"
+                                        + "You may view progress in the Server Log in the Task Manager<br/><br/>"
+                                        + "You may log out or continue doing work.</html>");
+                                notification.close();
+                            }
+
+                        });
 
                         return null;
                     }
