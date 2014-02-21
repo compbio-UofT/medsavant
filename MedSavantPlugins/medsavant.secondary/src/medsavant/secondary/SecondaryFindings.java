@@ -1,4 +1,4 @@
-package medsavant.discovery;
+package medsavant.secondary;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import medsavant.discovery.localDB.DiscoveryDBFunctions;
+import medsavant.secondary.localDB.DiscoveryDBFunctions;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
@@ -34,11 +34,13 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 
 /**
- * Compute and store all discovery findings for a patient.
+ * Compute and store all incidental/secondary findings for a patient.
+ * This program is adapted from DiscoveryFindings, and is not polished - please
+ * avoid modifying. If you must, start from DiscoveryFindings.java.
  * 
  * @author rammar
  */
-public class DiscoveryFindings {
+public class SecondaryFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	public static final String ALL_GENE_PANEL= "All genes";
 	
@@ -77,7 +79,7 @@ public class DiscoveryFindings {
 	/** Initialize DiscoveryFindings object for the given patient DNA ID.
 	 * @param dnaID	Patient's DNA ID
 	 */
-	public DiscoveryFindings(String dnaID) {
+	public SecondaryFindings(String dnaID) {
 		this.dnaID= dnaID;
 					
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
@@ -88,24 +90,6 @@ public class DiscoveryFindings {
 		INDEX_OF_FORMAT= header.indexOf(BasicVariantColumns.FORMAT.getAlias());
 		INDEX_OF_SAMPLE_INFO= header.indexOf(BasicVariantColumns.SAMPLE_INFO.getAlias());
 		
-		getGenderFromDB();
-	}
-	
-	
-	/**
-	 * Define exception for DiscoveryFindings.
-	 */
-	public class DiscoveryFindingsException extends Exception {
-		public DiscoveryFindingsException(String message) {
-			super(message);
-		}
-	}
-	
-	
-	/**
-	 * Get this patient's gender.
-	 */
-	private void getGenderFromDB() {
 		try {
 			// Get gender info
 			PatientManagerAdapter pma= MedSavantClient.PatientManager;
@@ -131,8 +115,18 @@ public class DiscoveryFindings {
 			ex.printStackTrace();
 		}
 	}
-			
 	
+	
+	/**
+	 * Define exception for DiscoveryFindings.
+	 */
+	public class DiscoveryFindingsException extends Exception {
+		public DiscoveryFindingsException(String message) {
+			super(message);
+		}
+	}
+	
+		
 	/** 
 	 * Searchable table output for development testing. 
 	 * @param selectedViewColumns Columns preselected for SearchableTablePanel output

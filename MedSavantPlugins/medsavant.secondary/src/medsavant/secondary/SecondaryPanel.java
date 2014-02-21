@@ -1,4 +1,4 @@
-package medsavant.discovery;
+package medsavant.secondary;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -55,10 +56,12 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -71,8 +74,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EtchedBorder;
-import medsavant.discovery.localDB.DiscoveryDB;
-import medsavant.discovery.localDB.DiscoveryHSQLServer;
+import medsavant.secondary.localDB.DiscoveryDB;
+import medsavant.secondary.localDB.DiscoveryHSQLServer;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -99,23 +102,22 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspec
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.view.JScrollMenu;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
-import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 
 
 /**
- * Default panel for Discovery app
+ * Default panel for Secondary app.
+ * This program is adapted from DiscoveryPanel, and is not polished - please
+ * avoid modifying. If you must, start from DiscoveryPanel.java.
  * 
  * @author rammar
  */
-public class DiscoveryPanel extends JPanel {
+public class SecondaryPanel extends JPanel {
 	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	private static final Properties properties= new Properties();
 	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
@@ -143,6 +145,10 @@ public class DiscoveryPanel extends JPanel {
 		"NON_FS_SUBSTITUTION", "NON_FS_DUPLICATION", "SPLICING", "STOPGAIN", 
 		"START_LOSS"
 		};
+	private static final String[] LOSS_OF_FUNCTION_MUTATIONS= new String[] {
+		"FS_DELETION", "FS_INSERTION", "FS_SUBSTITUTION", "FS_DUPLICATION",
+		"SPLICING", "STOPGAIN"
+	};
 	private static final String EXIST_KEYWORD= "Exists";
 	private static final String EQUALS_KEYWORD= "=";
 	private static final String LESS_KEYWORD= "<";
@@ -153,9 +159,12 @@ public class DiscoveryPanel extends JPanel {
 	private static final String GENE_COLUMN_KEYWORD= "jannovar gene symbol"; // may change later
 	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
 	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
-	private static final String ALL_GENE_PANEL= DiscoveryFindings.ALL_GENE_PANEL;
+	private static final String ALL_GENE_PANEL= SecondaryFindings.ALL_GENE_PANEL;
 	private static final String LEFT_HIDE_STRING= "<<";
 	private static final String RIGHT_HIDE_STRING= ">>";
+	private static final String CLINVAR_COLUMN_ALIAS= "Clinvar, rsID";
+	private static final String HGMD_COLUMN_ALIAS= "hgmd_pro_allmut, disease";
+	private static final String WORKFLOW_IMAGE_PATH= "/medsavant/secondary/images/Secondary Findings Workflow.png";
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 0;
@@ -167,7 +176,7 @@ public class DiscoveryPanel extends JPanel {
 	private final int PANE_HEIGHT= 20; // minimum, but it'll stretch down - may need to change later
 	private final int RING_DIAMETER= 200;
 	
-	private DiscoveryFindings discFind= null;
+	private SecondaryFindings discFind= null;
 	private int variantFetchLimit;
 	private ComboCondition baseComboCondition;
 	private ComboCondition newComboCondition;
@@ -239,7 +248,7 @@ public class DiscoveryPanel extends JPanel {
 	private JTextArea errorMessage;
     
 	
-	public DiscoveryPanel() {
+	public SecondaryPanel() {
 		/* Set up the properties based on stored user preference. */
 		loadProperties();
 	
@@ -288,17 +297,17 @@ public class DiscoveryPanel extends JPanel {
 			Map<String, String> columns= discFind.dbAliasToColumn;
 		
 			if (columns.get(variantProperty) != null) {
-				if (operator.equals(DiscoveryPanel.LIKE_KEYWORD)) {
+				if (operator.equals(SecondaryPanel.LIKE_KEYWORD)) {
 					/* Special case: For the LIKE operator, a "%" wildcard is 
 					 * appended to the end of the text from the text field. */
 					c= BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText() + "%");
-				} else if (operator.equals(DiscoveryPanel.EQUALS_KEYWORD)) {
+				} else if (operator.equals(SecondaryPanel.EQUALS_KEYWORD)) {
 					c= BinaryCondition.equalTo(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
-				} else if (operator.equals(DiscoveryPanel.LESS_KEYWORD)) {
+				} else if (operator.equals(SecondaryPanel.LESS_KEYWORD)) {
 					c= BinaryCondition.lessThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
-				} else if (operator.equals(DiscoveryPanel.GREATER_KEYWORD)) {
+				} else if (operator.equals(SecondaryPanel.GREATER_KEYWORD)) {
 					c= BinaryCondition.greaterThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
-				} else if (operator.equals(DiscoveryPanel.EXIST_KEYWORD)) {
+				} else if (operator.equals(SecondaryPanel.EXIST_KEYWORD)) {
 					c= UnaryCondition.isNotNull(discFind.ts.getDBColumn(columns.get(variantProperty)));
 				}	
 			}
@@ -424,7 +433,7 @@ public class DiscoveryPanel extends JPanel {
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
 		JPanel initVariantPane= new JPanel();
-		JLabel initVariantPaneLabel= new JLabel("Choose patient to see genomic variants.");
+		JLabel initVariantPaneLabel= new JLabel("Choose patient to see secondary findings.");
 		initVariantPane.setLayout(new MigLayout("align 50% 50%"));
 		initVariantPane.add(initVariantPaneLabel);
 		initVariantPaneLabel.setFont(new Font(initVariantPaneLabel.getFont().getName(), Font.PLAIN, 14));
@@ -511,13 +520,14 @@ public class DiscoveryPanel extends JPanel {
 		/* Patient selection panel. */
 		patientPanel= new JPanel();
 		patientPanel.setBackground(workview.getBackground());
-		patientPanel.setLayout(new MigLayout("insets 10 10 0 0, gapy 0px")); // create a bit of inset spacing top and left
+		patientPanel.setLayout(new MigLayout("insets 10 10 0 0, gapy 50px")); // create a bit of inset spacing top and left, 50px spacing between components
 		patientPanel.add(choosePatientButton, "alignx center, wrap");
-		patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
-		patientPanel.add(collapsible, "wrap, gapy 20px");
+		patientPanel.add(getWorkflowButton(), "alignx center, wrap");
+		//patientPanel.add(addFilterButton, "alignx center, wrap, gapy 20px");
+		//patientPanel.add(collapsible, "wrap, gapy 20px");
 		patientPanel.add(geneSelectionPanel(), "wrap");
-		patientPanel.add(mutationCheckboxPanel(), "wrap");
-		patientPanel.add(collapsibleSettings, "wrap");
+		//patientPanel.add(mutationCheckboxPanel(), "wrap");
+		//patientPanel.add(collapsibleSettings, "wrap");
 		patientPanel.add(progressPanel, "alignx center, wrap");
 		patientPanel.add(analyzeButton, "alignx center, wrap"); // need wrap for spacer below
 		patientPanel.add(new JLabel(" "), "gapy 20px"); // use as a spacer at the bottom
@@ -526,7 +536,7 @@ public class DiscoveryPanel extends JPanel {
 		patientJSP.setMinimumSize(new Dimension(patientPanel.getMinimumSize().width + PANE_WIDTH_OFFSET, PANE_HEIGHT));
 		patientJSP.setPreferredSize(new Dimension(patientPanel.getMinimumSize().width, patientPanel.getMaximumSize().height));
 		patientJSP.setBorder(BorderFactory.createEmptyBorder());
-		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);		
+		patientJSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		/* Set up the variant summary panel. */
 		vsp= new VariantSummaryPanel("Variant Summary");
@@ -608,7 +618,7 @@ public class DiscoveryPanel extends JPanel {
 				if (selectedIndividuals != null && selectedIndividuals.size() == 1 && !analysisRunning) {
 					analysisRunning= true;					
 					MSWorker= new MedSavantWorker<Object> (
-						DiscoveryPanel.class.getCanonicalName()) {
+						SecondaryPanel.class.getCanonicalName()) {
 
 						@Override
 						protected Object doInBackground() throws Exception {
@@ -637,7 +647,7 @@ public class DiscoveryPanel extends JPanel {
 
 							/*  Get discovery findings. Initialize or update for current DNA ID. */
 							if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
-								discFind= new DiscoveryFindings(currentIndividualDNA);
+								discFind= new SecondaryFindings(currentIndividualDNA);
 							}
 							
 							int total= discFind.getMaximumVariantCount(); // total variants for this DNA ID
@@ -645,8 +655,9 @@ public class DiscoveryPanel extends JPanel {
 							progressLabel.setText(total + " total variants found. Applying filters.");
 							
 							baseComboCondition= discFind.getComboCondition(
-								Arrays.asList(afChooser.getCheckBoxListSelectedValues()),
-								coverageThreshold, hetRatio, afThreshold);
+								Arrays.asList((Object[]) DEFAULT_AF_DB_LIST), DEFAULT_COVERAGE_THRESHOLD,
+								DEFAULT_HET_RATIO, DEFAULT_AF_THRESHOLD); // Secondary findings uses the default values, NO customizeability
+							
 							updateCondition();
 							discFind.setGenePanel(currentGenePanel);
 							discFind.storeVariants(variantFetchLimit);
@@ -1063,69 +1074,13 @@ public class DiscoveryPanel extends JPanel {
 		
 		final SearchConditionItem sci= new SearchConditionItem("", null);
 		
-		/* Replace 'OntologyConditionGenerator' with 'GenesConditionGenerator' to try out the gene query pane. */
-		//final ComprehensiveConditionGenerator ccg = new OntologyConditionGenerator(OntologyType.HPO);
-		final GenesConditionGenerator ccg = new GenesConditionGenerator();
-		
-		final SearchConditionEditorView scev= ccg.getViewGeneratorForItem(sci);
-		final SearchConditionPanel scp = new SearchConditionPanel(scev, null);
-
-		JButton OKButton = new JButton("OK");
-		JButton cancelButton = new JButton("Cancel");
-
-		OKButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					//save changes: this saves the users selections so next time the dialog pops up, those
-					//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
-					//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
-					if (scev.saveChanges()) {
-						try {
-							String encodedSearch = sci.getSearchConditionEncoding();
-							LOG.info("Restoring encoded search "+encodedSearch);
-							Condition c = ccg.getConditionsFromEncoding(encodedSearch);
-							LOG.info("Got condition " + c.toString());
-							//this condition can be used to query for
-						} catch (Exception ex) {
-							ex.printStackTrace();
-							System.err.println(ex);
-						}
-					}
-				} catch (IllegalArgumentException ex) {
-					DialogUtils.displayError(ex.getMessage());
-				}
-			}
-
-		});
-
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//add code to cancel
-			}
-		});
-
-		scev.setBackground(workview.getBackground());
-		scev.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-		scp.setBorder(BorderFactory.createLineBorder(Color.RED));
-		
-		scp.getButtonPanel().add(cancelButton);
-		scp.getButtonPanel().add(OKButton);
-		
-		scp.loadEditorViewInBackground(null);
-		customGenePanelEntry.add(scp);
-		collapsibleGene.add(customGenePanelEntry, "span");
-		
-		/////////////////////
-		
 		collapsibleGene.add(geneButton);
 		collapsibleGene.add(genePanelComboBox);
 		
 		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
 		collapsibleGene.setFocusPainted(false);
-		collapsibleGene.collapse(true);
+		collapsibleGene.collapse(false); // start with the panel open
 		
 		return collapsibleGene;
 	}
@@ -1133,6 +1088,8 @@ public class DiscoveryPanel extends JPanel {
 	/**
 	 * Update and set the new ComboCondition based on user selections and the
 	 * base ComboCondition returned from the DiscoveryFindings object.
+	 *
+	 * NOTE: This has been critically modified for Secondary Findings.
 	 */
 	private void updateCondition() {
 		newComboCondition= new ComboCondition(ComboCondition.Op.AND);
@@ -1140,40 +1097,62 @@ public class DiscoveryPanel extends JPanel {
 		// Start from the original base ComboCondition
 		newComboCondition.addCondition(baseComboCondition);
 		
-		// Iterate through the filters and add those conditions to the new ComboCondition
+		/* Iterate through the filters and add those conditions to the new ComboCondition
+		 * NOTE: Secondary Findings only uses gene panel selection, no other filters. */ 
 		for (FilterDetails fd : conditionList) {
 			newComboCondition.addCondition(fd.getCurrentCondition());
 		}
 		
-		// Add the mutations to the new ComboCondition
-		addMutationCondition(mutationFilterList);
+		/* Create a new ComboCondition to retrieve any variants that meet any of
+		 * the three criteria:
+		 * 1) Variant is LOF mutation
+		 * or
+		 * 2) Variant is annotated in Clinvar
+		 * or
+		 * 3) Variant is annotated in HGMD
+		 */
+		ComboCondition mutationOrDBComboCondition= new ComboCondition(ComboCondition.Op.OR);
+		
+		/* Add the mutations to the new ComboCondition.
+		 * NOTE: Default LOF mutations for Secondary findings - no customizability */
+		mutationOrDBComboCondition.addCondition(addMutationCondition
+			(Arrays.asList(LOSS_OF_FUNCTION_MUTATIONS)));
+		
+		/* Variant can also be in Clinvar or HGMD. */
+		Map<String, String> columns= discFind.dbAliasToColumn;
+		mutationOrDBComboCondition.addCondition(UnaryCondition.isNotNull(
+			discFind.ts.getDBColumn(columns.get(CLINVAR_COLUMN_ALIAS))));
+		mutationOrDBComboCondition.addCondition(UnaryCondition.isNotNull(
+			discFind.ts.getDBColumn(columns.get(HGMD_COLUMN_ALIAS))));
+		
+		/* Add the mutationOrDBComboCondition to the main condition. */
+		newComboCondition.addCondition(mutationOrDBComboCondition);
 		
 		discFind.setComboCondition(newComboCondition);
 	}
 	
     
 	/**
-	 * Add a filter condition describing mutations to the ComboCondition of DiscoveryFindings.
+	 * Returns a filter condition describing mutations to the ComboCondition of Secondary Findings.
 	 * @param mutations A list of the mutation Strings, as annotated in Jannovar, to filter the variants
+	 * @return The mutation condition to be added to the main combo condition
 	 */
-	private void addMutationCondition(List<String> mutations) {
+	private ComboCondition addMutationCondition(List<String> mutations) {
 		Map<String, String> columns= discFind.dbAliasToColumn;
 		String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getAlias();
 		
-		if (columns.get(JANNOVAR_EFFECT) != null) {
-			ComboCondition mutationComboCondition= new ComboCondition(ComboCondition.Op.OR);
-			
-			for (String m : mutations) {
-				mutationComboCondition.addCondition(
-					/* In the interest of efficiency, use Like instead of iLike 
-					 * here, just make sure the case of the Jannovar annotations
-					 * and the mutations stored here match. */
-					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
-					//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
-			}
-			
-			newComboCondition.addCondition(mutationComboCondition);
+		ComboCondition mutationComboCondition= new ComboCondition(ComboCondition.Op.OR);
+
+		for (String m : mutations) {
+			mutationComboCondition.addCondition(
+				/* In the interest of efficiency, use Like instead of iLike 
+				 * here, just make sure the case of the Jannovar annotations
+				 * and the mutations stored here match. */
+				BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+				//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
 		}
+		
+		return mutationComboCondition;
 	}
 	
 	
@@ -1255,6 +1234,38 @@ public class DiscoveryPanel extends JPanel {
 			layeredPane.add(rightHideButton, JLayeredPane.PALETTE_LAYER);
 		}
 	}
+	
+	
+	/**
+	 * Create a button to show the workflow of the Secondary Findings app.
+	 * @return Returns the button
+	 */
+	private JButton getWorkflowButton() {
+		JButton workflowButton= new JButton("Show me the pipeline");
+		
+		workflowButton.addActionListener(
+			new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					JDialog jd= new JDialog();
+					jd.setTitle("Secondary Findings Workflow");
+					
+					try {
+						Image image= (new ImageIcon(getClass().getResource(WORKFLOW_IMAGE_PATH)).getImage());
+						jd.add(new ImagePanel(image, 800, 581, true));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					jd.setVisible(true);
+					jd.pack();
+				}
+			}
+		);
+		
+		return workflowButton;
+	}
+	
 	
 	/** Set all values from JTextFields. Also set the relevant properties. */
 	private void setAllValuesFromFields() throws MalformedURLException {
@@ -1453,7 +1464,7 @@ public class DiscoveryPanel extends JPanel {
 				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename"));
 		if (!f.exists()) { // copy the default pre-packaged CGD file from Nov. 26, 2013.
 			try {
-				InputStream in= DiscoveryPanel.class.getResourceAsStream("/db_files/CGD.txt");
+				InputStream in= SecondaryPanel.class.getResourceAsStream("/db_files/CGD.txt");
 				OutputStream out= new FileOutputStream(f);
 				IOUtils.copy(in, out);
 				in.close();

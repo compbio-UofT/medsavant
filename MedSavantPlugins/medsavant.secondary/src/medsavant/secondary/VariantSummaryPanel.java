@@ -1,4 +1,4 @@
-package medsavant.discovery;
+package medsavant.secondary;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -24,7 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
-import medsavant.discovery.localDB.DiscoveryDBFunctions;
+import medsavant.secondary.localDB.DiscoveryDBFunctions;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
