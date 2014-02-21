@@ -20,6 +20,7 @@
 package org.ut.biolab.mfiume.app;
 
 import java.awt.Color;
+import java.awt.Container;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
@@ -56,6 +57,10 @@ public class jAppStore {
 
     public void showStore() {
         this.view.setVisible(true);
+    }
+    
+    public Container getContentPane() {
+        return this.view.getContentPane();
     }
 
     public static void wrapComponentWithLineBorder(JComponent c) {

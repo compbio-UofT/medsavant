@@ -171,6 +171,7 @@ public class MedSavantAppFetcher implements AppInfoFetcher {
                 }
             } while (reader != null);
         }
+        LOG.info("Found " + appInfo.size() + " App descriptions");
     }
 
     @Override

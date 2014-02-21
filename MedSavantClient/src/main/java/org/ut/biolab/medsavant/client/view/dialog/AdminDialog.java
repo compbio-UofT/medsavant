@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.dialog;
 
@@ -27,7 +27,10 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -43,6 +46,9 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class AdminDialog extends JDialog {
+
+    private Log LOG = LogFactory.getLog(AdminDialog.class);
+
     private PlaceHolderPasswordField passwordAdminField;
     private PlaceHolderTextField userAdminField;
     private PlaceHolderTextField dbnameAdminField;
@@ -65,21 +71,21 @@ public class AdminDialog extends JDialog {
 
         SettingsController sc = SettingsController.getInstance();
 
-         addressAdminField = new PlaceHolderTextField();
+        addressAdminField = new PlaceHolderTextField();
         addressAdminField.setPlaceholder("server address");
         addressAdminField.setText(sc.getServerAddress());
         addressAdminField.setColumns(textFieldAdminColumns);
-         portAdminField = new PlaceHolderTextField();
+        portAdminField = new PlaceHolderTextField();
         portAdminField.setPlaceholder("server port number");
         portAdminField.setText(sc.getServerPort());
         portAdminField.setColumns(textFieldAdminColumns);
-         dbnameAdminField = new PlaceHolderTextField();
+        dbnameAdminField = new PlaceHolderTextField();
         dbnameAdminField.setPlaceholder("database");
         dbnameAdminField.setColumns(textFieldAdminColumns);
-         userAdminField = new PlaceHolderTextField();
+        userAdminField = new PlaceHolderTextField();
         userAdminField.setPlaceholder("admin username");
         userAdminField.setColumns(textFieldAdminColumns);
-         passwordAdminField = new PlaceHolderPasswordField();
+        passwordAdminField = new PlaceHolderPasswordField();
         passwordAdminField.setPlaceholder("password");
         passwordAdminField.setColumns(textFieldAdminColumns);
 
@@ -101,7 +107,17 @@ public class AdminDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 if (validateAdminParams()) {
-                    closeDialogContainingPanel(p);
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                closeDialogContainingPanel(p);
+                            }
+                        });
+                    } catch (Exception e) {
+                        LOG.error(e);
+                    }
                     int port = Integer.parseInt(portAdminField.getText());
                     createDatabase(addressAdminField.getText(), port, dbnameAdminField.getText(), userAdminField.getText(), passwordAdminField.getPassword());
                 }
@@ -112,27 +128,41 @@ public class AdminDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 if (validateAdminParams()) {
-                    closeDialogContainingPanel(p);
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                closeDialogContainingPanel(p);
+                            }
+                        });
+                    } catch (Exception e) {
+                        LOG.error(e);
+                    }
                     int port = Integer.parseInt(portAdminField.getText());
                     removeDatabase(addressAdminField.getText(), port, dbnameAdminField.getText(), userAdminField.getText(), passwordAdminField.getPassword());
                 }
             }
-        });
+        }
+        );
 
         return p;
     }
 
     private void createDatabase(final String address, final int port, final String database, final String username, final char[] password) {
+        final JDialog instance = this;
         new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
             @Override
             public void run() {
                 try {
                     MedSavantClient.initializeRegistry(address, port + "");
                     MedSavantClient.SetupManager.createDatabase(address, port, database, username, password);
+                    instance.setVisible(false);
+                    setVisible(false);
                     DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
                 } catch (Throwable ex) {
-                    setVisible(false);
                     ex.printStackTrace();
+                    setVisible(false);
                     ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                 }
             }
@@ -140,19 +170,22 @@ public class AdminDialog extends JDialog {
     }
 
     private void removeDatabase(String address, int port, String database, String username, char[] password) {
+        final JDialog instance = this;
         if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This operation cannot be undone.", database) == DialogUtils.YES) {
             try {
                 MedSavantClient.initializeRegistry(address, port + "");
                 MedSavantClient.SetupManager.removeDatabase(address, port, database, username, password);
+                instance.setVisible(false);
                 setVisible(false);
                 DialogUtils.displayMessage("Database Removed", String.format("<html>Database <i>%s</i> successfully removed.</html>", database));
             } catch (Exception ex) {
+                setVisible(false);
                 ClientMiscUtils.reportError("Database could not be removed: %s", ex);
             }
         }
     }
 
-    private void closeDialogContainingPanel(Component c) {
+    private void closeDialogContainingPanel(final Component c) {
         if (c instanceof JDialog) {
             ((JDialog) c).setVisible(false);
         } else {
@@ -161,7 +194,6 @@ public class AdminDialog extends JDialog {
     }
 
     private boolean validateAdminParams() {
-
 
         if (addressAdminField.getText().isEmpty()) {
             MedSavantFrame.getInstance().showNotficationMessage("Server address required");
@@ -184,19 +216,19 @@ public class AdminDialog extends JDialog {
         }
 
         if (dbnameAdminField.getText().isEmpty()) {
-             DialogUtils.displayMessage("Database name required");
+            DialogUtils.displayMessage("Database name required");
             dbnameAdminField.requestFocus();
             return false;
         }
 
         if (userAdminField.getText().isEmpty()) {
-             DialogUtils.displayMessage("Username required");
+            DialogUtils.displayMessage("Username required");
             userAdminField.requestFocus();
             return false;
         }
 
         if (passwordAdminField.getText().isEmpty()) {
-             DialogUtils.displayMessage("Password required");
+            DialogUtils.displayMessage("Password required");
             passwordAdminField.requestFocus();
             return false;
         }
