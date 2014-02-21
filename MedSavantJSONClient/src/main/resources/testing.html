@@ -41,7 +41,7 @@
         }
 
 
-        function go() {
+        function go() {            
             var s = "";
             var adapter = document.theform.adapter.value;
             var method = document.theform.method.value;
@@ -96,14 +96,19 @@
         }
 
         //note: first and third arguments are case sensitive.
-        function MSCondition(projectIdv, referenceIdv, typev, methodv, leftv, rightv) {
+        function MSCondition(projectIdv, referenceIdv, typev, methodv, leftv, rightv, inclusive) {
             this.projectId = projectIdv;
             this.refId = referenceIdv;
             this.type = typev;
             this.method = methodv;
-            if (typev == "BinaryCondition") {
-                this.args = [leftv, rightv];
-            } else {
+            
+            if (typev === "BinaryCondition") {
+                if(typeof inclusive === 'undefined'){
+                    this.args = [leftv, rightv];
+                }else{
+                    this.args = [leftv, rightv, inclusive];
+                }
+            } else {                
                 this.args = [leftv];
             }
         }
@@ -165,7 +170,7 @@
 
         }
 
-        function getFilteredVariantsForPatient(projectId, refId, dnaId){
+        function getFilteredVariantsForPatientOld(projectId, refId, dnaId){
 
             //First, only consider variants corresponding to a certain DNA ID.
             var dnaIdCondition = new MSCondition(projectId, refId, "BinaryCondition", "equalTo", "dna_id", dnaId);
@@ -182,7 +187,92 @@
         }
 
 
+        function processFilteredVariants(d){
+            printResult(d);
+        }
+        
+        if (typeof String.prototype.startsWith !== 'function') {
+            String.prototype.startsWith = function (str){
+                return this.slice(0, str.length) === str;
+            };
+        }
+        
+        function getAnnotationColumnName(annotationFormats, programName, columnAlias){
+            for(var i = 0; i< annotationFormats.length; ++i){                                
+                //We use 'startsWith' for the program because our naming convention is a name followed by a date.
+                //e.g. 'ljb2_pp2hvar (Annovar, 2013-10-07)'
+                if(annotationFormats[i].program.startsWith(programName)){
+                    for(var j = 0; j < annotationFormats[i].fields.length; ++j){
+                        var customField = annotationFormats[i].fields[j];
+                        if(customField.alias === columnAlias){
+                            return customField.name;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function getOrionFilteredVariants(projectId, refId){                                
+            //To construct the filters, we need to know the column names of thousand genomes and polyphen.  These
+            //are 'custom' annotations, and the column names can vary.  Other columns, like 'quality' are fixed and are always present
+            //with the same name, so they can be hardcoded.
+            msInvoke('AnnotationManager', 'getAnnotationFormats', [projectId, refId], function(annotationFormats){                
+                var thousandGProgram = "1000g2012apr_all";
+                var thousandGAlias = thousandGProgram+", Score";
+                var polyphenProgram = "ljb2_pp2hvar";
+                var polyphenAlias = polyphenProgram+", Score";                
 
+                var thousandGColumn = getAnnotationColumnName(annotationFormats, thousandGProgram, thousandGAlias);
+                var polyphenColumn = getAnnotationColumnName(annotationFormats, polyphenProgram, polyphenAlias);                                                          
+                var qualityColumn = "qual";
+                var effectColumn = "effect"; //from Jannovar
+                alert('Got thousandGColumn name as ' + thousandGColumn + " and polyphen column as "+polyphenColumn);                                
+                
+                //filtering parameters.  Note: use strings for MSCondition.  
+                var qualityThresh = 30;                
+                var thousandGThresh = 0.05;               
+                var polyphenThresh = 0.4;
+                    
+                //to be anded.
+                var qualityCondition = 
+                        new MSCondition(projectId, refId, "BinaryCondition", "greaterThan", qualityColumn, qualityThresh, true);
+                var thousandGCondition = 
+                        new MSCondition(projectId, refId, "BinaryCondition", "lessThan", thousandGColumn, thousandGThresh, true);
+
+                //to be or'd.
+                var polyphenCondition1 = new MSCondition(projectId, refId, "BinaryCondition", "greaterThan", polyphenColumn, polyphenThresh, true);
+                var polyphenCondition2 = new MSCondition(projectId, refId,  "UnaryCondition", "isNull", polyphenColumn);
+
+                //to be anded.
+                var excludeSynCondition = new MSCondition(projectId, refId, "BinaryCondition", "notEqualTo", effectColumn, "SYNONYMOUS");
+                var excludeIntronCondition = new MSCondition(projectId, refId, "BinaryCondition", "notEqualTo", effectColumn, "INTRONIC");
+                var excludeRNAIntronCondition = new MSCondition(projectId, refId, "BinaryCondition", "notEqualTo", effectColumn, "ncRNA_INTRONIC");
+
+                var conditions = 
+                        [[excludeSynCondition, excludeIntronCondition, excludeRNAIntronCondition, qualityCondition, thousandGCondition, polyphenCondition1],
+                    [excludeSynCondition, excludeIntronCondition, excludeRNAIntronCondition, qualityCondition, thousandGCondition, polyphenCondition2]];
+
+                //Conditions are passed as row major matrix.  Within each row, conditions are ANDed together.  The rows are then
+                //OR'd together.
+                msInvoke('VariantManager', 'getVariants', [projectId, refId, conditions, 0, 10], processFilteredVariants);
+            });//end msInvoke(...getCustomVariantFields...)         
+     }
+
+        //var PHENOME_CENTRAL_PROJECT_NAME = 'pc';
+        var PHENOME_CENTRAL_PROJECT_NAME = 'test';
+        function getFilteredVariants(){               
+            msInvoke('ProjectManager', 'getProjectID', [PHENOME_CENTRAL_PROJECT_NAME], function(projectId){
+                if(projectId === -1){
+                        alert("Couldn't locate identifier for project named "+PHENOME_CENTRAL_PROJECT_NAME);
+                        return;
+                }
+                msInvoke('ProjectManager', 'getReferenceIDsForProject', [projectId], function(refIds) {                    
+                    alert('Calling getFilteredVariants with projectId='+projectId+" and refId="+refIds[0]);
+                    getOrionFilteredVariants(projectId, refIds[0]);
+                });     
+            });           
+       }
+        
         function variantImportProgressCheck() {
             //Progress is tied only to the user's session, and the JSON client always uses
             //the same session.
@@ -273,6 +363,9 @@
     </script>
     <BODY>
         <form name="theform" method="post">
+            <b><u>Get Filtered Variants</u></b>
+            <a href="javascript:getFilteredVariants()">Get Filtered Variants</a><BR>
+            <HR>
             <b><u>Method Tester</u></b><br>
             <b>Method:</b><br>
                     <input type="text" name="method" value="getProjectNames"><BR>

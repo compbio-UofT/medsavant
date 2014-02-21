@@ -43,7 +43,7 @@ public interface AnnotationManagerAdapter extends Remote {
 
     public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException;
-    
+    public AnnotationFormat[] getAnnotationFormats(String sessID, int projectID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     /**
      * Returns a mapping of defined tags to the customfields with that tag.  
      * 

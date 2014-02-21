@@ -387,6 +387,18 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
+    public AnnotationFormat[] getAnnotationFormats(String sessID, int projectID, int refID) throws SQLException, RemoteException, SessionExpiredException {
+        int[] annotationIDs = getAnnotationIDs(sessID, projectID, refID);
+        AnnotationFormat[] annotationFormats = new AnnotationFormat[annotationIDs.length];
+        int i = 0;
+        for(int annotationId : annotationIDs){
+            annotationFormats[i] = getAnnotationFormat(sessID, annotationId);
+            i++;
+        }
+        return annotationFormats;
+    }
+    
+    @Override
     public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException, SessionExpiredException {
 
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
