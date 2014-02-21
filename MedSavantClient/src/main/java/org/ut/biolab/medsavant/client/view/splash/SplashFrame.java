@@ -289,14 +289,7 @@ public class SplashFrame extends JFrame {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
-                    boolean didSave = doSave();
-
-                    if (didSave) {
-                        String name = form.getValueForStringField(nameField);
-                        serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-                        serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
-                    }
+                    doSave();
                 }
             });
 
@@ -337,48 +330,15 @@ public class SplashFrame extends JFrame {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
-                    // validate the form
-                    if (form != null) {
-                        if (form.validateForm()) {
-
-                            String database = form.getValueForStringField(databaseField);
-
-                            if (DialogUtils.askYesNo(
-                                    "Create Database",
-                                    String.format(
-                                            "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
-                                String host = form.getValueForStringField(hostField);
-                                int port = form.getValueForIntegerField(portField);
-                                String username = form.getValueForStringField(usernameField);
-                                String password = form.getValueForStringField(passwordField);
-
-                                createDatabase(host, port, database, username, password);
-                            }
-                        }
-                    }
+                    createDatabaseSpecifiedByForm();
                 }
 
             });
 
             deleteDBButton.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
-                    // validate the form
-                    if (form != null) {
-                        if (form.validateForm()) {
-
-                            String host = form.getValueForStringField(hostField);
-                            int port = form.getValueForIntegerField(portField);
-                            String database = form.getValueForStringField(databaseField);
-                            String username = form.getValueForStringField(usernameField);
-                            String password = form.getValueForStringField(passwordField);
-
-                            removeDatabase(host, port, database, username, password);
-                        }
-                    }
+                    deleteDatabaseSpecifiedByForm();
                 }
             });
 
@@ -413,6 +373,44 @@ public class SplashFrame extends JFrame {
             updateStateOfForm();
         }
 
+        private void createDatabaseSpecifiedByForm() {
+            // validate the form
+            if (form != null) {
+                if (form.validateForm()) {
+
+                    String database = form.getValueForStringField(databaseField);
+
+                    if (DialogUtils.askYesNo(
+                            "Create Database",
+                            String.format(
+                                    "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
+                        String host = form.getValueForStringField(hostField);
+                        int port = form.getValueForIntegerField(portField);
+                        String username = form.getValueForStringField(usernameField);
+                        String password = form.getValueForStringField(passwordField);
+
+                        createDatabase(host, port, database, username, password);
+                    }
+                }
+            }
+        }
+
+        private void deleteDatabaseSpecifiedByForm() {
+            // validate the form
+            if (form != null) {
+                if (form.validateForm()) {
+
+                    String host = form.getValueForStringField(hostField);
+                    int port = form.getValueForIntegerField(portField);
+                    String database = form.getValueForStringField(databaseField);
+                    String username = form.getValueForStringField(usernameField);
+                    String password = form.getValueForStringField(passwordField);
+
+                    removeDatabase(host, port, database, username, password);
+                }
+            }
+        }
+
         private void removeDatabase(final String address, final int port, final String database, final String username, final String password) {
 
             if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This operation cannot be undone.", database) == DialogUtils.YES) {
@@ -430,6 +428,7 @@ public class SplashFrame extends JFrame {
                                 }
 
                             });
+                            ServerController.getInstance().removeServer(server);
                             DialogUtils.displayMessage("Database Removed", String.format("<html>Database <i>%s</i> successfully removed.</html>", database));
                         } catch (Exception ex) {
                             try {
@@ -466,17 +465,18 @@ public class SplashFrame extends JFrame {
                             }
 
                         });
+                        doSave();
                         DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
                     } catch (Throwable ex) {
                         ex.printStackTrace();
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
-                                
+
                                 @Override
                                 public void run() {
                                     setVisible(false);
                                 }
-                                
+
                             });
                         } catch (Exception ex1) {
                         }
@@ -497,7 +497,7 @@ public class SplashFrame extends JFrame {
             this.updateUI();
         }
 
-        private boolean doSave() {
+        private void doSave() {
             if (form != null) {
                 if (form.validateForm()) {
                     String name = form.getValueForStringField(nameField);
@@ -520,15 +520,15 @@ public class SplashFrame extends JFrame {
 
                     if (existingServer != null && existingServer != server) {
                         DialogUtils.displayMessage("There's already a server named " + name + ".");
-                        return false;
+                        return;
                     } else {
                         ServerController.getInstance().saveServers();
                     }
 
-                    return true;
+                    serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
+                    serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
                 }
             }
-            return false;
         }
 
         private void updateStateOfForm() {
@@ -574,6 +574,7 @@ public class SplashFrame extends JFrame {
                 MedSavantServerInfo server = (MedSavantServerInfo) o[1];
                 int result = DialogUtils.askYesNo("Remove Server", String.format("Really remove %s?", server.getNickname()));
                 if (result == DialogUtils.YES) {
+                    
                     ServerController.getInstance().removeServer(server);
                 }
             }
