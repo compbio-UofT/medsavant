@@ -5,6 +5,7 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
+import java.awt.BorderLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
@@ -27,6 +28,10 @@ public class AppStoreApp implements LaunchableApp {
             final MedSavantAppInstaller mai = new MedSavantAppInstaller();
 
             appStore = new jAppStore("MedSavant App Store", maf, mai);
+            
+            view = new JPanel();
+            view.setLayout(new BorderLayout());
+            view.add(appStore.getContentPane(),BorderLayout.CENTER);
         }
         
     }
@@ -38,11 +43,11 @@ public class AppStoreApp implements LaunchableApp {
         return view;
     }
 
-    private void initView() {
+    /*private void initView() {
         if (view == null) {
             view = new JPanel();
         }
-    }
+    }*/
 
     @Override
     public void viewWillUnload() {
@@ -50,9 +55,9 @@ public class AppStoreApp implements LaunchableApp {
 
     @Override
     public void viewWillLoad() {
-        initView();
-        MedSavantFrame.getInstance().getDashboard().goHome();
-        appStore.showStore();
+        //initView();
+        //MedSavantFrame.getInstance().getDashboard().goHome();
+        //appStore.showStore();
     }
 
     @Override
@@ -61,7 +66,7 @@ public class AppStoreApp implements LaunchableApp {
 
     @Override
     public void viewDidLoad() {
-        MedSavantFrame.getInstance().getDashboard().goHome();
+        //MedSavantFrame.getInstance().getDashboard().goHome();
     }
 
     @Override
