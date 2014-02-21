@@ -258,8 +258,7 @@
             });//end msInvoke(...getCustomVariantFields...)         
      }
 
-        //var PHENOME_CENTRAL_PROJECT_NAME = 'pc';
-        var PHENOME_CENTRAL_PROJECT_NAME = 'test';
+        var PHENOME_CENTRAL_PROJECT_NAME = 'pc';        
         function getFilteredVariants(){               
             msInvoke('ProjectManager', 'getProjectID', [PHENOME_CENTRAL_PROJECT_NAME], function(projectId){
                 if(projectId === -1){
