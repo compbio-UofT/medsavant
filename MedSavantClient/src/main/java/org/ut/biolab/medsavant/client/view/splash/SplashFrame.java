@@ -18,14 +18,6 @@
  */
 package org.ut.biolab.medsavant.client.view.splash;
 
-import com.apple.eawt.AboutHandler;
-import com.apple.eawt.AppEvent.AboutEvent;
-import com.apple.eawt.AppEvent.PreferencesEvent;
-import com.apple.eawt.AppEvent.QuitEvent;
-import com.apple.eawt.Application;
-import com.apple.eawt.PreferencesHandler;
-import com.apple.eawt.QuitHandler;
-import com.apple.eawt.QuitResponse;
 import com.explodingpixels.macwidgets.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,12 +28,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
@@ -57,6 +53,7 @@ import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
+import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
@@ -79,7 +76,7 @@ import org.ut.biolab.mfiume.app.jAppStore;
 public class SplashFrame extends JFrame {
 
     private static Log LOG = LogFactory.getLog(SplashFrame.class);
-    
+
     private final JPanel primaryPanel;
     private jAppStore appStore;
 
@@ -91,11 +88,11 @@ public class SplashFrame extends JFrame {
         if (ClientMiscUtils.MAC) {
             MacUtils.makeWindowLeopardStyle(this.getRootPane());
         }
-        
+
         this.setTitle("MedSavant");
         this.setResizable(false);
         this.setBackground(Color.white);
-        
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         this.setLayout(new MigLayout("filly, insets 0, gapx 0, height 530, width 750, hidemode 3"));
@@ -144,7 +141,7 @@ public class SplashFrame extends JFrame {
             }
         });
         fileMenu.add(appItem);
-        this.setJMenuBar(menuBar);
+        //this.setJMenuBar(menuBar);
 
         this.pack();
         this.setLocationRelativeTo(null);
@@ -182,7 +179,6 @@ public class SplashFrame extends JFrame {
         private MedSavantServerInfo server;
 
         private JPanel adminPanel;
-        private JPanel editPanel;
         private JButton chooseButton;
         private JButton cancelButton;
         private JButton saveButton;
@@ -284,11 +280,8 @@ public class SplashFrame extends JFrame {
 
             container.add(form, "wrap, aligny top");
 
-            editPanel = new JPanel();
-            editPanel.setLayout(new MigLayout("insets 0, fillx, alignx trailing"));
-
             chooseButton = ViewUtil.getTexturedButton("Connect");
-            
+
             cancelButton = ViewUtil.getTexturedButton("Cancel");
             saveButton = ViewUtil.getTexturedButton("Save");
 
@@ -331,40 +324,166 @@ public class SplashFrame extends JFrame {
             saveButton.setVisible(false);
 
             adminPanel = ViewUtil.getClearPanel();
-            /*
-             adminPanel.setLayout(new MigLayout("insets 0, center"));
 
-             final JButton createDBButton = ViewUtil.getTexturedButton("Create Database");
-             final JButton deleteDBButton = ViewUtil.getTexturedButton("Delete Database");
+            adminPanel.setLayout(new MigLayout("insets 0, center"));
 
-             final JToggleButton admin = ViewUtil.getSoftToggleButton("Administrative Options");
+            final JLabel adminLabel = ViewUtil.getSettingsHelpLabel("Requires administrative priviledges");
+            final JButton createDBButton = ViewUtil.getTexturedButton("Create Database");
+            final JButton deleteDBButton = ViewUtil.getTexturedButton("Delete Database");
 
-             adminPanel.add(admin, "wrap");
-             adminPanel.add(createDBButton, "split");
-             adminPanel.add(deleteDBButton, "wrap");
+            final JToggleButton admin = ViewUtil.getSoftToggleButton("Database Administration");
 
-             createDBButton.setVisible(false);
-             deleteDBButton.setVisible(false);
+            createDBButton.addActionListener(new ActionListener() {
 
-             admin.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
 
-             @Override
-             public void actionPerformed(ActionEvent e) {
-             boolean isAdministrating = admin.isSelected();
-             createDBButton.setVisible(isAdministrating);
-             deleteDBButton.setVisible(isAdministrating);
-             }
+                    // validate the form
+                    if (form != null) {
+                        if (form.validateForm()) {
 
-             });
+                            String database = form.getValueForStringField(databaseField);
 
-             adminPanel.setVisible(false);
-             */
+                            if (DialogUtils.askYesNo(
+                                    "Create Database",
+                                    String.format(
+                                            "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
+                                String host = form.getValueForStringField(hostField);
+                                int port = form.getValueForIntegerField(portField);
+                                String username = form.getValueForStringField(usernameField);
+                                String password = form.getValueForStringField(passwordField);
+
+                                createDatabase(host, port, database, username, password);
+                            }
+                        }
+                    }
+                }
+
+            });
+
+            deleteDBButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    // validate the form
+                    if (form != null) {
+                        if (form.validateForm()) {
+
+                            String host = form.getValueForStringField(hostField);
+                            int port = form.getValueForIntegerField(portField);
+                            String database = form.getValueForStringField(databaseField);
+                            String username = form.getValueForStringField(usernameField);
+                            String password = form.getValueForStringField(passwordField);
+
+                            removeDatabase(host, port, database, username, password);
+                        }
+                    }
+                }
+            });
+
+            adminPanel.add(admin, "wrap");
+            adminPanel.add(adminLabel, "wrap");
+            adminPanel.add(createDBButton, "split");
+            adminPanel.add(deleteDBButton, "wrap");
+
+            adminLabel.setVisible(false);
+            createDBButton.setVisible(false);
+            deleteDBButton.setVisible(false);
+
+            admin.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    boolean isAdministrating = admin.isSelected();
+                    adminLabel.setVisible(isAdministrating);
+                    createDBButton.setVisible(isAdministrating);
+                    deleteDBButton.setVisible(isAdministrating);
+                }
+
+            });
+
+            container.add(adminPanel, "wrap");
+            //adminPanel.setVisible(false);
 
             this.add(container, BorderLayout.CENTER);
             this.add(bottomMenu, BorderLayout.SOUTH);
             this.updateUI();
 
             updateStateOfForm();
+        }
+
+        private void removeDatabase(final String address, final int port, final String database, final String username, final String password) {
+
+            if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This operation cannot be undone.", database) == DialogUtils.YES) {
+                new ProgressDialog("Removing Database", String.format("<html>Removing database <i>%s</i>. Please wait.</html>", database)) {
+                    @Override
+                    public void run() {
+                        try {
+                            MedSavantClient.initializeRegistry(address, port + "");
+                            MedSavantClient.SetupManager.removeDatabase(address, port, database, username, password.toCharArray());
+                            SwingUtilities.invokeAndWait(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    setVisible(false);
+                                }
+
+                            });
+                            DialogUtils.displayMessage("Database Removed", String.format("<html>Database <i>%s</i> successfully removed.</html>", database));
+                        } catch (Exception ex) {
+                            try {
+                                SwingUtilities.invokeAndWait(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        setVisible(false);
+                                    }
+
+                                });
+                            } catch (Exception ex1) {
+                                Logger.getLogger(SplashFrame.class.getName()).log(Level.SEVERE, null, ex1);
+                            }
+                            ClientMiscUtils.reportError("Database could not be removed: %s", ex);
+                        }
+                    }
+                }.setVisible(true);
+            }
+        }
+
+        private void createDatabase(final String address, final int port, final String database, final String username, final String password) {
+            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
+                @Override
+                public void run() {
+                    try {
+                        MedSavantClient.initializeRegistry(address, port + "");
+                        MedSavantClient.SetupManager.createDatabase(address, port, database, username, password.toCharArray());
+                        SwingUtilities.invokeAndWait(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                setVisible(false);
+                            }
+
+                        });
+                        DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
+                    } catch (Throwable ex) {
+                        ex.printStackTrace();
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                
+                                @Override
+                                public void run() {
+                                    setVisible(false);
+                                }
+                                
+                            });
+                        } catch (Exception ex1) {
+                        }
+                        ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
+                    }
+                }
+            }.setVisible(true);
         }
 
         private void showBlockPanel() {
@@ -416,7 +535,6 @@ public class SplashFrame extends JFrame {
             if (form != null) {
                 form.setEditModeOn(isEditing);
                 adminPanel.setVisible(isEditing);
-                editPanel.setVisible(isEditing);
                 chooseButton.setVisible(!isEditing);
                 cancelButton.setVisible(isEditing);
                 saveButton.setVisible(isEditing);
@@ -509,14 +627,14 @@ public class SplashFrame extends JFrame {
 
                     switch (event.getType()) {
                         case LOGGED_IN:
-                            
+
                             LOG.info("Checking login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
-                            
+
                             // don't log in if the cancel button was pressed
                             if (loginThread.isCancelled() || !isLoggingIn) {
                                 return;
                             }
-                            
+
                             MedSavantFrame frame = MedSavantFrame.getInstance();
                             frame.initializeSessionView();
                             frame.setLocationRelativeTo(null);
@@ -541,7 +659,7 @@ public class SplashFrame extends JFrame {
                 }
 
             });
-            
+
             JPanel container = ViewUtil.getClearPanel();
             container.setLayout(new MigLayout());
 
@@ -570,7 +688,6 @@ public class SplashFrame extends JFrame {
 
             this.add(container, "center, growx 1.0");
 
-            
         }
 
         @Override
@@ -653,9 +770,9 @@ public class SplashFrame extends JFrame {
                 public void actionPerformed(ActionEvent e) {
                     isLoggingIn = false;
                     loginThread.cancel(true);
-                    
+
                     LoginController.getInstance().cancelCurrentLoginAttempt();
-                    
+
                     LOG.info("After clicking cancel login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
 
                     setPageAppropriately();
@@ -708,36 +825,47 @@ public class SplashFrame extends JFrame {
             usernameField.setForeground(ViewUtil.getSemiBlackColor());
             usernameField.setColumns(14);
             panel.add(usernameField, "wrap");
-			usernameField.addKeyListener(new KeyListener()
-				{	
-					@Override
-					public void keyPressed(KeyEvent e) {
-						if (e.getKeyCode() == KeyEvent.VK_ENTER)
-							doSignIntoServer(server);
-					}
-					@Override public void keyReleased(KeyEvent e) {}
-					@Override public void keyTyped(KeyEvent e) {}
-				}
-			);
-			
-			
+            usernameField.addKeyListener(new KeyListener() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        doSignIntoServer(server);
+                    }
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                }
+
+                @Override
+                public void keyTyped(KeyEvent e) {
+                }
+            }
+            );
+
             passwordField = new PlaceHolderPasswordField();
             passwordField.setPlaceholder("Password");
             passwordField.setFont(new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 20));
             passwordField.setForeground(ViewUtil.getSemiBlackColor());
             passwordField.setColumns(14);
             panel.add(passwordField, "wrap");
-			passwordField.addKeyListener(new KeyListener()
-				{	
-					@Override
-					public void keyPressed(KeyEvent e) {
-						if (e.getKeyCode() == KeyEvent.VK_ENTER)
-							doSignIntoServer(server);
-					}
-					@Override public void keyReleased(KeyEvent e) {}
-					@Override public void keyTyped(KeyEvent e) {}
-				}
-			);
+            passwordField.addKeyListener(new KeyListener() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        doSignIntoServer(server);
+                    }
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                }
+
+                @Override
+                public void keyTyped(KeyEvent e) {
+                }
+            }
+            );
 
             rememberPasswordCheckbox = new JCheckBox("Remember Password");
             rememberPasswordCheckbox.setFocusable(false);
@@ -814,7 +942,7 @@ public class SplashFrame extends JFrame {
             if (isLoggingIn) {
                 return;
             }
-            
+
             isLoggingIn = true;
 
             loginThread = new MedSavantWorker<Void>("LoginView") {
@@ -832,7 +960,7 @@ public class SplashFrame extends JFrame {
                     return null;
                 }
             };
-            
+
             loginThread.execute();
         }
 
@@ -975,8 +1103,6 @@ public class SplashFrame extends JFrame {
             normalSplitScreen.refresh();
         }
     }
-
-   
 
     public static void main(String[] a) {
         SplashFrame loginFrame = new SplashFrame();
