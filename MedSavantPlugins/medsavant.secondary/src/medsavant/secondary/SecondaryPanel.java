@@ -642,9 +642,6 @@ public class SecondaryPanel extends JPanel {
 							/* Get all the user settings. */
 							setAllValuesFromFields();
 
-							/* Every time an analysis is run, parameters/settings are saved. */
-							saveProperties();
-
 							/*  Get discovery findings. Initialize or update for current DNA ID. */
 							if (discFind == null || !currentIndividualDNA.equals(discFind.dnaID)) {
 								discFind= new SecondaryFindings(currentIndividualDNA);
