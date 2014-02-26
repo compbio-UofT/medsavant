@@ -260,8 +260,11 @@ public class VariantSummaryPanel extends JScrollPane {
 	public void updateOtherIndividualsPane(final SimpleVariant simpleVar) {
 		/* Clearing a collapsible pane leads to weird errors, so I'm removing it
 		 * and adding it back. */
-		if (otherIndividualsPane != null)
+		if (otherIndividualsPane != null) {
 			summaryPanel.remove(otherIndividualsPane);
+			otherIndividualsThread.cancel(true);
+		}
+			
 		otherIndividualsPane= getCollapsiblePane(otherIndividualsPaneTitle);
 		summaryPanel.add(otherIndividualsPane, "wrap");
 		
@@ -272,7 +275,8 @@ public class VariantSummaryPanel extends JScrollPane {
 		otherIndividualsPane.revalidate();
 		
 		/* Get the other individuals DNA IDs. */		
-		otherIndividualsThread= new MedSavantWorker<Void>("updateOtherIndividualsPane")
+		// add a random number to differentiate the threads by pagename
+		otherIndividualsThread= new MedSavantWorker<Void>("updateOtherIndividualsPane" + Double.toString(Math.random()))
 		{
 			@Override
 			protected void showSuccess(Void result) {
@@ -280,7 +284,7 @@ public class VariantSummaryPanel extends JScrollPane {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				JPanel dnaIDPanel= new JPanel();
+				JPanel dnaIDPanel;
 				List<String> dnaIDList= getAllDNAIDsForVariant(simpleVar);
 				Collections.sort(dnaIDList); // sort the DNA IDs so that a user can scroll through quickly
 				
@@ -307,8 +311,11 @@ public class VariantSummaryPanel extends JScrollPane {
 					dnaIDPanel.add(new JLabel(dnaID), "wrap");
 				}
 				
-				otherIndividualsPane.add(dnaIDPanel);
-				otherIndividualsPane.revalidate();
+				/* Only add the individuals if this thread hasn't been cancelled. */
+				if (!otherIndividualsThread.isCancelled()) {
+					otherIndividualsPane.add(dnaIDPanel);
+					otherIndividualsPane.revalidate();
+				}
 				
 				return null;
 			}

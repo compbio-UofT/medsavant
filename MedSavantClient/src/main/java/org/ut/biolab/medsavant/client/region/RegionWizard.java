@@ -687,6 +687,9 @@ public class RegionWizard extends WizardDialog {
 
             for (Object[] rowData : selectedGenesPanel.getData()) {
                 output.write(rowData[1] + "\t" + rowData[2] + "\t" + rowData[3] + "\t" + rowData[0] + "\n");
+				
+				System.out.println("[TESTING]: " + Arrays.toString(rowData)); //////////////////TESTING
+				
             }
 
             output.close();

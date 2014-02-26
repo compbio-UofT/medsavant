@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -101,6 +102,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
@@ -108,6 +110,7 @@ import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.view.JScrollMenu;
 import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
+import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 
 
 /**
@@ -143,14 +146,13 @@ public class DiscoveryPanel extends JPanel {
 		"NON_FS_SUBSTITUTION", "NON_FS_DUPLICATION", "SPLICING", "STOPGAIN", 
 		"START_LOSS"
 		};
-	private static final String EXIST_KEYWORD= "Exists";
-	private static final String EQUALS_KEYWORD= "=";
-	private static final String LESS_KEYWORD= "<";
-	private static final String GREATER_KEYWORD= ">";
-	private static final String LIKE_KEYWORD= "Like";
+	public static final String EXIST_KEYWORD= "Exists";
+	public static final String EQUALS_KEYWORD= "=";
+	public static final String LESS_KEYWORD= "<";
+	public static final String GREATER_KEYWORD= ">";
+	public static final String LIKE_KEYWORD= "Like";
 	private static final List<String> OPERATOR_OPTIONS= Arrays.asList(
 		EXIST_KEYWORD, EQUALS_KEYWORD, LESS_KEYWORD, GREATER_KEYWORD, LIKE_KEYWORD);
-	private static final String GENE_COLUMN_KEYWORD= "jannovar gene symbol"; // may change later
 	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
 	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
 	private static final String ALL_GENE_PANEL= DiscoveryFindings.ALL_GENE_PANEL;
@@ -237,6 +239,7 @@ public class DiscoveryPanel extends JPanel {
 	private VariantSummaryPanel vsp;
 	private int patientPanelInsertPosition= 2;
 	private JTextArea errorMessage;
+	private GenePanel customGenePanel;
     
 	
 	public DiscoveryPanel() {
@@ -248,63 +251,10 @@ public class DiscoveryPanel extends JPanel {
 		
 		// the local server
 		server= new DiscoveryHSQLServer(DISCOVERY_DB_USER, DISCOVERY_DB_PASSWORD);
-	}
-
+	}	
 	
 	public JPanel getView() {
 		return view;
-	}
-	
-	
-	/**
-	 * Inner class: From the filter panes, stores details that are required for
-	 * building ComboConditions at runtime.
-	 */
-	private class FilterDetails {
-		private String variantProperty;
-		private String operator;
-		private JTextField jtf;
-		
-		private FilterDetails() {
-		}
-		
-		/**
-		 * Set the FilterDetails fields.
-		 * @param variantProperty The name of the variant property used for filtering
-		 * @param operator The logical operator applied
-		 * @param jtf the JTextField where the condition is being specified
-		 */
-		private void setDetails(String variantProperty, String operator, JTextField jtf) {
-			this.variantProperty= variantProperty;
-			this.operator= operator;
-			this.jtf= jtf;			
-		}
-		
-		/**
-		 * Get the current Condition object based on this filter.
-		 */
-		private Condition getCurrentCondition() {
-			Condition c= null;
-			Map<String, String> columns= discFind.dbAliasToColumn;
-		
-			if (columns.get(variantProperty) != null) {
-				if (operator.equals(DiscoveryPanel.LIKE_KEYWORD)) {
-					/* Special case: For the LIKE operator, a "%" wildcard is 
-					 * appended to the end of the text from the text field. */
-					c= BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText() + "%");
-				} else if (operator.equals(DiscoveryPanel.EQUALS_KEYWORD)) {
-					c= BinaryCondition.equalTo(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText());
-				} else if (operator.equals(DiscoveryPanel.LESS_KEYWORD)) {
-					c= BinaryCondition.lessThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
-				} else if (operator.equals(DiscoveryPanel.GREATER_KEYWORD)) {
-					c= BinaryCondition.greaterThan(discFind.ts.getDBColumn(columns.get(variantProperty)), jtf.getText(), false);
-				} else if (operator.equals(DiscoveryPanel.EXIST_KEYWORD)) {
-					c= UnaryCondition.isNotNull(discFind.ts.getDBColumn(columns.get(variantProperty)));
-				}	
-			}
-			
-			return c;
-		}
 	}
 	
 	
@@ -862,7 +812,7 @@ public class DiscoveryPanel extends JPanel {
 		final JTextField operatorText= new JTextField(10); // 10 character spaces wide
 		
 		// Add this FilterDetails object to the list of conditions
-		final FilterDetails filterPanelDetails= new FilterDetails();
+		final FilterDetails filterPanelDetails= new FilterDetails(this);
 		filterPanelDetails.setDetails(name, operatorButton.getText(), operatorText); // initialize for the default operator
 		conditionList.add(filterPanelDetails);
 		
@@ -999,8 +949,9 @@ public class DiscoveryPanel extends JPanel {
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem();
 		
 		// Add this FilterDetails object to the list of conditions
-		final FilterDetails filterPanelDetails= new FilterDetails();
-		filterPanelDetails.setDetails(GENE_COLUMN_KEYWORD, LIKE_KEYWORD, geneTextField);
+		final FilterDetails filterPanelDetails= new FilterDetails(this);
+		filterPanelDetails.setDetails(BasicVariantColumns.JANNOVAR_SYMBOL.getAlias(),
+			LIKE_KEYWORD, geneTextField);
 		
 		// Detect changes to the panel
 		genePanelComboBox.addActionListener(
@@ -1054,73 +1005,16 @@ public class DiscoveryPanel extends JPanel {
 					jpm.show(geneButton, 0, 0);
 				}
 			}
-		);		
+		);
 		
+		// Create a custom gene panel JPanel
+		customGenePanel= new GenePanel(this);
+		customGenePanel.setBackground(workview.getBackground());
 		
-		/* Custome gene panel entry using a GenesConditionGenerator. */
-		JPanel customGenePanelEntry = new JPanel();
-		customGenePanelEntry.setLayout(new BoxLayout(customGenePanelEntry, BoxLayout.Y_AXIS));
-		
-		final SearchConditionItem sci= new SearchConditionItem("", null);
-		
-		/* Replace 'OntologyConditionGenerator' with 'GenesConditionGenerator' to try out the gene query pane. */
-		//final ComprehensiveConditionGenerator ccg = new OntologyConditionGenerator(OntologyType.HPO);
-		final GenesConditionGenerator ccg = new GenesConditionGenerator();
-		
-		final SearchConditionEditorView scev= ccg.getViewGeneratorForItem(sci);
-		final SearchConditionPanel scp = new SearchConditionPanel(scev, null);
-
-		JButton OKButton = new JButton("OK");
-		JButton cancelButton = new JButton("Cancel");
-
-		OKButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					//save changes: this saves the users selections so next time the dialog pops up, those
-					//same selections will be checked.  For most SearchConditionEditorViews, this isn't necessary,
-					//but it is necessary for some (e.g. GenesConditionGenerator).  Best to always call it.
-					if (scev.saveChanges()) {
-						try {
-							String encodedSearch = sci.getSearchConditionEncoding();
-							LOG.info("Restoring encoded search "+encodedSearch);
-							Condition c = ccg.getConditionsFromEncoding(encodedSearch);
-							LOG.info("Got condition " + c.toString());
-							//this condition can be used to query for
-						} catch (Exception ex) {
-							ex.printStackTrace();
-							System.err.println(ex);
-						}
-					}
-				} catch (IllegalArgumentException ex) {
-					DialogUtils.displayError(ex.getMessage());
-				}
-			}
-
-		});
-
-		cancelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//add code to cancel
-			}
-		});
-
-		scev.setBackground(workview.getBackground());
-		scev.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-		scp.setBorder(BorderFactory.createLineBorder(Color.RED));
-		
-		scp.getButtonPanel().add(cancelButton);
-		scp.getButtonPanel().add(OKButton);
-		
-		scp.loadEditorViewInBackground(null);
-		customGenePanelEntry.add(scp);
-		collapsibleGene.add(customGenePanelEntry, "span");
-		
-		/////////////////////
-		
+		// Add the components to the collapsible pane
 		collapsibleGene.add(geneButton);
-		collapsibleGene.add(genePanelComboBox);
+		collapsibleGene.add(genePanelComboBox, "wrap");
+		collapsibleGene.add(customGenePanel.getPanel(), "span");
 		
 		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
@@ -1129,6 +1023,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		return collapsibleGene;
 	}
+	
 	
 	/**
 	 * Update and set the new ComboCondition based on user selections and the
@@ -1147,6 +1042,11 @@ public class DiscoveryPanel extends JPanel {
 		
 		// Add the mutations to the new ComboCondition
 		addMutationCondition(mutationFilterList);
+		
+		// Add the gene panel genes, if a panel has been entered
+		if (customGenePanel != null || !customGenePanel.getComboCondition().isEmpty()) {
+			newComboCondition.addCondition(customGenePanel.getComboCondition());
+		}
 		
 		discFind.setComboCondition(newComboCondition);
 	}
@@ -1589,5 +1489,13 @@ public class DiscoveryPanel extends JPanel {
 				patientPanel.remove(errorMessage);
 		}
 	}
+
 	
+	/**
+	 * Get the DiscoveryFindings object from this Discovery app.
+	 * @return The DiscoveryFindings object.
+	 */
+	public DiscoveryFindings getDiscoveryFindings() {
+		return this.discFind;
+	}
 }
