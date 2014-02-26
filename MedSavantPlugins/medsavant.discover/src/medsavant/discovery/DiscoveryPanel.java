@@ -2,8 +2,6 @@ package medsavant.discovery;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.UnaryCondition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
@@ -23,7 +21,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -90,6 +87,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
@@ -100,17 +98,11 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspec
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.shared.model.Gene;
+import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.view.JScrollMenu;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
-import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
-import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 
 
 /**
@@ -155,9 +147,9 @@ public class DiscoveryPanel extends JPanel {
 		EXIST_KEYWORD, EQUALS_KEYWORD, LESS_KEYWORD, GREATER_KEYWORD, LIKE_KEYWORD);
 	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
 	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
-	private static final String ALL_GENE_PANEL= DiscoveryFindings.ALL_GENE_PANEL;
 	private static final String LEFT_HIDE_STRING= "<<";
 	private static final String RIGHT_HIDE_STRING= ">>";
+	private static final String CUSTOM_GENE_PANEL_TEXT= "Custom...";
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 0;
@@ -179,7 +171,7 @@ public class DiscoveryPanel extends JPanel {
 	private double afThreshold;
 	private String[] chooserAFArray;
 	private List<String> mutationFilterList= new LinkedList<String>();
-	private List<String> genePanelList= Arrays.asList(ALL_GENE_PANEL, "ACMG", "CGD");
+	private List<String> genePanelList;
 	private String currentGenePanel;
 	private String[] mutationArray;
 	
@@ -944,8 +936,8 @@ public class DiscoveryPanel extends JPanel {
 		
 		final JButton geneButton= new JButton(GENE_PANEL_TEXT + triangleString);
 		final JTextField geneTextField= new JTextField(10); // 10 character spaces wide
-		final JComboBox genePanelComboBox= new JComboBox(genePanelList.toArray());
-		genePanelComboBox.setSelectedItem(ALL_GENE_PANEL); // may be set later from properties - remove this
+		final JComboBox genePanelComboBox= populateGenePanels();
+		genePanelComboBox.setSelectedItem(DiscoveryFindings.ALL_GENE_PANEL);
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem();
 		
 		// Add this FilterDetails object to the list of conditions
@@ -959,6 +951,15 @@ public class DiscoveryPanel extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
 					currentGenePanel= (String) genePanelComboBox.getSelectedItem();
+					if (currentGenePanel.equals(CUSTOM_GENE_PANEL_TEXT)) {
+						// newline before adding, like adding wrap to previous element
+						collapsibleGene.add(customGenePanel.getSearchConditionPanel(), "newline, span");
+					} else {
+						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
+						customGenePanel.clearCondition();
+					}
+					
+					collapsibleGene.revalidate(); // refresh
 				}
 			}
 		);
@@ -983,7 +984,7 @@ public class DiscoveryPanel extends JPanel {
 										collapsibleGene.remove(genePanelComboBox);
 										collapsibleGene.add(geneTextField);
 										conditionList.add(filterPanelDetails);
-										currentGenePanel= ALL_GENE_PANEL;
+										currentGenePanel= DiscoveryFindings.ALL_GENE_PANEL;
 									} else if (s.equals(GENE_PANEL_TEXT)) {
 										collapsibleGene.remove(geneTextField);
 										collapsibleGene.add(genePanelComboBox);
@@ -1007,14 +1008,13 @@ public class DiscoveryPanel extends JPanel {
 			}
 		);
 		
-		// Create a custom gene panel JPanel
-		customGenePanel= new GenePanel(this);
+		// Create a custom gene panel JPanel to be added to the pane later
+		customGenePanel= new GenePanel();
 		customGenePanel.setBackground(workview.getBackground());
 		
 		// Add the components to the collapsible pane
 		collapsibleGene.add(geneButton);
-		collapsibleGene.add(genePanelComboBox, "wrap");
-		collapsibleGene.add(customGenePanel.getPanel(), "span");
+		collapsibleGene.add(genePanelComboBox);
 		
 		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
@@ -1227,6 +1227,80 @@ public class DiscoveryPanel extends JPanel {
 	
 	
 	/**
+	 * Populate a JComboBox with gene panels from the server.
+	 * @return the JComboBox with all gene panel names
+	 */
+	private JComboBox populateGenePanels() {
+		// initialize the gene panel list, convert to list
+		genePanelList= new ArrayList<String>(Arrays.asList(DiscoveryFindings.ALL_GENE_PANEL, 
+			DiscoveryFindings.ACMG_GENE_PANEL, DiscoveryFindings.CGD_GENE_PANEL));
+		
+		// Populate with the existing region lists
+		try {
+			RegionController controller= RegionController.getInstance();
+			for (RegionSet r : controller.getRegionSets()) {
+				genePanelList.add(r.getName());
+			}
+		} catch (Exception e) {
+			LOG.error("[" + this.getClass().getSimpleName() + 
+				"]: Error retrieving gene panels from server.");
+			e.printStackTrace();
+		}
+		
+		// Add the custom gene panel option at the end
+		genePanelList.add(CUSTOM_GENE_PANEL_TEXT);
+		
+		JComboBox output= new JComboBox(genePanelList.toArray());
+		
+		return output;
+	}		
+	
+	
+	/**
+	 * Status bar to report potential errors in the processing of the current 
+	 * patient. If there are no errors, no status is output. Unlike the progress
+	 * status, this one is reported at the top of the patient panel, to increase
+	 * the likelihood that it is seen by the user.
+	 */
+	private void errorStatusReport() {
+		List<String> errorList= new ArrayList<String>();
+		
+		/* Check gender. */
+		if (discFind.getGender().equals(ClientMiscUtils.GENDER_UNKNOWN)) {
+			errorList.add("Patient gender is " + ClientMiscUtils.GENDER_UNKNOWN);
+		}
+		
+		/* Check if allelic depth information is present. */
+		if (!discFind.hasAllelicCoverage()) {
+			errorList.add("Sample missing allelic coverage");
+		}
+		
+		/* Add/remove the errorMessage text. */
+		if (errorList.size() > 0) {
+			patientPanelInsertPosition= 3; // push further buttons down
+			errorMessage.setText(StringUtils.join(errorList.toArray(), "\n"));
+			
+			if (errorMessage.getParent() != patientPanel) { // if not already added
+				patientPanel.add(errorMessage, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
+			}
+		} else {
+			patientPanelInsertPosition= 2; // back to original value
+			if (errorMessage != null)
+				patientPanel.remove(errorMessage);
+		}
+	}
+
+	
+	/**
+	 * Get the DiscoveryFindings object from this Discovery app.
+	 * @return The DiscoveryFindings object.
+	 */
+	public DiscoveryFindings getDiscoveryFindings() {
+		return this.discFind;
+	}
+
+
+	/**
 	 * Load the properties file if it exists.
 	 */
 	private void loadProperties() {
@@ -1303,6 +1377,25 @@ public class DiscoveryPanel extends JPanel {
 		loadProperties();
 		
 		workview.updateUI(); // May need to update the UI based on these properties.
+	}
+	
+		
+	/**
+	 * Convert string list of integers into an int[].
+	 * @param arr String list in the format "[1,2,3,4,5]
+	 */
+	private int[] getIntArrayFromString(String arr) {
+		String[] items = arr.replaceAll("\\[", "").replaceAll("\\]", "").split("\\s?,\\s?");
+
+		int[] results = new int[items.length];
+
+		for (int i = 0; i < items.length; i++) {
+			try {
+				results[i] = Integer.parseInt(items[i]);
+			} catch (NumberFormatException nfe) {};
+		}
+		
+		return results;
 	}
 	
 	
@@ -1435,67 +1528,5 @@ public class DiscoveryPanel extends JPanel {
 			writer.newLine();
 		}
 		writer.close();
-	}
-	
-	/**
-	 * Convert string list of integers into an int[].
-	 * @param arr String list in the format "[1,2,3,4,5]
-	 */
-	private int[] getIntArrayFromString(String arr) {
-		String[] items = arr.replaceAll("\\[", "").replaceAll("\\]", "").split("\\s?,\\s?");
-
-		int[] results = new int[items.length];
-
-		for (int i = 0; i < items.length; i++) {
-			try {
-				results[i] = Integer.parseInt(items[i]);
-			} catch (NumberFormatException nfe) {};
-		}
-		
-		return results;
-	}
-	
-	
-	/**
-	 * Status bar to report potential errors in the processing of the current 
-	 * patient. If there are no errors, no status is output. Unlike the progress
-	 * status, this one is reported at the top of the patient panel, to increase
-	 * the likelihood that it is seen by the user.
-	 */
-	private void errorStatusReport() {
-		List<String> errorList= new ArrayList<String>();
-		
-		/* Check gender. */
-		if (discFind.getGender().equals(ClientMiscUtils.GENDER_UNKNOWN)) {
-			errorList.add("Patient gender is " + ClientMiscUtils.GENDER_UNKNOWN);
-		}
-		
-		/* Check if allelic depth information is present. */
-		if (!discFind.hasAllelicCoverage()) {
-			errorList.add("Sample missing allelic coverage");
-		}
-		
-		/* Add/remove the errorMessage text. */
-		if (errorList.size() > 0) {
-			patientPanelInsertPosition= 3; // push further buttons down
-			errorMessage.setText(StringUtils.join(errorList.toArray(), "\n"));
-			
-			if (errorMessage.getParent() != patientPanel) { // if not already added
-				patientPanel.add(errorMessage, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
-			}
-		} else {
-			patientPanelInsertPosition= 2; // back to original value
-			if (errorMessage != null)
-				patientPanel.remove(errorMessage);
-		}
-	}
-
-	
-	/**
-	 * Get the DiscoveryFindings object from this Discovery app.
-	 * @return The DiscoveryFindings object.
-	 */
-	public DiscoveryFindings getDiscoveryFindings() {
-		return this.discFind;
 	}
 }

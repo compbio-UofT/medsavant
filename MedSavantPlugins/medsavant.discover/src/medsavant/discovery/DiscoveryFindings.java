@@ -41,6 +41,8 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 public class DiscoveryFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	public static final String ALL_GENE_PANEL= "All genes";
+	public static final String ACMG_GENE_PANEL= "ACMG";
+	public static final String CGD_GENE_PANEL= "CGD";
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
 	private final String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getAlias();
@@ -81,7 +83,7 @@ public class DiscoveryFindings {
 		this.dnaID= dnaID;
 					
 		ts= ProjectController.getInstance().getCurrentVariantTableSchema();
-		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names
+		dbAliasToColumn= getDbToHumanReadableMap(); // Get column aliases from column names;
 		header= getTableHeader();
 		effectIndex= header.indexOf(JANNOVAR_EFFECT);
 		geneSymbolIndex= header.indexOf(JANNOVAR_GENE);		
@@ -341,7 +343,10 @@ public class DiscoveryFindings {
 			String classification= query.get(0);
 			String inheritance= query.get(1);
 
-			if ((genePanel.equals(ALL_GENE_PANEL) || 
+			// If the specified gene panel is not the ACMG panel or CGD panel, 
+			// output the gene if the coverage and ratios are ok. If it is in those
+			// panels, check the inheritance.
+			if ((!(genePanel.equals(ACMG_GENE_PANEL) || genePanel.equals(CGD_GENE_PANEL)) || 
 					(inheritance != null && !inheritance.equals(""))) 
 					&& coverageAndRatioPass(row, true)) {
 						
