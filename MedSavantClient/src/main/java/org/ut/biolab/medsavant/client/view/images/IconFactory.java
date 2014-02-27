@@ -169,7 +169,7 @@ public class IconFactory {
             case APP_PANELS:
                 return getIcon(ICON_ROOT + "icon-panels.png");
             case WAIT:
-                return getIcon(ICON_ROOT + "wait.gif");
+                return getIcon(ICON_ROOT + "indefinite-1.gif");
             case SEARCH_PH:
                 return getIcon(ICON_ROOT + "search_placeholder.png");
             case CLOSE:

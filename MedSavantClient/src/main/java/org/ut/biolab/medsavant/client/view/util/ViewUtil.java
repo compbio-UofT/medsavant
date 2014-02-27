@@ -770,10 +770,9 @@ public final class ViewUtil {
             label.setText(text);
         }
     }
-
-    public static void adjustForegroundColorOnMouseover(final JComponent l, int amount) {
+    
+    public static void adjustForegroundColorOnMouseover(final JComponent l, final Color newColor) {
         final Color originalColor = l.getForeground();
-        final Color newColor = new Color(Math.min(originalColor.getRed() + amount, 255), Math.min(originalColor.getBlue() + amount, 255), Math.min(originalColor.getGreen() + amount, 255));
         l.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -797,6 +796,12 @@ public final class ViewUtil {
                 l.setForeground(originalColor);
             }
         });
+    }
+
+    public static void adjustForegroundColorOnMouseover(final JComponent l, int amount) {
+        final Color originalColor = l.getForeground();
+        final Color newColor = new Color(Math.min(originalColor.getRed() + amount, 255), Math.min(originalColor.getBlue() + amount, 255), Math.min(originalColor.getGreen() + amount, 255));
+        adjustForegroundColorOnMouseover(l,newColor);
     }
 
     public static Font getBigInputFont() {
@@ -1185,6 +1190,10 @@ public final class ViewUtil {
      */
     public static Color getMedSavantBlueColor() {
         return new Color(57,124,193);
+    }
+    
+    public static Color getMedSavantLightBlueColor() {
+        return new Color(65,164,219);
     }
 
 }

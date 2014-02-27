@@ -612,7 +612,11 @@ public class SplashFrame extends JFrame {
                             frame2.setVisible(false);
                             break;
                         case LOGIN_FAILED:
-                            DialogUtils.displayException("Login Failed", event.getException().getLocalizedMessage(), event.getException());
+                            
+                            Exception e = event == null ? null : event.getException();
+                            String msg = event == null ? "" : event.getException().getLocalizedMessage();
+                            
+                            DialogUtils.displayException("Login Failed", msg,e);
                             event.getException().printStackTrace();
                             break;
                     }

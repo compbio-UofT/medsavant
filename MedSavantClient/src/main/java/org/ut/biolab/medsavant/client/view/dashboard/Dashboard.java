@@ -172,7 +172,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         homeMenu = new NiceMenu();
         
-        homeMenu.addLeftComponent(getHomeButton());
+        homeMenu.setTitle("MedSavant");
+        //homeMenu.addLeftComponent(getHomeButton());
         //homeMenu.addRightComponent(getLogoutButton());
         
         baseLayer.add(homeMenu, BorderLayout.NORTH);
@@ -350,12 +351,12 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     
     private JLabel getHomeButton() {
-        JLabel homeLabel = new JLabel("MedSavant");
+        JLabel homeLabel = new JLabel("Back");
         homeLabel.setFont(ViewUtil.getBigTitleFont());
-        homeLabel.setForeground(ViewUtil.getSemiBlackColor());
+        homeLabel.setForeground(ViewUtil.getMedSavantBlueColor());
         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        ViewUtil.adjustForegroundColorOnMouseover(homeLabel,-25);
+        ViewUtil.adjustForegroundColorOnMouseover(homeLabel,ViewUtil.getMedSavantLightBlueColor());
 
         final ActionListener goHomeActionListener = new ActionListener() {
 
