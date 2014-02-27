@@ -20,12 +20,14 @@
 package org.ut.biolab.medsavant.client.view.app;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 
@@ -69,7 +71,17 @@ public abstract class MultiSectionApp implements LaunchableApp {
             view = new JPanel();
             view.setLayout(new BorderLayout());
 
-            final JTabbedPane tabs = new JTabbedPane();
+            final JTabbedPane tabs = new JTabbedPane() {
+
+                public Color getForegroundAt(int index) {
+                    if (getSelectedIndex() == index) {
+                        return Color.WHITE;
+                    }
+                    return Color.BLACK;
+                }
+            };
+
+            tabs.setUI(new MSTabbedPaneUI());
             tabs.setFocusable(false);
 
             final AppSubSection[] subsections = getSubSections();
@@ -79,16 +91,18 @@ public abstract class MultiSectionApp implements LaunchableApp {
             if (subsections.length > 0) {
                 currentSubSection = subsections[0];
             }
-            
+
             tabs.addChangeListener(new ChangeListener() {
 
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    if (currentSubSection != null) { currentSubSection.viewDidUnload(); }
+                    if (currentSubSection != null) {
+                        currentSubSection.viewDidUnload();
+                    }
                     currentSubSection = subsections[tabs.getSelectedIndex()];
                     currentSubSection.viewWillLoad();
                 }
-                
+
             });
 
             if (getPersistentPanels() != null

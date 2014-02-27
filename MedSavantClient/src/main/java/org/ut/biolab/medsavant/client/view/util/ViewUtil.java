@@ -958,11 +958,15 @@ public final class ViewUtil {
     }
 
     public static JLabel getEmphasizedLabel(String s) {
+        return getEmphasizedLabel(s,fColorScheme.getCategoryTextColor());
+    }
+    
+    public static JLabel getEmphasizedLabel(String s, Color c) {
         JLabel sc = new JLabel(s);
         sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 11.0f));
         JLabel l = MacWidgetFactory.makeEmphasizedLabel(sc,
-                fColorScheme.getCategoryTextColor(),
-                fColorScheme.getCategoryTextColor(),
+                c,
+                c,
                 fColorScheme.getCategoryTextShadowColor());
         return l;
     }

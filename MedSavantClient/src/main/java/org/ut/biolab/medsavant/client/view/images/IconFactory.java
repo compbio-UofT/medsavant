@@ -46,7 +46,7 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
-
+        HOME,
         ADDKVP,
         BROWSER,
         BAMFILE,
@@ -134,6 +134,8 @@ public class IconFactory {
     
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case HOME:
+                return getIcon(ICON_ROOT + "icon-home-ios.png");
             case DASHBOARD:
                 return getIcon(ICON_ROOT + "icon-home-inmenu.png");
             case IMPORT_VCF:
