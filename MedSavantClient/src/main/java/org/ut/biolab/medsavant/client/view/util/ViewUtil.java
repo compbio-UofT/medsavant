@@ -71,6 +71,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
@@ -114,9 +115,25 @@ public final class ViewUtil {
     }
 
     public static JButton createHyperLinkButton(String string) {
-        JideButton b = new JideButton(string);
-        b.setButtonStyle(JideButton.HYPERLINK_STYLE);
-        return b;
+        return createHyperlinkButton(string,Color.black,null);
+    }
+    
+    public static JButton createHyperlinkButton(String name, Color color, ActionListener l) {
+        final JideButton button = new JideButton(name);
+        button.setButtonStyle(JideButton.HYPERLINK_STYLE);
+
+        button.setForeground(color);
+        button.setOpaque(false);
+
+        button.setHorizontalAlignment(SwingConstants.LEADING);
+
+        if (l != null) {
+            button.addActionListener(l);
+        }
+        
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        return button;
     }
 
     public static Border getTinyBorder() {
@@ -755,7 +772,7 @@ public final class ViewUtil {
         if (label.getText() == null || label.getText().isEmpty()) {
             return;
         }
-        
+
         if (fm.stringWidth(label.getText()) <= width) {
             return;
         }
@@ -770,7 +787,7 @@ public final class ViewUtil {
             label.setText(text);
         }
     }
-    
+
     public static void adjustForegroundColorOnMouseover(final JComponent l, final Color newColor) {
         final Color originalColor = l.getForeground();
         l.addMouseListener(new MouseListener() {
@@ -801,7 +818,7 @@ public final class ViewUtil {
     public static void adjustForegroundColorOnMouseover(final JComponent l, int amount) {
         final Color originalColor = l.getForeground();
         final Color newColor = new Color(Math.min(originalColor.getRed() + amount, 255), Math.min(originalColor.getBlue() + amount, 255), Math.min(originalColor.getGreen() + amount, 255));
-        adjustForegroundColorOnMouseover(l,newColor);
+        adjustForegroundColorOnMouseover(l, newColor);
     }
 
     public static Font getBigInputFont() {
@@ -819,33 +836,31 @@ public final class ViewUtil {
         cb.setText(text);
         return cb;
     }
-    
+
     public static JPanel getSemiTransparentPanel(final Color color, final float alpha) {
-        return getSemiTransparentPanel(color,alpha,0,null);
+        return getSemiTransparentPanel(color, alpha, 0, null);
     }
 
     public static JPanel getSemiTransparentPanel(final Color color, final float alpha, final int cornerRadius, final Color borderColor) {
-        
+
         JPanel p = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)); // turn on opacity
                 g.setColor(color);
-                
-                Graphics2D g2d = (Graphics2D)g;
+
+                Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
+
                 g2d.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), cornerRadius, cornerRadius);
-                
-                
+
                 if (color != null) {
                     g2d.setColor(borderColor);
-                    g2d.drawRoundRect(0, 0, this.getWidth()-1, this.getHeight()-1, cornerRadius, cornerRadius);
+                    g2d.drawRoundRect(0, 0, this.getWidth() - 1, this.getHeight() - 1, cornerRadius, cornerRadius);
                 }
             }
         };
-        
-        
+
         p.setOpaque(false);
         return p;
     }
@@ -857,9 +872,9 @@ public final class ViewUtil {
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume();
             }
-            
+
         });
-        
+
         p.addMouseListener(new MouseListener() {
 
             @Override
@@ -886,16 +901,32 @@ public final class ViewUtil {
             public void mouseExited(MouseEvent e) {
                 e.consume();
             }
-            
+
         });
     }
-    
+
     public static Font getDefaultFont(int size) {
-        return getDefaultFont(Font.PLAIN,size);
+        return getDefaultFont(Font.PLAIN, size);
     }
-    
-    public static Font getDefaultFont(int style,int size) {
-        return new Font(ViewUtil.getDefaultFontFamily(),style, size);
+
+    public static Font getDefaultFont(int style, int size) {
+        return new Font(ViewUtil.getDefaultFontFamily(), style, size);
+    }
+
+    public static JTabbedPane getMSTabedPane() {
+        JTabbedPane tabs = new JTabbedPane() {
+
+            public Color getForegroundAt(int index) {
+                if (getSelectedIndex() == index) {
+                    return Color.WHITE;
+                }
+                return Color.BLACK;
+            }
+        };
+
+        tabs.setUI(new MSTabbedPaneUI());
+        tabs.setFocusable(false);
+        return tabs;
     }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
@@ -958,9 +989,9 @@ public final class ViewUtil {
     }
 
     public static JLabel getEmphasizedLabel(String s) {
-        return getEmphasizedLabel(s,fColorScheme.getCategoryTextColor());
+        return getEmphasizedLabel(s, fColorScheme.getCategoryTextColor());
     }
-    
+
     public static JLabel getEmphasizedLabel(String s, Color c) {
         JLabel sc = new JLabel(s);
         sc.setFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD, 11.0f));
@@ -1186,18 +1217,18 @@ public final class ViewUtil {
     public static Color getSidebarColor() {
         return fColorScheme.getActiveBackgroundColor();
     }
-    
+
     /**
      * Get the iconic color used in the MedSavant logo.
      *
      * @return the iconic color used in the MedSavant logo
      */
     public static Color getMedSavantBlueColor() {
-        return new Color(57,124,193);
+        return new Color(57, 124, 193);
     }
-    
+
     public static Color getMedSavantLightBlueColor() {
-        return new Color(65,164,219);
+        return new Color(65, 164, 219);
     }
 
 }

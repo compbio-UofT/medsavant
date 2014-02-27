@@ -68,7 +68,8 @@ public class MedSavantFrame extends JFrame {
     private Dashboard sessionDashboard;
     private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
 
-    private static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
+    public static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
+    public static final String USERGUIDE_URI = "http://genomesavant.com/p/medsavant/learn";
 
     //Adds a new function under the 'Debug' menu. The debug menu is not shown if
     //it is empty
@@ -146,36 +147,6 @@ public class MedSavantFrame extends JFrame {
             fileMenu.add(closeItem);
 
         }
-
-        JMenuItem signOutButton = new JMenuItem("Sign Out");
-        signOutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                instance.requestLogout();
-            }
-        });
-        fileMenu.add(signOutButton);
-
-        menuBar.add(fileMenu);
-
-        JMenu helpMenu = new JMenu("Help");
-
-        JMenuItem feedbackItem = new JMenuItem("Send Feedback");
-        feedbackItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    URI uri = URI.create(FEEDBACK_URI);
-                    Desktop.getDesktop().mail(uri);
-                } catch (Exception ex) {
-                }
-            }
-        });
-
-        helpMenu.add(feedbackItem);
-        menuBar.add(helpMenu);
-
-        setJMenuBar(menuBar);
 
         //bottomBar = new BottomBar();
         //add(bottomBar, BorderLayout.SOUTH);
