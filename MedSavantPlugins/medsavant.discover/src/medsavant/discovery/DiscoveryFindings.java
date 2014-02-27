@@ -90,7 +90,8 @@ public class DiscoveryFindings {
 		INDEX_OF_FORMAT= header.indexOf(BasicVariantColumns.FORMAT.getAlias());
 		INDEX_OF_SAMPLE_INFO= header.indexOf(BasicVariantColumns.SAMPLE_INFO.getAlias());
 		
-		getGenderFromDB();
+		if (dnaID != null)
+			getGenderFromDB();
 	}
 	
 	

@@ -108,9 +108,13 @@ public class RegionDetailedListEditor extends DetailedListEditor {
                             ClientMiscUtils.reportError("Could not remove " + set.getName() + ": %s", ex);
                         }
                     }
-                    if (numCouldntRemove != items.size()) {
+                    
+					// Ron: commenting this out cause it's annoying me. 
+					/*
+					if (numCouldntRemove != items.size()) {
                         DialogUtils.displayMessage(String.format("Successfully removed %d list(s)", items.size()));
                     }
+					*/
                 }
             }.setVisible(true);
         }

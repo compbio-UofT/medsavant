@@ -69,6 +69,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import medsavant.discovery.localDB.DiscoveryDB;
 import medsavant.discovery.localDB.DiscoveryHSQLServer;
 import net.miginfocom.swing.MigLayout;
@@ -936,21 +938,36 @@ public class DiscoveryPanel extends JPanel {
 		
 		final JButton geneButton= new JButton(GENE_PANEL_TEXT + triangleString);
 		final JTextField geneTextField= new JTextField(10); // 10 character spaces wide
-		final JComboBox genePanelComboBox= populateGenePanels();
-		genePanelComboBox.setSelectedItem(DiscoveryFindings.ALL_GENE_PANEL);
-		currentGenePanel= (String) genePanelComboBox.getSelectedItem();
+		final JComboBox genePanelComboBox= new JComboBox();
+		populateGenePanels(genePanelComboBox);
+		currentGenePanel= (String) genePanelComboBox.getSelectedItem(); // initialize
 		
 		// Add this FilterDetails object to the list of conditions
 		final FilterDetails filterPanelDetails= new FilterDetails(this);
 		filterPanelDetails.setDetails(BasicVariantColumns.JANNOVAR_SYMBOL.getAlias(),
 			LIKE_KEYWORD, geneTextField);
 		
-		// Detect changes to the panel
+		// Update the gene panels dropdown when the popup menu is made visible
+		genePanelComboBox.addPopupMenuListener(
+			new PopupMenuListener() {
+				@Override public void popupMenuWillBecomeVisible(PopupMenuEvent pme) {
+					populateGenePanels(genePanelComboBox);
+				}
+				
+				@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent pme) {}
+				@Override public void popupMenuCanceled(PopupMenuEvent pme) {}
+			}
+		);
+		
+		// Respond to gene panel selection when a selection has been made (clicked)
 		genePanelComboBox.addActionListener(
 			new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
-					currentGenePanel= (String) genePanelComboBox.getSelectedItem();
+					// If nothing has been selected yet, don't assign null
+					if (genePanelComboBox.getSelectedItem() != null)
+						currentGenePanel= (String) genePanelComboBox.getSelectedItem();				
+					
 					if (currentGenePanel.equals(CUSTOM_GENE_PANEL_TEXT)) {
 						// newline before adding, like adding wrap to previous element
 						collapsibleGene.add(customGenePanel.getSearchConditionPanel(), "newline, span");
@@ -1228,12 +1245,19 @@ public class DiscoveryPanel extends JPanel {
 	
 	/**
 	 * Populate a JComboBox with gene panels from the server.
-	 * @return the JComboBox with all gene panel names
+	 * @param jcb the JComboBox with all gene panel names
 	 */
-	private JComboBox populateGenePanels() {
+	private void populateGenePanels(JComboBox jcb) {
+		// Store the current selection before repopulating
+		String originalSelection= (String) jcb.getSelectedItem();
+		
+		// clear the combobox of current items
+		jcb.removeAllItems();
+		
 		// initialize the gene panel list, convert to list
 		genePanelList= new ArrayList<String>(Arrays.asList(DiscoveryFindings.ALL_GENE_PANEL, 
-			DiscoveryFindings.ACMG_GENE_PANEL, DiscoveryFindings.CGD_GENE_PANEL));
+			DiscoveryFindings.ACMG_GENE_PANEL, DiscoveryFindings.CGD_GENE_PANEL, 
+			CUSTOM_GENE_PANEL_TEXT));
 		
 		// Populate with the existing region lists
 		try {
@@ -1247,13 +1271,19 @@ public class DiscoveryPanel extends JPanel {
 			e.printStackTrace();
 		}
 		
-		// Add the custom gene panel option at the end
-		genePanelList.add(CUSTOM_GENE_PANEL_TEXT);
+		// Add the list of all gene panels to the combobox
+		for (String name : genePanelList) {
+			jcb.addItem(name);
+		}
 		
-		JComboBox output= new JComboBox(genePanelList.toArray());
-		
-		return output;
-	}		
+		// set the default if nothing was selected before repopulating and set 
+		// the previous selection otherwise
+		if (originalSelection == null) {
+			jcb.setSelectedItem(DiscoveryFindings.ALL_GENE_PANEL);
+		} else {
+			jcb.setSelectedItem(originalSelection);
+		}
+	}	
 	
 	
 	/**

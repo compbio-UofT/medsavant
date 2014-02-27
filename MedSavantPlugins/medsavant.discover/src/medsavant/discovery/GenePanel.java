@@ -42,18 +42,24 @@ public class GenePanel {
 	
 	private static final String DONE_TEXT= "Done";
 	private static final String CLEAR_TEXT= "Clear";
+	private static final String DEFAULT_GENE_PANEL_TITLE_TEXT= "Gene panel name?";
 	
-	private SearchConditionItem sci;
 	/* NOTE:
 	 * Replace 'OntologyConditionGenerator' with 'GenesConditionGenerator' to try out the gene query pane. */
 	//private ComprehensiveConditionGenerator ccg = new OntologyConditionGenerator(OntologyType.HPO);
 	private GenesConditionGenerator ccg;
+	
+	private SearchConditionItem sci;
 	private SearchConditionEditorView scev;
 	private SearchConditionPanel scp;
 	private String encodedSearch;
 	private ComboCondition genePanelCC= new ComboCondition(ComboCondition.Op.OR); // initialize to something
 	private JButton doneButton;
 	private RegionController controller= RegionController.getInstance();
+	
+	private List<Gene> geneList= new ArrayList<Gene>(); // The list of gene objects created from gene symbols.
+	
+	private JTextField genePanelTitle= new JTextField(DEFAULT_GENE_PANEL_TITLE_TEXT);
 	
 	
 	/**
@@ -88,7 +94,6 @@ public class GenePanel {
 			// reset doneButton from clear to done
 			doneButton.setText(DONE_TEXT);
 		}
-			
 		
 		return scp;
 	}
@@ -100,13 +105,8 @@ public class GenePanel {
 	private void createSearchConditionPanel() {
 		scp= new SearchConditionPanel(scev, null); // initialize here, not construct
 		
-		/* The list of gene objects created from gene symbols. */
-		final List<Gene> geneList= new ArrayList<Gene>();
-		
 		// components of this panel
 		doneButton= new JButton(DONE_TEXT);
-		final String defaultGenePanelTitleText= "Gene panel name?";
-		final JTextField genePanelTitle= new JTextField(defaultGenePanelTitleText);
 		genePanelTitle.setForeground(Color.RED);
 		
 		/* Button to indicate the gene panel selection is ready for variant filtering. */
@@ -115,63 +115,10 @@ public class GenePanel {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				if (doneButton.getText().equals(DONE_TEXT)) {
-					doneButton.setText(CLEAR_TEXT);
-					
-					try {
-						/* Save changes: this saves the users selections so next time
-						 * the dialog pops up, those same selections will be checked.
-						 * For most SearchConditionEditorViews, this isn't necessary, 
-						 * but it is necessary for some (e.g. GenesConditionGenerator).
-						 * Best to always call it. */
-						if (scev.saveChanges()) {
-							/* Get the gene symbols delimited by ";" */
-							encodedSearch= sci.getSearchConditionEncoding();
-
-							/* Look up the chromosomal coordinates for each gene before saving */
-							String[] genes= encodedSearch.split(";");
-
-							Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
-							TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema(); 
-
-							// Use ORs between genes for a gene panel
-							genePanelCC= new ComboCondition(ComboCondition.Op.OR);
-
-							/* Add a condition for each gene symbol. */
-							for (String geneSymbol : genes) {
-								Gene g= GeneSetController.getInstance().getGene(geneSymbol);	
-								if (g != null) {
-									geneList.add(g);
-
-									genePanelCC.addCondition(BinaryCondition.iLike(
-										ts.getDBColumn(columns.get(
-											BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())),
-										"%" + geneSymbol + "%"));
-
-								} else { // Gene symbol not found in our DB
-									throw new GenePanelException(
-										"Could not retrieve details for gene symbol: " + geneSymbol);
-								}
-							}
-						}
-					} catch (Exception ex) {
-						DialogUtils.displayError(ex.getMessage());
-						ex.printStackTrace();
-					}
+					doneAction();
 					
 				} else if (doneButton.getText().equals(CLEAR_TEXT)) {
-					try {
-						doneButton.setText(DONE_TEXT);
-						scev.loadViewFromSearchConditionParameters(""); // clear the genes - Currently NOT working.
-						genePanelTitle.setText(defaultGenePanelTitleText);
-						genePanelTitle.setForeground(Color.RED);
-						scp.remove(genePanelTitle);
-						scp.revalidate();
-
-						// Reset the ComboCondition to empty
-						genePanelCC= new ComboCondition(ComboCondition.Op.OR);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					clearAction();
 				}
 			}
 		});
@@ -216,9 +163,14 @@ public class GenePanel {
 			new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent ae) {
+					/* Perform done button actions before saving. */
+					doneAction();
+					
 					/* Save the panel as a region list on the server if the name
-					 * has been assigned. */
-					if (!genePanelTitle.getText().equals(defaultGenePanelTitleText)) {
+					 * has been assigned but doesn't exist already. */
+					if (!genePanelTitle.getText().equals(DEFAULT_GENE_PANEL_TITLE_TEXT) &&
+						!genePanelTitle.getText().equals("") &&  // can be replaced with regex for whitespace.
+						validateGenePanelTitle(genePanelTitle.getText())) {
 						saveGenePanel(genePanelTitle.getText(), geneList);
 					}
 				}
@@ -229,6 +181,82 @@ public class GenePanel {
 		scp.getButtonPanel().add(doneButton);
 		scp.getButtonPanel().add(saveButton);
 		scp.loadEditorViewInBackground(null);
+	}
+	
+	
+	/**
+	 * Action performed when "Done" button is clicked.
+	 */
+	private void doneAction() {
+		doneButton.setText(CLEAR_TEXT);
+
+		// Clear the current list of Genes
+		geneList.clear();
+		
+		try {
+			/* Save changes: this saves the users selections so next time
+			 * the dialog pops up, those same selections will be checked.
+			 * For most SearchConditionEditorViews, this isn't necessary, 
+			 * but it is necessary for some (e.g. GenesConditionGenerator).
+			 * Best to always call it. */
+			if (scev.saveChanges()) {
+				/* Get the gene symbols delimited by ";" */
+				encodedSearch= sci.getSearchConditionEncoding();
+
+				/* Look up the chromosomal coordinates for each gene before saving */
+				String[] genes= encodedSearch.split(";");
+
+				Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
+				TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema(); 
+
+				// Use ORs between genes for a gene panel
+				genePanelCC= new ComboCondition(ComboCondition.Op.OR);
+
+				/* Add a condition for each gene symbol. */
+				for (String geneSymbol : genes) {
+					Gene g= GeneSetController.getInstance().getGene(geneSymbol);	
+					if (g != null) {
+						geneList.add(g);
+
+						/* Search for the pattern "GENENAME:" in the jannovar symbol field. */
+						genePanelCC.addCondition(BinaryCondition.iLike(
+							ts.getDBColumn(columns.get(
+								BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())),
+							"%" + geneSymbol + ":%"));
+
+					} else { // Gene symbol not found in our DB
+						throw new GenePanelException(
+							"Could not retrieve details for gene symbol: " + geneSymbol);
+					}
+				}
+			}
+		} catch (Exception ex) {
+			DialogUtils.displayError(ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
+	
+	
+	/**
+	 * Action performed when "Done" button is clicked.
+	 */
+	private void clearAction() {
+		try {
+			doneButton.setText(DONE_TEXT);
+			scev.loadViewFromSearchConditionParameters(""); // clear the genes - Currently NOT working.
+			genePanelTitle.setText(DEFAULT_GENE_PANEL_TITLE_TEXT);
+			genePanelTitle.setForeground(Color.RED);
+			scp.remove(genePanelTitle);
+			scp.revalidate();
+
+			// Clear the current list of Genes
+			geneList.clear();
+
+			// Reset the ComboCondition to empty
+			genePanelCC= new ComboCondition(ComboCondition.Op.OR);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -299,7 +327,7 @@ public class GenePanel {
 	 * @param panelTitle The gene panel title
 	 * @return boolean if name already exists
 	 */
-	private boolean validateListName(String panelTitle) {
+	private boolean validateGenePanelTitle(String panelTitle) {
 		try {
 			for (RegionSet r : controller.getRegionSets()) {
 				if (r.getName().equals(panelTitle)) {
