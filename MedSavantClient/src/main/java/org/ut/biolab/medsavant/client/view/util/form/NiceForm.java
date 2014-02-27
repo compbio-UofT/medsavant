@@ -62,6 +62,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
     }
 
     public NiceForm(NiceFormModel model) {
+        this.setDoubleBuffered(true);
         this.setOpaque(false);
         setModel(model);
         listeners = new ArrayList<Listener<FormEvent>>();
@@ -84,6 +85,8 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
 
     public void refresh() {
 
+        
+        
         this.removeAll();
         this.setLayout(new MigLayout("insets 0"));
 
