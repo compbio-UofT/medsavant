@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.NiceMenu;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -172,8 +174,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         homeMenu = new NiceMenu();
         
-        homeMenu.addLeftComponent(getHomeButton());
-        //homeMenu.addRightComponent(getLogoutButton());
+        homeMenu.setTitle("MedSavant");
+        homeMenu.addRightComponent(getLogoutButton());
         
         baseLayer.add(homeMenu, BorderLayout.NORTH);
 
@@ -245,9 +247,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         });
 
         appTopMenu.addLeftComponent(getHomeButton());
-        //appTopMenu.addLeftComponent(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "divider.png").getImage(), 2, 23));
         appTopMenu.setCenterComponent(navigationPanel);
-        //appTopMenu.addRightComponent(getLogoutButton());
+        appTopMenu.addRightComponent(getLogoutButton());
 
         appLayer.add(appTopMenu, BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
@@ -350,12 +351,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
     
     private JLabel getHomeButton() {
-        JLabel homeLabel = new JLabel("MedSavant");
-        homeLabel.setFont(ViewUtil.getBigTitleFont());
-        homeLabel.setForeground(ViewUtil.getSemiBlackColor());
-        homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        ViewUtil.adjustForegroundColorOnMouseover(homeLabel,-25);
+        JLabel homeLabel = ViewUtil.getEmphasizedLabel("HOME", ViewUtil.getMedSavantBlueColor());
 
         final ActionListener goHomeActionListener = new ActionListener() {
 
@@ -364,7 +360,6 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 goHome();
             }
         };
-        //home.addActionListener(goHomeActionListener);
         homeLabel.addMouseListener(new MouseListener() {
 
             @Override
@@ -389,14 +384,16 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             }
 
         });
+        
+        homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
         return homeLabel;
     }
 
-    private JLabel getLogoutButton() {
-        JLabel label = new JLabel("Sign Out");
-        label.setFont(new Font("Helvetica Neue", Font.PLAIN, 16));
-        label.setForeground(ViewUtil.getSemiBlackColor());
-
+    private JComponent getLogoutButton() {
+       
+        final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
+        
         final ActionListener goHomeActionListener = new ActionListener() {
 
             @Override
@@ -428,6 +425,9 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             }
 
         });
+
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
         return label;
     }
 
