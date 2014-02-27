@@ -94,7 +94,7 @@ import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.START_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.UPLOAD_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.VARIANT_ID;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.SearchConditionItem;
 
 /**
  *

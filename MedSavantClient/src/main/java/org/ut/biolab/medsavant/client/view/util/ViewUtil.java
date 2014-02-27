@@ -219,7 +219,7 @@ public final class ViewUtil {
     }
 
     public static Border getTinyLineBorder() {
-        return new LineBorder(Color.lightGray, 1);
+        return new LineBorder(new Color(235,235,235), 1);
     }
 
     public static Border getThickLeftLineBorder() {

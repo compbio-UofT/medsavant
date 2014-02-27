@@ -50,11 +50,11 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem;
+import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem.QueryRelation;
+import org.ut.biolab.medsavant.client.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 
 /**
  *

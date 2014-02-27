@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
-import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
 
 /**
  *

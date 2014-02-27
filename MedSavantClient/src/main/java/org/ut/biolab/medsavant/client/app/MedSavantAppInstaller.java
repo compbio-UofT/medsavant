@@ -27,8 +27,7 @@ import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
-import org.ut.biolab.mfiume.app.AppInfo;
-import org.ut.biolab.mfiume.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 
 /**
  *

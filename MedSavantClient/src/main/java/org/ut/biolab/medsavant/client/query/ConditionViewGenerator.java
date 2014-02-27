@@ -17,35 +17,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.client.appapi;
+package org.ut.biolab.medsavant.client.query;
 
-import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.client.query.SearchConditionItem;
-import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
-
+import java.util.List;
+import java.util.Map;
+import org.ut.biolab.medsavant.client.query.view.SearchConditionItemView;
 
 /**
- * Plugin which implements filtering.
  *
  * @author mfiume
  */
-public abstract class MedSavantVariantSearchApp extends MedSavantApp {
-
-    /**
-     * This method is called once during the lifecycle of each instance of the plugin
-     * filter to give the filter instance a chance to set up.
-     */
-    public abstract void init();
-
-    //public abstract ComprehensiveConditionGenerator getSearchConditionGenerator();
-
-    public abstract String getName();
-
-    public abstract String category();
-
-    public abstract Condition getConditionsFromEncoding(String encoding) throws Exception;
-
-    public abstract SearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item);
-    
+public interface ConditionViewGenerator {
+    public SearchConditionItemView generateViewForItem(SearchConditionItem item);
+    public Condition generateConditionForItem(SearchConditionItem item) throws Exception;
+    public Map<String,List<String>> getAllowableItemNames();
 }

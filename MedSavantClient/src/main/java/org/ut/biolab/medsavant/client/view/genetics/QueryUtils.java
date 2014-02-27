@@ -29,11 +29,11 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem;
+import org.ut.biolab.medsavant.client.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.value.encode.NumericConditionEncoder;
+import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 
 /**
  *

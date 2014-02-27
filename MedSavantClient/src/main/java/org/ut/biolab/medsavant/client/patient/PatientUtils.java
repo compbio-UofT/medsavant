@@ -36,11 +36,10 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.mfiume.query.QueryViewController;
-//import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem.QueryRelation;
-import org.ut.biolab.mfiume.query.value.encode.NumericConditionEncoder;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem.QueryRelation;
+import org.ut.biolab.medsavant.client.query.value.encode.NumericConditionEncoder;
+import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 
 
 

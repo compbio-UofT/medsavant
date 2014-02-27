@@ -12,7 +12,7 @@ import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.mfiume.app.jAppStore;
+import org.ut.biolab.medsavant.client.app.jAppStore;
 
 /**
  *

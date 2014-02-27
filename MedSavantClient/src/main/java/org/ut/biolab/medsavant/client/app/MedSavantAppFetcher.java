@@ -34,8 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.medsavant.shared.util.WebResources;
-import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
-import org.ut.biolab.mfiume.app.AppInfo;
+import org.ut.biolab.medsavant.client.app.api.AppInfoFetcher;
 
 /**
  *
