@@ -52,7 +52,6 @@ import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
-import org.ut.biolab.medsavant.client.view.dialog.AdminDialog;
 import org.ut.biolab.medsavant.client.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
@@ -105,43 +104,6 @@ public class SplashFrame extends JFrame {
         setPrimaryPanel(loginComponent);
 
         this.add(primaryPanel, "width 100%, growy 1.0, growx 1.0");
-
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-
-        menuBar.add(fileMenu);
-
-        JMenuItem dbManagementItem = new JMenuItem("Database Management");
-        dbManagementItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                JDialog adminDialog = new AdminDialog();
-                adminDialog.setVisible(true);
-            }
-        });
-        fileMenu.add(dbManagementItem);
-
-        JMenuItem appItem = new JMenuItem("App Store");
-        appItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                showAppStore();
-            }
-
-            private void showAppStore() {
-                if (appStore == null) {
-                    final MedSavantAppFetcher maf = new MedSavantAppFetcher();
-                    final MedSavantAppInstaller mai = new MedSavantAppInstaller();
-
-                    appStore = new jAppStore("MedSavant App Store", maf, mai);
-                }
-                appStore.showStore();
-            }
-        });
-        fileMenu.add(appItem);
-        //this.setJMenuBar(menuBar);
 
         this.pack();
         this.setLocationRelativeTo(null);
@@ -521,12 +483,12 @@ public class SplashFrame extends JFrame {
                     if (existingServer != null && existingServer != server) {
                         DialogUtils.displayMessage("There's already a server named " + name + ".");
                         return;
-                    } else {
-                        ServerController.getInstance().saveServers();
                     }
+                     
+                    ServerController.getInstance().saveServers();
 
-                    serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
                     serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
+                    serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
                 }
             }
         }
