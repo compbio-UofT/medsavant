@@ -132,11 +132,4 @@ public class AppStoreLandingPage implements AppStorePage {
 
         flowView.updateUI();
     }
-
-    private static final String iconroot = "/org/ut/biolab/mfiume/app/icon/";
-
-    @Override
-    public ImageIcon getIcon() {
-        return new ImageIcon(getClass().getResource(iconroot + "icon_shop_selected.png"));
-    }
 }

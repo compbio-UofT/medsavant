@@ -38,6 +38,9 @@ import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
 
 /**
  *
@@ -162,6 +165,14 @@ public class AppStoreInstalledPage implements AppStorePage {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+                Notification n = new Notification();
+                n.setName("Installing " + i.getName());
+                n.setIsIndeterminateProgress(true);
+                n.setIcon(AppDirectory.getAppStore().getIcon());
+                n.setShowsProgress(true);
+                
+                MedSavantFrame.getInstance().showNotification(n);
+                
                 boolean success = installer.installApp(i);
                 if (success) {
                     addRecentlyInstalledApp(i);
@@ -172,7 +183,12 @@ public class AppStoreInstalledPage implements AppStorePage {
                             updateInstalledList();
                         }
                     });
+                    n.close();
+                } else {
+                    n.setDescription("Error installing App");
                 }
+                
+                n.setIsIndeterminateProgress(false);
             }
         });
         t.start();
@@ -225,12 +241,6 @@ public class AppStoreInstalledPage implements AppStorePage {
             }
         }
 
-    }
-    private static final String iconroot = "/org/ut/biolab/mfiume/app/icon/";
-
-    @Override
-    public ImageIcon getIcon() {
-        return new ImageIcon(getClass().getResource(iconroot + "icon_installed_selected.png"));
     }
 
     public void addRecentlyUninstalledApp(AppInfo i) {

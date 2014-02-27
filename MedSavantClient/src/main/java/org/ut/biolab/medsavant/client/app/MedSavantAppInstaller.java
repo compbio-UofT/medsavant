@@ -64,6 +64,7 @@ public class MedSavantAppInstaller implements AppInstaller {
             System.out.println("Plugin installed to  " + DirectorySettings.getPluginsDirectory().getAbsolutePath());
 
         } catch (Throwable ex) {
+            ex.printStackTrace();
             return false;
         }
 

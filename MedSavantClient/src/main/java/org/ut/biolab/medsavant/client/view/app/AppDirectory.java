@@ -5,6 +5,7 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
+import javax.swing.ImageIcon;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.builtin.RegionsApp;
 import org.ut.biolab.medsavant.client.view.app.builtin.SavantApp;
@@ -26,6 +27,10 @@ public class AppDirectory {
     private static PatientsApp patients;
     private static RegionsApp regions;
     private static AppStoreApp appStore;
+
+    public static AppStoreApp getAppStore() {
+        return appStore;
+    }
 
     public static enum BuiltInApp {
         TASK_MANAGER,
@@ -71,35 +76,35 @@ public class AppDirectory {
         }
     }
 
-    static VariantNavigatorApp getVariantNavigator() {
+    public static VariantNavigatorApp getVariantNavigator() {
         if (variantNavigator == null) {
             variantNavigator = new VariantNavigatorApp();
         }
         return variantNavigator;
     }
 
-    static AppStoreApp getAppStoreApp() {
+    public static AppStoreApp getAppStoreApp() {
         if (appStore == null) {
             appStore = new AppStoreApp();
         }
         return appStore;
     }
 
-    static PatientsApp getPatientsApp() {
+    public static PatientsApp getPatientsApp() {
         if (patients == null) {
             patients = new PatientsApp();
         }
         return patients;
     }
 
-    static RegionsApp getRegionsApp() {
+    public static RegionsApp getRegionsApp() {
         if (regions == null) {
             regions = new RegionsApp();
         }
         return regions;
     }
 
-    static SavantApp getGenomeBrowser() {
+    public static SavantApp getGenomeBrowser() {
         if (genomeBrowser == null) {
             genomeBrowser = new SavantApp();
         }
@@ -113,7 +118,7 @@ public class AppDirectory {
         return taskManager;
     }
 
-    static AccountManagerApp getAccountManager() {
+    public static AccountManagerApp getAccountManager() {
         if (accountManager == null) {
             accountManager = new AccountManagerApp();
         }

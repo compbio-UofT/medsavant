@@ -20,9 +20,7 @@
 package org.ut.biolab.medsavant.client.app;
 
 import org.ut.biolab.medsavant.client.view.component.LazyPanel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JPanel;
 
 /**
  *
@@ -32,6 +30,4 @@ public interface AppStorePage {
 
     public String getName();
     public LazyPanel getView();
-
-    public ImageIcon getIcon();
 }
