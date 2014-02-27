@@ -161,7 +161,7 @@ public final class ViewUtil {
     }
 
     public static Font getBigTitleFont() {
-        return ViewUtil.getDefaultFont(Font.PLAIN, 18);
+        return ViewUtil.getDefaultFont(Font.BOLD, 18);
     }
 
     public static Font getMediumTitleFont() {
@@ -927,6 +927,10 @@ public final class ViewUtil {
         tabs.setUI(new MSTabbedPaneUI());
         tabs.setFocusable(false);
         return tabs;
+    }
+
+    public static Color getDefaultBackgroundColor() {
+        return Color.white;
     }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {

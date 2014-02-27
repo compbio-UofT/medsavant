@@ -53,14 +53,8 @@ public class AppStoreViewManager {
 
         content.removeAll();
 
-        if (previousPage != null) {
-            previousPage.viewDidUnload();
-        }
-
         content.add(page.getView(),BorderLayout.CENTER);
         content.updateUI();
-
-        page.viewDidLoad();
 
         previousPage = page;
 

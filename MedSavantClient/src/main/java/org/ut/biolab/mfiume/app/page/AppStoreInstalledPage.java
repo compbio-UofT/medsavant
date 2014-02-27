@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.mfiume.app.page;
 
+import java.awt.BorderLayout;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -33,8 +34,10 @@ import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppInstallUtils;
 import org.ut.biolab.mfiume.app.AppStorePage;
+import org.ut.biolab.medsavant.client.view.component.LazyPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
-import org.ut.biolab.mfiume.app.component.TitleBar;
 
 /**
  *
@@ -44,14 +47,25 @@ public class AppStoreInstalledPage implements AppStorePage {
 
     AppInstaller installer;
     private final HashSet<AppInfo> installQueue;
-    private final JPanel view;
+    private final LazyPanel view;
     private final HashSet<AppInfo> recentlyInstalled;
     private final HashSet<AppInfo> recentlyUninstalled;
 
     public AppStoreInstalledPage(AppInstaller installer) {
         this.installer = installer;
         this.installQueue = new HashSet<AppInfo>();
-        this.view = new JPanel();
+        this.view = new LazyPanel() {
+
+            @Override
+            public void viewDidLoad() {
+                updateInstalledList();
+            }
+
+            @Override
+            public void viewDidUnload() {
+            }
+            
+        };
 
         view.setOpaque(false);
 
@@ -65,39 +79,35 @@ public class AppStoreInstalledPage implements AppStorePage {
     }
 
     @Override
-    public JPanel getView() {
+    public LazyPanel getView() {
         return view;
-    }
-
-    @Override
-    public void viewDidLoad() {
-        updateInstalledList();
-    }
-
-    @Override
-    public void viewDidUnload() {
     }
 
     protected void updateInstalledList() {
 
+        
         System.out.println("Updating download list " + this.installQueue.size() + " installs in queue");
 
         view.removeAll();
-        MigLayout ml = new MigLayout("wrap 1, gapx 0, gapy 0");
-        view.setLayout(ml);
+        view.setLayout(new BorderLayout());
+        
+        JPanel container = ViewUtil.getClearPanel();
+        
+        MigLayout ml = new MigLayout("wrap 1, gapx 0, gapy 0, hidemode 3");
+        container.setLayout(ml);
 
         if (!installQueue.isEmpty()) {
-            TitleBar queuedTitle = new TitleBar("Installing...");
-            view.add(queuedTitle);
+            JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installing...");
+            container.add(queuedTitle);
 
             for (AppInfo i : this.installQueue) {
-                view.add(new AppInstallProgressView(i), "width 100%");
+                container.add(new AppInstallProgressView(i), "width 100%");
             }
         }
-        view.add(Box.createVerticalStrut(5));
+        container.add(Box.createVerticalStrut(5));
 
-        TitleBar queuedTitle = new TitleBar("Installed");
-        view.add(queuedTitle);
+        JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installed");
+        container.add(queuedTitle);
 
         Set<AppInfo> installedApps = installer.getInstallRegistry();
 
@@ -105,25 +115,27 @@ public class AppStoreInstalledPage implements AppStorePage {
             if (recentlyInstalled.contains(i) || recentlyUninstalled.contains(i)) {
                 continue;
             }
-            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.INSTALLED), "width 100%");
+            container.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.INSTALLED), "width 100%");
         }
 
         for (AppInfo i : recentlyInstalled) {
-            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_INSTALLED), "width 100%");
+            container.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_INSTALLED), "width 100%");
         }
 
         for (AppInfo i : recentlyUninstalled) {
-            view.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_UNINSTALLED), "width 100%");
+            container.add(new AppInstallInstalledView(i, installer, this, AppInstallInstalledView.State.JUST_UNINSTALLED), "width 100%");
         }
 
         if (installedApps.isEmpty()) {
-            view.add(new JLabel("No apps installed"));
+            container.add(new JLabel("No apps installed"));
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
-            view.add(Box.createVerticalStrut(5));
-            view.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
+            container.add(Box.createVerticalStrut(5));
+            container.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
         }
+        
+        view.add(new StandardAppContainer(container),BorderLayout.CENTER);
 
         view.updateUI();
     }

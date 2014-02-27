@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.mfiume.app;
 
+import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -30,9 +31,7 @@ import javax.swing.JPanel;
 public interface AppStorePage {
 
     public String getName();
-    public JPanel getView();
-    public void viewDidLoad();
-    public void viewDidUnload();
+    public LazyPanel getView();
 
     public ImageIcon getIcon();
 }

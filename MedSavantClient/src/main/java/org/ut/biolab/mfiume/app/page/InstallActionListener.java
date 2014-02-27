@@ -21,6 +21,7 @@ package org.ut.biolab.mfiume.app.page;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JTabbedPane;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppInstallUtils;
 import org.ut.biolab.mfiume.app.AppStoreViewManager;
@@ -34,12 +35,12 @@ public class InstallActionListener implements ActionListener {
     private boolean doUpdate = false;
     private final AppStoreInstalledPage installedPage;
     private final AppInfo i;
-    private final AppStoreViewManager avm;
+    private final JTabbedPane parent;
 
-    public InstallActionListener(AppStoreInstalledPage installedPage, AppInfo i, AppStoreViewManager avm) {
+    public InstallActionListener(AppStoreInstalledPage installedPage, AppInfo i, JTabbedPane parent) {
         this.installedPage = installedPage;
         this.i = i;
-        this.avm = avm;
+        this.parent = parent;
     }
 
     @Override
@@ -48,7 +49,7 @@ public class InstallActionListener implements ActionListener {
             installedPage.queueAppWithNameForUninstallation(i.getName(), false);
         }
         installedPage.queueAppForInstallation(i);
-        avm.switchToPage(installedPage);
+        parent.setSelectedIndex(0);
     }
 
     void setModeToUpdate(boolean b) {

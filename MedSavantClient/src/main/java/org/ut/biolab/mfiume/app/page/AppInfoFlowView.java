@@ -31,6 +31,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.AppInfo;
 import org.ut.biolab.mfiume.app.AppStoreViewManager;
@@ -44,15 +45,15 @@ import org.ut.biolab.mfiume.app.jAppStore;
 class AppInfoFlowView extends RoundedJPanel {
 
     private final AppStoreInstalledPage installedPage;
-    private final AppStoreViewManager avm;
+    private final JTabbedPane parent;
     private final JButton downloadButton;
     private final AppInfoModal aim;
     private final InstallActionListener ial;
 
-    public AppInfoFlowView(final AppInfo i, final AppStoreViewManager avm, final AppStoreInstalledPage installedPage, boolean installedAlready, boolean canUpdate) {
+    public AppInfoFlowView(final AppInfo i, final JTabbedPane parent, final AppStoreInstalledPage installedPage, boolean installedAlready, boolean canUpdate) {
         super();
 
-        this.avm = avm;
+        this.parent = parent;
         this.installedPage = installedPage;
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -88,10 +89,10 @@ class AppInfoFlowView extends RoundedJPanel {
         downloadButton = getSoftButton("Install App");
         JButton moreInfo = getSoftButton("More Info");
 
-        ial = new InstallActionListener(installedPage, i, avm);
+        ial = new InstallActionListener(installedPage, i, parent);
         downloadButton.addActionListener(ial);
 
-        aim = new AppInfoModal(i, installedPage, avm);
+        aim = new AppInfoModal(i, installedPage, parent);
 
         moreInfo.addActionListener(new ActionListener() {
             @Override

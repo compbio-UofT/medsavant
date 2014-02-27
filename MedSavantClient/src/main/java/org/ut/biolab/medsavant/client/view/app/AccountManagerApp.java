@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -34,7 +35,9 @@ public class AccountManagerApp implements LaunchableApp {
     private void initView() {
         if (view == null) {
             view = new JPanel();
-
+            
+            view.setBackground(ViewUtil.getDefaultBackgroundColor());
+            
             JButton b = new JButton("Change password");
             b.addActionListener(new ActionListener() {
 

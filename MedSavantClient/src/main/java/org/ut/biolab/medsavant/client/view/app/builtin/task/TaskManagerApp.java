@@ -235,7 +235,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             this.setLayout(new BorderLayout());
 
             JPanel view = new JPanel();
-            view.setBackground(Color.white);
+            view.setBackground(ViewUtil.getDefaultBackgroundColor());
 
             MigLayout l = new MigLayout("fillx, nogrid, insets 0");
             view.setLayout(l);
@@ -267,7 +267,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
             // add a refresh button
             if (t.getCurrentStatus() == TaskStatus.PERSISTENT || t.getCurrentStatus() == TaskStatus.PERSISTENT_AUTOREFRESH) {
-                JButton refreshButton = new JButton("Refresh");
+                JButton refreshButton = ViewUtil.getRefreshButton();
                 ActionListener al = new ActionListener() {
 
                     @Override

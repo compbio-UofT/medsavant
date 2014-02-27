@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.mfiume.app.AppInfo;
@@ -46,11 +47,11 @@ import org.ut.biolab.mfiume.app.AppStoreViewManager;
 public class AppInfoModal extends JDialog {
 
     private final AppStoreInstalledPage installedPage;
-    private final AppStoreViewManager avm;
+    private final JTabbedPane parent;
     private final JButton downloadButton;
     private final InstallActionListener ail;
 
-    public AppInfoModal(final AppInfo i, final AppStoreInstalledPage installedPage, final AppStoreViewManager avm) {
+    public AppInfoModal(final AppInfo i, final AppStoreInstalledPage installedPage, final JTabbedPane avm) {
         super((JFrame) null, i.getName(), true);
 
         //MacUtils.makeWindowLeopardStyle(this.getRootPane());
@@ -60,7 +61,7 @@ public class AppInfoModal extends JDialog {
         this.setBackground(Color.white);
 
         this.installedPage = installedPage;
-        this.avm = avm;
+        this.parent = avm;
 
         Dimension d = new Dimension(400, 400);
         this.setPreferredSize(d);

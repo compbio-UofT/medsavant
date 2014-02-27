@@ -1,33 +1,38 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.mfiume.app;
 
+import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.mfiume.app.api.AppInfoFetcher;
 import org.ut.biolab.mfiume.app.page.AppStoreLandingPage;
 import org.ut.biolab.mfiume.app.page.AppStoreInstalledPage;
 import com.explodingpixels.macwidgets.MacUtils;
 import com.explodingpixels.widgets.WindowUtils;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JTabbedPane;
+import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.mfiume.app.api.AppInstaller;
 
 /**
@@ -59,20 +64,50 @@ class AppStoreView extends JDialog {
 
     private void initView() {
 
-        AppStoreViewManager avm = new AppStoreViewManager();
+        final AppStoreInstalledPage installedAppsPage;
+        final AppStoreLandingPage landingPage;
 
-        AppStoreInstalledPage installedAppsPage = new AppStoreInstalledPage(installer);
-        AppStoreLandingPage landingPage = new AppStoreLandingPage(fetcher, installer, avm, installedAppsPage);
+        JTabbedPane tabs = new JTabbedPane() {
+            
+            private int selectedIndex = -1;
 
-        AppStorePage[] pages = new AppStorePage[]{landingPage, installedAppsPage};
-        AppStoreMenu menu = new AppStoreMenu(pages, avm);
-        avm.setMenu(menu);
+            public Color getForegroundAt(int index) {
+                if (getSelectedIndex() == index) {
+                    return Color.WHITE;
+                }
+                return Color.BLACK;
+            }
+
+            public void setSelectedIndex(int index) {
+
+                if (selectedIndex != -1 && this.getComponentAt(selectedIndex) instanceof LazyPanel) {
+                    LazyPanel p = (LazyPanel) this.getComponentAt(selectedIndex);
+                    p.viewDidUnload();
+                }
+                
+                if (this.getComponentAt(index) instanceof LazyPanel) {
+                    LazyPanel p = (LazyPanel) this.getComponentAt(index);
+                    p.viewDidLoad();
+                }
+                
+                selectedIndex = index;
+
+                super.setSelectedIndex(index);
+            }
+        };
+
+        tabs.setUI(new MSTabbedPaneUI());
+        tabs.setFocusable(false);
+        tabs.setBackground(ViewUtil.getDefaultBackgroundColor());
+
+        installedAppsPage = new AppStoreInstalledPage(installer);
+        landingPage = new AppStoreLandingPage(fetcher, installer, tabs, installedAppsPage);
+
+        tabs.add(landingPage.getName(), landingPage.getView());
+        tabs.add(installedAppsPage.getName(), installedAppsPage.getView());
 
         this.setLayout(new BorderLayout());
-
-        this.add(menu, BorderLayout.NORTH);
-        this.add(avm.getView(), BorderLayout.CENTER);
-
-        avm.switchToPage(landingPage);
+        this.add(tabs, BorderLayout.CENTER);
+        tabs.setSelectedIndex(0);
     }
 }
