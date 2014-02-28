@@ -6,6 +6,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.JideButton;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -435,7 +436,8 @@ public class VariantSummaryPanel extends JScrollPane {
 		final String URL_CHARSET = "UTF-8";
 		
 		JideButton urlButton= new JideButton(buttonText);
-		urlButton.setButtonStyle(ButtonStyle.HYPERLINK_STYLE);	
+		urlButton.setButtonStyle(ButtonStyle.HYPERLINK_STYLE);
+		urlButton.setForeground(Color.BLUE);
 		urlButton.setToolTipText("Lookup " + buttonText + " on the web");
 		urlButton.addActionListener(new ActionListener() 
 		{

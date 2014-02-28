@@ -75,6 +75,8 @@ public class DiscoveryFindings {
 	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);	
 	private Pattern geneSymbolPattern= Pattern.compile("^([^:]+)");
 	private Pattern formatFieldPattern= Pattern.compile("([^;]*AD[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
+	private Pattern aoFieldPattern= Pattern.compile("([^;]*AO[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AO" in format
+	private Pattern dpFieldPattern= Pattern.compile("([^;]*DP[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "DP" in format
 	
 	/** Initialize DiscoveryFindings object for the given patient DNA ID.
 	 * @param dnaID	Patient's DNA ID
@@ -381,6 +383,8 @@ public class DiscoveryFindings {
 		
 		Matcher dp4Matcher= dp4Pattern.matcher(info_field);
 		Matcher formatFieldMatcher= formatFieldPattern.matcher(format_field);
+		Matcher aoFieldMatcher= aoFieldPattern.matcher(format_field);
+		Matcher dpFieldMatcher= dpFieldPattern.matcher(format_field);
 		
 		/* Process DP4 or AD or AO text (from VCF INFO or Format columns) if present. */
 		if (dp4Matcher.find()) { // NOTE: need to run find() to get group() below
@@ -419,6 +423,38 @@ public class DiscoveryFindings {
 			int refCount= Integer.parseInt(adCoverageDelimited[0]);
 			int altCount= Integer.parseInt(adCoverageDelimited[1]);
 			double ratio= ((double) altCount)/(altCount + refCount);
+			
+			if (altCount >= coverageThreshold && ratio >= hetRatio) {
+				result= true;
+			}
+			
+		} else if (aoFieldMatcher.find() && dpFieldMatcher.find()) { // NOTE: need to run find() to get group() below
+		
+			// if both patterns match, you only need to grab one of the strings.
+			String formatFieldText= aoFieldMatcher.group(1);
+			//String formatFieldText= dpFieldMatcher.group(1); // can also use this
+			
+			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
+			String[] delimited= formatFieldText.split(":");			
+			int aoIndex= Arrays.asList(delimited).indexOf("AO");
+			int dpIndex= Arrays.asList(delimited).indexOf("DP");
+			
+			String[] sampleInfo= sampleInfoFieldText.split(":");
+			int totalCount= Integer.parseInt(sampleInfo[dpIndex]);;
+			
+			/* Sometimes the AO count can be comma separated for multiple alternate
+			 * alleles. In this case, due to the way we import these in MedSavant,
+			 * I don't know which allele corresponds to which depth, so take the
+			 * minimum. This may have to be modified later. */		
+			String[] aoCoverageDelimited= sampleInfoFieldText.split(":")[aoIndex].split(",");
+			int[] aoCoverageInt= new int[aoCoverageDelimited.length];
+			for (int i= 0; i != aoCoverageInt.length; ++i) {
+				aoCoverageInt[i]= Integer.parseInt(aoCoverageDelimited[i]);
+			}
+			Arrays.sort(aoCoverageInt); // sort the array in ascending order
+			
+			int altCount= aoCoverageInt[0];
+			double ratio= ((double) altCount)/((double) totalCount);
 			
 			if (altCount >= coverageThreshold && ratio >= hetRatio) {
 				result= true;

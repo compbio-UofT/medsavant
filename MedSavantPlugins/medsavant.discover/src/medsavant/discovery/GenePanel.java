@@ -190,8 +190,6 @@ public class GenePanel {
 	 * Action performed when "Done" button is clicked.
 	 */
 	private void doneAction() {
-		doneButton.setText(CLEAR_TEXT);
-
 		// Clear the current list of Genes
 		geneList.clear();
 		
@@ -205,6 +203,10 @@ public class GenePanel {
 				/* Get the gene symbols delimited by ";" */
 				encodedSearch= sci.getSearchConditionEncoding();
 
+				/* Only update the button if the string of genes has length > 0. */
+				if (encodedSearch.length() != 0)
+					doneButton.setText(CLEAR_TEXT);
+				
 				/* Look up the chromosomal coordinates for each gene before saving */
 				String[] genes= encodedSearch.split(";");
 
