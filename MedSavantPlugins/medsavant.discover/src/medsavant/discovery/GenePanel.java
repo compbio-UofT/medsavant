@@ -18,6 +18,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.medsavant.complex.GenesConditionGenerator;
+import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
+import org.ut.biolab.medsavant.client.query.view.SearchConditionPanel;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
@@ -29,10 +33,6 @@ import org.ut.biolab.medsavant.shared.importing.FileFormat;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
-import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
 
 
 /**

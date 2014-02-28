@@ -65,7 +65,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
@@ -90,6 +89,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.query.view.JScrollMenu;
 import org.ut.biolab.medsavant.client.region.RegionController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
@@ -105,7 +105,6 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
-import org.ut.biolab.mfiume.query.view.JScrollMenu;
 
 
 /**
@@ -153,6 +152,7 @@ public class DiscoveryPanel extends JPanel {
 	private static final String LEFT_HIDE_STRING= "<<";
 	private static final String RIGHT_HIDE_STRING= ">>";
 	private static final String CUSTOM_GENE_PANEL_TEXT= "Custom...";
+	private static final Color GREYISH_BLUE= new Color(27, 106, 198);
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 0;
@@ -1043,7 +1043,7 @@ public class DiscoveryPanel extends JPanel {
 		customGenePanel.setBackground(workview.getBackground());
 		
 		// Add the components to the collapsible pane
-		collapsibleGene.add(geneButton);
+		collapsibleGene.add(geneButton, "wrap");
 		collapsibleGene.add(genePanelComboBox);
 		collapsibleGene.add(genePanelHelp);
 		
@@ -1123,14 +1123,14 @@ public class DiscoveryPanel extends JPanel {
 		
 		leftHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		leftHideButton.setFont(new Font(leftHideButton.getFont().getName(), Font.BOLD, 20));
-		leftHideButton.setForeground(Color.DARK_GRAY);
+		leftHideButton.setForeground(GREYISH_BLUE);
 		leftHideButton.setBackground(workview.getBackground());
 		leftHideButton.setSize(leftHideButton.getMinimumSize());
 		leftHideButton.setLocation(0, 0);
 		
 		rightHideButton.setButtonStyle(ButtonStyle.TOOLBAR_STYLE);
 		rightHideButton.setFont(new Font(rightHideButton.getFont().getName(), Font.BOLD, 20));
-		rightHideButton.setForeground(Color.DARK_GRAY);
+		rightHideButton.setForeground(GREYISH_BLUE);
 		rightHideButton.setBackground(workview.getBackground());
 		rightHideButton.setSize(rightHideButton.getMinimumSize());
 		rightHideButton.setLocation(layeredPane.getSize().width - rightHideButton.getSize().width, 0);
@@ -1286,8 +1286,13 @@ public class DiscoveryPanel extends JPanel {
 		}
 		
 		// Add the list of all gene panels to the combobox
+		int maximumPanelNameLength= 30;
 		for (String name : genePanelList) {
-			jcb.addItem(name);
+			if (name.length() <= maximumPanelNameLength) {
+				jcb.addItem(name);
+			} else {
+				jcb.addItem(name.substring(0, maximumPanelNameLength) + "...");
+			}
 		}
 		
 		// set the default if nothing was selected before repopulating and set 

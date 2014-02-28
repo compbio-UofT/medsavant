@@ -144,7 +144,8 @@ public class Jannovar {
         jannovar.Jannovar.main(new String[]{
             "-D", getRefSeqSerializedFile().getAbsolutePath(),
             "-V", sourceVCF.getAbsolutePath(),
-            "-O", destDir.getAbsolutePath() /*outFile.getAbsolutePath()*/
+            "-O", destDir.getAbsolutePath(), /*outFile.getAbsolutePath()*/
+			"-a" // get all annotations for this variant
         });
 
         LOG.info("[Jannovar] Wrote annotated VCF file to \"" + sourceVCF.getParent() + "/" + outFile.getAbsolutePath() + "\"");
