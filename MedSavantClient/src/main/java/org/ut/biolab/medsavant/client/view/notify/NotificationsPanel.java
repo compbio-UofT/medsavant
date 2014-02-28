@@ -34,6 +34,7 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
@@ -140,7 +141,7 @@ public class NotificationsPanel extends JPanel {
             return showsProgress;
         }
 
-        public boolean isIsIndeterminateProgress() {
+        public boolean isIndeterminateProgress() {
             return isIndeterminateProgress;
         }
 
@@ -252,6 +253,7 @@ public class NotificationsPanel extends JPanel {
         private Color subTextErrorColor = Color.red;
         private Color subTextNormalColor; // a light gray, set later
         private ActionListener closeActionListener;
+        private ProgressWheel progressIndifinite;
 
         public NotificationPanel(Notification n) {
 
@@ -289,8 +291,12 @@ public class NotificationsPanel extends JPanel {
             ViewUtil.ellipsizeLabel(subTextLabel, middleWidth-2*innerinsets);
             
             if (notification.isShowsProgress()) {
-                progress.setVisible(true);
+                progressIndifinite.setVisible(notification.isIndeterminateProgress);
+                progress.setVisible(!notification.isIndeterminateProgress);
                 progress.setValue((int) (notification.getProgress()*100));
+            } else {
+                progressIndifinite.setVisible(false);
+                progress.setVisible(false);
             }
             
             this.updateUI();
@@ -336,14 +342,17 @@ public class NotificationsPanel extends JPanel {
             
             
             progress = (JProgressBar) ViewUtil.makeMini(new JProgressBar());
-            
+            progressIndifinite = ViewUtil.getIndeterminateProgressBar();
+                    
             middle.add(nameLabel, "growx 1.0");
             middle.add(subTextLabel);
             middle.add(progress,"width 100%, hidemode 3");
+            middle.add(progressIndifinite,"hidemode 3");
             
             subTextNormalColor = subTextLabel.getForeground();
             
             progress.setVisible(false);
+            progressIndifinite.setVisible(false);
             
             rightSide.add(closeButton);
             

@@ -183,9 +183,12 @@ public class AppStoreInstalledPage implements AppStorePage {
                             updateInstalledList();
                         }
                     });
-                    n.close();
+                    n.setDescription("Installed. Requires restart.");
+                    n.setShowsProgress(false);
+                    //n.close();
                 } else {
                     n.setDescription("Error installing App");
+                    n.setShowsProgress(false);
                 }
                 
                 n.setIsIndeterminateProgress(false);
