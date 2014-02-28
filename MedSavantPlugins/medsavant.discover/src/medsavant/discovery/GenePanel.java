@@ -27,11 +27,13 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.importing.BEDFormat;
 import org.ut.biolab.medsavant.shared.importing.FileFormat;
 import org.ut.biolab.medsavant.shared.model.Gene;
+import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.mfiume.query.SearchConditionItem;
 import org.ut.biolab.mfiume.query.medsavant.complex.GenesConditionGenerator;
 import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
 import org.ut.biolab.mfiume.query.view.SearchConditionPanel;
+
 
 /**
  * Creates a gene panel entry form.
@@ -56,10 +58,10 @@ public class GenePanel {
 	private ComboCondition genePanelCC= new ComboCondition(ComboCondition.Op.OR); // initialize to something
 	private JButton doneButton;
 	private RegionController controller= RegionController.getInstance();
-	
 	private List<Gene> geneList= new ArrayList<Gene>(); // The list of gene objects created from gene symbols.
-	
 	private JTextField genePanelTitle= new JTextField(DEFAULT_GENE_PANEL_TITLE_TEXT);
+	private Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
+	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema(); 
 	
 	
 	/**
@@ -178,8 +180,8 @@ public class GenePanel {
 		);
 		
 		/* Add components to the panel. */
-		scp.getButtonPanel().add(doneButton);
 		scp.getButtonPanel().add(saveButton);
+		scp.getButtonPanel().add(doneButton);
 		scp.loadEditorViewInBackground(null);
 	}
 	
@@ -205,9 +207,6 @@ public class GenePanel {
 
 				/* Look up the chromosomal coordinates for each gene before saving */
 				String[] genes= encodedSearch.split(";");
-
-				Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
-				TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema(); 
 
 				// Use ORs between genes for a gene panel
 				genePanelCC= new ComboCondition(ComboCondition.Op.OR);
@@ -339,6 +338,39 @@ public class GenePanel {
 		} catch (Exception ex) {
 			ClientMiscUtils.reportError("Error fetching region list: %s", ex);
 			return false;
+		}
+	}
+	
+	
+	/**
+	 * Update the gene panel combo condition based on an existing gene panel
+	 * stored as a region list on the server.
+	 * @param name The name of the gene panel/region list
+	 */
+	public void addCustomGenePanel(String name) {			
+		// Reset the combo condition, use ORs between genes for a gene panel
+		genePanelCC= new ComboCondition(ComboCondition.Op.OR);
+
+		// Get the list of region lists (gene panels) and find the one we're
+		// interested in.
+		try {
+			List<RegionSet> allGenePanels= RegionController.getInstance().getRegionSets();
+			for (RegionSet rs : allGenePanels) {
+				if (rs.getName().equals(name)) {
+					List<GenomicRegion> allGenes= RegionController.getInstance().getRegionsInSet(rs);
+					
+					// iterate through all genes in this panel
+					for (GenomicRegion gr : allGenes) {
+						// add the gene name/symbol to the combo condition
+						genePanelCC.addCondition(BinaryCondition.iLike(
+							ts.getDBColumn(columns.get(
+								BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())), 
+								"%" + gr.getName() + ":%"));
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

@@ -65,6 +65,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
@@ -942,6 +943,13 @@ public class DiscoveryPanel extends JPanel {
 		populateGenePanels(genePanelComboBox);
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem(); // initialize
 		
+		final JButton genePanelHelp= ViewUtil.getHelpButton("Gene Panel selection", 
+				"Choose the gene panel appropriate for your workflow. Default " +
+				"panels include the American College of Medical Genetics recommendations " +
+				"for reporting incidental findings (ACMG), and all genes with " +
+				"manually curated modes of inheritance from the Clinical Genomics " +
+				"Database (CGD).");
+		
 		// Add this FilterDetails object to the list of conditions
 		final FilterDetails filterPanelDetails= new FilterDetails(this);
 		filterPanelDetails.setDetails(BasicVariantColumns.JANNOVAR_SYMBOL.getAlias(),
@@ -974,6 +982,8 @@ public class DiscoveryPanel extends JPanel {
 					} else {
 						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
 						customGenePanel.clearCondition();
+						
+						customGenePanel.addCustomGenePanel(currentGenePanel);
 					}
 					
 					collapsibleGene.revalidate(); // refresh
@@ -999,12 +1009,15 @@ public class DiscoveryPanel extends JPanel {
 									geneButton.setText(s + triangleString);
 									if (s.equals(GENE_TEXT)) {
 										collapsibleGene.remove(genePanelComboBox);
+										collapsibleGene.remove(genePanelHelp);
+										collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
 										collapsibleGene.add(geneTextField);
 										conditionList.add(filterPanelDetails);
 										currentGenePanel= DiscoveryFindings.ALL_GENE_PANEL;
 									} else if (s.equals(GENE_PANEL_TEXT)) {
 										collapsibleGene.remove(geneTextField);
 										collapsibleGene.add(genePanelComboBox);
+										collapsibleGene.add(genePanelHelp);
 										conditionList.remove(filterPanelDetails);
 									}
 								}
@@ -1032,6 +1045,7 @@ public class DiscoveryPanel extends JPanel {
 		// Add the components to the collapsible pane
 		collapsibleGene.add(geneButton);
 		collapsibleGene.add(genePanelComboBox);
+		collapsibleGene.add(genePanelHelp);
 		
 		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
@@ -1256,8 +1270,8 @@ public class DiscoveryPanel extends JPanel {
 		
 		// initialize the gene panel list, convert to list
 		genePanelList= new ArrayList<String>(Arrays.asList(DiscoveryFindings.ALL_GENE_PANEL, 
-			DiscoveryFindings.ACMG_GENE_PANEL, DiscoveryFindings.CGD_GENE_PANEL, 
-			CUSTOM_GENE_PANEL_TEXT));
+			CUSTOM_GENE_PANEL_TEXT, DiscoveryFindings.ACMG_GENE_PANEL,
+			DiscoveryFindings.CGD_GENE_PANEL));
 		
 		// Populate with the existing region lists
 		try {
