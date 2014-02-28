@@ -47,7 +47,7 @@ public class InstallActionListener implements ActionListener {
             installedPage.queueAppWithNameForUninstallation(i.getName(), false);
         }
         installedPage.queueAppForInstallation(i);
-        parent.setSelectedIndex(1);
+        //parent.setSelectedIndex(1);
     }
 
     void setModeToUpdate(boolean b) {
