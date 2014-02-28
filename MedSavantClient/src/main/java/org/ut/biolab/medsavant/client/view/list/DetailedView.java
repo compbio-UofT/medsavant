@@ -45,7 +45,7 @@ public abstract class DetailedView extends JPanel {
         pageName = page;
         setPreferredSize(new Dimension(9999, 350));
         setOpaque(true);
-        this.setBackground(Color.white);
+        this.setBackground(ViewUtil.getDefaultBackgroundColor());
         setLayout(new BorderLayout());
 
         contentPanel = new JPanel();

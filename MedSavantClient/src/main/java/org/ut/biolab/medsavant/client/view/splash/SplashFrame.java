@@ -66,7 +66,7 @@ import org.ut.biolab.medsavant.client.view.util.form.NiceFormField;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormFieldGroup;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormModel;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
-import org.ut.biolab.mfiume.app.jAppStore;
+import org.ut.biolab.medsavant.client.app.jAppStore;
 
 /**
  *

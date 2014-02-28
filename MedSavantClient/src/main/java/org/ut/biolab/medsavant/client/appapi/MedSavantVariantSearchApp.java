@@ -21,9 +21,8 @@ package org.ut.biolab.medsavant.client.appapi;
 
 import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.mfiume.query.SearchConditionItem;
-
-import org.ut.biolab.mfiume.query.view.SearchConditionEditorView;
+import org.ut.biolab.medsavant.client.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
 
 
 /**

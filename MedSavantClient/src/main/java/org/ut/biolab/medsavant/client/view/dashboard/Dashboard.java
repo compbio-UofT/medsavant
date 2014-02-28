@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +36,7 @@ import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import savant.util.swing.HyperlinkButton;
 
 /**
  *
@@ -172,6 +175,37 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         MenuFactory.generateMenu(); // initialize the Apps in the menus
 
+        JPanel bottomDisclaimer = ViewUtil.getClearPanel();
+        bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
+        
+        JLabel copy = new JLabel("Developed by University of Toronto");
+        copy.setForeground(ViewUtil.getSubtleTitleColor());
+        bottomDisclaimer.add(copy);
+        
+        JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    URI uri = URI.create(MedSavantFrame.FEEDBACK_URI);
+                    Desktop.getDesktop().mail(uri);
+                } catch (Exception ex) {
+                }
+            }
+        });
+        bottomDisclaimer.add(feedback,"split, right");
+        
+        JComponent userguide = ViewUtil.createHyperlinkButton("User Guide", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    URI uri = URI.create(MedSavantFrame.USERGUIDE_URI);
+                    Desktop.getDesktop().browse(uri);
+                } catch (Exception ex) {
+                }
+            }
+        });
+        bottomDisclaimer.add(userguide,"right");
+        
         homeMenu = new NiceMenu();
         
         homeMenu.setTitle("MedSavant");
@@ -180,6 +214,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         baseLayer.add(homeMenu, BorderLayout.NORTH);
 
         baseLayer.add(p, BorderLayout.CENTER);
+        baseLayer.add(bottomDisclaimer,BorderLayout.SOUTH);
         baseLayer.updateUI();
     }
 

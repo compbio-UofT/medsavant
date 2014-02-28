@@ -36,8 +36,8 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 
 
 /**

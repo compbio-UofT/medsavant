@@ -74,7 +74,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
 
 /**
  *

@@ -37,9 +37,9 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.mfiume.query.medsavant.MedSavantConditionViewGenerator;
-import org.ut.biolab.mfiume.query.QueryViewController;
-import org.ut.biolab.mfiume.query.SearchConditionGroupItem;
+import org.ut.biolab.medsavant.client.query.medsavant.MedSavantConditionViewGenerator;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem;
 
 /**
  * Panel which contains a collection of <code>QueryPanel</code>s, each of which

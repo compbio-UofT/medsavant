@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
-import org.ut.biolab.mfiume.query.QueryViewController;
+import org.ut.biolab.medsavant.client.query.QueryViewController;
 
 /**
  *

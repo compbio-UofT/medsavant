@@ -424,7 +424,10 @@ public class AppController extends Controller {
         LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
         IOUtils.copyFile(selectedFile, pluginFile);
         LOG.info("Getting plugin information...");
-        AppDescriptor desc = addPlugin(pluginFile);
+        
+        
+        // removed February 27th 2014 by mfiume, wasn't working , TODO: re-enable and fix
+        /*AppDescriptor desc = addPlugin(pluginFile);
         LOG.info("Got plugin information");
         if (desc != null) {
             LOG.info("Loading plugin...");
@@ -434,7 +437,7 @@ public class AppController extends Controller {
             pluginLoader.addJar(pluginFile);
             loadPlugin(desc);
             LOG.info("Done loading plugin");
-        }
+        }*/
     }
     
     private boolean checkForPluginUpdate(String id) {

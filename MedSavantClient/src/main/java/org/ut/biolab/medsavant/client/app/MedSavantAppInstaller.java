@@ -27,8 +27,7 @@ import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
-import org.ut.biolab.mfiume.app.AppInfo;
-import org.ut.biolab.mfiume.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 
 /**
  *
@@ -65,6 +64,7 @@ public class MedSavantAppInstaller implements AppInstaller {
             System.out.println("Plugin installed to  " + DirectorySettings.getPluginsDirectory().getAbsolutePath());
 
         } catch (Throwable ex) {
+            ex.printStackTrace();
             return false;
         }
 

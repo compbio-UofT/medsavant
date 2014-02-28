@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -71,18 +72,7 @@ public abstract class MultiSectionApp implements LaunchableApp {
             view = new JPanel();
             view.setLayout(new BorderLayout());
 
-            final JTabbedPane tabs = new JTabbedPane() {
-
-                public Color getForegroundAt(int index) {
-                    if (getSelectedIndex() == index) {
-                        return Color.WHITE;
-                    }
-                    return Color.BLACK;
-                }
-            };
-
-            tabs.setUI(new MSTabbedPaneUI());
-            tabs.setFocusable(false);
+            final JTabbedPane tabs = ViewUtil.getMSTabedPane();
 
             final AppSubSection[] subsections = getSubSections();
             for (AppSubSection sub : subsections) {
