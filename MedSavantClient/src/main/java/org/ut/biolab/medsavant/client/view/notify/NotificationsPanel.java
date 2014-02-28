@@ -337,7 +337,7 @@ public class NotificationsPanel extends JPanel {
                 
             };
             
-            closeButton = ViewUtil.getTexturedButton("Close");
+            closeButton = ViewUtil.getTexturedButton("Hide");
             closeButton.addActionListener(closeActionListener);
             
             
