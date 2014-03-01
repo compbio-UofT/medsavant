@@ -108,128 +108,6 @@ public class NotificationsPanel extends JPanel {
         npanelContainer.updateUI();
     }
 
-    /**
-     * A notification to be shown in the notification panel
-     */
-    public static class Notification {
-
-        private ImageIcon icon;
-        private String name = "";
-        private String description = "";
-        private double progress = -1;
-        private boolean showsProgress = false;
-        private boolean isIndeterminateProgress = false;
-        private boolean timesout = false;
-        private boolean canClose = true;
-        private String actionName = "";
-        private ActionListener action;
-        private Listener<Notification> listener;
-        private boolean isClosed = false;
-
-        public Notification() {
-        }
-
-        public String getName() {
-            return name;
-        }
-        
-        public double getProgress() {
-            return progress;
-        }
-
-        public boolean isShowsProgress() {
-            return showsProgress;
-        }
-
-        public boolean isIndeterminateProgress() {
-            return isIndeterminateProgress;
-        }
-
-        public boolean isTimesout() {
-            return timesout;
-        }
-
-        public boolean isCanClose() {
-            return canClose;
-        }
-
-        public String getActionName() {
-            return actionName;
-        }
-
-        public ActionListener getAction() {
-            return action;
-        }
-
-        public ImageIcon getIcon() {
-            return icon;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-            updateListener();
-        }
-        
-        public void setIcon(ImageIcon icon) {
-            this.icon = icon;
-        }
-        
-        public void setName(String name) {
-            this.name = name;
-            updateListener();
-        }
-
-        public void setProgress(double progress) {
-            this.progress = progress;
-            updateListener();
-        }
-
-        public void setShowsProgress(boolean showsProgress) {
-            this.showsProgress = showsProgress;
-            updateListener();
-        }
-
-        public void setIsIndeterminateProgress(boolean isIndeterminateProgress) {
-            this.isIndeterminateProgress = isIndeterminateProgress;
-            updateListener();
-        }
-
-        public void setTimesout(boolean timesout) {
-            this.timesout = timesout;
-            updateListener();
-        }
-
-        public void setCanClose(boolean canClose) {
-            this.canClose = canClose;
-            updateListener();
-        }
-
-        public void setAction(String actionName, ActionListener action) {
-            this.action = action;
-            this.actionName = actionName;
-            updateListener();
-        }
-
-        private void addListener(Listener<Notification> listener) {
-            this.listener = listener;
-        }
-
-        private void updateListener() {
-            if (listener != null) {
-                listener.handleEvent(this);
-            }
-        }
-
-        public void close() {
-            isClosed = true;
-            updateListener();
-        }
-
-    }
 
     private static class NotificationPanel extends JPanel implements Listener<Notification> {
 
@@ -254,6 +132,7 @@ public class NotificationsPanel extends JPanel {
         private Color subTextNormalColor; // a light gray, set later
         private ActionListener closeActionListener;
         private ProgressWheel progressIndifinite;
+        private JButton actionButton;
 
         public NotificationPanel(Notification n) {
 
@@ -275,7 +154,7 @@ public class NotificationsPanel extends JPanel {
 
         private void refreshUI() {
             
-            if (notification.isClosed) {
+            if (notification.isClosed()) {
                 closeActionListener.actionPerformed(null);
             }
             
@@ -291,12 +170,19 @@ public class NotificationsPanel extends JPanel {
             ViewUtil.ellipsizeLabel(subTextLabel, middleWidth-2*innerinsets);
             
             if (notification.isShowsProgress()) {
-                progressIndifinite.setVisible(notification.isIndeterminateProgress);
-                progress.setVisible(!notification.isIndeterminateProgress);
+                progressIndifinite.setVisible(notification.isIndeterminateProgress());
+                progress.setVisible(!notification.isIndeterminateProgress());
                 progress.setValue((int) (notification.getProgress()*100));
             } else {
                 progressIndifinite.setVisible(false);
                 progress.setVisible(false);
+            }
+            
+            if (notification.getAction() != null) {
+                actionButton.removeActionListener(notification.getAction());
+                actionButton.addActionListener(notification.getAction());
+                actionButton.setText(ViewUtil.ellipsize(notification.getActionName(), rightWidth-innerinsets-actionButton.getInsets().left-actionButton.getInsets().right));
+                actionButton.setVisible(true);
             }
             
             this.updateUI();
@@ -317,7 +203,7 @@ public class NotificationsPanel extends JPanel {
             
             leftSide.setLayout(new MigLayout(String.format("width %d, insets %d, hidemode 3", leftWidth, innerinsets)));
             middle.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, fillx, wrap, gapy 2", middleWidth, innerinsets)));
-            rightSide.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, wrap", rightWidth, innerinsets)));
+            rightSide.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, wrap, hidemode 3, wrap 1, gapy 2", rightWidth, innerinsets)));
             
             p.add(leftSide);
             p.add(middle);
@@ -340,6 +226,8 @@ public class NotificationsPanel extends JPanel {
             closeButton = ViewUtil.getTexturedButton("Hide");
             closeButton.addActionListener(closeActionListener);
             
+            actionButton = ViewUtil.getTexturedButton("");
+            actionButton.setVisible(false);
             
             progress = (JProgressBar) ViewUtil.makeMini(new JProgressBar());
             progressIndifinite = ViewUtil.getIndeterminateProgressBar();
@@ -355,6 +243,7 @@ public class NotificationsPanel extends JPanel {
             progressIndifinite.setVisible(false);
             
             rightSide.add(closeButton);
+            rightSide.add(actionButton);
             
             if (notification.getIcon() != null) {
                 leftSide.removeAll();

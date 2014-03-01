@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.app.api;
 
+import java.awt.event.ActionListener;
 import java.util.Set;
 import org.ut.biolab.medsavant.client.app.AppInfo;
 
@@ -35,4 +36,6 @@ public interface AppInstaller {
     public boolean uninstallApp(AppInfo appInfo);
 
     public String getProgramName();
+
+    public ActionListener getRestartActionListener();
 }

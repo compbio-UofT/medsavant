@@ -53,6 +53,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
@@ -980,6 +981,10 @@ public class OptionView {
             public void actionPerformed(ActionEvent ae) {
 
                 new BackgroundTaskWorker<Void>("Mendel") {
+                    
+                    //Notification notification = new Notification();
+                    //notification.getName();
+                    
                     MedSavantWorker currentWorker;
                     Locks.DialogLock dialogLock;
 

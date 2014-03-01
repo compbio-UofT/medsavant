@@ -44,8 +44,8 @@ public class IncidentalFindings {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 	
 	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
-	private final String JANNOVAR_EFFECT= "jannovar effect";
-	private final String JANNOVAR_GENE= "jannovar gene symbol";
+	private final String JANNOVAR_EFFECT= "ANNOVAR Effect";
+	private final String JANNOVAR_GENE= "ANNOVAR Gene Symbol";
 	private final String STOPGAIN= "STOPGAIN";
 	private final String FRAMESHIFTS= "FS_%";
 	private final String SPLICING= "SPLICING";

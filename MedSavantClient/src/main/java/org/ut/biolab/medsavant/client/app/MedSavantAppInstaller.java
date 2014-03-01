@@ -19,6 +19,8 @@
  */
 package org.ut.biolab.medsavant.client.app;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +30,7 @@ import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
 /**
  *
@@ -105,5 +108,18 @@ public class MedSavantAppInstaller implements AppInstaller {
     @Override
     public String getProgramName() {
         return "MedSavant";
+    }
+
+    @Override
+    public ActionListener getRestartActionListener() {
+        return new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MedSavantFrame.getInstance().requestLogoutAndRestart();
+            }
+            
+        };
+        
     }
 }

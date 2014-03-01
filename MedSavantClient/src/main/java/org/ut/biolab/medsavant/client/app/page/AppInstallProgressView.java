@@ -28,6 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import org.ut.biolab.medsavant.client.app.AppInfo;
 import org.ut.biolab.medsavant.client.app.jAppStore;
+import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -47,14 +49,9 @@ public class AppInstallProgressView extends JPanel {
         jAppStore.wrapComponentWithLineBorder(this);
     }
 
-    private JProgressBar getIndeterminantProgressBar() {
+    private ProgressWheel getIndeterminantProgressBar() {
 
-        JProgressBar b = new JProgressBar();
-        b.setIndeterminate(true);
-
-        b.putClientProperty("JProgressBar.style", "circular");
-
-        return b;
+        return ViewUtil.getIndeterminateProgressBar();
 
     }
 
