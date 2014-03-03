@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin class="org.ut.biolab.medsavant.app.mendelclinic.MendelClinicApp">
     <properties>
-        <property name="version" value="1.0.0"/>
+        <property name="version" value="1.1.0"/>
         <property name="sdk-version" value="1.2-SNAPSHOT"/>
         <property name="name" value="Mendel" />
         <property name="category" value="VISUALIZATION" />
