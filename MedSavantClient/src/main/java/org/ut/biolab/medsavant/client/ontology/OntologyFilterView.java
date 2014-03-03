@@ -73,7 +73,7 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
 
             @Override
             protected Void doInBackground() throws Exception {
-                OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);
+                OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getSessionID(), ontology);
                 setAvailableValues(Arrays.asList(terms));
                 return null;
             }
@@ -82,13 +82,13 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
         /*new CancellableProgressDialog("Fetching Ontology", String.format("Retrieving list of %s ontology terms.", ontology,true)) {
          @Override
          public void run() throws InterruptedException, SQLException, RemoteException {
-         OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);
+         OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getSessionID(), ontology);
          availableValues = Arrays.asList(terms);
          }
 
          @Override
          public ProgressStatus checkProgress() throws RemoteException {
-         return MedSavantClient.OntologyManager.checkProgress(LoginController.getInstance().getSessionID(), cancelled);
+         return MedSavantClient.OntologyManager.checkProgress(LoginController.getSessionID(), cancelled);
          }
          }.showDialog();
          */

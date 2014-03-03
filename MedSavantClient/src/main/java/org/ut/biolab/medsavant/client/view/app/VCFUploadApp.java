@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
@@ -392,7 +392,7 @@ public class VCFUploadApp implements LaunchableApp {
                             public void run() {
                                 try {
                                     variantManager.uploadVariants(
-                                            LoginController.getInstance().getSessionID(),
+                                            LoginController.getSessionID(),
                                             transferIDs,
                                             ProjectController.getInstance().getCurrentProjectID(),
                                             ReferenceController.getInstance().getCurrentReferenceID(),
@@ -419,7 +419,7 @@ public class VCFUploadApp implements LaunchableApp {
                                         AppDirectory.getTaskManager().showMessageForTask(instance,
                                                 "<html>Variants have completed being imported.<br/>"
                                                         + "As a result, you must login again.</html>");
-                                        MedSavantFrame.getInstance().requestLogout();
+                                        MedSavantFrame.getInstance().requestLogoutAndRestart();
                                     }
 
                                 });

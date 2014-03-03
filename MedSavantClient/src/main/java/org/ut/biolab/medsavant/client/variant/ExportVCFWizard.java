@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.controller.ResultController;
+import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.shared.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.client.util.ExportVCF;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
@@ -179,7 +180,7 @@ public class ExportVCFWizard extends WizardDialog {
                                 });
                                 workButton.setText("Cancel");
 
-                                ExportVCF.exportVCF(variantFile, this);
+                                ExportVCF.exportVCF(variantFile, this, FilterController.getInstance().getAllFilterConditions());
                                 return null;
                             }
 

@@ -223,7 +223,7 @@ public class AddAnnotationDialog extends javax.swing.JDialog {
         try {
             String projectName = this.text_program_name.getText();
 
-            if (MedSavantClient.ProjectManager.containsProject(LoginController.getInstance().getSessionID(), projectName)) {
+            if (MedSavantClient.ProjectManager.containsProject(LoginController.getSessionID(), projectName)) {
                 JOptionPane.showMessageDialog(this, "Project already exists");
             } else {
                 //ProjectController.getInstance().addProject(projectName);

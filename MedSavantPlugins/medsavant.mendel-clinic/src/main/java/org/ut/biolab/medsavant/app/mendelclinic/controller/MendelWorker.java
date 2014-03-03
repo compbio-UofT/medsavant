@@ -63,6 +63,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.client.view.util.PeekingPanelContainer;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
@@ -201,11 +202,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         aligned.setPreferredSize(new Dimension(450, 999));
         aligned.add(vip, BorderLayout.CENTER);
 
-        JPanel p = new JPanel();
-        p.setLayout(new BorderLayout());
-        //p.add(stp, BorderLayout.CENTER);
-        p.add(ssp, BorderLayout.CENTER);
-        p.add(aligned, BorderLayout.EAST);
+        PeekingPanelContainer p = new PeekingPanelContainer(ssp);
+        p.addPeekingPanel("Inspector", BorderLayout.EAST, aligned, true);
 
         f.add(p);
 
@@ -881,7 +879,7 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
                 taskWorker.addLog("Executing criteria #" + criteriaNumber + " of " + step.getCriteria().size() + " of step #" + stepNumber + "...");
 
                 Set<String> setOfDNAIDs = criterion.getDNAIDs(); //TODO: write method
-                //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getInstance().getSessionID(), criterion.getCohort().getId());
+                //List<String> dnaIDsInCohort = MedSavantClient.CohortManager.getDNAIDsForCohort(LoginController.getSessionID(), criterion.getCohort().getId());
 
                 Set<MendelVariant> excludedVariantsFromThisStep = new HashSet<MendelVariant>();
 
@@ -1025,7 +1023,7 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
     private SimpleFamily getSimpleFamilyFromID(String familyID) throws SQLException, RemoteException, SessionExpiredException {
 
         try {
-            List<Object[]> results = MedSavantClient.PatientManager.getFamily(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), familyID);
+            List<Object[]> results = MedSavantClient.PatientManager.getFamily(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), familyID);
 
             SimpleFamily fam = new SimpleFamily();
             for (Object[] o : results) {

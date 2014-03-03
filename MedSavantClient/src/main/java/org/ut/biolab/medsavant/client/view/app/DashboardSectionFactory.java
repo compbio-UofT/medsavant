@@ -41,7 +41,7 @@ public class DashboardSectionFactory {
 
         s.addLaunchableApp(AppDirectory.getVariantNavigator());
         s.addLaunchableApp(AppDirectory.getGenomeBrowser());
-        s.addLaunchableApp(AppDirectory.getAppStoreApp());
+        
         s.addLaunchableApp(AppDirectory.getPatientsApp());
         s.addLaunchableApp(AppDirectory.getRegionsApp());
         s.addLaunchableApp(AppDirectory.getTaskManager());
@@ -52,6 +52,7 @@ public class DashboardSectionFactory {
         }
         
         s.addLaunchableApp(AppDirectory.getAccountManager());
+        s.addLaunchableApp(AppDirectory.getAppStoreApp());
 
         return s;
     }

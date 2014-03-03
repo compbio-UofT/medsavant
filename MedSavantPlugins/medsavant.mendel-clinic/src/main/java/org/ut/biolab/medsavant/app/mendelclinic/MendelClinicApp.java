@@ -28,6 +28,9 @@ import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 public class MendelClinicApp extends MedSavantDashboardApp {
 
     private MendelPanel fmp;
+    
+    private static final String iconroot = "/icons/";
+    public static ImageIcon icon = getIcon(iconroot + "mendel-icon.png");
 
     @Override
     public JPanel getContent() {
@@ -53,15 +56,13 @@ public class MendelClinicApp extends MedSavantDashboardApp {
     @Override
     public void viewDidUnload() {
     }
-
-    private static final String iconroot = "/icons/";
-
+    
     @Override
     public ImageIcon getIcon() {        
-        return getIcon(iconroot + "mendel-icon.png");
+        return icon;
     }
-
-    public ImageIcon getIcon(String resourcePath) {
-        return new ImageIcon(getClass().getResource(resourcePath));
+    
+    public static ImageIcon getIcon(String resourcePath) {
+        return new ImageIcon(MendelClinicApp.class.getResource(resourcePath));
     }
 }

@@ -112,7 +112,7 @@ public class PatientConditionGenerator implements ComprehensiveConditionGenerato
 
         return ConditionUtils.getConditionsMatchingDNAIDs(
                 MedSavantClient.PatientManager.getDNAIDsForStringList(
-                LoginController.getInstance().getSessionID(),
+                LoginController.getSessionID(),
                 ProjectController.getInstance().getCurrentPatientTableSchema(),
                 appliedValues,
                 columnName,

@@ -56,7 +56,7 @@ public class RegionController extends Controller<RegionEvent> {
 
     public void addRegionSet(String regionSetName, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException {
         try {
-            MedSavantClient.RegionSetManager.addRegionSet(LoginController.getInstance().getSessionID(), regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), delim, fileFormat, numHeaderLines, fileID);
+            MedSavantClient.RegionSetManager.addRegionSet(LoginController.getSessionID(), regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), delim, fileFormat, numHeaderLines, fileID);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
@@ -66,7 +66,7 @@ public class RegionController extends Controller<RegionEvent> {
 
     public void removeSet(int setID) throws SQLException, RemoteException {
         try {
-            MedSavantClient.RegionSetManager.removeRegionSet(LoginController.getInstance().getSessionID(), setID);
+            MedSavantClient.RegionSetManager.removeRegionSet(LoginController.getSessionID(), setID);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
@@ -77,7 +77,7 @@ public class RegionController extends Controller<RegionEvent> {
     public List<RegionSet> getRegionSets() throws SQLException, RemoteException {
         List<RegionSet> result = new ArrayList<RegionSet>();
         try {
-            result.addAll(MedSavantClient.RegionSetManager.getRegionSets(LoginController.getInstance().getSessionID()));
+            result.addAll(MedSavantClient.RegionSetManager.getRegionSets(LoginController.getSessionID()));
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
@@ -91,7 +91,7 @@ public class RegionController extends Controller<RegionEvent> {
             return ((AdHocRegionSet)set).regions;
         }
         try {
-            return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.getInstance().getSessionID(), set);
+            return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.getSessionID(), set);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
@@ -112,7 +112,7 @@ public class RegionController extends Controller<RegionEvent> {
         }
         if (!setsSet.isEmpty()) {
             try {
-                result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.getInstance().getSessionID(), setsSet));
+                result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.getSessionID(), setsSet));
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 return null;
@@ -123,7 +123,7 @@ public class RegionController extends Controller<RegionEvent> {
 
     public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
         try {
-            MedSavantClient.RegionSetManager.addToRegionSet(LoginController.getInstance().getSessionID(), set, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
+            MedSavantClient.RegionSetManager.addToRegionSet(LoginController.getSessionID(), set, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;

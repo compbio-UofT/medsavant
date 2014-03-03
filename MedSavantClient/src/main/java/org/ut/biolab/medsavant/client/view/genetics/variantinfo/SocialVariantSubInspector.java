@@ -98,7 +98,7 @@ public class SocialVariantSubInspector extends SubInspector implements Listener<
 
                 list.add(sv);
                 try {
-                    MedSavantClient.VariantManager.addVariantComments(LoginController.getInstance().getSessionID(), list);
+                    MedSavantClient.VariantManager.addVariantComments(LoginController.getSessionID(), list);
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error adding variant comments: %s", ex);
                 }
@@ -137,7 +137,7 @@ public class SocialVariantSubInspector extends SubInspector implements Listener<
 
         try {
             List<VariantComment> comments = MedSavantClient.VariantManager.getVariantComments(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     selectedVariant.getUploadID(),
@@ -229,7 +229,7 @@ public class SocialVariantSubInspector extends SubInspector implements Listener<
                         List<VariantComment> list = new ArrayList<VariantComment>();
                         list.add(comment);
                         try {
-                            MedSavantClient.VariantManager.removeVariantComments(LoginController.getInstance().getSessionID(), list);
+                            MedSavantClient.VariantManager.removeVariantComments(LoginController.getSessionID(), list);
                         } catch (Exception ex) {
                             ClientMiscUtils.reportError("Error removing variant comments: %s", ex);
                         }

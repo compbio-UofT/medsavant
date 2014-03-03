@@ -49,7 +49,7 @@ public class UserController extends Controller<UserEvent> {
 
     public void addUser(String name, char[] pass, UserLevel level) throws SQLException, RemoteException {
         try {
-            MedSavantClient.UserManager.addUser(LoginController.getInstance().getSessionID(), name, pass, level);
+            MedSavantClient.UserManager.addUser(LoginController.getSessionID(), name, pass, level);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
@@ -59,7 +59,7 @@ public class UserController extends Controller<UserEvent> {
 
     public void removeUser(String name) throws SQLException, RemoteException {
         try {
-            MedSavantClient.UserManager.removeUser(LoginController.getInstance().getSessionID(), name);
+            MedSavantClient.UserManager.removeUser(LoginController.getSessionID(), name);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
@@ -69,7 +69,7 @@ public class UserController extends Controller<UserEvent> {
 
     public String[] getUserNames() throws SQLException, RemoteException {
         try {
-            return MedSavantClient.UserManager.getUserNames(LoginController.getInstance().getSessionID());
+            return MedSavantClient.UserManager.getUserNames(LoginController.getSessionID());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;

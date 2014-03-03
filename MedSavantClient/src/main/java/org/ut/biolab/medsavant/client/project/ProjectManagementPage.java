@@ -129,7 +129,7 @@ public class ProjectManagementPage extends AppSubSection {
         public void editItem(Object[] items) {
             try {
                 String projName = (String) items[0];
-                String sessionID = LoginController.getInstance().getSessionID();
+                String sessionID = LoginController.getSessionID();
                 int projID = MedSavantClient.ProjectManager.getProjectID(sessionID, projName);
 
                 // Check for existing unpublished changes to this project.
@@ -276,7 +276,7 @@ public class ProjectManagementPage extends AppSubSection {
             @Override
             protected ProjectDetails[] doInBackground() throws Exception {
                 int projectId = ProjectController.getInstance().getProjectID(projectName);
-                return MedSavantClient.ProjectManager.getProjectDetails(LoginController.getInstance().getSessionID(), projectId);
+                return MedSavantClient.ProjectManager.getProjectDetails(LoginController.getSessionID(), projectId);
             }
 
             @Override
@@ -314,7 +314,7 @@ public class ProjectManagementPage extends AppSubSection {
                 details.add(p);
             }
 
-            String sessionID = LoginController.getInstance().getSessionID();
+            String sessionID = LoginController.getSessionID();
 
             try {
                 if (MedSavantClient.SettingsManager.isProjectLockedForChanges(sessionID, projectID)) {
@@ -332,7 +332,7 @@ public class ProjectManagementPage extends AppSubSection {
                                         + "making changes. Are you sure you want to proceed?");
 
                                 if (result == DialogUtils.YES) {
-                                    MedSavantClient.SettingsManager.forceReleaseLockForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                                    MedSavantClient.SettingsManager.forceReleaseLockForProject(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                                     refreshSelectedProject();
                                 }
                             } catch (Exception ex) {

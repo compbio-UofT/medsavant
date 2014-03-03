@@ -479,7 +479,7 @@ public class VCFAnnotationWizard extends WizardDialog {
                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
 
-                        new ProjectWorker<Void>("Importing variants", autoPublish.isSelected(), LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID()) {
+                        new ProjectWorker<Void>("Importing variants", autoPublish.isSelected(), LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID()) {
                             private int fileIndex = 0;
 
                             @Override

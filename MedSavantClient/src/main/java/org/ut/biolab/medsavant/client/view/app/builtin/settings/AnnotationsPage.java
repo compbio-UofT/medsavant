@@ -253,7 +253,7 @@ public class AnnotationsPage extends AppSubSection {
 
                                     if (response == DialogUtils.YES) {
                                         try {
-                                            MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getInstance().getSessionID(), an.getID());
+                                            MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.getSessionID(), an.getID());
                                             DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
                                         } catch (Exception ex) {
                                             ClientMiscUtils.reportError("Error uninstalling annotations", ex);

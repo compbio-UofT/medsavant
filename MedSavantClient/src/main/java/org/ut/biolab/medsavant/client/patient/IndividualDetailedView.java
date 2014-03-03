@@ -98,7 +98,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
         try {
-            fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
         }
@@ -464,14 +464,14 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             public void actionPerformed(ActionEvent e) {
                 if (patientIDs != null && patientIDs.length > 0) {
                     try {
-                        Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                        Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts, "Select Cohort", "Select which cohort to add to:");
                         form.setVisible(true);
                         Cohort selected = (Cohort) form.getSelectedValue();
                         if (selected == null) {
                             return;
                         }
-                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getInstance().getSessionID(), patientIDs, selected.getId());                        
+                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getSessionID(), patientIDs, selected.getId());                        
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error adding individuals to cohort: %s", ex);
                     }
@@ -496,7 +496,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         @Override
         protected Object[] doInBackground() throws RemoteException, SQLException {
             try {
-                return MedSavantClient.PatientManager.getPatientRecord(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
+                return MedSavantClient.PatientManager.getPatientRecord(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 return null;
@@ -526,10 +526,10 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         @Override
         protected File doInBackground() throws Exception {
             csvSem.acquire();
-            List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
+            List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
 
-            familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
+            familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patientID);
 
             File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + patientID + ".csv");
             CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);

@@ -50,7 +50,7 @@ public class CohortsPage extends AppSubSection {
                     new SimpleDetailedListModel<Cohort>("Cohort") {
                         @Override
                         public Cohort[] getData() throws Exception {
-                            return MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                            return MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                         }
                     },
                     new CohortDetailedView(pageName),

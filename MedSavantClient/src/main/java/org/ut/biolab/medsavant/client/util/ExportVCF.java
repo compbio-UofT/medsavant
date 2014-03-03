@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.util;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -86,19 +87,19 @@ public class ExportVCF implements BasicVariantColumns {
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; // and on
 
     public static File exportTDF(File destFile) throws Exception {
-        return exportTDF(destFile, null);
+        return exportTDF(destFile, null, FilterController.getInstance().getAllFilterConditions());
     }
 
     public static File exportVCF(File destFile) throws Exception {
-         return exportVCF(destFile, null);
+         return exportVCF(destFile, null, FilterController.getInstance().getAllFilterConditions());
     }
 
-    public static File exportTDF(File destFile, MedSavantWorker worker) throws Exception {
+    public static File exportTDF(File destFile, MedSavantWorker worker, Condition[][] conditions) throws Exception {
         System.out.println("Requesting table export from server...");
         int fileID
-                = MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                = MedSavantClient.VariantManager.exportVariants(LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
-                        .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), false, true);
+                        .getCurrentReferenceID(), conditions, false, true);
 
         if (worker != null) {
             if (worker.isCancelled()) {
@@ -127,11 +128,11 @@ public class ExportVCF implements BasicVariantColumns {
         return resultingFile;
     }
 
-    public static File exportVCF(File destFile, MedSavantWorker worker) throws Exception {
+    public static File exportVCF(File destFile, MedSavantWorker worker, Condition[][] conditions) throws Exception {
         int fileID
-                = MedSavantClient.VariantManager.exportVariants(LoginController.getInstance().getSessionID(),
+                = MedSavantClient.VariantManager.exportVariants(LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance()
-                        .getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), true, false);
+                        .getCurrentReferenceID(), conditions, true, false);
 
         if (worker != null) {
             if (worker.isCancelled()) {

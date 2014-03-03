@@ -136,7 +136,7 @@ public class UpdatesPanel extends JPanel {
                 @Override
                 protected Notification[] doInBackground() throws Exception {
                     if (serverChecks) {
-                        return MedSavantClient.NotificationManager.getNotifications(LoginController.getInstance().getSessionID(), LoginController.getInstance().getUserName());
+                        return MedSavantClient.NotificationManager.getNotifications(LoginController.getSessionID(), LoginController.getInstance().getUserName());
                     }
                     return null;
                 }

@@ -477,12 +477,12 @@ public class ImportVariantsWizard extends WizardDialog {
                                     setStatusMessage("Importing variants");
                                     inUploading = false;
                                     setIndeterminate(true);
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
+                                    manager.uploadVariants(LoginController.getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     setStatusMessage("Importing variants");
-                                    manager.uploadVariants(LoginController.getInstance().getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
+                                    manager.uploadVariants(LoginController.getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(),false);
                                     LOG.info("Done importing");
                                 }
                                 return null;
@@ -509,10 +509,10 @@ public class ImportVariantsWizard extends WizardDialog {
                             protected ProgressStatus checkProgress() throws RemoteException {
                                 ProgressStatus stat;
                                 if (inUploading) {
-                                    stat = MedSavantClient.NetworkManager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
+                                    stat = MedSavantClient.NetworkManager.checkProgress(LoginController.getSessionID(), isCancelled());
                                 } else {
                                     try {
-                                        stat = manager.checkProgress(LoginController.getInstance().getSessionID(), isCancelled());
+                                        stat = manager.checkProgress(LoginController.getSessionID(), isCancelled());
                                     } catch (SessionExpiredException ex) {
                                         MedSavantExceptionHandler.handleSessionExpiredException(ex);
                                         return null;

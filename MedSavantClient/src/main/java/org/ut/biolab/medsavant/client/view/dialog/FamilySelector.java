@@ -448,7 +448,7 @@ public class FamilySelector extends JDialog implements BasicPatientColumns {
 
         private void setFamilies() throws SQLException, RemoteException {
             try {
-                List<String> fams = MedSavantClient.PatientManager.getFamilyIDs(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                List<String> fams = MedSavantClient.PatientManager.getFamilyIDs(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                 families = new ArrayList<Object[]>(fams.size());
 
                 for (String fam : fams) {

@@ -143,7 +143,7 @@ public class ChangePasswordDialog extends JDialog {
             }
 
             try {
-                MedSavantClient.UserManager.changePassword(LoginController.getInstance().getSessionID(),
+                MedSavantClient.UserManager.changePassword(LoginController.getSessionID(),
                         LoginController.getInstance().getUserName(),
                         textfields[0].getPassword(),
                         textfields[1].getPassword());

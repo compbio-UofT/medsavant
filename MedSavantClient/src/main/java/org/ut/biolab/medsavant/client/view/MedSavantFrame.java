@@ -52,7 +52,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
 
@@ -216,7 +216,7 @@ public class MedSavantFrame extends JFrame {
         requestRestart(false);
     }
 
-    public void requestLogout() {
+    public void requestLogoutAndRestart() {
         requestRestart(true);
     }
 

@@ -67,7 +67,7 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
         super(FILTER_NAME, queryID);
         List vals = new ArrayList<Cohort>();
         try {
-            vals.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
+            vals.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID())));
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
         }
@@ -111,7 +111,7 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
                     cohNames.add(coh.getName());
                 }
                 try {
-                    return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohNames));
+                    return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohNames));
                 } catch (SessionExpiredException ex) {
                     MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 }

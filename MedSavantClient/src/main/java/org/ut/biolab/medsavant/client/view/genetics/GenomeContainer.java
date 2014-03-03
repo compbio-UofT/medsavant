@@ -188,7 +188,7 @@ public class GenomeContainer extends JLayeredPane {
             try {
                 long start = System.currentTimeMillis();
                 final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantManager.getChromosomeHeatMap(
-                        LoginController.getInstance().getSessionID(),
+                        LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),

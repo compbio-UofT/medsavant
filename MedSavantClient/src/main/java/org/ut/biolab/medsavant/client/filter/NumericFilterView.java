@@ -121,7 +121,7 @@ public class NumericFilterView extends FilterView {
 
                 @Override
                 protected Void doInBackground() throws Exception {
-                    setExtremeValues(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName));
+                    setExtremeValues(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getSessionID(), whichTable.getName(), columnName));
                     return null;
                 }
 
@@ -248,7 +248,7 @@ public class NumericFilterView extends FilterView {
                         } else {
                             try {
                                 return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(
-                                        LoginController.getInstance().getSessionID(),
+                                        LoginController.getSessionID(),
                                         ProjectController.getInstance().getCurrentProjectID(),
                                         columnName,
                                         appliedRange));

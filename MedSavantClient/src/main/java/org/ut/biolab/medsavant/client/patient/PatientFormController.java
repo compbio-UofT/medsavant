@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 public class PatientFormController extends FormController {
 
     public PatientFormController() throws SQLException, RemoteException, SessionExpiredException {
-        super(MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(),
+        super(MedSavantClient.PatientManager.getPatientFields(LoginController.getSessionID(),
                 ProjectController.getInstance().getCurrentProjectID()),
                 BasicPatientColumns.PATIENT_ID);
 
@@ -72,7 +72,7 @@ public class PatientFormController extends FormController {
                 }
             }
 
-            MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(),
+            MedSavantClient.PatientManager.addPatient(LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(), fields, validatedValues);
             DialogUtils.displayMessage("Individual Added");            
         } catch (Exception ex) {

@@ -127,7 +127,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         int widthOfContainer = this.getParent().getSize().width;
 
-        int centralWidth = Math.min(widthOfContainer / 2, 1000); // TODO: centralize width for other apps to use
+        int centralWidth = Math.min((int)Math.round(widthOfContainer*0.75), 1200); // TODO: centralize width for other apps to use
 
         int numIconsPerRow = (centralWidth + gapHorizontal) / (appIconWidth + gapHorizontal);
 
@@ -178,7 +178,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         JPanel bottomDisclaimer = ViewUtil.getClearPanel();
         bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
         
-        JLabel copy = new JLabel("Developed by University of Toronto");
+        JLabel copy = new JLabel("Developed at University of Toronto");
         copy.setForeground(ViewUtil.getSubtleTitleColor());
         bottomDisclaimer.add(copy);
         
@@ -433,7 +433,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
-                MedSavantFrame.getInstance().requestLogout();
+                MedSavantFrame.getInstance().requestLogoutAndRestart();
             }
         };
         label.addMouseListener(new MouseListener() {

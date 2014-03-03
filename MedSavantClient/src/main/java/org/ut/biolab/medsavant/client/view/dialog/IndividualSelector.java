@@ -533,7 +533,7 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
 
                 setCohorts();
 
-                List<Object[]> tmpIndividuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
+                List<Object[]> tmpIndividuals = MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), Integer.MAX_VALUE);
                 List<Object[]> updatedIndividuals = new ArrayList<Object[]>();
 
                 for (Object[] row : tmpIndividuals) {

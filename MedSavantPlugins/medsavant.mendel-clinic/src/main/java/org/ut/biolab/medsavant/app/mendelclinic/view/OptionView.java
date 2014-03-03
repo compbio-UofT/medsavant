@@ -3,6 +3,9 @@ package org.ut.biolab.medsavant.app.mendelclinic.view;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -16,12 +19,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -35,6 +42,7 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.app.mendelclinic.MendelClinicApp;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
@@ -49,12 +57,19 @@ import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
 import org.ut.biolab.medsavant.app.mendelclinic.controller.MendelWorker;
 import org.ut.biolab.medsavant.app.mendelclinic.model.Locks;
 import org.ut.biolab.medsavant.app.mendelclinic.view.OptionView.InheritanceStep.InheritanceModel;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.model.GeneralLog;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
@@ -73,7 +88,8 @@ public class OptionView {
     protected class ZygosityStepViewGenerator {
 
         private RoundedPanel inheritanceModelView;
-         public ZygosityStepViewGenerator() {
+
+        public ZygosityStepViewGenerator() {
             setupView();
         }
 
@@ -104,7 +120,7 @@ public class OptionView {
                         zygosityStep.setZygosity(null);
                     } else {
 
-                        zygosityStep.setZygosity((Zygosity)b.getSelectedItem());
+                        zygosityStep.setZygosity((Zygosity) b.getSelectedItem());
                     }
                 }
 
@@ -216,12 +232,12 @@ public class OptionView {
 
             required.add(new JLabel("Select variants from "));
 
-            datasetLabel = new JLabel("filtered variants");
+            datasetLabel = new JLabel("Variant Navigator");
             datasetLabel.setFont(ViewUtil.getMediumTitleFont());
 
             required.add(datasetLabel);
 
-            required.add(new JLabel(" where"));
+            required.add(new JLabel(" results, where"));
 
             IncludeExcludeCriteria c = new IncludeExcludeCriteria();
 
@@ -312,6 +328,7 @@ public class OptionView {
     }
 
     public static class ZygosityStep {
+
         private Zygosity zygosity;
 
         public ZygosityStep() {
@@ -340,41 +357,41 @@ public class OptionView {
         public enum InheritanceModel {
 
             ANY {
-                @Override
-                public String toString() {
-                    return "Any";
-                }
-            }, AUTOSOMAL_DOMINANT {
-                @Override
-                public String toString() {
-                    return "Autosomal Dominant";
-                }
-            }, AUTOSOMAL_RECESSIVE {
-                @Override
-                public String toString() {
-                    return "Autosomal Recessive";
-                }
-            }, X_LINKED_RECESSIVE {
-                @Override
-                public String toString() {
-                    return "X-Linked Recessive";
-                }
-            }, X_LINKED_DOMINANT {
-                @Override
-                public String toString() {
-                    return "X-Linked Dominant";
-                }
-            }, COMPOUND_HETEROZYGOTE {
-                @Override
-                public String toString() {
-                    return "Compound Heterozygote";
-                }
-            }, DE_NOVO {
-                @Override
-                public String toString() {
-                    return "De Novo";
-                }
-            }
+                        @Override
+                        public String toString() {
+                            return "Any";
+                        }
+                    }, AUTOSOMAL_DOMINANT {
+                        @Override
+                        public String toString() {
+                            return "Autosomal Dominant";
+                        }
+                    }, AUTOSOMAL_RECESSIVE {
+                        @Override
+                        public String toString() {
+                            return "Autosomal Recessive";
+                        }
+                    }, X_LINKED_RECESSIVE {
+                        @Override
+                        public String toString() {
+                            return "X-Linked Recessive";
+                        }
+                    }, X_LINKED_DOMINANT {
+                        @Override
+                        public String toString() {
+                            return "X-Linked Dominant";
+                        }
+                    }, COMPOUND_HETEROZYGOTE {
+                        @Override
+                        public String toString() {
+                            return "Compound Heterozygote";
+                        }
+                    }, DE_NOVO {
+                        @Override
+                        public String toString() {
+                            return "De Novo";
+                        }
+                    }
         };
         private Set<String> families;
         private InheritanceModel inheritanceModel;
@@ -515,7 +532,6 @@ public class OptionView {
             typeBox.addItem("gene has variant");
             //typeBox.addItem("position has variant");
 
-
             typeBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     switch (typeBox.getSelectedIndex()) {
@@ -539,7 +555,7 @@ public class OptionView {
             freqTypeChoice.addItem("none");
             freqTypeChoice.addItem("at most");
             freqTypeChoice.addItem("at least");
-            
+
             freqTypeChoice.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     switch (freqTypeChoice.getSelectedIndex()) {
@@ -562,7 +578,6 @@ public class OptionView {
             freqTypeChoice.setSelectedIndex(0);
 
             view.add(freqTypeChoice);
-
 
             final JPanel freqPanel = ViewUtil.getClearPanel();
             ViewUtil.applyHorizontalBoxLayout(freqPanel);
@@ -615,7 +630,6 @@ public class OptionView {
             });
 
             view.add(new JLabel("of individuals"));
-
 
             final JComboBox notIndividuals = new JComboBox();
             notIndividuals.setFocusable(false);
@@ -712,25 +726,16 @@ public class OptionView {
                         });
                         edit.add(resetSelf);
 
-                        ActionListener removeFromGroup = new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                throw new UnsupportedOperationException("Not supported yet.");
-                            }
-                        };
-
-                        JMenuItem saveToCohorts = new JMenuItem("Save to cohorts");
-                        saveToCohorts.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                DialogUtils.displayMessage("TODO");
-                            }
-                        });
-                        edit.add(saveToCohorts);
-
+                        /*JMenuItem saveToCohorts = new JMenuItem("Save to cohorts");
+                         saveToCohorts.addActionListener(new ActionListener() {
+                         @Override
+                         public void actionPerformed(ActionEvent ae) {
+                         DialogUtils.displayMessage("TODO");
+                         }
+                         });
+                         edit.add(saveToCohorts);*/
                         m.add(edit);
                         editAdded = true;
-                    } else {
                     }
 
                     // set group
@@ -760,7 +765,6 @@ public class OptionView {
                         }
                     } else {
                     }
-
 
                     if (m.getSubElements().length > 0) {
 
@@ -856,7 +860,6 @@ public class OptionView {
             view.add(chooseIndividualsButton);
         }
     }
-    //private static String COHORT_COMBO = "COHORT_COMBO";
 
     void viewDidLoad() {
     }
@@ -976,20 +979,74 @@ public class OptionView {
         JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
+
+            Notification notification = new Notification();
+
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                new BackgroundTaskWorker<Void>("Mendel") {
+                new BackgroundTaskWorker<Boolean>("Mendel") {
+
                     MedSavantWorker currentWorker;
                     Locks.DialogLock dialogLock;
+                    private final int WARN_IF_VARIANTS_EXCEED = 1000000;
 
                     @Override
-                    protected Void doInBackground() throws Exception {
+                    protected Boolean doInBackground() throws Exception {
+
+                        Set<String> dnaIDs = getRelevantDNAIDs();
+                        
+                        //System.out.println("Relevant DNA IDs");
+                        //for (String d : dnaIDs) {
+                        //    System.out.println("\t" + d);
+                        //}
+                        
+                        if (dnaIDs.isEmpty()) {
+                            DialogUtils.displayMessage("Please select individuals to run the analysis on");
+                            return false;
+                        }
+                        
+                        Condition[][] conditions = getRelevantConditions(dnaIDs);
+
+                        int numVariants = MedSavantClient.VariantManager.getFilteredVariantCount(
+                                LoginController.getSessionID(),
+                                ProjectController.getInstance().getCurrentProjectID(),
+                                ReferenceController.getInstance().getCurrentReferenceID(),
+                                conditions);
+
+                        if (numVariants > WARN_IF_VARIANTS_EXCEED) {
+                            int result = DialogUtils.askYesNo("Confirm", String.format("<html>This analysis will download %s genetic variants<br/>to your computer, which may take some time.<br/><br/>For quicker results, add more filters in the Variant Navigator.<br/><br/>Proceed anyway?</html>", MiscUtils.numToString(numVariants)));
+                            if (result == DialogUtils.NO) {
+                                return false;
+                            }
+                        }
+
+                        System.out.println("Starting Mendel");
+
+                        notification.setName("Mendel");
+                        notification.setHideDoesClose(false);
+                        notification.setIsIndeterminateProgress(true);
+                        notification.setIcon(MendelClinicApp.icon);
+
+                        this.addListener(new Listener<TaskWorker>() {
+
+                            @Override
+                            public void handleEvent(TaskWorker event) {
+                                if (!event.getLog().isEmpty()) {
+                                    GeneralLog log = event.getLog().get(event.getLog().size() - 1);
+                                    notification.setDescription(log.getDescription());
+                                }
+                            }
+
+                        });
+
+                        MedSavantFrame.getInstance().showNotification(notification);
+
                         final Locks.FileResultLock fileLock = new Locks.FileResultLock();
                         dialogLock = new Locks.DialogLock();
 
                         // File retriever
-                        currentWorker = getRetrieverWorker(this, fileLock);
+                        currentWorker = getRetrieverWorker(this, fileLock, notification);
                         currentWorker.execute();
                         try {
                             synchronized (fileLock) {
@@ -1013,24 +1070,38 @@ public class OptionView {
                             //NotificationsPanel.getNotifyPanel(NotificationsPanel.JOBS_PANEL_NAME).markNotificationAsComplete(notificationID);
                         }
 
-                        return null;
+                        return true;
                     }
 
                     @Override
-                    protected void showSuccess(Void t) {
-                        this.setStatus(TaskWorker.TaskStatus.FINISHED);
+                    protected void showSuccess(Boolean t) {
 
-                        int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
-                        if (result == DialogUtils.YES) {
-                            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                            dialogLock.getResultsDialog().setSize(new Dimension((int)(screenSize.width*0.9), (int)(screenSize.height * 0.9)));
-                            dialogLock.getResultsDialog().setVisible(true);
+                        if (t) {
+
+                            notification.setHideDoesClose(true);
+                            notification.unhide();
+                            notification.setAction("Results", new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                    dialogLock.getResultsDialog().setSize(new Dimension((int) (screenSize.width * 0.9), (int) (screenSize.height * 0.9)));
+                                    dialogLock.getResultsDialog().setTitle("Mendel Results");
+                                    dialogLock.getResultsDialog().setVisible(true);
+                                }
+                            });
+
+                            this.setStatus(TaskWorker.TaskStatus.FINISHED);
+
+                            int result = DialogUtils.askYesNo("Mendel Complete", "<html>Would you like to view the<br/>results now?</html>");
+                            if (result == DialogUtils.YES) {
+                                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                                dialogLock.getResultsDialog().setSize(new Dimension((int) (screenSize.width * 0.9), (int) (screenSize.height * 0.9)));
+                                dialogLock.getResultsDialog().setTitle("Mendel Results");
+                                dialogLock.getResultsDialog().setVisible(true);
+                            }
                         }
-                        
-                        dialogLock.getResultsDialog().setTitle("Mendel Results");
-                        dialogLock.getResultsDialog().setVisible(true);
                     }
-                    
                 }.start();
             }
 
@@ -1040,11 +1111,62 @@ public class OptionView {
                 return w;
             }
 
-            private MedSavantWorker getRetrieverWorker(final BackgroundTaskWorker m, final Locks.FileResultLock fileLock) {
+            private Set<String> getRelevantDNAIDs() {
+                Set<String> dnaIds = new HashSet<String>();
+
+                for (IncludeExcludeStep step : steps) {
+                    for (IncludeExcludeCriteria criteria : step.getCriteria()) {
+                        dnaIds.addAll(criteria.getDNAIDs());
+                    }
+                }
+
+                for (String family : inheritanceStep.getFamilies()) {
+                    try {
+                        Map<String, String> patientToDNAID = MedSavantClient.PatientManager.getDNAIDsForFamily(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), family);
+                        for (String pID : patientToDNAID.keySet()) {
+                            dnaIds.add(patientToDNAID.get(pID));
+                        }
+                    } catch (SessionExpiredException ex) {
+                        MedSavantExceptionHandler.handleSessionExpiredException(ex);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                return dnaIds;
+            }
+
+            private Condition[][] getRelevantConditions(Set<String> dnaIds) throws InterruptedException, SQLException, RemoteException {
+
+                Condition[] dnaIDConditions = new Condition[dnaIds.size()];
+
+                // add conditions for dnaIDs ... (dna_id = 'A' OR ...) ...
+                TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
+                int counter = 0;
+                for (String dnaID : dnaIds) {
+                    dnaIDConditions[counter++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.DNA_ID.getColumnName()), dnaID);
+                    //System.out.println(dnaIDConditions[counter-1]);
+                }
+                
+                // and within rows, or between rows
+                Condition[][] existingConditions = FilterController.getInstance().getAllFilterConditions();
+                Condition[] flatRows = new Condition[existingConditions.length];
+                counter = 0;
+                for (Condition[] existingConditionRow : existingConditions) {
+                    flatRows[counter++] = ComboCondition.and(existingConditionRow);
+                }
+                Condition flatMatrix = ComboCondition.or(flatRows);
+
+                Condition c = ComboCondition.and(flatMatrix,ComboCondition.or(dnaIDConditions));
+                return new Condition[][] { new Condition[] { c } };
+            }
+
+            private MedSavantWorker getRetrieverWorker(final BackgroundTaskWorker m, final Locks.FileResultLock fileLock, final Notification n) {
                 return new MedSavantWorker<File>("Variant Download") {
 
                     @Override
                     protected void showSuccess(File result) {
+                        n.setDescription("Variant Download Complete");
                         m.addLog("Variant Download Complete");
                         synchronized (fileLock) {
                             fileLock.setFile(result);
@@ -1055,9 +1177,10 @@ public class OptionView {
                     @Override
                     protected File doInBackground() throws Exception {
 
+                        n.setDescription("Retrieving Variants...");
                         m.addLog("Retrieving Variants...");
 
-                        String session = LoginController.getInstance().getSessionID();
+                        String session = LoginController.getSessionID();
                         int refID = ReferenceController.getInstance().getCurrentReferenceID();
                         int projectID = ProjectController.getInstance().getCurrentProjectID();
                         int updateID = MedSavantClient.ProjectManager.getNewestUpdateID(
@@ -1067,9 +1190,6 @@ public class OptionView {
                                 true);
 
                         File outdir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
-
-                        // hard code for testing only
-                        //File tdfFile = new File("/private/var/folders/np/94t7v45x3ll1nls20039ynk00000gn/T/msavant/2013_7_8_10_28_14_317/./FORGE162-varexport-1373292779750.tdf");
 
                         File tdfFile;
                         if (filtersChangedSinceLastDump || (lastTDFFile == null)) {
@@ -1083,7 +1203,11 @@ public class OptionView {
                             File zipFile = new File(outdir, System.currentTimeMillis() + "-variantdump.tdf.zip");
 
                             System.out.println("Exporting to " + zipFile.getAbsolutePath());
-                            tdfFile = ExportVCF.exportTDF(zipFile);
+
+                            Set<String> dnaIDs = getRelevantDNAIDs();
+                            Condition[][] conditions = getRelevantConditions(dnaIDs);
+
+                            tdfFile = ExportVCF.exportTDF(zipFile, null, conditions);
                             System.out.println("Finished export");
 
                             // remove the old tdf file, it's out of date
@@ -1102,9 +1226,9 @@ public class OptionView {
 
                         filtersChangedSinceLastDump = false;
 
-    // line in format: "8243_0000","chr17","6115", "6115", "G","C","SNP","Hetero"
-
+                        // line in format: "8243_0000","chr17","6115", "6115", "G","C","SNP","Hetero"
                         int[] columnsToKeep = new int[]{3, 4, 5, 6, 8, 9, 12, 13};
+                        n.setDescription("Stripping file");
                         m.addLog("Stripping file");
 
                         File strippedFile = awkColumnsFromFile(tdfFile, columnsToKeep);
@@ -1162,6 +1286,7 @@ public class OptionView {
                             subsetLines[i] = null;
                         }
                     }
+
                 };
             }
         });

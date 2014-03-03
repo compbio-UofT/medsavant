@@ -115,7 +115,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         List<String> chroms;
         try {
             chroms = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     BasicVariantColumns.CHROM.getColumnName(),
                     false);
@@ -132,7 +132,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         List<String> dnaIds;
         try {
             dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     BasicVariantColumns.DNA_ID.getColumnName(),
                     false);
@@ -166,7 +166,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
         if (dnaIds == null) {
             try {
                 dnaIds = MedSavantClient.DBUtils.getDistinctValuesForColumn(
-                        LoginController.getInstance().getSessionID(),
+                        LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentVariantTableName(),
                         BasicVariantColumns.DNA_ID.getColumnName(),
                         false);
@@ -207,7 +207,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                     Condition[] restrictToDNAIDsCondition = new Condition[restrictToTheseDNAIDs.size()];
                     int i = 0;
                     for (String dnaID : this.restrictToTheseDNAIDs) {
-                        restrictToDNAIDsCondition[i++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.CHROM.getColumnName()), dnaID);
+                        restrictToDNAIDsCondition[i++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.DNA_ID.getColumnName()), dnaID);
                     }
                     Condition[][] newFilterConditions = new Condition[filterConditions.length + 1][];
                     for (i = 0; i < filterConditions.length; i++) {
@@ -239,7 +239,7 @@ public class MedSavantDataSource implements DataSourceAdapter<VariantRecord>, Va
                 }
 
                 List<Object[]> filteredVariants = MedSavantClient.VariantManager.getVariants(
-                        LoginController.getInstance().getSessionID(),
+                        LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         conditions,

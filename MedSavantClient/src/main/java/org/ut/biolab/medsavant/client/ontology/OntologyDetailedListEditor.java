@@ -80,7 +80,7 @@ class OntologyDetailedListEditor extends DetailedListEditor {
                     for (int i = 0; i < items.size(); i++) {
                         String ontName = items.get(i)[0].toString();
                         try {
-                            MedSavantClient.OntologyManager.removeOntology(LoginController.getInstance().getSessionID(), ontName);
+                            MedSavantClient.OntologyManager.removeOntology(LoginController.getSessionID(), ontName);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
                             setVisible(false);

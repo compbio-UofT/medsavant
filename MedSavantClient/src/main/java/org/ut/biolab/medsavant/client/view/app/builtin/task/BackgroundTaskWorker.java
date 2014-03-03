@@ -14,6 +14,7 @@ import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
@@ -51,6 +52,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
         taskLog.add(new GeneralLog(s));
         taskUpdated();
     }
+    
 
     /**
      * Get the log
@@ -61,6 +63,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
     public List<GeneralLog> getLog() {
         return taskLog;
     }
+    
 
     /**
      * Notify listeners of changes to this task
@@ -215,10 +218,10 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
         return this.getLog().get(this.getLog().size() - 1);
     }
 
-    public NotificationsPanel.Notification getNotificationForWorker() {
+    public Notification getNotificationForWorker() {
         
         final BackgroundTaskWorker instance = this;
-        final NotificationsPanel.Notification n = new NotificationsPanel.Notification();
+        final Notification n = new Notification();
         n.setName(instance.getTaskName());
         n.setIcon(instance.getOwner().getIcon());
         instance.addListener(new Listener<TaskWorker>() {

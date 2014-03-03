@@ -103,7 +103,7 @@ public class TagFilterView extends FilterView {
             JPanel bottomContainer = new JPanel();
             ViewUtil.applyHorizontalBoxLayout(bottomContainer);
 
-            List<String> tagNames = MedSavantClient.VariantManager.getDistinctTagNames(LoginController.getInstance().getSessionID());
+            List<String> tagNames = MedSavantClient.VariantManager.getDistinctTagNames(LoginController.getSessionID());
 
             for (String tag : tagNames) {
                 tagNameCB.addItem(tag);
@@ -197,12 +197,12 @@ public class TagFilterView extends FilterView {
                         @Override
                         public Condition[] getConditions() {
                             try {
-                                List<Integer> uploadIDs = MedSavantClient.VariantManager.getUploadIDsMatchingVariantTags(LoginController.getInstance().getSessionID(), TagFilterView.tagsToStringArray(variantTags));
+                                List<Integer> uploadIDs = MedSavantClient.VariantManager.getUploadIDsMatchingVariantTags(LoginController.getSessionID(), TagFilterView.tagsToStringArray(variantTags));
 
                                 Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
 
-                                TableSchema table = MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getInstance().getSessionID(), MedSavantClient.ProjectManager.getVariantTableName(
-                                         LoginController.getInstance().getSessionID(),
+                                TableSchema table = MedSavantClient.CustomTablesManager.getCustomTableSchema(LoginController.getSessionID(), MedSavantClient.ProjectManager.getVariantTableName(
+                                         LoginController.getSessionID(),
                                          ProjectController.getInstance().getCurrentProjectID(),
                                          ReferenceController.getInstance().getCurrentReferenceID(),
                                          true));
@@ -272,7 +272,7 @@ public class TagFilterView extends FilterView {
         if (tagName != null) {
             List<String> values;
             try {
-                values = MedSavantClient.VariantManager.getValuesForTagName(LoginController.getInstance().getSessionID(), tagName);
+                values = MedSavantClient.VariantManager.getValuesForTagName(LoginController.getSessionID(), tagName);
                 for (String val : values) {
                     tagValueCB.addItem(val);
                 }

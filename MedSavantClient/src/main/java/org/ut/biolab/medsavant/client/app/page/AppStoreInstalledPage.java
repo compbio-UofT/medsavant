@@ -20,11 +20,16 @@
 package org.ut.biolab.medsavant.client.app.page;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,7 +44,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
-import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel.Notification;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 
 /**
  *
@@ -133,18 +138,15 @@ public class AppStoreInstalledPage implements AppStorePage {
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
             container.add(Box.createVerticalStrut(5));
-            container.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
-			
-			JButton reset= new JButton("Restart now!");
-			reset.addActionListener(new ActionListener() 
-				{
-					@Override
-					public void actionPerformed(ActionEvent ae) {
-						MedSavantFrame.getInstance().forceRestart();
-					}
-				}
-			);
-			container.add(reset);
+            
+            JButton restartButton = new JButton("Restart Now");
+            restartButton.addActionListener(installer.getRestartActionListener());
+            
+            container.add(ViewUtil.horizontallyAlignComponents(
+                    new Component[] { 
+                        new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"),
+                        restartButton 
+                    }));
         }
         
         view.add(new StandardAppContainer(container),BorderLayout.CENTER);
@@ -195,6 +197,16 @@ public class AppStoreInstalledPage implements AppStorePage {
                     });
                     n.setDescription("Installed. Requires restart.");
                     n.setShowsProgress(false);
+                    
+                    n.setAction("Restart", new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            MedSavantFrame.getInstance().requestLogoutAndRestart();
+                        }
+                        
+                    });
+                    
                     //n.close();
                 } else {
                     n.setDescription("Error installing App");

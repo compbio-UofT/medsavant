@@ -144,7 +144,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
 
         @Override
         protected List<String[]> doInBackground() throws Exception {
-            return MedSavantClient.VariantManager.getTagsForUpload(LoginController.getInstance().getSessionID(), file.getUploadId());
+            return MedSavantClient.VariantManager.getTagsForUpload(LoginController.getSessionID(), file.getUploadId());
         }
 
         protected void showProgress(double ignored) {

@@ -119,7 +119,7 @@ public class IndividualDetailEditor extends DetailedListEditor {
                 public void run() {
                     try {
                         MedSavantClient.PatientManager.removePatient(
-                                LoginController.getInstance().getSessionID(),
+                                LoginController.getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
@@ -146,7 +146,7 @@ public class IndividualDetailEditor extends DetailedListEditor {
             File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[] { "csv" }), null);
             if (file != null) {
                 //remove current data
-                MedSavantClient.PatientManager.clearPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                MedSavantClient.PatientManager.clearPatients(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
                 new ImportProgressDialog(file).showDialog();
             }
         } catch (Exception ex) {
@@ -180,7 +180,7 @@ public class IndividualDetailEditor extends DetailedListEditor {
             lastStatus = new ProgressStatus("Reading records...", -1.0);
             CustomField[] fields = null;
             try {
-                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
             }
@@ -224,7 +224,7 @@ public class IndividualDetailEditor extends DetailedListEditor {
                         }
                     }
                     try {
-                        MedSavantClient.PatientManager.addPatient(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
+                        MedSavantClient.PatientManager.addPatient(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
                     } catch (SessionExpiredException ex) {
                         MedSavantExceptionHandler.handleSessionExpiredException(ex);
                     }
@@ -251,8 +251,8 @@ public class IndividualDetailEditor extends DetailedListEditor {
             List<Object[]> patients = null;
 
             try {
-                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
-                patients = MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                fields = MedSavantClient.PatientManager.getPatientFields(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+                patients = MedSavantClient.PatientManager.getPatients(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 return;
