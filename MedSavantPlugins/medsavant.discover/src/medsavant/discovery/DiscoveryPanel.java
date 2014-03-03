@@ -7,6 +7,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.JideButton;
+import jannovar.common.VariantType;
 import java.util.Calendar;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -128,18 +129,28 @@ public class DiscoveryPanel extends JPanel {
 	private static final String DISCOVERY_DB_USER= "incidental_user";
 	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
-		"MISSENSE", "SYNONYMOUS", "FS_DELETION", "FS_INSERTION", "FS_SUBSTITUTION",
-		"FS_DUPLICATION", "NON_FS_DELETION ", "NON_FS_INSERTION", "NON_FS_SUBSTITUTION",
-		"NON_FS_DUPLICATION", "SPLICING", "STOPGAIN", "STOPLOSS", "START_GAIN",
-		"START_LOSS", "UTR3", "UTR5", "INTRONIC", "UPSTREAM", "DOWNSTREAM", "INTERGENIC",
-		"ncRNA_EXONIC", "ncRNA_INTRONIC", "ncRNA_SPLICING", "ERROR"
-		);
+		VariantType.MISSENSE.toString(), VariantType.SYNONYMOUS.toString(),
+		VariantType.FS_DELETION.toString(), VariantType.FS_INSERTION.toString(),
+		VariantType.FS_SUBSTITUTION.toString(), VariantType.FS_DUPLICATION.toString(),
+		VariantType.NON_FS_DELETION .toString(), VariantType.NON_FS_INSERTION.toString(),
+		VariantType.NON_FS_SUBSTITUTION.toString(), VariantType.NON_FS_DUPLICATION.toString(),
+		VariantType.SPLICING.toString(), VariantType.STOPGAIN.toString(),
+		VariantType.STOPLOSS.toString(), 
+		VariantType.START_LOSS.toString(), VariantType.UTR3.toString(),
+		VariantType.UTR5.toString(), VariantType.INTRONIC.toString(),
+		VariantType.UPSTREAM.toString(), VariantType.DOWNSTREAM.toString(),
+		VariantType.INTERGENIC.toString(), VariantType.ncRNA_EXONIC.toString(),
+		VariantType.ncRNA_INTRONIC.toString(), VariantType.ncRNA_SPLICING.toString(),
+		VariantType.ERROR.toString()
+	);
 	private static final String[] DEFAULT_MUTATIONS= new String[] {
-		"MISSENSE", "FS_DELETION", "FS_INSERTION", "FS_SUBSTITUTION", 
-		"FS_DUPLICATION", "NON_FS_DELETION ", "NON_FS_INSERTION", 
-		"NON_FS_SUBSTITUTION", "NON_FS_DUPLICATION", "SPLICING", "STOPGAIN", 
-		"START_LOSS"
-		};
+		VariantType.MISSENSE.toString(), VariantType.FS_DELETION.toString(),
+		VariantType.FS_INSERTION.toString(), VariantType.FS_SUBSTITUTION.toString(),
+		VariantType.FS_DUPLICATION.toString(), VariantType.NON_FS_DELETION .toString(),
+		VariantType.NON_FS_INSERTION.toString(), VariantType.NON_FS_SUBSTITUTION.toString(),
+		VariantType.NON_FS_DUPLICATION.toString(), VariantType.SPLICING.toString(),
+		VariantType.STOPGAIN.toString(), VariantType.START_LOSS.toString()
+	};
 	public static final String EXIST_KEYWORD= "Exists";
 	public static final String EQUALS_KEYWORD= "=";
 	public static final String LESS_KEYWORD= "<";
@@ -770,6 +781,7 @@ public class DiscoveryPanel extends JPanel {
 					
 					/* Update the Variant Summary Panel. */
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
+					vsp.updateAnnotation(line);
 					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
 					vsp.updateCGDPane(discFind.getZygosity(line), discFind.getGender(), discFind.getClassification(line));
 					ClinvarSubInspector csi= new ClinvarSubInspector();
@@ -930,7 +942,7 @@ public class DiscoveryPanel extends JPanel {
 	 * @return A gene/gene panel selection CollapsiblePane
 	 */
 	private CollapsiblePane geneSelectionPanel() {
-		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes");
+		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes and Gene Panels");
 		collapsibleGene.setLayout(new MigLayout("gapy 0px, align center"));
 		
 		final String GENE_TEXT= "Gene";

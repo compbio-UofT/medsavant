@@ -20,13 +20,12 @@
 package org.ut.biolab.medsavant.client.app.page;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -135,6 +134,17 @@ public class AppStoreInstalledPage implements AppStorePage {
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
             container.add(Box.createVerticalStrut(5));
             container.add(new JLabel("<html><font color=RED>Restart " + installer.getProgramName() +  " for changes to take effect</font></html>"));
+			
+			JButton reset= new JButton("Restart now!");
+			reset.addActionListener(new ActionListener() 
+				{
+					@Override
+					public void actionPerformed(ActionEvent ae) {
+						MedSavantFrame.getInstance().forceRestart();
+					}
+				}
+			);
+			container.add(reset);
         }
         
         view.add(new StandardAppContainer(container),BorderLayout.CENTER);

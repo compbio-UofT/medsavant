@@ -6,6 +6,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.swing.ButtonStyle;
 import com.jidesoft.swing.JideButton;
+import jannovar.common.VariantType;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -14,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +62,20 @@ public class VariantSummaryPanel extends JScrollPane {
 	private final String baseOMIMUrl= "http://www.omim.org/entry/";
 	private final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
 	
+	/* LOF mutations to colour as red, potentially harmful mutations to colour
+	 * as orange. */
+	private static final List<String> RED_MUTATIONS= Arrays.asList(
+		VariantType.FS_DELETION.toString(), VariantType.FS_DUPLICATION.toString(),
+		VariantType.FS_INSERTION.toString(), VariantType.FS_SUBSTITUTION.toString(),
+		VariantType.STOPGAIN.toString(), VariantType.SPLICING.toString(),
+		VariantType.ERROR.toString() // Errors are red as well, but aren't functional annotations
+	);
+	private static final List<String> ORANGE_MUTATIONS= Arrays.asList(
+		VariantType.MISSENSE.toString(), VariantType.NON_FS_DELETION.toString(),
+		VariantType.NON_FS_DUPLICATION.toString(), VariantType.NON_FS_INSERTION.toString(),
+		VariantType.NON_FS_SUBSTITUTION.toString(), VariantType.START_LOSS.toString()
+	);
+	
 	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 	private VariantManagerAdapter vma= MedSavantClient.VariantManager;
 	public JPanel summaryPanel= new JPanel();
@@ -78,6 +94,16 @@ public class VariantSummaryPanel extends JScrollPane {
 	private String hgmdPaneTitle= "HGMD details";
 	private String otherIndividualsPaneTitle= "Individuals with this variant";
 	private MedSavantWorker otherIndividualsThread;
+	private JPanel variantPanel;
+	
+	//variant properties
+	private String chromosome;
+	private int start;
+	private int end;
+	private String reference;
+	private String alternate;
+	private List<String> mutationEffects;
+	private List<String> mutationAnnotations;
 			
 	
 	/**
@@ -88,13 +114,16 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.setBorder(BorderFactory.createEmptyBorder());
 		this.setViewportView(summaryPanel);
 		this.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		this.variantPanel= new JPanel();
 		
 		summaryPanel.setLayout(new MigLayout("gapy 0px"));
+		variantPanel.setLayout(new MigLayout("alignx center"));
 		//summaryPanel.setBackground(ViewUtil.getSidebarColor());
 		titleLabel= new JLabel(title);
 		titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
 		summaryPanel.add(titleLabel, "alignx center, span");
-		summaryPanel.add(new JLabel(" "), "wrap");
+		summaryPanel.add(variantPanel);
+		summaryPanel.add(new JLabel(" "), "wrap"); // spacer
 		
 		this.autoSize(PANE_WIDTH, PANE_HEIGHT, PANE_WIDTH_OFFSET);
 	}
@@ -108,6 +137,37 @@ public class VariantSummaryPanel extends JScrollPane {
 		titleLabel.setText(geneSymbol);
 		currentGeneSymbol= geneSymbol;
 		summaryPanel.revalidate();
+	}
+
+	
+	/**
+	 * Add or update the annotation for this variant.
+	 * @param line The entire row entry from the DB for this variant.
+	 * @param header The table header row
+	 */
+	public void updateAnnotation(Object[] row, List<String> header) {
+		/* Parse the information. */
+		this.chromosome= (String) row[BasicVariantColumns.INDEX_OF_CHROM];
+		this.start= Integer.parseInt((String) row[BasicVariantColumns.INDEX_OF_START_POSITION]);
+		this.end= Integer.parseInt((String) row[BasicVariantColumns.INDEX_OF_END_POSITION]);
+		this.reference= (String) row[BasicVariantColumns.INDEX_OF_REF];
+		this.alternate= (String) row[BasicVariantColumns.INDEX_OF_ALT];
+		
+		// mutation details can be comma-delimited lists
+		String effects= (String) row[header.indexOf(
+			BasicVariantColumns.JANNOVAR_EFFECT.getAlias())];
+		String annotations= (String) row[header.indexOf(
+			BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())];
+		
+		this.mutationEffects= Arrays.asList(effects.split(","));
+		this.mutationAnnotations= Arrays.asList(effects.split(","));
+		
+		/* Add these details to the variant panel. */
+		
+		variantPanel.revalidate();
+		
+		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
+		summaryPanel.updateUI();
 	}
 	
 	
@@ -310,6 +370,14 @@ public class VariantSummaryPanel extends JScrollPane {
 				
 				for (String dnaID : dnaIDList) {
 					dnaIDPanel.add(new JLabel(dnaID), "wrap");
+				}
+				
+				/* Collapse the pane if there are more then 5 individuals,
+				 * otherwise, expand it. */
+				if (dnaIDList.size() > 5) {
+					otherIndividualsPane.collapse(true);
+				} else {
+					otherIndividualsPane.collapse(false);
 				}
 				
 				/* Only add the individuals if this thread hasn't been cancelled. */

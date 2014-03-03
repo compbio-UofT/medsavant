@@ -81,6 +81,7 @@
 			<zipfileset src="${dist.jar}" excludes="META-INF/*" />
 			<zipfileset src="lib/hsqldb.jar" excludes="META-INF/*" />
 			<zipfileset src="lib/commons-io-2.4.jar" excludes="META-INF/*" />
+			<zipfileset src="lib/jannovar-0.6-SNAPSHOT.jar" excludes="META-INF/*" />
 		</jar>
 		<delete dir="${dist.dir}/lib"/>
 		<move file="${dist.jar}-all" tofile="${dist.jar}"/>
