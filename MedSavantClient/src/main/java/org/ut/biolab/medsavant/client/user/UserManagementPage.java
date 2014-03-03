@@ -264,7 +264,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
             @Override
             protected UserLevel doInBackground() throws Exception {
-                return MedSavantClient.UserManager.getUserLevel(LoginController.getInstance().getSessionID(), userName);
+                return MedSavantClient.UserManager.getUserLevel(LoginController.getSessionID(), userName);
             }
 
             @Override

@@ -118,7 +118,7 @@ public class ProjectSummaryPage extends AppSubSection {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
                 try {
-                    return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.getInstance().getSessionID(), projectID).size()));
+                    return new JLabel(ViewUtil.numToString(MedSavantClient.PatientManager.getPatients(LoginController.getSessionID(), projectID).size()));
                 } catch (SessionExpiredException ex) {
                     MedSavantExceptionHandler.handleSessionExpiredException(ex);
                     return null;
@@ -130,7 +130,7 @@ public class ProjectSummaryPage extends AppSubSection {
             @Override
             public JComponent getValue() throws SQLException, RemoteException {
                 try {
-                    return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), projectID).length));
+                    return new JLabel(ViewUtil.numToString(MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), projectID).length));
                 } catch (SessionExpiredException ex) {
                     MedSavantExceptionHandler.handleSessionExpiredException(ex);
                     return null;

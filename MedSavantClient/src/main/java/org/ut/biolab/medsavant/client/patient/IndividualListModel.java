@@ -54,7 +54,7 @@ public class IndividualListModel implements DetailedListModel, BasicPatientColum
     @Override
     public Object[][] getList(int limit) throws RemoteException, SQLException {
         try {
-            return MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), limit).toArray(new Object[0][0]);
+            return MedSavantClient.PatientManager.getBasicPatientInfo(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), limit).toArray(new Object[0][0]);
 
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);

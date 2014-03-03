@@ -268,7 +268,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
 
             if (referenceName == null || referenceName.equals("")) {
                 DialogUtils.displayMessage("Reference name required");
-            } else if (manager.containsReference(LoginController.getInstance().getSessionID(), referenceName)) {
+            } else if (manager.containsReference(LoginController.getSessionID(), referenceName)) {
                 DialogUtils.displayMessage("Reference already exists");
             } else {
                 ReferenceController.getInstance().addReference(referenceName, chroms, referenceURL);

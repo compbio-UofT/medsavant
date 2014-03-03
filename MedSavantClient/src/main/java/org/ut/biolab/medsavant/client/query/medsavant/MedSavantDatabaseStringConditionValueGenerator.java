@@ -58,7 +58,7 @@ public class MedSavantDatabaseStringConditionValueGenerator extends StringCondit
         try {
 
             boolean allowInexactMatch = columnName.equals(PHENOTYPES.getColumnName());
-            List<String> results = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache);
+            List<String> results = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache);
 
             if (columnName.equals(CHROM.getColumnName())) {
                 Collections.sort(results, new ChromosomeComparator());

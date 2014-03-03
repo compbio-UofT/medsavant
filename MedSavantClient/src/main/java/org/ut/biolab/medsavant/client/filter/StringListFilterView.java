@@ -111,7 +111,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
 
                 @Override
                 protected Void doInBackground() throws Exception {
-                    setAvailableValues(MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache));
+                    setAvailableValues(MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.getSessionID(), whichTable.getName(), columnName, allowInexactMatch, useCache));
                     if (columnName.equals(CHROM.getColumnName())) {
                         Collections.sort(getAvailableValues(), new ChromosomeComparator());
                     }
@@ -188,7 +188,7 @@ public class StringListFilterView extends TabularFilterView<String> implements B
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
                     try {
-                        return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getInstance().getSessionID(),
+                        return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.getSessionID(),
                                 ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
                                 allowInexactMatch));
                     } catch (SessionExpiredException ex) {

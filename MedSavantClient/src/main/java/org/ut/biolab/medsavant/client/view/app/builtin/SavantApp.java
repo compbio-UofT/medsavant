@@ -274,7 +274,7 @@ public class SavantApp implements LaunchableApp {
                 view.setLayout(new BorderLayout());
                 view.add(new WaitPanel("Starting Genome Browser"));
 
-                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
+                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
                 genomeContainer = new GenomeContainer(pageName, chroms); // what's the first param for?
                 genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
 

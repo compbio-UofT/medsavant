@@ -67,7 +67,7 @@ public class ExternalAnnotationController {
     }
 
     public Annotation[] getExternalAnnotations() throws SQLException, RemoteException, SessionExpiredException {
-        return MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getInstance().getSessionID());
+        return MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.getSessionID());
     }
 
     public void fireAnnotationAddedEvent(String projectName) {

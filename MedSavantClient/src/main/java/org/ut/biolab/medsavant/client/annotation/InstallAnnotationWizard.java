@@ -417,14 +417,14 @@ public class InstallAnnotationWizard extends WizardDialog {
         try {
             if (fromRepository) {
                 progressLabel.setText("Installing annotation...");
-                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
+                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
                 
             } else {
                 progressLabel.setText("Uploading file to server...");
                 File annotationFile = new File(fileChoosePanel.getPath());
                 int transferID = ClientNetworkUtils.copyFileToServer(annotationFile);
                 progressLabel.setText("Installing annotation...");
-                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), transferID);                
+                return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), transferID);                
             }
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);

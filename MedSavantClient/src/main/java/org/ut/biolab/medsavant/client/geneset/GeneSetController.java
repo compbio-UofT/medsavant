@@ -75,7 +75,7 @@ public class GeneSetController {
     public GeneSet getCurrentGeneSet() throws SQLException, RemoteException {
         if (currentSet == null) {
             try {
-                currentSet = manager.getGeneSet(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceName());
+                currentSet = manager.getGeneSet(LoginController.getSessionID(), ReferenceController.getInstance().getCurrentReferenceName());
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 return null;
@@ -89,7 +89,7 @@ public class GeneSetController {
             genes = new HashMap<String, Gene>();
             Gene[] rawGenes;
             try {
-                rawGenes = manager.getGenes(LoginController.getInstance().getSessionID(), getCurrentGeneSet());
+                rawGenes = manager.getGenes(LoginController.getSessionID(), getCurrentGeneSet());
             } catch (SessionExpiredException ex) {
                 MedSavantExceptionHandler.handleSessionExpiredException(ex);
                 return null;

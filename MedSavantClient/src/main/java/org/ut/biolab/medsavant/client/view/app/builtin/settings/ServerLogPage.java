@@ -149,7 +149,7 @@ public class ServerLogPage extends AppSubSection {
             @Override
             public int getTotalNum() {
                 try {
-                    return MedSavantClient.LogManager.getServerLogSize(LoginController.getInstance().getSessionID());
+                    return MedSavantClient.LogManager.getServerLogSize(LoginController.getSessionID());
                 } catch (Exception ex) {
                     return 0;
                 }
@@ -187,7 +187,7 @@ public class ServerLogPage extends AppSubSection {
         waitPanel.setStatus("");
         showWaitPanel();
         try {
-            List<GeneralLog> logs = MedSavantClient.LogManager.getServerLog(LoginController.getInstance().getSessionID(), start, limit);
+            List<GeneralLog> logs = MedSavantClient.LogManager.getServerLog(LoginController.getSessionID(), start, limit);
             v = new ArrayList<Object[]>();
             for (GeneralLog log : logs) {
                 v.add(new Object[]{

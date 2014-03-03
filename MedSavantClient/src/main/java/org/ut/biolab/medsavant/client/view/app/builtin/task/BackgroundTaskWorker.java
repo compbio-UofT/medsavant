@@ -52,6 +52,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
         taskLog.add(new GeneralLog(s));
         taskUpdated();
     }
+    
 
     /**
      * Get the log
@@ -62,6 +63,7 @@ public abstract class BackgroundTaskWorker<T> implements TaskWorker {
     public List<GeneralLog> getLog() {
         return taskLog;
     }
+    
 
     /**
      * Notify listeners of changes to this task

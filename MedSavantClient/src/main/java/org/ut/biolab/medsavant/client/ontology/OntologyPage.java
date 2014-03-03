@@ -48,7 +48,7 @@ public class OntologyPage extends AppSubSection {
                     new SimpleDetailedListModel("Ontology") {
                         @Override
                         public Ontology[] getData() throws Exception {
-                            return MedSavantClient.OntologyManager.getOntologies(LoginController.getInstance().getSessionID());
+                            return MedSavantClient.OntologyManager.getOntologies(LoginController.getSessionID());
                         }
                     },
                     new OntologyDetailedView(pageName),

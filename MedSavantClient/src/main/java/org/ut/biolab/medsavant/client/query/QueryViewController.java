@@ -162,7 +162,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             }
 
             return MedSavantClient.VariantManager.getVariants(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     new Condition[][]{{r}},

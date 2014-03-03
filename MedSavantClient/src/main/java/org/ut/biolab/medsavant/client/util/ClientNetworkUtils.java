@@ -98,7 +98,7 @@ public class ClientNetworkUtils extends NetworkUtils {
 
         try {
             streamID =
-                netMgr.openWriterOnServer(LoginController.getInstance().getSessionID(), file.getName(), file.length());
+                netMgr.openWriterOnServer(LoginController.getSessionID(), file.getName(), file.length());
             stream = new FileInputStream(file);
 
             int numBytes;
@@ -108,11 +108,11 @@ public class ClientNetworkUtils extends NetworkUtils {
                     buf = new byte[numBytes];
                 }
                 stream.read(buf);
-                netMgr.writeToServer(LoginController.getInstance().getSessionID(), streamID, buf);
+                netMgr.writeToServer(LoginController.getSessionID(), streamID, buf);
             }
         } finally {
             if (streamID >= 0) {
-                netMgr.closeWriterOnServer(LoginController.getInstance().getSessionID(), streamID);
+                netMgr.closeWriterOnServer(LoginController.getSessionID(), streamID);
             }
             if (stream != null) {
                 stream.close();
@@ -136,12 +136,12 @@ public class ClientNetworkUtils extends NetworkUtils {
         try {
             stream = new FileOutputStream(destFile);
             byte[] buf;
-            while ((buf = netMgr.readFromServer(LoginController.getInstance().getSessionID(), streamID)) != null) {
+            while ((buf = netMgr.readFromServer(LoginController.getSessionID(), streamID)) != null) {
                 stream.write(buf);
                 stream.flush();
             }
         } finally {
-            netMgr.closeReaderOnServer(LoginController.getInstance().getSessionID(), streamID);
+            netMgr.closeReaderOnServer(LoginController.getSessionID(), streamID);
             if (stream != null) {
                 stream.close();
             }

@@ -62,7 +62,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public Reference[] getReferences() throws SQLException, RemoteException {
         try {
-            return manager.getReferences(LoginController.getInstance().getSessionID());
+            return manager.getReferences(LoginController.getSessionID());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
@@ -75,7 +75,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public boolean setReference(String refName, boolean getConfirmation) throws SQLException, RemoteException {
         try {
-            if (manager.containsReference(LoginController.getInstance().getSessionID(), refName)) {
+            if (manager.containsReference(LoginController.getSessionID(), refName)) {
 
                 if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
                     if(!DialogUtils.confirmChangeReference(false)){
@@ -98,7 +98,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public int getReferenceID(String refName) throws SQLException, RemoteException {
         try {
-            return manager.getReferenceID(LoginController.getInstance().getSessionID(), refName);
+            return manager.getReferenceID(LoginController.getSessionID(), refName);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return 0;
@@ -111,7 +111,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public String[] getReferenceNames() throws SQLException, RemoteException {
         try {
-            return manager.getReferenceNames(LoginController.getInstance().getSessionID());
+            return manager.getReferenceNames(LoginController.getSessionID());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
@@ -124,7 +124,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public String getCurrentReferenceUrl(){
         try {
-            return manager.getReferenceUrl(LoginController.getInstance().getSessionID(), currentReferenceID);
+            return manager.getReferenceUrl(LoginController.getSessionID(), currentReferenceID);
         } catch (Exception e){
             return null;
         }
@@ -136,7 +136,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public Chromosome[] getChromosomes(int refID) throws SQLException, RemoteException {
         try {
-            return manager.getChromosomes(LoginController.getInstance().getSessionID(), refID);
+            return manager.getChromosomes(LoginController.getSessionID(), refID);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;
@@ -149,7 +149,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
 
     public void addReference(String name, Chromosome[] chroms, String url) throws SQLException, RemoteException {
         try {
-            manager.addReference(LoginController.getInstance().getSessionID(), name, chroms, url);
+            manager.addReference(LoginController.getSessionID(), name, chroms, url);
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
@@ -162,7 +162,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
             @Override
             public void run() {
                 try {
-                    manager.removeReference(LoginController.getInstance().getSessionID(), manager.getReferenceID(LoginController.getInstance().getSessionID(), refName));
+                    manager.removeReference(LoginController.getSessionID(), manager.getReferenceID(LoginController.getSessionID(), refName));
                     fireEvent(new ReferenceEvent(ReferenceEvent.Type.REMOVED, refName));
                 } catch (Throwable ex) {
                     setVisible(false);

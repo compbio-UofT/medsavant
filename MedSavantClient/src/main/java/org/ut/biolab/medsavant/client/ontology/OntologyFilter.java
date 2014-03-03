@@ -63,7 +63,7 @@ public class OntologyFilter extends RegionSetFilter {
         Set<Gene> genes = new HashSet<Gene>();
         Map<OntologyTerm, String[]> allTermsGenes;
         try {
-            allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
+            allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return null;

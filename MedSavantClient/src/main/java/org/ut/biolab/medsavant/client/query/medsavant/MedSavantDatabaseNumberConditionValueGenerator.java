@@ -51,7 +51,7 @@ public class MedSavantDatabaseNumberConditionValueGenerator extends NumberCondit
 
         String columnName = field.getColumnName();
         try {
-            Range r = MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getInstance().getSessionID(), whichTable.getName(), columnName);
+            Range r = MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.getSessionID(), whichTable.getName(), columnName);
             return new double[] { r.getMin(), r.getMax() } ;
         } catch (Exception ex) {
             Logger.getLogger(MedSavantDatabaseStringConditionValueGenerator.class.getName()).log(Level.SEVERE, null, ex);

@@ -34,11 +34,13 @@ public class Notification {
     private boolean showsProgress = false;
     private boolean isIndeterminateProgress = false;
     private boolean timesout = false;
-    private boolean canClose = true;
+    private boolean canHide = true;
     private String actionName = "";
     private ActionListener action;
     private Listener<Notification> listener;
-    private boolean isClosed = false;
+    private boolean isHidden = false;
+    private boolean isClosed;
+    private boolean hideDoesClose = true;
 
     public Notification() {
     }
@@ -63,8 +65,8 @@ public class Notification {
         return timesout;
     }
 
-    public boolean isCanClose() {
-        return canClose;
+    public boolean canHide() {
+        return canHide;
     }
 
     public String getActionName() {
@@ -83,8 +85,8 @@ public class Notification {
         return description;
     }
 
-    public boolean isClosed() {
-        return isClosed;
+    public boolean isHidden() {
+        return isHidden;
     }
 
     public void setDescription(String description) {
@@ -121,8 +123,8 @@ public class Notification {
         updateListener();
     }
 
-    public void setCanClose(boolean canClose) {
-        this.canClose = canClose;
+    public void setCanHide(boolean canHide) {
+        this.canHide = canHide;
         updateListener();
     }
 
@@ -142,8 +144,31 @@ public class Notification {
         }
     }
 
+    public void hide() {
+        isHidden = true;
+        if (hideDoesClose) {
+            close();
+        } else {
+            updateListener();
+        }
+    }
+
     public void close() {
         isClosed = true;
+        updateListener();
+    }
+
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    public void setHideDoesClose(boolean b) {
+        hideDoesClose = b;
+        updateListener();
+    }
+
+    public void unhide() {
+        isHidden = false;
         updateListener();
     }
 }

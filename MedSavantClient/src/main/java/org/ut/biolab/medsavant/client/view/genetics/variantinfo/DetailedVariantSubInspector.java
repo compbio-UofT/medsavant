@@ -167,7 +167,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
         conditions[0][0] = BinaryConditionMS.equalTo(vIDCol, variantID);
 
         try {
-            List<Object[]> rows = MedSavantClient.VariantManager.getVariants(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), conditions, 0, 1);
+            List<Object[]> rows = MedSavantClient.VariantManager.getVariants(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), conditions, 0, 1);
             Object[] row = rows.get(0);
 
             VariantRecord r = new VariantRecord(
@@ -234,7 +234,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                     String bamPath;
                     try {
                         bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                                LoginController.getInstance().getSessionID(),
+                                LoginController.getSessionID(),
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 dnaID);
                         if (bamPath != null && !bamPath.equals("")) {
@@ -311,7 +311,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
 
         try {
             String bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     r.getDnaID());
 

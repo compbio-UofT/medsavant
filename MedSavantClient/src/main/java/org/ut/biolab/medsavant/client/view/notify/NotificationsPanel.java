@@ -95,7 +95,7 @@ public class NotificationsPanel extends JPanel {
         this.setLayout(new BorderLayout());
         npanelContainer = ViewUtil.getClearPanel();
         
-        npanelContainer.setLayout(new MigLayout(String.format("insets %d %d %d %d, gapy %d, fillx, alignx trailing, wrap",this.verticalOffset+inset,inset,inset,inset,gap)));
+        npanelContainer.setLayout(new MigLayout(String.format("insets %d %d %d %d, gapy %d, fillx, alignx trailing, wrap, hidemode 3",this.verticalOffset+inset,inset,inset,inset,gap)));
         
         this.add(npanelContainer,BorderLayout.EAST);
     }
@@ -158,13 +158,15 @@ public class NotificationsPanel extends JPanel {
                 closeActionListener.actionPerformed(null);
             }
             
+            setVisible(!notification.isHidden());
+            
             nameLabel.setText(notification.getName());
             
             // set the subtext color to red if the description contains the word "error"
             subTextLabel.setText(notification.getDescription());
             subTextLabel.setForeground(notification.getDescription().toLowerCase().contains("error") ? subTextErrorColor : subTextNormalColor);
             
-            closeButton.setVisible(notification.isCanClose());
+            closeButton.setVisible(notification.canHide());
             
             ViewUtil.ellipsizeLabel(nameLabel, middleWidth-2*innerinsets);
             ViewUtil.ellipsizeLabel(subTextLabel, middleWidth-2*innerinsets);

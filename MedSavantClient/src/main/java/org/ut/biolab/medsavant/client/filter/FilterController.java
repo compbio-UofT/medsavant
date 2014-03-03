@@ -160,60 +160,12 @@ public class FilterController extends Controller<FilterEvent> {
         return filterMap.get(queryID).get(title);
     }
 
-    /*
-    public List<Filter> getFilters(int queryID) {
-        List<Filter> qfs = new ArrayList<Filter>();
-        RangeFilter rf = new RangeFilter() {
-            @Override
-            public String getName() {
-                return "Range Filters";
-            }
-            @Override
-            public String getID() {
-                return "range_filters";
-            }
-        };
-        boolean hasRangeFilter = false;
-        for (Filter f : filterMap.get(queryID).values()) {
-            if (f instanceof RangeFilter) {
-                rf.merge(((RangeFilter)f).getRangeSet());
-                hasRangeFilter = true;
-            } else if (f instanceof Filter) {
-                qfs.add((Filter) f);
-            }
-        }
-        if (hasRangeFilter) {
-            qfs.add((Filter)rf);
-        }
-        return qfs;
-    }
-
-    public List<List<Filter>> getAllFilters() {
-        List<List<Filter>> qfs = new ArrayList<List<Filter>>();
-        for (Object key : filterMap.keySet().toArray()) {
-            qfs.add(getFilters((Integer)key));
-        }
-        return qfs;
-    }
-*/
     public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
         return new Condition[] { this.newConditions };
     }
 
-   
-
     public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
         return new Condition[][] { new Condition[] { this.newConditions }};
-    }
-
-
-    //add anything from filters with filterId to list
-    private void addFiltersToList(List<Filter> filters, List<Filter> list, String filtID) {
-        for (int i = filters.size()-1; i >= 0; i--) {
-            if (filters.get(i).getID().equals(filtID)) {
-                list.add(filters.remove(i));
-            }
-        }
     }
 
     public boolean hasFiltersApplied() {

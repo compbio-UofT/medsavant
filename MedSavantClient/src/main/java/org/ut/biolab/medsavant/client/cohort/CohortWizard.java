@@ -124,7 +124,7 @@ public class CohortWizard extends WizardDialog {
         if (cohortName != null && !cohortName.equals("")) {
             try {
                 if (validateName()) {
-                    MedSavantClient.CohortManager.addCohort(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortName);                    
+                    MedSavantClient.CohortManager.addCohort(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortName);                    
                     setVisible(false);
                 }
             } catch (Exception ex) {
@@ -136,7 +136,7 @@ public class CohortWizard extends WizardDialog {
     private boolean validateName() throws SQLException, RemoteException {
         Cohort[] existingCohorts = null;
         try {
-            existingCohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            existingCohorts = MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
         } catch (SessionExpiredException ex) {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return false;

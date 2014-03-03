@@ -108,7 +108,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
                 try {
 
                     if (MedSavantClient.VariantManager.willApproximateCountsForConditions(
-                            LoginController.getInstance().getSessionID(),
+                            LoginController.getSessionID(),
                             ProjectController.getInstance().getCurrentProjectID(),
                             ReferenceController.getInstance().getCurrentReferenceID(),
                             FilterController.getInstance().getAllFilterConditions())) {

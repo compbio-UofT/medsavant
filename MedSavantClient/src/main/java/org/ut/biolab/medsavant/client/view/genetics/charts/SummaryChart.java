@@ -647,7 +647,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             Map<Object, List<String>> map;
             try {
                 map = MedSavantClient.PatientManager.getDNAIDsForValues(
-                        LoginController.getInstance().getSessionID(),
+                        LoginController.getSessionID(),
                         ProjectController.getInstance().getCurrentProjectID(),
                         generator.getFilterId());
             } catch (SessionExpiredException ex) {
@@ -703,7 +703,7 @@ public class SummaryChart extends JLayeredPane implements BasicPatientColumns, B
             }
 
             ScatterChartMap scatterMap = MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
-                    LoginController.getInstance().getSessionID(),
+                    LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     FilterController.getInstance().getAllFilterConditions(),

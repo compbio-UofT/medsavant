@@ -392,7 +392,7 @@ public class VCFUploadApp implements LaunchableApp {
                             public void run() {
                                 try {
                                     variantManager.uploadVariants(
-                                            LoginController.getInstance().getSessionID(),
+                                            LoginController.getSessionID(),
                                             transferIDs,
                                             ProjectController.getInstance().getCurrentProjectID(),
                                             ReferenceController.getInstance().getCurrentReferenceID(),

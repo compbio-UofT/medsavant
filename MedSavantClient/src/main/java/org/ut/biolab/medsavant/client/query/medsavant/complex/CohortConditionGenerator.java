@@ -48,7 +48,7 @@ public class CohortConditionGenerator implements ComprehensiveConditionGenerator
     @Override
     public Condition getConditionsFromEncoding(String encoding) throws Exception {
         List<String> cohortNames = StringConditionEncoder.unencodeConditions(encoding);
-        return ConditionUtils.getConditionsMatchingDNAIDs(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortNames));
+        return ConditionUtils.getConditionsMatchingDNAIDs(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), cohortNames));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class CohortConditionGenerator implements ComprehensiveConditionGenerator
                 List<String> vals = new ArrayList<String>();
                 try {
 
-                    List<Cohort> cohorts = Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getInstance().getSessionID(), ProjectController.getInstance().getCurrentProjectID()));
+                    List<Cohort> cohorts = Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID()));
                     for (Cohort c : cohorts) {
                         vals.add(c.getName());
                     }

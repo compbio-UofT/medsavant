@@ -252,7 +252,7 @@ public class BrowserPage extends AppSubSection {
                 view.setLayout(new BorderLayout());
                 view.add(new WaitPanel("Starting Genome Browser"));
 
-                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getInstance().getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
+                Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.getSessionID(), ReferenceController.getInstance().getCurrentReferenceID());
                 genomeContainer = new GenomeContainer(pageName, chroms);
                 genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
 

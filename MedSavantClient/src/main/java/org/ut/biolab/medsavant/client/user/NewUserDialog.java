@@ -189,7 +189,7 @@ public class NewUserDialog extends JDialog {
         try {
             String username = usernameField.getText();
 
-            if (MedSavantClient.UserManager.userExists(LoginController.getInstance().getSessionID(), username)) {
+            if (MedSavantClient.UserManager.userExists(LoginController.getSessionID(), username)) {
                 DialogUtils.displayMessage("User already exists.");
             } else {
                 UserController.getInstance().addUser(username, passwordField.getPassword(), UserLevel.valueOf(privilegeGroup.getSelection().getActionCommand()));

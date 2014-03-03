@@ -108,7 +108,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
                     @Override
                     protected Void doInBackground() throws Exception {
                         
-                        OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);
+                        OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getSessionID(), ontology);
                         popupMap = new HashMap<String, JPopupMenu>();
                         countMap = new HashMap<String, JLabel>();
                         for (OntologyTerm term : terms) {
@@ -265,7 +265,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
         }
 
         Set<Gene> genes = new HashSet<Gene>();
-        Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getInstance().getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
+        Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.getSessionID(), appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
         for (String[] termGenes : allTermsGenes.values()) {
             for (String geneName : termGenes) {
                 Gene g = GeneSetController.getInstance().getGene(geneName);
@@ -310,7 +310,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
 
         try {
 
-            OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getInstance().getSessionID(), ontology);         
+            OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.getSessionID(), ontology);         
 
             vals = new ArrayList<String>(terms.length);
             termNameToTermObjectMap = new HashMap<String, OntologyTerm>();
