@@ -996,10 +996,10 @@ public class OptionView {
 
                         Set<String> dnaIDs = getRelevantDNAIDs();
                         
-                        System.out.println("Relevant DNA IDs");
-                        for (String d : dnaIDs) {
-                            System.out.println("\t" + d);
-                        }
+                        //System.out.println("Relevant DNA IDs");
+                        //for (String d : dnaIDs) {
+                        //    System.out.println("\t" + d);
+                        //}
                         
                         if (dnaIDs.isEmpty()) {
                             DialogUtils.displayMessage("Please select individuals to run the analysis on");
@@ -1145,7 +1145,7 @@ public class OptionView {
                 int counter = 0;
                 for (String dnaID : dnaIds) {
                     dnaIDConditions[counter++] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.DNA_ID.getColumnName()), dnaID);
-                    System.out.println(dnaIDConditions[counter-1]);
+                    //System.out.println(dnaIDConditions[counter-1]);
                 }
                 
                 // and within rows, or between rows
