@@ -55,6 +55,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.CohortManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
@@ -84,7 +85,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.shared.model.exception.LockException;
 
 public class MedSavantServlet extends HttpServlet implements MedSavantServerRegistry {
 
@@ -96,19 +96,14 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     private static final Log LOG = LogFactory.getLog(MedSavantServlet.class);
 
-    @SuppressWarnings("unused")
     private CohortManagerAdapter cohortManager;
 
-    @SuppressWarnings("unused")
     private PatientManagerAdapter patientManager;
 
-    @SuppressWarnings("unused")
     private CustomTablesAdapter customTablesManager;
 
-    @SuppressWarnings("unused")
     private AnnotationManagerAdapter annotationManagerAdapter;
 
-    @SuppressWarnings("unused")
     private GeneSetManagerAdapter geneSetManager;
 
     @SuppressWarnings("unused")
@@ -116,35 +111,26 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     private NetworkManagerAdapter networkManager;
 
-    @SuppressWarnings("unused")
     private OntologyManagerAdapter ontologyManager;
 
-    @SuppressWarnings("unused")
     private ProjectManagerAdapter projectManager;
 
-    @SuppressWarnings("unused")
     private UserManagerAdapter userManager;
 
     private SessionManagerAdapter sessionManager;
 
-    @SuppressWarnings("unused")
     private SettingsManagerAdapter settingsManager;
 
-    @SuppressWarnings("unused")
     private RegionSetManagerAdapter regionSetManager;
 
-    @SuppressWarnings("unused")
     private ReferenceManagerAdapter referenceManager;
 
-    @SuppressWarnings("unused")
     private DBUtilsAdapter dbUtils;
 
-    @SuppressWarnings("unused")
     private SetupAdapter setupManager;
 
     private VariantManagerAdapter variantManager;
 
-    @SuppressWarnings("unused")
     private NotificationManagerAdapter notificationManager;
 
     @SuppressWarnings("unused")
@@ -159,7 +145,9 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     private int medSavantServerPort;
 
     private String username;
+
     private String password;
+
     private String db;
 
     private int maxSimultaneousUploads;
