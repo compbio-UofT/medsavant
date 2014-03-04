@@ -20,6 +20,7 @@ import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.query.SearchConditionItem;
 import org.ut.biolab.medsavant.client.query.medsavant.complex.GenesConditionGenerator;
+import org.ut.biolab.medsavant.client.query.view.GeneSearchConditionEditorView;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionPanel;
 import org.ut.biolab.medsavant.client.region.RegionController;
@@ -244,7 +245,11 @@ public class GenePanel {
 	private void clearAction() {
 		try {
 			doneButton.setText(DONE_TEXT);
-			scev.loadViewFromSearchConditionParameters(""); // clear the genes - Currently NOT working.
+			
+			//scev.loadViewFromSearchConditionParameters(""); // clear the genes - Currently NOT working.
+			GeneSearchConditionEditorView temp= (GeneSearchConditionEditorView) scev;
+			temp.clearTextArea();					
+					
 			genePanelTitle.setText(DEFAULT_GENE_PANEL_TITLE_TEXT);
 			genePanelTitle.setForeground(Color.RED);
 			scp.remove(genePanelTitle);

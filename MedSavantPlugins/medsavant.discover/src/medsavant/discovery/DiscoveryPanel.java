@@ -781,7 +781,8 @@ public class DiscoveryPanel extends JPanel {
 					
 					/* Update the Variant Summary Panel. */
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
-					vsp.updateAnnotation(line);
+					vsp.updateAlleleFrequencyPane(line, discFind.header);
+					vsp.updateAnnotation(line, discFind.header);
 					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
 					vsp.updateCGDPane(discFind.getZygosity(line), discFind.getGender(), discFind.getClassification(line));
 					ClinvarSubInspector csi= new ClinvarSubInspector();

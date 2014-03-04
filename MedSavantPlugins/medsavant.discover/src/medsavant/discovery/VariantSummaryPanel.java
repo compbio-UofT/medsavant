@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -41,8 +44,11 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 
 
@@ -55,12 +61,13 @@ import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
  */
 public class VariantSummaryPanel extends JScrollPane {
 	
-	private final static int DB_VARIANT_REQUEST_LIMIT= 5000;
-	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
-	private final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
-	private final String baseClinvarUrl= "http://www.ncbi.nlm.nih.gov/clinvar/";
-	private final String baseOMIMUrl= "http://www.omim.org/entry/";
-	private final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
+	private static final int DB_VARIANT_REQUEST_LIMIT= 5000;
+	private static final Log LOG = LogFactory.getLog(MedSavantClient.class);	
+	private static final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
+	private static final String baseClinvarUrl= "http://www.ncbi.nlm.nih.gov/clinvar/";
+	private static final String baseOMIMUrl= "http://www.omim.org/entry/";
+	private static final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
+	private static final Color WARNING_ORANGE= new Color(249, 114, 85); // other option: (242, 103, 34);
 	
 	/* LOF mutations to colour as red, potentially harmful mutations to colour
 	 * as orange. */
@@ -95,6 +102,9 @@ public class VariantSummaryPanel extends JScrollPane {
 	private String otherIndividualsPaneTitle= "Individuals with this variant";
 	private MedSavantWorker otherIndividualsThread;
 	private JPanel variantPanel;
+	private List<String> alleleFrequencyColumns;
+	private CollapsiblePane afPane;
+	private String afPaneTitle= "Allele frequency details";
 	
 	//variant properties
 	private String chromosome;
@@ -117,15 +127,17 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.variantPanel= new JPanel();
 		
 		summaryPanel.setLayout(new MigLayout("gapy 0px"));
-		variantPanel.setLayout(new MigLayout("alignx center"));
+		variantPanel.setLayout(new MigLayout());
 		//summaryPanel.setBackground(ViewUtil.getSidebarColor());
 		titleLabel= new JLabel(title);
 		titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
 		summaryPanel.add(titleLabel, "alignx center, span");
-		summaryPanel.add(variantPanel);
+		summaryPanel.add(variantPanel, "alignx center, span");
 		summaryPanel.add(new JLabel(" "), "wrap"); // spacer
 		
 		this.autoSize(PANE_WIDTH, PANE_HEIGHT, PANE_WIDTH_OFFSET);
+		
+		this.alleleFrequencyColumns= getAlleleFrequencyColumns();
 	}
 	
 	
@@ -142,14 +154,14 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	/**
 	 * Add or update the annotation for this variant.
-	 * @param line The entire row entry from the DB for this variant.
+	 * @param row The entire row entry from the DB for this variant.
 	 * @param header The table header row
 	 */
 	public void updateAnnotation(Object[] row, List<String> header) {
 		/* Parse the information. */
 		this.chromosome= (String) row[BasicVariantColumns.INDEX_OF_CHROM];
-		this.start= Integer.parseInt((String) row[BasicVariantColumns.INDEX_OF_START_POSITION]);
-		this.end= Integer.parseInt((String) row[BasicVariantColumns.INDEX_OF_END_POSITION]);
+		this.start= ((Integer) row[BasicVariantColumns.INDEX_OF_START_POSITION]).intValue();
+		this.end= ((Integer) row[BasicVariantColumns.INDEX_OF_END_POSITION]).intValue();
 		this.reference= (String) row[BasicVariantColumns.INDEX_OF_REF];
 		this.alternate= (String) row[BasicVariantColumns.INDEX_OF_ALT];
 		
@@ -160,11 +172,69 @@ public class VariantSummaryPanel extends JScrollPane {
 			BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())];
 		
 		this.mutationEffects= Arrays.asList(effects.split(","));
-		this.mutationAnnotations= Arrays.asList(effects.split(","));
+		this.mutationAnnotations= Arrays.asList(annotations.split(","));
 		
-		/* Add these details to the variant panel. */
+		/* Clean up old components then add these details to the variant panel. */
+		variantPanel.removeAll();
+		variantPanel.add(getBoldLabel(chromosome + ": " + start + "-" + end), "span");
+		variantPanel.add(getBoldLabel("Reference"));
+		variantPanel.add(new JLabel(reference), "split 2, wrap");
+		variantPanel.add(getBoldLabel("Alternate"));
+		variantPanel.add(new JLabel(alternate), "split 2, wrap");
+		
+		// try-catch block in case mutationEffects and mutationAnnotations are
+		// not the same size
+		try {
+			
+			for (int i= 0; i != mutationEffects.size(); ++i) {
+				String currentEffect= mutationEffects.get(i);
+				String currentAnnotation= mutationAnnotations.get(i);
+				Color mutationColor= Color.DARK_GRAY; // default colour
+				if (RED_MUTATIONS.contains(currentEffect)) {
+					mutationColor= Color.RED;
+				} else if (ORANGE_MUTATIONS.contains(currentEffect)) {
+					mutationColor= WARNING_ORANGE;
+				}
+				
+				variantPanel.add(getColorTextArea(currentEffect + ": " + 
+					currentAnnotation, mutationColor), "span");
+			}
+			
+		} catch (Exception ex) {
+			DialogUtils.displayError(ex.getMessage());
+			ex.printStackTrace();
+		}
 		
 		variantPanel.revalidate();
+		
+		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
+		summaryPanel.updateUI();
+	}
+	
+	
+	/**
+	 * Add or update the allele frequency pane for this variant.
+	 * @param row The entire row entry from the DB for this variant.
+	 * @param header The table header row
+	 */
+	public void updateAlleleFrequencyPane(Object[] row, List<String> header) {
+		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+		if (afPane != null)
+			summaryPanel.remove(afPane);
+		
+		afPane= getCollapsiblePane(afPaneTitle);
+		
+		for (String afColumn : alleleFrequencyColumns) {			
+			String afValue= "N/A";
+			if ((BigDecimal) row[header.indexOf(afColumn)] != null)
+				afValue= ((BigDecimal) row[header.indexOf(afColumn)]).toString();
+			
+			
+			afPane.add(getBoldLabel(afColumn));
+			afPane.add(new JLabel(afValue), "wrap");
+		}
+		
+		summaryPanel.add(afPane, "wrap");
 		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
 		summaryPanel.updateUI();
@@ -491,6 +561,37 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	
 	/**
+	 * Create a bold coloured label with the specified text
+	 * @param labelText The JLabel text
+	 * @param c The text color
+	 */
+	private JLabel getColorLabel(String labelText, Color c) {
+		JLabel colorLabel= getBoldLabel(labelText);
+		colorLabel.setForeground(c);
+		return colorLabel;
+	}
+	
+	
+	/**
+	 * Creates a coloured text area (to wrap lines) with the specified text.
+	 * @param text The text
+	 * @param c The text color
+	 */
+	private JTextArea getColorTextArea(String text, Color c) {
+		JTextArea colorText= new JTextArea(text);
+		colorText.setLineWrap(true);
+		colorText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+		colorText.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH/4, colorText.getPreferredSize().height));
+		colorText.setBackground(summaryPanel.getBackground());
+		colorText.setForeground(c);
+		colorText.setFont(new Font(colorText.getFont().getName(), Font.BOLD,
+			colorText.getFont().getSize() + 1)); // add 1 to the font size
+		
+		return colorText;
+	}
+	
+	
+	/**
 	 * Create a button that opens a URL in a web browser when clicked.
 	 * @param buttonText Button text
 	 * @param baseURL URL linked from the button
@@ -549,5 +650,32 @@ public class VariantSummaryPanel extends JScrollPane {
 	 */
 	public JPanel getSummaryPanel() {
 		return summaryPanel;
+	}
+	
+	
+	/**
+	 * Get the Allele Frequency annotation columns from this database.
+	 * @return a list of the allele frequency column names.
+	 */
+	private List<String> getAlleleFrequencyColumns() {
+		List<String> output= new ArrayList<String>();
+		
+		try {
+			AnnotationManagerAdapter am= MedSavantClient.AnnotationManagerAdapter;
+			Map<String, Set<CustomField>> fieldMap= 
+				am.getAnnotationFieldsByTag(LoginController.getInstance().getSessionID(), true);
+			
+			Set<CustomField> columnNames= fieldMap.get(CustomField.ALLELE_FREQUENCY_TAG);
+			for (CustomField cf : columnNames) {
+				output.add(cf.getAlias());
+			}
+			
+		} catch (Exception e) {
+			LOG.error("[" + this.getClass().getSimpleName() + 
+				"]: Error retrieving allele frequency columns.");
+			e.printStackTrace();
+		}
+	
+		return output;
 	}
 }
