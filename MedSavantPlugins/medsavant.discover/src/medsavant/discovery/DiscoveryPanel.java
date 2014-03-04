@@ -125,7 +125,7 @@ public class DiscoveryPanel extends JPanel {
 	private static final double	DEFAULT_HET_RATIO= 0.3;
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
-		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
+		"1000g2012apr_all, Score", "esp6500_all, Score"};
 	private static final String DISCOVERY_DB_USER= "incidental_user";
 	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
@@ -244,7 +244,7 @@ public class DiscoveryPanel extends JPanel {
 	private JideButton rightHideButton= new JideButton(RIGHT_HIDE_STRING);
 	private VariantSummaryPanel vsp;
 	private int patientPanelInsertPosition= 2;
-	private JTextArea errorMessage;
+	private JPanel errorMessage;
 	private GenePanel customGenePanel;
     
 	
@@ -368,14 +368,8 @@ public class DiscoveryPanel extends JPanel {
 		pw.setVisible(false);
 		
 		/* Error messages. */
-		errorMessage= new JTextArea();
-		errorMessage.setLineWrap(true);
-		errorMessage.setWrapStyleWord(true); // wrap after words, so as not to break words up
-		errorMessage.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, errorMessage.getPreferredSize().height));
-		errorMessage.setBackground(workview.getBackground());
-		errorMessage.setForeground(Color.RED);
-		errorMessage.setFont(new Font(errorMessage.getFont().getName(), Font.PLAIN, 15));
-		
+		errorMessage= new JPanel();
+		errorMessage.setLayout(new MigLayout("", "center", ""));		
 		
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
@@ -779,7 +773,7 @@ public class DiscoveryPanel extends JPanel {
 					for (int index= 0; index != discFind.header.size(); ++index)
 						line[index]= st.getModel().getValueAt(selectedIndex, index);
 					
-					/* Update the Variant Summary Panel. */
+					/* Set up/update the Variant Summary Panel. */
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
 					vsp.updateAlleleFrequencyPane(line, discFind.header);
 					vsp.updateAnnotation(line, discFind.header);
@@ -1339,9 +1333,22 @@ public class DiscoveryPanel extends JPanel {
 		
 		/* Add/remove the errorMessage text. */
 		if (errorList.size() > 0) {
-			patientPanelInsertPosition= 3; // push further buttons down
-			errorMessage.setText(StringUtils.join(errorList.toArray(), "\n"));
+			errorMessage.removeAll(); // clear existing errors
 			
+			patientPanelInsertPosition= 3; // push any upcoming new buttons down
+			
+			for (String e : errorList) {
+				// JTextArea because it supports multiple lines and wrapping
+				JTextArea errorText= new JTextArea(e);
+		
+				errorText.setLineWrap(true);
+				errorText.setWrapStyleWord(true); // wrap after words, so as not to break words up
+				errorText.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, errorMessage.getPreferredSize().height));
+				errorText.setBackground(workview.getBackground());
+				errorText.setForeground(Color.RED);
+				errorText.setFont(new Font(errorText.getFont().getName(), Font.PLAIN, 15));
+				errorMessage.add(
+					
 			if (errorMessage.getParent() != patientPanel) { // if not already added
 				patientPanel.add(errorMessage, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
 			}
