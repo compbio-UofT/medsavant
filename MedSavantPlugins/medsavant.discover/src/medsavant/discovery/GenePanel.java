@@ -19,7 +19,9 @@ import javax.swing.JTextField;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.query.SearchConditionItem;
+import org.ut.biolab.medsavant.client.query.medsavant.complex.ComprehensiveConditionGenerator;
 import org.ut.biolab.medsavant.client.query.medsavant.complex.GenesConditionGenerator;
+import org.ut.biolab.medsavant.client.query.medsavant.complex.OntologyConditionGenerator;
 import org.ut.biolab.medsavant.client.query.view.GeneSearchConditionEditorView;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionPanel;
@@ -33,6 +35,7 @@ import org.ut.biolab.medsavant.shared.importing.BEDFormat;
 import org.ut.biolab.medsavant.shared.importing.FileFormat;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
+import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 
 
@@ -43,15 +46,14 @@ import org.ut.biolab.medsavant.shared.model.RegionSet;
  */
 public class GenePanel {
 	
+	public static final String PANEL= "panel";
+	public static final String HPO= "hpo";
+	
 	private static final String DONE_TEXT= "Done";
 	private static final String CLEAR_TEXT= "Clear";
 	private static final String DEFAULT_GENE_PANEL_TITLE_TEXT= "Gene panel name?";
 	
-	/* NOTE:
-	 * Replace 'OntologyConditionGenerator' with 'GenesConditionGenerator' to try out the gene query pane. */
-	//private ComprehensiveConditionGenerator ccg = new OntologyConditionGenerator(OntologyType.HPO);
-	private GenesConditionGenerator ccg;
-	
+	private ComprehensiveConditionGenerator ccg;
 	private SearchConditionItem sci;
 	private SearchConditionEditorView scev;
 	private SearchConditionPanel scp;
@@ -67,10 +69,17 @@ public class GenePanel {
 	
 	/**
 	 * Create a new GenePanel entry form.
+	 * @param type Type of gene panel. Can be GenePanel.PANEL or GenePanel.HPO. If wrong type is specified, defaults to gene panel
 	 */
-	public GenePanel() {
+	public GenePanel(String type) {
 		sci= new SearchConditionItem("", null);
-		ccg= new GenesConditionGenerator();
+		
+		if (type.equals(GenePanel.HPO)) {
+			ccg= new OntologyConditionGenerator(OntologyType.HPO);
+		} else { //default to gene panel
+			ccg= new GenesConditionGenerator();
+		}
+		
 		scev= ccg.getViewGeneratorForItem(sci);
 		createSearchConditionPanel();
 	}

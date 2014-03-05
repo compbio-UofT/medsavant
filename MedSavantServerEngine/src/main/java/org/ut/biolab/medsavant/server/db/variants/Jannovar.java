@@ -100,13 +100,17 @@ public class Jannovar {
 
             // use the reference to url map when Jannovar links break
             // TODO: have the map be compiled from an xml file hosted online, to support changes after deployment
-            if (referenceToRefSeqSerURL.containsKey(reference)) {
+            /*
+			if (referenceToRefSeqSerURL.containsKey(reference)) {
                 LOG.info("Downloading serialized file from genomesavant.com");
                 NetworkUtils.downloadFile(referenceToRefSeqSerURL.get(reference), getJannovarDataDirectory(), "refseq_" + reference + ".ser");
             } else {
+			*/
                 LOG.info("Compiling serialized file with Jannovar");
                 jannovar.Jannovar.main(new String[]{"--create-refseq", "-d", getJannovarDataDirectory().getAbsolutePath()});
-            }
+            /*
+			}
+			*/ 
         }
         return true;
     }
@@ -144,8 +148,8 @@ public class Jannovar {
         jannovar.Jannovar.main(new String[]{
             "-D", getRefSeqSerializedFile().getAbsolutePath(),
             "-V", sourceVCF.getAbsolutePath(),
-            "-O", destDir.getAbsolutePath(), /*outFile.getAbsolutePath()*/
-			"-a" // get all annotations for this variant
+            "-O", destDir.getAbsolutePath() /*outFile.getAbsolutePath()*/
+			//, "-a" // get all annotations for this variant - currently causing infobright errors.
         });
 
         LOG.info("[Jannovar] Wrote annotated VCF file to \"" + sourceVCF.getParent() + "/" + outFile.getAbsolutePath() + "\"");

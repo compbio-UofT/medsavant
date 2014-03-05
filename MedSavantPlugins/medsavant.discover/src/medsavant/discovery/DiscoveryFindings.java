@@ -44,7 +44,7 @@ public class DiscoveryFindings {
 	public static final String ACMG_GENE_PANEL= "ACMG";
 	public static final String CGD_GENE_PANEL= "CGD";
 	
-	private final int DB_VARIANT_REQUEST_LIMIT= 5000;
+	private final int DB_VARIANT_REQUEST_LIMIT= 500; // shorter limit better for cancelling jobs
 	private final String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getAlias();
 	private final String JANNOVAR_GENE= BasicVariantColumns.JANNOVAR_SYMBOL.getAlias();
 	
@@ -246,7 +246,7 @@ public class DiscoveryFindings {
 			ComboCondition currentAFComboCondition= new ComboCondition(ComboCondition.Op.OR);
 			currentAFComboCondition.addCondition(
 				BinaryCondition.lessThan(ts.getDBColumn(columnName),
-					Double.toString(alleleFrequencyThreshold), true));
+					alleleFrequencyThreshold, true));
 			
 			// include variant even if information for AF is missing
 			currentAFComboCondition.addCondition(

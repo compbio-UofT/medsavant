@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -22,6 +23,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -58,6 +61,7 @@ import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -66,7 +70,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EtchedBorder;
@@ -164,6 +167,7 @@ public class DiscoveryPanel extends JPanel {
 	private static final String RIGHT_HIDE_STRING= ">>";
 	private static final String CUSTOM_GENE_PANEL_TEXT= "Custom...";
 	private static final Color GREYISH_BLUE= new Color(27, 106, 198);
+	private static final String HPO_GENE_PANEL_TEXT= "Human Phenotypes...";
 	
 	private final int TOP_MARGIN= 0;
 	private final int SIDE_MARGIN= 0;
@@ -370,6 +374,7 @@ public class DiscoveryPanel extends JPanel {
 		/* Error messages. */
 		errorMessage= new JPanel();
 		errorMessage.setLayout(new MigLayout("", "center", ""));		
+		errorMessage.setBackground(workview.getBackground());
 		
 		variantPane= new JScrollPane();
 		variantPane.setBorder(BorderFactory.createEmptyBorder());
@@ -777,6 +782,7 @@ public class DiscoveryPanel extends JPanel {
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
 					vsp.updateAlleleFrequencyPane(line, discFind.header);
 					vsp.updateAnnotation(line, discFind.header);
+					vsp.updateHarmfulnessPredictorsPane(line, discFind.header);
 					vsp.updateOtherIndividualsPane(new SimpleVariant(chr, start, end, ref, alt, type));
 					vsp.updateCGDPane(discFind.getZygosity(line), discFind.getGender(), discFind.getClassification(line));
 					ClinvarSubInspector csi= new ClinvarSubInspector();
@@ -937,7 +943,7 @@ public class DiscoveryPanel extends JPanel {
 	 * @return A gene/gene panel selection CollapsiblePane
 	 */
 	private CollapsiblePane geneSelectionPanel() {
-		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes and Gene Panels");
+		final CollapsiblePane collapsibleGene= new CollapsiblePane("Genes, Panels and Phenotypes");
 		collapsibleGene.setLayout(new MigLayout("gapy 0px, align center"));
 		
 		final String GENE_TEXT= "Gene";
@@ -975,6 +981,7 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		// Respond to gene panel selection when a selection has been made (clicked)
+		// This includes HPO selection
 		genePanelComboBox.addActionListener(
 			new ActionListener() {
 				@Override
@@ -986,6 +993,12 @@ public class DiscoveryPanel extends JPanel {
 					if (currentGenePanel.equals(CUSTOM_GENE_PANEL_TEXT)) {
 						// newline before adding, like adding wrap to previous element
 						collapsibleGene.add(customGenePanel.getSearchConditionPanel(), "newline, span");
+					} else if (currentGenePanel.equals(HPO_GENE_PANEL_TEXT)) {
+						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
+						customGenePanel.clearCondition();
+						
+						JDialog hpoDialog= hpoSelectionDialog();
+						hpoDialog.setVisible(true);
 					} else {
 						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
 						customGenePanel.clearCondition();
@@ -1046,7 +1059,7 @@ public class DiscoveryPanel extends JPanel {
 		);
 		
 		// Create a custom gene panel JPanel to be added to the pane later
-		customGenePanel= new GenePanel();
+		customGenePanel= new GenePanel(GenePanel.PANEL);
 		customGenePanel.setBackground(workview.getBackground());
 		
 		// Add the components to the collapsible pane
@@ -1060,6 +1073,43 @@ public class DiscoveryPanel extends JPanel {
 		collapsibleGene.collapse(true);
 		
 		return collapsibleGene;
+	}
+	
+	
+	/**
+	 * Create a CollapsiblePane for gene or gene panel selection
+	 * @return A gene/gene panel selection CollapsiblePane
+	 */
+	private JDialog hpoSelectionDialog() {
+		final JDialog jd= new JDialog(MedSavantFrame.getInstance(), "Human Phenotype Ontology");
+		
+		GenePanel hpo= new GenePanel(GenePanel.HPO);
+		hpo.setBackground(workview.getBackground());
+		
+		jd.add(hpo.getSearchConditionPanel());
+		
+		/*
+		int y = p.y + this.getHeight() + 2;
+		int frameHeight = MedSavantFrame.getInstance().getHeight();
+		if ((y + DIALOG_HEIGHT) > (frameHeight)) {
+			y = frameHeight - DIALOG_HEIGHT - 10;
+		}
+		jd.setLocation(new Point(p.x, y));
+		*/
+		
+		jd.addWindowListener(
+			new WindowAdapter() {
+				@Override public void windowClosing(WindowEvent e) {                                
+					jd.dispose();
+					currentGenePanel= DiscoveryFindings.ALL_GENE_PANEL; // reset
+				}
+			}
+		);
+		
+		jd.requestFocus();
+		jd.pack();
+		
+		return jd;
 	}
 	
 	
@@ -1105,9 +1155,11 @@ public class DiscoveryPanel extends JPanel {
 				mutationComboCondition.addCondition(
 					/* In the interest of efficiency, use Like instead of iLike 
 					 * here, just make sure the case of the Jannovar annotations
-					 * and the mutations stored here match. */
-					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
-					//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m));
+					 * and the mutations stored here match.
+					 * NOTE: need the wildcards because some mutations may look like
+					 * this - INTRON,STOPGAIN. */
+					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), "%" + m + "%"));
+					//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), "%" + m + "%"));
 			}
 			
 			newComboCondition.addCondition(mutationComboCondition);
@@ -1277,7 +1329,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		// initialize the gene panel list, convert to list
 		genePanelList= new ArrayList<String>(Arrays.asList(DiscoveryFindings.ALL_GENE_PANEL, 
-			CUSTOM_GENE_PANEL_TEXT, DiscoveryFindings.ACMG_GENE_PANEL,
+			CUSTOM_GENE_PANEL_TEXT, HPO_GENE_PANEL_TEXT, DiscoveryFindings.ACMG_GENE_PANEL,
 			DiscoveryFindings.CGD_GENE_PANEL));
 		
 		// Populate with the existing region lists
@@ -1338,16 +1390,13 @@ public class DiscoveryPanel extends JPanel {
 			patientPanelInsertPosition= 3; // push any upcoming new buttons down
 			
 			for (String e : errorList) {
-				// JTextArea because it supports multiple lines and wrapping
-				JTextArea errorText= new JTextArea(e);
-		
-				errorText.setLineWrap(true);
-				errorText.setWrapStyleWord(true); // wrap after words, so as not to break words up
-				errorText.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, errorMessage.getPreferredSize().height));
-				errorText.setBackground(workview.getBackground());
+				JLabel errorText= new JLabel(e); // note: doesn't wrap text if too long
+				//errorText.setBackground(workview.getBackground());
 				errorText.setForeground(Color.RED);
 				errorText.setFont(new Font(errorText.getFont().getName(), Font.PLAIN, 15));
-				errorMessage.add(
+				
+				errorMessage.add(errorText, "wrap");
+			}
 					
 			if (errorMessage.getParent() != patientPanel) { // if not already added
 				patientPanel.add(errorMessage, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);

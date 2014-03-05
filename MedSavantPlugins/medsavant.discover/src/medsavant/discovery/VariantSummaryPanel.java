@@ -68,6 +68,17 @@ public class VariantSummaryPanel extends JScrollPane {
 	private static final String baseOMIMUrl= "http://www.omim.org/entry/";
 	private static final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
 	private static final Color WARNING_ORANGE= new Color(249, 114, 85); // other option: (242, 103, 34);
+	private static final String POLYPHEN2HUMVAR_COLUMN= "ljb2_pp2hvar, Score";
+	private static final String SIFT_COLUMN= "ljb2_sift, Score";
+	private static final String PHYLOP_COLUMN= "ljb2_phylop, Score";
+	private static final List<String> predictorColumns= Arrays.asList(
+		POLYPHEN2HUMVAR_COLUMN, SIFT_COLUMN,PHYLOP_COLUMN
+	); // for now these are hard-coded, but this may be updated later
+	private static final double POLYPHEN2HUMVAR_PROBABLY_DAMAGING_THRESHOLD= 0.90; // above this
+	private static final double POLYPHEN2HUMVAR_POSSIBLY_DAMAGING_THRESHOLD= 0.80; // above this
+	private static final double SIFT_PROBABLY_DAMAGING_THRESHOLD= 0.05; // below this
+	private static final String PROBABLY_DAMAGING= "probably damaging";
+	private static final String POSSIBLY_DAMAGING= "possibly damaging";
 	
 	/* LOF mutations to colour as red, potentially harmful mutations to colour
 	 * as orange. */
@@ -105,6 +116,8 @@ public class VariantSummaryPanel extends JScrollPane {
 	private List<String> alleleFrequencyColumns;
 	private CollapsiblePane afPane;
 	private String afPaneTitle= "Allele frequency details";
+	private CollapsiblePane predictorPane;
+	private String predictorPaneTitle= "Variant harmfulness prediction";
 	
 	//variant properties
 	private String chromosome;
@@ -201,7 +214,7 @@ public class VariantSummaryPanel extends JScrollPane {
 			}
 			
 		} catch (Exception ex) {
-			DialogUtils.displayError(ex.getMessage());
+			//DialogUtils.displayError(ex.getMessage());
 			ex.printStackTrace();
 		}
 		
@@ -235,6 +248,55 @@ public class VariantSummaryPanel extends JScrollPane {
 		}
 		
 		summaryPanel.add(afPane, "wrap");
+		
+		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
+		summaryPanel.updateUI();
+	}
+
+	
+	/**
+	 * Add or update the harmfulness predictors pane for this variant.
+	 * @param row The entire row entry from the DB for this variant.
+	 * @param header The table header row
+	 */
+	public void updateHarmfulnessPredictorsPane(Object[] row, List<String> header) {
+		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+		if (predictorPane != null)
+			summaryPanel.remove(predictorPane);
+		
+		predictorPane= getCollapsiblePane(predictorPaneTitle);
+		
+		for (String predictorColumn : predictorColumns) {
+			String predictorValue= "N/A";
+			JLabel predictorJLabel= getColorLabel(predictorValue, Color.DARK_GRAY);
+			
+			/* Check if there is a value and then evaluate it before outputting. */
+			if ((BigDecimal) row[header.indexOf(predictorColumn)] != null) {
+				predictorValue= ((BigDecimal) row[header.indexOf(predictorColumn)]).toString();
+				predictorJLabel= getColorLabel(predictorValue, Color.DARK_GRAY);
+				
+				/* Classify the variants.
+				 * SIFT < 0.05 => probably damaging
+				 * Polyphen2 >= 0.90 => probably damaging
+				 * 0.90 > Polyphen2 >= 0.80 => probably damanging	 */
+				if (predictorColumn.equals(SIFT_COLUMN) &&
+					Double.parseDouble(predictorValue) < SIFT_PROBABLY_DAMAGING_THRESHOLD) {
+					predictorJLabel= getColorLabel(predictorValue + " " + PROBABLY_DAMAGING, Color.RED);
+				} else if (predictorColumn.equals(POLYPHEN2HUMVAR_COLUMN) &&
+					Double.parseDouble(predictorValue) >= POLYPHEN2HUMVAR_PROBABLY_DAMAGING_THRESHOLD) {
+					predictorJLabel= getColorLabel(predictorValue + " " + PROBABLY_DAMAGING, Color.RED);
+				} else if (predictorColumn.equals(POLYPHEN2HUMVAR_COLUMN) &&
+					Double.parseDouble(predictorValue) >= POLYPHEN2HUMVAR_POSSIBLY_DAMAGING_THRESHOLD) {
+					predictorJLabel= getColorLabel(predictorValue + " " + POSSIBLY_DAMAGING, WARNING_ORANGE);
+				}
+			}
+			
+			predictorPane.add(getBoldLabel(predictorColumn));
+			predictorPane.add(predictorJLabel, "wrap");
+		}
+		
+		
+		summaryPanel.add(predictorPane, "wrap");
 		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
 		summaryPanel.updateUI();
