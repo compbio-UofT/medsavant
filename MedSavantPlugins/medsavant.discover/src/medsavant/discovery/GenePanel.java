@@ -49,10 +49,11 @@ public class GenePanel {
 	public static final String PANEL= "panel";
 	public static final String HPO= "hpo";
 	
-	private static final String DONE_TEXT= "Done";
+	private static final String DONE_TEXT= "Apply";
 	private static final String CLEAR_TEXT= "Clear";
 	private static final String DEFAULT_GENE_PANEL_TITLE_TEXT= "Gene panel name?";
 	
+	private String panelType;
 	private ComprehensiveConditionGenerator ccg;
 	private SearchConditionItem sci;
 	private SearchConditionEditorView scev;
@@ -64,7 +65,8 @@ public class GenePanel {
 	private List<Gene> geneList= new ArrayList<Gene>(); // The list of gene objects created from gene symbols.
 	private JTextField genePanelTitle= new JTextField(DEFAULT_GENE_PANEL_TITLE_TEXT);
 	private Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
-	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema(); 
+	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
+	private OntologyConditionGenerator ocg;
 	
 	
 	/**
@@ -72,10 +74,13 @@ public class GenePanel {
 	 * @param type Type of gene panel. Can be GenePanel.PANEL or GenePanel.HPO. If wrong type is specified, defaults to gene panel
 	 */
 	public GenePanel(String type) {
+		panelType= type;
+		
 		sci= new SearchConditionItem("", null);
 		
 		if (type.equals(GenePanel.HPO)) {
 			ccg= new OntologyConditionGenerator(OntologyType.HPO);
+			ocg= new OntologyConditionGenerator(OntologyType.HPO);
 		} else { //default to gene panel
 			ccg= new GenesConditionGenerator();
 		}
@@ -137,6 +142,8 @@ public class GenePanel {
 		
 		/* Add the gene panel title text field when hovering over the save button. */
 		JButton saveButton= new JButton("Save panel");
+		if (panelType.equals(GenePanel.HPO))
+			saveButton.setText("Save as gene panel"); // to reduce ambiguity
 		saveButton.addMouseMotionListener(
 			new MouseMotionListener() {
 				@Override
@@ -218,7 +225,17 @@ public class GenePanel {
 					doneButton.setText(CLEAR_TEXT);
 				
 				/* Look up the chromosomal coordinates for each gene before saving */
-				String[] genes= encodedSearch.split(";");
+				String[] genes= null;
+				if (panelType.equals(GenePanel.PANEL)) {
+					genes= encodedSearch.split(";");
+				} else if (panelType.equals(GenePanel.HPO)) {
+					// retrieve genes for each ontology term
+					List<GenomicRegion> regionList= ocg.getRegionsFromEncoding(encodedSearch);
+					genes= new String[regionList.size()];
+					for (int i= 0; i != regionList.size(); ++i) {
+						genes[i]= regionList.get(i).getName();
+					}
+				}
 
 				// Use ORs between genes for a gene panel
 				genePanelCC= new ComboCondition(ComboCondition.Op.OR);
@@ -228,13 +245,17 @@ public class GenePanel {
 					Gene g= GeneSetController.getInstance().getGene(geneSymbol);	
 					if (g != null) {
 						geneList.add(g);
-
-						/* Search for the pattern "GENENAME:" in the jannovar symbol field. */
-						genePanelCC.addCondition(BinaryCondition.iLike(
-							ts.getDBColumn(columns.get(
-								BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())),
-							"%" + geneSymbol + ":%"));
-
+						
+						/* Search for the pattern "GENENAME:" in the jannovar symbol field.
+						 * Since there can be multiple genes in a field, I have two 
+						 * conditions below. */
+						genePanelCC.addCondition(
+							BinaryCondition.iLike(ts.getDBColumn(columns.get(
+							BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())), geneSymbol + ":%"));
+						genePanelCC.addCondition(
+							BinaryCondition.iLike(ts.getDBColumn(columns.get(
+							BasicVariantColumns.JANNOVAR_SYMBOL.getAlias())), "%:" + geneSymbol + ":%"));
+						
 					} else { // Gene symbol not found in our DB
 						throw new GenePanelException(
 							"Could not retrieve details for gene symbol: " + geneSymbol);
@@ -255,9 +276,10 @@ public class GenePanel {
 		try {
 			doneButton.setText(DONE_TEXT);
 			
-			//scev.loadViewFromSearchConditionParameters(""); // clear the genes - Currently NOT working.
-			GeneSearchConditionEditorView temp= (GeneSearchConditionEditorView) scev;
-			temp.clearTextArea();					
+			if (panelType.equals(GenePanel.PANEL)) {
+				GeneSearchConditionEditorView temp= (GeneSearchConditionEditorView) scev;
+				temp.clearTextArea();
+			}
 					
 			genePanelTitle.setText(DEFAULT_GENE_PANEL_TITLE_TEXT);
 			genePanelTitle.setForeground(Color.RED);

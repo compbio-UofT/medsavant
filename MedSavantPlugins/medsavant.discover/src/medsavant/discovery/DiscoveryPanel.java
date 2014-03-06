@@ -121,6 +121,11 @@ public class DiscoveryPanel extends JPanel {
 	private static final Properties properties= new Properties();
 	private static final String PROPERTIES_FILENAME= DirectorySettings.getMedSavantDirectory().getPath() +
 				File.separator + "cache" + File.separator + "discovery_app_settings.xml";
+	private static final int[] DEFAULT_COLUMNS= new int[] {
+		BasicVariantColumns.INDEX_OF_CHROM, BasicVariantColumns.INDEX_OF_START_POSITION,
+		BasicVariantColumns.INDEX_OF_END_POSITION, BasicVariantColumns.INDEX_OF_REF,
+		BasicVariantColumns.INDEX_OF_ALT, BasicVariantColumns.INDEX_OF_ZYGOSITY
+	};
 	private static final int DEFAULT_FETCH_LIMIT= 2000;
 	private static final String DEFAULT_CGD_URL= "http://research.nhgri.nih.gov/CGD/download/txt/CGD.txt.gz";
 	private static final String DEFAULT_CGD_FILENAME= "CGD.txt";
@@ -128,7 +133,8 @@ public class DiscoveryPanel extends JPanel {
 	private static final double	DEFAULT_HET_RATIO= 0.3;
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
-		"1000g2012apr_all, Score", "esp6500_all, Score"};
+		"1000g2012apr_all, Score", "esp6500_all, Score"
+	};
 	private static final String DISCOVERY_DB_USER= "incidental_user";
 	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
@@ -250,6 +256,8 @@ public class DiscoveryPanel extends JPanel {
 	private int patientPanelInsertPosition= 2;
 	private JPanel errorMessage;
 	private GenePanel customGenePanel;
+	private GenePanel hpoPanel;
+	private JDialog hpoDialog;
     
 	
 	public DiscoveryPanel() {
@@ -725,6 +733,7 @@ public class DiscoveryPanel extends JPanel {
 		} else {
 			stp= discFind.getTableOutput(
 				getIntArrayFromString(properties.getProperty("sortable_table_panel_columns")));
+			
 		}
 		stp.getColumnChooser().setProperties(properties, PROPERTIES_FILENAME);
 		variantPane.setViewportView(stp);
@@ -948,11 +957,13 @@ public class DiscoveryPanel extends JPanel {
 		
 		final String GENE_TEXT= "Gene";
 		final String GENE_PANEL_TEXT= "Gene panel";
+		final String HUMAN_PHENOTYPES_TEXT= "Human phenotypes";
 		final String triangleString= " ▾"; // I added the triangles to imply this is a popupmenu button
 		
 		final JButton geneButton= new JButton(GENE_PANEL_TEXT + triangleString);
 		final JTextField geneTextField= new JTextField(10); // 10 character spaces wide
 		final JComboBox genePanelComboBox= new JComboBox();
+		final JButton hpoButton= new JButton("Launch HPO chooser...");
 		populateGenePanels(genePanelComboBox);
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem(); // initialize
 		
@@ -990,18 +1001,14 @@ public class DiscoveryPanel extends JPanel {
 					if (genePanelComboBox.getSelectedItem() != null)
 						currentGenePanel= (String) genePanelComboBox.getSelectedItem();				
 					
-					if (currentGenePanel.equals(CUSTOM_GENE_PANEL_TEXT)) {
+					if (currentGenePanel.equals(CUSTOM_GENE_PANEL_TEXT)) { // custom gene panel
 						// newline before adding, like adding wrap to previous element
 						collapsibleGene.add(customGenePanel.getSearchConditionPanel(), "newline, span");
-					} else if (currentGenePanel.equals(HPO_GENE_PANEL_TEXT)) {
-						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
-						customGenePanel.clearCondition();
-						
-						JDialog hpoDialog= hpoSelectionDialog();
-						hpoDialog.setVisible(true);
 					} else {
 						collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
-						customGenePanel.clearCondition();
+						
+						// clear the custom panel and HPO ComboConditions and select an existing panel
+						clearPanelConditions();
 						
 						customGenePanel.addCustomGenePanel(currentGenePanel);
 					}
@@ -1020,24 +1027,32 @@ public class DiscoveryPanel extends JPanel {
 					// copy over the button text without the triangle
 					String jmText= geneButton.getText().substring(0, geneButton.getText().length() - 1 - triangleString.length());
 					JMenu jm= new JMenu(jmText);
-					for (final String s : (new String[] {GENE_PANEL_TEXT, GENE_TEXT})) {
+					for (final String s : (new String[] {GENE_PANEL_TEXT, HUMAN_PHENOTYPES_TEXT, GENE_TEXT})) {
 						JMenuItem jmi= new JMenuItem(s);
 						jmi.addMouseListener(
 							new MouseListener() {
 								@Override
 								public void mousePressed(MouseEvent me) {
 									geneButton.setText(s + triangleString);
+									
+									// Clear the existing pane. Note: using removeAll()
+									// doesn't work with CollapsiblePanes
+									collapsibleGene.remove(genePanelComboBox);
+									collapsibleGene.remove(genePanelHelp);
+									collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
+									collapsibleGene.remove(geneTextField);
+									collapsibleGene.remove(hpoButton);
+									
 									if (s.equals(GENE_TEXT)) {
-										collapsibleGene.remove(genePanelComboBox);
-										collapsibleGene.remove(genePanelHelp);
-										collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
 										collapsibleGene.add(geneTextField);
 										conditionList.add(filterPanelDetails);
 										currentGenePanel= DiscoveryFindings.ALL_GENE_PANEL;
 									} else if (s.equals(GENE_PANEL_TEXT)) {
-										collapsibleGene.remove(geneTextField);
 										collapsibleGene.add(genePanelComboBox);
 										collapsibleGene.add(genePanelHelp);
+										conditionList.remove(filterPanelDetails);
+									} else if (s.equals(HUMAN_PHENOTYPES_TEXT)) {
+										collapsibleGene.add(hpoButton);
 										conditionList.remove(filterPanelDetails);
 									}
 								}
@@ -1058,6 +1073,22 @@ public class DiscoveryPanel extends JPanel {
 			}
 		);
 		
+		// HPO Launcher
+		hpoButton.addActionListener(
+			new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					// clear the custom panel and HPO ComboConditions and select an existing panel
+					clearPanelConditions();
+						
+					Point location= new Point();
+					hpoButton.getLocation(location);
+					hpoSelectionDialog(location); // creates AND displays the dialog
+				}
+			}
+		);
+		
 		// Create a custom gene panel JPanel to be added to the pane later
 		customGenePanel= new GenePanel(GenePanel.PANEL);
 		customGenePanel.setBackground(workview.getBackground());
@@ -1065,7 +1096,7 @@ public class DiscoveryPanel extends JPanel {
 		// Add the components to the collapsible pane
 		collapsibleGene.add(geneButton, "wrap");
 		collapsibleGene.add(genePanelComboBox);
-		collapsibleGene.add(genePanelHelp);
+		collapsibleGene.add(genePanelHelp);		
 		
 		collapsibleGene.setMinimumSize(new Dimension(PANE_WIDTH - PANE_WIDTH_OFFSET, 0));		
 		collapsibleGene.setStyle(CollapsiblePane.PLAIN_STYLE);
@@ -1077,39 +1108,50 @@ public class DiscoveryPanel extends JPanel {
 	
 	
 	/**
-	 * Create a CollapsiblePane for gene or gene panel selection
-	 * @return A gene/gene panel selection CollapsiblePane
+	 * Create and show a JDialog for HPO selection.
+	 * @param p The location for this JDialog
 	 */
-	private JDialog hpoSelectionDialog() {
-		final JDialog jd= new JDialog(MedSavantFrame.getInstance(), "Human Phenotype Ontology");
-		
-		GenePanel hpo= new GenePanel(GenePanel.HPO);
-		hpo.setBackground(workview.getBackground());
-		
-		jd.add(hpo.getSearchConditionPanel());
-		
-		/*
-		int y = p.y + this.getHeight() + 2;
-		int frameHeight = MedSavantFrame.getInstance().getHeight();
-		if ((y + DIALOG_HEIGHT) > (frameHeight)) {
-			y = frameHeight - DIALOG_HEIGHT - 10;
+	private void hpoSelectionDialog(final Point p) {
+		if (hpoDialog != null) {
+			hpoDialog.setVisible(true);
+		} else {
+			hpoDialog= new JDialog(MedSavantFrame.getInstance(), "Human Phenotype Ontology (HPO) Chooser");
+
+			// start medsavantworker - new thread
+			MedSavantWorker hpoLoadingThread=
+				new MedSavantWorker<Object> (DiscoveryPanel.class.getCanonicalName()) {
+					@Override
+					protected Object doInBackground() throws Exception {
+						hpoPanel= new GenePanel(GenePanel.HPO);
+						hpoPanel.setBackground(workview.getBackground());
+						JPanel hpoPanel= DiscoveryPanel.this.hpoPanel.getSearchConditionPanel();
+						hpoDialog.add(hpoPanel);
+						hpoDialog.pack();
+
+						return null;
+					}
+
+					@Override protected void showSuccess(Object t) {
+						hpoDialog.setVisible(true);
+						hpoDialog.setLocation(p);
+						hpoDialog.pack();
+					}
+				};
+
+			hpoLoadingThread.execute();
 		}
-		jd.setLocation(new Point(p.x, y));
-		*/
+	}
+	
+	
+	/**
+	 * Clears the conditions from the GenePanel objects.
+	 */
+	private void clearPanelConditions() {
+		if (customGenePanel != null)
+			customGenePanel.clearCondition();
 		
-		jd.addWindowListener(
-			new WindowAdapter() {
-				@Override public void windowClosing(WindowEvent e) {                                
-					jd.dispose();
-					currentGenePanel= DiscoveryFindings.ALL_GENE_PANEL; // reset
-				}
-			}
-		);
-		
-		jd.requestFocus();
-		jd.pack();
-		
-		return jd;
+		if (hpoPanel != null)
+			hpoPanel.clearCondition();
 	}
 	
 	
@@ -1132,8 +1174,13 @@ public class DiscoveryPanel extends JPanel {
 		addMutationCondition(mutationFilterList);
 		
 		// Add the gene panel genes, if a panel has been entered
-		if (customGenePanel != null || !customGenePanel.getComboCondition().isEmpty()) {
+		if (customGenePanel != null && !customGenePanel.getComboCondition().isEmpty()) {
 			newComboCondition.addCondition(customGenePanel.getComboCondition());
+		}
+		
+		// Add the hpo genes, if a panel has been entered
+		if (hpoPanel != null && !hpoPanel.getComboCondition().isEmpty()) {
+			newComboCondition.addCondition(hpoPanel.getComboCondition());
 		}
 		
 		discFind.setComboCondition(newComboCondition);
@@ -1152,14 +1199,22 @@ public class DiscoveryPanel extends JPanel {
 			ComboCondition mutationComboCondition= new ComboCondition(ComboCondition.Op.OR);
 			
 			for (String m : mutations) {
-				mutationComboCondition.addCondition(
 					/* In the interest of efficiency, use Like instead of iLike 
-					 * here, just make sure the case of the Jannovar annotations
+					 * here, just make sure the letter case of the Jannovar annotations
 					 * and the mutations stored here match.
 					 * NOTE: need the wildcards because some mutations may look like
-					 * this - INTRON,STOPGAIN. */
-					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), "%" + m + "%"));
-					//BinaryCondition.iLike(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), "%" + m + "%"));
+					 * this - INTRON,STOPGAIN. However, also need to ensure that
+					 * %FS_INSERTION% doesn't match "NON_FS_INSERTION", so condition
+					 * will be specified as below matching either m% or %,m% - the
+					 * delimiter is ":". */
+				
+				// First mutation in the string
+				mutationComboCondition.addCondition(
+					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), m + "%"));
+				
+				// OR: Multi-annotation mutation midstring
+				mutationComboCondition.addCondition(
+					BinaryCondition.like(discFind.ts.getDBColumn(columns.get(JANNOVAR_EFFECT)), "%," + m + "%"));
 			}
 			
 			newComboCondition.addCondition(mutationComboCondition);
@@ -1329,7 +1384,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		// initialize the gene panel list, convert to list
 		genePanelList= new ArrayList<String>(Arrays.asList(DiscoveryFindings.ALL_GENE_PANEL, 
-			CUSTOM_GENE_PANEL_TEXT, HPO_GENE_PANEL_TEXT, DiscoveryFindings.ACMG_GENE_PANEL,
+			CUSTOM_GENE_PANEL_TEXT, DiscoveryFindings.ACMG_GENE_PANEL,
 			DiscoveryFindings.CGD_GENE_PANEL));
 		
 		// Populate with the existing region lists
@@ -1433,6 +1488,9 @@ public class DiscoveryPanel extends JPanel {
 				properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
 				properties.setProperty("CGD_DB_filename", DEFAULT_CGD_FILENAME);
 
+				String columnStringList= Arrays.toString(DEFAULT_COLUMNS);
+				properties.setProperty("sortable_table_panel_columns" , columnStringList);
+						
 				properties.setProperty("variant_fetch_limit", Integer.toString(DEFAULT_FETCH_LIMIT));
 				properties.setProperty("coverage_threshold", Integer.toString(DEFAULT_COVERAGE_THRESHOLD));
 				properties.setProperty("het_ratio", Double.toString(DEFAULT_HET_RATIO));

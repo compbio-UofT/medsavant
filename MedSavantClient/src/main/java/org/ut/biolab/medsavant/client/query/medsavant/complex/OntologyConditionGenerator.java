@@ -65,7 +65,7 @@ import org.ut.biolab.medsavant.client.query.view.StringSearchConditionEditorView
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class OntologyConditionGenerator implements ComprehensiveConditionGenerator {
 
@@ -255,8 +255,14 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
         return MedSavantConditionViewGenerator.REGIONBASED_CONDITIONS;
     }
 
-    @Override
-    public Condition getConditionsFromEncoding(String encoding) throws Exception {
+	
+	
+	/**
+	 * Fetch the region list for an ontology encoding string.
+	 * @param encoding the ontology encoding string
+	 * @return a list of GenomicRegion regions
+	 */
+    public List<GenomicRegion> getRegionsFromEncoding(String encoding) throws Exception {
         init();
         List<String> termNames = StringConditionEncoder.unencodeConditions(encoding);
         List<OntologyTerm> appliedTerms = new ArrayList<OntologyTerm>(termNames.size());
@@ -281,6 +287,15 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
         for (Gene g : genes) {
             regions.add(new GenomicRegion(g.getName(), g.getChrom(), g.getStart(), g.getEnd()));
         }
+		
+		return regions;
+	}
+	
+	
+    @Override
+    public Condition getConditionsFromEncoding(String encoding) throws Exception {
+		List<GenomicRegion> regions= getRegionsFromEncoding(encoding);
+		
         return ConditionUtils.getConditionsMatchingGenomicRegions(regions);
     }
     

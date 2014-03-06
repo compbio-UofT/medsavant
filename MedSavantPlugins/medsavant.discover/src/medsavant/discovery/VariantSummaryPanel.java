@@ -125,6 +125,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	private int end;
 	private String reference;
 	private String alternate;
+	private String zygosity;
 	private List<String> mutationEffects;
 	private List<String> mutationAnnotations;
 			
@@ -177,6 +178,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		this.end= ((Integer) row[BasicVariantColumns.INDEX_OF_END_POSITION]).intValue();
 		this.reference= (String) row[BasicVariantColumns.INDEX_OF_REF];
 		this.alternate= (String) row[BasicVariantColumns.INDEX_OF_ALT];
+		this.zygosity= (String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY];
 		
 		// mutation details can be comma-delimited lists
 		String effects= (String) row[header.indexOf(
@@ -194,6 +196,8 @@ public class VariantSummaryPanel extends JScrollPane {
 		variantPanel.add(new JLabel(reference), "split 2, wrap");
 		variantPanel.add(getBoldLabel("Alternate"));
 		variantPanel.add(new JLabel(alternate), "split 2, wrap");
+		variantPanel.add(getBoldLabel("Zygosity"));
+		variantPanel.add(new JLabel(zygosity), "split 2, wrap");
 		
 		// try-catch block in case mutationEffects and mutationAnnotations are
 		// not the same size
