@@ -23,8 +23,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -258,6 +258,7 @@ public class DiscoveryPanel extends JPanel {
 	private GenePanel customGenePanel;
 	private GenePanel hpoPanel;
 	private JDialog hpoDialog;
+	private JPanel hpoStatus;
     
 	
 	public DiscoveryPanel() {
@@ -966,6 +967,9 @@ public class DiscoveryPanel extends JPanel {
 		final JButton hpoButton= new JButton("Launch HPO chooser...");
 		populateGenePanels(genePanelComboBox);
 		currentGenePanel= (String) genePanelComboBox.getSelectedItem(); // initialize
+		hpoStatus= new JPanel(); //initialize
+		hpoStatus.setLayout(new MigLayout());
+		hpoStatus.setBackground(workview.getBackground());
 		
 		final JButton genePanelHelp= ViewUtil.getHelpButton("Gene Panel selection", 
 				"Choose the gene panel appropriate for your workflow. Default " +
@@ -1042,6 +1046,7 @@ public class DiscoveryPanel extends JPanel {
 									collapsibleGene.remove(customGenePanel.getSearchConditionPanel());
 									collapsibleGene.remove(geneTextField);
 									collapsibleGene.remove(hpoButton);
+									collapsibleGene.remove(hpoStatus);
 									
 									if (s.equals(GENE_TEXT)) {
 										collapsibleGene.add(geneTextField);
@@ -1052,7 +1057,8 @@ public class DiscoveryPanel extends JPanel {
 										collapsibleGene.add(genePanelHelp);
 										conditionList.remove(filterPanelDetails);
 									} else if (s.equals(HUMAN_PHENOTYPES_TEXT)) {
-										collapsibleGene.add(hpoButton);
+										collapsibleGene.add(hpoButton, "wrap");
+										collapsibleGene.add(hpoStatus);
 										conditionList.remove(filterPanelDetails);
 									}
 								}
@@ -1081,10 +1087,12 @@ public class DiscoveryPanel extends JPanel {
 				public void actionPerformed(ActionEvent ae) {
 					// clear the custom panel and HPO ComboConditions and select an existing panel
 					clearPanelConditions();
-						
-					Point location= new Point();
-					hpoButton.getLocation(location);
-					hpoSelectionDialog(location); // creates AND displays the dialog
+					
+					hpoStatus.add(new JLabel("Loading ontology..."), "alignx center");
+					hpoStatus.add(new ProgressWheel(), "alignx center");
+					hpoStatus.revalidate();
+					
+					hpoSelectionDialog(); // creates AND displays the dialog and updates the status
 				}
 			}
 		);
@@ -1109,36 +1117,55 @@ public class DiscoveryPanel extends JPanel {
 	
 	/**
 	 * Create and show a JDialog for HPO selection.
-	 * @param p The location for this JDialog
 	 */
-	private void hpoSelectionDialog(final Point p) {
+	private void hpoSelectionDialog() {
 		if (hpoDialog != null) {
 			hpoDialog.setVisible(true);
 		} else {
 			hpoDialog= new JDialog(MedSavantFrame.getInstance(), "Human Phenotype Ontology (HPO) Chooser");
 
-			// start medsavantworker - new thread
+			// Loading the HPO panel is quite laggy and makes the client freeze
+			// doing this loading in another thread.
 			MedSavantWorker hpoLoadingThread=
 				new MedSavantWorker<Object> (DiscoveryPanel.class.getCanonicalName()) {
 					@Override
 					protected Object doInBackground() throws Exception {
-						hpoPanel= new GenePanel(GenePanel.HPO);
+						hpoPanel= new GenePanel(GenePanel.HPO, hpoDialog);
 						hpoPanel.setBackground(workview.getBackground());
-						JPanel hpoPanel= DiscoveryPanel.this.hpoPanel.getSearchConditionPanel();
-						hpoDialog.add(hpoPanel);
-						hpoDialog.pack();
-
+						hpoDialog.setContentPane(hpoPanel.getSearchConditionPanel());
+						
+						hpoDialog.setSize(600,400); // FIX - find out how it's implemented elsewhere without being fixed size
+						
 						return null;
 					}
 
 					@Override protected void showSuccess(Object t) {
 						hpoDialog.setVisible(true);
-						hpoDialog.setLocation(p);
-						hpoDialog.pack();
 					}
 				};
 
 			hpoLoadingThread.execute();
+			
+			hpoDialog.setLocationRelativeTo(this.choosePatientButton);
+			
+			hpoDialog.addWindowFocusListener(
+				new WindowFocusListener() {
+					@Override
+					public void windowGainedFocus(WindowEvent we) {
+						// Clear the loading message
+						hpoStatus.removeAll();
+						hpoStatus.revalidate();
+					}
+					
+					@Override
+					public void windowLostFocus(WindowEvent we) {
+						if (hpoPanel != null && !hpoPanel.getComboCondition().isEmpty()) {
+							hpoStatus.add(new JLabel("HPO conditions added."));
+							hpoStatus.revalidate();
+						}
+					}
+				}
+			);
 		}
 	}
 	

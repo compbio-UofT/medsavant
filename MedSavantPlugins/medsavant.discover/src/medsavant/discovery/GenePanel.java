@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
@@ -67,6 +68,7 @@ public class GenePanel {
 	private Map<String, String> columns= new DiscoveryFindings(null).getDbToHumanReadableMap();
 	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 	private OntologyConditionGenerator ocg;
+	private JDialog displayDialog;
 	
 	
 	/**
@@ -87,6 +89,18 @@ public class GenePanel {
 		
 		scev= ccg.getViewGeneratorForItem(sci);
 		createSearchConditionPanel();
+	}
+	
+	
+	/**
+	 * Create a new GenePanel entry form designed for display in a JDialog.
+	 * @param jd The JDialog where it will be displayed
+	 * @param type Type of gene panel. Can be GenePanel.PANEL or GenePanel.HPO. If wrong type is specified, defaults to gene panel
+	 */
+	public GenePanel(String type, JDialog jd) {
+		this(type);
+		
+		this.displayDialog= jd;
 	}
 	
 		
@@ -199,7 +213,22 @@ public class GenePanel {
 		/* Add components to the panel. */
 		scp.getButtonPanel().add(saveButton);
 		scp.getButtonPanel().add(doneButton);
-		scp.loadEditorViewInBackground(null);
+		
+		/* Retrieve the panel. If displaying in a JDialog, pass a non-null
+		 * runnable to pack the JDialog. */
+		if (displayDialog == null) {
+			scp.loadEditorViewInBackground(null);
+		} else {
+			scp.loadEditorViewInBackground(
+				new Runnable() {
+                    @Override
+                    public void run() {
+                        displayDialog.pack();
+                        displayDialog.invalidate();
+                    }
+                }
+			);
+		}
 	}
 	
 	
@@ -266,6 +295,10 @@ public class GenePanel {
 			DialogUtils.displayError(ex.getMessage());
 			ex.printStackTrace();
 		}
+		
+		// Hide the JDialog
+		if (displayDialog != null)
+			displayDialog.setVisible(false);
 	}
 	
 	
