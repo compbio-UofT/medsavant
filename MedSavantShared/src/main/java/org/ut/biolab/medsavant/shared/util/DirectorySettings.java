@@ -58,6 +58,9 @@ public class DirectorySettings {
         return new File(getGenoTypeDirectory(), database+"_"+projectId);
         //return new File(getMedSavantDirectory().getAbsolutePath()+File.pathSeparator+"genotypes"+File.pathSeparator+"project_"+projectId);
     }
+    public static File getAnnotatedTSVDirectory(String database, int projectId){
+        return new File(getGenoTypeDirectory(database, projectId), "annotatedTSV");
+    }
     
     public static File getTmpDirectory() {
         return tmpDir;

@@ -31,10 +31,8 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -47,6 +45,7 @@ import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
+import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
@@ -58,6 +57,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
@@ -71,7 +71,7 @@ public class ImportUpdateManager {
     /**
      * IMPORT FILES INTO AN EXISTING TABLE
      */
-    public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] vcfFiles, final boolean includeHomozygousReferenceCalls, final String[][] tags) throws IOException, SQLException, Exception {
+    public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final String[][] tags) throws IOException, SQLException, Exception {
 
         String userId = SessionManager.getInstance().getUserForSession(sessionID);
         final String database = SessionManager.getInstance().getDatabaseForSession(sessionID);
@@ -85,35 +85,75 @@ public class ImportUpdateManager {
                 LOG.info("Starting import");
                 File workingDirectory = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
                 LOG.info("Working directory is " + workingDirectory.getAbsolutePath());
+                int startFile = 0;
+                int endFile = Math.min(allVCFFiles.length, MedSavantServerEngine.getMaxThreads());
+
+                File[] allAnnotatedFiles = new File[0];
+                int[] allAnnotationIDs = new int[0];
+                File annotationDir = DirectorySettings.getAnnotatedTSVDirectory(database, projectID);
+                File workingDir = null;
+                annotationDir.mkdirs();
                 try {
-
-                    getJobProgress().setMessage("Preparing table for new VCF");
-                    // prepare for annotation
-                    File[] importedTSVFiles = doConvertVCFToTSV(sessionID, vcfFiles, updateID, includeHomozygousReferenceCalls, createSubdir(workingDirectory, "converted"), this);
-
-                    getJobProgress().setMessage("Merging in existing VCFs");
-                    //dump entire table.
+                    //Could run this in a different thread, but make sure to wait for that thread at the end!
+                    getJobProgress().setMessage("Preparing database for new variants...");                    
+                    
+                    //Dumping the database should not be necessary if we retain copies of the TSVs from which the 
+                    //table was originally built.  This line is temporary and will be removed in the near future.
                     File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), true);
 
-                    File workingDir = createSubdir(workingDirectory, "annotate_upload");
+                    while (startFile < endFile) {
+                        workingDir = createSubdir(workingDirectory, "annotate_upload");
+                        getJobProgress().setMessage("Performing functional annotations for VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length);                        
+                                                
+                        File[] vcfFiles = ArrayUtils.subarray(allVCFFiles, startFile, endFile);
+                        
+                        if (preAnnotateWithJannovar) {
+                            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
+                            vcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessionID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDir);                           
+                        }
 
-                    getJobProgress().setMessage("Annotating...");
-                    int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
-                    CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
-                    File[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, importedTSVFiles, workingDir, this);
-                    getJobProgress().setMessage("Done annotation, uploading to database.");
-                    uploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, ArrayUtils.addAll(annotatedFiles, existingTableAsTSV), workingDir);
+                        getJobProgress().setMessage("Preparing VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length + " for further annotations");
+                        // prepare for annotation
+                        File[] importedTSVFiles = doConvertVCFToTSV(sessionID, vcfFiles, updateID, includeHomozygousReferenceCalls, createSubdir(workingDirectory, "converted"), this);
 
-                    // do some accounting
-                    //
+                        getJobProgress().setMessage("Annotating VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length);
+                        int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
+                        CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
+
+                        //Instead of saving the split annotatedFiles, just save the importedTSVFiles??  Then use named pipes to split and 
+                        //load into infobright on the fly?
+                        File[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, importedTSVFiles, workingDir, this);
+
+                        //Save the annotated Files, delete everything else.
+                        for (File annotatedFile : annotatedFiles) {
+                            annotatedFile.renameTo(new File(workingDir, annotatedFile.getName()));
+                        }
+                        
+                        ArrayUtils.addAll(allAnnotatedFiles, annotatedFiles);
+                        ArrayUtils.addAll(allAnnotationIDs, annotationIDs);
+                        if(VariantManager.REMOVE_WORKING_DIR){
+                            MiscUtils.deleteDirectory(workingDirectory);
+                        }                  
+                        
+                        startFile += MedSavantServerEngine.getMaxThreads();
+                        endFile = Math.min(allVCFFiles.length, endFile + MedSavantServerEngine.getMaxThreads());
+                    }//end while
+                    
+                    getJobProgress().setMessage("Done annotating, loading all variants into database.");
+                    workingDir = createSubdir(workingDirectory, "annotate_upload");
+                    uploadTSVFiles(sessionID, updateID, projectID, referenceID, allAnnotationIDs, ArrayUtils.addAll(allAnnotatedFiles, existingTableAsTSV), workingDir);                                       
                     VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
-
                     // create patients for all DNA ids in this update
                     createPatientsForUpdate(sessionID, updateID, projectID, referenceID);
                 } finally {
-                    if (VariantManager.REMOVE_WORKING_DIR) {
-                        LOG.info("Deleting workingDirectory " + workingDirectory);
-                        MiscUtils.deleteDirectory(workingDirectory);
+                    if (VariantManager.REMOVE_WORKING_DIR) {                        
+                        if(workingDir != null && workingDir.exists()){
+                            MiscUtils.deleteDirectory(workingDir);
+                        }
+                        
+                        //This code is temporary and will be removed.  Annotated TSV files should
+                        //be retained to avoid table dumps and reloads.
+                        MiscUtils.deleteDirectory(annotationDir);                                                
                     }
                 }
 
@@ -188,16 +228,26 @@ public class ImportUpdateManager {
         LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
         ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
 
+        File[] splitTSVFiles = null;
         try {
             //get annotation information
             Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
             parentJob.getJobProgress().setMessage("Preparing variants for annotation");
-            File[] splitTSVFiles = splitFilesByDNAAndFileID(tsvFiles, createSubdir(workingDir, "split"));
+            splitTSVFiles = splitFilesByDNAAndFileID(tsvFiles, createSubdir(workingDir, "split"));
             File[] annotatedTSVFiles = annotateTSVFiles(sessionID, splitTSVFiles, annotations, customFields, createSubdir(workingDir, "annotate"), parentJob);
             return annotatedTSVFiles;
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
             throw e;
+        }finally{
+            //assert splitTSVFiles are deleted.
+            if(splitTSVFiles == null){
+                for(File splitTSVFile : splitTSVFiles){
+                    if(splitTSVFile.exists()){
+                        splitTSVFile.delete();
+                    }
+                }
+            }
         }
     }
 
@@ -368,7 +418,6 @@ public class ImportUpdateManager {
         VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, subDump, tableNameSub);
     }
 
-   
     private static void createPatientsForUpdate(String sessionID, int updateID, int projectID, int referenceID) throws RemoteException, SQLException, SessionExpiredException {
 
         // get the table schema for the update

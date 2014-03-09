@@ -213,17 +213,20 @@ public class BatchVariantAnnotator {
         } finally {
             // clean up
             try {
+                /*
                 if (cursors != null) {
+                    
                     for (AnnotationCursor c : cursors) {
-                        //c.cleanup();
+                        c.cleanup();
                     }
-                }
+                }*/
                 if (recordReader != null) {
                     recordReader.close();
                 }
                 if (recordWriter != null) {
                     recordWriter.close();
                 }
+                inputTDFFile.delete(); //no longer need input TDF file.
             } catch (NullPointerException nex) {
                 LOG.error("Caught nullpointerexception ");
                 nex.printStackTrace();

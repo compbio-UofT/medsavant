@@ -104,6 +104,8 @@ public class VariantAnnotator extends MedSavantServerJob implements BasicVariant
                 String customFieldFilename = workingFilePath + "_plusfields";
                 filesUsed.add(customFieldFilename);
                 VariantManagerUtils.addCustomVCFFields(workingFilePath, customFieldFilename, customFields, INDEX_OF_CUSTOM_INFO); //last of the default fields
+                File oldFile = new File(workingFilePath);
+                oldFile.delete(); //don't need the old file.
                 workingFilePath = customFieldFilename;
             }
 

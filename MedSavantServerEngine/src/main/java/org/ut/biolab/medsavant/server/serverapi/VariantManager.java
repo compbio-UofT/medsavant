@@ -396,28 +396,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             File[] vcfFiles = vcfFileList.toArray(new File[vcfFileList.size()]);
 
             EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
-
-            File[] janVcfFiles = vcfFiles;
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");           
             int updateID = -1;
-            try {
-                if (preAnnotateWithJannovar) {
-                    org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
-                    janVcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(userSessionID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID);
-                }
-
-                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, janVcfFiles, includeHomoRef, tags);
+            try {              
+                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, tags);
                 addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
                 EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
             } finally {
-                if(preAnnotateWithJannovar){
-                    for(File f : janVcfFiles){
-                        File p = f.getParentFile();
-                        f.delete();
-                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
-                    }
-                }
+                
             }
             //clean up.
             //never delete vcf files

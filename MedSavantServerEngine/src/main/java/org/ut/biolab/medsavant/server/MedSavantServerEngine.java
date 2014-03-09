@@ -92,7 +92,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     private static final int MAX_THREAD_KEEPALIVE_TIME = 1440; //in minutes
 
     //Maximum number of IO-heavy jobs that can be run simultaneously.
-    //(see MedSavantIOScheduler)  Should be <= MAX_THREADS.
+    //(see MedSavantIOScheduler)  Should be <= MAX_THREADS. 
     public static final int MAX_IO_JOBS = maxThreads;
     public static boolean USE_INFINIDB_ENGINE = false;
     int listenOnPort;
@@ -106,6 +106,10 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         longThreadPool = Executors.newFixedThreadPool(maxThreads);
         ((ThreadPoolExecutor) longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
         shortThreadPool = Executors.newCachedThreadPool();
+    }
+    
+    public static int getMaxThreads(){
+        return maxThreads;
     }
 
     public static Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception{
