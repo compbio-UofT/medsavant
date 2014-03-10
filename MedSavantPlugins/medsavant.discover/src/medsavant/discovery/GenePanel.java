@@ -224,7 +224,7 @@ public class GenePanel {
                     @Override
                     public void run() {
                         displayDialog.pack();
-                        displayDialog.invalidate();
+                        displayDialog.invalidate(); // not sure if this is necessary
                     }
                 }
 			);
