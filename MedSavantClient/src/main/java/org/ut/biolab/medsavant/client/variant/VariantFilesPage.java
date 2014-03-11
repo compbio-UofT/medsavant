@@ -76,6 +76,7 @@ public class VariantFilesPage extends AppSubSection {
                     },
                     new VariantFilesDetailedView(pageName),
                     new VariantFilesDetailedListEditor());
+             view.setSearchBarEnabled(true);
         }
         return view;
     }

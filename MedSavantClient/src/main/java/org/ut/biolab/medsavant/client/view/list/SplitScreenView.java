@@ -62,27 +62,27 @@ public class SplitScreenView extends JPanel {
         p.setDividerSize(0);
         p.setDividerLocation(230);
         add(p, BorderLayout.CENTER);
+        
+        listView.getControlBar().installDraggableWidgetOnSplitPane(p);
     }
 
     public void refresh() {
-        System.out.println("Parent refreshing list");
         listView.refreshList();
     }
 
     public Object[][] getList() {
         return listView.data;
     }
+    
+     public void setSearchBarEnabled(boolean b) {
+        listView.setSearchBarEnabled(b);
+    }
 
     public void selectItemWithKey(String key) {
         listView.selectItemWithKey(key);
     }
 
-    public void selectItemAtIndex(int index, int categoryIndex) {
-        try {
-            SourceListItem i = listView.listModel.getCategories().get(categoryIndex).getItems().get(index);
-            listView.sourceList.setSelectedItem(i);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void selectItemAtIndex(int i) {
+        listView.selectItemAtIndex(i);
     }
 }

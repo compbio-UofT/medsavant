@@ -39,8 +39,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
-import org.ut.biolab.medsavant.client.app.MedSavantAppInstaller;
 import org.ut.biolab.medsavant.client.controller.ServerController;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -154,12 +152,13 @@ public class SplashFrame extends JFrame {
 
         @Override
         public void setSelectedItem(Object[] selectedRow) {
-
+            
             if (selectedRow == null || selectedRow.length == 0) {
                 showBlockPanel();
                 return;
             }
             MedSavantServerInfo server = (MedSavantServerInfo) selectedRow[1];
+            LOG.info("Someone selected row " + server.getNickname());
             showServerInfo(server);
         }
 
@@ -199,6 +198,7 @@ public class SplashFrame extends JFrame {
 
         private void setEditing(boolean b) {
             isEditing = b;
+            if (server != null) { serverManager.setSelectedServer(server); }
             updateStateOfForm();
         }
 
@@ -224,6 +224,7 @@ public class SplashFrame extends JFrame {
                 return;
             }
 
+            LOG.info("Creating form for server " + server.getNickname());
             form = getNiceFormForServer(server);
 
             form.addListener(new Listener<NiceForm.FormEvent>() {
@@ -484,7 +485,7 @@ public class SplashFrame extends JFrame {
                         DialogUtils.displayMessage("There's already a server named " + name + ".");
                         return;
                     }
-                     
+
                     ServerController.getInstance().saveServers();
 
                     serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
@@ -536,7 +537,7 @@ public class SplashFrame extends JFrame {
                 MedSavantServerInfo server = (MedSavantServerInfo) o[1];
                 int result = DialogUtils.askYesNo("Remove Server", String.format("Really remove %s?", server.getNickname()));
                 if (result == DialogUtils.YES) {
-                    
+
                     ServerController.getInstance().removeServer(server);
                 }
             }
@@ -556,7 +557,6 @@ public class SplashFrame extends JFrame {
         public void editItem(Object[] item) {
             serverManager.setMode(ServerManagementComponent.EDIT_MODE);
         }
-
     }
 
     private class LoginComponent extends JPanel implements Listener<ServerController> {
@@ -612,11 +612,11 @@ public class SplashFrame extends JFrame {
                             frame2.setVisible(false);
                             break;
                         case LOGIN_FAILED:
-                            
+
                             Exception e = event == null ? null : event.getException();
                             String msg = event == null ? "" : event.getException().getLocalizedMessage();
-                            
-                            DialogUtils.displayException("Login Failed", msg,e);
+
+                            DialogUtils.displayException("Login Failed", msg, e);
                             event.getException().printStackTrace();
                             break;
                     }

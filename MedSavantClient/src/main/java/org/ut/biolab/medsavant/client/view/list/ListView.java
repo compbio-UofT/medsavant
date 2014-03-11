@@ -20,39 +20,34 @@
 package org.ut.biolab.medsavant.client.view.list;
 
 import com.explodingpixels.macwidgets.MacIcons;
-import com.explodingpixels.macwidgets.SourceList;
-import com.explodingpixels.macwidgets.SourceListCategory;
-import com.explodingpixels.macwidgets.SourceListClickListener;
-import com.explodingpixels.macwidgets.SourceListContextMenuProvider;
 import com.explodingpixels.macwidgets.SourceListControlBar;
-import com.explodingpixels.macwidgets.SourceListDarkColorScheme;
-import com.explodingpixels.macwidgets.SourceListItem;
-import com.explodingpixels.macwidgets.SourceListModel;
-import com.explodingpixels.macwidgets.SourceListSelectionListener;
-import com.explodingpixels.widgets.PopupMenuCustomizer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.login.LoginController;
 
+import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ListViewTablePanel;
-import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.util.list.NiceList;
+import org.ut.biolab.medsavant.client.view.util.list.NiceListItem;
 
 /**
  *
@@ -70,15 +65,18 @@ public class ListView extends JPanel {
     private final DetailedListModel detailedModel;
     private final DetailedView detailedView;
     private final DetailedListEditor detailedEditor;
+
     Object[][] data;
+
     private final JPanel showCard;
     private final JLabel errorMessage;
-    //private int limit = 10000;
-    SourceList sourceList;
-    final SourceListModel listModel;
-    private HashMap<SourceListItem, Integer> itemToIndexMap;
+
+    private NiceList list;
+
+    //private JPanel buttonPanel;
     private final SourceListControlBar controlBar;
-    private String selectedItemMemory;
+    private boolean searchBarEnabled = false;
+    private final WaitPanel wp;
 
     public ListView(String page, DetailedListModel model, DetailedView view, DetailedListEditor editor) {
         pageName = page;
@@ -88,227 +86,11 @@ public class ListView extends JPanel {
 
         setLayout(new CardLayout());
 
-        WaitPanel wp = new WaitPanel("Getting list");
+        wp = new WaitPanel("Getting list");
         add(wp, CARD_WAIT);
 
         showCard = new JPanel();
         add(showCard, CARD_SHOW);
-
-        listModel = new SourceListModel();
-
-        sourceList = new SourceList(listModel);
-
-        //sourceList.
-        //sourceList.setColorScheme(new CustomColorScheme());
-        controlBar = new SourceListControlBar();
-        sourceList.installSourceListControlBar(controlBar);
-
-        if (detailedEditor.doesImplementAdding()) {
-            controlBar.createAndAddButton(MacIcons.PLUS, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    detailedEditor.addItems();
-                    // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
-                    if (LoginController.getInstance().isLoggedIn()) {
-                        if (detailedEditor.doesRefreshAfterAdding()) {
-                            refreshList();
-                        }
-                    }
-                }
-
-            });
-        }
-
-        if (detailedEditor.doesImplementDeleting()) {
-
-            final Runnable removeServer = new Runnable() {
-
-                @Override
-                public void run() {
-                    SourceListItem item = sourceList.getSelectedItem();
-                    if (item == null) {
-                        return;
-                    }
-
-                    Integer selectedIndex = itemToIndexMap.get(item);
-
-                    if (selectedIndex == null) {
-                        return;
-                    }
-
-                    List<Object[]> selectedObjects = new ArrayList<Object[]>();
-                    selectedObjects.add(data[selectedIndex]);
-                    detailedEditor.deleteItems(selectedObjects);
-
-                    // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
-                    if (LoginController.getInstance().isLoggedIn()) {
-                        if (detailedEditor.doesRefreshAfterDeleting()) {
-                            refreshList();
-                        }
-                    }
-                }
-
-            };
-
-            sourceList.addSourceListClickListener(new SourceListClickListener() {
-
-                @Override
-                public void sourceListItemClicked(SourceListItem sli, SourceListClickListener.Button button, int i) {
-                    if (button == SourceListClickListener.Button.RIGHT) {
-
-                        final JPopupMenu m = new JPopupMenu();
-
-                        JMenuItem removeButton = new JMenuItem("Remove");
-                        removeButton.addActionListener(new ActionListener() {
-
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                m.setVisible(false);
-                                removeServer.run();
-                            }
-
-                        });
-
-                        //Point listPosition = sourceList.getComponent().getLocationOnScreen();
-                        //m.setLocation(listPosition.x, listPosition.y);
-                        m.add(removeButton);
-
-                        m.setVisible(true);
-                    }
-                }
-
-                @Override
-                public void sourceListCategoryClicked(SourceListCategory slc, SourceListClickListener.Button button, int i) {
-                }
-
-            });
-
-            controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    removeServer.run();
-                }
-            });
-        }
-
-        if (detailedEditor.doesImplementEditing()) {
-            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GEAR), new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-
-                    SourceListItem item = sourceList.getSelectedItem();
-                    if (item == null) {
-                        return;
-                    }
-
-                    int selectedIndex = itemToIndexMap.get(item);
-
-                    detailedEditor.editItem(data[selectedIndex]);
-                    if (detailedEditor.doesRefreshAfterEditing()) {
-                        refreshList();
-                    }
-                }
-
-            });
-        }
-
-        if (detailedEditor.doesImplementImporting()) {
-            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT), new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-
-                    detailedEditor.importItems();
-                    refreshList();
-                }
-
-            });
-        }
-
-        if (detailedEditor.doesImplementExporting()) {
-            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT), new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-
-                    detailedEditor.exportItems();
-                    refreshList();
-
-                }
-
-            });
-        }
-
-        if (detailedEditor.doesImplementLoading()) {
-            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR), new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-
-                    SourceListItem item = sourceList.getSelectedItem();
-                    if (item == null) {
-                        return;
-                    }
-
-                    int selectedIndex = itemToIndexMap.get(item);
-
-                    List<Object[]> selectedObjects = new ArrayList<Object[]>();
-                    selectedObjects.add(data[selectedIndex]);
-
-                    detailedEditor.loadItems(selectedObjects);
-                    refreshList();
-
-                }
-
-            });
-        }
-
-        sourceList.setSourceListContextMenuProvider(new SourceListContextMenuProvider() {
-
-            @Override
-            public JPopupMenu createContextMenu() {
-                return null;
-            }
-
-            @Override
-            public JPopupMenu createContextMenu(SourceListItem sli) {
-                return detailedView.createPopup();
-            }
-
-            @Override
-            public JPopupMenu createContextMenu(SourceListCategory slc) {
-                return null;
-            }
-
-        });
-
-        sourceList.addSourceListSelectionListener(new SourceListSelectionListener() {
-
-            @Override
-            public void sourceListItemSelected(SourceListItem sli) {
-
-                if (sli == null) {
-                    detailedView.setSelectedItem(new Object[]{});
-                    return;
-                }
-
-                selectedItemMemory = sli.getText();
-
-                Integer index = itemToIndexMap.get(sli);
-                if (index == null) {
-                    detailedView.setSelectedItem(new Object[]{});
-                    return;
-                }
-
-                if (detailedView != null) {
-                    detailedView.setSelectedItem(data[index]);
-                }
-            }
-
-        });
 
         JPanel errorPanel = new JPanel();
         errorPanel.setLayout(new BorderLayout());
@@ -317,19 +99,125 @@ public class ListView extends JPanel {
 
         add(errorPanel, CARD_ERROR);
 
+        controlBar = new SourceListControlBar();
+
+        if (detailedEditor.doesImplementAdding()) {
+
+            controlBar.createAndAddButton(MacIcons.PLUS, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailedEditor.addItems();
+                    // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
+
+                    if (detailedEditor.doesRefreshAfterAdding() && LoginController.getInstance().isLoggedIn()) {
+                        refreshList();
+                    }
+                }
+
+            });
+        }
+
+        if (detailedEditor.doesImplementImporting()) {
+
+            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT), new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailedEditor.importItems();
+                    if (detailedEditor.doesImplementImporting()) {
+                        refreshList();
+                    }
+                }
+
+            });
+        }
+
+        if (detailedEditor.doesImplementExporting()) {
+
+            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EXPORT), new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailedEditor.exportItems();
+                    refreshList();
+                }
+
+            });
+        }
+
+        if (detailedEditor.doesImplementDeleting()) {
+
+            controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailedEditor.deleteItems(getSelectedRows());
+                    // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
+
+                    if (detailedEditor.doesRefreshAfterDeleting() && LoginController.getInstance().isLoggedIn()) {
+                        refreshList();
+                    }
+                }
+
+            });
+        }
+
+        if (detailedEditor.doesImplementEditing()) {
+
+            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GEAR), new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (getSelectedRows().size() > 0) {
+                        detailedEditor.editItem(getSelectedRows().get(0));
+                        if (detailedEditor.doesRefreshAfterEditing()) {
+                            refreshList();
+                        }
+                    } else {
+                        DialogUtils.displayMessage("Please choose one item to edit.");
+                    }
+                }
+
+            });
+        }
+
+        // Only for SavedFiltersPanel
+        if (detailedEditor.doesImplementLoading()) {
+
+            controlBar.createAndAddButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOAD_ON_TOOLBAR), new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    detailedEditor.loadItems(getSelectedRows());
+                }
+
+            });
+
+        }
+
         showWaitCard();
         fetchList();
     }
 
+    public SourceListControlBar getControlBar() {
+        return this.controlBar;
+    }
+
+    private List<Object[]> getSelectedRows() {
+        List<NiceListItem> items = list.getSelectedItems();
+        List<Object[]> selectedRows = new ArrayList<Object[]>();
+        for (NiceListItem item : items) {
+            selectedRows.add((Object[]) item.getItem());
+        }
+        return selectedRows;
+    }
+
     private void showWaitCard() {
-        ((CardLayout) getLayout()).show(this, CARD_WAIT);
+        //((CardLayout) getLayout()).show(this, CARD_WAIT);
     }
 
     private void showShowCard() {
-        Component c = this.getParent();
-        if (c instanceof JSplitPane) {
-            controlBar.installDraggableWidgetOnSplitPane((JSplitPane) c);
-        }
         ((CardLayout) getLayout()).show(this, CARD_SHOW);
         this.updateUI();
     }
@@ -355,8 +243,12 @@ public class ListView extends JPanel {
         fetchList();
     }
 
+    boolean isFetching = false;
+    final Object fetch = new Object();
+
     private void fetchList() {
 
+        isFetching = true;
         new MedSavantWorker<Object[][]>(pageName) {
             @Override
             protected Object[][] doInBackground() throws Exception {
@@ -376,6 +268,10 @@ public class ListView extends JPanel {
             @Override
             protected void showSuccess(Object[][] result) {
                 setList(result);
+                isFetching = false;
+                synchronized (fetch) {
+                    fetch.notifyAll();
+                }
             }
 
             @Override
@@ -390,69 +286,107 @@ public class ListView extends JPanel {
 
         showCard.setLayout(new BorderLayout());
 
-        showCard.add(sourceList.getComponent(), BorderLayout.CENTER);
+        String[] columnNames = detailedModel.getColumnNames();
+        Class[] columnClasses = detailedModel.getColumnClasses();
+        int[] columnVisibility = detailedModel.getHiddenColumns();
 
-        int visibleColumn = 0;
-        // determine the first visible column from the list of hidden ones
-        if (detailedModel.getHiddenColumns().length != 0) {
-            while (detailedModel.getHiddenColumns()[visibleColumn] == visibleColumn) {
-                visibleColumn++;
-            }
+        int firstVisibleColumn = 0;
+        while (columnVisibility.length > 0 && firstVisibleColumn == columnVisibility[firstVisibleColumn]) {
+            firstVisibleColumn++;
         }
 
-        if (!listModel.getCategories().isEmpty()) {
-            listModel.removeCategoryAt(0);
-        }
-
-        String categoryName = pageName;
-        if (data.length > 10) {
-            categoryName += " (" + data.length + ")";
-        }
-
-        SourceListCategory category = new SourceListCategory(categoryName);
-        listModel.addCategory(category);
-
-        itemToIndexMap = new HashMap<SourceListItem, Integer>();
-        int counter = 0;
-        SourceListItem item;
-
-        SourceListItem itemToSelect = null;
-
+        list = new NiceList();
+        list.startTransaction();
         for (Object[] row : data) {
+            list.addItem(new NiceListItem(row[firstVisibleColumn].toString(), row));
+        }
+        list.endTransaction();
 
-            String label = row[visibleColumn].toString();
-            listModel.addItemToCategory(item = new SourceListItem(label), category);
+        wp.setBackground(list.getColorScheme().getBackgroundColor());
 
-            itemToIndexMap.put(item, counter++);
+        if (detailedView != null) {
+            list.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
 
-            if (item.getText().equals(selectedItemMemory)) {
-                itemToSelect = item;
-            }
+                    if (!e.getValueIsAdjusting()) {
+                        List<Object[]> selectedItems = getSelectedRows();
+                        if (selectedItems.size() == 1) {
+                            detailedView.setSelectedItem(selectedItems.get(0));
+                        } else {
+                            detailedView.setMultipleSelections(selectedItems);
+                        }
+                    }
+                }
+            });
+
+            list.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        JPopupMenu popup = detailedView.createPopup();
+                        if (popup != null) {
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+            });
         }
 
-        if (itemToSelect != null) {
-            sourceList.setSelectedItem(itemToSelect);
+        list.getSelectionModel().setSelectionInterval(0, 0);
+
+        JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(list);
+        jsp.setHorizontalScrollBar(null);
+
+        if (searchBarEnabled) {
+            showCard.add(list.getSearchBar(), BorderLayout.NORTH);
         }
 
-        // need to add an item otherwise the category title doesn't display
-        if (data.length == 0) {
-            listModel.addItemToCategory(item = new SourceListItem(""), category);
-        }
+        showCard.add(jsp, BorderLayout.CENTER);
+
+        showCard.add(controlBar.getComponent(), BorderLayout.SOUTH);
+
     }
 
-    void selectItemWithKey(String key) {
+    public void setSearchBarEnabled(boolean b) {
+        searchBarEnabled = b;
+    }
 
-        this.selectedItemMemory = key;
+    void selectItemWithKey(final String key) {
+        new Thread(new Runnable() {
 
-        try {
-            for (SourceListItem i : listModel.getCategories().get(0).getItems()) {
-                if (i.getText().equals(key)) {
-                    sourceList.setSelectedItem(i);
-                    return;
+            @Override
+            public void run() {
+                if (isFetching) {
+                    try {
+                        synchronized (fetch) {
+                            fetch.wait();
+                        }
+                    } catch (InterruptedException ex) {
+                    }
                 }
+                list.selectItemWithKey(key);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        }).start();
+    }
+
+    void selectItemAtIndex(final int i) {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (isFetching) {
+                    try {
+                        synchronized (fetch) {
+                            fetch.wait();
+                        }
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                list.selectItemAtIndex(i);
+            }
+
+        }).start();
     }
 }

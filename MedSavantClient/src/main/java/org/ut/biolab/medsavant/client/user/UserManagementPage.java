@@ -70,6 +70,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
                     },
                     new UserDetailedView(),
                     new UserDetailedListEditor());
+            view.setSearchBarEnabled(true);
         }
         return view;
     }
