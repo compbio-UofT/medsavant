@@ -13,6 +13,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -83,6 +84,7 @@ public class NiceMenu extends JPanel {
         titleLabel.setText(title);
         titleLabel.setForeground(new Color(64, 64, 64));
         titleLabel.setFont(ViewUtil.getBigTitleFont());
+        titleLabel.setFont(FontFactory.getTitleFont());
         setCenterComponent(titleLabel);
 
         centerComponent.invalidate();

@@ -73,6 +73,7 @@ import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 
@@ -262,7 +263,7 @@ public final class ViewUtil {
     }
 
     public static String getDefaultFontFamily() {
-        return "HelveticaNeue";//"MyriadPro-Regular";//"AppleGothic";//"Helvetica Neue";
+        return FontFactory.getGeneralFont().getFamily();
     }
 
     public static JPanel alignLeft(Component c) {

@@ -558,8 +558,5 @@
     <module>MedSavantClient</module>
     <module>MedSavantJSONClient</module>
     <module>distribution</module>
-    <module>MList</module>
-    <module>Fonts</module>
-    <module>MTable</module>
   </modules>
 </project>

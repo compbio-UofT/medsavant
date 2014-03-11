@@ -79,6 +79,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -446,7 +447,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 "TitledBorder.font",
                 "ToolBar.font",
                 "ToolTip.font",
-                "Tree.font"}, new Font(ViewUtil.getDefaultFontFamily(), Font.PLAIN, 13));
+                "Tree.font",
+                "JOptionPane.font",
+                "JDialog.font"}, FontFactory.getGeneralFont());
+            
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");

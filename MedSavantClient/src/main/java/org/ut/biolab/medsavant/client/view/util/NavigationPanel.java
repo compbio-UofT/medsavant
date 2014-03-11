@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 
@@ -50,9 +51,8 @@ public class NavigationPanel extends JPanel {
         this.setLayout(new MigLayout("hidemode 3, insets 0"));
 
         titleLabel = new JLabel();
-        titleLabel.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
+        titleLabel.setFont(FontFactory.getTitleFont());
         titleLabel.setVisible(false);
-        //titleLabel.setForeground(new Color(96,110,130));//new Color(67,138,218));
         titleLabel.setForeground(new Color(64, 64, 64));
 
         this.add(titleLabel);

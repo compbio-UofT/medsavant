@@ -120,15 +120,12 @@ public class NiceList extends JList {
 
     public void selectItemWithKey(String key) {
         clearSearch();
-        System.out.print("Selecting item with key " + key);
         for (NiceListItem item : this.allItems) {
             if (item.toString().toLowerCase().equals(key.toLowerCase())) {
-                System.out.println("\t ... yes");
                 this.setSelectedValue(item, true);
                 return;
             }
         }
-        System.out.println("\t ... no");
     }
 
     private void clearSearch() {
@@ -149,7 +146,7 @@ public class NiceList extends JList {
     
     class NiceListCellRenderer implements ListCellRenderer {
 
-        private static final int cellHeight = 53;
+        private static final int cellHeight = 45;
         
         public NiceListCellRenderer() {
         }
@@ -176,7 +173,7 @@ public class NiceList extends JList {
             p.setLayout(new MigLayout(String.format("fillx, height %d",cellHeight)));
 
             JLabel l = new JLabel(mitem.toString());
-            l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 18));//l.getFont().deriveFont(40));
+            l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 16));
             l.setForeground(isSelected ? colorScheme.getSelectedFontColor() : colorScheme.getUnselectedFontColor() );
             
             p.add(l);

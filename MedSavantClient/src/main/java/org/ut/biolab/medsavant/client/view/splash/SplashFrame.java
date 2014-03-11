@@ -158,7 +158,6 @@ public class SplashFrame extends JFrame {
                 return;
             }
             MedSavantServerInfo server = (MedSavantServerInfo) selectedRow[1];
-            LOG.info("Someone selected row " + server.getNickname());
             showServerInfo(server);
         }
 
@@ -224,7 +223,6 @@ public class SplashFrame extends JFrame {
                 return;
             }
 
-            LOG.info("Creating form for server " + server.getNickname());
             form = getNiceFormForServer(server);
 
             form.addListener(new Listener<NiceForm.FormEvent>() {
