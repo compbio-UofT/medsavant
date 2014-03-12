@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 
 import eu.hansolo.custom.SteelCheckBox;
 import eu.hansolo.tools.ColorDef;
+import java.awt.ComponentOrientation;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -204,7 +205,8 @@ public final class ViewUtil {
             }
         };
 
-        p.setBorder(ViewUtil.getMediumBorder());
+        //p.setBorder(ViewUtil.getMediumBorder());
+        p.setBorder(null);
 
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 
@@ -919,14 +921,15 @@ public final class ViewUtil {
 
             public Color getForegroundAt(int index) {
                 if (getSelectedIndex() == index) {
-                    return Color.WHITE;
+                    return Color.BLACK;
                 }
-                return Color.BLACK;
+                return new Color(40,40,40);
             }
         };
 
         tabs.setUI(new MSTabbedPaneUI());
         tabs.setFocusable(false);
+        
         return tabs;
     }
 
@@ -1220,7 +1223,7 @@ public final class ViewUtil {
      * @return the sidebar color
      */
     public static Color getSidebarColor() {
-        return fColorScheme.getActiveBackgroundColor();
+        return new Color(213, 233, 251);
     }
 
     /**
@@ -1229,11 +1232,7 @@ public final class ViewUtil {
      * @return the iconic color used in the MedSavant logo
      */
     public static Color getMedSavantBlueColor() {
-        return new Color(57, 124, 193);
-    }
-
-    public static Color getMedSavantLightBlueColor() {
-        return new Color(65, 164, 219);
+        return new Color(26, 143, 240);//new Color(57, 124, 193);
     }
 
 }
