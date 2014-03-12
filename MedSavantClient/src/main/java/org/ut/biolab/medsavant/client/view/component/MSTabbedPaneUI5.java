@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class MSTabbedPaneUI extends BasicTabbedPaneUI {
+public class MSTabbedPaneUI5 extends BasicTabbedPaneUI {
 
     private static final Insets NO_INSETS = new Insets(0, 0, 0, 0);
     private Color selectedColorSet;
@@ -53,10 +53,10 @@ public class MSTabbedPaneUI extends BasicTabbedPaneUI {
     int tabHeight = 35;
 
     public static ComponentUI createUI(JComponent c) {
-        return new MSTabbedPaneUI();
+        return new MSTabbedPaneUI5();
     }
 
-    public MSTabbedPaneUI() {
+    public MSTabbedPaneUI5() {
 
         Color selectedColor = ViewUtil.getMedSavantBlueColor();
         Color unselectedColor = Color.white;

@@ -59,14 +59,15 @@ class AppStoreView extends JDialog {
     private void initView() {
 
         JTabbedPane tabs = new JTabbedPane() {
-            
+
             private int selectedIndex = -1;
 
             public Color getForegroundAt(int index) {
                 if (getSelectedIndex() == index) {
-                    return Color.WHITE;
+                    return Color.BLACK;
                 }
-                return Color.BLACK;
+                return new Color(40, 40, 40);
+                
             }
 
             public void setSelectedIndex(int index) {
@@ -75,12 +76,12 @@ class AppStoreView extends JDialog {
                     LazyPanel p = (LazyPanel) this.getComponentAt(selectedIndex);
                     p.viewDidUnload();
                 }
-                
+
                 if (this.getComponentAt(index) instanceof LazyPanel) {
                     LazyPanel p = (LazyPanel) this.getComponentAt(index);
                     p.viewDidLoad();
                 }
-                
+
                 selectedIndex = index;
 
                 super.setSelectedIndex(index);
@@ -90,7 +91,7 @@ class AppStoreView extends JDialog {
         tabs.setUI(new MSTabbedPaneUI());
         tabs.setFocusable(false);
         tabs.setBackground(ViewUtil.getDefaultBackgroundColor());
-        
+
         AppStoreInstalledPage installedAppsPage = new AppStoreInstalledPage(installer);
         AppStoreLandingPage landingPage = new AppStoreLandingPage(fetcher, installer, tabs, installedAppsPage);
 

@@ -80,11 +80,11 @@ public class LoginController extends Controller<LoginEvent> {
                     new NameValuePair("login-event", loggedIn ? "LoggedIn" : "LoggedOut"));
         } catch (Exception e) {
         }
-        
+
         Thread t = new Thread() {
             @Override
             public void run() {
-                
+
                 synchronized (EVENT_LOCK) {
                     LoginController.this.loggedIn = loggedIn;
 
@@ -94,7 +94,7 @@ public class LoginController extends Controller<LoginEvent> {
                         unregister();
                         fireEvent(new LoginEvent(LoginEvent.Type.LOGGED_OUT));
                     }
-                    
+
                     if (!loggedIn) {
                         if (!SettingsController.getInstance().getRememberPassword()) {
                             password = "";
@@ -128,7 +128,6 @@ public class LoginController extends Controller<LoginEvent> {
         try {
             LOG.info("Starting session...");
             sessionId = MedSavantClient.SessionManager.registerNewSession(un, pw, dbname);
-            LOG.info("... done.  My session ID is: " + sessionId);
 
             if (userName.equals("root")) {
                 level = UserLevel.ADMIN;
@@ -144,7 +143,7 @@ public class LoginController extends Controller<LoginEvent> {
         settings.setUsername(un);
         if (settings.getRememberPassword()) {
             settings.setPassword(pw);
-        }else{
+        } else {
             settings.setPassword("");
         }
 
@@ -160,7 +159,7 @@ public class LoginController extends Controller<LoginEvent> {
         try {
             String clientVersion = VersionSettings.getVersionString();
             String serverVersion = MedSavantClient.SettingsManager.getServerVersion();
-            
+
             if (!VersionSettings.isClientCompatibleWithServer(clientVersion, serverVersion)) {
                 DialogUtils.displayMessage("Version Mismatch", "<html>Your client version (" + clientVersion + ") is not compatible with the server (" + serverVersion + ").<br>Visit " + WebResources.URL + " to get the correct version.</html>");
                 fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
@@ -169,9 +168,9 @@ public class LoginController extends Controller<LoginEvent> {
         } catch (Exception ex) {
             LOG.error("Error comparing versions.", ex);
             ex.printStackTrace();
-            DialogUtils.displayMessage("Problem Comparing Versions", 
+            DialogUtils.displayMessage("Problem Comparing Versions",
                     "<html>We could not determine compatibility between MedSavant and your database.<br>"
-                            + "Please ensure that your versions are compatible before continuing.</html>");
+                    + "Please ensure that your versions are compatible before continuing.</html>");
         }
         try {
             LOG.info("Setting up project");
@@ -179,11 +178,11 @@ public class LoginController extends Controller<LoginEvent> {
                 LOG.info("Finalizing login");
                 setLoggedIn(true);
             } else {
-                fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
+                fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_CANCELLED));
             }
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error signing in: %s", ex);
-            fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_FAILED));
+            fireEvent(new LoginEvent(ex));
         }
     }
     private Semaphore semLogin = new Semaphore(1, true);
@@ -193,18 +192,20 @@ public class LoginController extends Controller<LoginEvent> {
         if (currentLoginThread != null) {
             LOG.info("Cancelling sign in");
             currentLoginThread.cancel(true);
+            fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_CANCELLED));
         }
     }
 
     public synchronized void login(MedSavantServerInfo server) {
         login(server.getUsername(), server.getPassword(), server.getDatabase(), server.getHost(), server.getPort() + "");
     }
-    
+
     public synchronized void login(final String un, final String pw, final String dbname, final String serverAddress, final String serverPort) {
         //init registry
         try {
             cancelCurrentLoginAttempt();
 
+            LOG.info("Creating login worker");
             currentLoginThread = new MedSavantWorker<Void>("Login") {
                 @Override
                 protected Void doInBackground() {
@@ -235,15 +236,15 @@ public class LoginController extends Controller<LoginEvent> {
                     }
                     try {
                         semLogin.acquire();
-                        
+
                         getInstance().serverAddress = serverAddress;
                         getInstance().dbname = dbname;
                         //register session
                         userName = un;
                         password = pw;
-                        
+
                         finishLogin(un, pw);
-                        
+
                         semLogin.release();
                     } catch (Exception ex) {
                         LOG.info("Aborted login...");
@@ -268,10 +269,12 @@ public class LoginController extends Controller<LoginEvent> {
      */
     public void logout() {
         try {
-            LOG.info("Logging out...");
-            setLoggedIn(false);
-            AnalyticsAgent.onEndSession(true);
-            this.unregister();
+            if (this.isLoggedIn()) {
+                LOG.info("Logging out...");
+                setLoggedIn(false);
+                AnalyticsAgent.onEndSession(true);
+                this.unregister();
+            }
         } catch (Exception ex) {
         }
     }
@@ -338,5 +341,4 @@ public class LoginController extends Controller<LoginEvent> {
         return this.dbname;
     }
 
-    
 }

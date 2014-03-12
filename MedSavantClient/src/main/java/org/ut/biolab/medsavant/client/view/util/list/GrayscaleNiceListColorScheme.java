@@ -25,16 +25,16 @@ import java.awt.Color;
  *
  * @author mfiume
  */
-class DarkNiceListColorScheme implements NiceListColorScheme {
+class GrayscaleNiceListColorScheme implements NiceListColorScheme {
 
-    private final Color backgroundColor = new Color(56, 56, 56);
-    private final Color selectedColor = new Color(45,45,45);
-    private final Color unselectedColor = backgroundColor;//new Color(23,23,23);
-    private final Color selectedFontColor = new Color(255, 255, 255);
-    private final Color unselectedFontColor = new Color(230, 230, 230);
-    private final Color borderColor = new Color(42, 42, 42);
+    private final Color backgroundColor = new Color(237,237,237);//new Color(213, 233, 251);
+    private final Color selectedColor = new Color(220,220,220);//new Color(191, 226, 250);
+    private final Color unselectedColor = backgroundColor;
+    private final Color selectedFontColor = new Color(0, 0, 0);
+    private final Color unselectedFontColor = new Color(100, 100, 100);
+    private final Color borderColor = new Color(220,220,220);//new Color(203, 226, 243);
     
-    public DarkNiceListColorScheme() {
+    public GrayscaleNiceListColorScheme() {
     }
 
     public Color getBackgroundColor() {

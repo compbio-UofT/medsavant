@@ -61,7 +61,7 @@ public class MSTabbedPaneUI3 extends BasicTabbedPaneUI {
 
 		selectedColorSet = new ColorSet();
                 
-                Color selectedColor = ViewUtil.getMedSavantLightBlueColor();
+                Color selectedColor = ViewUtil.getMedSavantBlueColor();
                 Color unselectedColor = new Color(222, 222, 222);
                 Color hoverColor = new Color(235, 235, 235);
                 

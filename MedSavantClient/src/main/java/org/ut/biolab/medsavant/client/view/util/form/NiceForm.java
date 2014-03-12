@@ -38,6 +38,14 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
         }
     }
 
+    private String bulletStringOfLength(int length) {
+        String s = "";
+        while (length-- > 0) {
+            s += "•";
+        }
+        return s;
+    }
+
     public enum FormEvent {
 
         DID_UNLOCK_FOR_EDITING,
@@ -54,6 +62,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
     }
 
     public enum FieldType {
+
         STRING,
         EMAIL,
         NUMBER,
@@ -85,10 +94,8 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
 
     public void refresh() {
 
-        
-        
         this.removeAll();
-        this.setLayout(new MigLayout("insets 0"));
+        this.setLayout(new MigLayout("insets 0, gapx 5, gapy 5"));
 
         if (showEditButton) {
             final SteelCheckBox cb = ViewUtil.getSwitchCheckBox();
@@ -109,7 +116,6 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                 }
             });
             this.add(cb, "wrap");
-
         }
 
         map = new LinkedHashMap<NiceFormField, JComponent>();
@@ -129,6 +135,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
 
         if (group.displayHeading()) {
             this.add(ViewUtil.getEmphasizedLabel(group.getName().toUpperCase()), "wrap, span");
+            //this.add(new JSeparator(),"wrap, span, growx 1.0");
         }
 
         for (NiceFormField field : group.getFields()) {
@@ -141,31 +148,46 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
 
             switch (field.getType()) {
                 case NUMBER:
-                    JTextField f0 = new JTextField(field.getName());
-                    if (field.getValue() != null) {
-                        f0.setText(field.getValue().toString());
+                    if (isInEditMode) {
+                        JTextField f0 = new JTextField(field.getName());
+                        if (field.getValue() != null) {
+                            f0.setText(field.getValue().toString());
+                        }
+                        f0.setColumns(intFieldWidth);
+                        c = f0;
+                    } else {
+                        if (field.getValue() != null) {
+                            c = new JLabel(field.getValue().toString());
+                        }
                     }
-                    f0.setColumns(intFieldWidth);
-                    f0.setFont(ViewUtil.getBigInputFont());
-                    c = f0;
                     break;
                 case STRING:
                 case EMAIL:
-                    JTextField f1 = new JTextField(field.getName(), stringFieldWidth);
-                    if (field.getValue() != null) {
-                        f1.setText(field.getValue().toString());
+                    if (isInEditMode) {
+                        JTextField f1 = new JTextField(field.getName(), stringFieldWidth);
+                        if (field.getValue() != null) {
+                            f1.setText(field.getValue().toString());
+                        }
+                        c = f1;
+                    } else {
+                        if (field.getValue() != null) {
+                            c = new JLabel(field.getValue().toString());
+                        }
                     }
-                    f1.setFont(ViewUtil.getBigInputFont());
-                    c = f1;
                     break;
                 case PASSWORD:
-                    PlaceHolderPasswordField f2 = new PlaceHolderPasswordField("", stringFieldWidth);
-                    f2.setPlaceholder("");
-                    if (field.getValue() != null) {
-                        f2.setText(field.getValue().toString());
+                    if (isInEditMode) {
+                        PlaceHolderPasswordField f2 = new PlaceHolderPasswordField("", stringFieldWidth);
+                        f2.setPlaceholder("");
+                        if (field.getValue() != null) {
+                            f2.setText(field.getValue().toString());
+                        }
+                        c = f2;
+                    } else {
+                        if (field.getValue() != null) {
+                            c = new JLabel(bulletStringOfLength(field.getValue().toString().length()));
+                        }
                     }
-                    f2.setFont(ViewUtil.getBigInputFont());
-                    c = f2;
                     break;
                 case BOOLEAN:
                     addLabel = false;
@@ -174,26 +196,28 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                     if (field.getValue() != null) {
                         cb.setSelected((Boolean) field.getValue());
                     }
+                    cb.setEnabled(isInEditMode);
                     c = cb;
                     break;
             }
 
             if (addLabel) {
-                this.add(ViewUtil.makeSmall(ViewUtil.getEmphasizedSemiBlackLabel(field.getName())));
+                this.add(ViewUtil.makeSmall(ViewUtil.getEmphasizedSemiBlackLabel(field.getName().toUpperCase())));
             } else {
                 this.add(Box.createHorizontalStrut(1));
             }
 
             if (c != null) {
 
-                // in non-edit mode, add the textual representation
-                if (!isInEditMode) {
-                    if (c instanceof JTextField) {
-                        ((JTextField) c).setDisabledTextColor(ViewUtil.getSemiBlackColor());
-                    }
-                    c.setEnabled(false);
-                }
+                c.setFont(ViewUtil.getBigInputFont());
 
+                // in non-edit mode, add the textual representation
+                /*if (!isInEditMode) {
+                 if (c instanceof JTextField) {
+                 ((JTextField) c).setDisabledTextColor(ViewUtil.getSemiBlackColor());
+                 }
+                 c.setEnabled(false);
+                 }*/
                 Color color = ViewUtil.getSemiBlackColor();
                 c.setForeground(color);
                 this.add(c, "wrap");
@@ -201,7 +225,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
             }
         }
     }
-    
+
     public boolean isFieldSet(NiceFormField field) {
         switch (field.getType()) {
             case NUMBER:
@@ -271,7 +295,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
     private boolean validateField(NiceFormField field) {
 
         try {
-            
+
             // true iff the field isn't required and is blank
             if (!field.isRequired() && !this.isFieldSet(field)) {
                 return true;
@@ -283,13 +307,17 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                     break;
                 case NUMBER: // todo: custom unsigned int validator
                     int i = this.getValueForIntegerField(field);
-                    if (i < 0) { return false; }
+                    if (i < 0) {
+                        return false;
+                    }
                     break;
                 case EMAIL: // todo: custom validator
                 case STRING:
                 case PASSWORD: // todo: custom validator
                     String s = this.getValueForStringField(field);
-                    if (s.isEmpty()) { return false; }
+                    if (s.isEmpty()) {
+                        return false;
+                    }
                     break;
                 default:
                     return false;
@@ -298,5 +326,22 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
         } catch (Exception e) {
             return true;
         }
+    }
+
+    public static void main(String[] argv) {
+        JFrame f = new JFrame();
+
+        f.setBackground(Color.white);
+        f.setLayout(new MigLayout("wrap"));
+        NiceFormFieldGroup g = new NiceFormFieldGroup("Heading", true);
+        g.addField(new NiceFormField(true, "field", NiceForm.FieldType.STRING, "Hello"));
+
+        NiceFormModel m = new NiceFormModel();
+        m.addGroup(g);
+
+        NiceForm form = new NiceForm(m);
+        f.add(form);
+        f.pack();
+        f.setVisible(true);
     }
 }

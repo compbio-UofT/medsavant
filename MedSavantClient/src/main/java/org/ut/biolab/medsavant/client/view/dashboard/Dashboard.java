@@ -36,7 +36,9 @@ import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.util.swing.HyperlinkButton;
+import org.apache.commons.httpclient.NameValuePair;
 
 /**
  *
@@ -293,6 +295,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             previousApp.viewDidUnload();
         }
         app.viewDidLoad();
+        AnalyticsAgent.log(new NameValuePair("app-launched",app.getName()));
         previousApp = app;
 
         appLayer.updateUI();
@@ -385,8 +388,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }*/
 
     
-    private JLabel getHomeButton() {
-        JLabel homeLabel = ViewUtil.getEmphasizedLabel("HOME", ViewUtil.getMedSavantBlueColor());
+    private JComponent getHomeButton() {
+       
 
         final ActionListener goHomeActionListener = new ActionListener() {
 
@@ -395,6 +398,22 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 goHome();
             }
         };
+        
+        JButton goHome = ViewUtil.getSoftButton("Home");
+        goHome.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                goHomeActionListener.actionPerformed(null);
+            }
+            
+        });
+        
+        return goHome;
+        
+        /*
+         JLabel homeLabel = ViewUtil.getEmphasizedLabel("HOME", ViewUtil.getMedSavantBlueColor());
+        
         homeLabel.addMouseListener(new MouseListener() {
 
             @Override
@@ -423,19 +442,34 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         return homeLabel;
+        */
     }
 
     private JComponent getLogoutButton() {
-       
-        final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
         
-        final ActionListener goHomeActionListener = new ActionListener() {
+        final ActionListener signOutActionListener = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
                 MedSavantFrame.getInstance().requestLogoutAndRestart();
             }
         };
+       
+        JButton signOut = ViewUtil.getSoftButton("Sign Out");
+        signOut.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                signOutActionListener.actionPerformed(null);
+            }
+            
+        });
+        
+        return signOut;
+        
+        /*
+        final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
+        
         label.addMouseListener(new MouseListener() {
 
             @Override
@@ -464,6 +498,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         
         return label;
+                */
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {

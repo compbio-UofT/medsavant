@@ -20,15 +20,12 @@
 package org.ut.biolab.medsavant.client.project;
 
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import net.miginfocom.swing.MigLayout;
 
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
@@ -43,20 +40,13 @@ public class ProjectChooser extends JDialog {
 
     public ProjectChooser(String[] projNames) {
         super(DialogUtils.getFrontWindow(), "Choose Project", Dialog.ModalityType.APPLICATION_MODAL);
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(20, 30, 0, 30);
+        setLayout(new MigLayout("wrap, fillx"));
 
-        add(new JLabel("<html><center>This database has more than one project.<br>Choose the one to work with.</center></html>"), gbc);
+        add(new JLabel("<html><center>This database has more than one project.<br>Choose the one to work with.</center></html>"),"growx 1.0");
 
-        gbc.weightx = 0.0;
-        gbc.insets = new Insets(10, 30, 0, 30);
         for (String p: projNames) {
             JButton b = new JButton(p);
-            add(b, gbc);
+            add(b,"center");
             b.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
@@ -65,19 +55,7 @@ public class ProjectChooser extends JDialog {
                 }
             });
         }
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                setVisible(false);
-            }
-        });
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(10, 30, 20, 30);
-        add(cancelButton, gbc);
-
-        ClientMiscUtils.registerCancelButton(cancelButton);
+        
         pack();
         setResizable(false);
         setLocationRelativeTo(getParent());

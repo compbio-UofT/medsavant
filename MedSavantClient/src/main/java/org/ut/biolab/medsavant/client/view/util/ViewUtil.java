@@ -1232,7 +1232,7 @@ public final class ViewUtil {
      * @return the iconic color used in the MedSavant logo
      */
     public static Color getMedSavantBlueColor() {
-        return new Color(26, 143, 240);//new Color(57, 124, 193);
+        return new Color(26, 143, 240);
     }
 
 }

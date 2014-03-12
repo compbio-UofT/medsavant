@@ -17,7 +17,7 @@ public class FontFactory {
 
     private static final Font titleFontPrimary = getFont("HelveticaNeue-Medium").deriveFont(20f);
     private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
-    private static final Font sectionHeaderFont = loadFont("/font/ostrich-black.ttf").deriveFont(24f);
+    private static final Font sectionHeaderFont = titleFont.deriveFont(24f);//loadFont("/font/ostrich-regular.ttf").deriveFont(36f); //titleFont;
     private static final Font generalFontPrimary = getFont("HelveticaNeue-Light");
     private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
     

@@ -17,6 +17,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import net.miginfocom.swing.MigLayout;
@@ -27,7 +28,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class NiceList extends JList {
 
-    private NiceListColorScheme colorScheme = new DefaultNiceListColorScheme();
+    private NiceListColorScheme colorScheme = new GrayscaleNiceListColorScheme();
 
     private final Vector<NiceListItem> allItems;
     private JTextField searchBar;
@@ -41,12 +42,12 @@ public class NiceList extends JList {
         initSearchBar();
     }
 
-    public void addItem(NiceListItem item) {
+    public void addItem(final NiceListItem item) {
         allItems.add(item);
         updateListItems();
     }
 
-    public void removeItem(NiceListItem item) {
+    public void removeItem(final NiceListItem item) {
         allItems.remove(item);
         updateListItems();
     }
@@ -69,19 +70,27 @@ public class NiceList extends JList {
     }
 
     private void updateListItems() {
-        
-        if (inTransaction) { return; }
-        
+
+        if (inTransaction) {
+            return;
+        }
+
         this.setBackground(colorScheme.getBackgroundColor());
-        
-        Vector v;
+
+        final Vector v;
         if (searchBar.getText().isEmpty()) {
             v = new Vector(allItems);
         } else {
             v = getSearchResults();
         }
 
-        this.setListData(v);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setListData(v);
+            }
+        });
     }
 
     private Vector getSearchResults() {
@@ -108,9 +117,12 @@ public class NiceList extends JList {
     }
 
     public List<NiceListItem> getSelectedItems() {
-        
+
         List<NiceListItem> results = new ArrayList<NiceListItem>();
-        for (Object item : this.getSelectedValues()) {
+
+        Object[] selected = this.getSelectedValues();
+
+        for (Object item : selected) {
             if (item instanceof NiceListItem) {
                 results.add((NiceListItem) item);
             }
@@ -143,23 +155,22 @@ public class NiceList extends JList {
     public NiceListColorScheme getColorScheme() {
         return this.colorScheme;
     }
-    
+
     class NiceListCellRenderer implements ListCellRenderer {
 
         private static final int cellHeight = 45;
-        
+
         public NiceListCellRenderer() {
         }
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            
 
             if (value instanceof NiceListItem) {
 
                 NiceListItem mitem = (NiceListItem) value;
                 return getListCellRendererRegularComponent(list, mitem, index, isSelected, cellHasFocus);
-                
+
             } else {
                 throw new UnsupportedOperationException("NiceList can't render items of type " + value.getClass().getCanonicalName());
             }
@@ -167,18 +178,18 @@ public class NiceList extends JList {
 
         private Component getListCellRendererRegularComponent(JList list, NiceListItem mitem, int index, boolean isSelected, boolean cellHasFocus) {
             JPanel p = new JPanel();
-            
+
             p.setBackground(isSelected ? colorScheme.getSelectedColor() : colorScheme.getUnselectedColor());
 
-            p.setLayout(new MigLayout(String.format("fillx, height %d",cellHeight)));
+            p.setLayout(new MigLayout(String.format("fillx, height %d", cellHeight)));
 
             JLabel l = new JLabel(mitem.toString());
             l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 16));
-            l.setForeground(isSelected ? colorScheme.getSelectedFontColor() : colorScheme.getUnselectedFontColor() );
-            
+            l.setForeground(isSelected ? colorScheme.getSelectedFontColor() : colorScheme.getUnselectedFontColor());
+
             p.add(l);
 
-            p.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, colorScheme.getBorderColor()));
+            p.setBorder(BorderFactory.createMatteBorder((index == 0) ? 1 : 0, 0, 1, 0, colorScheme.getBorderColor()));
 
             return p;
         }

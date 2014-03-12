@@ -25,7 +25,7 @@ package org.ut.biolab.medsavant.client.login;
  */
 public class LoginEvent {
 
-    public enum Type { LOGGED_IN, LOGGED_OUT, LOGIN_FAILED };
+    public enum Type { LOGGED_IN, LOGGED_OUT, LOGIN_FAILED, LOGIN_CANCELLED };
 
     private final Type type;
     private final Exception exception;

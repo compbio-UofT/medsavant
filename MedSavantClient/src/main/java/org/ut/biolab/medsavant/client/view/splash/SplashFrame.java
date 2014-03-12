@@ -63,7 +63,6 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormField;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormFieldGroup;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormModel;
-import org.ut.biolab.medsavant.shared.util.VersionSettings;
 import org.ut.biolab.medsavant.client.app.jAppStore;
 
 /**
@@ -586,13 +585,14 @@ public class SplashFrame extends JFrame {
                 @Override
                 public void handleEvent(LoginEvent event) {
 
+                    LOG.info("Received login event " + event.getType().toString());
+                    
                     switch (event.getType()) {
                         case LOGGED_IN:
-
-                            LOG.info("Checking login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
-
+                            
                             // don't log in if the cancel button was pressed
-                            if (loginThread.isCancelled() || !isLoggingIn) {
+                            if (loginThread.isCancelled()) {
+                                LOG.info("Login was cancelled " + loginThread.isCancelled() + " " + !isLoggingIn);
                                 return;
                             }
 
@@ -612,10 +612,13 @@ public class SplashFrame extends JFrame {
                         case LOGIN_FAILED:
 
                             Exception e = event == null ? null : event.getException();
-                            String msg = event == null ? "" : event.getException().getLocalizedMessage();
+                            String msg = (event == null || event.getException() == null) ? "" : event.getException().getLocalizedMessage();
 
                             DialogUtils.displayException("Login Failed", msg, e);
-                            event.getException().printStackTrace();
+                            isLoggingIn = false;
+                            break;
+                        case LOGIN_CANCELLED:
+                            isLoggingIn = false;
                             break;
                     }
 
@@ -779,6 +782,7 @@ public class SplashFrame extends JFrame {
             serverNameLabel.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    serverManager.normalSplitScreen.selectItemWithKey(serverNameLabel.getText());
                     serverManager.setMode(ServerManagementComponent.NORMAL_MODE);
                     setPrimaryPanel(serverManager);
                 }
@@ -905,6 +909,7 @@ public class SplashFrame extends JFrame {
         private void loginUsingEnteredUsernameAndPassword(final MedSavantServerInfo server) {
 
             if (isLoggingIn) {
+                LOG.info("Already logging in");
                 return;
             }
 
@@ -926,6 +931,7 @@ public class SplashFrame extends JFrame {
                 }
             };
 
+            LOG.info("Executing login thread");
             loginThread.execute();
         }
 

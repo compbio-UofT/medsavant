@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import net.miginfocom.swing.MigLayout;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -338,9 +339,15 @@ public class ListView extends JPanel {
         JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(list);
         jsp.setHorizontalScrollBar(null);
 
+        JPanel topPanel = ViewUtil.getClearPanel();
+        topPanel.setLayout(new MigLayout("wrap, fillx"));
+        
+        topPanel.add(ViewUtil.getEmphasizedLabel(pageName.toUpperCase()));
+        
         if (searchBarEnabled) {
-            showCard.add(list.getSearchBar(), BorderLayout.NORTH);
+            topPanel.add(list.getSearchBar(),"growx 1.0");
         }
+        showCard.add(topPanel,BorderLayout.NORTH);
 
         showCard.add(jsp, BorderLayout.CENTER);
 
