@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -52,7 +54,11 @@ public class GenePanel {
 	
 	private static final String DONE_TEXT= "Apply";
 	private static final String CLEAR_TEXT= "Clear";
-	private static final String DEFAULT_GENE_PANEL_TITLE_TEXT= "Gene panel name?";
+	private static final String SAVE_TEXT= "Save panel";
+	private static final String SAVED_TEXT= "Saved!";
+	private static final String DEFAULT_GENE_PANEL_TITLE_TEXT= "Save gene panel as...";
+	
+	private Matcher m;
 	
 	private String panelType;
 	private ComprehensiveConditionGenerator ccg;
@@ -69,6 +75,7 @@ public class GenePanel {
 	private TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
 	private OntologyConditionGenerator ocg;
 	private JDialog displayDialog;
+	private JButton saveButton;
 	
 	
 	/**
@@ -155,7 +162,7 @@ public class GenePanel {
 		});
 		
 		/* Add the gene panel title text field when hovering over the save button. */
-		JButton saveButton= new JButton("Save panel");
+		saveButton= new JButton("Save panel");
 		if (panelType.equals(GenePanel.HPO))
 			saveButton.setText("Save as gene panel"); // to reduce ambiguity
 		saveButton.addMouseMotionListener(
@@ -201,10 +208,17 @@ public class GenePanel {
 					
 					/* Save the panel as a region list on the server if the name
 					 * has been assigned but doesn't exist already. */
+					
+					// match empty strings or plain whitespace
+					m= (Pattern.compile("\\s*")).matcher(genePanelTitle.getText());
+					
 					if (!genePanelTitle.getText().equals(DEFAULT_GENE_PANEL_TITLE_TEXT) &&
-						!genePanelTitle.getText().equals("") &&  // can be replaced with regex for whitespace.
-						validateGenePanelTitle(genePanelTitle.getText())) {
+						!m.matches() && validateGenePanelTitle(genePanelTitle.getText())) {
+						
 						saveGenePanel(genePanelTitle.getText(), geneList);
+						saveButton.setText(SAVED_TEXT);
+					} else {
+						DialogUtils.displayError("Oops!", "Please enter a valid gene panel title.");
 					}
 				}
 			}
@@ -307,6 +321,7 @@ public class GenePanel {
 	 */
 	private void clearAction() {
 		try {
+			saveButton.setText(SAVE_TEXT);
 			doneButton.setText(DONE_TEXT);
 			
 			if (panelType.equals(GenePanel.PANEL)) {
@@ -401,7 +416,7 @@ public class GenePanel {
 		try {
 			for (RegionSet r : controller.getRegionSets()) {
 				if (r.getName().equals(panelTitle)) {
-					DialogUtils.displayError("Error", "List name already in use.");
+					DialogUtils.displayError("Oops!", "Gene panel name already in use.");
 					return false;
 				}
 			}

@@ -1469,6 +1469,12 @@ public class DiscoveryPanel extends JPanel {
 		if (errorList.size() > 0) {
 			errorMessage.removeAll(); // clear existing errors
 			
+			// Add a warnings title
+			JLabel errorTitle= new JLabel("WARNING"); // note: doesn't wrap text if too long
+			errorTitle.setForeground(Color.RED);
+			errorTitle.setFont(new Font(errorTitle.getFont().getName(), Font.BOLD, 16));
+			errorMessage.add(errorTitle, "wrap");
+			
 			patientPanelInsertPosition= 3; // push any upcoming new buttons down
 			
 			for (String e : errorList) {
@@ -1480,6 +1486,13 @@ public class DiscoveryPanel extends JPanel {
 				errorMessage.add(errorText, "wrap");
 			}
 					
+			// Add a little help message
+			JButton errorMessageHelp= ViewUtil.getHelpButton("WARNING help", 
+				"Warnings presented above may affect the quality of the variants " +
+				"output by this workflow. When warnings are present, please note " +
+				"that some results of this workflow may be incorrect.");
+			errorMessage.add(errorMessageHelp);
+			
 			if (errorMessage.getParent() != patientPanel) { // if not already added
 				patientPanel.add(errorMessage, "alignx center, wrap, gapy 20px", patientPanelInsertPosition - 2);
 			}
