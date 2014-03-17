@@ -789,6 +789,8 @@ public class DiscoveryPanel extends JPanel {
 						line[index]= st.getModel().getValueAt(selectedIndex, index);
 					
 					/* Set up/update the Variant Summary Panel. */
+					// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
+					vsp.clearSummaryPane();
 					vsp.updateGeneSymbol(discFind.getGeneSymbol(line));
 					vsp.updateAlleleFrequencyPane(line, discFind.header);
 					vsp.updateAnnotation(line, discFind.header);

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -44,7 +45,6 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -103,10 +103,6 @@ public class VariantSummaryPanel extends JScrollPane {
 	
 	private String currentGeneSymbol;
 	private JLabel titleLabel;
-	private CollapsiblePane otherIndividualsPane;
-	private CollapsiblePane clinvarPane;
-	private CollapsiblePane cgdPane;
-	private CollapsiblePane hgmdPane;
 	private String cgdPaneTitle= "Clinical Genomics Database (CGD) details";
 	private String clinvarPaneTitle= "Clinvar details";
 	private String hgmdPaneTitle= "HGMD details";
@@ -114,10 +110,9 @@ public class VariantSummaryPanel extends JScrollPane {
 	private MedSavantWorker otherIndividualsThread;
 	private JPanel variantPanel;
 	private List<String> alleleFrequencyColumns;
-	private CollapsiblePane afPane;
 	private String afPaneTitle= "Allele frequency details";
-	private CollapsiblePane predictorPane;
 	private String predictorPaneTitle= "Variant harmfulness prediction";
+	private List<JComponent> clearList= new LinkedList<JComponent>();
 	
 	//variant properties
 	private String chromosome;
@@ -234,12 +229,8 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * @param row The entire row entry from the DB for this variant.
 	 * @param header The table header row
 	 */
-	public void updateAlleleFrequencyPane(Object[] row, List<String> header) {
-		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
-		if (afPane != null)
-			summaryPanel.remove(afPane);
-		
-		afPane= getCollapsiblePane(afPaneTitle);
+	public void updateAlleleFrequencyPane(Object[] row, List<String> header) {		
+		CollapsiblePane afPane= getCollapsiblePane(afPaneTitle);
 		
 		for (String afColumn : alleleFrequencyColumns) {			
 			String afValue= "N/A";
@@ -253,6 +244,9 @@ public class VariantSummaryPanel extends JScrollPane {
 		
 		summaryPanel.add(afPane, "wrap");
 		
+		// add to list of components
+		clearList.add(afPane);
+		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
 		summaryPanel.updateUI();
 	}
@@ -263,12 +257,8 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * @param row The entire row entry from the DB for this variant.
 	 * @param header The table header row
 	 */
-	public void updateHarmfulnessPredictorsPane(Object[] row, List<String> header) {
-		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
-		if (predictorPane != null)
-			summaryPanel.remove(predictorPane);
-		
-		predictorPane= getCollapsiblePane(predictorPaneTitle);
+	public void updateHarmfulnessPredictorsPane(Object[] row, List<String> header) {		
+		CollapsiblePane predictorPane= getCollapsiblePane(predictorPaneTitle);
 		
 		for (String predictorColumn : predictorColumns) {
 			String predictorValue= "N/A";
@@ -302,6 +292,9 @@ public class VariantSummaryPanel extends JScrollPane {
 		
 		summaryPanel.add(predictorPane, "wrap");
 		
+		// add to list of components
+		clearList.add(predictorPane);
+		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
 		summaryPanel.updateUI();
 	}
@@ -311,12 +304,8 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add or update the clinvar pane.
 	 * @param csi The ClinvarSubInspector
 	 */
-	public void updateClinvarPane(ClinvarSubInspector csi) {
-		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
-		if (clinvarPane != null)
-			summaryPanel.remove(clinvarPane);
-		
-		clinvarPane= getCollapsiblePane(clinvarPaneTitle);
+	public void updateClinvarPane(ClinvarSubInspector csi) {	
+		CollapsiblePane clinvarPane= getCollapsiblePane(clinvarPaneTitle);
 		
 		String disease= csi.getDisease();
 		// Convert all "_" to spaces, "|" to "; " and "\x2c" to ","
@@ -357,6 +346,9 @@ public class VariantSummaryPanel extends JScrollPane {
 			clinvarPane.add(new JLabel(csi.getClnSig()), "wrap");
 
 			summaryPanel.add(clinvarPane, "wrap");
+			
+			// add to list of components
+			clearList.add(clinvarPane);
 		}
 		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
@@ -369,11 +361,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * @param hsi The HGMDSubInspector
 	 */
 	public void updateHGMDPane(HGMDSubInspector hsi) {
-		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
-		if (hgmdPane != null)
-			summaryPanel.remove(hgmdPane);
-		
-		hgmdPane= getCollapsiblePane(hgmdPaneTitle);
+		CollapsiblePane hgmdPane= getCollapsiblePane(hgmdPaneTitle);
 		
 		// use JTextAreas when text runs over one line
 		JTextArea diseaseText= new JTextArea(hsi.getDisease());
@@ -402,6 +390,9 @@ public class VariantSummaryPanel extends JScrollPane {
 			hgmdPane.add(commentsText);
 
 			summaryPanel.add(hgmdPane, "wrap");
+			
+			// add to list of components
+			clearList.add(hgmdPane);
 		}
 		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
@@ -416,11 +407,7 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * @param classification Classification as determined by another program (required to deal with compound hets).
 	 */
 	public void updateCGDPane(String zygosity, String gender, String classification){
-		// clearing a collapsible pane leads to weird errors, so I'm removing it and adding it back.
-		if (cgdPane != null)
-			summaryPanel.remove(cgdPane);
-
-		cgdPane= getCollapsiblePane(cgdPaneTitle);
+		CollapsiblePane cgdPane= getCollapsiblePane(cgdPaneTitle);
 		
 		/* Get the CGD annotation. */
 		List<String> variantClassification= DiscoveryDBFunctions.getClassification(currentGeneSymbol, zygosity, "", gender);
@@ -443,6 +430,9 @@ public class VariantSummaryPanel extends JScrollPane {
 			cgdPane.add(diseaseText, "wrap");
 
 			summaryPanel.add(cgdPane, "wrap");
+			
+			// add to list of components
+			clearList.add(cgdPane);
 		}
 		
 		// deal with some weird redrawing error when the collapsiblepane shrinks from previous size
@@ -454,16 +444,12 @@ public class VariantSummaryPanel extends JScrollPane {
 	 * Add or update the other individuals pane to show all DNA IDs with this variant.
 	 * @param simpleVar The SimpleVariant object representing this variant.
 	 */
-	public void updateOtherIndividualsPane(final SimpleVariant simpleVar) {
-		/* Clearing a collapsible pane leads to weird errors, so I'm removing it
-		 * and adding it back. */
-		if (otherIndividualsPane != null) {
-			summaryPanel.remove(otherIndividualsPane);
-			otherIndividualsThread.cancel(true);
-		}
-			
-		otherIndividualsPane= getCollapsiblePane(otherIndividualsPaneTitle);
+	public void updateOtherIndividualsPane(final SimpleVariant simpleVar) {			
+		final CollapsiblePane otherIndividualsPane= getCollapsiblePane(otherIndividualsPaneTitle);
 		summaryPanel.add(otherIndividualsPane, "wrap");
+		
+		// add to list of components
+		clearList.add(otherIndividualsPane);
 		
 		final ProgressWheel pw= new ProgressWheel();
 		pw.setIndeterminate(true);
@@ -516,11 +502,8 @@ public class VariantSummaryPanel extends JScrollPane {
 					otherIndividualsPane.collapse(false);
 				}
 				
-				/* Only add the individuals if this thread hasn't been cancelled. */
-				if (!otherIndividualsThread.isCancelled()) {
-					otherIndividualsPane.add(dnaIDPanel);
-					otherIndividualsPane.revalidate();
-				}
+				otherIndividualsPane.add(dnaIDPanel);
+				otherIndividualsPane.revalidate();
 				
 				return null;
 			}
@@ -579,7 +562,7 @@ public class VariantSummaryPanel extends JScrollPane {
 		}
 		
 		return allDNAIDs;
-	}	
+	}
 	
 	
 	/**
@@ -706,6 +689,9 @@ public class VariantSummaryPanel extends JScrollPane {
 		
 		summaryPanel.add(customPane, "wrap");
 		
+		// add to list of components
+		clearList.add(customPane);
+		
 		return customPane;
 	}
 	
@@ -743,5 +729,19 @@ public class VariantSummaryPanel extends JScrollPane {
 		}
 	
 		return output;
+	}
+	
+	
+	/**
+	 * Remove all components from main pane.
+	 */
+	public void clearSummaryPane() {
+		for (JComponent jc : clearList) {
+			if (jc != null)
+				summaryPanel.remove(jc);
+		}
+		
+		// Ensure the list is empty
+		clearList.clear(); // should be switched to removeAll() for Java 1.7
 	}
 }
