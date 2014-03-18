@@ -8,14 +8,30 @@ package org.ut.biolab.medsavant.client.view.font;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.InputStream;
+import javax.swing.UIManager;
 
 /**
  *
  * @author mfiume
  */
 public class FontFactory {
-
-    private static final Font titleFontPrimary = getFont("HelveticaNeue-Medium").deriveFont(20f);
+    //fonts, in order of preference.
+    private static final String[] fontsToTry = new String[]{"HelveticaNeue-Medium", "Lucida Sans Regular", "Times New Roman"};
+    private static final Font titleFontPrimary;
+    static{
+        Font f = null;
+        int i = 0;
+        while((f == null) && i < fontsToTry.length){            
+            f = getFont(fontsToTry[i]);
+            ++i;
+        }
+                
+        if(f == null){           
+            f = UIManager.getDefaults().getFont("TitledBorder.font");
+        }
+        System.out.println("Setting font to "+f.getFontName());                
+        titleFontPrimary = f.deriveFont(20f);        
+    }
     private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
     private static final Font sectionHeaderFont = titleFont.deriveFont(24f);//loadFont("/font/ostrich-regular.ttf").deriveFont(36f); //titleFont;
     private static final Font generalFontPrimary = getFont("HelveticaNeue-Light");
