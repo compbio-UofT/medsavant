@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.util.Modifier;
 import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
-import org.ut.bioloab.medsavant.shared.appapi.VariantIterator;
+import org.ut.biolab.medsavant.shared.appdevapi.VariantIterator;
 
 
 /**

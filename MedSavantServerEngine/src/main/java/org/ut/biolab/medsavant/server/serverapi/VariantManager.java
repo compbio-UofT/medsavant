@@ -69,7 +69,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
-import org.ut.bioloab.medsavant.shared.appapi.VariantIterator;
+import org.ut.biolab.medsavant.shared.appdevapi.VariantIterator;
 
 /**
  *
