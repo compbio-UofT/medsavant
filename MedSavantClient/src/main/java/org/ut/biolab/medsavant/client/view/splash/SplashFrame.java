@@ -836,7 +836,7 @@ public class SplashFrame extends JFrame {
             }
             );
 
-            rememberPasswordCheckbox = new JCheckBox("Remember Password");
+            rememberPasswordCheckbox = new JCheckBox("Remember Password");              
             rememberPasswordCheckbox.setFocusable(false);
             panel.add(rememberPasswordCheckbox, "wrap");
 

@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.query.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -108,7 +109,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         //group.add(nullButton);
 
         final JCheckBox nullButton = new JCheckBox("include missing values");
-
+        
         JPanel bp = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(bp);
         p.add(labelPanel);
@@ -123,7 +124,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         final JTextField toBox = new JTextField();
 
         nullButton.setSelected(NumericConditionEncoder.encodesNull(encoding));
-
+        
         nullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -165,6 +166,7 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
         ViewUtil.applyHorizontalBoxLayout(nullValueContainer);
         nullValueContainer.add(Box.createHorizontalGlue());
         nullValueContainer.add(nullButton);
+        nullButton.setBackground(nullValueContainer.getBackground()); //fixes a windows issue.
         nullValueContainer.add(Box.createHorizontalGlue());
 
         JPanel labelContainer = ViewUtil.getClearPanel();

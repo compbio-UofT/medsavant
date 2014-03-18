@@ -15,28 +15,30 @@ import javax.swing.UIManager;
  * @author mfiume
  */
 public class FontFactory {
-    //fonts, in order of preference.
-    private static final String[] fontsToTry = new String[]{"HelveticaNeue-Medium", "Lucida Sans Regular", "Times New Roman"};
+
+    //fonts, in order of preference.    
+    private static final String[] fontsToTry = new String[]{"HelveticaNeue-Medium", "Arial", "Lucida Sans Regular", "Times New Roman"};
     private static final Font titleFontPrimary;
-    static{
+
+    static {
         Font f = null;
         int i = 0;
-        while((f == null) && i < fontsToTry.length){            
+        while ((f == null) && i < fontsToTry.length) {
             f = getFont(fontsToTry[i]);
             ++i;
         }
-                
-        if(f == null){           
+
+        if (f == null) {
             f = UIManager.getDefaults().getFont("TitledBorder.font");
         }
-        System.out.println("Setting font to "+f.getFontName());                
-        titleFontPrimary = f.deriveFont(20f);        
+        //System.out.println("Setting font to " + f.getFontName());
+        titleFontPrimary = f.deriveFont(20f);
     }
     private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
     private static final Font sectionHeaderFont = titleFont.deriveFont(24f);//loadFont("/font/ostrich-regular.ttf").deriveFont(36f); //titleFont;
     private static final Font generalFontPrimary = getFont("HelveticaNeue-Light");
     private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
-    
+
     public static Font getTitleFont() {
         return titleFont;
     }
@@ -71,7 +73,7 @@ public class FontFactory {
                 return i.deriveFont(13f);
             }
         }
-        
+
         return null;
     }
 
