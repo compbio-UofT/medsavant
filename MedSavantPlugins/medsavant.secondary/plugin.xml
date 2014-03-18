@@ -3,7 +3,7 @@
 <plugin class="medsavant.secondary.SecondaryApp">
     <properties>
         <property name="version" value="1.0.0"/>
-        <property name="sdk-version" value="1.2-rc-1"/>
+        <property name="sdk-version" value="1.2-SNAPSHOT"/>
         <property name="name" value="Secondary" />
         <property name="category" value="ANALYSIS" />
         <property name="author" value="University of Toronto" />

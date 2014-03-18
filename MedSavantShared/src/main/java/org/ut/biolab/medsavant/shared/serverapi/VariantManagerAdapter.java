@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.util.Modifier;
 import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
+import org.ut.bioloab.medsavant.shared.appapi.VariantIterator;
 
 
 /**
@@ -82,6 +83,9 @@ public interface VariantManagerAdapter extends Remote {
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException;
+	
+	public VariantIterator getVariantIterator(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
+	
     public int getVariantCount(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public int getFilteredVariantCount(String sessID,int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
     public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException, SessionExpiredException;

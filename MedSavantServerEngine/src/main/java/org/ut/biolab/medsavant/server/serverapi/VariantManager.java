@@ -60,7 +60,6 @@ import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
 import org.ut.biolab.medsavant.server.db.variants.Jannovar;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
-import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
@@ -70,6 +69,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
+import org.ut.bioloab.medsavant.shared.appapi.VariantIterator;
 
 /**
  *
@@ -675,6 +675,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, null);
     }
 
+	@Override
+    public VariantIterator getVariantIterator(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException {
+        return new VariantIterator(getVariants(sessionId, projectId, referenceId, conditions, start, limit, null),
+			AnnotationManager.getInstance().getAnnotationFormats(sessionId, projectId, referenceId));
+    }
+	
     @Override
     public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException {
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
