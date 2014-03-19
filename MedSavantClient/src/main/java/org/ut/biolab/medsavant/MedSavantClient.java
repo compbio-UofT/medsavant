@@ -53,7 +53,6 @@ import javax.swing.plaf.ColorUIResource;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
 import java.awt.Color;
-import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -82,7 +81,6 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.RegionSetManagerAdapter;
@@ -234,14 +232,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
             }
         }
 
-        
         //Setup temporary directories
         String username = System.getProperty("user.name");
-        DirectorySettings.setTmpDirectory((new File(System.getProperty("java.io.tmpdir"), "msavant_"+username)).getAbsolutePath());
+        DirectorySettings.setTmpDirectory((new File(System.getProperty("java.io.tmpdir"), "msavant_" + username)).getAbsolutePath());
         DirectorySettings.setMedSavantDirectory((new File(System.getProperty("user.home"), MiscUtils.WINDOWS ? "medsavant" : ".medsavant")).getAbsolutePath());
-        
-        
-        LOG.info("MedSavant booted");        
+
+        LOG.info("MedSavant booted");
         SplashFrame loginFrame = new SplashFrame();
         loginFrame.setVisible(true);
 
@@ -384,7 +380,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
             });
 
             if (MiscUtils.WINDOWS) {
-                LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
+                UIManager.put("CheckBox.background", new javax.swing.plaf.ColorUIResource(Color.WHITE));
+                UIManager.put("Panel.background", new javax.swing.plaf.ColorUIResource(Color.WHITE));
+                LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);                
+                /*UIManager.put("JideTabbedPane.tabAreaBackground", new javax.swing.plaf.ColorUIResource(Color.WHITE));
+                UIManager.put("JideTabbedPane.background", new javax.swing.plaf.ColorUIResource(Color.WHITE));
+                UIManager.put("SidePane.background", new javax.swing.plaf.ColorUIResource(Color.WHITE));*/             
             } else {
                 LookAndFeelFactory.installJideExtension();
             }
@@ -399,18 +400,17 @@ public class MedSavantClient implements MedSavantServerRegistry {
             //tooltips
             UIManager.put("ToolTip.background", new ColorUIResource(255, 255, 255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
-            ToolTipManager.sharedInstance().setInitialDelay(500);
-
+            ToolTipManager.sharedInstance().setInitialDelay(500);            
         } catch (Exception x) {
             LOG.error("Unable to install look & feel.", x);
         }
 
     }
-    
-     private static void customizeForMac() {
+
+    private static void customizeForMac() {
 
         try {
-            
+
             UIManager.put("Panel.background", new Color(237, 237, 237)); // the above line makes the bg dark, setting back
 
             System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -450,7 +450,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 "Tree.font",
                 "JOptionPane.font",
                 "JDialog.font"}, FontFactory.getGeneralFont());
-            
 
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
