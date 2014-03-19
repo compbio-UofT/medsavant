@@ -5,12 +5,12 @@
  */
 package org.ut.biolab.medsavant.client.view.util.list;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -33,12 +33,24 @@ public class NiceList extends JList {
     private final Vector<NiceListItem> allItems;
     private JTextField searchBar;
     private boolean inTransaction;
+    private class NiceListModel extends AbstractListModel{
 
+        @Override
+        public int getSize() {
+            return allItems.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return allItems.get(index);
+        }
+        
+    }
     public NiceList() {
         allItems = new Vector<NiceListItem>();
 
         this.setCellRenderer(new NiceListCellRenderer());
-
+        this.setModel(new NiceListModel());
         initSearchBar();
     }
 
