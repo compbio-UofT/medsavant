@@ -31,6 +31,8 @@ public class PGXPanel extends JPanel {
 	private final int SIDE_PANE_WIDTH= 380;
 	private final int SIDE_PANE_WIDTH_OFFSET= 20;
 	
+	private String currentHosptialID;
+	private String currentDNAID;
 	private JPanel appView;
 	private JScrollPane patientSidePanel;
 	private JScrollPane reportPanel;
@@ -78,23 +80,19 @@ public class PGXPanel extends JPanel {
 		ActionListener outputAL= new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent ae) {
-				// show the patient selector window
-				patientSelector.setVisible(true);
+				patientSelector.setVisible(true); // show the patient selector window
 
 				Set<String> selectedIndividuals= patientSelector.getHospitalIDsOfSelectedIndividuals();
 				
-				if (patientSelector.hasMadeSelection() && selectedIndividuals.size() == 1) {
-					String currentIndividual= selectedIndividuals.iterator().next();
-					String currentIndividualDNA= patientSelector.getDNAIDsOfSelectedIndividuals().iterator().next();
+				if (patientSelector.hasMadeSelection()) {
+					currentHosptialID= selectedIndividuals.iterator().next();
+					currentDNAID= patientSelector.getDNAIDsOfSelectedIndividuals().iterator().next();
 					
-					if (currentIndividualDNA != null) {
-						choosePatientButton.setText(currentIndividual);
-					} else {
-						// can't find this individual's DNA ID - may be a DB error
-						errorDialog("Can't find a DNA ID for " + currentIndividual);
+					if (currentDNAID != null) {
+						choosePatientButton.setText(currentHosptialID);
+					} else { // can't find this individual's DNA ID - may be a DB error
+						errorDialog("Can't find a DNA ID for " + currentHosptialID);
 					}
-				} else if (patientSelector.getHospitalIDsOfSelectedIndividuals().size() > 1){
-					choosePatientButton.setText("Choose only 1 patient");
 				}
 			}
 		};
@@ -166,6 +164,14 @@ public class PGXPanel extends JPanel {
 		reportPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		reportPanel.setPreferredSize(reportPanel.getMaximumSize().getSize());
 		reportPanel.setViewportView(reportJP);
+	}
+	
+	
+	/**
+	 * Update the report panel.
+	 */
+	private void updateReportPanel() {
+		
 	}
 	
 	
