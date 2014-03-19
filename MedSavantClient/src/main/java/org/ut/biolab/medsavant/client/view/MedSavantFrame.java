@@ -195,6 +195,9 @@ public class MedSavantFrame extends JFrame {
             protected Void doInBackground() throws Exception {
 
                 Dashboard dash = new Dashboard();
+                
+                //dash.setBackgroundImage(IconFactory.getInstance().getIcon("/img/bg/bg3.jpg").getImage());
+                
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
 
                 sessionDashboard = dash;

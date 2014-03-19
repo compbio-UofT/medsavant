@@ -42,9 +42,11 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class MSTabbedPaneUI extends BasicTabbedPaneUI {
 
     private static final Insets NO_INSETS = new Insets(0, 0, 0, 0);
-    private Color selectedColorSet;
-    private Color defaultColorSet;
-    private Color hoverColorSet;
+    
+    private Color selectedColor;
+    private boolean paintColorSet;
+
+    private Color unselectedColor;
     private Color lineColor = new Color(192, 192, 192);
     private Insets contentInsets = new Insets(10, 10, 10, 10);
     private int lastRollOverTab = -1;
@@ -55,16 +57,21 @@ public class MSTabbedPaneUI extends BasicTabbedPaneUI {
     public static ComponentUI createUI(JComponent c) {
         return new MSTabbedPaneUI();
     }
-
+    
     public MSTabbedPaneUI() {
+        this(ViewUtil.getMedSavantBlueColor());
+    }
+    
+    public void setPaintColorSet(boolean b) {
+        this.paintColorSet = b;
+    }
+    
+    public MSTabbedPaneUI(Color selectedColor) {
 
-        Color selectedColor = ViewUtil.getMedSavantBlueColor();
         Color unselectedColor = Color.white;
-        Color hoverColor = new Color(147, 176, 218);
 
-        selectedColorSet = selectedColor;
-        defaultColorSet = unselectedColor;
-        hoverColorSet = hoverColor;
+        this.selectedColor = selectedColor;
+        this.unselectedColor = unselectedColor;
 
         setContentInsets(0);
     }
@@ -120,7 +127,7 @@ public class MSTabbedPaneUI extends BasicTabbedPaneUI {
     protected void paintTabArea(Graphics g, int tabPlacement, int selectedIndex) {
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setColor(defaultColorSet);
+        g2d.setColor(unselectedColor);
         g2d.fillRect(0, 0, tabPane.getWidth(), tabPane.getHeight());
 
         super.paintTabArea(g, tabPlacement, selectedIndex);
@@ -132,16 +139,22 @@ public class MSTabbedPaneUI extends BasicTabbedPaneUI {
     protected void paintTabBackground(Graphics g, int tabPlacement,
             int tabIndex, int x, int y, int w, int h, boolean isSelected) {
         Graphics2D g2d = (Graphics2D) g;
-        Color colorSet;
+        Color color;
 
         Rectangle rect = rects[tabIndex];
 
+        Color thisColor = selectedColor;
+        
+        if (paintColorSet) {
+            thisColor = ViewUtil.getColor(tabIndex, tabPane.getTabCount());
+        }
+        
         if (isSelected) {
-            colorSet = selectedColorSet;
+            color = thisColor;
         } else if (getRolloverTab() == tabIndex) {
-            colorSet = hoverColorSet;
+            color = new Color(thisColor.getRed(),thisColor.getGreen(),thisColor.getBlue(),150);
         } else {
-            colorSet = defaultColorSet;
+            color = unselectedColor;
         }
 
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -154,7 +167,7 @@ public class MSTabbedPaneUI extends BasicTabbedPaneUI {
             xpos++;
         }
 
-        g2d.setColor(colorSet);
+        g2d.setColor(color);
         g2d.fillRect(xpos, h - underlineHeight, width, underlineHeight);
     }
 

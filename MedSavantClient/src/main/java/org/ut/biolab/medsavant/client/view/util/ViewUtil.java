@@ -65,8 +65,11 @@ import javax.swing.event.ChangeListener;
 import eu.hansolo.custom.SteelCheckBox;
 import eu.hansolo.tools.ColorDef;
 import java.awt.ComponentOrientation;
+import java.awt.Image;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.RescaleOp;
+import java.awt.image.WritableRaster;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
@@ -117,9 +120,9 @@ public final class ViewUtil {
     }
 
     public static JButton createHyperLinkButton(String string) {
-        return createHyperlinkButton(string,Color.black,null);
+        return createHyperlinkButton(string, Color.black, null);
     }
-    
+
     public static JButton createHyperlinkButton(String name, Color color, ActionListener l) {
         final JideButton button = new JideButton(name);
         button.setButtonStyle(JideButton.HYPERLINK_STYLE);
@@ -132,7 +135,7 @@ public final class ViewUtil {
         if (l != null) {
             button.addActionListener(l);
         }
-        
+
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         return button;
@@ -222,7 +225,7 @@ public final class ViewUtil {
     }
 
     public static Border getTinyLineBorder() {
-        return new LineBorder(new Color(235,235,235), 1);
+        return new LineBorder(new Color(235, 235, 235), 1);
     }
 
     public static Border getThickLeftLineBorder() {
@@ -414,6 +417,11 @@ public final class ViewUtil {
     }
 
     public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
+        
+        /*if (1 == 1) {
+            return image;
+        }*/
+
         int w = image.getWidth();
         int h = image.getHeight();
         BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -439,20 +447,56 @@ public final class ViewUtil {
         return output;
     }
 
-    public static BufferedImage darkenImage(BufferedImage image) {
-        int w = image.getWidth();
-        int h = image.getHeight();
-        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    public static BufferedImage darkenImage(BufferedImage img) {
 
-        Graphics2D g2 = output.createGraphics();
+        BufferedImage buffered = new BufferedImage(img.getWidth(null),
+                img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        buffered.getGraphics().drawImage(img, 0, 0, null);
 
-        g2.drawImage(image, 0, 0, null);
-        g2.setColor(new Color(0, 0, 0, 100));
-        g2.fill(new Rectangle(0, 0, w, h));
+        int amount = 50;
 
-        g2.dispose();
+        for (int i = 0; i < buffered.getWidth(); i++) {
+            for (int j = 0; j < buffered.getHeight(); j++) {
+                int rgb = buffered.getRGB(i, j);
+                int alpha = (rgb >> 24) & 0x000000FF;
+                Color c = new Color(rgb);
+                if (alpha != 0) {
+                    int red = (c.getRed() - amount) <= 0 ? 0 : c.getRed() - amount;
+                    int green = (c.getGreen() - amount) <= 0 ? 0
+                            : c.getGreen() - amount;
+                    int blue = (c.getBlue() - amount) <= 0 ? 0 : c.getBlue() - amount;
+                    c = new Color(red, green, blue, alpha);
+                    buffered.setRGB(i, j, c.getRGB());
+                }
+            }
+        }
+        return buffered;
+    }
 
-        return output;
+    public static BufferedImage lightenImage(BufferedImage img) {
+
+        BufferedImage buffered = new BufferedImage(img.getWidth(null),
+                img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        buffered.getGraphics().drawImage(img, 0, 0, null);
+
+        int amount = -50;
+
+        for (int i = 0; i < buffered.getWidth(); i++) {
+            for (int j = 0; j < buffered.getHeight(); j++) {
+                int rgb = buffered.getRGB(i, j);
+                int alpha = (rgb >> 24) & 0x000000FF;
+                Color c = new Color(rgb);
+                if (alpha != 0) {
+                    int red = (c.getRed() - amount) >= 255 ? 255 : c.getRed() - amount;
+                    int green = (c.getGreen() - amount) >= 255 ? 255
+                            : c.getGreen() - amount;
+                    int blue = (c.getBlue() - amount) >= 255 ? 255 : c.getBlue() - amount;
+                    c = new Color(red, green, blue, alpha);
+                    buffered.setRGB(i, j, c.getRGB());
+                }
+            }
+        }
+        return buffered;
     }
 
     public static JButton getIconButton(ImageIcon icon) {
@@ -461,8 +505,10 @@ public final class ViewUtil {
 
     public static JButton getIconButton(ImageIcon icon, int cornerRadius) {
 
-        BufferedImage unselectedImage = makeRoundedCorner(makeBufferedImageFromIcon(icon), cornerRadius);
-        BufferedImage selectedImage = makeRoundedCorner(darkenImage(makeBufferedImageFromIcon(icon)), cornerRadius);
+        BufferedImage original = convertImageToType(icon.getImage(), BufferedImage.TYPE_4BYTE_ABGR);
+
+        BufferedImage unselectedImage = makeRoundedCorner(original, cornerRadius);
+        BufferedImage selectedImage = makeRoundedCorner(darkenImage(original), cornerRadius);
 
         final JButton button = new JButton(new ImageIcon(unselectedImage));
         button.setPressedIcon(new ImageIcon(selectedImage));
@@ -473,6 +519,35 @@ public final class ViewUtil {
 
         //ViewUtil.makeSmall(button);
         return button;
+    }
+
+    private static BufferedImage convertImageToType(Image src, int bufImgType) {
+        ImageIcon srcIcon = new ImageIcon(src);
+        BufferedImage img = new BufferedImage(srcIcon.getIconWidth(), srcIcon.getIconHeight(), bufImgType);
+        Graphics2D g2d = img.createGraphics();
+        g2d.drawImage(src, 0, 0, null);
+        g2d.dispose();
+        return img;
+    }
+
+    public static BufferedImage colorImage(Image im, Color c) {
+
+        BufferedImage image = convertImageToType((BufferedImage) im, BufferedImage.TYPE_4BYTE_ABGR);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+        WritableRaster raster = image.getRaster();
+
+        for (int xx = 0; xx < width; xx++) {
+            for (int yy = 0; yy < height; yy++) {
+                int[] pixels = raster.getPixel(xx, yy, (int[]) null);
+                pixels[0] = c.getRed();
+                pixels[1] = c.getGreen();
+                pixels[2] = c.getBlue();
+                raster.setPixel(xx, yy, pixels);
+            }
+        }
+        return image;
     }
 
     public static JToggleButton getTogglableIconButton(ImageIcon icon) {
@@ -727,7 +802,7 @@ public final class ViewUtil {
     }
 
     private static BufferedImage makeBufferedImageFromIcon(ImageIcon icon) {
-        BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
         bufferedImage.getGraphics().drawImage(icon.getImage(), 0, 0, null);
         return bufferedImage;
     }
@@ -916,21 +991,28 @@ public final class ViewUtil {
         return new Font(ViewUtil.getDefaultFontFamily(), style, size);
     }
 
-    public static JTabbedPane getMSTabedPane() {
+    public static JTabbedPane getMSTabedPane(boolean paintColorSet) {
         JTabbedPane tabs = new JTabbedPane() {
 
             public Color getForegroundAt(int index) {
                 if (getSelectedIndex() == index) {
                     return Color.BLACK;
                 }
-                return new Color(40,40,40);
+                return new Color(40, 40, 40);
             }
         };
 
-        tabs.setUI(new MSTabbedPaneUI());
+        MSTabbedPaneUI ui;
+        tabs.setUI(ui = new MSTabbedPaneUI());
+        ui.setPaintColorSet(paintColorSet);
+
         tabs.setFocusable(false);
-        
+
         return tabs;
+    }
+
+    public static JTabbedPane getMSTabedPane() {
+        return getMSTabedPane(false);
     }
 
     public static Color getDefaultBackgroundColor() {

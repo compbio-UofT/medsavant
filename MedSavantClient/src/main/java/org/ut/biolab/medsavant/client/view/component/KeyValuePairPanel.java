@@ -133,6 +133,16 @@ public class KeyValuePairPanel extends JPanel {
 
         kvpPanel.setLayout(new GridBagLayout());
     }
+    
+    public void setXPadding(int padx) {
+        columnConstraints.get(0).ipadx = padx;
+        columnConstraints.get(1).ipadx = padx;
+    }
+    
+     public void setYPadding(int pady) {
+        columnConstraints.get(0).ipady = pady;
+        columnConstraints.get(1).ipady = pady;
+    }
 
     public static JLabel getKeyLabel(String s) {
         JLabel l = new JLabel(s.toUpperCase());
@@ -233,7 +243,17 @@ public class KeyValuePairPanel extends JPanel {
     public void addKey(String key) {
         addKey(key, false);
     }
+    
+    public void addKeyWithValue(String key, String value) {
+        this.addKey(key);
+        this.setValue(key, value);
+    }
 
+    public void addKeyWithValue(String key, JComponent value) {
+        this.addKey(key);
+        this.setValue(key, value);
+    }
+    
     public void addKey(final String key, boolean showExpand) {
 
         Color rowColor = Color.WHITE;
@@ -245,18 +265,18 @@ public class KeyValuePairPanel extends JPanel {
             keysInMoreSection.add(key);
         }
 
-        JPanel valuePanel = new JPanel();
+        JPanel valuePanel = ViewUtil.getClearPanel();
         valuePanel.setBackground(rowColor);
         ViewUtil.applyHorizontalBoxLayout(valuePanel);
 
         int i = 0;
 
-        JPanel keyPanel = new JPanel();
+        JPanel keyPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(keyPanel);
         keyPanel.setBackground(rowColor);
 
         final JLabel keyLabel = getKeyLabel(key);
-        keyLabel.setBorder(ViewUtil.getMediumBorder());
+        //keyLabel.setBorder(ViewUtil.getMediumBorder());
         keyKeyComponentMap.put(key, keyLabel);
 
         if (showExpand) {
@@ -288,7 +308,7 @@ public class KeyValuePairPanel extends JPanel {
 
         JPanel[] extraComponents = new JPanel[additionalColumns];
         for (int j = 0; j < additionalColumns; j++) {
-            JPanel panel = new JPanel();
+            JPanel panel = ViewUtil.getClearPanel();
             panel.setBackground(rowColor);
             ViewUtil.applyHorizontalBoxLayout(panel);
             panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -345,7 +365,7 @@ public class KeyValuePairPanel extends JPanel {
      */
     public void setValue(String key, String value, boolean splitCommas) {
 
-        if (value.equals(NULL_VALUE)) {
+        if (value == null || value.equals(NULL_VALUE)) {
             setValue(key, getNullLabel());
             return;
         }

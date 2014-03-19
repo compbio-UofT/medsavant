@@ -83,7 +83,7 @@ public class NiceMenu extends JPanel {
         JLabel titleLabel = new JLabel("");
         titleLabel.setText(title);
         titleLabel.setForeground(new Color(64, 64, 64));
-        titleLabel.setFont(FontFactory.getTitleFont());
+        titleLabel.setFont(FontFactory.getMenuTitleFont());
         setCenterComponent(titleLabel);
 
         centerComponent.invalidate();

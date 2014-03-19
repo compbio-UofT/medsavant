@@ -7,7 +7,10 @@ package org.ut.biolab.medsavant.client.view.font;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.font.TextAttribute;
 import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  *
@@ -17,11 +20,18 @@ public class FontFactory {
 
     private static final Font titleFontPrimary = getFont("HelveticaNeue-Medium").deriveFont(20f);
     private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
-    private static final Font sectionHeaderFont = titleFont.deriveFont(24f);//loadFont("/font/ostrich-regular.ttf").deriveFont(36f); //titleFont;
-    private static final Font generalFontPrimary = getFont("HelveticaNeue-Light");
+    private static final Font sectionHeaderFont = titleFont.deriveFont(24f);
+
+    private static Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+
+    {
+        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+    }
+
+    private static final Font generalFontPrimary = getFont("HelveticaNeue-Light").deriveFont(map);
     private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
-    
-    public static Font getTitleFont() {
+
+    public static Font getMenuTitleFont() {
         return titleFont;
     }
 
@@ -55,7 +65,7 @@ public class FontFactory {
                 return i.deriveFont(13f);
             }
         }
-        
+
         return null;
     }
 

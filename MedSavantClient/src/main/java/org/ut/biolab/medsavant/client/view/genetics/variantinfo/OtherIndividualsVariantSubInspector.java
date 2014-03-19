@@ -32,7 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
+import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
 import static org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsSubInspector.MAXIMIUM_VARIANTS_TO_FETCH;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;

@@ -7,13 +7,23 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,30 +49,30 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.util.swing.HyperlinkButton;
 import org.apache.commons.httpclient.NameValuePair;
+import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
 
 /**
  *
  * @author mfiume
  */
-public class Dashboard extends JPanel implements Listener<DashboardSection> {
+public class Dashboard extends StackableJPanelContainer implements Listener<DashboardSection> {
 
     private static Log LOG = LogFactory.getLog(Dashboard.class);
 
     int appIconWidth = 128;
 
     private final ArrayList<DashboardSection> dashboardSections;
-    private final JPanel baseLayer;
+    private final JPanel dashLayer;
     private LaunchableApp previousApp;
     private final JPanel appLayer;
-
-    private final String BASE_LAYER = "0";
-    private final String APP_LAYER = "1";
-    private final CardLayout cardLayout;
 
     private NiceMenu appTopMenu;
     private NiceMenu homeMenu;
     private final LimitedQueue<LaunchableApp> history;
     private final HashSet<LaunchableApp> appHistoryBlackList;
+
+    private Image backgroundImage;
+    private boolean transparentBackground = true;
 
     public Dashboard() {
 
@@ -73,24 +83,52 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         this.setBackground(Color.white);
 
-        cardLayout = new CardLayout();
-
-        this.setLayout(cardLayout);
-
+        //cardLayout = new CardLayout();
+        //this.setLayout(cardLayout);
         dashboardSections = new ArrayList<DashboardSection>();
-
-        baseLayer = new JPanel();
-        baseLayer.setBackground(Color.white);
-
-        this.add(baseLayer, BASE_LAYER);
 
         appLayer = new JPanel();
         appLayer.setBackground(Color.white);
         appLayer.setLayout(new BorderLayout());
 
-        this.add(appLayer, APP_LAYER);
+        this.push(appLayer);
 
-        cardLayout.show(this, BASE_LAYER);
+        dashLayer = new JPanel();/* {
+            public void paintComponent(Graphics g) {
+
+                if (backgroundImage != null) {
+
+                    //System.out.println("Drawing image for dash background");
+                    int width = this.getWidth();
+                    int height = this.getHeight();
+
+                    BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g2 = resizedImage.createGraphics();
+                    g2.drawImage(backgroundImage, 0, 0, width, height, null);
+
+                    //Image scaled = backgroundImage.getScaledInstance(this.getWidth(), this.getHeight(), Image.SCALE_SMOOTH);
+                    g.drawImage(resizedImage, 0, 0, null);
+
+                    g.setColor(new Color(255, 255, 255, 200));
+                    g.fillRect(0, 0, width, height);
+
+                    return;
+                }
+
+                if (transparentBackground) {
+
+                    int width = this.getWidth();
+                    int height = this.getHeight();
+
+                    g.setColor(new Color(255, 255, 255, 240));
+                    g.fillRect(0, 0, width, height);
+
+                }
+            }
+        };*/
+        dashLayer.setBackground(Color.white);
+
+        this.push(dashLayer);
 
         this.addComponentListener(new ComponentListener() {
 
@@ -113,13 +151,18 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
         });
     }
 
+    public void setBackgroundImage(Image im) {
+        this.backgroundImage = im;
+        dashLayer.repaint();
+    }
+
     public void addDashboardSection(DashboardSection s) {
         this.dashboardSections.add(s);
     }
 
     private void relayout() {
 
-        baseLayer.removeAll();
+        dashLayer.removeAll();
 
         JPanel middlePane = ViewUtil.getClearPanel();
 
@@ -129,7 +172,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         int widthOfContainer = this.getParent().getSize().width;
 
-        int centralWidth = Math.min((int)Math.round(widthOfContainer*0.75), 1200); // TODO: centralize width for other apps to use
+        int centralWidth = Math.min((int) Math.round(widthOfContainer * 0.75), 1200); // TODO: centralize width for other apps to use
 
         int numIconsPerRow = (centralWidth + gapHorizontal) / (appIconWidth + gapHorizontal);
 
@@ -138,9 +181,9 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
 
-        baseLayer.setOpaque(true);
+        dashLayer.setOpaque(true);
 
-        baseLayer.setLayout(new BorderLayout());
+        dashLayer.setLayout(new BorderLayout());
 
         for (DashboardSection s : this.dashboardSections) {
 
@@ -179,11 +222,11 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         JPanel bottomDisclaimer = ViewUtil.getClearPanel();
         bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
-        
+
         JLabel copy = new JLabel("Developed at University of Toronto");
         copy.setForeground(ViewUtil.getSubtleTitleColor());
         bottomDisclaimer.add(copy);
-        
+
         JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -194,8 +237,8 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 }
             }
         });
-        bottomDisclaimer.add(feedback,"split, right");
-        
+        bottomDisclaimer.add(feedback, "split, right");
+
         JComponent userguide = ViewUtil.createHyperlinkButton("User Guide", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -206,18 +249,60 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 }
             }
         });
-        bottomDisclaimer.add(userguide,"right");
-        
+        bottomDisclaimer.add(userguide, "right");
+
         homeMenu = new NiceMenu();
-        
+
         homeMenu.setTitle("MedSavant");
         homeMenu.addRightComponent(getLogoutButton());
-        
-        baseLayer.add(homeMenu, BorderLayout.NORTH);
 
-        baseLayer.add(p, BorderLayout.CENTER);
-        baseLayer.add(bottomDisclaimer,BorderLayout.SOUTH);
-        baseLayer.updateUI();
+        dashLayer.add(homeMenu, BorderLayout.NORTH);
+
+        dashLayer.add(p, BorderLayout.CENTER);
+        dashLayer.add(bottomDisclaimer, BorderLayout.SOUTH);
+        dashLayer.updateUI();
+    }
+
+    public BufferedImage createBlurredImage(JPanel panel) {
+        System.out.println("Blurring image");
+
+        int w = panel.getWidth();
+        int h = panel.getHeight();
+        BufferedImage sourceImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = sourceImage.createGraphics();
+        panel.paint(g);
+
+        return createBlurredImage(sourceImage);
+    }
+
+    public BufferedImage createBlurredImage(BufferedImage sourceImage) {
+
+        // Create a buffered image from the source image with a format that's compatible with the screen
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+        GraphicsDevice graphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
+
+        GraphicsConfiguration graphicsConfiguration = graphicsDevice.getDefaultConfiguration();
+
+        // If the source image has no alpha info use Transparency.OPAQUE instead
+        BufferedImage image = graphicsConfiguration.createCompatibleImage(sourceImage.getWidth(null), sourceImage.getHeight(null), Transparency.BITMASK);
+
+        // Copy image to buffered image
+        Graphics graphics = image.createGraphics();
+
+        // Paint the image onto the buffered image
+        graphics.drawImage(sourceImage, 0, 0, null);
+
+        graphics.dispose();
+
+        float[] matrix = {
+            1 / 16f, 1 / 8f, 1 / 16f,
+            1 / 8f, 1 / 4f, 1 / 8f,
+            1 / 16f, 1 / 8f, 1 / 16f,};
+
+        BufferedImageOp op = new ConvolveOp(new Kernel(3, 3, matrix));
+
+        return op.filter(image, null);
     }
 
     public void goHome() {
@@ -226,7 +311,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             previousApp.viewWillUnload();
         }
 
-        cardLayout.show(this, BASE_LAYER);
+        this.dashLayer.setVisible(true);
 
         if (previousApp != null) {
             previousApp.viewDidUnload();
@@ -236,7 +321,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }
 
     public void launchApp(LaunchableApp app) {
-        
+
         if (history.contains(app)) {
             history.remove(app);
         }
@@ -289,13 +374,14 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
 
         appLayer.add(appTopMenu, BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
-        cardLayout.show(this, APP_LAYER);
+
+        this.dashLayer.setVisible(false);
 
         if (previousApp != null) {
             previousApp.viewDidUnload();
         }
         app.viewDidLoad();
-        AnalyticsAgent.log(new NameValuePair("app-launched",app.getName()));
+        AnalyticsAgent.log(new NameValuePair("app-launched", app.getName()));
         previousApp = app;
 
         appLayer.updateUI();
@@ -346,18 +432,20 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     }
 
     private static ImageIcon resizeIconTo(ImageIcon icon, int itemSize) {
-        Image img = icon.getImage();
-        Image newimg = img.getScaledInstance(itemSize, itemSize, java.awt.Image.SCALE_SMOOTH);
-        return new ImageIcon(newimg);
+        BufferedImage resizedImage = new BufferedImage(itemSize, itemSize, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(icon.getImage(), 0, 0, itemSize, itemSize, null);
+        g.dispose();
+        return new ImageIcon(resizedImage);
     }
 
     public List<LaunchableApp> getLaunchHistory() {
-        
+
         List<LaunchableApp> list = new ArrayList<LaunchableApp>(history.size());
         for (LaunchableApp e : history) {
             list.add(0, e);
         }
-        
+
         return list;
     }
 
@@ -373,23 +461,20 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
     public void handleEvent(DashboardSection event) {
         relayout();
     }
-    
+
     /*private JButton getHomeButton() {
-        JButton b = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD),3);
-        b.addActionListener(new ActionListener() {
+     JButton b = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD),3);
+     b.addActionListener(new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                goHome();
-            }
+     @Override
+     public void actionPerformed(ActionEvent e) {
+     goHome();
+     }
             
-        });
-        return b;
-    }*/
-
-    
+     });
+     return b;
+     }*/
     private JComponent getHomeButton() {
-       
 
         final ActionListener goHomeActionListener = new ActionListener() {
 
@@ -398,7 +483,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 goHome();
             }
         };
-        
+
         JButton goHome = ViewUtil.getSoftButton("Home");
         goHome.addActionListener(new ActionListener() {
 
@@ -406,47 +491,47 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             public void actionPerformed(ActionEvent e) {
                 goHomeActionListener.actionPerformed(null);
             }
-            
+
         });
-        
+
         return goHome;
-        
+
         /*
          JLabel homeLabel = ViewUtil.getEmphasizedLabel("HOME", ViewUtil.getMedSavantBlueColor());
         
-        homeLabel.addMouseListener(new MouseListener() {
+         homeLabel.addMouseListener(new MouseListener() {
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                goHomeActionListener.actionPerformed(null);
-            }
+         @Override
+         public void mouseClicked(MouseEvent e) {
+         goHomeActionListener.actionPerformed(null);
+         }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
+         @Override
+         public void mousePressed(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+         @Override
+         public void mouseReleased(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
+         @Override
+         public void mouseEntered(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
+         @Override
+         public void mouseExited(MouseEvent e) {
+         }
 
-        });
+         });
         
-        homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        return homeLabel;
-        */
+         return homeLabel;
+         */
     }
 
     private JComponent getLogoutButton() {
-        
+
         final ActionListener signOutActionListener = new ActionListener() {
 
             @Override
@@ -454,7 +539,7 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
                 MedSavantFrame.getInstance().requestLogoutAndRestart();
             }
         };
-       
+
         JButton signOut = ViewUtil.getSoftButton("Sign Out");
         signOut.addActionListener(new ActionListener() {
 
@@ -462,43 +547,43 @@ public class Dashboard extends JPanel implements Listener<DashboardSection> {
             public void actionPerformed(ActionEvent e) {
                 signOutActionListener.actionPerformed(null);
             }
-            
+
         });
-        
+
         return signOut;
-        
+
         /*
-        final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
+         final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
         
-        label.addMouseListener(new MouseListener() {
+         label.addMouseListener(new MouseListener() {
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                goHomeActionListener.actionPerformed(null);
-            }
+         @Override
+         public void mouseClicked(MouseEvent e) {
+         goHomeActionListener.actionPerformed(null);
+         }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
+         @Override
+         public void mousePressed(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+         @Override
+         public void mouseReleased(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
+         @Override
+         public void mouseEntered(MouseEvent e) {
+         }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
+         @Override
+         public void mouseExited(MouseEvent e) {
+         }
 
-        });
+         });
 
-        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+         label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         
-        return label;
-                */
+         return label;
+         */
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {
