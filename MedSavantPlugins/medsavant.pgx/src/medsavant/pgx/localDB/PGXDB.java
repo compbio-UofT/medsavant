@@ -12,45 +12,41 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 
 
 /**
- * Interfaces with the Incidentalome DB.
+ * Local pharmacogenomics DB.
  * 
  * @author rammar
  */
 public class PGXDB {
 	
+	private static final String db_path_prefix= "mem:pharmacogenomicsdb";
+	private static final String DB_URL= "jdbc:hsqldb:" + db_path_prefix;
+	private static final String GENE_MARKER_LIST_FILE_PATH= "/medsavant/pgx/localDBFiles/gene_marker_list.txt";
+	private static final String HAPLOTYPE_MARKERS_FILE_PATH= "/medsavant/pgx/localDBFiles/haplotype_markers.txt";
+	private static final String GENE_MARKER_LIST_TABLE_NAME= "gene_marker_list";
+	private static final String HAPLOTYPE_MARKERS_TABLE_NAME= "haplotype_markers";
+	
 	private static Connection conn;
-	private static String DB_URL;
-	private static String DB_USER;
-	private static String DB_PASSWORD;
-	private static Properties properties;
 	
 			
 	/**
 	 * Creates all tables to the DB and populates with all data from packaged
 	 * text files.
-	 * @param	url	The DB URL
-	 * @param	user	Username for login
-	 * @param	passw	Password for login
 	 * @throws SQLException 
 	 */
-	public static void populateDB(String url, String user, String passw, Properties prop) throws SQLException {
-		DB_URL= url;
-		DB_USER= user;
-		DB_PASSWORD= passw;
-		properties= prop;
-		
+	public static void initialize() throws SQLException {		
 		conn= connectionToServer();	
 		createSchema(conn);
 		loadTables(conn);
 	}
 
 	
-	/** Close connection to DB. */
+	/** 
+	 * Close connection to DB.
+	 */
 	public static void closeConnectionToDB() throws SQLException {
 		conn.close();
 	}
@@ -59,15 +55,19 @@ public class PGXDB {
 	/**
 	 * Create JDBC-based connection to HSQL server.
 	 * By default, connection is auto-committing.
+	 * @return the Connection to the local HSQLDB JDBC driver
 	 */
-	private static Connection connectionToServer () throws SQLException {
+	private static Connection connectionToServer() throws SQLException {
+		/* Snippet of code from HyperSQL documentation. Loads the HSQLDB JDBC driver. */
 		try {
 			Class.forName("org.hsqldb.jdbcDriver");
 		} catch (Exception e) {
-			System.out.println("ERROR: failed to load HSQLDB JDBC driver.");
+			System.err.println("[" + PGXDB.class.getSimpleName() + 
+				"]: failed to load HSQLDB JDBC driver.");
 			e.printStackTrace();
 		}
-		return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+		
+		return DriverManager.getConnection(DB_URL);
 	}
 	
 	
@@ -81,130 +81,34 @@ public class PGXDB {
 			String sql;
 
 			/* Execute SQL as a batch, rather than individually. This is more efficient
-			 * when processing many 
+			 * when processing many.
 			 */
-
-			/* // Simple test table
-			sql=	"CREATE TABLE dbtest ( " +
-					"	intField1 INT, " +
-					"	intField2 INT, " +
-					")";
-			s.addBatch(sql);
-			*/
-
 			
 			/* Create all the Incidentalome tables. These will be populated by
 			 * CSV Loader. */
 			
-			sql=	"CREATE TABLE disease_classification ( " +
-					"  inheritance varchar(45) NOT NULL,  " +
-					"  zygosity varchar(45) NOT NULL,  " +
-					"  gender varchar(45) DEFAULT 'both' NOT NULL,  " +
-					"  classification varchar(45) NOT NULL,  " +
-					"  PRIMARY KEY (inheritance,zygosity,gender)  " +
+			sql=	"CREATE TABLE " + GENE_MARKER_LIST_TABLE_NAME + " ( " +
+					"  Gene varchar(20) NOT NULL, " +
+					"  Marker_list(50000) NOT NULL, " + // could be a very long field
+					"  PRIMARY KEY (Gene)  " +
 					")";
 			s.addBatch(sql);
 
 			
-			sql=	"CREATE TABLE CGD_synonym ( " +
-					"	inheritance varchar(200) NOT NULL, " + 
-					"	synonym varchar(10) DEFAULT NULL, " +
-					"	comments varchar(500) DEFAULT NULL, " + 
-					"	PRIMARY KEY (inheritance) " +
+			sql=	"CREATE TABLE " + HAPLOTYPE_MARKERS_TABLE_NAME + " ( " +
+					"	Gene varchar(20) NOT NULL, " + 
+					"	Haplotype_ID varchar(1000) DEFAULT NULL, " +
+					"	Haplotype_Symbol varchar(100) DEFAULT NULL, " + 
+					"	Marker_info varchar(50000) DEFAULT NULL, " + // could be a very long field
+					"	PRIMARY KEY (Gene, Haplotype_Symbol) " +
 					")";
 			s.addBatch(sql);
-
-			sql=	"CREATE TABLE CGD ( " +
-					"	Gene varchar(20) NOT NULL, " +
-					"	Entrez_Gene_Id varchar(20) NOT NULL, " +
-					"	Condition varchar(500) NOT NULL, " +
-					"	Inheritance varchar(500) NOT NULL, " +
-					"	Age_Group varchar(500) NOT NULL, " +
-					"	Allelic_Conditions varchar(1000) NOT NULL, " +
-					"	Manifestation_Categories varchar(1000) NOT NULL, " +
-					"	Intervention_Categories varchar(1000) NOT NULL, " +
-					"	Comments varchar(1000) NOT NULL, " +
-					"	Intervention_Rationale varchar(10000) NOT NULL, " +
-					"	Refs varchar(1000) NOT NULL, " +
-					"	PRIMARY KEY (Gene) " +
-					")";
-			s.addBatch(sql);
-		
-			sql=	"CREATE TABLE ACMG ( " +
-					"	gene varchar(20) NOT NULL, " +
-					"	PRIMARY KEY (Gene) " +
-					")";
-			s.addBatch(sql);
-			
-/*
-			// OLD TABLES
-			sql=	"CREATE TABLE incidentalome_annotated ( " +
-					"  Gene varchar(100) NOT NULL, " +
-					"  Disease varchar(1000) NOT NULL, " +
-					"  Inheritance_JS varchar(5) NOT NULL, " +
-					"  MedicalAction varchar(100) NOT NULL, " +
-					"  ModifiedInh_JS varchar(1) NOT NULL, " +
-					"  Source varchar(100) NOT NULL, " +
-					"  Inheritance_source varchar(5) NOT NULL, " +
-					"  Gene_ReviewedJS varchar(100) NOT NULL, " +
-					"  Comments_JS varchar(1000) NOT NULL " +
-					")";
-			s.addBatch(sql);
-
-			sql=	"CREATE TABLE hgmd_pro_allmut ( " +
-					"  disease varchar(125) DEFAULT NULL, " +
-					"  gene varchar(10) DEFAULT NULL, " +
-					"  chrom varchar(25) DEFAULT NULL, " +
-					"  genename varchar(200) DEFAULT NULL, " +
-					"  gdbid varchar(8) DEFAULT NULL, " +
-					"  omimid varchar(8) DEFAULT NULL, " +
-					"  amino varchar(8) DEFAULT NULL, " +
-					"  deletion varchar(65) DEFAULT NULL, " +
-					"  insertion varchar(65) DEFAULT NULL, " +
-					"  codon integer DEFAULT NULL, " +
-					"  codonAff integer DEFAULT NULL, " +
-					"  descr varchar(125) DEFAULT NULL, " +
-					"  hgvs varchar(60) DEFAULT NULL, " +
-					"  hgvsAll varchar(120) DEFAULT NULL, " +
-					"  dbsnp varchar(12) DEFAULT NULL, " +
-					"  chromosome varchar(2) DEFAULT NULL, " +
-					"  startCoord integer DEFAULT NULL, " +
-					"  endCoord integer DEFAULT NULL, " +
-					"  tag varchar(10) DEFAULT NULL, " +
-					"  author varchar(25) DEFAULT NULL, " +
-					"  fullname varchar(50) DEFAULT NULL, " +
-					"  allname varchar(300) DEFAULT NULL, " + // increased to 300 from 200
-					"  vol varchar(6) DEFAULT NULL, " +
-					"  page varchar(50) DEFAULT NULL, " + // some entries were larger than 10 characters
-					"  year_field char(4) DEFAULT NULL, " + // "year" was an invalid column name
-					"  pmid varchar(8) DEFAULT NULL, " +
-					"  reftag char(3) DEFAULT NULL, " +
-					"  comments varchar(300) DEFAULT NULL, " + // increased to 300 from 125
-					"  acc_num varchar(10) DEFAULT '' NOT NULL, " +
-					"  new_date date DEFAULT NULL, " +
-					"  base char(1) DEFAULT NULL " +
-					")";
-			s.addBatch(sql);
-
-			sql=	"CREATE TABLE clinvar_20130808 ( " +
-					"  chromosome varchar(2) NOT NULL, " +
-					"  position int NOT NULL, " +
-					"  id varchar(30) NOT NULL, " +
-					"  ref varchar(1000) default NULL, " +
-					"  alt varchar(1000) default NULL, " +
-					"  qual varchar(45) default NULL, " +
-					"  filter varchar(45) default NULL, " +
-					"  INFO varchar(10000) default NULL, " +
-					"  PRIMARY KEY  (chromosome,position,id) " +
-					")";
-			s.addBatch(sql);
-*/
 			
 			
 			s.executeBatch();
 			s.close();
 		} catch (SQLException e) {
-			System.err.println("[IncidentalDB]: Error creating tables " + e.toString());
+			System.err.println("[" + PGXDB.class.getSimpleName() + "]: Error creating tables " + e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -214,69 +118,33 @@ public class PGXDB {
 	 * Load tables into the DB.
 	 * @param c The HSQL DB connection
 	 */
-	private static void loadTables(Connection c) throws SQLException {
-		
-/* 
-		// load test table dbtest
-		Statement s= c.createStatement();
-		int x= 1;
-		int y= 10;
-		
-		for (int i= 0; i != 10; i++) {
-			s.execute("INSERT INTO dbtest VALUES ("+ x++ +","+ y++ + ")");
-		}
-		s.close();
-*/
-		
+	private static void loadTables(Connection c) throws SQLException {		
 		/* Load the delimited tables from text files. */
 		CSVLoader loader;
-		try {
-
-			String filepath;			
+		try {			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			loader.loadCSV(PGXDB.class.getResourceAsStream(GENE_MARKER_LIST_FILE_PATH),
+				GENE_MARKER_LIST_TABLE_NAME, false);
 			
 			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
 			loader.setSeprator('\t');
-			filepath= "/db_files/disease_classification.txt";
-			loader.loadCSV(PGXDB.class.getResourceAsStream(filepath), "disease_classification", false);
-			
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/CGD_synonyms.txt";
-			loader.loadCSV(PGXDB.class.getResourceAsStream(filepath), "CGD_synonym", false);
-			
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			loader.loadCSV(new FileInputStream(DirectorySettings.getMedSavantDirectory().getPath() +
-				File.separator + "cache" + File.separator + properties.getProperty("CGD_DB_filename")),
-				"CGD", false);
-			
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/ACMG_incidental_genes_list.txt";
-			loader.loadCSV(PGXDB.class.getResourceAsStream(filepath), "ACMG", false);
-			
-/* 
-			//OLD TABLES
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/incidentalome_annotated.txt";
-			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "incidentalome_annotated", false);
-
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/clinvar_20130808.txt";
-			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "clinvar_20130808", false);
-			
-			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
-			loader.setSeprator('\t');
-			filepath= "/db_files/hgmd_pro_allmut.txt";
-			loader.loadCSV(IncidentalDB.class.getResourceAsStream(filepath), "hgmd_pro_allmut", false);
-*/
+			loader.loadCSV(PGXDB.class.getResourceAsStream(HAPLOTYPE_MARKERS_FILE_PATH),
+				HAPLOTYPE_MARKERS_TABLE_NAME, false);
 			
 		} catch (Exception e) {
-			System.err.println("[IncidentalDB]: Error loading tables " + e.toString());
+			System.err.println("[" + PGXDB.class.getSimpleName() + "]: Error loading tables " + e.toString());
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Return this database's Connection.
+	 * @return this database's Connection; null if connection has not been initialized.
+	 */
+	public static Connection getConnection() {
+		return conn;
 	}
 	
 	
@@ -309,7 +177,7 @@ public class PGXDB {
 		
 		ResultSet rs= s.getResultSet();
 		while (rs.next()) {
-			System.out.println("[IncidentalDB]: " + getRowAsString(rs));
+			System.out.println("[" + PGXDB.class.getSimpleName() + "]: " + getRowAsString(rs));
 		}
 		
 		s.close();
