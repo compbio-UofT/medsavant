@@ -3,12 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package org.ut.biolab.medsavant.component.field.editable;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
@@ -16,22 +13,21 @@ import javax.swing.JTextField;
  *
  * @author mfiume
  */
-public class StringEditableField extends OnClickEditableField<String> {
-
+public class IntegerEditableField extends OnClickEditableField<Integer> {
     private final JTextField textField;
 
-    public StringEditableField() {
+    public IntegerEditableField() {
         textField = new JTextField();
         textField.setColumns(15);
-
+        
         addCancelFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
         this.setRejectButtonVisible(false);
     }
-
+    
     @Override
-    public void updateEditorRepresentationForValue(String value) {
-        textField.setText(value);
+    public void updateEditorRepresentationForValue(Integer value) {
+        textField.setText(value + "");
     }
 
     @Override
@@ -40,12 +36,16 @@ public class StringEditableField extends OnClickEditableField<String> {
     }
 
     @Override
-    public String getValueFromEditor() {
-        return textField.getText();
+    public Integer getValueFromEditor() {
+        try {
+            return Integer.parseInt(textField.getText());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override
     public void didToggleEditMode(boolean editMode) {
     }
-
+    
 }

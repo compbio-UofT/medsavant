@@ -237,29 +237,29 @@ public class PatientView extends JPanel implements FieldEditedListener {
         StringEditableField individualIDField = new StringEditableField();
         individualIDField.setTag(INDIVIDUAL_ID);
         individualIDField.setValue(patient.getHospitalID());
-        individualIDField.addFieldChangedListener(this);
+        individualIDField.addFieldEditedListener(this);
 
         EnumEditableField sexField = new EnumEditableField(new String[]{"Unknown", "Male", "Female"});
         sexField.setValue("Unknown");
         sexField.setTag(SEX);
-        sexField.addFieldChangedListener(this);
+        sexField.addFieldEditedListener(this);
 
         EnumEditableField affectedField = new EnumEditableField(new String[]{"Unknown", "Yes", "No"});
         affectedField.setValue("Unknown");
         affectedField.setTag(AFFECTED);
-        affectedField.addFieldChangedListener(this);
+        affectedField.addFieldEditedListener(this);
 
         EditablePatientField motherField = new EditablePatientField();
         motherField.setTag(MOTHER_ID);
-        motherField.addFieldChangedListener(this);
+        motherField.addFieldEditedListener(this);
 
         EditablePatientField fatherField = new EditablePatientField();
         fatherField.setTag(FATHER_ID);
-        fatherField.addFieldChangedListener(this);
+        fatherField.addFieldEditedListener(this);
 
         StringEditableField familyIDField = new StringEditableField();
         familyIDField.setTag(FAMILY_ID);
-        familyIDField.addFieldChangedListener(this);
+        familyIDField.addFieldEditedListener(this);
 
         profileKVP.setValue(PatientView.INDIVIDUAL_ID, individualIDField);
         profileKVP.setValue(PatientView.SEX, sexField);
@@ -271,12 +271,12 @@ public class PatientView extends JPanel implements FieldEditedListener {
         StringEditableField dnaIDField = new StringEditableField();
         dnaIDField.setTag(DNA_ID);
         dnaIDField.setValue(patient.getDnaID());
-        dnaIDField.addFieldChangedListener(this);
+        dnaIDField.addFieldEditedListener(this);
         
         StringEditableField bamURLField = new StringEditableField();
         bamURLField.setTag(BAM_URL);
         bamURLField.setValue(patient.getBamURL());
-        bamURLField.addFieldChangedListener(this);
+        bamURLField.addFieldEditedListener(this);
         
         geneticsKVP.setValue(PatientView.DNA_ID, dnaIDField);
         geneticsKVP.setValue(PatientView.BAM_URL, bamURLField);
@@ -284,7 +284,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
         StringEditableField phenotypeField = new StringEditableField();
         phenotypeField.setTag(PHENOTYPE);
         phenotypeField.setValue(patient.getPhenotypes());
-        phenotypeField.addFieldChangedListener(this);
+        phenotypeField.addFieldEditedListener(this);
         
         phenotypeKVP.setValue(PatientView.PHENOTYPE, phenotypeField);
 

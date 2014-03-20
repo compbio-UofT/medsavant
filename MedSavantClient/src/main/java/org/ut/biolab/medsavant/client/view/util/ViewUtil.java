@@ -624,7 +624,8 @@ public final class ViewUtil {
     }
 
     public static Color getAlternateRowColor() {
-        return new Color(242, 245, 249);
+        return new Color(245,245,245);
+        //return new Color(242, 245, 249);
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext) {

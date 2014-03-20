@@ -40,7 +40,7 @@ public abstract class EditableField<T> extends JPanel {
     private boolean autonomousEditingEnabled = true;
     
     // is this component in edit mode?
-    private boolean editing = false;
+    boolean editing = false;
     
     // identifier 
     private String tag;
@@ -67,6 +67,7 @@ public abstract class EditableField<T> extends JPanel {
     public void setEditing(boolean isEditing) {
         this.editing = isEditing;
         updateUIForEditingState(isEditing);
+        updateUI();
     }
 
     /**
@@ -210,7 +211,7 @@ public abstract class EditableField<T> extends JPanel {
      * Add a listener that is notified on changes to the field's value.
      * @param l A listener.
      */
-    public void addFieldChangedListener(FieldEditedListener l) {
+    public void addFieldEditedListener(FieldEditedListener l) {
         this.changeListeners.add(l);
     }
     
@@ -218,7 +219,7 @@ public abstract class EditableField<T> extends JPanel {
      * Remove a listener that is notified on changes to the field's value.
      * @param l A listener.
      */
-    public void removeFieldChangedListener(FieldEditedListener l) {
+    public void removeFieldEditedListener(FieldEditedListener l) {
         this.changeListeners.remove(l);
     }
 
@@ -252,7 +253,7 @@ public abstract class EditableField<T> extends JPanel {
      * @return A reject button.
      */
     protected static JButton generateRejectButton(final EditableField field) {
-        JButton b = createSegmentButton("segmentedRoundRect","first");//getIconButton("medsavant/field/editable/icon/cancel.png","OK");
+        JButton b = createSegmentButton("segmentedRoundRect","only");//getIconButton("medsavant/field/editable/icon/cancel.png","OK");
         b.setText("Cancel");
         b.addActionListener(new ActionListener() {
 
@@ -272,7 +273,7 @@ public abstract class EditableField<T> extends JPanel {
      * @return An accept button.
      */
     protected static JButton generateAcceptButton(final EditableField field) {
-        JButton b = createSegmentButton("segmentedRoundRect","last");
+        JButton b = createSegmentButton("segmentedRoundRect","only");
         b.setText("OK");
         //getIconButton("medsavant/field/editable/icon/ok.png","OK");
         b.addActionListener(new ActionListener() {
@@ -296,6 +297,7 @@ public abstract class EditableField<T> extends JPanel {
      */
     public static JButton createSegmentButton(String style, String position) {
         JButton button = new JButton();
+        button.setFocusable(false);
         button.putClientProperty("JButton.buttonType", style);
         button.putClientProperty("JButton.segmentPosition", position);
         return button;

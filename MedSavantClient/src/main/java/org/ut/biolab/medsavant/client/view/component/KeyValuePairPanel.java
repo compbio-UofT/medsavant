@@ -28,8 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import javax.swing.border.Border;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
@@ -42,7 +45,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class KeyValuePairPanel extends JPanel {
 
     public static final String NULL_VALUE = "<NONE>";
-    public static final Font KEY_FONT = new Font("Arial", Font.BOLD, 10);
+    public static final Font KEY_FONT = FontFactory.getGeneralFont().deriveFont(11f).deriveFont(Font.BOLD);
     private Map<String, JLabel> keyKeyComponentMap;
     private Map<String, JPanel> keyValueComponentMap;
     private Map<String, JPanel> keyDetailComponentMap;
@@ -131,7 +134,9 @@ public class KeyValuePairPanel extends JPanel {
             columnConstraints.add(c);
         }
 
-        kvpPanel.setLayout(new GridBagLayout());
+        
+        GridBagLayout gbl = new GridBagLayout();
+        kvpPanel.setLayout(gbl);
     }
     
     public void setXPadding(int padx) {
@@ -145,7 +150,7 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public static JLabel getKeyLabel(String s) {
-        JLabel l = new JLabel(s.toUpperCase());
+        JLabel l = new JLabel(s);
         l.setFont(KEY_FONT);
         return l;
     }
@@ -264,18 +269,29 @@ public class KeyValuePairPanel extends JPanel {
         if (newRowsGoIntoMoreSection) {
             keysInMoreSection.add(key);
         }
+        
+        rowColor = Color.white;
 
+        String layoutConstraints = "insets 3 3 3 3, filly";
+        
         JPanel valuePanel = ViewUtil.getClearPanel();
+        valuePanel.setLayout(new MigLayout(layoutConstraints));
         valuePanel.setBackground(rowColor);
-        ViewUtil.applyHorizontalBoxLayout(valuePanel);
 
         int i = 0;
 
         JPanel keyPanel = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(keyPanel);
+        keyPanel.setLayout(new MigLayout(layoutConstraints + ", alignx right, hmin 30"));
+        
         keyPanel.setBackground(rowColor);
 
         final JLabel keyLabel = getKeyLabel(key);
+        
+        Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(245,245,245));
+        
+        keyPanel.setBorder(border);
+        valuePanel.setBorder(border);
+          
         //keyLabel.setBorder(ViewUtil.getMediumBorder());
         keyKeyComponentMap.put(key, keyLabel);
 
@@ -299,7 +315,6 @@ public class KeyValuePairPanel extends JPanel {
         }
 
         keyPanel.add(keyLabel);
-        keyPanel.add(Box.createHorizontalGlue());
 
         keyLabel.setVisible(keysVisible);
 
@@ -311,7 +326,8 @@ public class KeyValuePairPanel extends JPanel {
             JPanel panel = ViewUtil.getClearPanel();
             panel.setBackground(rowColor);
             ViewUtil.applyHorizontalBoxLayout(panel);
-            panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            panel.setBorder(border);
+            //panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             extraComponents[j] = panel;//ViewUtil.getClearPanel();
             kvpPanel.add(extraComponents[j], incrementConstraintRow(i++));
         }
@@ -320,8 +336,9 @@ public class KeyValuePairPanel extends JPanel {
         keyDetailConstraints.gridy++;
         keyDetailConstraints.gridy++;
 
-        JPanel detailPanel = new JPanel();
-        detailPanel.setBorder(ViewUtil.getTinyLineBorder());
+        JPanel detailPanel = ViewUtil.getClearPanel();
+        detailPanel.setBackground(rowColor);
+        //detailPanel.setBorder(ViewUtil.getTinyLineBorder());
         detailPanel.setVisible(false);
         keyDetailComponentMap.put(key, detailPanel);
 

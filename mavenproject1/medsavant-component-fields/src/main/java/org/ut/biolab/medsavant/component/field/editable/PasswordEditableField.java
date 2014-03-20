@@ -5,23 +5,22 @@
  */
 package org.ut.biolab.medsavant.component.field.editable;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JComponent;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 /**
  *
  * @author mfiume
  */
-public class StringEditableField extends OnClickEditableField<String> {
+public class PasswordEditableField extends OnClickEditableField<String> {
 
-    private final JTextField textField;
+    private final JPasswordField textField;
 
-    public StringEditableField() {
-        textField = new JTextField();
+    public PasswordEditableField() {
+        super(true);
+        
+        textField = new JPasswordField();
         textField.setColumns(15);
 
         addCancelFocusListener(textField);
@@ -41,11 +40,13 @@ public class StringEditableField extends OnClickEditableField<String> {
 
     @Override
     public String getValueFromEditor() {
-        return textField.getText();
+        return new String(textField.getPassword());
     }
-
+    
     @Override
     public void didToggleEditMode(boolean editMode) {
     }
+
+    
 
 }
