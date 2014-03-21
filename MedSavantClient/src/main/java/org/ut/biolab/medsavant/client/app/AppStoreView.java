@@ -90,7 +90,7 @@ class AppStoreView extends JDialog {
 
         tabs.setUI(new MSTabbedPaneUI());
         tabs.setFocusable(false);
-        tabs.setBackground(ViewUtil.getDefaultBackgroundColor());
+        tabs.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         AppStoreInstalledPage installedAppsPage = new AppStoreInstalledPage(installer);
         AppStoreLandingPage landingPage = new AppStoreLandingPage(fetcher, installer, tabs, installedAppsPage);

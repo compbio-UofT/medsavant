@@ -256,7 +256,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         c.addKeyListener(new KeyListener() {
 
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+                if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
                     if (OnClickEditableField.this.setValueFromEditor()) {
                         OnClickEditableField.this.setEditing(false);
                     }

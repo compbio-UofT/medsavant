@@ -149,9 +149,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         content.add(patientView,BorderLayout.CENTER);
         
         menu = ViewUtil.getClearPanel();
-        menu.add(addIndividualsButton());
+        //menu.add(addIndividualsButton());
 
-        addBottomComponent(menu);
+        //addBottomComponent(menu);
 
         blockPanel = new BlockingPanel("No individual selected", content);
         viewContainer.add(blockPanel, BorderLayout.CENTER);
@@ -277,10 +277,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     }
     
     public synchronized void setPatient(Patient patient) {
-
-        
         patientView.setPatient(patient);
-
     }
 
     /*
@@ -454,21 +451,29 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         @Override
         protected void showSuccess(Object[] result) {
 
+            Integer patientIDInteger = (Integer) result[BasicPatientColumns.INDEX_OF_PATIENT_ID];
+            
             Patient patient = new Patient(result[BasicPatientColumns.INDEX_OF_HOSPITAL_ID].toString());
-            patient.setFamilyID(toStringProtexted(result[BasicPatientColumns.INDEX_OF_FAMILY_ID]));
-            patient.setMotherHospitalID(toStringProtexted(result[BasicPatientColumns.INDEX_OF_IDBIOMOM]));
-            patient.setFatherHospitalID(toStringProtexted(result[BasicPatientColumns.INDEX_OF_IDBIODAD]));
-            patient.setSex(toStringProtexted(result[BasicPatientColumns.INDEX_OF_GENDER]));
-            patient.setBamURL(toStringProtexted(result[BasicPatientColumns.INDEX_OF_BAM_URL]));
-            patient.setDnaID(toStringProtexted(result[BasicPatientColumns.INDEX_OF_DNA_IDS]));
-            patient.setPhenotypes(toStringProtexted(result[BasicPatientColumns.INDEX_OF_PHENOTYPES]));
+            patient.setID(patientIDInteger);
+            patient.setFamilyID(toStringProtected(result[BasicPatientColumns.INDEX_OF_FAMILY_ID]));
+            patient.setMotherHospitalID(toStringProtected(result[BasicPatientColumns.INDEX_OF_IDBIOMOM]));
+            patient.setFatherHospitalID(toStringProtected(result[BasicPatientColumns.INDEX_OF_IDBIODAD]));
+            Integer genderInteger = (Integer) result[BasicPatientColumns.INDEX_OF_GENDER];
+            if (genderInteger != null) {
+                patient.setSex(toStringProtected(ClientMiscUtils.genderToString((Integer)genderInteger)));
+            } else{
+                patient.setSex(ClientMiscUtils.GENDER_UNKNOWN);
+            }
+            patient.setBamURL(toStringProtected(result[BasicPatientColumns.INDEX_OF_BAM_URL]));
+            patient.setDnaID(toStringProtected(result[BasicPatientColumns.INDEX_OF_DNA_IDS]));
+            patient.setPhenotypes(toStringProtected(result[BasicPatientColumns.INDEX_OF_PHENOTYPES]));
             
             setPatient(patient);
             //setPatientInformation(result);
             blockPanel.unblock();
         }
 
-        private String toStringProtexted(Object object) {
+        private String toStringProtected(Object object) {
             if (object == null) {
                 return null;
             } else {

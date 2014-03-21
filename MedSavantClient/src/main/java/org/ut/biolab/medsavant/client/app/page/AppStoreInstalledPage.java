@@ -99,7 +99,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         
         JPanel container = ViewUtil.getClearPanel();
         
-        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3");
+        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3, insets 0");
         container.setLayout(ml);
 
         if (!installQueue.isEmpty()) {
@@ -149,7 +149,11 @@ public class AppStoreInstalledPage implements AppStorePage {
                     }));
         }
         
-        view.add(new StandardAppContainer(container),BorderLayout.CENTER);
+        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
+        
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        view.add(sac,BorderLayout.CENTER);
+        sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         view.updateUI();
     }

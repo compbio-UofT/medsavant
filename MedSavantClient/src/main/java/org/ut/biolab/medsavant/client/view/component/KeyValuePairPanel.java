@@ -287,10 +287,9 @@ public class KeyValuePairPanel extends JPanel {
 
         final JLabel keyLabel = getKeyLabel(key);
         
-        Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(245,245,245));
-        
-        keyPanel.setBorder(border);
-        valuePanel.setBorder(border);
+        //Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(245,245,245));
+        //keyPanel.setBorder(border);
+        //valuePanel.setBorder(border);
           
         //keyLabel.setBorder(ViewUtil.getMediumBorder());
         keyKeyComponentMap.put(key, keyLabel);
@@ -326,7 +325,7 @@ public class KeyValuePairPanel extends JPanel {
             JPanel panel = ViewUtil.getClearPanel();
             panel.setBackground(rowColor);
             ViewUtil.applyHorizontalBoxLayout(panel);
-            panel.setBorder(border);
+            //panel.setBorder(border);
             //panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             extraComponents[j] = panel;//ViewUtil.getClearPanel();
             kvpPanel.add(extraComponents[j], incrementConstraintRow(i++));

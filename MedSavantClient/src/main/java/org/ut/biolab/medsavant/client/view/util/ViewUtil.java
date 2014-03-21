@@ -70,6 +70,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
@@ -166,7 +167,7 @@ public final class ViewUtil {
     }
 
     public static Font getBigTitleFont() {
-        return ViewUtil.getDefaultFont(Font.BOLD, 18);
+        return ViewUtil.getDefaultFont(Font.BOLD, 25);
     }
 
     public static Font getMediumTitleFont() {
@@ -417,11 +418,10 @@ public final class ViewUtil {
     }
 
     public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
-        
-        /*if (1 == 1) {
-            return image;
-        }*/
 
+        /*if (1 == 1) {
+         return image;
+         }*/
         int w = image.getWidth();
         int h = image.getHeight();
         BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -497,6 +497,22 @@ public final class ViewUtil {
             }
         }
         return buffered;
+    }
+
+    public static BufferedImage getBufferedImage(Image img) {
+        if (img == null) {
+            return null;
+        }
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+        // draw original image to thumbnail image object and 
+        // scale it to the new size on-the-fly 
+        BufferedImage bufimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = bufimg.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(img, 0, 0, w, h, null);
+        g2.dispose();
+        return bufimg;
     }
 
     public static JButton getIconButton(ImageIcon icon) {
@@ -624,7 +640,7 @@ public final class ViewUtil {
     }
 
     public static Color getAlternateRowColor() {
-        return new Color(245,245,245);
+        return new Color(245, 245, 245);
         //return new Color(242, 245, 249);
     }
 
@@ -1018,6 +1034,35 @@ public final class ViewUtil {
 
     public static Color getDefaultBackgroundColor() {
         return Color.white;
+    }
+
+    public static JLabel getGrayItalicizedLabel(String str) {
+        JLabel l = new JLabel(str);
+        l.setForeground(Color.gray);
+        l.setFont(l.getFont().deriveFont(Font.ITALIC));
+        return l;
+    }
+
+    public static JPanel getWhiteLineBorderedPanel() {
+        JPanel p = new JPanel();
+        p.setBackground(Color.white);
+        p.setBorder(BorderFactory.createLineBorder(new Color(227, 227, 227), 1));
+        return p;
+    }
+
+    public static Color getLightGrayBackgroundColor() {
+        return new Color(245,245,245);
+    }
+    
+    public static JPanel getDefaultFixedWidthPanel(JPanel p) {
+        return getFixedWidthPanel(p,800);
+    }
+
+    public static JPanel getFixedWidthPanel(JPanel p, int width) {
+        JPanel wrapper = getClearPanel();
+        wrapper.setLayout(new MigLayout("insets 0, fillx"));
+        wrapper.add(p,String.format("wmin %d, wmax %d,width %d, center",width,width, width));
+        return wrapper;
     }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {

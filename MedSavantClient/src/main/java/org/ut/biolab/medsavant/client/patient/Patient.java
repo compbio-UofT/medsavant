@@ -19,12 +19,25 @@
 
 package org.ut.biolab.medsavant.client.patient;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.project.ProjectController;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+
 /**
  *
  * @author mfiume
  */
 public class Patient {
 
+    private int ID;
     private String hospitalID;
     private String motherHospitalID;
     private String fatherHospitalID;
@@ -37,6 +50,14 @@ public class Patient {
     
     public Patient(String hospitalID) {
         this.hospitalID = hospitalID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getHospitalID() {
@@ -105,6 +126,64 @@ public class Patient {
 
     public void setPhenotypes(String phenotypes) {
         this.phenotypes = phenotypes;
+    }
+
+    @Override
+    public String toString() {
+        return "Patient{" + "hospitalID=" + hospitalID + ", motherHospitalID=" + motherHospitalID + ", fatherHospitalID=" + fatherHospitalID + ", familyID=" + familyID + ", dnaID=" + dnaID + ", sex=" + sex + ", affected=" + affected + ", bamURL=" + bamURL + ", phenotypes=" + phenotypes + '}';
+    }
+
+    void saveToDatabase() {
+        try {
+            CustomField[] fieldArray = MedSavantClient.PatientManager.getCustomPatientFields(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID());
+            
+            int idIndex = BasicPatientColumns.INDEX_OF_PATIENT_ID;
+            int hospitalIDIndex = BasicPatientColumns.INDEX_OF_HOSPITAL_ID;
+            int biomomIndex = BasicPatientColumns.INDEX_OF_IDBIOMOM;
+            int biodadIndex = BasicPatientColumns.INDEX_OF_IDBIODAD;
+            int familyIDIndex = BasicPatientColumns.INDEX_OF_FAMILY_ID;
+            int bamURLIndex = BasicPatientColumns.INDEX_OF_BAM_URL;
+            int dnaIDIndex = BasicPatientColumns.INDEX_OF_DNA_IDS;
+            int phenotypesIndex = BasicPatientColumns.INDEX_OF_PHENOTYPES;
+            int genderIndex = BasicPatientColumns.INDEX_OF_GENDER;
+            
+            List<CustomField> fields = new ArrayList<CustomField>();
+            List<String> values = new ArrayList<String>();
+            
+            fields.add(fieldArray[hospitalIDIndex]);
+            values.add(this.getHospitalID());
+            
+            fields.add(fieldArray[biomomIndex]);
+            values.add(this.getMotherHospitalID());
+            
+            fields.add(fieldArray[biodadIndex]);
+            values.add(this.getFatherHospitalID());
+            
+            fields.add(fieldArray[familyIDIndex]);
+            values.add(this.getFamilyID());
+            
+            fields.add(fieldArray[bamURLIndex]);
+            values.add(this.getBamURL());
+            
+            fields.add(fieldArray[dnaIDIndex]);
+            values.add(this.getDnaID());
+            
+            fields.add(fieldArray[phenotypesIndex]);
+            values.add(this.getPhenotypes());
+            
+            fields.add(fieldArray[genderIndex]);
+            values.add(this.getSex());
+            
+            MedSavantClient.PatientManager.updatePatient(
+                    LoginController.getSessionID(), 
+                    ProjectController.getInstance().getCurrentProjectID(), 
+                    this.getID(), fields, values);
+                    
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Patient.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

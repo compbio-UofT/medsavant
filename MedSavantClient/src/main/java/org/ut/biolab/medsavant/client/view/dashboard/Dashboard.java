@@ -223,9 +223,9 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         JPanel bottomDisclaimer = ViewUtil.getClearPanel();
         bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
 
-        JLabel copy = new JLabel("Developed at University of Toronto");
-        copy.setForeground(ViewUtil.getSubtleTitleColor());
-        bottomDisclaimer.add(copy);
+        //JLabel copy = new JLabel("Developed at University of Toronto");
+        //copy.setForeground(ViewUtil.getSubtleTitleColor());
+        //bottomDisclaimer.add(copy);
 
         JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override

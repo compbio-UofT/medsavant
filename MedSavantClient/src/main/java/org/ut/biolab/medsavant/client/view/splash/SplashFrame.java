@@ -202,11 +202,11 @@ public class SplashFrame extends JFrame {
             kvp.addKeyWithValue("Server name", nameField);
             kvp.addKeyWithValue("Host name", hostField);
             kvp.addKeyWithValue("Port", portField);
-            kvp.addKeyWithValue(DBNAME_KEY, databaseField);
 
             kvp.addKeyWithValue("Username", usernameField);
             kvp.addKeyWithValue("Password", passwordField);
             kvp.addKeyWithValue("Remember password", rememberPasswordField);
+            kvp.addKeyWithValue(DBNAME_KEY, databaseField);
 
             final JToggleButton adminButton = ViewUtil.getSoftToggleButton("Admin");
 
@@ -218,6 +218,7 @@ public class SplashFrame extends JFrame {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    System.out.println("Creating db");
                     createDatabaseSpecifiedByForm();
                 }
 
@@ -226,13 +227,14 @@ public class SplashFrame extends JFrame {
             deleteDBButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    System.out.println("Deleting db");
                     deleteDatabaseSpecifiedByForm();
                 }
             });
 
             JPanel adminPanel = ViewUtil.getClearPanel();
 
-            adminPanel.setLayout(new MigLayout("insets 0, center"));
+            adminPanel.setLayout(new MigLayout("insets 0"));
 
             //adminPanel.add(admin, "wrap");
             adminPanel.add(adminLabel, "wrap");
@@ -279,20 +281,6 @@ public class SplashFrame extends JFrame {
 
             kvp = getNiceFormForServer(server);
 
-            // TODO kvp
-            /*form.addListener(new Listener<NiceForm.FormEvent>() {
-
-             @Override
-             public void handleEvent(NiceForm.FormEvent event) {
-
-             if (form.isEditModeOn()) {
-             serverManagementComponent.setMode(ServerManagementComponent.EDIT_MODE);
-             } else {
-             serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-             }
-             }
-
-             });*/
             container.add(kvp, "wrap, aligny top, growx 1.0, wmax 100%");
 
             chooseButton = ViewUtil.getTexturedButton("Connect");
@@ -315,44 +303,25 @@ public class SplashFrame extends JFrame {
         }
 
         private void createDatabaseSpecifiedByForm() {
-            // validate the form
-            // TODO kvp
-            /*
-             if (form != null) {
-             if (form.validateForm()) {
 
-             String database = form.getValueForStringField(databaseField);
+            String host = hostField.getValue();
+            int port = portField.getValue();
+            String database = databaseField.getValue();
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
 
-             if (DialogUtils.askYesNo(
-             "Create Database",
-             String.format(
-             "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
-             String host = form.getValueForStringField(hostField);
-             int port = form.getValueForIntegerField(portField);
-             String username = form.getValueForStringField(usernameField);
-             String password = form.getValueForStringField(passwordField);
-
-             createDatabase(host, port, database, username, password);
-             }
-             }
-             }*/
+            createDatabase(host, port, database, username, password);
         }
 
         private void deleteDatabaseSpecifiedByForm() {
-            // validate the form
-            // TODO kvp
-            /*if (form != null) {
-             if (form.validateForm()) {
 
-             String host = form.getValueForStringField(hostField);
-             int port = form.getValueForIntegerField(portField);
-             String database = form.getValueForStringField(databaseField);
-             String username = form.getValueForStringField(usernameField);
-             String password = form.getValueForStringField(passwordField);
+            String host = hostField.getValue();
+            int port = portField.getValue();
+            String database = databaseField.getValue();
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
 
-             removeDatabase(host, port, database, username, password);
-             }
-             }*/
+            removeDatabase(host, port, database, username, password);
         }
 
         private void removeDatabase(final String address, final int port, final String database, final String username, final String password) {
@@ -395,25 +364,17 @@ public class SplashFrame extends JFrame {
         }
 
         private void createDatabase(final String address, final int port, final String database, final String username, final String password) {
-            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
-                @Override
-                public void run() {
-                    try {
-                        MedSavantClient.initializeRegistry(address, port + "");
-                        MedSavantClient.SetupManager.createDatabase(address, port, database, username, password.toCharArray());
-                        SwingUtilities.invokeAndWait(new Runnable() {
+            if (DialogUtils.askYesNo(
+                    "Create Database",
+                    String.format(
+                            "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
 
-                            @Override
-                            public void run() {
-                                setVisible(false);
-                            }
-
-                        });
-                        doSave();
-                        DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
-                    } catch (Throwable ex) {
-                        ex.printStackTrace();
+                new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
+                    @Override
+                    public void run() {
                         try {
+                            MedSavantClient.initializeRegistry(address, port + "");
+                            MedSavantClient.SetupManager.createDatabase(address, port, database, username, password.toCharArray());
                             SwingUtilities.invokeAndWait(new Runnable() {
 
                                 @Override
@@ -422,12 +383,26 @@ public class SplashFrame extends JFrame {
                                 }
 
                             });
-                        } catch (Exception ex1) {
+                            doSave();
+                            DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
+                        } catch (Throwable ex) {
+                            ex.printStackTrace();
+                            try {
+                                SwingUtilities.invokeAndWait(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        setVisible(false);
+                                    }
+
+                                });
+                            } catch (Exception ex1) {
+                            }
+                            ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                         }
-                        ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                     }
-                }
-            }.setVisible(true);
+                }.setVisible(true);
+            }
         }
 
         private void showBlockPanel() {
@@ -526,13 +501,12 @@ public class SplashFrame extends JFrame {
             doSave();
         }
 
-        
         private void addChangeListenersToFields(EditableField... fields) {
             for (EditableField f : fields) {
                 f.addFieldEditedListener(this);
             }
         }
-        
+
     }
 
     private static class ServerDetailedListEditor extends DetailedListEditor {
@@ -708,7 +682,7 @@ public class SplashFrame extends JFrame {
             } else if (ServerController.getInstance().getServers().isEmpty()) {
                 setPage(NO_SERVER_ATALL_PAGE);
             } else {
-                
+
                 setServer(ServerController.getInstance().getCurrentServer());
                 setPage(LOGIN_PAGE);
             }
@@ -1064,7 +1038,6 @@ public class SplashFrame extends JFrame {
             serverListScreen.selectItemWithKey(server.getNickname());
         }
 
-        
         @Override
         public void handleEvent(ServerController event) {
             refreshList();

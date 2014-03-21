@@ -32,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.AppInfo;
 import org.ut.biolab.medsavant.client.app.component.RoundedJPanel;
@@ -54,12 +55,12 @@ class AppInfoFlowView extends JPanel {
         this.parent = parent;
         this.installedPage = installedPage;
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
+        this.setLayout(new MigLayout("fillx"));
+        
         this.setBackground(Color.white);
         
         // bold
-        String shortName = ViewUtil.ellipsize(i.getName(), 24);
+        String shortName = i.getName();// ViewUtil.ellipsize(i.getName(), 24);
         JLabel nameLabel = new JLabel("<html><b>" + shortName + "</b> " + i.getVersion() + "</html>");
         if (!shortName.equals(i.getName())) {
             nameLabel.setToolTipText(i.getName());
@@ -77,24 +78,26 @@ class AppInfoFlowView extends JPanel {
 
         // gray
         JLabel authorLabel = new JLabel(i.getAuthor());
-        ViewUtil.shortenLabelToLength(authorLabel,30);
+        //ViewUtil.shortenLabelToLength(authorLabel,30);
         authorLabel.setFont(mediumFont);
         authorLabel.setForeground(Color.darkGray);
 
         downloadButton = getSoftButton("Install App");
-        JButton moreInfo = getSoftButton("More Info");
+        //JButton moreInfo = getSoftButton("More Info");
 
+        JButton infoButton = ViewUtil.getHelpButton("", "");
+        
         ial = new InstallActionListener(installedPage, i, parent);
         downloadButton.addActionListener(ial);
 
         aim = new AppInfoModal(i, installedPage, parent);
 
-        moreInfo.addActionListener(new ActionListener() {
+        /*moreInfo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 aim.setVisible(true);
             }
-        });
+        });*/
 
         if (installedAlready) {
             if (canUpdate) {
@@ -107,17 +110,24 @@ class AppInfoFlowView extends JPanel {
         JPanel actionBar = new JPanel();
         actionBar.setOpaque(false);
         actionBar.setLayout(new BoxLayout(actionBar, BoxLayout.X_AXIS));
-        actionBar.add(moreInfo);
+        //actionBar.add(infoButton);
 
         actionBar.add(Box.createHorizontalGlue());
         actionBar.add(downloadButton);
 
+        this.add(nameLabel,"wrap");
+        this.add(categoryLabel,"wrap");
+        this.add(authorLabel);
+        this.add(actionBar,"right, wrap");
+        
+        /*
         this.add(Box.createRigidArea(new Dimension(220,1)));
         this.add(getLeftAlignedComponent(nameLabel));
         this.add(getLeftAlignedComponent(categoryLabel));
         this.add(Box.createVerticalStrut(3));
         this.add(getLeftAlignedComponent(authorLabel));
         this.add(actionBar);
+                */
         
         int border = 20;
         this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTinyLineBorder(),BorderFactory.createEmptyBorder(border, border, border, border)));

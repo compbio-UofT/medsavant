@@ -21,6 +21,7 @@ package org.ut.biolab.medsavant.client.app.page;
 
 import org.ut.biolab.medsavant.client.app.component.FlowView;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -49,7 +50,7 @@ public class AppStoreLandingPage implements AppStorePage {
 
     private final AppStoreInstalledPage installedPage;
     private final AppInfoFetcher fetcher;
-    private FlowView flowView;
+    private JPanel appListView;
     private final JTabbedPane parent;
     private final AppInstaller installer;
 
@@ -100,20 +101,24 @@ public class AppStoreLandingPage implements AppStorePage {
         p.setLayout(new BorderLayout());
         
         JPanel container = ViewUtil.getClearPanel();
-        container.setLayout(new MigLayout("fillx,insets 30"));
+        container.setLayout(new MigLayout("fillx,insets 0"));
 
-        flowView = new FlowView();
-        flowView.setBorder(BorderFactory.createEmptyBorder());
+        appListView = ViewUtil.getClearPanel();
+        appListView.setLayout(new MigLayout("wrap, fillx, insets 0"));
         container.add(ViewUtil.getLargeGrayLabel("Available apps"),"wrap");
-        container.add(flowView,"growx 1.0");
+        container.add(appListView,"growx 1.0");
         
-        p.add(new StandardAppContainer(container),BorderLayout.CENTER);
+        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
+        
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        p.add(sac,BorderLayout.CENTER);
+        sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         return p;
     }
 
     private synchronized void setAppInfo(List<AppInfo> info) {
-        flowView.removeAll();
+        appListView.removeAll();
 
         Set<AppInfo> installRegistry = installer.getInstallRegistry();
 
@@ -127,9 +132,9 @@ public class AppStoreLandingPage implements AppStorePage {
                 }
             }
             AppInfoFlowView infoBox = new AppInfoFlowView(i, parent, installedPage, installedAlready, canUpdate);
-            flowView.add(infoBox);
+            appListView.add(infoBox, "width 100%");
         }
 
-        flowView.updateUI();
+        appListView.updateUI();
     }
 }
