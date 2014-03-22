@@ -35,18 +35,26 @@ public class StandardFixedWidthAppPanel extends JPanel {
     private final JLabel titleLabel;
     private final boolean initialized;
     
-    
     public StandardFixedWidthAppPanel() {
-        this(null);
+        this(true);
     }
+    
     public StandardFixedWidthAppPanel(String title) {
+        this(title,true);
+    }
+    
+    public StandardFixedWidthAppPanel(boolean doesScroll) {
+        this(null,doesScroll);
+    }
+    
+    public StandardFixedWidthAppPanel(String title,boolean doesScroll) {
         
         content = ViewUtil.getClearPanel();
         content.setLayout(new MigLayout("insets 0, fillx, hidemode 3"));
         
         JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(content);
         
-        StandardAppContainer sac = new StandardAppContainer(fixedWidth,true);
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth,doesScroll);
         sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
         
         titleLabel = ViewUtil.getLargeGrayLabel("");
