@@ -131,7 +131,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (installedApps.isEmpty()) {
-            container.add(new JLabel("No apps installed"));
+            container.add(ViewUtil.getGrayItalicizedLabel("No apps installed"));
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {

@@ -1068,6 +1068,14 @@ public final class ViewUtil {
         return wrapper;
     }
 
+    public static String bulletStringOfLength(int length) {
+        String s = "";
+        while (length-- > 0) {
+            s += "•";
+        }
+        return s;
+    }
+
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 
         public DetailListCellRenderer() {

@@ -149,9 +149,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         content.add(patientView,BorderLayout.CENTER);
         
         menu = ViewUtil.getClearPanel();
-        //menu.add(addIndividualsButton());
-
-        //addBottomComponent(menu);
 
         blockPanel = new BlockingPanel("No individual selected", content);
         viewContainer.add(blockPanel, BorderLayout.CENTER);
@@ -160,9 +157,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
         pedigreeDetails.removeAll();
-///        pedigreeDetails.setLayout(new BorderLayout());
 
-        pedigreeDetails.add(fontZoomButtonsPanel);//, BorderLayout.NORTH);
+        pedigreeDetails.add(fontZoomButtonsPanel);
+
         //Step 1
         graph = new Graph();
         CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
@@ -186,7 +183,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         //view.highlight(nodes);
         //view.setSelectionEnabled(true);
-
 
         view.addRule(new ShapeRule(GENDER, "1", new SymbolSexMale()));
         view.addRule(new ShapeRule(GENDER, "2", new SymbolSexFemale()));
@@ -246,7 +242,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     } else if (SwingUtilities.isLeftMouseButton(e)) {
                         if (patID != null && patID > 0) {
                             selectIndividualInList(patID);
-                            //setSelectedItem(patientId, hospitalId);
                         }
                     }
                 } else {
@@ -261,7 +256,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         });
 
         pedigreeDetails.add(view.getComponent());
-//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
         pedigreeDetails.updateUI();
     }
 
@@ -279,60 +273,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     public synchronized void setPatient(Patient patient) {
         patientView.setPatient(patient);
     }
-
-    /*
-    public synchronized void setPatientInformation(Object[] result) {
-        String[][] values = new String[fieldNames.size()][2];
-        for (int i = 0; i < fieldNames.size(); i++) {
-            values[i][0] = fieldNames.get(i);
-            values[i][1] = "";
-            if (result[i] != null) {
-                values[i][1] = result[i].toString();
-
-                //special case for gender
-                if (values[i][0].equals(BasicPatientColumns.GENDER.getAlias())) {
-                    String s;
-                    if (result[i] instanceof Integer) {
-                        s = ClientMiscUtils.genderToString((Integer) result[i]);
-                    } else if (result[i] instanceof Long) {
-                        s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long) result[i]));
-                    } else {
-                        s = ClientMiscUtils.GENDER_UNKNOWN;
-                    }
-                    values[i][1] = s;
-                }
-
-                //special case for affected
-                if (values[i][0].equals(BasicPatientColumns.AFFECTED.getAlias())) {
-                    String s;
-                    if (result[i] instanceof Boolean) {
-                        Boolean b = (Boolean) result[i];
-                        s = b ? "Yes" : "No";
-                    } else {
-                        s = "Unknown";
-                    }
-                    values[i][1] = s;
-                }
-            }
-        }
-
-        infoDetails.removeAll();
-        infoDetails.setLayout(new MigLayout("fillx,wrap,insets 0"));
-        
-        NiceFormFieldGroup group = new NiceFormFieldGroup("Patient",false);
-        for (String[] value : values) {
-            NiceFormField niceFormField = new NiceFormField(value[0], value[1]);
-            group.addField(niceFormField);
-        }
-        
-        NiceFormModel model = new NiceFormModel();
-        model.addGroup(group);
-        
-        NiceForm form = new NiceForm(model);
-
-        infoDetails.add(form);
-        infoDetails.updateUI();
-    }*/
 
     @Override
     public void setSelectedItem(Object[] item) {

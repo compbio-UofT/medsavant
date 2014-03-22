@@ -286,10 +286,6 @@ public class KeyValuePairPanel extends JPanel {
         keyPanel.setBackground(rowColor);
 
         final JLabel keyLabel = getKeyLabel(key);
-        
-        //Border border = BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(245,245,245));
-        //keyPanel.setBorder(border);
-        //valuePanel.setBorder(border);
           
         //keyLabel.setBorder(ViewUtil.getMediumBorder());
         keyKeyComponentMap.put(key, keyLabel);
@@ -394,7 +390,9 @@ public class KeyValuePairPanel extends JPanel {
         }
         
         JLabel c = new JLabel(value);
-        c.setToolTipText(value);
+        if (splitCommas) {
+            c.setToolTipText(value);
+        }
         setValue(key, c);
     }
 

@@ -45,13 +45,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
         }
     }
 
-    private String bulletStringOfLength(int length) {
-        String s = "";
-        while (length-- > 0) {
-            s += "•";
-        }
-        return s;
-    }
+    
 
     public enum FormEvent {
 
@@ -192,7 +186,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                         c = f2;
                     } else {
                         if (field.getValue() != null) {
-                            c = new JLabel(bulletStringOfLength(field.getValue().toString().length()));
+                            c = new JLabel(ViewUtil.bulletStringOfLength(field.getValue().toString().length()));
                         }
                     }
                     break;

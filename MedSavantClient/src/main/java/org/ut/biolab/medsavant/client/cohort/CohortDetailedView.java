@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.cohort;
 
@@ -32,6 +32,9 @@ import javax.swing.*;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import java.util.ArrayList;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,6 +58,9 @@ import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem;
 import org.ut.biolab.medsavant.client.query.SearchConditionGroupItem.QueryRelation;
 import org.ut.biolab.medsavant.client.query.SearchConditionItem;
 import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 
 /**
  *
@@ -65,43 +71,21 @@ class CohortDetailedView extends DetailedView {
     private static final Log LOG = LogFactory.getLog(CohortDetailedView.class);
     private Cohort[] cohorts;
     private CohortDetailsWorker worker;
-    private final JPanel details;
     private JTable list;
-    private final CollapsiblePane membersPane;
     private final BlockingPanel blockPanel;
+    private final JPanel members;
+    private final StandardFixedWidthAppPanel canvas;
 
     CohortDetailedView(String page) {
         super(page);
 
-        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-        viewContainer.setLayout(new BorderLayout());
+        canvas = new StandardFixedWidthAppPanel("Cohort");
+        members = canvas.addBlock("Members");
 
-        JPanel content = new JPanel();
-        content.setLayout(new BorderLayout());
+        blockPanel = new BlockingPanel("No cohort selected", canvas);
 
-        JPanel infoContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-        content.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
-        CollapsiblePanes panes = new CollapsiblePanes();
-        panes.setOpaque(false);
-        infoContainer.add(panes);
-
-        membersPane = new CollapsiblePane();
-        membersPane.setStyle(CollapsiblePane.TREE_STYLE);
-        membersPane.setCollapsible(false);
-        panes.add(membersPane);
-
-        details = new JPanel();
-        details.setLayout(new BorderLayout());
-        membersPane.setLayout(new BorderLayout());
-        membersPane.add(details, BorderLayout.CENTER);
-
-        panes.addExpansion();
-
-        blockPanel = new BlockingPanel("No cohort selected", content);
-        viewContainer.add(blockPanel, BorderLayout.CENTER);
+        this.setLayout(new BorderLayout());
+        this.add(blockPanel, BorderLayout.CENTER);
     }
 
     private class CohortDetailsWorker extends MedSavantWorker<List<SimplePatient>> {
@@ -137,17 +121,16 @@ class CohortDetailedView extends DetailedView {
         JPopupMenu popupMenu = new JPopupMenu();
 
         //Filter by patient
-
         JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", hospitalIds.length == 1 ? "Hospital ID <i>" + hospitalIds[0] + "</i>" : "Selected Hospital IDs"));
         filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String cohort = null;
-                if(cohorts.length == 1){
+                if (cohorts.length == 1) {
                     cohort = cohorts[0].getName();
-                }                
-                QueryUtils.addQueryOnHospitals(hospitalIds, cohort);                
-                
+                }
+                QueryUtils.addQueryOnHospitals(hospitalIds, cohort);
+
                 DialogUtils.displayMessage("Selected Cohort and Hospital IDS have been added to query.  Click 'Variants' to review and execute search.");
             }
         });
@@ -158,7 +141,7 @@ class CohortDetailedView extends DetailedView {
 
     public synchronized void setPatientList(List<SimplePatient> patients) {
 
-        details.removeAll();
+        members.removeAll();
 
         final Object[][] data = new Object[patients.size()][1];
 
@@ -166,12 +149,8 @@ class CohortDetailedView extends DetailedView {
             data[i][0] = patients.get(i);
         }
 
-        JPanel p = ViewUtil.getClearPanel();
-        //p.setBackground(Color.WHITE);
-        p.setBorder(ViewUtil.getBigBorder());
-        ViewUtil.applyVerticalBoxLayout(p);
-
         list = new StripyTable(data, new String[]{"Member Hospital IDs"});
+        list.setFont(FontFactory.getGeneralFont().deriveFont(16));
         list.setBorder(null);
         list.setShowGrid(false);
         list.setRowHeight(21);
@@ -195,19 +174,33 @@ class CohortDetailedView extends DetailedView {
             }
         });
 
+        final JButton removeButton = removeIndividualsButton();
+        removeButton.setEnabled(false);
+        list.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-        p.add(ViewUtil.alignLeft(new JLabel(ViewUtil.numToString(list.getRowCount()) + " members")));
-        p.add(Box.createRigidArea(new Dimension(10, 10)));
-        p.add(ViewUtil.getClearBorderedScrollPane(list));
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int count = list.getSelectedRowCount();
+                removeButton.setEnabled(count > 0);
+                if (count == 0) {
+                    removeButton.setText("Remove selected member");
+                } else {
+                    if (count == 1) {
+                        removeButton.setText("Remove selected member");
+                    } else {
+                        removeButton.setText(String.format("Remove %d selected members", count));
+                    }
+                }
+            }
 
-        JPanel menu = ViewUtil.getClearPanel();
-        menu.add(removeIndividualsButton());
-        p.add(menu);
+        });
 
-        details.add(p, BorderLayout.CENTER);
+        members.setLayout(new MigLayout("fillx, insets 0, wrap"));
+        members.add(new JLabel(ViewUtil.numToString(list.getRowCount()) + " members"), "split, growx 1.0");
+        members.add(removeButton, "right,wrap");
+        members.add(list, "width 100%");
 
-        details.updateUI();
-
+        members.updateUI();
     }
 
     @Override
@@ -218,10 +211,10 @@ class CohortDetailedView extends DetailedView {
         } else {
 
             cohorts = new Cohort[]{(Cohort) item[0]};
-            membersPane.setTitle(cohorts[0].getName());
+            canvas.setTitle(cohorts[0].getName());
 
-            details.removeAll();
-            details.updateUI();
+            members.removeAll();
+            members.updateUI();
 
             if (worker != null) {
                 worker.cancel(true);
@@ -241,25 +234,24 @@ class CohortDetailedView extends DetailedView {
                 cohorts[i] = (Cohort) items.get(i)[0];
             }
             if (items.isEmpty()) {
-                membersPane.setTitle("");
+                canvas.setTitle("");
             } else {
-                membersPane.setTitle("Multiple cohorts (" + items.size() + ")");
+                canvas.setTitle("Multiple cohorts (" + items.size() + ")");
             }
-            details.removeAll();
-            details.updateUI();
+            members.removeAll();
+            members.updateUI();
         }
     }
 
-    private JLabel removeIndividualsButton() {
+    private JButton removeIndividualsButton() {
 
-        JLabel button = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
-        button.setToolTipText("Remove selected");
-        //JButton button = new JButton("Remove individual(s) from cohort");
+        JButton button = ViewUtil.getSoftButton("Remove selected member");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.setOpaque(false);
-        button.addMouseListener(new MouseAdapter() {
+        button.addActionListener(new ActionListener() {
+
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent e) {
                 int[] rows = list.getSelectedRows();
                 int[] patientIDs = new int[rows.length];
                 for (int i = 0; i < rows.length; i++) {
@@ -304,30 +296,29 @@ class CohortDetailedView extends DetailedView {
 
                     List<SearchConditionItem> sciList = new ArrayList<SearchConditionItem>(cohorts.length);
 
-                       
                     List<String> cohortStrings = new ArrayList(cohorts.length);
                     for (Cohort cohort : cohorts) {
                         cohortStrings.add(cohort.getName());
                         /*
-                        SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.AND, p);
-                        cohortItem.setDescription(cohort.toString());
-                        cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));
-                        sciList.add(cohortItem);
-                        * */
+                         SearchConditionItem cohortItem = new SearchConditionItem("Cohort", SearchConditionGroupItem.QueryRelation.AND, p);
+                         cohortItem.setDescription(cohort.toString());
+                         cohortItem.setSearchConditionEncoding(StringConditionEncoder.encodeConditions(Arrays.asList(new String[]{cohort.toString()})));
+                         sciList.add(cohortItem);
+                         * */
                     }
-                                        
+
                     String description = StringConditionEncoder.getDescription(cohortStrings);
                     String encodedConditions = StringConditionEncoder.encodeConditions(cohortStrings);
-                    
+
                     qvc.replaceFirstLevelItem("Cohort", encodedConditions, description);
-/*
-                    if (cohorts.length < 2) {
+                    /*
+                     if (cohorts.length < 2) {
                         
-                        SearchConditionItem sci = sciList.get(0);
-                        qvc.generateItemViewAndAddToGroup(sci, p);
-                    } else {
-                        qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
-                    }*/
+                     SearchConditionItem sci = sciList.get(0);
+                     qvc.generateItemViewAndAddToGroup(sci, p);
+                     } else {
+                     qvc.replaceFirstLevelGroup("Cohorts", sciList, QueryRelation.AND, true);
+                     }*/
                     qvc.refreshView();
                     DialogUtils.displayMessage("Selected Cohorts have been added to query.  Click 'Variants' to review and execute search.");
 
