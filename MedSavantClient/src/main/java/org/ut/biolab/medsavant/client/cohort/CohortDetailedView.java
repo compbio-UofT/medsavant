@@ -61,6 +61,7 @@ import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -196,7 +197,7 @@ class CohortDetailedView extends DetailedView {
         });
 
         members.setLayout(new MigLayout("fillx, insets 0, wrap"));
-        members.add(new JLabel(ViewUtil.numToString(list.getRowCount()) + " members"), "split, growx 1.0");
+        members.add(new JLabel(ViewUtil.numToString(list.getRowCount()) + " " + MiscUtils.pluralize(list.getRowCount(), "member", "members")), "split, growx 1.0");
         members.add(removeButton, "right,wrap");
         members.add(list, "width 100%");
 
