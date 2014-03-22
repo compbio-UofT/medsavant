@@ -27,7 +27,7 @@ import net.miginfocom.swing.MigLayout;
  * @author mfiume
  */
 public abstract class OnClickEditableField<T> extends EditableField<T> {
-    
+
     // whether the field is a password field
     private boolean passwordField;
 
@@ -73,12 +73,12 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
     public OnClickEditableField() {
         this(false);
     }
-    
+
     public OnClickEditableField(boolean passwordField) {
         super();
-        
+
         this.passwordField = passwordField;
-        
+
         initUI();
 
         setValue(null);
@@ -133,7 +133,8 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         value = v;
         if (v == null || v.toString().isEmpty()) {
             valueLabel.setForeground(nullColor);
-            valueLabel.setText("Not Set");
+            //needs a space of padding to prevent cut off (https://bugs.openjdk.java.net/browse/JDK-4262130?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel)
+            valueLabel.setText("Not Set "); 
             valueLabel.setFont(valueLabel.getFont().deriveFont(Font.ITALIC));
         } else {
             valueLabel.setForeground(Color.black);
@@ -225,7 +226,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         });
 
     }
-    
+
     private void setVisibility(Component[] components, boolean isVisible) {
         for (Component c : components) {
             c.setVisible(isVisible);
@@ -238,14 +239,16 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
     }
 
-    public void addCancelFocusListener(JComponent c) {
+    public void addSaveFocusListener(JComponent c) {
         c.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
             }
 
             public void focusLost(FocusEvent e) {
-                OnClickEditableField.this.setEditing(false);
+                if (OnClickEditableField.this.setValueFromEditor()) {
+                    OnClickEditableField.this.setEditing(false);
+                }
                 return;
             }
 

@@ -298,8 +298,6 @@ public class SplashFrame extends JFrame {
             this.add(container, BorderLayout.CENTER);
             this.add(bottomMenu, BorderLayout.SOUTH);
             this.updateUI();
-
-            updateStateOfForm();
         }
 
         private void createDatabaseSpecifiedByForm() {
@@ -444,59 +442,11 @@ public class SplashFrame extends JFrame {
             ServerController.getInstance().saveServers();
 
             serverManagementComponent.serverListScreen.selectItemWithKey(name);
-
-            // TODO kvp
-            /*if (form != null) {
-             if (form.validateForm()) {
-             String name = form.getValueForStringField(nameField);
-             String host = form.getValueForStringField(hostField);
-             int port = form.getValueForIntegerField(portField);
-             String database = form.getValueForStringField(databaseField);
-             String username = form.getValueForStringField(usernameField);
-             String password = form.getValueForStringField(passwordField);
-             boolean rememberPass = form.getValueForBooleanField(rememberPasswordField);
-
-             server.setHost(host);
-             server.setPort(port);
-             server.setDatabase(database);
-             server.setNickname(name);
-             server.setUsername(username);
-             server.setPassword(password);
-             server.setRememberPassword(rememberPass);
-
-             MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(server.getNickname());
-
-             if (existingServer != null && existingServer != server) {
-             DialogUtils.displayMessage("There's already a server named " + name + ".");
-             return;
-             }
-
-             ServerController.getInstance().saveServers();
-
-             serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
-             serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-             }
-             }
-             */
-        }
-
-        private void updateStateOfForm() {
-            // TODO kvp
-            /*if (kvp != null) {
-             form.setEditModeOn(isEditing);
-             adminPanel.setVisible(isEditing);
-             chooseButton.setVisible(!isEditing);
-             cancelButton.setVisible(isEditing);
-             saveButton.setVisible(isEditing);
-             if (isEditing) {
-             form.focus();
-             }
-             }*/
         }
 
         @Override
         public void handleEvent(EditableField f) {
-            System.out.println("Field with tag " + f.getTag() + "  was edited");
+            System.out.println("Field with value " + f.getValue() + "  was edited");
             System.out.println("Saving");
             doSave();
         }

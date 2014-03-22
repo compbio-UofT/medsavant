@@ -1037,7 +1037,10 @@ public final class ViewUtil {
     }
 
     public static JLabel getGrayItalicizedLabel(String str) {
-        JLabel l = new JLabel(str);
+        
+        // pad the end of the label to prevent last character from being cut off
+        // https://bugs.openjdk.java.net/browse/JDK-4262130?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel
+        JLabel l = new JLabel(str + " ");
         l.setForeground(Color.gray);
         l.setFont(l.getFont().deriveFont(Font.ITALIC));
         return l;

@@ -23,7 +23,7 @@ public class PasswordEditableField extends OnClickEditableField<String> {
         textField = new JPasswordField();
         textField.setColumns(15);
 
-        addCancelFocusListener(textField);
+        addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
         this.setRejectButtonVisible(false);
     }

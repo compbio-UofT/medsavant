@@ -92,8 +92,6 @@ public class AppStoreInstalledPage implements AppStorePage {
 
     protected void updateInstalledList() {
         
-        System.out.println("Updating download list " + this.installQueue.size() + " installs in queue");
-
         view.removeAll();
         view.setLayout(new BorderLayout());
         

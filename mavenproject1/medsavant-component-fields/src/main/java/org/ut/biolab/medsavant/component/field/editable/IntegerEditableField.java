@@ -20,7 +20,7 @@ public class IntegerEditableField extends OnClickEditableField<Integer> {
         textField = new JTextField();
         textField.setColumns(15);
         
-        addCancelFocusListener(textField);
+        addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
         this.setRejectButtonVisible(false);
     }

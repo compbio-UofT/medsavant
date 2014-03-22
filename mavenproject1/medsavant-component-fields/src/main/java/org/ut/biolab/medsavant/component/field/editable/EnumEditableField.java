@@ -32,7 +32,7 @@ public class EnumEditableField extends OnClickEditableField<Object> {
         super();
         comboBox = new JComboBox();
 
-        addCancelFocusListener(comboBox);
+        addSaveFocusListener(comboBox);
         addSaveAndCancelKeyListeners(comboBox);
 
         comboBox.addItemListener(new ItemListener() {

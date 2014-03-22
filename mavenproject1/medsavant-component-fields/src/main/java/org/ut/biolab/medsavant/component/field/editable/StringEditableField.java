@@ -24,7 +24,7 @@ public class StringEditableField extends OnClickEditableField<String> {
         textField = new JTextField();
         textField.setColumns(15);
 
-        addCancelFocusListener(textField);
+        addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
         this.setRejectButtonVisible(false);
     }

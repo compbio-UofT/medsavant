@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
@@ -58,7 +59,6 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 public class VCFUploadApp implements LaunchableApp {
 
     private static final Log LOG = LogFactory.getLog(VCFUploadApp.class);
-    int containerWidth = 400;
     private static VariantManagerAdapter variantManager = MedSavantClient.VariantManager;
 
     List<File> filesToImport;
@@ -81,7 +81,7 @@ public class VCFUploadApp implements LaunchableApp {
         }
     };
 
-    private JPanel settingsPanel;
+    private JPanel advancedOptionsPanel;
     private JButton importButton;
     private JXCollapsiblePane dragDropContainer;
     private CardLayout cardLayout;
@@ -101,43 +101,47 @@ public class VCFUploadApp implements LaunchableApp {
 
     private void initView() {
         if (view == null) {
-            view = new JPanel();
-
-            view.setBackground(Color.white);
-            view.setLayout(new BorderLayout());
 
             JPanel settingsCard = getSettingsPanel();
-            view.add(settingsCard, BorderLayout.CENTER);
+
+            JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(settingsCard);
+            view = new StandardAppContainer(fixedWidth, true);
+            view.setBackground(ViewUtil.getLightGrayBackgroundColor());
+
+            refreshFileList();
         }
     }
 
     private void initSettingsPanel() {
 
-        settingsPanel = ViewUtil.getClearPanel();
-        settingsPanel.setVisible(false);
+        advancedOptionsPanel = ViewUtil.getWhiteLineBorderedPanel();
+        advancedOptionsPanel.setLayout(new MigLayout("fillx"));
+        advancedOptionsPanel.setVisible(false);
         //settingsPanel.setOpaque(false);
 
-        JPanel p = ViewUtil.getSubBannerPanel("");
-        //p.setOpaque(false);
-        p.setBackground(Color.white);
-        MigLayout ml = new MigLayout("inset 10");
-        p.setLayout(ml);
+        JLabel l = new JLabel("Advanced Options");
+        l.setFont(ViewUtil.getMediumTitleFont());
+        advancedOptionsPanel.add(l, "wrap");
 
-        p.add(ViewUtil.getSettingsHeaderLabel("Annotation"), "wrap");
-        p.add(annovarCheckbox = new JCheckBox("perform gene-based variant annotation"), "wrap");
+        advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Annotation"), "wrap");
+        advancedOptionsPanel.add(annovarCheckbox = new JCheckBox("perform gene-based variant annotation"), "wrap");
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
 
-        p.add(ViewUtil.getSettingsHeaderLabel("Notifications"), "wrap");
+        advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Notifications"), "wrap");
 
         emailPlaceholder = new PlaceHolderTextField();
         emailPlaceholder.setPlaceholder("email address");
-        p.add(ViewUtil.getSettingsHelpLabel("Email notifications are sent upon completion"), "wrap");
-        p.add(emailPlaceholder, "wrap, growx 1.0");
+        advancedOptionsPanel.add(ViewUtil.getSettingsHelpLabel("Email notifications are sent upon completion"), "wrap");
+        advancedOptionsPanel.add(emailPlaceholder, "wrap, growx 1.0");
 
-        settingsPanel.setBorder(BorderFactory.createEmptyBorder());
-        settingsPanel.add(p);
+    }
 
+    private void addFilesToImport(File[] files) {
+        for (File f : files) {
+            addFileToImport(f);
+        }
+        refreshFileList();
     }
 
     private void addFileToImport(File f) {
@@ -153,7 +157,6 @@ public class VCFUploadApp implements LaunchableApp {
         }
 
         filesToImport.add(f);
-        refreshFileList();
     }
 
     @Override
@@ -198,14 +201,19 @@ public class VCFUploadApp implements LaunchableApp {
     private void refreshFileList() {
         fileListView.removeAll();
         MigLayout ml = new MigLayout("wrap 2");
+
         fileListView.setLayout(ml);
+
+        JLabel l = new JLabel("Files to upload");
+        l.setFont(ViewUtil.getMediumTitleFont());
+        fileListView.add(l, "span 2, wrap");
 
         for (final File f : this.filesToImport) {
 
             JButton b = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLOSE));
             fileListView.add(b);
 
-            fileListView.add(new JLabel(f.getAbsolutePath()), String.format("width %s, center", containerWidth - b.getIcon().getIconWidth() - 5));
+            fileListView.add(new JLabel(f.getAbsolutePath()));
 
             b.addActionListener(new ActionListener() {
 
@@ -216,6 +224,21 @@ public class VCFUploadApp implements LaunchableApp {
                 }
 
             });
+        }
+
+        if (this.filesToImport.isEmpty()) {
+            fileListView.add(ViewUtil.getGrayItalicizedLabel("No files selected for upload"), "wrap");
+        } else {
+            JButton clearAll = ViewUtil.getSoftButton("Clear All");
+            clearAll.addActionListener(new ActionListener(){
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    clearFiles();
+                }
+                
+            });
+            fileListView.add(clearAll, "span 2, wrap");
         }
 
         fileListView.updateUI();
@@ -233,10 +256,8 @@ public class VCFUploadApp implements LaunchableApp {
 
     private JPanel getSettingsPanel() {
 
-        JPanel settingsCard = ViewUtil.getClearPanel();
-        settingsCard.setLayout(new BorderLayout());
-
-        JPanel container = ViewUtil.getClearPanel();
+        JPanel container = new JPanel();
+        container.setBackground(ViewUtil.getLightGrayBackgroundColor());
         MigLayout layout = new MigLayout("insets 30 200 30 200, fillx, hidemode 3");
         container.setLayout(layout);
 
@@ -253,7 +274,7 @@ public class VCFUploadApp implements LaunchableApp {
         dp.setOpaque(false);
 
         dp.setBorderDashed(true);
-        dp.setDashThickness(3);
+        dp.setDashThickness(2);
 
         ImagePanel ip = new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT_VCF).getImage(), 300, 200);
 
@@ -281,40 +302,39 @@ public class VCFUploadApp implements LaunchableApp {
             @Override
             public void actionPerformed(ActionEvent e) {
                 File[] files = DialogUtils.chooseFilesForOpen("Choose Variant Files", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz", "vcf.bz2"}), null);
-                for (File f : files) {
-                    addFileToImport(f);
-                }
+                addFilesToImport(files);
             }
 
         });
 
-        container.add(dragDropContainer, "center, wrap");
+        JPanel wrapper = ViewUtil.getWhiteLineBorderedPanel();
+        wrapper.setLayout(new MigLayout("fillx"));
+        wrapper.add(dragDropContainer, "growx 1.0");
+
+        //JLabel title = ViewUtil.getLargeGrayLabel("VCF Upload");
+        //container.add(title,"wrap");
+        container.add(wrapper, "wrap, width 100%");
 
         new FileDrop(dp, new FileDrop.Listener() {
             public void filesDropped(java.io.File[] files) {
-                for (File f : files) {
-                    addFileToImport(f);
-                }
+                addFilesToImport(files);
             }   // end filesDropped
         }); // end FileDrop.Listener
 
-        fileListView = ViewUtil.getClearPanel();
-        container.add(fileListView, "wrap, center");
+        fileListView = ViewUtil.getWhiteLineBorderedPanel();
+        container.add(fileListView, "wrap, width 100%");
 
         JToggleButton advancedOptionsButton = ViewUtil.getSoftToggleButton("Advanced Options");//ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
-        advancedOptionsButton.setToolTipText("Advanced Options");
         advancedOptionsButton.setFocusable(false);
         //container.add(advancedOptionsButton, "wrap, center");
 
         initSettingsPanel();
 
-        container.add(settingsPanel, "wrap, center, width 100%");
-
         advancedOptionsButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                settingsPanel.setVisible(!settingsPanel.isVisible());
+                advancedOptionsPanel.setVisible(!advancedOptionsPanel.isVisible());
             }
 
         });
@@ -324,13 +344,12 @@ public class VCFUploadApp implements LaunchableApp {
         importButton.setFocusable(false);
         JPanel bContainer = ViewUtil.getClearPanel();
         bContainer.setLayout(new MigLayout("fillx, insets 0"));
-        bContainer.setPreferredSize(new Dimension(containerWidth, 24));
 
         bContainer.add(advancedOptionsButton, "left");
         bContainer.add(importButton, "right");
 
+        container.add(advancedOptionsPanel, "wrap, width 100%");
         container.add(bContainer, "wrap,center");
-        container.add(settingsPanel, String.format("wrap, center, width %s", containerWidth));
 
         final VCFUploadApp instance = this;
 
@@ -349,6 +368,7 @@ public class VCFUploadApp implements LaunchableApp {
                         this.addLog("Upload started");
 
                         final Notification notification = this.getNotificationForWorker();
+
                         notification.setShowsProgress(true);
 
                         SwingUtilities.invokeLater(new Runnable() {
@@ -409,8 +429,6 @@ public class VCFUploadApp implements LaunchableApp {
                             private void succeeded() {
                                 LOG.info("Uplaod succeeded");
 
-                                
-                                
                                 SwingUtilities.invokeLater(new Runnable() {
 
                                     @Override
@@ -418,12 +436,12 @@ public class VCFUploadApp implements LaunchableApp {
                                         LOG.info("Uplaod succeeded");
                                         AppDirectory.getTaskManager().showMessageForTask(instance,
                                                 "<html>Variants have completed being imported.<br/>"
-                                                        + "As a result, you must login again.</html>");
+                                                + "As a result, you must login again.</html>");
                                         MedSavantFrame.getInstance().requestLogoutAndRestart();
                                     }
 
                                 });
-                                
+
                             }
 
                         });
@@ -464,12 +482,7 @@ public class VCFUploadApp implements LaunchableApp {
 
         });
 
-        JScrollPane p = ViewUtil.getClearBorderlessScrollPane(container);
-        p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        settingsCard.add(p, BorderLayout.CENTER);
-
-        return settingsCard;
+        return container;
     }
 
     /**
