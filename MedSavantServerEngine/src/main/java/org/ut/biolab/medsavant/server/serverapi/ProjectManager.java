@@ -89,6 +89,14 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         return instance;
     }
 
+    //This method will be removed from the public API. API users do not need to know database details.
+    @Override    
+    @Deprecated
+    public String getVariantTableName(String sessID, int updateID, int projectid, int refid) throws SQLException, SessionExpiredException, RemoteException {
+        return DBSettings.getVariantViewName(projectid, refid);
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     @Override
     public String[] getProjectNames(String sid) throws SQLException, SessionExpiredException {
 
@@ -260,11 +268,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         for (CustomField f : customFields) {
             variantSchema.addColumn(f);
         }
-        /*
-         for (CustomField f : getCustomVariantFields(sessID, projID, refID, updID)) {
-         variantSchema.addColumn(f);
-         }
-         */
+       
         String s = "";
         for (DbColumn c : variantSchema.getColumns()) {
             s += c.getColumnNameSQL() + " ";
@@ -289,8 +293,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 updateString = variantSchema.getCreateQuery() + " ENGINE=INFINIDB;";
             } else {
                 updateString = variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;";
-            }
-            //LOG.info(updateString);
+            }            
             conn.executeUpdate(updateString);
         } finally {
             conn.close();
@@ -301,16 +304,14 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     public void setupTablesForVariantRemoval(String sessID, int projID, int refID, int updId, String newSubsetTableName) throws SQLException, RemoteException, SessionExpiredException {
         Object[] row = ProjectManager.getInstance().getVariantTableMapRecord(sessID, projID, refID, true);
-        String tableName = (String) row[MedSavantDatabase.VarianttablemapTableSchema.INDEX_OF_VARIANT_TABLENAME];
-        //String tableNameSub = (String) row[MedSavantDatabase.VarianttablemapTableSchema.INDEX_OF_VARIANT_SUBSET_TABLENAME];
-        int[] annotationIds = AnnotationManager.getInstance().getAnnotationIDs(sessID, projID, refID);
-        //addTableToMap(sessID, projID, refID, updId, false, tableName, annotationIds, tableNameSub);
+        String tableName = (String) row[MedSavantDatabase.VarianttablemapTableSchema.INDEX_OF_VARIANT_TABLENAME];        
+        int[] annotationIds = AnnotationManager.getInstance().getAnnotationIDs(sessID, projID, refID);       
         addTableToMap(sessID, projID, refID, updId, false, tableName, annotationIds, newSubsetTableName);
 
     }
 
-    //This method will be removed from the RMI-exposed API.  published is redundant: it must always be false, and this 
-    //argument will also be removed.
+    //This method will be removed from the RMI-exposed API (but retained as a public non-RMI method).  
+    // published is redundant: it must always be false, and this argument will also be removed.
     @Deprecated
     @Override
     public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException, SessionExpiredException {
@@ -327,23 +328,15 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tableName);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
-
-        // String viewName = DBSettings.getVariantViewName(projID, refID);
+        
         float subMultiplier = 0.0f;
-       // if (subTableName != null) {
-        //subMultiplier = getMultiplier(sessID, viewName, subTableName);
-        //  }
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER), subMultiplier);
 
-        // add annotation ids
-        //LOG.info("\n\n\n\n\n\n\n");
-        //LOG.info(annotationIDs);
         if (annotationIDs.length > 0) {
             String annIDString = "";
             for (int id : annotationIDs) {
                 annIDString += id + ",";
-            }
-            //LOG.info(annIDString);
+            }            
             annIDString = annIDString.substring(0, annIDString.length() - 1); // remove the last comma
             query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDString);
         }
@@ -383,26 +376,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
      */
     public String getNameOfVariantTable(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
         Object[] row = getVariantTableMapRecord(sid, projectid, refid, published);
-
-        return sub ? (String) row[VariantTablemapTableSchema.INDEX_OF_VARIANT_SUBSET_TABLENAME] : (String) row[VariantTablemapTableSchema.INDEX_OF_VARIANT_TABLENAME];
-        /*TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-         SelectQuery query = new SelectQuery();
-         query.addFromTable(table.getTable());
-         query.addColumns(table.getDBColumn((sub ? VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME : VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         if (published) {
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
-         }
-         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-
-         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-         if (rs.next()) {
-         return rs.getString(1);
-         } else {
-         return null;
-         }*/
+        return sub ? (String) row[VariantTablemapTableSchema.INDEX_OF_VARIANT_SUBSET_TABLENAME] : (String) row[VariantTablemapTableSchema.INDEX_OF_VARIANT_TABLENAME];        
     }
 
     //The published argument is ignored, and this method may be renamed in the future.
@@ -418,57 +392,14 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     @Deprecated
     public String getVariantTableName(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException, SessionExpiredException {
-        return sub ? DBSettings.getVariantViewName(projectid, refid) : DBSettings.getVariantViewName(projectid, refid);
-        /*TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-         SelectQuery query = new SelectQuery();
-         query.addFromTable(table.getTable());
-         query.addColumns(table.getDBColumn((sub ? VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME : VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         if (published) {
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
-         }
-         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-
-         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-         if (rs.next()) {
-         return rs.getString(1);
-         } else {
-         return null;
-         }*/
-    }
-
-    @Deprecated
-    @Override
-    public String getVariantTableName(String sid, int updateID, int projectid, int refid) throws SQLException, SessionExpiredException {
-        throw new UnsupportedOperationException("getVariantTableName(String,int,int,int) is deprecated");
-        /*
-         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-         SelectQuery query = new SelectQuery();
-         query.addFromTable(table.getTable());
-         query.addColumns(table.getDBColumn((VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateID));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
-         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-
-         LOG.info("Getting variant table for update with " + query.toString());
-        
-         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-         if (rs.next()) {
-         return rs.getString(1);
-         } else {
-         return null;
-         }*/
-    }
+        return sub ? DBSettings.getVariantViewName(projectid, refid) : DBSettings.getVariantViewName(projectid, refid);       
+    }   
 
     public Object[] getVariantTableViewInfo(String sid, int projectid, int refid) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(
-                //table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME),
+        query.addColumns(                
                 table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME),
                 table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
@@ -887,30 +818,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
             float multiplier = this.getMultiplier(sid, variantViewName, variantSubViewName);
 
-            /*
-             //Check that the subset table is setup correctly. This might not be the case if variants have been removed.
-             int numVariantsInView = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, variantViewName, new Condition[0][]);
-             int step = VariantManagerUtils.determineStepForSubset(numVariantsInView);                                       
-             if(step == 1 && multiplier > 1.000001){  
-             //subset table needs to be recreated.
-             LOG.info("Subset table has too large step size for this table.  Readjusting...");
-                
-             //not an assertion, this if is expected to fail some of the time.
-             String query = "SELECT count(*) FROM "+variantViewName;
-             conn.executeQuery(query);
-             rs.next();
-             int numVariantsInView = rs.getInt(1);
-                
-             query = "SELECT count(*) FROM "+variantSubViewName;
-             conn.executeQuery(query);
-             rs.next();
-             int numVariantsInSubset = rs.getInt(1);
-                
-             if(numVariantsInView != numVariantsInSubset){
-             LOG.info("")
-             recreateSubset();
-             }
-             }*/
+           
             //update the table so everything points to the published version of the table, and the subset multiplier is set correctly.            
             UpdateQuery query = new UpdateQuery(variantTableMapTable.getTable());
             query.addSetClause(variantTableMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableName);
@@ -1106,13 +1014,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Deleting unpublished entries from variant format table: " + dq1.toString());
             ConnectionController.executeUpdate(sessID, dq1.toString());
         }
-
-        /*
-        TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
-
-        
-        VariantManagerUtils.dropTableIfExists(sessID, fileTable.getTableName());
-        SetupMedSavantDatabase.makeVariantFileTable(sessID, false);*/
+       
         //Drop the main file table, and restore the "backup" copy from the Infobright table.
         restorePublishedFileTable(sessID);
         cleanStaleGenotypeFiles(sessID, projID);        
@@ -1121,7 +1023,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     //Copies the published Infobright file table over the MyISAM file table.  This effectively 
     //undoes any changes that might be pending for unpublished variants.  This method is used to
     //cancel publication, and also to assert that updates to the variant table happen ONLY on 
-    //published variants.
+    //published variants.  
     public void restorePublishedFileTable(String sessID) throws SQLException, SessionExpiredException, IOException {
         TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
         //Drop the main file table, and restore the "backup" copy from the Infobright table.

@@ -25,9 +25,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery.JoinType;
-import com.healthmarketscience.sqlbuilder.SetOperationQuery;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
-import com.healthmarketscience.sqlbuilder.UnionQuery;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,7 +45,6 @@ import org.ut.biolab.medsavant.server.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileIBTableSchema;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
@@ -91,45 +88,36 @@ public class ImportUpdateManager {
         MedSavantServerJob importJob = new MedSavantServerJob(userId, database + ": VCF Import, " + dateFormat.format(new Date()), null) {
             @Override
             public boolean run() throws Exception {
+                //Assert database state reflects that of published variants.
                 ProjectManager.getInstance().restorePublishedFileTable(sessionID);
+                
                 LOG.info("Starting import");
                 File workingDirectory = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
                 LOG.info("Working directory is " + workingDirectory.getAbsolutePath());
                 int startFile = 0;
                 int endFile = Math.min(allVCFFiles.length, MedSavantServerEngine.getMaxThreads());
-
                 List<TSVFile> allAnnotatedFiles = new ArrayList<TSVFile>();
-                int[] allAnnotationIDs = new int[0];
-                //File annotationDir = DirectorySettings.getAnnotatedTSVDirectory(database, projectID);
+                int[] allAnnotationIDs = new int[0];                
                 File workingDir = null;
 
+                //Create directory where annotated TSV files will be moved to.  In the future, dumping variants from the main table
+                //won't be necessary as we can reuse the TSVs.
                 File finalAnnotationDestDir = DirectorySettings.getAnnotatedTSVDirectory(database, projectID, referenceID);
                 if (!finalAnnotationDestDir.exists()) {
                     finalAnnotationDestDir.mkdirs();
                 }
-
-                //annotationDir.mkdirs();
+                
                 try {
-                    //Could run this in a different thread, but make sure to wait for that thread at the end!
                     getJobProgress().setMessage("Preparing database for new variants...");
                     int[] annotationIDs = AnnotationManager.getInstance().getAnnotationIDs(sessionID, projectID, referenceID);
                     CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
-                    int numVariantsImported = 0;
-                    //Dumping the database should not be necessary if we retain copies of the TSVs from which the 
-                    //table was originally built.  This line is temporary and will be removed in the near future.
-                    //File existingTableAsTSV = doDumpTableAsTSV(sessionID, existingVariantTableName, createSubdir(workingDirectory, "dump"), true);
+                    int numVariantsImported = 0;                    
                     ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
 
+                    //Process the given files in groups no larger then MedSavantServerEngine.getMaxThreads().                      
                     while (startFile < endFile) {
-                        workingDir = createSubdir(workingDirectory, "annotate_upload");
-                        getJobProgress().setMessage("Performing functional annotations for VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length);
-
+                        workingDir = createSubdir(workingDirectory, "annotate_upload");                        
                         File[] vcfFiles = ArrayUtils.subarray(allVCFFiles, startFile, endFile);
-
-                        /*if (preAnnotateWithJannovar) {
-                         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
-                         vcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessionID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDir);
-                         }*/
                         getJobProgress().setMessage("Preparing VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length + " for further annotations");
                         // prepare for annotation
                         TSVFile[] importedTSVFiles
@@ -141,8 +129,7 @@ public class ImportUpdateManager {
                         for (TSVFile file : importedTSVFiles) {
                             numVariantsImported += file.getNumLines();
                         }
-                        //Instead of saving the split annotatedFiles, just save the importedTSVFiles??  Then use named pipes to split and 
-                        //load into infobright on the fly?
+                       
                         TSVFile[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, importedTSVFiles, workingDir, this);
 
                         //Save the annotated Files, delete everything else.  These can be reused if annotations are later changed.
@@ -172,9 +159,7 @@ public class ImportUpdateManager {
                     getJobProgress().setMessage("Done annotating, loading all variants into database.");
                     workingDir = createSubdir(workingDirectory, "annotate_upload");
                     String currentTableName
-                            = ProjectManager.getInstance().getNameOfVariantTable(sessionID, projectID, referenceID, true, false);
-                    /* String currentTableNameSubset
-                     = ProjectManager.getInstance().getNameOfVariantTable(sessionID, projectID, referenceID, true, true);*/
+                            = ProjectManager.getInstance().getNameOfVariantTable(sessionID, projectID, referenceID, true, false);                  
 
                     String tableNameSubset = ProjectManager.getInstance().addVariantTableToDatabase(
                             sessionID,
@@ -185,26 +170,16 @@ public class ImportUpdateManager {
                             customFields,
                             true);
 
-                    appendTSVFilesToVariantTable(sessionID, projectID, referenceID, updateID, allAnnotatedFiles.toArray(new TSVFile[allAnnotatedFiles.size()]), currentTableName);
-                    //registerTable(sessionID, projectID, referenceID, updateID, currentTableName, currentTableNameSubset, allAnnotationIDs);
+                    appendTSVFilesToVariantTable(sessionID, projectID, referenceID, updateID, allAnnotatedFiles.toArray(new TSVFile[allAnnotatedFiles.size()]), currentTableName);                    
 
+                    //Recreate subset table.
                     int[] fileIds = getFileIds(sessionID, projectID, referenceID, updateID);
                     String viewName = DBSettings.getVariantViewName(projectID, referenceID);
                     int totalNumVariants = numVariantsImported + VariantManager.getInstance().getNumFilteredVariantsHelper(sessionID, viewName, new Condition[0][]);
                     TableSchema publishedVariantView = CustomTables.getInstance().getCustomTableSchema(sessionID, viewName);
                     TableSchema unpublishedVariantTable = CustomTables.getInstance().getCustomTableSchema(sessionID, currentTableName);
                     TableSchema publishedFileTable = MedSavantDatabase.VariantFileIBTableSchema;
-                    /*
-                     UnionQuery uq = new UnionQuery(SetOperationQuery.Type.UNION);
-                     SelectQuery[] sq = new SelectQuery[2];
-                     sq[0] = new SelectQuery();
-                     sq[0].addFromTable(publishedVariantView.getTable());
-                     sq[0].addAllTableColumns(publishedVariantView.getTable());
-
-                     sq[1] = new SelectQuery();
-                     sq[1].addFromTable(unpublishedVariantTable.getTable());
-                     sq[1].addAllTableColumns(unpublishedVariantTable.getTable());
-                     */
+                                      
                     Condition[] fileRestrictionCondition = new Condition[fileIds.length];
                     int i = 0;
                     for (int fileId : fileIds) {
@@ -225,35 +200,13 @@ public class ImportUpdateManager {
                             )
                     );
 
-                    /*
-                    
-                    
-                     Condition[] cc
-                     = {
-                     VariantManager.getSubsetRestrictionCondition(totalNumVariants),};
-                     */
-                    /* sq[1].addCondition(
-                     ComboCondition.and(new Condition[]{ComboCondition.and(cc), ComboCondition.or(fileRestrictionCondition)})
-                     );*/
-                    /*                  sq[1].addCondition(ComboCondition.or(fileRestrictionCondition));
-                     uq.addQueries(sq);
-                     "("+uq.toString()+") as t1 WHERE RAND() < "*/
-                    /*                    
-                     sq.addJoin(
-                     SelectQuery.JoinType.INNER, 
-                     unpublishedVariantTable.getTable(), 
-                     publishedFileTable.getTable(), 
-                     BinaryCondition.equalTo(unpublishedVariantTable.getDBColumn(BasicVariantColumns.FILE_ID), publishedFileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID))
-                     );                    
-                     sq.addCondition(ComboCondition.and(cc));
-                     sq.addAllTableColumns(unpublishedVariantTable.getTable());*/
                     String qs = "SELECT ot.* FROM (" + query.toString() + ") as ot WHERE RAND() <= " + VariantManager.getSubsetFraction(totalNumVariants);
                     VariantManager.getSubsetRestrictionCondition(totalNumVariants).toString();
                     DBUtils.copyQueryResultToNewTable(sessionID, qs, tableNameSubset, this);
 
                     registerTable(sessionID, projectID, referenceID, updateID, currentTableName, tableNameSubset, allAnnotationIDs);
 
-//uploadTSVFiles(sessionID, updateID, projectID, referenceID, allAnnotationIDs, ArrayUtils.addAll(allAnnotatedFiles, existingTableAsTSV), workingDir);                                       
+
                     VariantManagerUtils.addTagsToUpload(sessionID, updateID, tags);
                     // create patients for all DNA ids in this update
                     createPatientsForUpdate(sessionID, currentTableName, projectID, updateID);
@@ -274,9 +227,7 @@ public class ImportUpdateManager {
                 return true;
             }
         };
-        //Although importing takes a long time, the outer 'import' job doesn't that much work,
-        //and mostly waits on other threads.
-        //MedSavantServerEngine.submitShortJob(importJob).get();
+        
         MedSavantServerEngine.runJobInCurrentThread(importJob);
 
         return updateID;
@@ -323,7 +274,7 @@ public class ImportUpdateManager {
                     getJobProgress().setMessage("Writing existing variants to file");
                     TSVFile existingViewAsTSV = doDumpTableAsTSV(sessionID, existingViewName, createSubdir(workingDirectory, "dump"));
                     getJobProgress().setMessage("Annotating...");
-                    //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
+                    
                     String tableName = ProjectManager.getInstance().addVariantTableToDatabase(
                             sessionID,
                             projectID,
@@ -359,8 +310,7 @@ public class ImportUpdateManager {
                     DBUtils.copyQueryResultToNewTable(sessionID, sq, tableNameSubset);
                     
                     registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
-
-                    //annotateAndUploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, new File[]{existingTableAsTSV}, createSubdir(workingDirectory, "annotate_upload"), this);
+                    
                     if (publishUponCompletion) {
                         publishLatestUpdate(sessionID, projectID);
                     }
@@ -371,8 +321,7 @@ public class ImportUpdateManager {
                 }
                 return true;
             }
-        };
-        //MedSavantServerEngine.submitShortJob(updateJob).get();
+        };        
         MedSavantServerEngine.runJobInCurrentThread(updateJob);
         return updateID;
     }
@@ -396,14 +345,7 @@ public class ImportUpdateManager {
         ProjectManager.getInstance().addTableToMap(sessionID, projectID, referenceID, updateID, false, tableName, annotationIDs, tableNameSub);
 
     }
-
-    @Deprecated
-    private static void dropTablesPriorToUpdateID(String sessionID, int projectID, int referenceID, int updateID) throws RemoteException, SQLException, SessionExpiredException {
-        int minId = -1;
-        int maxId = updateID - 1;
-        ProjectManager.getInstance().removeTables(sessionID, projectID, referenceID, minId, maxId);
-
-    }
+  
 
     /**
      * PARSING
@@ -414,11 +356,13 @@ public class ImportUpdateManager {
         LOG.info("Converting VCF files to TSV, working directory is " + outDir.getAbsolutePath());
 
         File[] processedVCFs = vcfFiles;
+        parentJob.getJobProgress().setMessage("Performing functional annotations for VCFs.");
         if (preAnnotateWithJannovar) {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
             processedVCFs = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDirectory);
         }
 
+        parentJob.getJobProgress().setMessage("Parsing VCFs.");
         // parse each vcf file in a separate thread with a separate file ID
         List<MedSavantServerJob> threads = new ArrayList<MedSavantServerJob>(vcfFiles.length);
         String stamp = System.nanoTime() + "";
@@ -556,12 +500,7 @@ public class ImportUpdateManager {
         return VariantManagerUtils.annotateTSVFiles(sessionID, tsvFiles, annotations, customFields, parentJob);
     }
 
-    /*
-     @Deprecated
-     private static void annotateAndUploadTSVFilesOld(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, File[] tsvFiles, File workingDir, MedSavantServerJob parentJob) throws Exception {
-     File[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, tsvFiles, workingDir, parentJob);
-     uploadTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, annotatedFiles, workingDir);
-     }*/
+   
     private static TSVFile[] annotateTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, TSVFile[] tsvFiles, File workingDir, MedSavantServerJob parentJob) throws Exception {
         try {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
@@ -601,7 +540,7 @@ public class ImportUpdateManager {
             TSVFile[] annotatedTSVFiles, String tableName)
             throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException {
 
-        int variantTableID = ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, true);
+//        int variantTableID = ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, true);
 
         //Note, table is NOT locked.  Publishing involves inserting the updateID in the view table.
         //appendTSVFilesToTable(sessionID, projectID, referenceID, updateID, variantTableID, annotationIDs, annotatedTSVFiles, tableName, tableNameSubset, createSubdir(workingDir, "subset"));
@@ -616,125 +555,11 @@ public class ImportUpdateManager {
         for (TSVFile af : annotatedTSVFiles) {
             LOG.info("Uploading " + af.getFile().getAbsolutePath() + "...");
             VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, af.getFile(), tableName);
-            /* if (initialStepSize == 1 && VariantManagerUtils.determineStepForSubset(numLines) > 1) {
-             //abort writing to the subset table.
-             initialStepSize = -1;
-             }*/
+            
         }
 
         //No new tables should have been created, so it's not necessary to drop any existing tables.
         //dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
         setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-    }
-    /*
-     @Deprecated
-     private static void appendTSVFilesToVariantTableOld(String sessionID, int projectID, int referenceID, int updateID,
-     int[] annotationIDs, File[] annotatedTSVFiles, File workingDir)
-     throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException {
-
-     String currentTableName
-     = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true, false);
-     String currentTableNameSubset
-     = ProjectManager.getInstance().getVariantTableName(sessionID, projectID, referenceID, true, true);
-
-     int variantTableID = ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, true);
-
-     //Note, table is NOT locked.  Publishing involves inserting the updateID in the view table.
-     appendTSVFilesToTable(sessionID, projectID, referenceID, variantTableID, annotationIDs, annotatedTSVFiles, currentTableName, currentTableNameSubset, createSubdir(workingDir, "subset"));
-
-     registerTable(sessionID, projectID, referenceID, updateID, currentTableName, currentTableNameSubset, annotationIDs);
-     //No new tables should have been created, so it's not necessary to drop any existing tables.
-     //dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
-     setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-     }
-
-     @Deprecated
-     private static void uploadTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, File[] annotatedTSVFiles, File workingDir) throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException {
-
-     //TODO: shouldn't these (tablename and tablenamesub) functions consider the customfields?
-     String tableName = ProjectManager.getInstance().createVariantTable(
-     sessionID,
-     projectID,
-     referenceID,
-     updateID,
-     annotationIDs,
-     true);
-
-     String tableNameSubset = ProjectManager.getInstance().createVariantTable(
-     sessionID,
-     projectID,
-     referenceID,
-     updateID,
-     annotationIDs,
-     false,
-     true);
-     uploadTSVFiles(sessionID, projectID, referenceID, updateID, annotationIDs, annotatedTSVFiles, tableName, tableNameSubset, createSubdir(workingDir, "subset"));
-     registerTable(sessionID, projectID, referenceID, updateID, tableName, tableNameSubset, annotationIDs);
-     dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
-     setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-     }
-     */
-
-    @Deprecated
-    private static void appendTSVFilesToTableOld(String sessionID, int projectID, int referenceID, int updateID, int variantTableID, int[] annotationIDs, TSVFile[] annotatedTSVFiles, String tableName, String tableNameSub, File workingDir) throws SQLException, IOException, SessionExpiredException {
-
-        try {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
-                    sessionID,
-                    LogManagerAdapter.LogType.INFO,
-                    "Uploading " + annotatedTSVFiles.length + " TSV files");
-        } catch (RemoteException ex) {
-        } catch (SessionExpiredException ex) {
-        }
-
-        //existing variants without the about-to-be-included files.
-        String viewName = ProjectManager.getInstance().getNameOfVariantTable(sessionID, projectID, referenceID, true, false);
-
-        //number of lines currently in the table.
-        // int numLines = VariantManager.getInstance().getNumFilteredVariantsHelper(sessionID, viewName, new Condition[][]{});
-        //number of lines in incoming TSV files
-        //for (AnnotatedTSVFile af : annotatedTSVFiles) {
-        //  numLines += af.getNumLines();
-        //}
-        //int initialStepSize = VariantManagerUtils.determineStepForSubset(numLines);
-        // upload all the TSV files to the table
-        for (TSVFile af : annotatedTSVFiles) {
-            LOG.info("Uploading " + af.getFile().getAbsolutePath() + "...");
-            VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, af.getFile(), tableName);
-            /* if (initialStepSize == 1 && VariantManagerUtils.determineStepForSubset(numLines) > 1) {
-             //abort writing to the subset table.
-             initialStepSize = -1;
-             }*/
-        }
-
-        /*
-         if (initialStepSize == -1) {
-         //Need to recreate sub table from scratch.  
-         LOG.info("Dumping variants to file for sub table");
-            
-         int currentStep = VariantManagerUtils.determineStepForSubset(numLines);
-                        
-         //Dump variants in existing sub table view to a file.  Note this does not include the 
-         //as yet unpublished variants (i.e. those in annotatedTSVFiles).
-         File subDump = new File(workingDir, viewName + "sub.tsv");           
-         VariantManagerUtils.variantTableToTSVFile(sessionID, viewName, subDump, null, true, currentStep);
-         LOG.info("Loading into subset table: " + tableNameSub);
-         VariantManagerUtils.dropTableIfExists(sessionID, tableNameSub);
-         CustomField[] customFields = 
-         ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, variantTableID);
-               
-               
-         tableNameSub = ProjectManager.getInstance().addVariantTableToDatabase(
-         sessionID,
-         projectID,
-         referenceID,
-         variantTableID,
-         annotationIDs,
-         customFields,
-         true);
-                        
-         VariantManagerUtils.uploadTSVFileToVariantTable(sessionID, subDump, tableNameSub, null, -1);
-         }
-         */
-    }
+    }      
 }
