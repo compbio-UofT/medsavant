@@ -104,6 +104,7 @@ public class StandardFixedWidthAppPanel extends JPanel {
 
     public void setTitle(String string) {
         titleLabel.setText(string);
+        ViewUtil.ellipsizeLabel(titleLabel, 800);
         titleLabel.setVisible(true);
     }
     

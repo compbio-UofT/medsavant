@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.variant;
 
@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -51,48 +52,19 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 class VariantFilesDetailedView extends DetailedView implements BasicVariantColumns {
 
     private final JPanel details;
-    private final JPanel content;
     private SimpleVariantFile[] files;
     private DetailsWorker detailsWorker;
-    private CollapsiblePane infoPanel;
     private final BlockingPanel blockPanel;
+    private final StandardFixedWidthAppPanel canvas;
 
     public VariantFilesDetailedView(String page) {
         super(page);
-
-        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-        viewContainer.setLayout(new BorderLayout());
-
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BorderLayout());
-
-        JPanel infoContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-        contentPanel.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
-        CollapsiblePanes panes = new CollapsiblePanes();
-        panes.setOpaque(false);
-
-        infoPanel = new CollapsiblePane();
-        infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-        infoPanel.setCollapsible(false);
-        panes.add(infoPanel);
-        panes.addExpansion();
-
-        infoContainer.add(panes);
-
-        content = new JPanel();
-        content.setLayout(new BorderLayout());
-        infoPanel.setLayout(new BorderLayout());
-        infoPanel.add(content, BorderLayout.CENTER);
-
-        details = ViewUtil.getClearPanel();
-
-        content.add(details);
-
-        blockPanel = new BlockingPanel("No file selected", contentPanel);
-        viewContainer.add(blockPanel, BorderLayout.CENTER);
+        canvas = new StandardFixedWidthAppPanel();
+        blockPanel = new BlockingPanel("No file selected", canvas);
+        details = canvas.addBlock();
+        blockPanel.block();
+        this.setLayout(new BorderLayout());
+        this.add(blockPanel, BorderLayout.CENTER);
     }
 
     @Override
@@ -102,7 +74,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             blockPanel.block();
         } else {
             files = new SimpleVariantFile[]{(SimpleVariantFile) item[0]};
-            infoPanel.setTitle(files[0].getPath());
+            canvas.setTitle(files[0].getPath());
 
             details.removeAll();
             details.updateUI();
@@ -155,7 +127,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             result.add(0, new String[]{"File Name", file.getPath()});
             result.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
             result.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
-			//result.add(3, new String[]{"DNA ID", ""}); // need to fill this field.
+            //result.add(3, new String[]{"DNA ID", ""}); // need to fill this field.
             setFileInfoList(result);
             blockPanel.unblock();
         }
@@ -172,9 +144,9 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             }
 
             if (items.isEmpty()) {
-                infoPanel.setTitle("");
+                canvas.setTitle("");
             } else {
-                infoPanel.setTitle("Multiple uploads (" + items.size() + ")");
+                canvas.setTitle("Multiple uploads (" + items.size() + ")");
             }
             details.removeAll();
             details.updateUI();
@@ -193,12 +165,12 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             final JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
             filter1Item.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {                    
-                    QueryUtils.addQueryOnVariantFiles(files);                                                                                           
+                public void actionPerformed(ActionEvent e) {
+                    QueryUtils.addQueryOnVariantFiles(files);
                     DialogUtils.displayMessage("Selected File has been added to query.  Click 'Variants' to review and execute search.");
                 }
             });
-            
+
             popupMenu.add(filter1Item);
         }
 

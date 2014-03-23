@@ -52,6 +52,7 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -190,47 +191,20 @@ public class ProjectManagementPage extends AppSubSection {
 
     private class ProjectsDetailedView extends DetailedView {
 
-        private final JPanel content;
         private String projectName;
         private DetailsWorker detailsWorker;
         private JPanel details;
-        private CollapsiblePane infoPanel;
         private final BlockingPanel blockingPanel;
+        private final StandardFixedWidthAppPanel canvas;
 
         public ProjectsDetailedView() {
             super(pageName);
-
-            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-            viewContainer.setLayout(new BorderLayout());
-
-            JPanel infoContainer = ViewUtil.getClearPanel();
-            ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-            viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
-            blockingPanel = new BlockingPanel("No user selected", ViewUtil.getClearBorderlessScrollPane(infoContainer));
-            viewContainer.add(blockingPanel, BorderLayout.CENTER);
-
-            CollapsiblePanes panes = new CollapsiblePanes();
-            panes.setOpaque(false);
-            infoContainer.add(panes);
-
-            infoPanel = new CollapsiblePane();
-            infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-            infoPanel.setCollapsible(false);
-            panes.add(infoPanel);
-            panes.addExpansion();
-
-            content = new JPanel();
-            content.setLayout(new BorderLayout());
-            infoPanel.setLayout(new BorderLayout());
-            infoPanel.add(content, BorderLayout.CENTER);
-
-            details = ViewUtil.getClearPanel();
-
-            content.add(details);
-
+            canvas = new StandardFixedWidthAppPanel();
+            blockingPanel = new BlockingPanel("No project selected",canvas);
+            details = canvas.addBlock("Basic Information");
             blockingPanel.block();
+            this.setLayout(new BorderLayout());
+            this.add(blockingPanel,BorderLayout.CENTER);            
         }
 
         @Override
@@ -246,7 +220,7 @@ public class ProjectManagementPage extends AppSubSection {
         }
 
         private void refreshSelectedProject() {
-            infoPanel.setTitle(projectName);
+            canvas.setTitle(projectName);
 
             details.removeAll();
             details.updateUI();
@@ -306,9 +280,9 @@ public class ProjectManagementPage extends AppSubSection {
 
             int projectID = projectDetails[0].getProjectID();
             if (projectID == ProjectController.getInstance().getCurrentProjectID()) {
-                JPanel p = new JPanel();
+                JPanel p = ViewUtil.getClearPanel();
                 ViewUtil.applyHorizontalBoxLayout(p);
-                p.add(new JLabel("This is the current project."));
+                p.add(ViewUtil.getGrayItalicizedLabel("This is the current project."));
                 p.add(Box.createHorizontalGlue());
                 details.add(Box.createVerticalStrut(10));
                 details.add(p);
@@ -318,10 +292,10 @@ public class ProjectManagementPage extends AppSubSection {
 
             try {
                 if (MedSavantClient.SettingsManager.isProjectLockedForChanges(sessionID, projectID)) {
-                    JPanel p = new JPanel();
+                    JPanel p = ViewUtil.getClearPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
 
-                    p.add(new JLabel("This project is locked. Administrators cannot make further changes."));
+                    p.add(ViewUtil.getGrayItalicizedLabel("This project is locked. Administrators cannot make further changes."));
                     JButton b = new JButton("Unlock");
                     b.addActionListener(new ActionListener() {
                         @Override
@@ -348,9 +322,9 @@ public class ProjectManagementPage extends AppSubSection {
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);
                 } else {
-                    JPanel p = new JPanel();
+                    JPanel p = ViewUtil.getClearPanel();
                     ViewUtil.applyHorizontalBoxLayout(p);
-                    p.add(ViewUtil.alignLeft(new JLabel("This project is unlocked. Administrators can make changes.")));
+                    p.add(ViewUtil.alignLeft(ViewUtil.getGrayItalicizedLabel("This project is unlocked. Administrators can make changes.")));
                     details.add(Box.createVerticalStrut(10));
                     details.add(p);
                 }
@@ -364,9 +338,9 @@ public class ProjectManagementPage extends AppSubSection {
         @Override
         public void setMultipleSelections(List<Object[]> items) {
             if (items.isEmpty()) {
-                infoPanel.setTitle("");
+                canvas.setTitle("");
             } else {
-                infoPanel.setTitle("Multiple projects (" + items.size() + ")");
+                canvas.setTitle("Multiple projects (" + items.size() + ")");
             }
             details.removeAll();
             details.updateUI();

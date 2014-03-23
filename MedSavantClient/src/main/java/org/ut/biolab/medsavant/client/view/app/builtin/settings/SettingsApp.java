@@ -30,8 +30,7 @@ public class SettingsApp extends MultiSectionApp {
             new AnnotationsPage(this),
             new OntologyPage(this),
             new ReferenceGenomePage(this),
-            new GeneSetPage(this),
-            new ServerLogPage(this) };
+            new GeneSetPage(this) };
     }
 
     @Override

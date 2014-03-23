@@ -342,7 +342,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         appTopMenu.setTitle(app.getName());
 
         appTopMenu.addLeftComponent(getHomeButton());
-        //appTopMenu.setCenterComponent(navigationPanel);
         appTopMenu.addRightComponent(getLogoutButton());
 
         appLayer.add(appTopMenu, BorderLayout.NORTH);
