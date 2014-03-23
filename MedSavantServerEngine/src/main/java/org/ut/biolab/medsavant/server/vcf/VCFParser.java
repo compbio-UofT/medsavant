@@ -89,6 +89,7 @@ public class VCFParser {
     private int numHom = 0;
     private int numHet = 0;
 
+    private int numVariants = 0;
     private String sessID;
     private File vcfFile;
 
@@ -471,7 +472,9 @@ public class VCFParser {
 
             String[] allAlt = altStr.split(","); //there may be multiple alternative alleles
 
-            for (String alt : allAlt) { //process each alternative allele                    
+            int altNumber = 0;
+            for (String alt : allAlt) { //process each alternative allele        
+                altNumber++;
                 if (badRef) {
                     ++numInvalidRef;
                 }
@@ -579,9 +582,9 @@ public class VCFParser {
                             variantType = VariantType.InDel;
                         }
                     }
-                }
+                }//end else.
 
-                VariantRecord variantRecordTemplate = new VariantRecord(line, newStart, newEnd, newRef, newAlt, variantType);
+                VariantRecord variantRecordTemplate = new VariantRecord(line, newStart, newEnd, newRef, newAlt, altNumber, variantType);
 
                 int indexGT = getIndexGT(line); //index of GT in line
 

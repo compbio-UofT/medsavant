@@ -656,6 +656,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         (String) row[INDEX_OF_DBSNP_ID],
                         (String) row[INDEX_OF_REF],
                         (String) row[INDEX_OF_ALT],
+                        (Integer) row[INDEX_OF_ALT_NUMBER],
                         (Float) row[INDEX_OF_QUAL],
                         (String) row[INDEX_OF_FILTER],
                         (String) row[INDEX_OF_CUSTOM_INFO],

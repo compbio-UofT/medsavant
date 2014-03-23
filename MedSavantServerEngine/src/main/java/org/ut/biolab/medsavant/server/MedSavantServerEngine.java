@@ -224,14 +224,41 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         return isTLSRequired() ? new SslRMIClientSocketFactory() : RMISocketFactory.getSocketFactory();
     }
 
+    public static String getHost() {
+        return host;
+    }
+
+    public static int getPort() {
+        return port;
+    }
+
+    public static String getRootName() {
+        return rootName;
+    }
+
+    public static String getPass() {
+        return pass;
+    }
+
+    private static  String host;
+    private static  int port;
+    private static  String rootName;
+    private static  String pass;
+    
+    
+    
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
+        host = databaseHost;
+        port = databasePort;
+        rootName = rootUserName;
+        pass = password;
         try {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
-
+        
         listenOnPort = MedSavantServerUnicastRemoteObject.getListenPort();
 
         if (!performPreemptiveSystemCheck()) {

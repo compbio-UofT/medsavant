@@ -362,7 +362,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             if(msg != null){
                 DialogUtils.displayMessage(msg);
             }
-            if(referenceID > 0 && updateID>0){
+            if(referenceID > 0 && updateID>0){               
                 MedSavantClient.VariantManager.publishVariants(sessionID, projectID, referenceID, updateID);
             }else{
                 MedSavantClient.VariantManager.publishVariants(sessionID, projectID);

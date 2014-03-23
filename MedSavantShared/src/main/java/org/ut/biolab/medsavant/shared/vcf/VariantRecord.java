@@ -112,6 +112,7 @@ public class VariantRecord implements Serializable {
     private String dbSNPID;
     private String ref;
     private String alt;
+    private int altNumber;
     private Float qual;
     private String filter;
     private VariantType type;
@@ -146,7 +147,7 @@ public class VariantRecord implements Serializable {
     public VariantRecord() {
     }
 
-    public VariantRecord(String[] line, long start, long end, String ref, String alt, VariantType vt) throws Exception {//, String[] infoKeys, Class[] infoClasses) {
+    public VariantRecord(String[] line, long start, long end, String ref, String alt, int altNumber, VariantType vt) throws Exception {//, String[] infoKeys, Class[] infoClasses) {
         dnaID = null;
         chrom = (String) parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
         if (!chrom.toLowerCase().startsWith("chr")) {
@@ -182,10 +183,11 @@ public class VariantRecord implements Serializable {
         qual = (Float) parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
         filter = (String) parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
         customInfo = (String) parse(CLASS_OF_CUSTOMINFO, line[FILE_INDEX_OF_INFO]);
-
+        
         this.start_position = start;
         this.end_position = end;
         this.alt = alt;
+        this.altNumber = altNumber;
         this.ref = ref;
         this.type = vt;
 
@@ -205,6 +207,7 @@ public class VariantRecord implements Serializable {
             String dbSNPID,
             String ref,
             String alt,
+            int altNumber,
             float qual,
             String filter,
             String customInfo,
@@ -221,6 +224,7 @@ public class VariantRecord implements Serializable {
         this.dbSNPID = dbSNPID;
         this.ref = ref;
         this.alt = alt;
+        this.altNumber = altNumber;
         this.qual = qual;
         this.filter = filter;
         this.setCustomInfo(customInfo);
@@ -239,11 +243,20 @@ public class VariantRecord implements Serializable {
         this.setDbSNPID(r.getDbSNPID());
         this.setRef(r.getRef());
         this.setAlt(r.getAlt());
+        this.setAltNumber(r.getAltNumber());
         this.setQual(r.getQual());
         this.setFilter(r.getFilter());
         this.setCustomInfo(r.getCustomInfo());
         this.setCustomFields(r.getCustomFields());
         this.setType(r.getType());
+    }
+    
+    public void setAltNumber(int a){
+        this.altNumber = a;
+    }
+    
+    public int getAltNumber(){
+        return this.altNumber;
     }
 
     private static Object parse(Class c, String value) {
@@ -291,6 +304,8 @@ public class VariantRecord implements Serializable {
         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
     }
 
+    /*
+    @Deprecated
     public VariantType getVariantType(String ref, String alt) {
         if (ref.startsWith("<") || alt.startsWith("<")) {
             if (alt.contains("<DEL>") || ref.contains("<DEL>")) {
@@ -314,7 +329,7 @@ public class VariantRecord implements Serializable {
         }
         return result;
     }
-
+*/
     private VariantType variantTypeHelper(VariantType currentType, VariantType newType) {
         if (currentType == null || currentType == newType) {
             return newType;
@@ -708,6 +723,7 @@ public class VariantRecord implements Serializable {
                 + "\"" + getString(this.dbSNPID) + "\"" + delim
                 + "\"" + getString(this.ref) + "\"" + delim
                 + "\"" + getString(this.alt) + "\"" + delim
+                + "\"" + getString(this.altNumber) + "\"" + delim
                 + "\"" + getString(this.qual) + "\"" + delim
                 + "\"" + getString(this.filter) + "\"" + delim
                 + "\"" + getString(this.type) + "\"" + delim

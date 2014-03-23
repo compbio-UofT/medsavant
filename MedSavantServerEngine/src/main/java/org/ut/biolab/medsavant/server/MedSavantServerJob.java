@@ -58,7 +58,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
     public ScheduleStatus getScheduleStatus() {
         return jobProgress.getStatus();
     }
-
+    
     public MedSavantServerJob(String userId, String jobName, MedSavantServerJob parentJob) {
         jobProgress = new MedSavantServerJobProgress(userId, jobName);
         this.parentJob = parentJob;

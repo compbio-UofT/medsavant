@@ -52,6 +52,7 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_START_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_END_POSITION;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ALT;
+import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ALT_NUMBER;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CHROM;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_CUSTOM_INFO;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_DBSNP_ID;
@@ -246,6 +247,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
                     (String) row[INDEX_OF_DBSNP_ID],
                     (String) row[INDEX_OF_REF],
                     (String) row[INDEX_OF_ALT],
+                    (Integer) row[INDEX_OF_ALT_NUMBER],
                     (Float) row[INDEX_OF_QUAL],
                     (String) row[INDEX_OF_FILTER],
                     (String) row[INDEX_OF_CUSTOM_INFO],

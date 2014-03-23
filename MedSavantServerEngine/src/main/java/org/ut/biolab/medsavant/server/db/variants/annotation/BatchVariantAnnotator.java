@@ -62,11 +62,16 @@ public class BatchVariantAnnotator {
     private final String sid;
     // the total number of lines read from the input file
     private int totalNumLinesRead;
+    
+    private int totalNumVariantsWritten = 0;
     // the total number of warnings raised while annotating
     private int totalNumWarnings;
     
     private MedSavantServerJobProgress jobProgress;
 
+    public int getTotalVariantsWritten(){
+        return totalNumVariantsWritten;
+    }
     /**
      * Perform a set of annotations on a tab delimited genomic input file, and
      * output a tab delimited file to a specified path.
@@ -507,7 +512,7 @@ public class BatchVariantAnnotator {
             this.numFieldsInOutputFile = numFieldsInOutputFile;
             variantWindow = new LinkedList<SimpleVariantRecord>(); //profile with arraylist also.
             startTime = System.currentTimeMillis();
-            //variantWindow = new SimpleVariantRecord[VARIANT_WINDOW_SIZE];
+            //variantWindow = new SimpleVariantRecord[VARIANT_WINDOW_SIZE];            
         }
         
          boolean isLowDensity(List<SimpleVariantRecord> variantWindow){
@@ -559,6 +564,7 @@ public class BatchVariantAnnotator {
                 
                 for (SimpleVariantRecord svr : variantWindow) {
                     recordWriter.writeNext(svr.getLineWithAnnotations(cursors));
+                    totalNumVariantsWritten++;
                     //recordWriter.writeNext((String[]) ArrayUtils.addAll(svr.line, outputAnnotations[i]));
                 }
 

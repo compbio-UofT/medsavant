@@ -658,10 +658,14 @@ public class MedSavantDatabase {
 
     public static class VariantFileTableSchema extends TableSchema {
 
-        public static final String TABLE_NAME = "variant_file";
+        private static final String TABLE_NAME_PREFIX = "variant_file";
 
-        public VariantFileTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
+        public VariantFileTableSchema(DbSchema s){
+            this(s, "");
+        }
+        
+        public VariantFileTableSchema(DbSchema s, String suffix) {
+            super(s.addTable(TABLE_NAME_PREFIX+suffix));
             addColumns();
         }
         // variant_file.upload_id
@@ -721,4 +725,5 @@ public class MedSavantDatabase {
     public static final TableSchema VariantTagTableSchema = new TableSchema(schema, "variant_tag", VariantTagColumns.class);
     public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
     public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
+    public static final VariantFileTableSchema VariantFileIBTableSchema = new VariantFileTableSchema(schema, "_ib");
 }

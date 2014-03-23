@@ -351,32 +351,33 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                         LoginController.getSessionID(), projectID, firstRef,
                         manager.getNewestUpdateID(LoginController.getSessionID(), projectID, firstRef, false));
                 for (CustomField f : fields) {
-                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                    //casing of f.getColumnName should match database.
+                    variantFormatModel.addRow(new Object[]{f.getColumnName(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
             } catch (Exception ex) {
                 LOG.error("Error getting reference IDs for project.", ex);
             }
         } else {
-            variantFormatModel.addRow(new Object[]{AA.getColumnName().toUpperCase(), AA.getTypeString(), true, AA.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{AC.getColumnName().toUpperCase(), AC.getTypeString(), true, AC.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{AF.getColumnName().toUpperCase(), AF.getTypeString(), true, AF.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{AN.getColumnName().toUpperCase(), AN.getTypeString(), true, AN.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{BQ.getColumnName().toUpperCase(), BQ.getTypeString(), true, BQ.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{CIGAR.getColumnName().toUpperCase(), CIGAR.getTypeString(), true, CIGAR.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{DB.getColumnName().toUpperCase(), DB.getTypeString(), true, DB.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{DP.getColumnName().toUpperCase(), DP.getTypeString(), true, DP.getAlias(), ""});
-            //variantFormatModel.addRow(new Object[]{END.getColumnName().toUpperCase(), END.getTypeString(), true, END.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{H2.getColumnName().toUpperCase(), H2.getTypeString(), true, H2.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{MQ.getColumnName().toUpperCase(), MQ.getTypeString(), true, MQ.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{MQ0.getColumnName().toUpperCase(), MQ0.getTypeString(), true, MQ0.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{NS.getColumnName().toUpperCase(), NS.getTypeString(), true, NS.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{SB.getColumnName().toUpperCase(), SB.getTypeString(), true, SB.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{SOMATIC.getColumnName().toUpperCase(), SOMATIC.getTypeString(), true, SOMATIC.getAlias(), ""});
-            variantFormatModel.addRow(new Object[]{VALIDATED.getColumnName().toUpperCase(), VALIDATED.getTypeString(), true, VALIDATED.getAlias(), ""});
-			variantFormatModel.addRow(new Object[]{JANNOVAR_EFFECT.getColumnName().toUpperCase(), JANNOVAR_EFFECT.getTypeString(), JANNOVAR_EFFECT.isFilterable(), JANNOVAR_EFFECT.getAlias(), ""});
-			variantFormatModel.addRow(new Object[]{JANNOVAR_SYMBOL.getColumnName().toUpperCase(), JANNOVAR_SYMBOL.getTypeString(), JANNOVAR_SYMBOL.isFilterable(), JANNOVAR_SYMBOL.getAlias(), ""});
-			variantFormatModel.addRow(new Object[]{FORMAT.getColumnName().toUpperCase(), FORMAT.getTypeString(), FORMAT.isFilterable(), FORMAT.getAlias(), ""});
-			variantFormatModel.addRow(new Object[]{SAMPLE_INFO.getColumnName().toUpperCase(), SAMPLE_INFO.getTypeString(), SAMPLE_INFO.isFilterable(), SAMPLE_INFO.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{AA.getColumnName(), AA.getTypeString(), true, AA.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{AC.getColumnName(), AC.getTypeString(), true, AC.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{AF.getColumnName(), AF.getTypeString(), true, AF.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{AN.getColumnName(), AN.getTypeString(), true, AN.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{BQ.getColumnName(), BQ.getTypeString(), true, BQ.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{CIGAR.getColumnName(), CIGAR.getTypeString(), true, CIGAR.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{DB.getColumnName(), DB.getTypeString(), true, DB.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{DP.getColumnName(), DP.getTypeString(), true, DP.getAlias(), ""});
+            //variantFormatModel.addRow(new Object[]{END.getColumnName(), END.getTypeString(), true, END.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{H2.getColumnName(), H2.getTypeString(), true, H2.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{MQ.getColumnName(), MQ.getTypeString(), true, MQ.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{MQ0.getColumnName(), MQ0.getTypeString(), true, MQ0.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{NS.getColumnName(), NS.getTypeString(), true, NS.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{SB.getColumnName(), SB.getTypeString(), true, SB.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{SOMATIC.getColumnName(), SOMATIC.getTypeString(), true, SOMATIC.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{VALIDATED.getColumnName(), VALIDATED.getTypeString(), true, VALIDATED.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{JANNOVAR_EFFECT.getColumnName(), JANNOVAR_EFFECT.getTypeString(), JANNOVAR_EFFECT.isFilterable(), JANNOVAR_EFFECT.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{JANNOVAR_SYMBOL.getColumnName(), JANNOVAR_SYMBOL.getTypeString(), JANNOVAR_SYMBOL.isFilterable(), JANNOVAR_SYMBOL.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{FORMAT.getColumnName(), FORMAT.getTypeString(), FORMAT.isFilterable(), FORMAT.getAlias(), ""});
+            variantFormatModel.addRow(new Object[]{SAMPLE_INFO.getColumnName(), SAMPLE_INFO.getTypeString(), SAMPLE_INFO.isFilterable(), SAMPLE_INFO.getAlias(), ""});
         }
 
         table.setModel(variantFormatModel);
@@ -530,7 +531,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
         final JComponent j = new JLabel("<html><p>You may continue. The import process will continue in the< background and you will be notified upon completion.</p></html>");
 
-
         workButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -589,6 +589,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                             } catch (Exception e) {
                                 DialogUtils.displayException("Error", "Error trying to create project", e);
                                 LOG.error(e);
+                                e.printStackTrace();
                             }
                             return null;
                         }
@@ -711,14 +712,14 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private int[] mergeAnnIDsWithDefaults(int[] annIDs, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException {
-        //LOG.info("WARNING: Debug code, temporarily disabled default annotation installation, line 714 of ProjectWizard.java");
-        //return annIDs;
+        LOG.info("WARNING: Debug code, temporarily disabled default annotation installation, line 714 of ProjectWizard.java");
+        return annIDs;
         // UNCOMMENT THIS BEFORE COMMITTING
-        int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getSessionID(), projID, refID);
+        /*int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getSessionID(), projID, refID);
         Set<Integer> a = new HashSet<Integer>();
         a.addAll(Arrays.asList(ArrayUtils.toObject(annIDs)));
         a.addAll(Arrays.asList(ArrayUtils.toObject(defaults)));
-        return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));
+        return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));*/
     }
 
     private void createNewProject() throws Exception {
@@ -728,13 +729,15 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         //add references and annotations
         for (CheckListItem cli : checkListItems) {
             if (cli.isSelected()) {
-
                 //set custom vcf fields
                 int refID = cli.getReference().getID();
-                manager.setCustomVariantFields(LoginController.getSessionID(), projID, refID, 0, variantFields);
                 int[] annIDs = mergeAnnIDsWithDefaults(cli.getAnnotationIDs(), projID, refID);
-                String tablename = manager.createVariantTable(LoginController.getSessionID(), projID, refID, 0, annIDs, false);
-                manager.addTableToMap(LoginController.getSessionID(), projID, refID, 0, true, tablename, annIDs, null);
+                manager.setCustomVariantFields(LoginController.getSessionID(), projID, refID, 0, variantFields);                                
+                manager.createVariantTable(LoginController.getSessionID(), projID, refID, 0, annIDs, false);
+                
+                //The below has been absorbed into createVariantTable.
+                //manager.addTableToMap(LoginController.getSessionID(), projID, refID, 0, false, tablename, annIDs, null);
+                //MedSavantClient.VariantManager.publishVariants(LoginController.getSessionID(), projID, refID, -1);
             }
         }
     }
@@ -774,9 +777,11 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     int refID = cli.getReference().getID();
                     LOG.info("Adding reference with id " + refID);
                     annIDs = mergeAnnIDsWithDefaults(annIDs, projectID, refID);
-                    String tablename = manager.createVariantTable(LoginController.getSessionID(), projectID, refID, 0, annIDs, false);
                     manager.setCustomVariantFields(LoginController.getSessionID(), projectID, refID, 0, variantFields);
-                    manager.addTableToMap(LoginController.getSessionID(), projectID, refID, 0, true, tablename, annIDs, null);
+                    manager.createVariantTable(LoginController.getSessionID(), projectID, refID, 0, annIDs, false);                                       
+                    //The below has been absorbed into createVariantTable
+                    //manager.addTableToMap(LoginController.getSessionID(), projectID, refID, 0, false, tablename, annIDs, null);
+                    //MedSavantClient.VariantManager.publishVariants(LoginController.getSessionID(), projectID, refID, -1);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
                     //remove existing ref
@@ -839,7 +844,6 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             setBackground(Color.WHITE);
-
 
             checkBox = new JCheckBox(ref.getName());
             checkBox.setMaximumSize(new Dimension(1000, 20));

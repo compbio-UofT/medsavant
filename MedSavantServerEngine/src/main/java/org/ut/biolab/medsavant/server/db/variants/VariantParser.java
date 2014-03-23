@@ -51,6 +51,7 @@ public class VariantParser extends MedSavantServerJob{
     private boolean success = false;
     private Exception exception;
     private String sessID;
+    private int numVariants;
     public VariantParser(String sessID, MedSavantServerJob parentJob, File vcfFile, File outFile, int updateID, int fileID, boolean includeHomoRef) throws FileNotFoundException, IOException {
         super(SessionManager.getInstance().getUserForSession(sessID), "VariantLoader", parentJob);
         this.vcfFile = vcfFile;
@@ -78,6 +79,10 @@ public class VariantParser extends MedSavantServerJob{
         return success;
     }
 
+    public int getNumVariants(){
+        return numVariants;       
+    }
+    
     @Override
     public String toString() {
         return "VariantParser{" + "includeHomoRef=" + includeHomoRef + ", updateID=" + updateID + ", vcfFile=" + vcfFile + ", reader=" + reader + ", outFile=" + outFile + ", fileID=" + fileID + ", success=" + success + ", exception=" + exception + '}';
@@ -87,7 +92,7 @@ public class VariantParser extends MedSavantServerJob{
     public boolean run() {
         try {
             VCFParser vcfParser = new VCFParser(sessID, vcfFile, getJobProgress());
-            vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
+            numVariants = vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
             success = true;
             
             LOG.info("VCF file "+vcfFile+" was successfully imported.");

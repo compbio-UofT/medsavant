@@ -53,8 +53,10 @@ public class VariantAnnotator extends MedSavantServerJob implements BasicVariant
     private final CustomField[] customFields;
     private Exception exception;
     private boolean success;
+    
+    private int numVariantsWritten = 0;
 
-    public VariantAnnotator(String sessID, MedSavantServerJob parentJob, File inputFile, File outFile, Annotation[] annotations, CustomField[] customFields) throws FileNotFoundException, IOException {        
+    public VariantAnnotator(String sessID, MedSavantServerJob parentJob, File inputFile, File outFile, Annotation[] annotations, CustomField[] customFields) throws FileNotFoundException, IOException {
         super(SessionManager.getInstance().getUserForSession(sessID), "VariantAnnotator", parentJob);
         this.inFile = inputFile;
         this.outFile = outFile;
@@ -76,6 +78,10 @@ public class VariantAnnotator extends MedSavantServerJob implements BasicVariant
         return success;
     }
 
+    public int getNumVariantsWritten(){
+        return numVariantsWritten;
+    }
+    
     @Override
     public boolean run() {
 
@@ -132,13 +138,13 @@ public class VariantAnnotator extends MedSavantServerJob implements BasicVariant
 
                 VariantManagerUtils.logFileSize(annotatedFilename);
                 workingFilePath = annotatedFilename;
-
+                numVariantsWritten = bva.getTotalVariantsWritten();
             }
 
             outFile = new File(workingFilePath);
 
             success = true;
-
+            
         } catch (Exception e) {
 
             try {
