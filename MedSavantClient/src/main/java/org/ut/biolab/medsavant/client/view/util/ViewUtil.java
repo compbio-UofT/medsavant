@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 
 import eu.hansolo.custom.SteelCheckBox;
 import eu.hansolo.tools.ColorDef;
+import java.awt.BasicStroke;
 import java.awt.ComponentOrientation;
 import java.awt.Image;
 import java.awt.event.MouseWheelEvent;
@@ -71,6 +72,8 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 import net.miginfocom.swing.MigLayout;
+import org.jdesktop.swingx.graphics.GraphicsUtilities;
+import org.jdesktop.swingx.graphics.ShadowRenderer;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 
@@ -933,30 +936,88 @@ public final class ViewUtil {
     }
 
     public static JPanel getSemiTransparentPanel(final Color color, final float alpha) {
-        return getSemiTransparentPanel(color, alpha, 0, null);
+        return getRoundedShadowedPanel(color, alpha, 0, null, 7);
     }
 
-    public static JPanel getSemiTransparentPanel(final Color color, final float alpha, final int cornerRadius, final Color borderColor) {
+    public static JPanel getRoundedShadowedPanel(final Color color, final float alpha, final int cornerRadius, final Color borderColor, final int shadowSize) {
 
         JPanel p = new JPanel() {
+
+            private BufferedImage shadow;
+
             @Override
             protected void paintComponent(Graphics g) {
-                ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)); // turn on opacity
-                g.setColor(color);
+                int x = shadowSize;
+                int y = shadowSize;
+                int w = getWidth() - 2 * shadowSize;
+                int h = getHeight() - 2 * shadowSize;
 
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
 
-                g2d.fillRoundRect(0, 0, this.getWidth(), this.getHeight(), cornerRadius, cornerRadius);
-
-                if (color != null) {
-                    g2d.setColor(borderColor);
-                    g2d.drawRoundRect(0, 0, this.getWidth() - 1, this.getHeight() - 1, cornerRadius, cornerRadius);
+                if (shadow != null) {
+                    int xOffset = (shadow.getWidth() - w) / 2;
+                    int yOffset = shadowSize;//(shadow.getHeight() - h) / 2;
+                    g2.drawImage(shadow, x - xOffset, y - yOffset, null);
                 }
+
+                GradientPaint gp = new GradientPaint(x, y, new Color(255,255,255,(int)(alpha*255)),
+                        x, x+h, new Color(245, 245, 245, (int)(alpha*255)), true);
+                // Fill with a gradient.
+                g2.setPaint(gp);
+                //g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
+                g2.fillRoundRect(x, y, w, h, cornerRadius, cornerRadius);
+
+                g2.setStroke(new BasicStroke(1f));
+                g2.setColor(borderColor);
+                g2.drawRoundRect(x, y, w, h, cornerRadius, cornerRadius);
+
+                g2.dispose();
+            }
+
+            /*
+             @Override
+             protected void paintComponent(Graphics g) {
+             ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)); // turn on opacity
+             g.setColor(color);
+
+             Graphics2D g2d = (Graphics2D) g;
+             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+             g2d.fillRoundRect(shadowSize, shadowSize, this.getWidth() - 2 * shadowSize, this.getHeight() - 2 * shadowSize, cornerRadius, cornerRadius);
+
+             if (color != null) {
+             g2d.setColor(borderColor);
+             g2d.drawRoundRect(shadowSize, shadowSize, this.getWidth() - 1 - 2 * shadowSize, this.getHeight() - 1 - 2 * shadowSize, cornerRadius, cornerRadius);
+             }
+             }*/
+            public void setBounds(int x, int y, int width, int height) {
+                super.setBounds(x, y, width, height);
+
+                int w = getWidth() - 2 * shadowSize;
+                int h = getHeight() - 2 * shadowSize;
+
+                shadow = GraphicsUtilities.createCompatibleTranslucentImage(w, h);
+                Graphics2D g2 = shadow.createGraphics();
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, w, h, cornerRadius, cornerRadius);
+                g2.dispose();
+
+                ShadowRenderer renderer = new ShadowRenderer(shadowSize, 0.15f, new Color(60, 60, 60)) {
+                };
+                shadow = renderer.createShadow(shadow);
+
+                g2 = shadow.createGraphics();
+                // The color does not matter, red is used for debugging
+                g2.setColor(Color.RED);
+                g2.setComposite(AlphaComposite.Clear);
+                g2.fillRoundRect(shadowSize, shadowSize, w, h, cornerRadius, cornerRadius);
+                g2.dispose();
             }
         };
 
-        p.setOpaque(false);
+        //p.setOpaque(false);
         return p;
     }
 
@@ -1037,7 +1098,7 @@ public final class ViewUtil {
     }
 
     public static JLabel getGrayItalicizedLabel(String str) {
-        
+
         // pad the end of the label to prevent last character from being cut off
         // https://bugs.openjdk.java.net/browse/JDK-4262130?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel
         JLabel l = new JLabel(str + " ");
@@ -1054,17 +1115,17 @@ public final class ViewUtil {
     }
 
     public static Color getLightGrayBackgroundColor() {
-        return new Color(245,245,245);
+        return new Color(245, 245, 245);
     }
-    
+
     public static JPanel getDefaultFixedWidthPanel(JPanel p) {
-        return getFixedWidthPanel(p,800);
+        return getFixedWidthPanel(p, 800);
     }
 
     public static JPanel getFixedWidthPanel(JPanel p, int width) {
         JPanel wrapper = getClearPanel();
         wrapper.setLayout(new MigLayout("insets 0, fillx"));
-        wrapper.add(p,String.format("wmin %d, wmax %d,width %d, center",width,width, width));
+        wrapper.add(p, String.format("wmin %d, wmax %d,width %d, center", width, width, width));
         return wrapper;
     }
 

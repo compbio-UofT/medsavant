@@ -48,7 +48,7 @@ public class NotificationsPanel extends JPanel {
     
     int verticalOffset = 44;
     int inset = 10;
-    int gap = 10;
+    int gap = 4;
     
     private final ArrayList<Notification> notifications;
     private final HashMap<Notification, NotificationPanel> map;
@@ -116,7 +116,7 @@ public class NotificationsPanel extends JPanel {
         int middleWidth = 140;
         int rightWidth = 55;
         
-        int insets = 3;
+        int insets = 8;
         int innerinsets = 2;
         
         //int width = 280;
@@ -192,7 +192,7 @@ public class NotificationsPanel extends JPanel {
 
         private void initUI() {
             this.setOpaque(false);
-            JPanel p = ViewUtil.getSemiTransparentPanel(Color.white, 0.95f, 10, new Color(230,230,230));
+            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, 0.95f, 10, new Color(200,200,200), 7);
             ViewUtil.consumeMouseEventsForComponent(p);
             p.setLayout(new MigLayout(String.format("fillx, insets %d, height %d",insets, height)));
 
