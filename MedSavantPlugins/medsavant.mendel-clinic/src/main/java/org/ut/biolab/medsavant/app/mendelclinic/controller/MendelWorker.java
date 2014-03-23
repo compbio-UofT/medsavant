@@ -210,6 +210,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         stp.forceRefreshData();
         f.setPreferredSize(new Dimension(600, 600));
         f.setMinimumSize(new Dimension(600, 600));
+        
+        taskWorker.addLog("Done");
 
         if (completionLock != null) {
             synchronized (completionLock) {
