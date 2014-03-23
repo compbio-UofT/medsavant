@@ -339,37 +339,10 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         appTopMenu = new NiceMenu();
 
-        final NavigationPanel navigationPanel = new NavigationPanel();
-        navigationPanel.setTitle(app.getName());
-        navigationPanel.setTitleClickAction(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JPopupMenu m = MenuFactory.generatePrettyMenu();
-
-                m.show(appTopMenu, (int) ((appTopMenu.getSize().getSize().getWidth() / 2) - (m.getPreferredSize().getWidth() / 2)), (int) (appTopMenu.getSize().getHeight()));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
-        });
+        appTopMenu.setTitle(app.getName());
 
         appTopMenu.addLeftComponent(getHomeButton());
-        appTopMenu.setCenterComponent(navigationPanel);
+        //appTopMenu.setCenterComponent(navigationPanel);
         appTopMenu.addRightComponent(getLogoutButton());
 
         appLayer.add(appTopMenu, BorderLayout.NORTH);

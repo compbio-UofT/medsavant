@@ -192,7 +192,7 @@ public class NotificationsPanel extends JPanel {
 
         private void initUI() {
             this.setOpaque(false);
-            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, 0.95f, 10, new Color(200,200,200), 7);
+            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, new Color(245,245,245), 0.95f, 10, new Color(200,200,200), 7);
             ViewUtil.consumeMouseEventsForComponent(p);
             p.setLayout(new MigLayout(String.format("fillx, insets %d, height %d",insets, height)));
 

@@ -117,10 +117,12 @@ public class AppSwitchPanel extends JPanel {
            
             // switching started
             if (isSwitching) {
-                selectedIndex = 0;
-                List<LaunchableApp> history = MedSavantFrame.getInstance().getDashboard().getLaunchHistory();
                 
-                if (history.isEmpty()) { return; }
+                List<LaunchableApp> history = MedSavantFrame.getInstance().getDashboard().getLaunchHistory();
+                if (history.isEmpty()) { 
+                    return; 
+                }
+                selectedIndex = 0;
                 
                 apps = history.subList(0, Math.min(history.size(), maxApps));
             
@@ -147,8 +149,8 @@ public class AppSwitchPanel extends JPanel {
         this.removeAll();
         if (this.isSwitching) {
             int shadowSize = 10;
-            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, 0.95f, 10, Color.gray, shadowSize);
-            p.setLayout(new MigLayout());
+            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, new Color(245,245,245), 0.9f, 10, new Color(230,230,230), shadowSize);
+            p.setLayout(new MigLayout("insets 30"));
             
             int appNum = 0;
             for (LaunchableApp app : apps) {
@@ -163,8 +165,9 @@ public class AppSwitchPanel extends JPanel {
                 appNum++;
             }
             
-            //this.setLayout(new MigLayout("fillx, filly"));
-            this.add(p);
+            this.setLayout(new MigLayout("fillx, filly, center"));
+            this.add(p,"center, growx 1.0");
+            p.repaint();
         }
         this.updateUI();
     }

@@ -936,10 +936,10 @@ public final class ViewUtil {
     }
 
     public static JPanel getSemiTransparentPanel(final Color color, final float alpha) {
-        return getRoundedShadowedPanel(color, alpha, 0, null, 7);
+        return getRoundedShadowedPanel(color, color, alpha, 0, null, 7);
     }
 
-    public static JPanel getRoundedShadowedPanel(final Color color, final float alpha, final int cornerRadius, final Color borderColor, final int shadowSize) {
+    public static JPanel getRoundedShadowedPanel(final Color topColor, final Color bottomColor, final float alpha, final int cornerRadius, final Color borderColor, final int shadowSize) {
 
         JPanel p = new JPanel() {
 
@@ -952,6 +952,8 @@ public final class ViewUtil {
                 int w = getWidth() - 2 * shadowSize;
                 int h = getHeight() - 2 * shadowSize;
 
+                if (w < 0 || h < 0) { return; }
+                
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -962,8 +964,8 @@ public final class ViewUtil {
                     g2.drawImage(shadow, x - xOffset, y - yOffset, null);
                 }
 
-                GradientPaint gp = new GradientPaint(x, y, new Color(255,255,255,(int)(alpha*255)),
-                        x, x+h, new Color(245, 245, 245, (int)(alpha*255)), true);
+                GradientPaint gp = new GradientPaint(x, y, new Color(topColor.getRed(), topColor.getGreen(), topColor.getBlue(),(int)(alpha*255)),
+                        x, x+h, new Color(bottomColor.getRed(), bottomColor.getGreen(), bottomColor.getBlue(), (int)(alpha*255)), true);
                 // Fill with a gradient.
                 g2.setPaint(gp);
                 //g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
@@ -975,28 +977,14 @@ public final class ViewUtil {
 
                 g2.dispose();
             }
-
-            /*
-             @Override
-             protected void paintComponent(Graphics g) {
-             ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)); // turn on opacity
-             g.setColor(color);
-
-             Graphics2D g2d = (Graphics2D) g;
-             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-             g2d.fillRoundRect(shadowSize, shadowSize, this.getWidth() - 2 * shadowSize, this.getHeight() - 2 * shadowSize, cornerRadius, cornerRadius);
-
-             if (color != null) {
-             g2d.setColor(borderColor);
-             g2d.drawRoundRect(shadowSize, shadowSize, this.getWidth() - 1 - 2 * shadowSize, this.getHeight() - 1 - 2 * shadowSize, cornerRadius, cornerRadius);
-             }
-             }*/
+            
             public void setBounds(int x, int y, int width, int height) {
                 super.setBounds(x, y, width, height);
 
                 int w = getWidth() - 2 * shadowSize;
                 int h = getHeight() - 2 * shadowSize;
+                
+                if (w < 0 || h < 0) { return; }
 
                 shadow = GraphicsUtilities.createCompatibleTranslucentImage(w, h);
                 Graphics2D g2 = shadow.createGraphics();
@@ -1017,7 +1005,7 @@ public final class ViewUtil {
             }
         };
 
-        //p.setOpaque(false);
+        p.setOpaque(false);
         return p;
     }
 
