@@ -712,14 +712,14 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private int[] mergeAnnIDsWithDefaults(int[] annIDs, int projID, int refID) throws RemoteException, SQLException, SessionExpiredException {
-        LOG.info("WARNING: Debug code, temporarily disabled default annotation installation, line 714 of ProjectWizard.java");
-        return annIDs;
+        /*LOG.info("WARNING: Debug code, temporarily disabled default annotation installation, line 714 of ProjectWizard.java");
+        return annIDs;*/
         // UNCOMMENT THIS BEFORE COMMITTING
-        /*int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getSessionID(), projID, refID);
+        int[] defaults = manager.getDefaultAnnotationIDs(LoginController.getSessionID(), projID, refID);
         Set<Integer> a = new HashSet<Integer>();
         a.addAll(Arrays.asList(ArrayUtils.toObject(annIDs)));
         a.addAll(Arrays.asList(ArrayUtils.toObject(defaults)));
-        return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));*/
+        return ArrayUtils.toPrimitive(a.toArray(new Integer[a.size()]));
     }
 
     private void createNewProject() throws Exception {
