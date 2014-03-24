@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.font.TextAttribute;
 import java.io.InputStream;
+import java.text.AttributedCharacterIterator;
 import java.util.Hashtable;
 import java.util.Map;
 import javax.swing.UIManager;
@@ -19,11 +20,32 @@ import javax.swing.UIManager;
  */
 public class FontFactory {
 
-    //fonts, in order of preference.    
-    private static final String[] fontsToTry = new String[]{"HelveticaNeue-Medium", "Arial", "Lucida Sans Regular", "Times New Roman"};
-    private static final Font titleFontPrimary;
+    //fonts, in order of preference.        
+    private static final Font titleFontPrimary = initFont(new String[]{"HelveticaNeue-Medium", "Arial", "Lucida Sans Regular", "Times New Roman"}, 20f);
+    private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
+    private static final Font sectionHeaderFont = titleFont.deriveFont(24f);
 
-    static {
+    private static final Map<TextAttribute, Object> fontAttributeMap = new Hashtable<TextAttribute, Object>();
+
+    static{
+        fontAttributeMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+    }
+
+    private static final Font generalFontPrimary = initFont(new String[]{"HelveticaNeue-Light", "Arial", "Lucida Sans Regular", "Times New Roman"}, fontAttributeMap);
+    //getFont("HelveticaNeue-Light").deriveFont(map);
+    private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
+
+    private static Font initFont(String[] fontsToTry, Map<? extends AttributedCharacterIterator.Attribute, ?> attributes) {
+        Font f = initFont(fontsToTry);
+        return f.deriveFont(attributes);
+    }
+
+    private static Font initFont(String[] fontsToTry, float size) {
+        Font f = initFont(fontsToTry);
+        return f.deriveFont(size);
+    }
+
+    private static Font initFont(String[] fontsToTry) {
         Font f = null;
         int i = 0;
         while ((f == null) && i < fontsToTry.length) {
@@ -35,19 +57,8 @@ public class FontFactory {
             f = UIManager.getDefaults().getFont("TitledBorder.font");
         }
         //System.out.println("Setting font to " + f.getFontName());
-        titleFontPrimary = f.deriveFont(20f);
+        return f;
     }
-    private static final Font titleFont = (titleFontPrimary != null) ? titleFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(20f);
-    private static final Font sectionHeaderFont = titleFont.deriveFont(24f);
-
-    private static Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
-
-    {
-        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-    }
-
-    private static final Font generalFontPrimary = getFont("HelveticaNeue-Light").deriveFont(map);
-    private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
 
     public static Font getMenuTitleFont() {
         return titleFont;
