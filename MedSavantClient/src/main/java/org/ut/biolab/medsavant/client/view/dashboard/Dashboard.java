@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.client.view.dashboard;
 
+import java.awt.AlphaComposite;
 import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -13,6 +14,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -94,38 +96,39 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         this.push(appLayer);
 
         dashLayer = new JPanel();/* {
-            public void paintComponent(Graphics g) {
+         public void paintComponent(Graphics g) {
 
-                if (backgroundImage != null) {
+         if (backgroundImage != null) {
 
-                    //System.out.println("Drawing image for dash background");
-                    int width = this.getWidth();
-                    int height = this.getHeight();
+         //System.out.println("Drawing image for dash background");
+         int width = this.getWidth();
+         int height = this.getHeight();
 
-                    BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g2 = resizedImage.createGraphics();
-                    g2.drawImage(backgroundImage, 0, 0, width, height, null);
+         BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+         Graphics2D g2 = resizedImage.createGraphics();
+         g2.drawImage(backgroundImage, 0, 0, width, height, null);
 
-                    //Image scaled = backgroundImage.getScaledInstance(this.getWidth(), this.getHeight(), Image.SCALE_SMOOTH);
-                    g.drawImage(resizedImage, 0, 0, null);
+         //Image scaled = backgroundImage.getScaledInstance(this.getWidth(), this.getHeight(), Image.SCALE_SMOOTH);
+         g.drawImage(resizedImage, 0, 0, null);
 
-                    g.setColor(new Color(255, 255, 255, 200));
-                    g.fillRect(0, 0, width, height);
+         g.setColor(new Color(255, 255, 255, 200));
+         g.fillRect(0, 0, width, height);
 
-                    return;
-                }
+         return;
+         }
 
-                if (transparentBackground) {
+         if (transparentBackground) {
 
-                    int width = this.getWidth();
-                    int height = this.getHeight();
+         int width = this.getWidth();
+         int height = this.getHeight();
 
-                    g.setColor(new Color(255, 255, 255, 240));
-                    g.fillRect(0, 0, width, height);
+         g.setColor(new Color(255, 255, 255, 240));
+         g.fillRect(0, 0, width, height);
 
-                }
-            }
-        };*/
+         }
+         }
+         };*/
+
         dashLayer.setBackground(Color.white);
 
         this.push(dashLayer);
@@ -226,7 +229,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         //JLabel copy = new JLabel("Developed at University of Toronto");
         //copy.setForeground(ViewUtil.getSubtleTitleColor());
         //bottomDisclaimer.add(copy);
-
         JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -367,7 +369,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        JButton button = ViewUtil.getIconButton(resizeIconTo(icon, iconWidth));
+        JButton button = ViewUtil.getIconButton(new ImageIcon(getScaledInstance(icon.getImage(), iconWidth, iconWidth, RenderingHints.VALUE_INTERPOLATION_BILINEAR, true)));
 
         button.addActionListener(actionListener);
 
@@ -402,14 +404,69 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             }
         });
     }
+    
+    public static Image getScaledInstance(Image img,
+                                           int targetWidth,
+                                           int targetHeight,
+                                           Object hint,
+                                           boolean higherQuality)
+    {
+        int type = BufferedImage.TYPE_INT_ARGB;
+        Image ret = img;
+        int w, h;
+        if (higherQuality) {
+            // Use multi-step technique: start with original size, then
+            // scale down in multiple passes with drawImage()
+            // until the target size is reached
+            w = new ImageIcon(img).getIconWidth();
+            h = new ImageIcon(img).getIconHeight();
+        } else {
+            // Use one-step technique: scale directly from original
+            // size to target size with a single drawImage() call
+            w = targetWidth;
+            h = targetHeight;
+        }
+        
+        do {
+            if (higherQuality && w > targetWidth) {
+                w /= 2;
+                if (w < targetWidth) {
+                    w = targetWidth;
+                }
+            }
 
+            if (higherQuality && h > targetHeight) {
+                h /= 2;
+                if (h < targetHeight) {
+                    h = targetHeight;
+                }
+            }
+
+            BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = tmp.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
+            g2.drawImage(ret, 0, 0, w, h, null);
+            g2.dispose();
+
+            ret = tmp;
+        } while (w != targetWidth || h != targetHeight);
+
+        return ret;
+    }
+
+    /*
     private static ImageIcon resizeIconTo(ImageIcon icon, int itemSize) {
         BufferedImage resizedImage = new BufferedImage(itemSize, itemSize, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = resizedImage.createGraphics();
+        g.setComposite(AlphaComposite.Src);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawImage(icon.getImage(), 0, 0, itemSize, itemSize, null);
         g.dispose();
+        
         return new ImageIcon(resizedImage);
-    }
+    }*/
 
     public List<LaunchableApp> getLaunchHistory() {
 
