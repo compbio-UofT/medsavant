@@ -454,20 +454,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         return ret;
     }
 
-    /*
-    private static ImageIcon resizeIconTo(ImageIcon icon, int itemSize) {
-        BufferedImage resizedImage = new BufferedImage(itemSize, itemSize, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = resizedImage.createGraphics();
-        g.setComposite(AlphaComposite.Src);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.drawImage(icon.getImage(), 0, 0, itemSize, itemSize, null);
-        g.dispose();
-        
-        return new ImageIcon(resizedImage);
-    }*/
-
     public List<LaunchableApp> getLaunchHistory() {
 
         List<LaunchableApp> list = new ArrayList<LaunchableApp>(history.size());
