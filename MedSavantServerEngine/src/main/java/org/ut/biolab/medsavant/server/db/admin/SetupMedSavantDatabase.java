@@ -148,7 +148,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + ") ENGINE=MyISAM;");
             String[] users = UserManager.getInstance().getUserNames(sessID);
             for (String u : users) {
-                conn.executePreparedUpdate(String.format("GRANT INSERT ON %s TO ?", MedSavantDatabase.ServerlogTableSchema.getTableName()), u);
+                conn.executePreparedUpdate(String.format("GRANT INSERT ON %s TO ?@'localhost'", MedSavantDatabase.ServerlogTableSchema.getTableName()), u);
             }
 
             conn.executeUpdate(MedSavantDatabase.RegionSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
