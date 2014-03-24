@@ -13,8 +13,8 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
  */
 public class Variant {
 	
-	private static final String JANNOVAR_TYPE= "EFFECT";
-	private static final String JANNOVAR_EFFECT= "HGVS";
+	private static final String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getColumnName();
+	private static final String JANNOVAR_SYMBOL= BasicVariantColumns.JANNOVAR_SYMBOL.getColumnName();
 	private static final String DP4= "DP4";
 	private static final String AD= "AD";
 	private static final String AO= "AO";
@@ -53,8 +53,8 @@ public class Variant {
 		end= ((Integer) row[BasicVariantColumns.INDEX_OF_END_POSITION]).longValue();
 		zygosity= (String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY];
 		infoColumn= (String) row[BasicVariantColumns.INDEX_OF_CUSTOM_INFO];
-		formatColumn= extractFromInfoColumn(BasicVariantColumns.FORMAT.getAlias());
-		sampleInfoColumn= extractFromInfoColumn(BasicVariantColumns.SAMPLE_INFO.getAlias());
+		formatColumn= extractFromInfoColumn(BasicVariantColumns.FORMAT.getColumnName());
+		sampleInfoColumn= extractFromInfoColumn(BasicVariantColumns.SAMPLE_INFO.getColumnName());
 	}
 	
 	
@@ -140,6 +140,15 @@ public class Variant {
 	
 	
 	/**
+	 * Return the end position for this variant.
+	 * @return the end position
+	 */
+	public long getEnd() {
+		return end;
+	}
+	
+	
+	/**
 	 * Return the first gene symbol for this variant.
 	 * @return the gene symbol
 	 */
@@ -158,7 +167,7 @@ public class Variant {
 	public String getGT() {
 		try {
 			if (gtField == null)
-				extractFromFormatColumn(GT);
+				gtField= extractFromFormatColumn(GT);
 		} catch (FieldNotFoundException fnfe) {
 			System.err.println(fnfe.getMessage());
 			fnfe.printStackTrace();
@@ -172,9 +181,9 @@ public class Variant {
 	 * Get the biological effect of this variant.
 	 * @return biological effect of this variant
 	 */
-	public String getVariantEffect() {
+	public String getMutationSymbols() {
 		if (variantEffect == null)
-			variantEffect= extractFromInfoColumn(JANNOVAR_EFFECT);
+			variantEffect= extractFromInfoColumn(JANNOVAR_SYMBOL);
 		
 		return variantEffect;
 	}
@@ -184,9 +193,9 @@ public class Variant {
 	 * Get the mutation category of this variant.
 	 * @return the mutation type/category
 	 */
-	public String getVariantType() {
+	public String getMutationType() {
 		if (variantType == null)
-			variantType= extractFromInfoColumn(JANNOVAR_TYPE);
+			variantType= extractFromInfoColumn(JANNOVAR_EFFECT);
 		
 		return variantType;
 	}
@@ -226,14 +235,14 @@ public class Variant {
 	 * @param key the key for the field within the info column
 	 * @return the value corresponding to the key, null if key is absent
 	 */
-	private String extractFromInfoColumn(String key) {
+	public String extractFromInfoColumn(String key) {
 		String regex= ";?" + key + "=([^;]+);?";
 		Pattern keyPattern= Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		Matcher keyMatcher= keyPattern.matcher(infoColumn);
 		
 		String value= null;
 		if (keyMatcher.find()) { // NOTE: need to run find() to get group() below
-			keyMatcher.group(1);
+			value= keyMatcher.group(1);
 		}
 		
 		return value;
@@ -245,7 +254,7 @@ public class Variant {
 	 * @param key the key for the field within the FORMAT column
 	 * @return the value corresponding to the key from the SAMPLE_INFO column, null if key is absent
 	 */
-	private String extractFromFormatColumn(String key) throws FieldNotFoundException {
+	public String extractFromFormatColumn(String key) throws FieldNotFoundException {
 		List<String> formatKeys= Arrays.asList(formatColumn.split(":"));
 		int index= formatKeys.indexOf(key);
 		List<String> sampleInfoKeys= Arrays.asList(sampleInfoColumn.split(":"));
@@ -269,7 +278,8 @@ public class Variant {
 	 * Extract the gene symbol for this variant.
 	 */
 	private void extractGene() {
-		Matcher geneMatcher= geneSymbolPattern.matcher(infoColumn);
+		String geneString= extractFromInfoColumn(JANNOVAR_SYMBOL);
+		Matcher geneMatcher= geneSymbolPattern.matcher(geneString);
 		if (geneMatcher.find()) {
 			geneSymbol= geneMatcher.group(1);
 		}

@@ -7,13 +7,16 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -22,6 +25,7 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.appdevapi.Variant;
 
 /**
  * Default panel for Pharmacogenomics app.
@@ -110,9 +114,6 @@ public class PGXPanel extends JPanel {
 				
 				/* Perform a new pharmacogenomic analysis for this DNA ID. */
 				analyzePatient();
-				
-				/* Update the report pane. */
-				updateReportPane();
 			}
 		};
 		
@@ -161,7 +162,7 @@ public class PGXPanel extends JPanel {
 		patientSideJP.setMinimumSize(new Dimension(SIDE_PANE_WIDTH, 0)); // minimum width for panel
 		
 		patientSideJP.add(choosePatientButton, "alignx center, wrap");
-		patientSideJP.add(new JLabel("STUFF GOES HERE"), "alignx center, gapy 20px, wrap");
+		patientSideJP.add(new JLabel("ONLY USE WGS FILES - NO EXOMES YET"), "alignx center, gapy 20px, wrap");
 		patientSideJP.add(status, "alignx center, gapy 50px, wrap");
 		patientSideJP.add(statusWheel, "alignx center, wrap");
 		
@@ -225,6 +226,9 @@ public class PGXPanel extends JPanel {
 			@Override protected void showSuccess(Object t) {
 				status.setText("Analysis complete.");
 				statusWheel.setVisible(false);
+				
+				/* Update the report pane. */
+				updateReportPane();
 			}
 		};
 		
@@ -241,6 +245,19 @@ public class PGXPanel extends JPanel {
 		reportJP.setLayout(new MigLayout("gapy 0px, fillx"));
 		
 		reportJP.add(new JLabel("Record retrieved for DNA ID: " + currentDNAID), "wrap");
+		
+		///// TESTING
+		for (Variant v : currentPGXAnalysis.getVariants()) {
+			reportJP.add(new JLabel("[TESTING]: " + Arrays.toString(v.getRow())), "wrap");
+		}
+		
+		try{
+			for (Variant v : currentPGXAnalysis.getVariants()) {
+				reportJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
+					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), v.getGT(),
+					(String) v.getColumn("snp137, RSID")}, " ")), "wrap");
+			}
+		} catch (Exception e) {}
 		
 		reportPane.setViewportView(reportJP);
 	}	

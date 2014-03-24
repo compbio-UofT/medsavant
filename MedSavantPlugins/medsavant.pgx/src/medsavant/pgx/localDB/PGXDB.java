@@ -89,7 +89,7 @@ public class PGXDB {
 			
 			sql=	"CREATE TABLE " + GENE_MARKER_LIST_TABLE_NAME + " ( " +
 					"  Gene varchar(20) NOT NULL, " +
-					"  Marker_list(50000) NOT NULL, " + // could be a very long field
+					"  Marker_list varchar(50000) NOT NULL, " + // could be a very long field
 					"  PRIMARY KEY (Gene)  " +
 					")";
 			s.addBatch(sql);
@@ -98,9 +98,9 @@ public class PGXDB {
 			sql=	"CREATE TABLE " + HAPLOTYPE_MARKERS_TABLE_NAME + " ( " +
 					"	Gene varchar(20) NOT NULL, " + 
 					"	Haplotype_ID varchar(1000) DEFAULT NULL, " +
-					"	Haplotype_Symbol varchar(100) DEFAULT NULL, " + 
+					"	Haplotype_Symbol varchar(100) NOT NULL, " + 
 					"	Marker_info varchar(50000) DEFAULT NULL, " + // could be a very long field
-					"	PRIMARY KEY (Gene, Haplotype_Symbol) " +
+					"	PRIMARY KEY (Gene,Haplotype_Symbol)  " +
 					")";
 			s.addBatch(sql);
 			

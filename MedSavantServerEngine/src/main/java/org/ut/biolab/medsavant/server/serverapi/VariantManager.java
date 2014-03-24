@@ -69,7 +69,6 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
-import org.ut.biolab.medsavant.shared.appdevapi.VariantIterator;
 
 /**
  *
@@ -673,12 +672,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException {
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, null);
-    }
-
-	@Override
-    public VariantIterator getVariantIterator(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException {
-        return new VariantIterator(getVariants(sessionId, projectId, referenceId, conditions, start, limit, null),
-			AnnotationManager.getInstance().getAnnotationFormats(sessionId, projectId, referenceId));
     }
 	
     @Override
