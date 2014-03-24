@@ -558,5 +558,6 @@
     <module>MedSavantClient</module>
     <module>MedSavantJSONClient</module>
     <module>distribution</module>
+    <module>custom-libs/medsavant-component-fields</module>
   </modules>
 </project>
