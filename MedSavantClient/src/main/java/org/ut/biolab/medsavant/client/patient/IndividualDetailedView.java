@@ -404,6 +404,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             } else{
                 patient.setSex(ClientMiscUtils.GENDER_UNKNOWN);
             }
+            patient.setAffected((Boolean) result[BasicPatientColumns.INDEX_OF_AFFECTED]);
             patient.setBamURL(toStringProtected(result[BasicPatientColumns.INDEX_OF_BAM_URL]));
             patient.setDnaID(toStringProtected(result[BasicPatientColumns.INDEX_OF_DNA_IDS]));
             patient.setPhenotypes(toStringProtected(result[BasicPatientColumns.INDEX_OF_PHENOTYPES]));

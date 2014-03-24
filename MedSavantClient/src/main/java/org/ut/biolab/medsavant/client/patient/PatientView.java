@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.component.field.editable.EditableField;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
+import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 
 /**
@@ -118,7 +119,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
         });
 
         subsectionCohort.setLayout(new MigLayout("insets 0"));
-        subsectionCohort.add(notCohortMemberLabel,"wrap");
+        subsectionCohort.add(notCohortMemberLabel, "wrap");
         subsectionCohort.add(addToCohortButton);
 
         profileKVP = getKVP();
@@ -163,8 +164,6 @@ public class PatientView extends JPanel implements FieldEditedListener {
     private void refreshView() {
 
         content.setTitle(patient.getHospitalID());
-
-        System.out.println("Refreshing view for patient " + patient);
 
         StringEditableField individualIDField = new StringEditableField();
         individualIDField.setTag(INDIVIDUAL_ID);
@@ -231,6 +230,52 @@ public class PatientView extends JPanel implements FieldEditedListener {
     @Override
     public void handleEvent(EditableField f) {
         System.out.println("Field " + f.getTag() + " was edited to " + f.getValue());
+
+        /*
+        // profile keys
+    public static final String FATHER_ID = "Father ID";
+    public static final String MOTHER_ID = "Mother ID";
+    public static final String FAMILY_ID = "Family ID";
+    public static final String AFFECTED = "Affected";
+    public static final String INDIVIDUAL_ID = "Individual ID";
+    public static final String SEX = "Sex";
+
+    // genetic keys
+    public static final String SEX = "DNA ID";
+    public static final String BAM_URL = "Read Alignment URL";
+
+    // phenotype keys
+    public static final String PHENOTYPE = "HPO IDs";
+        */
+        
+        if (f.getTag().equals(FATHER_ID)) {
+            patient.setFatherHospitalID((String)f.getValue());
+            
+        } else if (f.getTag().equals(MOTHER_ID)) {
+            patient.setMotherHospitalID((String)f.getValue());
+            
+        } else if (f.getTag().equals(FAMILY_ID)) {
+            patient.setFamilyID((String)f.getValue());
+            
+        } else if (f.getTag().equals(AFFECTED)) {
+            patient.setAffected(((String)f.getValue()).equals("Yes"));
+            
+        } else if (f.getTag().equals(INDIVIDUAL_ID)) {
+            patient.setID((Integer)f.getValue());
+            
+        } else if (f.getTag().equals(SEX)) {
+            patient.setSex((String)f.getValue());
+            
+        } else if (f.getTag().equals(DNA_ID)) {
+            patient.setDnaID((String)f.getValue());
+            
+        } else if (f.getTag().equals(BAM_URL)) {
+            patient.setBamURL((String)f.getValue());
+        
+        } else if (f.getTag().equals(PHENOTYPE)) {
+            patient.setPhenotypes((String)f.getValue());
+        }
+        
         patient.saveToDatabase();
     }
 }
