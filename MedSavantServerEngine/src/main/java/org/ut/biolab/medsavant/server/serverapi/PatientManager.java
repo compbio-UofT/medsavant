@@ -336,6 +336,21 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         ConnectionController.executeUpdate(sid,  query.toString());
     }
+    
+    @Override
+    public void updatePatient(String sid, int projectId, int patientID, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException {
+
+        String tablename = getPatientTableName(sid,projectId);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+
+        UpdateQuery query = new UpdateQuery(table.getTable());
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(PATIENT_ID), patientID));
+        for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
+            query.addSetClause(table.getDBColumn(cols.get(i).getColumnName()), values.get(i));
+        }
+
+        ConnectionController.executeUpdate(sid,  query.toString());
+    }
 
     @Override
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projID, String columnName) throws SQLException, RemoteException, SessionExpiredException {

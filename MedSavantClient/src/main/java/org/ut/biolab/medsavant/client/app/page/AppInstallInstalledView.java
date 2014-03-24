@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.app.AppInfo;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 import org.ut.biolab.medsavant.client.app.jAppStore;
@@ -55,11 +56,10 @@ class AppInstallInstalledView extends JPanel {
         this.setBackground(Color.white);
         int padding = 10;
         this.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        this.setLayout(new MigLayout("fillx"));
 
         this.add(new JLabel("<html><b>" + i.getName() + "</b> " + i.getVersion() + "</html>"));
-        this.add(Box.createHorizontalGlue());
-        this.add(getUninstallButton(state));
+        this.add(getUninstallButton(state),"right");
 
         jAppStore.wrapComponentWithLineBorder(this);
     }

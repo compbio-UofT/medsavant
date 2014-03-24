@@ -34,9 +34,8 @@ import java.util.List;
 import javax.swing.*;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import com.jidesoft.pane.CollapsiblePane;
-import com.jidesoft.pane.CollapsiblePanes;
 import java.util.concurrent.Semaphore;
+import net.miginfocom.swing.MigLayout;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -50,7 +49,6 @@ import pedviz.view.symbols.Symbol2D;
 import pedviz.view.symbols.SymbolSexFemale;
 import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -61,11 +59,11 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
-import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.client.view.util.form.*;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
@@ -76,8 +74,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     private List<String> fieldNames;
     private DetailsWorker detailsWorker;
-    private final JPanel infoContent;
-    private final JPanel infoDetails;
+    //private final JPanel infoDetails;
     private final JPanel menu;
     private int[] patientIDs;
     private String[] hospitalIDs;
@@ -89,11 +86,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private List<Integer> selectedNodes;
     private String familyID;
     private Graph graph;
-    private final CollapsiblePane collapsiblePane;
     private final BlockingPanel blockPanel;
     private static int pedigreeFontSize = 1;
     private final Semaphore csvSem = new Semaphore(1);
     private JPanel fontZoomButtonsPanel;
+    private final JPanel content;
+    private PatientView patientView;
 
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
         super(page);
@@ -106,31 +104,14 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
 
-        JPanel content = new JPanel();
-        content.setLayout(new BorderLayout());
-
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-        content.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
-        CollapsiblePanes panes = new CollapsiblePanes();
-        panes.setOpaque(false);
-        infoContainer.add(panes);
-
-        collapsiblePane = new CollapsiblePane();
-        collapsiblePane.setStyle(CollapsiblePane.TREE_STYLE);
-        collapsiblePane.setCollapsible(false);
-        panes.add(collapsiblePane);
-
-        panes.addExpansion();
-
-        infoContent = new JPanel();
-        infoContent.setLayout(new BorderLayout());
-        collapsiblePane.setLayout(new BorderLayout());
-        collapsiblePane.add(infoContent, BorderLayout.CENTER);
-
-
+        content = ViewUtil.getClearPanel();
+        viewContainer.add(content,BorderLayout.CENTER);
+        
+        content.setLayout(new BorderLayout());
+        
         fontZoomButtonsPanel = ViewUtil.getClearPanel();
         fontZoomButtonsPanel.setLayout(new BoxLayout(fontZoomButtonsPanel, BoxLayout.X_AXIS));
 
@@ -159,18 +140,15 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         fontZoomButtonsPanel.add(zoomFont);
         fontZoomButtonsPanel.add(unZoomFont);
 
-        infoDetails = ViewUtil.getClearPanel();
+        patientView = new PatientView();
+        //infoDetails = ViewUtil.getClearPanel();
         pedigreeDetails = new JPanel();
         pedigreeDetails.setBackground(Color.white);
         pedigreeDetails.setLayout(new BoxLayout(pedigreeDetails, BoxLayout.Y_AXIS));
         pedigreeDetails.add(fontZoomButtonsPanel);
-        ViewUtil.setBoxYLayout(infoContent);
-        infoContent.add(infoDetails);
-
+        content.add(patientView,BorderLayout.CENTER);
+        
         menu = ViewUtil.getClearPanel();
-        menu.add(addIndividualsButton());
-
-        addBottomComponent(menu);
 
         blockPanel = new BlockingPanel("No individual selected", content);
         viewContainer.add(blockPanel, BorderLayout.CENTER);
@@ -179,9 +157,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
         pedigreeDetails.removeAll();
-///        pedigreeDetails.setLayout(new BorderLayout());
 
-        pedigreeDetails.add(fontZoomButtonsPanel);//, BorderLayout.NORTH);
+        pedigreeDetails.add(fontZoomButtonsPanel);
+
         //Step 1
         graph = new Graph();
         CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
@@ -205,7 +183,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         //view.highlight(nodes);
         //view.setSelectionEnabled(true);
-
 
         view.addRule(new ShapeRule(GENDER, "1", new SymbolSexMale()));
         view.addRule(new ShapeRule(GENDER, "2", new SymbolSexFemale()));
@@ -265,7 +242,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                     } else if (SwingUtilities.isLeftMouseButton(e)) {
                         if (patID != null && patID > 0) {
                             selectIndividualInList(patID);
-                            //setSelectedItem(patientId, hospitalId);
                         }
                     }
                 } else {
@@ -280,7 +256,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         });
 
         pedigreeDetails.add(view.getComponent());
-//        pedigreeDetails.add(view.getComponent(), BorderLayout.NORTH);
         pedigreeDetails.updateUI();
     }
 
@@ -294,85 +269,9 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
             }
         }
     }
-
-    public synchronized void setPatientInformation(Object[] result) {
-        String[][] values = new String[fieldNames.size()][2];
-        for (int i = 0; i < fieldNames.size(); i++) {
-            values[i][0] = fieldNames.get(i);
-            values[i][1] = "";
-            if (result[i] != null) {
-                values[i][1] = result[i].toString();
-
-                //special case for gender
-                if (values[i][0].equals(BasicPatientColumns.GENDER.getAlias())) {
-                    String s;
-                    if (result[i] instanceof Integer) {
-                        s = ClientMiscUtils.genderToString((Integer) result[i]);
-                    } else if (result[i] instanceof Long) {
-                        s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long) result[i]));
-                    } else {
-                        s = ClientMiscUtils.GENDER_UNKNOWN;
-                    }
-                    values[i][1] = s;
-                }
-
-                //special case for affected
-                if (values[i][0].equals(BasicPatientColumns.AFFECTED.getAlias())) {
-                    String s;
-                    if (result[i] instanceof Boolean) {
-                        Boolean b = (Boolean) result[i];
-                        s = b ? "Yes" : "No";
-                    } else {
-                        s = "Unknown";
-                    }
-                    values[i][1] = s;
-                }
-            }
-        }
-
-        infoDetails.removeAll();
-        ViewUtil.setBoxYLayout(infoDetails);
-
-        final KeyValuePairPanel kvp = new KeyValuePairPanel(1, true);
-
-        for (int i = 0; i < values.length; i++) {
-            kvp.addKey(values[i][0]);
-            kvp.setValue(values[i][0], values[i][1], true);
-        }
-
-        final String pedigreeKey = "Pedigree";
-        kvp.addKey(pedigreeKey);
-        final JToggleButton b = ViewUtil.getTexturedToggleButton(pedigreeShown ? "Hide" : "Show");
-        b.setSelected(pedigreeShown);
-
-        b.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                kvp.toggleDetailVisibility(pedigreeKey);
-                pedigreeShown = b.isSelected();
-                if (b.isSelected()) {
-                    b.setText("Hide");
-                } else {
-                    b.setText("Show");
-                }
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        pedigreeDetails.repaint();
-                    }
-                });
-            }
-        });
-
-        kvp.setValue(pedigreeKey, b);
-        kvp.setDetailComponent(pedigreeKey, pedigreeDetails);
-        if (pedigreeShown) {
-            kvp.toggleDetailVisibility(pedigreeKey);
-        }
-
-        infoDetails.add(kvp);
-        infoDetails.updateUI();
+    
+    public synchronized void setPatient(Patient patient) {
+        patientView.setPatient(patient);
     }
 
     @Override
@@ -388,32 +287,17 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     public void setSelectedItem(int patientId, String hospitalId) {
 
-        collapsiblePane.setTitle(hospitalId);
-
         hospitalIDs = new String[1];
 
         patientIDs = new int[1];
         patientIDs[0] = patientId;
         hospitalIDs[0] = hospitalId;
 
-        infoDetails.removeAll();
-        infoDetails.updateUI();
-
-
-        if (pedigreeWorker != null) {
-            pedigreeWorker.cancel(true);
-        }
-
-
-        pedigreeWorker = new PedigreeWorker(patientId);
-        pedigreeWorker.execute();
-
         if (detailsWorker != null) {
             detailsWorker.cancel(true);
         }
         detailsWorker = new DetailsWorker(patientId);
         detailsWorker.execute();
-        //if (menu != null) menu.setVisible(true);
     }
 
     @Override
@@ -428,13 +312,12 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 patientIDs[i] = (Integer) items.get(i)[0];
                 hospitalIDs[i] = (String) items.get(i)[2]; //BAD!
             }
-            if (items.isEmpty()) {
-                collapsiblePane.setTitle("");
+            /*if (items.isEmpty()) {
+                title.setText("");
             } else {
-                collapsiblePane.setTitle("Multiple individuals (" + items.size() + ")");
-            }
-            infoDetails.removeAll();
-            infoDetails.updateUI();
+                title.setText("Multiple individuals (" + items.size() + ")");
+            }*/
+
             pedigreeDetails.removeAll();
             pedigreeDetails.updateUI();
         }
@@ -457,8 +340,6 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
     private JButton addIndividualsButton() {
         JButton button = new JButton("Add individual to cohort");
-        button.setBackground(ViewUtil.getDetailsBackgroundColor());
-        button.setOpaque(false);
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -509,8 +390,36 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         @Override
         protected void showSuccess(Object[] result) {
-            setPatientInformation(result);
+
+            Integer patientIDInteger = (Integer) result[BasicPatientColumns.INDEX_OF_PATIENT_ID];
+            
+            Patient patient = new Patient(result[BasicPatientColumns.INDEX_OF_HOSPITAL_ID].toString());
+            patient.setID(patientIDInteger);
+            patient.setFamilyID(toStringProtected(result[BasicPatientColumns.INDEX_OF_FAMILY_ID]));
+            patient.setMotherHospitalID(toStringProtected(result[BasicPatientColumns.INDEX_OF_IDBIOMOM]));
+            patient.setFatherHospitalID(toStringProtected(result[BasicPatientColumns.INDEX_OF_IDBIODAD]));
+            Integer genderInteger = (Integer) result[BasicPatientColumns.INDEX_OF_GENDER];
+            if (genderInteger != null) {
+                patient.setSex(toStringProtected(ClientMiscUtils.genderToString((Integer)genderInteger)));
+            } else{
+                patient.setSex(ClientMiscUtils.GENDER_UNKNOWN);
+            }
+            patient.setAffected((Boolean) result[BasicPatientColumns.INDEX_OF_AFFECTED]);
+            patient.setBamURL(toStringProtected(result[BasicPatientColumns.INDEX_OF_BAM_URL]));
+            patient.setDnaID(toStringProtected(result[BasicPatientColumns.INDEX_OF_DNA_IDS]));
+            patient.setPhenotypes(toStringProtected(result[BasicPatientColumns.INDEX_OF_PHENOTYPES]));
+            
+            setPatient(patient);
+            //setPatientInformation(result);
             blockPanel.unblock();
+        }
+
+        private String toStringProtected(Object object) {
+            if (object == null) {
+                return null;
+            } else {
+                return object.toString();
+            }
         }
     }
 

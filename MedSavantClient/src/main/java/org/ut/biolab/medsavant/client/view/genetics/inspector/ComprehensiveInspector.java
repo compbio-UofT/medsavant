@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.inspector;
 
+import java.awt.Color;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,8 @@ import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
+import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
+import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.DetailedVariantSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaSubInspector;
@@ -56,7 +58,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividuals
  */
 public class ComprehensiveInspector extends JTabbedPane implements Listener<Object> {
 
-	/*
+    /*
      * Full width of the inspector panel (borders included).
      */
     public static final int INSPECTOR_WIDTH = 380;
@@ -77,32 +79,31 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private OtherIndividualsVariantSubInspector otherIndividualsVariantSubInspector;
     private OtherIndividualsGeneSubInspector otherIndividualsDetailedSubInspector;
     private List<Listener<Object>> selectionListeners = new LinkedList<Listener<Object>>();
-    private MedSavantGeneInspectorApp[] appGeneInspectors;     
-	private ClinvarSubInspector clinvarSubInspector= null;
-	private HGMDSubInspector hgmdSubInspector= null;
-	
-	private MedSavantWorker<Object> variantRecordSetterThread;
+    private MedSavantGeneInspectorApp[] appGeneInspectors;
+    private ClinvarSubInspector clinvarSubInspector = null;
+    private HGMDSubInspector hgmdSubInspector = null;
+
+    private MedSavantWorker<Object> variantRecordSetterThread;
     private VariantRecord currentVariantRecord;
-	private MedSavantWorker<Object> variantSetterThread;
+    private MedSavantWorker<Object> variantSetterThread;
     private SimpleVariant currentSimpleVariant;
-	private Object[] currentVariantLine;
-	private List<String> currentHeader;
-	
-	
-    public void refresh(){
-        if(inspectorsToTabIndexMap != null){                        
-            if(this.currentSimpleVariant != null){                
+    private Object[] currentVariantLine;
+    private List<String> currentHeader;
+
+    public void refresh() {
+        if (inspectorsToTabIndexMap != null) {
+            if (this.currentSimpleVariant != null) {
                 setSimpleVariant(currentSimpleVariant);
-            }else if(this.currentVariantRecord != null){                
+            } else if (this.currentVariantRecord != null) {
                 setVariantRecord(currentVariantRecord);
             }
-			
-			if (this.currentVariantLine != null) {
-				setVariantLine(currentVariantLine, currentHeader);
-			}
+
+            if (this.currentVariantLine != null) {
+                setVariantLine(currentVariantLine, currentHeader);
+            }
         }
     }
-    
+
     public void addSelectionListener(Listener<Object> selectionListener) {
         selectionListeners.add(selectionListener);
     }
@@ -158,23 +159,23 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         // Variant
         if (createSimpleVariantInspector) {
             simpleVariantInspector = new SimpleVariantSubInspector();
-            variantCollapsibleInspector.addSubInspector(simpleVariantInspector);            
+            variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
         }
 
         if (createDetailedVariantInspector) {
             detailedVariantSubInspector = new DetailedVariantSubInspector();
-            variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);            
+            variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);
         }
 
         if (createSocialVariantInspector) {
             socialSubInspector = new SocialVariantSubInspector();
-            variantCollapsibleInspector.addSubInspector(socialSubInspector);            
+            variantCollapsibleInspector.addSubInspector(socialSubInspector);
         }
 
         if (createOtherIndividualsInspector) {
             otherIndividualsVariantSubInspector = new OtherIndividualsVariantSubInspector(splitScreenPanel);
             otherIndividualsVariantSubInspector.setVariantSelectionListener(this);
-            variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);            
+            variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);
         }
 
         if (createAppVariantInspectors) {
@@ -191,8 +192,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     public JPanel getInfoPanel() {
                         return app.getInfoPanel();
                     }
-                    
-                });                
+
+                });
             }
         }
 
@@ -201,24 +202,24 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         // Gene
         if (createGeneSubInspector) {
             geneSubInspector = new GeneSubInspector();
-            geneCollapsibleInspector.addSubInspector(geneSubInspector);            
+            geneCollapsibleInspector.addSubInspector(geneSubInspector);
         }
 
         if (createOtherIndividualsInspector) { //TODO: Change to createOtherIndividualsDetailedSubInspector
             otherIndividualsDetailedSubInspector = new OtherIndividualsGeneSubInspector(splitScreenPanel);
-            otherIndividualsDetailedSubInspector.setVariantSelectionListener(this);                                         
+            otherIndividualsDetailedSubInspector.setVariantSelectionListener(this);
             geneCollapsibleInspector.addSubInspector(otherIndividualsDetailedSubInspector);
         }
 
         if (createOntologySubInspector) {
             ontologySubInspector = new OntologySubInspector();
-            geneCollapsibleInspector.addSubInspector(ontologySubInspector);        
+            geneCollapsibleInspector.addSubInspector(ontologySubInspector);
         }
 
         if (createGeneManiaInspector) {
             geneManiaInspector = new GeneManiaSubInspector();
-            geneCollapsibleInspector.addSubInspector(geneManiaInspector);            
-            geneManiaInspector.setGeneListener(this);            
+            geneCollapsibleInspector.addSubInspector(geneManiaInspector);
+            geneManiaInspector.setGeneListener(this);
         }
 
         if (createAppGeneInspectors) {
@@ -235,18 +236,17 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                     public JPanel getInfoPanel() {
                         return app.getInfoPanel();
                     }
-                    
-                });                
+
+                });
             }
         }
 
-        
         // Assemble everything        
         addTabPanel(ComprehensiveInspector.InspectorEnum.VARIANT, variantCollapsibleInspector);
         addTabPanel(ComprehensiveInspector.InspectorEnum.GENE, geneCollapsibleInspector);
 
-    } 
-    
+    }
+
     private void loadVariantInspectorApps() {
         List<MedSavantVariantInspectorApp> results = new LinkedList<MedSavantVariantInspectorApp>();
         for (AppDescriptor ad : AppController.getInstance().getDescriptors()) {
@@ -278,7 +278,6 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public CollapsibleInspector getGeneInspector() {
         return geneCollapsibleInspector;
     }
-   
 
     public void setVariantRecord(final VariantRecord r) {
 
@@ -398,8 +397,8 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public synchronized void setSimpleVariant(final SimpleVariant sv) {
         currentSimpleVariant = sv;
         // rammar - not sure what the following line is doing, but it's throwing NullPointerExceptions. Commenting it out.
-		//System.out.println("variantSetterThread is null?"+(variantSetterThread==null)+" varaintSetterThread isDone?"+variantSetterThread.isDone());
-        if (variantSetterThread == null || variantSetterThread.isDone()) {           
+        //System.out.println("variantSetterThread is null?"+(variantSetterThread==null)+" varaintSetterThread isDone?"+variantSetterThread.isDone());
+        if (variantSetterThread == null || variantSetterThread.isDone()) {
             final ComprehensiveInspector instance = this;
 
             instance.getVariantInspector().setMessage(new WaitPanel("Getting detailed variant information..."));
@@ -511,22 +510,28 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
             simpleVariantInspector.setGeneListener(this);
         }
     }
-	
-	/**
-	 * Customizeable ComprehensiveInspector constructor.
-	 */
+
+    @Override
+    public Color getForegroundAt(int index) {
+        if (getSelectedIndex() == index) {
+            return Color.BLACK;
+        }
+        return new Color(40, 40, 40);
+    }
+
+    /**
+     * Customizeable ComprehensiveInspector constructor.
+     */
     public ComprehensiveInspector() {
 
-        setTabPlacement(JTabbedPane.TOP);
-        setBorder(ViewUtil.getBigBorder());
-		
-		// Assemble the variant inspector
+                //setBorder(ViewUtil.getBigBorder());
+                // Assemble the variant inspector
         variantCollapsibleInspector = new CollapsibleInspector() {
-            @Override
-            public String getName() {
-                return "Variant";
-            }
-        };
+                    @Override
+                    public String getName() {
+                        return "Variant";
+                    }
+                };
 
         variantCollapsibleInspector.setMessage("No variant selected", VARIANT_HELP_TITLE, VARIANT_HELP_TEXT);
         variantCollapsibleInspector.switchToMessage();
@@ -540,20 +545,15 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         };
 
         geneCollapsibleInspector.setMessage("No gene selected", GENE_HELP_TITLE, GENE_HELP_TEXT);
-        
-		/*
-		// Help buttons
-		variantCollapsibleInspector.addComponent(ViewUtil.getHelpButton(VARIANT_HELP_TITLE, VARIANT_HELP_TEXT));
-        geneCollapsibleInspector.addComponent(ViewUtil.getHelpButton(GENE_HELP_TITLE, GENE_HELP_TEXT));
-        */
-		
+
         // Assemble everything        
         addTabPanel(ComprehensiveInspector.InspectorEnum.VARIANT, variantCollapsibleInspector);
         addTabPanel(ComprehensiveInspector.InspectorEnum.GENE, geneCollapsibleInspector);
+        
+        setUI(new MSTabbedPaneUI());
+        setFocusable(false);
     }
-	
-	
-	
+
     public void switchToGeneInspector() {
         switchToInspector(ComprehensiveInspector.InspectorEnum.GENE);
     }
@@ -572,47 +572,48 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         jsp.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         addTab(inspector.getName(), null, jsp, inspector.getName());
     }
-	
-	
-	public void addSimpleVariantInspector() {
-		simpleVariantInspector = new SimpleVariantSubInspector();
-		simpleVariantInspector.setGeneListener(this);
-		variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
-	}
 
-	public void addDetailedVariantInspector() {
-		detailedVariantSubInspector = new DetailedVariantSubInspector();
-		variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);            
-	}
+    public void addSimpleVariantInspector() {
+        simpleVariantInspector = new SimpleVariantSubInspector();
+        simpleVariantInspector.setGeneListener(this);
+        variantCollapsibleInspector.addSubInspector(simpleVariantInspector);
+    }
 
-	public void addSocialSubInspector() {
-		socialSubInspector = new SocialVariantSubInspector();
-		variantCollapsibleInspector.addSubInspector(socialSubInspector);            
-	}
+    public void addDetailedVariantInspector() {
+        detailedVariantSubInspector = new DetailedVariantSubInspector();
+        variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);
+    }
 
-	public void addOtherIndividualsVariantSubInspector(SplitScreenPanel splitScreenPanel) {
-		otherIndividualsVariantSubInspector = new OtherIndividualsVariantSubInspector(splitScreenPanel);
-		otherIndividualsVariantSubInspector.setVariantSelectionListener(this);
-		variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);            
-	}
-	
-	public void addClinvarSubInspector() {
-		clinvarSubInspector= new ClinvarSubInspector();
-		variantCollapsibleInspector.addSubInspector(clinvarSubInspector);
-	}
-	
-	public void addHGMDSubInspector() {
-		hgmdSubInspector= new HGMDSubInspector();
-		variantCollapsibleInspector.addSubInspector(hgmdSubInspector);
-	}
-	
-	public void setVariantLine(Object[] line, List<String> header) {
-		currentVariantLine= line;
-		if (line != null) {
-			if (clinvarSubInspector != null)
-				clinvarSubInspector.setVariantLine(line, header);
-			if (hgmdSubInspector != null)
-				hgmdSubInspector.setVariantLine(line, header);
-		}
-	}
+    public void addSocialSubInspector() {
+        socialSubInspector = new SocialVariantSubInspector();
+        variantCollapsibleInspector.addSubInspector(socialSubInspector);
+    }
+
+    public void addOtherIndividualsVariantSubInspector(SplitScreenPanel splitScreenPanel) {
+        otherIndividualsVariantSubInspector = new OtherIndividualsVariantSubInspector(splitScreenPanel);
+        otherIndividualsVariantSubInspector.setVariantSelectionListener(this);
+        variantCollapsibleInspector.addSubInspector(otherIndividualsVariantSubInspector);
+    }
+
+    public void addClinvarSubInspector() {
+        clinvarSubInspector = new ClinvarSubInspector();
+        variantCollapsibleInspector.addSubInspector(clinvarSubInspector);
+    }
+
+    public void addHGMDSubInspector() {
+        hgmdSubInspector = new HGMDSubInspector();
+        variantCollapsibleInspector.addSubInspector(hgmdSubInspector);
+    }
+
+    public void setVariantLine(Object[] line, List<String> header) {
+        currentVariantLine = line;
+        if (line != null) {
+            if (clinvarSubInspector != null) {
+                clinvarSubInspector.setVariantLine(line, header);
+            }
+            if (hgmdSubInspector != null) {
+                hgmdSubInspector.setVariantLine(line, header);
+            }
+        }
+    }
 }

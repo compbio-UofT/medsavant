@@ -11,9 +11,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -22,10 +25,12 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  */
 public class AccountManagerApp implements LaunchableApp {
 
+    private JPanel accountBlock;
+
     public AccountManagerApp() {
     }
 
-    private JPanel view;
+    private StandardFixedWidthAppPanel view;
 
     @Override
     public JPanel getView() {
@@ -34,25 +39,10 @@ public class AccountManagerApp implements LaunchableApp {
 
     private void initView() {
         if (view == null) {
-            view = new JPanel();
-            
-            view.setBackground(ViewUtil.getDefaultBackgroundColor());
-            
-            JButton b = new JButton("Change password");
-            b.addActionListener(new ActionListener() {
+            view = new StandardFixedWidthAppPanel();
 
-                private final String OLDPASS_LABEL = "Enter Current Password";
-                private final String NEWPASS_LABEL1 = "Enter New Password";
-                private final String NEWPASS_LABEL2 = "Confirm New Password";
+            accountBlock = view.addBlock("Account Information");
 
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    JDialog jd = new ChangePasswordDialog();
-                    jd.setVisible(true);
-                }
-            });
-
-            view.add(b);
         }
     }
 
@@ -63,6 +53,7 @@ public class AccountManagerApp implements LaunchableApp {
     @Override
     public void viewWillLoad() {
         initView();
+        refreshInfo();
     }
 
     @Override
@@ -89,6 +80,33 @@ public class AccountManagerApp implements LaunchableApp {
 
     @Override
     public void didLogin() {
+    }
+
+    private void refreshInfo() {
+        accountBlock.removeAll();
+        
+        KeyValuePairPanel kvp = new KeyValuePairPanel(1,true);
+        
+        JButton b = ViewUtil.getSoftButton("Change");
+        b.addActionListener(new ActionListener() {
+
+            private final String OLDPASS_LABEL = "Enter Current Password";
+            private final String NEWPASS_LABEL1 = "Enter New Password";
+            private final String NEWPASS_LABEL2 = "Confirm New Password";
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JDialog jd = new ChangePasswordDialog();
+                jd.setVisible(true);
+            }
+        });
+        
+        kvp.addKeyWithValue("Username", LoginController.getInstance().getUserName());
+        kvp.addKeyWithValue("Password", ViewUtil.bulletStringOfLength(LoginController.getInstance().getPassword().length()));
+        
+        kvp.setAdditionalColumn("Password", 0, b);
+
+        accountBlock.add(kvp);
     }
 
 }

@@ -30,14 +30,20 @@ import java.awt.event.WindowEvent;
 import com.explodingpixels.macwidgets.MacUtils;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import org.apache.commons.logging.Log;
@@ -55,6 +61,8 @@ import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
+import org.ut.biolab.medsavant.client.view.dashboard.AppSwitchPanel;
+import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 
 /**
  *
@@ -157,10 +165,10 @@ public class MedSavantFrame extends JFrame {
                 requestClose();
             }
         });
-        
+
         initializeSessionView();
     }
-    
+
     public void showNotification(Notification n) {
         notificationPanel.addNotification(n);
     }
@@ -175,13 +183,15 @@ public class MedSavantFrame extends JFrame {
 
         final JPanel dashBoardContainer = ViewUtil.getClearPanel();
         view.push(dashBoardContainer);
-        
+
         notificationPanel = new NotificationsPanel();
         view.push(notificationPanel);
         
+        AppSwitchPanel switchPanel = new AppSwitchPanel(dashBoardContainer);
+        view.push(switchPanel);
+
         //bannerNotficationsPanel = new BannerNotificationsPanel();
         //view.push(bannerNotficationsPanel);
-        
         new MedSavantWorker<Void>("MedSavantFrame") {
             @Override
             protected void showProgress(double fract) {
@@ -195,12 +205,15 @@ public class MedSavantFrame extends JFrame {
             protected Void doInBackground() throws Exception {
 
                 Dashboard dash = new Dashboard();
+
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
 
                 sessionDashboard = dash;
                 dashBoardContainer.setLayout(new BorderLayout());
-                dashBoardContainer.add(dash,BorderLayout.CENTER);
+                dashBoardContainer.add(dash, BorderLayout.CENTER);
                 dashBoardContainer.updateUI();
+
+                
 
                 return null;
             }
@@ -211,7 +224,7 @@ public class MedSavantFrame extends JFrame {
     public Dashboard getDashboard() {
         return sessionDashboard;
     }
-    
+
     public void forceRestart() {
         requestRestart(false);
     }

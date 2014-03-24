@@ -1,8 +1,9 @@
 package org.ut.biolab.medsavant.app.mendelclinic.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -23,15 +24,10 @@ public class MendelPanel {
         if (view == null) {
             view = new JPanel();
             view.setLayout(new BorderLayout());
-            view.setBackground(Color.white);
-
-            JPanel p = ViewUtil.getClearPanel();
-            p.setBorder(ViewUtil.getBigBorder());
-            p.setLayout(new BorderLayout());
-
+            view.setBackground(ViewUtil.getLightGrayBackgroundColor());
             fo = new OptionView();
-            p.add(ViewUtil.centerHorizontally(fo.getView()),BorderLayout.NORTH);
-
+            JPanel p = new StandardAppContainer(fo.getView(), true);
+            p.setBackground(ViewUtil.getLightGrayBackgroundColor());
             view.add(p, BorderLayout.CENTER);
         }
 

@@ -316,8 +316,8 @@ public class ScrollableJPopupMenu extends JPopupMenu {
      */
     static {
         try {
-            upIcon = new ImageIcon(ImageIO.read(ScrollableJPopupMenu.class.getClassLoader().getResource("disclosure-up.png")));
-            downIcon = new ImageIcon(ImageIO.read(ScrollableJPopupMenu.class.getClassLoader().getResource("disclosure.png")));
+            upIcon = new ImageIcon(ImageIO.read(ScrollableJPopupMenu.class.getClassLoader().getResource("icon/ui/disclosure-up.png")));
+            downIcon = new ImageIcon(ImageIO.read(ScrollableJPopupMenu.class.getClassLoader().getResource("icon/ui/disclosure.png")));
         } catch (IOException ex) {
         }
 

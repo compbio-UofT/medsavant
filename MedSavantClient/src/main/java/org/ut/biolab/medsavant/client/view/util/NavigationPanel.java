@@ -51,7 +51,7 @@ public class NavigationPanel extends JPanel {
         this.setLayout(new MigLayout("hidemode 3, insets 0"));
 
         titleLabel = new JLabel();
-        titleLabel.setFont(FontFactory.getTitleFont());
+        titleLabel.setFont(FontFactory.getMenuTitleFont());
         titleLabel.setVisible(false);
         titleLabel.setForeground(new Color(64, 64, 64));
 

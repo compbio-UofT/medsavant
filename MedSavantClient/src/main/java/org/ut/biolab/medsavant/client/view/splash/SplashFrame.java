@@ -64,6 +64,13 @@ import org.ut.biolab.medsavant.client.view.util.form.NiceFormField;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormFieldGroup;
 import org.ut.biolab.medsavant.client.view.util.form.NiceFormModel;
 import org.ut.biolab.medsavant.client.app.jAppStore;
+import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.component.field.editable.EditableField;
+import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
+import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
+import org.ut.biolab.medsavant.component.field.editable.IntegerEditableField;
+import org.ut.biolab.medsavant.component.field.editable.PasswordEditableField;
+import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 
 /**
  *
@@ -74,7 +81,6 @@ public class SplashFrame extends JFrame {
     private static Log LOG = LogFactory.getLog(SplashFrame.class);
 
     private final JPanel primaryPanel;
-    private jAppStore appStore;
 
     private final LoginComponent loginComponent;
     private final ServerManagementComponent serverManager;
@@ -122,26 +128,21 @@ public class SplashFrame extends JFrame {
         primaryPanel.updateUI();
     }
 
-    private class ServerDetailedView extends DetailedView {
+    private class ServerDetailedView extends DetailedView implements FieldEditedListener {
 
-        // fields in this form
-        private NiceFormField nameField;
-        private NiceFormField hostField;
-        private NiceFormField portField;
-        private NiceFormField databaseField;
-        private NiceFormField usernameField;
-        private NiceFormField passwordField;
-        private NiceFormField rememberPasswordField;
+        private StringEditableField nameField;
+        private StringEditableField hostField;
+        private IntegerEditableField portField;
+        private StringEditableField databaseField;
+        private StringEditableField usernameField;
+        private PasswordEditableField passwordField;
+        private EnumEditableField rememberPasswordField;
 
         private final ServerManagementComponent serverManagementComponent;
-        private NiceForm form;
         private MedSavantServerInfo server;
 
-        private JPanel adminPanel;
         private JButton chooseButton;
-        private JButton cancelButton;
-        private JButton saveButton;
-        private boolean isEditing;
+        private KeyValuePairPanel kvp;
 
         public ServerDetailedView(ServerManagementComponent parent) {
             super("Servers");
@@ -151,7 +152,7 @@ public class SplashFrame extends JFrame {
 
         @Override
         public void setSelectedItem(Object[] selectedRow) {
-            
+
             if (selectedRow == null || selectedRow.length == 0) {
                 showBlockPanel();
                 return;
@@ -169,35 +170,91 @@ public class SplashFrame extends JFrame {
             return new JPopupMenu();
         }
 
-        private NiceForm getNiceFormForServer(MedSavantServerInfo server) {
-            NiceFormModel model = new NiceFormModel();
+        private KeyValuePairPanel getNiceFormForServer(MedSavantServerInfo server) {
 
-            NiceFormFieldGroup settingsGroup = new NiceFormFieldGroup("Server Settings", true);
+            final String DBNAME_KEY = "Database name";
 
-            settingsGroup.addField(nameField = new NiceFormField(true, "Name", NiceForm.FieldType.STRING, server.getNickname()));
-            settingsGroup.addField(hostField = new NiceFormField(true, "Hostname", NiceForm.FieldType.STRING, server.getHost()));
-            settingsGroup.addField(portField = new NiceFormField(true, "Port", NiceForm.FieldType.NUMBER, server.getPort()));
-            settingsGroup.addField(databaseField = new NiceFormField(true, "Database", NiceForm.FieldType.STRING, server.getDatabase()));
+            final KeyValuePairPanel kvp = new KeyValuePairPanel(1, true);
 
-            model.addGroup(settingsGroup);
+            nameField = new StringEditableField();
+            nameField.setValue(server.getNickname());
 
-            NiceFormFieldGroup loginGroup = new NiceFormFieldGroup("Login", true);
+            hostField = new StringEditableField();
+            hostField.setValue(server.getHost());
 
-            loginGroup.addField(usernameField = new NiceFormField(false, "Username", NiceForm.FieldType.STRING, server.getUsername()));
-            loginGroup.addField(passwordField = new NiceFormField(false, "Password", NiceForm.FieldType.PASSWORD, server.getPassword()));
-            loginGroup.addField(rememberPasswordField = new NiceFormField(false, "Remember password", NiceForm.FieldType.BOOLEAN, server.isRememberPassword()));
+            portField = new IntegerEditableField();
+            portField.setValue(server.getPort());
 
-            model.addGroup(loginGroup);
+            databaseField = new StringEditableField();
+            databaseField.setValue(server.getDatabase());
 
-            NiceForm f = new NiceForm(model);
+            usernameField = new StringEditableField();
+            usernameField.setValue(server.getUsername());
 
-            return f;
-        }
+            passwordField = new PasswordEditableField();
+            passwordField.setValue(server.getPassword());
 
-        private void setEditing(boolean b) {
-            isEditing = b;
-            if (server != null) { serverManager.setSelectedServer(server); }
-            updateStateOfForm();
+            rememberPasswordField = new EnumEditableField(new String[]{"No", "Yes"});
+            rememberPasswordField.setValue(server.isRememberPassword() ? "Yes" : "No");
+
+            addChangeListenersToFields(nameField, hostField, hostField, databaseField, usernameField, passwordField, rememberPasswordField);
+
+            kvp.addKeyWithValue("Server name", nameField);
+            kvp.addKeyWithValue("Host name", hostField);
+            kvp.addKeyWithValue("Port", portField);
+
+            kvp.addKeyWithValue("Username", usernameField);
+            kvp.addKeyWithValue("Password", passwordField);
+            kvp.addKeyWithValue("Remember password", rememberPasswordField);
+            kvp.addKeyWithValue(DBNAME_KEY, databaseField);
+
+            final JToggleButton adminButton = ViewUtil.getSoftToggleButton("Admin");
+
+            final JLabel adminLabel = ViewUtil.getSettingsHelpLabel("Requires administrative priviledges");
+            final JButton createDBButton = ViewUtil.getTexturedButton("Create Database");
+            final JButton deleteDBButton = ViewUtil.getTexturedButton("Delete Database");
+
+            createDBButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println("Creating db");
+                    createDatabaseSpecifiedByForm();
+                }
+
+            });
+
+            deleteDBButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println("Deleting db");
+                    deleteDatabaseSpecifiedByForm();
+                }
+            });
+
+            JPanel adminPanel = ViewUtil.getClearPanel();
+
+            adminPanel.setLayout(new MigLayout("insets 0"));
+
+            //adminPanel.add(admin, "wrap");
+            adminPanel.add(adminLabel, "wrap");
+            adminPanel.add(createDBButton, "split");
+            adminPanel.add(deleteDBButton, "wrap");
+
+            adminButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    kvp.toggleDetailVisibility(DBNAME_KEY, adminButton.isSelected());
+                }
+
+            });
+
+            kvp.setAdditionalColumn(DBNAME_KEY, 0, adminButton);
+            kvp.setDetailComponent(DBNAME_KEY, adminPanel);
+            kvp.toggleDetailVisibility(DBNAME_KEY, adminButton.isSelected());
+
+            return kvp;
         }
 
         private void showServerInfo(final MedSavantServerInfo server) {
@@ -222,44 +279,11 @@ public class SplashFrame extends JFrame {
                 return;
             }
 
-            form = getNiceFormForServer(server);
+            kvp = getNiceFormForServer(server);
 
-            form.addListener(new Listener<NiceForm.FormEvent>() {
-
-                @Override
-                public void handleEvent(NiceForm.FormEvent event) {
-
-                    if (form.isEditModeOn()) {
-                        serverManagementComponent.setMode(ServerManagementComponent.EDIT_MODE);
-                    } else {
-                        serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-                    }
-                }
-
-            });
-
-            container.add(form, "wrap, aligny top");
+            container.add(kvp, "wrap, aligny top, growx 1.0, wmax 100%");
 
             chooseButton = ViewUtil.getTexturedButton("Connect");
-
-            cancelButton = ViewUtil.getTexturedButton("Cancel");
-            saveButton = ViewUtil.getTexturedButton("Save");
-
-            saveButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    doSave();
-                }
-            });
-
-            cancelButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setEditing(false);
-                    serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-                }
-            });
 
             chooseButton.addActionListener(new ActionListener() {
                 @Override
@@ -269,106 +293,33 @@ public class SplashFrame extends JFrame {
                 }
             });
 
-            bottomMenu.addRightComponent(cancelButton);
-            bottomMenu.addRightComponent(saveButton);
             bottomMenu.addRightComponent(chooseButton);
-
-            cancelButton.setVisible(false);
-            saveButton.setVisible(false);
-
-            adminPanel = ViewUtil.getClearPanel();
-
-            adminPanel.setLayout(new MigLayout("insets 0, center"));
-
-            final JLabel adminLabel = ViewUtil.getSettingsHelpLabel("Requires administrative priviledges");
-            final JButton createDBButton = ViewUtil.getTexturedButton("Create Database");
-            final JButton deleteDBButton = ViewUtil.getTexturedButton("Delete Database");
-
-            final JToggleButton admin = ViewUtil.getSoftToggleButton("Database Administration");
-
-            createDBButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    createDatabaseSpecifiedByForm();
-                }
-
-            });
-
-            deleteDBButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    deleteDatabaseSpecifiedByForm();
-                }
-            });
-
-            adminPanel.add(admin, "wrap");
-            adminPanel.add(adminLabel, "wrap");
-            adminPanel.add(createDBButton, "split");
-            adminPanel.add(deleteDBButton, "wrap");
-
-            adminLabel.setVisible(false);
-            createDBButton.setVisible(false);
-            deleteDBButton.setVisible(false);
-
-            admin.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    boolean isAdministrating = admin.isSelected();
-                    adminLabel.setVisible(isAdministrating);
-                    createDBButton.setVisible(isAdministrating);
-                    deleteDBButton.setVisible(isAdministrating);
-                }
-
-            });
-
-            container.add(adminPanel, "wrap");
-            //adminPanel.setVisible(false);
 
             this.add(container, BorderLayout.CENTER);
             this.add(bottomMenu, BorderLayout.SOUTH);
             this.updateUI();
-
-            updateStateOfForm();
         }
 
         private void createDatabaseSpecifiedByForm() {
-            // validate the form
-            if (form != null) {
-                if (form.validateForm()) {
 
-                    String database = form.getValueForStringField(databaseField);
+            String host = hostField.getValue();
+            int port = portField.getValue();
+            String database = databaseField.getValue();
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
 
-                    if (DialogUtils.askYesNo(
-                            "Create Database",
-                            String.format(
-                                    "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
-                        String host = form.getValueForStringField(hostField);
-                        int port = form.getValueForIntegerField(portField);
-                        String username = form.getValueForStringField(usernameField);
-                        String password = form.getValueForStringField(passwordField);
-
-                        createDatabase(host, port, database, username, password);
-                    }
-                }
-            }
+            createDatabase(host, port, database, username, password);
         }
 
         private void deleteDatabaseSpecifiedByForm() {
-            // validate the form
-            if (form != null) {
-                if (form.validateForm()) {
 
-                    String host = form.getValueForStringField(hostField);
-                    int port = form.getValueForIntegerField(portField);
-                    String database = form.getValueForStringField(databaseField);
-                    String username = form.getValueForStringField(usernameField);
-                    String password = form.getValueForStringField(passwordField);
+            String host = hostField.getValue();
+            int port = portField.getValue();
+            String database = databaseField.getValue();
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
 
-                    removeDatabase(host, port, database, username, password);
-                }
-            }
+            removeDatabase(host, port, database, username, password);
         }
 
         private void removeDatabase(final String address, final int port, final String database, final String username, final String password) {
@@ -411,25 +362,17 @@ public class SplashFrame extends JFrame {
         }
 
         private void createDatabase(final String address, final int port, final String database, final String username, final String password) {
-            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
-                @Override
-                public void run() {
-                    try {
-                        MedSavantClient.initializeRegistry(address, port + "");
-                        MedSavantClient.SetupManager.createDatabase(address, port, database, username, password.toCharArray());
-                        SwingUtilities.invokeAndWait(new Runnable() {
+            if (DialogUtils.askYesNo(
+                    "Create Database",
+                    String.format(
+                            "<html>Are you sure you want to create the database <i>%s</i>?</html>", database)) == DialogUtils.YES) {
 
-                            @Override
-                            public void run() {
-                                setVisible(false);
-                            }
-
-                        });
-                        doSave();
-                        DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
-                    } catch (Throwable ex) {
-                        ex.printStackTrace();
+                new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", database)) {
+                    @Override
+                    public void run() {
                         try {
+                            MedSavantClient.initializeRegistry(address, port + "");
+                            MedSavantClient.SetupManager.createDatabase(address, port, database, username, password.toCharArray());
                             SwingUtilities.invokeAndWait(new Runnable() {
 
                                 @Override
@@ -438,12 +381,26 @@ public class SplashFrame extends JFrame {
                                 }
 
                             });
-                        } catch (Exception ex1) {
+                            doSave();
+                            DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", database));
+                        } catch (Throwable ex) {
+                            ex.printStackTrace();
+                            try {
+                                SwingUtilities.invokeAndWait(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        setVisible(false);
+                                    }
+
+                                });
+                            } catch (Exception ex1) {
+                            }
+                            ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                         }
-                        ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                     }
-                }
-            }.setVisible(true);
+                }.setVisible(true);
+            }
         }
 
         private void showBlockPanel() {
@@ -458,51 +415,48 @@ public class SplashFrame extends JFrame {
         }
 
         private void doSave() {
-            if (form != null) {
-                if (form.validateForm()) {
-                    String name = form.getValueForStringField(nameField);
-                    String host = form.getValueForStringField(hostField);
-                    int port = form.getValueForIntegerField(portField);
-                    String database = form.getValueForStringField(databaseField);
-                    String username = form.getValueForStringField(usernameField);
-                    String password = form.getValueForStringField(passwordField);
-                    boolean rememberPass = form.getValueForBooleanField(rememberPasswordField);
 
-                    server.setHost(host);
-                    server.setPort(port);
-                    server.setDatabase(database);
-                    server.setNickname(name);
-                    server.setUsername(username);
-                    server.setPassword(password);
-                    server.setRememberPassword(rememberPass);
+            String name = nameField.getValue();
+            String host = hostField.getValue();
+            int port = portField.getValue();
+            String database = databaseField.getValue();
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
+            boolean rememberPass = rememberPasswordField.getValue().equals("Yes");
 
-                    MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(server.getNickname());
+            server.setHost(host);
+            server.setPort(port);
+            server.setDatabase(database);
+            server.setNickname(name);
+            server.setUsername(username);
+            server.setPassword(password);
+            server.setRememberPassword(rememberPass);
 
-                    if (existingServer != null && existingServer != server) {
-                        DialogUtils.displayMessage("There's already a server named " + name + ".");
-                        return;
-                    }
+            MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(server.getNickname());
 
-                    ServerController.getInstance().saveServers();
+            if (existingServer != null && existingServer != server) {
+                DialogUtils.displayMessage("There's already a server named " + name + ".");
+                return;
+            }
 
-                    serverManagementComponent.normalSplitScreen.selectItemWithKey(name);
-                    serverManagementComponent.setMode(ServerManagementComponent.NORMAL_MODE);
-                }
+            ServerController.getInstance().saveServers();
+
+            serverManagementComponent.serverListScreen.selectItemWithKey(name);
+        }
+
+        @Override
+        public void handleEvent(EditableField f) {
+            System.out.println("Field with value " + f.getValue() + "  was edited");
+            System.out.println("Saving");
+            doSave();
+        }
+
+        private void addChangeListenersToFields(EditableField... fields) {
+            for (EditableField f : fields) {
+                f.addFieldEditedListener(this);
             }
         }
 
-        private void updateStateOfForm() {
-            if (form != null) {
-                form.setEditModeOn(isEditing);
-                adminPanel.setVisible(isEditing);
-                chooseButton.setVisible(!isEditing);
-                cancelButton.setVisible(isEditing);
-                saveButton.setVisible(isEditing);
-                if (isEditing) {
-                    form.focus();
-                }
-            }
-        }
     }
 
     private static class ServerDetailedListEditor extends DetailedListEditor {
@@ -539,21 +493,6 @@ public class SplashFrame extends JFrame {
                 }
             }
         }
-
-        @Override
-        public boolean doesImplementEditing() {
-            return true;
-        }
-
-        @Override
-        public boolean doesRefreshAfterEditing() {
-            return false;
-        }
-
-        @Override
-        public void editItem(Object[] item) {
-            serverManager.setMode(ServerManagementComponent.EDIT_MODE);
-        }
     }
 
     private class LoginComponent extends JPanel implements Listener<ServerController> {
@@ -586,10 +525,10 @@ public class SplashFrame extends JFrame {
                 public void handleEvent(LoginEvent event) {
 
                     LOG.info("Received login event " + event.getType().toString());
-                    
+
                     switch (event.getType()) {
                         case LOGGED_IN:
-                            
+
                             // don't log in if the cancel button was pressed
                             if (loginThread.isCancelled()) {
                                 LOG.info("Login was cancelled " + loginThread.isCancelled() + " " + !isLoggingIn);
@@ -693,6 +632,7 @@ public class SplashFrame extends JFrame {
             } else if (ServerController.getInstance().getServers().isEmpty()) {
                 setPage(NO_SERVER_ATALL_PAGE);
             } else {
+
                 setServer(ServerController.getInstance().getCurrentServer());
                 setPage(LOGIN_PAGE);
             }
@@ -782,8 +722,7 @@ public class SplashFrame extends JFrame {
             serverNameLabel.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    serverManager.normalSplitScreen.selectItemWithKey(serverNameLabel.getText());
-                    serverManager.setMode(ServerManagementComponent.NORMAL_MODE);
+                    serverManager.serverListScreen.selectItemWithKey(serverNameLabel.getText());
                     setPrimaryPanel(serverManager);
                 }
             });
@@ -957,30 +896,15 @@ public class SplashFrame extends JFrame {
 
     private class ServerManagementComponent extends JPanel implements Listener<ServerController> {
 
-        private int mode;
         private NiceMenu topMenu;
 
-        private final static int NORMAL_MODE = 0;
-        private final static int EDIT_MODE = 1;
-
-        private SplitScreenView normalSplitScreen;
+        private SplitScreenView serverListScreen;
         private ServerDetailedView serverDetailView;
 
         public ServerManagementComponent() {
             initUI();
-            mode = NORMAL_MODE;
-            refreshUI();
             ServerController.getInstance().addListener(this);
 
-        }
-
-        public void setMode(int mode) {
-            this.mode = mode;
-            refreshUI();
-        }
-
-        private void refreshUI() {
-            serverDetailView.setEditing(mode == ServerManagementComponent.EDIT_MODE);
         }
 
         private void initUI() {
@@ -1008,7 +932,7 @@ public class SplashFrame extends JFrame {
             serverDetailView = new ServerDetailedView(this);
             final ServerDetailedListEditor serverDetailListEditor = new ServerDetailedListEditor(this);
 
-            normalSplitScreen = new SplitScreenView(new DetailedListModel() {
+            serverListScreen = new SplitScreenView(new DetailedListModel() {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
@@ -1041,7 +965,7 @@ public class SplashFrame extends JFrame {
 
             }, serverDetailView, serverDetailListEditor);
 
-            container.add(normalSplitScreen, "width 100%, height 100%");
+            container.add(serverListScreen, "width 100%, height 100%");
 
         }
 
@@ -1058,11 +982,10 @@ public class SplashFrame extends JFrame {
 
             ServerController.getInstance().addServer(server);
             serverManager.setSelectedServer(server);
-            serverManager.setMode(ServerManagementComponent.EDIT_MODE);
         }
 
         private void setSelectedServer(MedSavantServerInfo server) {
-            normalSplitScreen.selectItemWithKey(server.getNickname());
+            serverListScreen.selectItemWithKey(server.getNickname());
         }
 
         @Override
@@ -1071,7 +994,7 @@ public class SplashFrame extends JFrame {
         }
 
         private void refreshList() {
-            normalSplitScreen.refresh();
+            serverListScreen.refresh();
         }
     }
 

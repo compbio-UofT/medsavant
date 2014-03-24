@@ -43,6 +43,8 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -155,48 +157,20 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
         private final String[] FIELD_NAMES = new String[]{"User Level"};
         private final JPanel details;
-        private final JPanel content;
         private String name;
         private DetailsWorker worker;
-        private CollapsiblePane infoPanel;
         private final BlockingPanel blockingPanel;
+        private final StandardFixedWidthAppPanel canvas;
 
         public UserDetailedView() {
             super(pageName);
-
-            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-            viewContainer.setLayout(new BorderLayout());
-
-            JPanel infoContainer = ViewUtil.getClearPanel();
-            ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-            blockingPanel = new BlockingPanel("No user selected",ViewUtil.getClearBorderlessScrollPane(infoContainer));
-            viewContainer.add(blockingPanel, BorderLayout.CENTER);
-
-            CollapsiblePanes panes = new CollapsiblePanes();
-            panes.setOpaque(false);
-            infoContainer.add(panes);
-
-            infoPanel = new CollapsiblePane();
-            infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-
-            infoPanel.setCollapsible(false);
-            panes.add(infoPanel);
-            panes.addExpansion();
-
-            content = new JPanel();
-            content.setLayout(new BorderLayout());
-            infoPanel.setLayout(new BorderLayout());
-            infoPanel.add(content, BorderLayout.CENTER);
-
-            details = ViewUtil.getClearPanel();
-
-            //content.setLayout(new BorderLayout());
-
-            //content.add(details, BorderLayout.CENTER);
-            content.add(details);
-            
+            canvas = new StandardFixedWidthAppPanel();
+            blockingPanel = new BlockingPanel("No user selected",canvas);
+            details = canvas.addBlock();
             blockingPanel.block();
+            
+            this.setLayout(new BorderLayout());
+            this.add(blockingPanel,BorderLayout.CENTER);
         }
 
         @Override
@@ -208,7 +182,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             }
             
             name = (String) item[0];
-            infoPanel.setTitle(name);
+            canvas.setTitle(name);
 
             details.removeAll();
             details.updateUI();
@@ -246,9 +220,9 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
         @Override
         public void setMultipleSelections(List<Object[]> items) {
             if (items.isEmpty()) {
-                infoPanel.setTitle("");
+                canvas.setTitle("");
             } else {
-                infoPanel.setTitle("Multiple users (" + items.size() + ")");
+                canvas.setTitle("Multiple users (" + items.size() + ")");
             }
             details.removeAll();
             details.updateUI();

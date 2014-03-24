@@ -27,9 +27,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -42,7 +43,6 @@ import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -109,9 +109,7 @@ public class ListView extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     detailedEditor.addItems();
-                    // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
-
-                    if (detailedEditor.doesRefreshAfterAdding() && LoginController.getInstance().isLoggedIn()) {
+                    if (detailedEditor.doesRefreshAfterAdding()) {
                         refreshList();
                     }
                 }
@@ -156,7 +154,7 @@ public class ListView extends JPanel {
                     detailedEditor.deleteItems(getSelectedRows());
                     // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
 
-                    if (detailedEditor.doesRefreshAfterDeleting() && LoginController.getInstance().isLoggedIn()) {
+                    if (detailedEditor.doesRefreshAfterDeleting()) {
                         refreshList();
                     }
                 }
@@ -295,12 +293,40 @@ public class ListView extends JPanel {
         while (columnVisibility.length > 0 && firstVisibleColumn == columnVisibility[firstVisibleColumn]) {
             firstVisibleColumn++;
         }
+        
+        Set<NiceListItem> selectedItems; 
+        if (list != null) {
+            selectedItems = new HashSet<NiceListItem>(list.getSelectedItems());
+        } else {
+            selectedItems = new HashSet<NiceListItem>(); // empty set, for simplicity of not having to null check later on
+        }
 
         list = new NiceList();
         list.startTransaction();
+        
+        List<Integer> selectedIndicies = new ArrayList<Integer>();
+        
+        int counter = 0;
         for (Object[] row : data) {
-            list.addItem(new NiceListItem(row[firstVisibleColumn].toString(), row));
+            NiceListItem nli = new NiceListItem(row[firstVisibleColumn].toString(), row);
+            list.addItem(nli);
+            
+            if (selectedItems.contains(nli)) {
+                selectedIndicies.add(counter);
+            }
+            counter++;
         }
+        
+        /*
+        int[] selectedIndiciesArray = new int[selectedIndicies.size()];
+        
+        System.out.println("Reselecting "  + selectedIndicies.size() + " items");
+        for (int i = 0; i < selectedIndicies.size();i++) {
+            System.out.println("Reselecting "  + list.getItem(selectedIndicies.get(i)).toString() + " at index " + selectedIndicies.get(i));
+            selectedIndiciesArray[i] = selectedIndicies.get(i);
+        }*/
+        
+        
         list.endTransaction();
 
         wp.setBackground(list.getColorScheme().getBackgroundColor());
@@ -334,7 +360,11 @@ public class ListView extends JPanel {
             });
         }
 
-        list.getSelectionModel().setSelectionInterval(0, 0);
+        if (selectedIndicies.isEmpty()) {
+            list.selectItemAtIndex(0);
+        } else {
+            list.selectItemsAtIndicies(selectedIndicies);
+        }
 
         JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(list);
         jsp.setHorizontalScrollBar(null);
@@ -352,7 +382,7 @@ public class ListView extends JPanel {
         showCard.add(jsp, BorderLayout.CENTER);
 
         showCard.add(controlBar.getComponent(), BorderLayout.SOUTH);
-
+        
     }
 
     public void setSearchBarEnabled(boolean b) {
@@ -360,6 +390,7 @@ public class ListView extends JPanel {
     }
 
     void selectItemWithKey(final String key) {
+        //System.out.println("Selecting item with key " + key);
         new Thread(new Runnable() {
 
             @Override
@@ -379,6 +410,7 @@ public class ListView extends JPanel {
     }
 
     void selectItemAtIndex(final int i) {
+        //System.out.println("Selecting item at index " + i);
         new Thread(new Runnable() {
 
             @Override
@@ -395,5 +427,6 @@ public class ListView extends JPanel {
             }
 
         }).start();
+                
     }
 }

@@ -92,14 +92,12 @@ public class AppStoreInstalledPage implements AppStorePage {
 
     protected void updateInstalledList() {
         
-        System.out.println("Updating download list " + this.installQueue.size() + " installs in queue");
-
         view.removeAll();
         view.setLayout(new BorderLayout());
         
         JPanel container = ViewUtil.getClearPanel();
         
-        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3");
+        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3, insets 0");
         container.setLayout(ml);
 
         if (!installQueue.isEmpty()) {
@@ -133,7 +131,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (installedApps.isEmpty()) {
-            container.add(new JLabel("No apps installed"));
+            container.add(ViewUtil.getGrayItalicizedLabel("No apps installed"));
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
@@ -149,7 +147,11 @@ public class AppStoreInstalledPage implements AppStorePage {
                     }));
         }
         
-        view.add(new StandardAppContainer(container),BorderLayout.CENTER);
+        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
+        
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        view.add(sac,BorderLayout.CENTER);
+        sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         view.updateUI();
     }

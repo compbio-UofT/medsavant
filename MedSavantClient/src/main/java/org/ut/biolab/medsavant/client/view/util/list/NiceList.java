@@ -33,7 +33,8 @@ public class NiceList extends JList {
     private final Vector<NiceListItem> allItems;
     private JTextField searchBar;
     private boolean inTransaction;
-    private class NiceListModel extends AbstractListModel{
+
+    private class NiceListModel extends AbstractListModel {
 
         @Override
         public int getSize() {
@@ -46,9 +47,9 @@ public class NiceList extends JList {
         }
         
     }
+
     public NiceList() {
         allItems = new Vector<NiceListItem>();
-
         this.setCellRenderer(new NiceListCellRenderer());
         this.setModel(new NiceListModel());
         initSearchBar();
@@ -62,6 +63,10 @@ public class NiceList extends JList {
     public void removeItem(final NiceListItem item) {
         allItems.remove(item);
         updateListItems();
+    }
+
+    public NiceListItem getItem(int index) {
+        return allItems.get(index);
     }
 
     public JTextField getSearchBar() {
@@ -89,20 +94,14 @@ public class NiceList extends JList {
 
         this.setBackground(colorScheme.getBackgroundColor());
 
-        final Vector v;
+        final Vector<NiceListItem> v;
         if (searchBar.getText().isEmpty()) {
-            v = new Vector(allItems);
+            v = new Vector<NiceListItem>(allItems);
         } else {
             v = getSearchResults();
         }
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                setListData(v);
-            }
-        });
+                
+        setListData(v);
     }
 
     private Vector getSearchResults() {
@@ -158,10 +157,26 @@ public class NiceList extends JList {
         }
     }
 
+    public void selectItemsAtIndicies(List<Integer> indicies) {
+        int[] indiciesArray = new int[indicies.size()];
+        for (int i = 0; i < indicies.size(); i++) {
+            indiciesArray[i] = indicies.get(i);
+        }
+        selectItemsAtIndicies(indiciesArray);
+    }
+
+    private void selectItemsAtIndicies(int[] indicies) {
+        clearSearch();
+        this.setSelectedIndices(indicies);
+    }
+
     public void selectItemAtIndex(int i) {
         clearSearch();
-        NiceListItem item = this.allItems.get(i);
-        this.setSelectedValue(item, true);
+        try {
+            NiceListItem item = this.allItems.get(i);
+            this.setSelectedValue(item, true);
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
     }
 
     public NiceListColorScheme getColorScheme() {

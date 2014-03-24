@@ -59,7 +59,7 @@ public class RoundedPanel extends JPanel {
 
         if (dashed) {
             BasicStroke dashedStroke = new BasicStroke(dashThickness, BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_MITER, 10.0f, new float[]{10.0f}, 0.0f);
+                    BasicStroke.JOIN_MITER, 10.0f, new float[]{7.0f}, 0.0f);
             g2.setStroke(dashedStroke);
             g2.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, radius, radius));
         } else {

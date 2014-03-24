@@ -39,6 +39,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
+import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -54,8 +55,9 @@ public abstract class DetailedTableView<T> extends DetailedView {
     protected List<T> selected = new ArrayList<T>();
     private MedSavantWorker worker;
     private final BlockingPanel blockPanel;
-    private final JPanel detailView;
+    private final StandardFixedWidthAppPanel detailView;
     private JPanel tableArea;
+    private final JPanel tableBlock;
     
 
     public DetailedTableView(String page, String title, String multTitle, String[] colNames) {
@@ -63,9 +65,10 @@ public abstract class DetailedTableView<T> extends DetailedView {
         multipleTitle = multTitle;
         columnNames = colNames;
 
-        detailView = new JPanel();
-        detailView.setBackground(Color.white);
+        detailView = new StandardFixedWidthAppPanel(title,false);
         blockPanel = new BlockingPanel("No item selected", detailView);
+        
+        tableBlock = detailView.addBlock();
         
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -81,26 +84,17 @@ public abstract class DetailedTableView<T> extends DetailedView {
             selected.clear();
             selected.add((T) item[0]);
             
-            // block for loading
-            //TODO: show the load panel...
-            //blockPanel.setBlockText("Loading details..");
+            // TODO: show a wait panel instead
+            // the block shows a no item selected message very briefly
+            // blockPanel.block();
             
-            blockPanel.block();
+            tableBlock.removeAll();
+            tableBlock.setLayout(new BorderLayout());
             
-            detailView.removeAll();
-            detailView.setLayout(new BorderLayout());
-            
-            JPanel p = ViewUtil.getClearPanel();
-            p.setLayout(new MigLayout());
-            JLabel l = new JLabel(item[0].toString());
-            l.setFont(ViewUtil.getBigTitleFont());
-            l.setForeground(ViewUtil.getSemiBlackColor());
-            p.add(l);
-            
-            detailView.add(p, BorderLayout.NORTH);
+            detailView.setTitle(item[0].toString());
             
             tableArea = ViewUtil.getClearPanel();
-            detailView.add(tableArea,BorderLayout.CENTER);
+            tableBlock.add(tableArea,BorderLayout.CENTER);
           
             if (worker != null) {
                 worker.cancel(true);
@@ -120,7 +114,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
 
             });
             
-            detailView.updateUI();
+            tableBlock.updateUI();
         }
     }
 
@@ -140,18 +134,19 @@ public abstract class DetailedTableView<T> extends DetailedView {
     public synchronized void setData(final Object[][] data) {
 
         JPanel p = ViewUtil.getClearPanel();
-        p.setLayout(new MigLayout("insets 0, gapy 0"));
+        p.setLayout(new BorderLayout());
 
         final JTable table = new StripyTable(data, columnNames); 
         table.setBorder(null);
         table.setGridColor(new Color(235, 235, 235));
         table.setRowHeight(21);
 
-        p.add(table.getTableHeader(),"width 100%, wrap");
-        p.add(ViewUtil.getClearBorderlessScrollPane(table),"width 100%, height 100%");
+        p.add(table.getTableHeader(),BorderLayout.NORTH);
+        //p.add(table,"width 100%, height 100%");
+        p.add(ViewUtil.getClearBorderlessScrollPane(table),BorderLayout.CENTER);
 
-        tableArea.setLayout(new BorderLayout());
-        tableArea.add(p, BorderLayout.CENTER);
+        tableArea.setLayout(new MigLayout("fillx, filly, insets 0"));
+        tableArea.add(p, "width 100%, height 1000");
 
         tableArea.updateUI();
         

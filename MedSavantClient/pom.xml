@@ -210,6 +210,12 @@
             <artifactId>absolutelayout</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>edu.toronto.cs.medsavant</groupId>
+            <artifactId>medsavant-component-fields</artifactId>
+            <version>1.2-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <repositories>

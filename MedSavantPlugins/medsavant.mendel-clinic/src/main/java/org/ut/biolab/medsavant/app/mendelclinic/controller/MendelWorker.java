@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
+import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 
 import org.ut.biolab.medsavant.app.mendelclinic.controller.MendelWorker.SimplePatientSet;
@@ -210,6 +210,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         stp.forceRefreshData();
         f.setPreferredSize(new Dimension(600, 600));
         f.setMinimumSize(new Dimension(600, 600));
+        
+        taskWorker.addLog("Done");
 
         if (completionLock != null) {
             synchronized (completionLock) {

@@ -52,6 +52,32 @@ public class NiceListItem {
     public String toString() {
         return label == null ? item.toString() : label;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NiceListItem other = (NiceListItem) obj;
+        if ((this.label == null) ? (other.label != null) : !this.label.equals(other.label)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (this.label != null ? this.label.hashCode() : 0);
+        return hash;
+    }
+
+
+
+    
     
     
     

@@ -109,9 +109,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static SetupAdapter SetupManager;
     public static VariantManagerAdapter VariantManager; //proxy
     public static NotificationManagerAdapter NotificationManager;
-    public static boolean initialized = false;
-    //private static MedSavantFrame frame;
-    //private static String restartCommand;
+    private static boolean initialized = false;
     private static String[] restartCommand;
     private static boolean restarting = false;
     private static final Object managerLock = new Object();

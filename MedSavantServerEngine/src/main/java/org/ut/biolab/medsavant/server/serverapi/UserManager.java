@@ -254,7 +254,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             return true;
         } else {
             if (throwUnauthorizedExceptionIfNot) {
-                throw new UnauthorizedException("You do not have administrative privledges.");
+                throw new UnauthorizedException("You do not have administrative priviledges.");
             } else {
                 return false;
             }
