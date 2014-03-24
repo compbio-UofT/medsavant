@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
@@ -38,6 +40,8 @@ import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.ut.biolab.medsavant.server.db.util.DBUtils;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
@@ -49,8 +53,13 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
  */
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
 
+    private static final Log LOG = LogFactory.getLog(SetupMedSavantDatabase.class);
+    
     //public static final boolean ENGINE_INFINIDB = false;
     private static SetupMedSavantDatabase instance;
+    private static final String BRIGHTHOUSE_ENGINE = "BRIGHTHOUSE";
+    private static final String MYISAM_ENGINE = "MyISAM";
+    //private static final String VARIANT_FILE_IBTABLE_SUFFIX = "_ib";
 
     public static synchronized SetupMedSavantDatabase getInstance() throws RemoteException {
         if (instance == null) {
@@ -123,7 +132,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
     }
 
-    private void createTables(String sessID) throws SQLException, RemoteException, SessionExpiredException {
+    private void createTables(String sessID) throws IOException, SQLException, RemoteException, SessionExpiredException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
@@ -242,7 +251,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`filterable` tinyint(1) NOT NULL,"
                     + "`alias` varchar(200) COLLATE latin1_bin NOT NULL,"
                     + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
-                    + "`tags` varchar(500) COLLATE latin1_bin NOT NULL,"                            
+                    + "`tags` varchar(500) COLLATE latin1_bin NOT NULL,"
                     + "PRIMARY KEY (`annotation_id`,`position`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
@@ -363,8 +372,58 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL,"
                     + "UNIQUE KEY `unique` (`upload_id`,`file_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
+
+            makeVariantFileTable(sessID, false);
+
         } finally {
             conn.close();
+        }
+    }
+
+    public static String getVariantFileIBTableName() {
+        TableSchema table = MedSavantDatabase.VariantFileIBTableSchema;
+        return table.getTableName();        
+    }
+    
+    
+    public static void makeVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
+        makeVariantFileTable(sid, true);
+    }
+
+    public static void makeVariantFileTable(String sid, boolean brighthouse) throws IOException, SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.VariantFileTableSchema;
+
+        String tableName;
+        String engine;
+
+        if (brighthouse) {
+            tableName = getVariantFileIBTableName();
+            engine = BRIGHTHOUSE_ENGINE;
+        } else {
+            tableName = MedSavantDatabase.VariantFileTableSchema.getTableName();
+            engine = MYISAM_ENGINE;
+        }
+
+        String extras = "";
+        if(!brighthouse){
+            extras = ",UNIQUE(upload_id, file_id), UNIQUE(file_id)";
+        }
+        ConnectionController.executeUpdate(sid, "DROP TABLE IF EXISTS " + tableName);
+        String query = "CREATE TABLE  `" + tableName + "` ("
+                + "`upload_id` int(11) NOT NULL,"
+                + "`file_id` int(11) NOT NULL "+(brighthouse?"":"AUTO_INCREMENT")+","
+                + "`project_id` int(11) NOT NULL,"
+                + "`reference_id` int(11) NOT NULL,"
+                + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL"
+                + extras 
+                + ") ENGINE=" + engine + " DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
+        
+        LOG.info(query);
+        ConnectionController.executeUpdate(sid,query);
+                
+
+        if (brighthouse) {
+            DBUtils.copyTable(sid, MedSavantDatabase.VariantFileTableSchema.getTableName(), getVariantFileIBTableName());
         }
     }
 

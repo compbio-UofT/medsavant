@@ -274,7 +274,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         return result.toArray(new Chromosome[0]);
     }
 
-    String getReferenceName(String sid, int refID) throws SQLException, SessionExpiredException {
+    public String getReferenceName(String sid, int refID) throws SQLException, SessionExpiredException {
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(refTable.getTable());

@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
@@ -38,7 +37,6 @@ import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
-import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
@@ -46,7 +44,6 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -338,6 +335,16 @@ public class VCFUploadApp implements LaunchableApp {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    if (!ProjectController.getInstance().promptForUnpublished()) {
+                        DialogUtils.displayError("Can't add new variants until changes are published.");
+                        return;
+                    }
+                } catch (Exception ex) {
+                    LOG.error("Error checking for unpublished changes", ex);
+                    DialogUtils.displayError("Can't import VCF files.  Please contact your system administrator.");
+                    return;
+                }
 
                 new BackgroundTaskWorker(instance, "Upload Variants") {
 
@@ -391,15 +398,30 @@ public class VCFUploadApp implements LaunchableApp {
                             @Override
                             public void run() {
                                 try {
-                                    variantManager.uploadVariants(
-                                            LoginController.getSessionID(),
-                                            transferIDs,
-                                            ProjectController.getInstance().getCurrentProjectID(),
-                                            ReferenceController.getInstance().getCurrentReferenceID(),
-                                            new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
-                                    succeeded();
+                                    if (ProjectController.getInstance().promptForUnpublished()) {
+                                        SwingUtilities.invokeLater(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                AppDirectory.getTaskManager().showMessageForTask(instance,
+                                                        "<html>Variants have been uploaded and are now being processed.<br/>"
+                                                        + "You may view progress in the Server Log in the Task Manager<br/><br/>"
+                                                        + "You may log out or continue doing work.</html>");
+                                                notification.close();
+                                            }
+
+                                        });
+                                        variantManager.uploadVariants(
+                                                LoginController.getSessionID(),
+                                                transferIDs,
+                                                ProjectController.getInstance().getCurrentProjectID(),
+                                                ReferenceController.getInstance().getCurrentReferenceID(),
+                                                new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
+                                        succeeded();
+                                    } 
                                 } catch (Exception ex) {
-                                    LOG.error(ex);
+                                    ex.printStackTrace();
+                                    LOG.error("Error: ", ex);
                                     instance.addLog("Error: " + ex.getMessage());
                                     instance.setStatus(TaskStatus.ERROR);
                                     AppDirectory.getTaskManager().showErrorForTask(instance, ex);
@@ -409,21 +431,19 @@ public class VCFUploadApp implements LaunchableApp {
                             private void succeeded() {
                                 LOG.info("Uplaod succeeded");
 
-                                
-                                
                                 SwingUtilities.invokeLater(new Runnable() {
 
                                     @Override
                                     public void run() {
-                                        LOG.info("Uplaod succeeded");
+                                        LOG.info("Upload succeeded");
                                         AppDirectory.getTaskManager().showMessageForTask(instance,
                                                 "<html>Variants have completed being imported.<br/>"
-                                                        + "As a result, you must login again.</html>");
+                                                + "As a result, you must login again.</html>");
                                         MedSavantFrame.getInstance().requestLogoutAndRestart();
                                     }
 
                                 });
-                                
+
                             }
 
                         });
@@ -433,20 +453,6 @@ public class VCFUploadApp implements LaunchableApp {
                         this.addLog("Done");
 
                         this.setStatus(TaskStatus.FINISHED);
-
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                LOG.info("Uplaod succeeded");
-                                AppDirectory.getTaskManager().showMessageForTask(instance,
-                                        "<html>Variants have been uploaded and are now being processed.<br/>"
-                                        + "You may view progress in the Server Log in the Task Manager<br/><br/>"
-                                        + "You may log out or continue doing work.</html>");
-                                notification.close();
-                            }
-
-                        });
 
                         return null;
                     }

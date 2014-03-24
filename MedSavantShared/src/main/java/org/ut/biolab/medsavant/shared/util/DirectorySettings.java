@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+
 /**
  *
  * @author AndrewBrook, tarkvara, mfiume
@@ -31,6 +32,9 @@ import java.util.GregorianCalendar;
 public class DirectorySettings {
     private static File medSavantDir;
     private static File tmpDir;
+    
+    //Should this be configurable in the properties file?    
+    private static final String CHMOD = "/bin/chmod";
     
     /**
      * Retrieve the directory where MedSavant stores supporting files.
@@ -42,6 +46,15 @@ public class DirectorySettings {
         return medSavantDir;
     }
 
+    public static File getDatabaseWorkingDir() throws IOException{    
+        File f = new File(getTmpDirectory(), "database_work");
+        if(!f.exists()){           
+            f.mkdirs();    
+        }        
+        Runtime.getRuntime().exec(CHMOD + " -R 777 " + f.getAbsolutePath());    
+        return f;
+    }
+    
     private static File getDirectory(String parent, String dirName) {
         File result = new File(parent, dirName);
         if (!result.exists()) {
@@ -50,13 +63,33 @@ public class DirectorySettings {
         return result;
     }
 
+    public static File getAnnotatedTSVDirectory(){
+        return new File(getMedSavantDirectory().getAbsolutePath()+File.separator+"annotatedTSV");
+    }
+    
+    public static File getAnnotatedTSVDirectory(String database, int projectId, int refId){
+        return new File(getAnnotatedTSVDirectory(), database+"_"+projectId+"_"+refId);
+    }
+    
     public static File getGenoTypeDirectory(){
         return new File(getMedSavantDirectory().getAbsolutePath()+File.separator+"genotypes");
     }
     
     public static File getGenoTypeDirectory(String database, int projectId){
-        return new File(getGenoTypeDirectory(), database+"_"+projectId);
+        File f = new File(getGenoTypeDirectory(), database+"_"+projectId);
+        if(!f.exists()){
+            f.mkdirs(); 
+        }
+        return f;
         //return new File(getMedSavantDirectory().getAbsolutePath()+File.pathSeparator+"genotypes"+File.pathSeparator+"project_"+projectId);
+    }
+    
+    public static File getAnnotatedTSVDirectory(String database, int projectId){
+        File f = new File(getGenoTypeDirectory(database, projectId), "annotatedTSV");
+        if(!f.exists()){
+            f.mkdirs();
+        }
+        return f;
     }
     
     public static File getTmpDirectory() {

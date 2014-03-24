@@ -59,14 +59,14 @@ public class Jannovar {
      * @return An array of files that have been annotated with Jannovar
      * @throws JannovarException
      */
-    public File[] annotateVCFFiles(File[] vcfFiles, String database, int projectID) throws JannovarException, IOException {
+    public File[] annotateVCFFiles(File[] vcfFiles, String database, int projectID, File destDir) throws JannovarException, IOException {
 
         initialize();
 
         File[] jvFiles = new File[vcfFiles.length];
 
         int counter = 0;
-        File destDir = VariantManager.getVCFDestinationDir(database, projectID);
+        //File destDir = VariantManager.getVCFDestinationDir(database, projectID);
 
         // annotate each file
         for (File file : vcfFiles) {
