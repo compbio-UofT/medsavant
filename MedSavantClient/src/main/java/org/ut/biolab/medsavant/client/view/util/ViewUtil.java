@@ -417,9 +417,9 @@ public final class ViewUtil {
 
     public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
 
-        if (1 == 1) {
+        /*if (1 == 1) {
             return image;
-        }
+        }*/
         int w = image.getWidth();
         int h = image.getHeight();
         BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
