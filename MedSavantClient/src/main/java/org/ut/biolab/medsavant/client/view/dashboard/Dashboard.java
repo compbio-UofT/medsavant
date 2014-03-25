@@ -1,20 +1,12 @@
 package org.ut.biolab.medsavant.client.view.dashboard;
 
-import com.explodingpixels.macwidgets.MacButtonFactory;
-import com.explodingpixels.macwidgets.MacPainterFactory;
 import com.explodingpixels.macwidgets.MacWidgetFactory;
 import com.explodingpixels.macwidgets.TriAreaComponent;
-import com.explodingpixels.macwidgets.UnifiedToolBar;
 import com.explodingpixels.painter.MacWidgetsPainter;
-import java.awt.AlphaComposite;
-import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,15 +14,12 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ConvolveOp;
@@ -46,22 +35,17 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.component.NiceMenu;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.NavigationPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
-import savant.util.swing.HyperlinkButton;
 import org.apache.commons.httpclient.NameValuePair;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
-import org.ut.biolab.medsavant.client.view.font.FontFactory;
 
 /**
  *
@@ -78,19 +62,17 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
     private LaunchableApp previousApp;
     private final JPanel appLayer;
 
-    //private NiceMenu appTopMenu;
-    //private NiceMenu homeMenu;
-    private final LimitedQueue<LaunchableApp> history;
     private final HashSet<LaunchableApp> appHistoryBlackList;
 
     private Image backgroundImage;
     private boolean transparentBackground = true;
     private TriAreaComponent homeToolbar;
     private TriAreaComponent appToolbar;
+    private LaunchHistory history;
 
     public Dashboard() {
 
-        history = new LimitedQueue<LaunchableApp>(11);
+        history = new LaunchHistory();
         appHistoryBlackList = new HashSet<LaunchableApp>();
 
         this.setDoubleBuffered(true);
@@ -102,7 +84,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         dashboardSections = new ArrayList<DashboardSection>();
 
         appLayer = new JPanel();
-        appLayer.setBackground(Color.white);
+        appLayer.setBackground(ViewUtil.getDefaultBackgroundColor());
         appLayer.setLayout(new BorderLayout());
 
         this.push(appLayer);
@@ -141,7 +123,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
          }
          };*/
 
-        dashLayer.setBackground(Color.white);
+        dashLayer.setBackground(ViewUtil.getDefaultBackgroundColor());
 
         this.push(dashLayer);
 
@@ -183,7 +165,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         int gapHorizontal = 30;
         int gapVertical = gapHorizontal;
-        int topAndBottomInsets = 100;
+        int topAndBottomInsets = 70;
 
         int widthOfContainer = this.getParent().getSize().width;
 
@@ -232,8 +214,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         JScrollPane p = ViewUtil.getClearBorderlessScrollPane(middlePane);
         p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        MenuFactory.generateMenu(); // initialize the Apps in the menus
 
         JPanel bottomDisclaimer = ViewUtil.getClearPanel();
         bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
@@ -331,17 +311,14 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         }
 
         previousApp = null;
+        
+        this.updateUI();
     }
 
     public void launchApp(LaunchableApp app) {
 
-        if (history.contains(app)) {
-            history.remove(app);
-        }
-        if (!appHistoryBlackList.contains(app)) {
-            history.add(app);
-        }
-
+        history.add(app);
+        
         if (previousApp != null) {
             previousApp.viewWillUnload();
         }
@@ -379,7 +356,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        JButton button = ViewUtil.getIconButton(new ImageIcon(getScaledInstance(icon.getImage(), iconWidth, iconWidth, RenderingHints.VALUE_INTERPOLATION_BILINEAR, true)));
+        JButton button = ViewUtil.getIconButton(new ImageIcon(ViewUtil.getScaledInstance(icon.getImage(), iconWidth, iconWidth, RenderingHints.VALUE_INTERPOLATION_BILINEAR, true)));
 
         button.addActionListener(actionListener);
 
@@ -415,70 +392,12 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         });
     }
 
-    public static Image getScaledInstance(Image img,
-            int targetWidth,
-            int targetHeight,
-            Object hint,
-            boolean higherQuality) {
-        int type = BufferedImage.TYPE_INT_ARGB;
-        Image ret = img;
-        int w, h;
-        if (higherQuality) {
-            // Use multi-step technique: start with original size, then
-            // scale down in multiple passes with drawImage()
-            // until the target size is reached
-            w = new ImageIcon(img).getIconWidth();
-            h = new ImageIcon(img).getIconHeight();
-        } else {
-            // Use one-step technique: scale directly from original
-            // size to target size with a single drawImage() call
-            w = targetWidth;
-            h = targetHeight;
-        }
-
-        do {
-            if (higherQuality && w > targetWidth) {
-                w /= 2;
-                if (w < targetWidth) {
-                    w = targetWidth;
-                }
-            }
-
-            if (higherQuality && h > targetHeight) {
-                h /= 2;
-                if (h < targetHeight) {
-                    h = targetHeight;
-                }
-            }
-
-            BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = tmp.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
-            g2.drawImage(ret, 0, 0, w, h, null);
-            g2.dispose();
-
-            ret = tmp;
-        } while (w != targetWidth || h != targetHeight);
-
-        return ret;
-    }
-
     public List<LaunchableApp> getLaunchHistory() {
-
-        List<LaunchableApp> list = new ArrayList<LaunchableApp>(history.size());
-        for (LaunchableApp e : history) {
-            list.add(0, e);
-        }
-
-        return list;
+        return history.getRecentHistory();
     }
 
     public LaunchableApp getCurrentApp() {
         return this.previousApp;
-    }
-
-    public void blackListAppFromHistory(LaunchableApp app) {
-        appHistoryBlackList.add(app);
     }
 
     @Override

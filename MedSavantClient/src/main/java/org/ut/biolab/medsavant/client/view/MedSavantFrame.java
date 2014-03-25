@@ -143,25 +143,6 @@ public class MedSavantFrame extends JFrame {
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("File");
-
-        if (!ClientMiscUtils.MAC) {
-
-            JMenuItem closeItem = new JMenuItem("Exit");
-            closeItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    instance.requestClose();
-                }
-            });
-            fileMenu.add(closeItem);
-
-        }
-
-        //bottomBar = new BottomBar();
-        //add(bottomBar, BorderLayout.SOUTH);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -169,8 +150,6 @@ public class MedSavantFrame extends JFrame {
                 requestClose();
             }
         });
-
-        initializeSessionView();
     }
 
     public void showNotification(Notification n) {
@@ -194,8 +173,6 @@ public class MedSavantFrame extends JFrame {
         AppSwitchPanel switchPanel = new AppSwitchPanel(dashBoardContainer);
         view.push(switchPanel);
 
-        //bannerNotficationsPanel = new BannerNotificationsPanel();
-        //view.push(bannerNotficationsPanel);
         new MedSavantWorker<Void>("MedSavantFrame") {
             @Override
             protected void showProgress(double fract) {
@@ -208,11 +185,11 @@ public class MedSavantFrame extends JFrame {
             @Override
             protected Void doInBackground() throws Exception {
 
+                System.out.println("Creating dashboard");
                 Dashboard dash = new Dashboard();
-
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
-
                 sessionDashboard = dash;
+                
                 dashBoardContainer.setLayout(new BorderLayout());
                 dashBoardContainer.add(dash, BorderLayout.CENTER);
                 dashBoardContainer.updateUI();

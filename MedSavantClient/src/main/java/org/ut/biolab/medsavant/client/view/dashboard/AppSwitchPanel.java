@@ -21,6 +21,7 @@ package org.ut.biolab.medsavant.client.view.dashboard;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -54,6 +55,29 @@ public class AppSwitchPanel extends JPanel {
     public AppSwitchPanel(JComponent componentToListenOn) {
 
         this.setOpaque(false);
+        
+        KeyStroke escapeListeningKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.META_MASK, true);
+        Action escapeAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                //System.out.println("Escape");
+                if (isSwitching) {
+                    selectedIndex = -1;
+                     setSwitching(false);
+                }
+            }
+        };
+        
+        KeyStroke dashBoardListeningKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.META_MASK, true);
+        Action dashBoardAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                //System.out.println("Dash");
+                MedSavantFrame.getInstance().getDashboard().goHome();
+                if (isSwitching) {
+                    selectedIndex = -1;
+                     setSwitching(false);
+                }
+            }
+        };
 
         KeyStroke appSwitchStopListeningKeystroke = KeyStroke.getKeyStroke(KeyEvent.VK_META, 0, true);
         Action appSwitchStopAction = new AbstractAction() {
@@ -83,12 +107,20 @@ public class AppSwitchPanel extends JPanel {
             componentToListenOn = this;
         }
         
+        
         componentToListenOn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(appSwitchStopListeningKeystroke, "SwitchAppStop");
         componentToListenOn.getActionMap().put("SwitchAppStop", appSwitchStopAction);
         componentToListenOn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(appLeftSwitchKeystroke, "SwitchAppLeft");
         componentToListenOn.getActionMap().put("SwitchAppLeft", appLeftSwitchAction);
         componentToListenOn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(appRightSwitchKeystroke, "SwitchAppRight");
         componentToListenOn.getActionMap().put("SwitchAppRight", appRightSwitchAction);
+        
+        componentToListenOn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(dashBoardListeningKeystroke, "Dash");
+        componentToListenOn.getActionMap().put("Dash", dashBoardAction);
+        
+        componentToListenOn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeListeningKeystroke, "Escape");
+        componentToListenOn.getActionMap().put("Escape", escapeAction);
+        
     }
 
     private void shiftLeft() {
@@ -119,7 +151,9 @@ public class AppSwitchPanel extends JPanel {
             if (isSwitching) {
                 
                 List<LaunchableApp> history = MedSavantFrame.getInstance().getDashboard().getLaunchHistory();
+                System.out.println(history);
                 if (history.isEmpty()) { 
+                    //System.out.println("NO HISTORY, NOT SWITCHING");
                     return; 
                 }
                 selectedIndex = 0;
@@ -128,21 +162,18 @@ public class AppSwitchPanel extends JPanel {
             
             // switching ended
             } else {
-                MedSavantFrame.getInstance().getDashboard().launchApp(apps.get(selectedIndex));
+                if (selectedIndex != -1) {
+                    MedSavantFrame.getInstance().getDashboard().launchApp(apps.get(selectedIndex));
+                }
+                //System.out.println("SWITCH ENDED");
             }
 
             this.isSwitching = isSwitching;
             refresh();
+        } else {
+            //System.out.println("SORRY, NOT SWITCHING");
         }
 
-    }
-
-    public static void main(String[] arg) {
-        JFrame f = new JFrame();
-        AppSwitchPanel t = new AppSwitchPanel();
-        f.add(t);
-        f.pack();
-        f.setVisible(true);
     }
 
     private void refresh() {
@@ -155,7 +186,7 @@ public class AppSwitchPanel extends JPanel {
             int appNum = 0;
             for (LaunchableApp app : apps) {
                 
-                p.add(new ImagePanel(app.getIcon().getImage()),String.format("cell %d 0",appNum));
+                p.add(new ImagePanel(ViewUtil.getScaledInstance(app.getIcon().getImage(), 128, 128, RenderingHints.VALUE_INTERPOLATION_BILINEAR, true)),String.format("cell %d 0",appNum));
                 JLabel l = new JLabel(app.getName());
                 if (appNum == selectedIndex) {
                     l.setFont(l.getFont().deriveFont(Font.BOLD));
