@@ -405,7 +405,6 @@ public final class ViewUtil {
         ViewUtil.makeSmall(button);
         button.setFocusable(false);
         button.putClientProperty("JButton.buttonType", "textured");
-        //button.putClientProperty( "JButton.segmentPosition", "only" );
         return button;
     }
 
@@ -418,9 +417,9 @@ public final class ViewUtil {
 
     public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
 
-        /*if (1 == 1) {
-         return image;
-         }*/
+        if (1 == 1) {
+            return image;
+        }
         int w = image.getWidth();
         int h = image.getHeight();
         BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -433,7 +432,7 @@ public final class ViewUtil {
         // in fully opaque white with antialiasing enabled...
         g2.setComposite(AlphaComposite.Src);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.white);
         g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
 
         // ... then compositing the image on top,
@@ -524,7 +523,7 @@ public final class ViewUtil {
 
         BufferedImage unselectedImage = original;
         BufferedImage selectedImage = darkenImage(original);
-        
+
         if (cornerRadius > 0) {
             unselectedImage = makeRoundedCorner(unselectedImage, cornerRadius);
             selectedImage = makeRoundedCorner(selectedImage, cornerRadius);
@@ -659,7 +658,7 @@ public final class ViewUtil {
         JLabel s = new JLabel(subtext);
         ViewUtil.setFontSize(s, fontSize);
         s.setForeground(Color.darkGray);
-        p.add(s,"gapy 0, align 0 0, center, grow 0");
+        p.add(s, "gapy 0, align 0 0, center, grow 0");
         return p;
     }
 
@@ -948,8 +947,10 @@ public final class ViewUtil {
                 int w = getWidth() - 2 * shadowSize;
                 int h = getHeight() - 2 * shadowSize;
 
-                if (w < 0 || h < 0) { return; }
-                
+                if (w < 0 || h < 0) {
+                    return;
+                }
+
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
@@ -960,8 +961,8 @@ public final class ViewUtil {
                     g2.drawImage(shadow, x - xOffset, y - yOffset, null);
                 }
 
-                GradientPaint gp = new GradientPaint(x, y, new Color(topColor.getRed(), topColor.getGreen(), topColor.getBlue(),(int)(alpha*255)),
-                        x, x+h, new Color(bottomColor.getRed(), bottomColor.getGreen(), bottomColor.getBlue(), (int)(alpha*255)), true);
+                GradientPaint gp = new GradientPaint(x, y, new Color(topColor.getRed(), topColor.getGreen(), topColor.getBlue(), (int) (alpha * 255)),
+                        x, x + h, new Color(bottomColor.getRed(), bottomColor.getGreen(), bottomColor.getBlue(), (int) (alpha * 255)), true);
                 // Fill with a gradient.
                 g2.setPaint(gp);
                 //g2.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 255));
@@ -973,14 +974,16 @@ public final class ViewUtil {
 
                 g2.dispose();
             }
-            
+
             public void setBounds(int x, int y, int width, int height) {
                 super.setBounds(x, y, width, height);
 
                 int w = getWidth() - 2 * shadowSize;
                 int h = getHeight() - 2 * shadowSize;
-                
-                if (w < 0 || h < 0) { return; }
+
+                if (w < 0 || h < 0) {
+                    return;
+                }
 
                 shadow = GraphicsUtilities.createCompatibleTranslucentImage(w, h);
                 Graphics2D g2 = shadow.createGraphics();

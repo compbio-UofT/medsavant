@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -46,6 +47,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import org.apache.commons.httpclient.NameValuePair;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 
 /**
  *
@@ -77,53 +79,56 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         this.setDoubleBuffered(true);
 
-        this.setBackground(Color.white);
+        this.setBackground(ViewUtil.getDefaultBackgroundColor());
 
         //cardLayout = new CardLayout();
         //this.setLayout(cardLayout);
         dashboardSections = new ArrayList<DashboardSection>();
 
         appLayer = new JPanel();
-        appLayer.setBackground(ViewUtil.getDefaultBackgroundColor());
+        appLayer.setBackground(this.getBackground());
         appLayer.setLayout(new BorderLayout());
 
         this.push(appLayer);
 
-        dashLayer = new JPanel();/* {
-         public void paintComponent(Graphics g) {
+        dashLayer = new JPanel() {
+            public void paintComponent(Graphics g) {
 
-         if (backgroundImage != null) {
+                super.paintComponent(g);
+                if (backgroundImage != null) {
 
-         //System.out.println("Drawing image for dash background");
-         int width = this.getWidth();
-         int height = this.getHeight();
+                    int width = getWidth();
+                    int height = getHeight();
+                    int imageW = backgroundImage.getWidth(this);
+                    int imageH = backgroundImage.getHeight(this);
 
-         BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-         Graphics2D g2 = resizedImage.createGraphics();
-         g2.drawImage(backgroundImage, 0, 0, width, height, null);
+                    // Tile the image to fill our area.  
+                    for (int x = 0; x < width; x += imageW) {
+                        for (int y = 0; y < height; y += imageH) {
+                            g.drawImage(backgroundImage, x, y, this);
+                        }
+                    }
 
-         //Image scaled = backgroundImage.getScaledInstance(this.getWidth(), this.getHeight(), Image.SCALE_SMOOTH);
-         g.drawImage(resizedImage, 0, 0, null);
+                    /*
+                    BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g2 = resizedImage.createGraphics();
+                    g2.drawImage(backgroundImage, 0, 0, width, height, null);
+                    g.drawImage(resizedImage, 0, 0, null);
+                    */
+                    return;
+                }
 
-         g.setColor(new Color(255, 255, 255, 200));
-         g.fillRect(0, 0, width, height);
+                /*if (transparentBackground) {
+                 int width = this.getWidth();
+                 int height = this.getHeight();
 
-         return;
-         }
+                 g.setColor(new Color(255, 255, 255, 240));
+                 g.fillRect(0, 0, width, height);
+                 }*/
+            }
+        };
 
-         if (transparentBackground) {
-
-         int width = this.getWidth();
-         int height = this.getHeight();
-
-         g.setColor(new Color(255, 255, 255, 240));
-         g.fillRect(0, 0, width, height);
-
-         }
-         }
-         };*/
-
-        dashLayer.setBackground(ViewUtil.getDefaultBackgroundColor());
+        dashLayer.setBackground(this.getBackground());
 
         this.push(dashLayer);
 
@@ -146,6 +151,14 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             public void componentHidden(ComponentEvent e) {
             }
         });
+    }
+
+    public void setBackground(Color c) {
+        super.setBackground(c);
+        if (dashLayer != null) {
+            dashLayer.setBackground(c);
+            dashLayer.repaint();
+        }
     }
 
     public void setBackgroundImage(Image im) {
@@ -216,7 +229,16 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         JPanel bottomDisclaimer = ViewUtil.getClearPanel();
-        bottomDisclaimer.setLayout(new MigLayout("gapx 10, fillx, insets 8"));
+        bottomDisclaimer.setLayout(new MigLayout("fillx, insets 2"));
+
+        TriAreaComponent bottombar = new TriAreaComponent(10);
+        //bottomDisclaimer.setBackground(ViewUtil.getDefaultBackgroundColor());
+        //bottomDisclaimer.setBorder(ViewUtil.getTopLineBorder());
+        bottombar.getComponent().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        ImagePanel logo = new ImagePanel("icon/logo/medsavant-icon-mini.png");
+
+        bottombar.addComponentToCenter(logo);
 
         //JLabel copy = new JLabel("Developed at University of Toronto");
         //copy.setForeground(ViewUtil.getSubtleTitleColor());
@@ -231,7 +253,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
                 }
             }
         });
-        bottomDisclaimer.add(feedback, "split, right");
+        bottombar.addComponentToRight(feedback);
 
         JComponent userguide = ViewUtil.createHyperlinkButton("User Guide", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
@@ -243,12 +265,14 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
                 }
             }
         });
-        bottomDisclaimer.add(userguide, "right");
+        bottombar.addComponentToRight(userguide);
 
-        homeToolbar = getToolBar("Home");
+        bottomDisclaimer.add(bottombar.getComponent(), "width 100%");
+
+        homeToolbar = getToolBar();
         homeToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
         homeToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
-        
+
         dashLayer.add(homeToolbar.getComponent(), BorderLayout.NORTH);
 
         dashLayer.add(p, BorderLayout.CENTER);
@@ -311,14 +335,14 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         }
 
         previousApp = null;
-        
+
         this.updateUI();
     }
 
     public void launchApp(LaunchableApp app) {
 
         history.add(app);
-        
+
         if (previousApp != null) {
             previousApp.viewWillUnload();
         }
@@ -327,11 +351,12 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         JPanel p = app.getView();
 
-        appToolbar = getToolBar(app.getName());
+        appToolbar = getToolBar();
         appToolbar.addComponentToLeft((JComponent) Box.createHorizontalStrut(5));
         appToolbar.addComponentToLeft(getHomeButton());
         appToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
         appToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
+        this.addTitleToBar(appToolbar, app.getName());
 
         appLayer.add(appToolbar.getComponent(), BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
@@ -415,7 +440,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             }
         };
 
-        
         JButton goHome = new JButton(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "home-20.png"));
         goHome.setFocusable(false);
         goHome.putClientProperty("JButton.buttonType", "textured");
@@ -458,25 +482,28 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         return signOut;
     }
 
-    private TriAreaComponent getToolBar(String name) {
-                
-        TriAreaComponent bar = new TriAreaComponent(10);
+    private TriAreaComponent getToolBar() {
+
+        TriAreaComponent bar = new TriAreaComponent(5);
         bar.setBackgroundPainter(new MacWidgetsPainter<Component>() {
 
             @Override
             public void paint(Graphics2D gd, Component t, int i, int i1) {
-                gd.setColor(new Color(221,221,221));
+                gd.setColor(new Color(221, 221, 221));
                 gd.fillRect(0, 0, t.getWidth(), t.getHeight());
-               
+
             }
         });
         bar.getComponent().setBorder(ViewUtil.getBottomLineBorder());
-        JLabel title = MacWidgetFactory.makeEmphasizedLabel(new JLabel(name),new Color(64,64,64), new Color(64,64,64), new Color(230,230,230));
-        title.setFont(title.getFont().deriveFont(Font.PLAIN, 20));
-        //title.setFont(FontFactory.getMenuTitleFont());
-        bar.addComponentToCenter(title);
-        
+
         return bar;
+    }
+
+    private void addTitleToBar(TriAreaComponent bar, String name) {
+        JLabel title = MacWidgetFactory.makeEmphasizedLabel(new JLabel(name), new Color(64, 64, 64), new Color(64, 64, 64), new Color(230, 230, 230));
+        title.setFont(title.getFont().deriveFont(Font.BOLD, 14));
+        //title.setFont(FontFactory.getMenuTitleFont());
+        bar.addComponentToLeft(title);
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {
