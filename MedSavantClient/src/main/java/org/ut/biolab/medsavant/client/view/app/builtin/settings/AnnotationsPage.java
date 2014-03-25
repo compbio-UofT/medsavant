@@ -52,7 +52,7 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import static org.ut.biolab.medsavant.client.view.util.DialogUtils.getFrontWindow;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -95,11 +95,11 @@ public class AnnotationsPage extends AppSubSection {
 
         private final JPanel details;
         private final BlockingPanel blockPanel;
-        private final StandardFixedWidthAppPanel canvas;
+        private final StandardFixableWidthAppPanel canvas;
 
         public ExternalAnnotationDetailedView() {
             super(pageName);
-            canvas = new StandardFixedWidthAppPanel();
+            canvas = new StandardFixableWidthAppPanel();
             blockPanel = new BlockingPanel("No annotation selected", canvas);
             details = canvas.addBlock();
             blockPanel.block();

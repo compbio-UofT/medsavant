@@ -1112,7 +1112,11 @@ public final class ViewUtil {
     public static JPanel getFixedWidthPanel(JPanel p, int width) {
         JPanel wrapper = getClearPanel();
         wrapper.setLayout(new MigLayout("insets 0, fillx"));
-        wrapper.add(p, String.format("wmin %d, wmax %d,width %d, center", width, width, width));
+        if (width == -1) { // full width override
+            wrapper.add(p, "width 100%, center");
+        } else {
+            wrapper.add(p, String.format("wmin %d, wmax %d, width %d, center", width, width, width));
+        }
         return wrapper;
     }
 

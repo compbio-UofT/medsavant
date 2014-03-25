@@ -52,7 +52,7 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -195,11 +195,11 @@ public class ProjectManagementPage extends AppSubSection {
         private DetailsWorker detailsWorker;
         private JPanel details;
         private final BlockingPanel blockingPanel;
-        private final StandardFixedWidthAppPanel canvas;
+        private final StandardFixableWidthAppPanel canvas;
 
         public ProjectsDetailedView() {
             super(pageName);
-            canvas = new StandardFixedWidthAppPanel();
+            canvas = new StandardFixableWidthAppPanel();
             blockingPanel = new BlockingPanel("No project selected",canvas);
             details = canvas.addBlock("Basic Information");
             blockingPanel.block();

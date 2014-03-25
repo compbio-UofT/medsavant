@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.component.StripyTable;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -55,7 +55,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
     protected List<T> selected = new ArrayList<T>();
     private MedSavantWorker worker;
     private final BlockingPanel blockPanel;
-    private final StandardFixedWidthAppPanel detailView;
+    private final StandardFixableWidthAppPanel detailView;
     private JPanel tableArea;
     private final JPanel tableBlock;
     
@@ -65,7 +65,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
         multipleTitle = multTitle;
         columnNames = colNames;
 
-        detailView = new StandardFixedWidthAppPanel(title,false);
+        detailView = new StandardFixableWidthAppPanel(title,false);
         blockPanel = new BlockingPanel("No item selected", detailView);
         
         tableBlock = detailView.addBlock();

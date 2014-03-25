@@ -60,7 +60,7 @@ import org.ut.biolab.medsavant.client.query.SearchConditionItem;
 import org.ut.biolab.medsavant.client.query.value.encode.StringConditionEncoder;
 import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
@@ -75,12 +75,12 @@ class CohortDetailedView extends DetailedView {
     private JTable list;
     private final BlockingPanel blockPanel;
     private final JPanel members;
-    private final StandardFixedWidthAppPanel canvas;
+    private final StandardFixableWidthAppPanel canvas;
 
     CohortDetailedView(String page) {
         super(page);
 
-        canvas = new StandardFixedWidthAppPanel("Cohort");
+        canvas = new StandardFixableWidthAppPanel("Cohort");
         members = canvas.addBlock("Members");
 
         blockPanel = new BlockingPanel("No cohort selected", canvas);

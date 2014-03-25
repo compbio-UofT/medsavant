@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -160,11 +160,11 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
         private String name;
         private DetailsWorker worker;
         private final BlockingPanel blockingPanel;
-        private final StandardFixedWidthAppPanel canvas;
+        private final StandardFixableWidthAppPanel canvas;
 
         public UserDetailedView() {
             super(pageName);
-            canvas = new StandardFixedWidthAppPanel();
+            canvas = new StandardFixableWidthAppPanel();
             blockingPanel = new BlockingPanel("No user selected",canvas);
             details = canvas.addBlock();
             blockingPanel.block();

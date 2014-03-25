@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -44,7 +44,7 @@ public class AccountManagerApp implements LaunchableApp {
     public AccountManagerApp() {
     }
     
-    private StandardFixedWidthAppPanel view;
+    private StandardFixableWidthAppPanel view;
     
     @Override
     public JPanel getView() {
@@ -53,7 +53,7 @@ public class AccountManagerApp implements LaunchableApp {
     
     private void initView() {
         if (view == null) {
-            view = new StandardFixedWidthAppPanel();
+            view = new StandardFixableWidthAppPanel();
             accountBlock = view.addBlock("Account Information");
             colorBlock = view.addBlock("Colors");
             

@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.component.field.editable.EditableField;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
@@ -81,7 +81,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
     public static final String PHENOTYPE = "HPO IDs";
     private KeyValuePairPanel geneticsKVP;
     private KeyValuePairPanel phenotypeKVP;
-    private StandardFixedWidthAppPanel content;
+    private StandardFixableWidthAppPanel content;
     private JPanel cohortListPanel;
 
     public PatientView() {
@@ -95,7 +95,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
 
     private void initView() {
         this.setLayout(new BorderLayout());
-        content = new StandardFixedWidthAppPanel();
+        content = new StandardFixableWidthAppPanel();
         this.add(content, BorderLayout.CENTER);
         initBlocks();
     }

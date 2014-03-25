@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package org.ut.biolab.medsavant.client.view.util;
 
 import java.awt.BorderLayout;
@@ -29,48 +28,66 @@ import net.miginfocom.swing.MigLayout;
  *
  * @author mfiume
  */
-public class StandardFixedWidthAppPanel extends JPanel {
-    
+public class StandardFixableWidthAppPanel extends JPanel {
+
     private final JPanel content;
     private final JLabel titleLabel;
     private final boolean initialized;
-    
-    public StandardFixedWidthAppPanel() {
-        this(true);
+
+    private static boolean DEFAULT_DOESSCROLL = true;
+    private static String DEFAULT_TITLE = null;
+    private static boolean DEFAULT_FIXEDWIDTH = true;
+
+    public StandardFixableWidthAppPanel() {
+        this(DEFAULT_DOESSCROLL);
     }
-    
-    public StandardFixedWidthAppPanel(String title) {
-        this(title,true);
+
+    public StandardFixableWidthAppPanel(String title) {
+        this(title, DEFAULT_DOESSCROLL);
     }
-    
-    public StandardFixedWidthAppPanel(boolean doesScroll) {
-        this(null,doesScroll);
+
+    public StandardFixableWidthAppPanel(boolean doesScroll) {
+        this(DEFAULT_TITLE, doesScroll, DEFAULT_FIXEDWIDTH);
     }
-    
-    public StandardFixedWidthAppPanel(String title,boolean doesScroll) {
-        
+
+    public StandardFixableWidthAppPanel(boolean doesScroll, boolean fixedWidth) {
+        this(DEFAULT_TITLE, doesScroll, fixedWidth);
+    }
+
+    public StandardFixableWidthAppPanel(String title, boolean doesScroll) {
+        this(title, doesScroll, DEFAULT_FIXEDWIDTH);
+    }
+
+    public StandardFixableWidthAppPanel(String title, boolean doesScroll, boolean fixedWidth) {
+
         content = ViewUtil.getClearPanel();
         content.setLayout(new MigLayout("insets 0, fillx, hidemode 3"));
-        
-        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(content);
-        
-        StandardAppContainer sac = new StandardAppContainer(fixedWidth,doesScroll);
+
+        JPanel fixedWidthContainer;
+
+        if (fixedWidth) {
+            fixedWidthContainer = ViewUtil.getDefaultFixedWidthPanel(content);
+        } else {
+            fixedWidthContainer = ViewUtil.getFixedWidthPanel(content, -1);
+        }
+
+        StandardAppContainer sac = new StandardAppContainer(fixedWidthContainer, doesScroll);
         sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
-        
+
         titleLabel = ViewUtil.getLargeGrayLabel("");
         titleLabel.setVisible(false);
         if (title != null) {
             setTitle(title);
         }
-        
-        content.add(titleLabel,"wrap");
-        
+
+        content.add(titleLabel, "wrap");
+
         this.setLayout(new BorderLayout());
-        this.add(sac,BorderLayout.CENTER);
-        
+        this.add(sac, BorderLayout.CENTER);
+
         initialized = true;
     }
-    
+
     @Override
     public void setLayout(LayoutManager mgr) {
         if (initialized) {
@@ -79,7 +96,7 @@ public class StandardFixedWidthAppPanel extends JPanel {
             super.setLayout(mgr);
         }
     }
-    
+
     public JPanel addBlock() {
         return addBlock(null);
     }
@@ -89,16 +106,16 @@ public class StandardFixedWidthAppPanel extends JPanel {
         JPanel canvas = ViewUtil.getClearPanel();
         canvas.setLayout(new MigLayout("insets 0"));
         p.setLayout(new MigLayout("fillx, wrap"));
-        
+
         if (blockTitle != null) {
             JLabel l = new JLabel(blockTitle);
             l.setText(blockTitle);
             l.setFont(ViewUtil.getMediumTitleFont());
             p.add(l);
         }
-        
-        p.add(canvas,"width 100%");
-        content.add(p,"width 100%, wrap");
+
+        p.add(canvas, "width 100%");
+        content.add(p, "width 100%, wrap");
         return canvas;
     }
 
@@ -107,5 +124,5 @@ public class StandardFixedWidthAppPanel extends JPanel {
         ViewUtil.ellipsizeLabel(titleLabel, 800);
         titleLabel.setVisible(true);
     }
-    
+
 }

@@ -238,11 +238,12 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         ImagePanel logo = new ImagePanel("icon/logo/medsavant-icon-mini.png");
 
-        bottombar.addComponentToCenter(logo);
+        bottombar.addComponentToLeft(logo);
 
         //JLabel copy = new JLabel("Developed at University of Toronto");
         //copy.setForeground(ViewUtil.getSubtleTitleColor());
-        //bottomDisclaimer.add(copy);
+        //bottombar.addComponentToLeft(copy);
+        
         JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {

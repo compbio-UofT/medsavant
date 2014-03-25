@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -55,11 +55,11 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
     private SimpleVariantFile[] files;
     private DetailsWorker detailsWorker;
     private final BlockingPanel blockPanel;
-    private final StandardFixedWidthAppPanel canvas;
+    private final StandardFixableWidthAppPanel canvas;
 
     public VariantFilesDetailedView(String page) {
         super(page);
-        canvas = new StandardFixedWidthAppPanel();
+        canvas = new StandardFixableWidthAppPanel();
         blockPanel = new BlockingPanel("No file selected", canvas);
         details = canvas.addBlock();
         blockPanel.block();

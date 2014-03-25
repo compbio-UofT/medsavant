@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
@@ -66,20 +66,23 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
-                    Object[][] results = new Object[tasks.size() + 2][]; // 2 default entries
+                    Object[][] results = new Object[tasks.size() + 1][]; // 1 default entries
                     int counter = 0;
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
 
                     // server general log
-                    TaskWorker t = new ServerLogTaskWorker();
-                    results[counter] = new Object[]{t.getTaskName(), t};
-                    counter++;
+                    TaskWorker t;
+                    
+                    //t = new ServerLogTaskWorker();
+                    //results[counter] = new Object[]{t.getTaskName(), t};
+                    //counter++;
 
                     // server job log
                     t = new ServerJobMonitorTaskWorker();
-                    results[counter] = new Object[]{t.getTaskName(), t};
+                    results[counter++] = new Object[]{t.getTaskName(), t};
+                    
                     return results;
                 }
 
@@ -184,7 +187,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
         private static final int REFRESH_DELAY = 2000;
         private TaskWorker selectedWorker;
         private Timer refreshTimer;
-        private StandardFixedWidthAppPanel container;
+        private StandardFixableWidthAppPanel container;
         private final JPanel logPanel;
         private final BlockingPanel blockingPanel;
         private final JPanel statusPanel;
@@ -193,7 +196,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             super("Task Manager");
             refreshTimer = null;
 
-            container = new StandardFixedWidthAppPanel();
+            container = new StandardFixableWidthAppPanel(true, false);
             this.setLayout(new BorderLayout());
             this.add(container, BorderLayout.CENTER);
 
