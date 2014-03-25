@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -74,7 +75,7 @@ class VariantFilesDetailedView extends DetailedView implements BasicVariantColum
             blockPanel.block();
         } else {
             files = new SimpleVariantFile[]{(SimpleVariantFile) item[0]};
-            canvas.setTitle(files[0].getPath());
+            canvas.setTitle(MiscUtils.extractFileName(files[0].getPath()));
 
             details.removeAll();
             details.updateUI();
