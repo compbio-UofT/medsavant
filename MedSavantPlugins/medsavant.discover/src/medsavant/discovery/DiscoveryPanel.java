@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -95,9 +94,9 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.query.view.JScrollMenu;
 import org.ut.biolab.medsavant.client.region.RegionController;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
@@ -108,7 +107,6 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
-import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 
 
 /**
@@ -239,7 +237,6 @@ public class DiscoveryPanel extends JPanel {
 	private JTextField cgdText;
 	private JButton cgdHelp;
 	private JLabel cgdDateLabel;
-	private SplitScreenPanel ssp;
 	private JButton addFilterButton;
 	private JPanel patientPanel;
 	private JLabel fetchLimitLabel;
