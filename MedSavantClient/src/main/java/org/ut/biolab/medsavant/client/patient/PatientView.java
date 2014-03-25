@@ -127,6 +127,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
                         return;
                     }
                     MedSavantClient.CohortManager.addPatientsToCohort(LoginController.getSessionID(), new int[]{patient.getID()}, selected.getId());
+                    PatientView.this.refreshView();
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error adding individuals to cohort: %s", ex);
                 }
@@ -196,12 +197,12 @@ public class PatientView extends JPanel implements FieldEditedListener {
         affectedField.setTag(AFFECTED);
         affectedField.addFieldEditedListener(this);
 
-        EditablePatientField motherField = new EditablePatientField();
+        EditablePatientField motherField = new EditablePatientField(true);
         motherField.setValue(patient.getMotherHospitalID());
         motherField.setTag(MOTHER_ID);
         motherField.addFieldEditedListener(this);
 
-        EditablePatientField fatherField = new EditablePatientField();
+        EditablePatientField fatherField = new EditablePatientField(true);
         fatherField.setValue(patient.getFatherHospitalID());
         fatherField.setTag(FATHER_ID);
         fatherField.addFieldEditedListener(this);

@@ -253,7 +253,7 @@ public abstract class EditableField<T> extends JPanel {
      * @return A reject button.
      */
     protected static JButton generateRejectButton(final EditableField field) {
-        JButton b = createSegmentButton("segmentedRoundRect","only");//getIconButton("medsavant/field/editable/icon/cancel.png","OK");
+        JButton b = createSegmentButton("segmentedRoundRect","first");//getIconButton("medsavant/field/editable/icon/cancel.png","OK");
         b.setText("Cancel");
         b.addActionListener(new ActionListener() {
 
@@ -273,7 +273,7 @@ public abstract class EditableField<T> extends JPanel {
      * @return An accept button.
      */
     protected static JButton generateAcceptButton(final EditableField field) {
-        JButton b = createSegmentButton("segmentedRoundRect","only");
+        JButton b = createSegmentButton("segmentedRoundRect","last");
         b.setText("OK");
         //getIconButton("medsavant/field/editable/icon/ok.png","OK");
         b.addActionListener(new ActionListener() {

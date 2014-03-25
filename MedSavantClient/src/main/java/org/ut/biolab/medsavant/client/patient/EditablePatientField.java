@@ -22,13 +22,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.OnClickEditableField;
+import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 
 /**
  *
@@ -39,19 +42,17 @@ class EditablePatientField extends OnClickEditableField<String> {
     private final JButton button;
     private String editorValue;
     private final ActionListener actionListener;
-    //private final JLabel label;
     private final JPanel view;
-    private final JButton resetButton;
+    private final StringEditableField textOver;
 
-    public EditablePatientField() {
+    public EditablePatientField(boolean stringOverride) {
+
         view = new JPanel();
         view.setOpaque(false);
-        view.setLayout(new MigLayout("insets 0"));
+        view.setLayout(new MigLayout("insets 0, hidemode 3"));
 
         button = new JButton();
         button.setFocusable(false);
-        //label = new JLabel();
-        //label.setForeground(editColor);
 
         actionListener = new ActionListener() {
 
@@ -63,11 +64,7 @@ class EditablePatientField extends OnClickEditableField<String> {
                 Set<String> selected = s.getHospitalIDsOfSelectedIndividuals();
                 if (!selected.isEmpty()) {
                     editorValue = (String) selected.toArray()[0];
-                }
-                if (editorValue == null) {
-                    button.setText("Choose Individual...");
-                } else {
-                    button.setText(editorValue);
+                    textOver.setValue(editorValue);
                 }
             }
 
@@ -76,36 +73,39 @@ class EditablePatientField extends OnClickEditableField<String> {
         button.addActionListener(actionListener);
 
         this.setAcceptButtonVisible(true);
-        resetButton = createSegmentButton("segmentedRoundRect","only");
-        resetButton.setText("Clear");
-        resetButton.addActionListener(new ActionListener() {
+
+        textOver = new StringEditableField() {
 
             @Override
-            public void actionPerformed(ActionEvent e) {
-                editorValue = null;
-                button.setText("Choose Individual...");
-                EditablePatientField.this.updateUI();
+            public void didToggleEditMode(boolean editMode) {
+                if (!editMode) {
+                    try {
+                        editorValue = this.getValueFromEditor();
+                    } catch (NullPointerException npe) {
+                        // thrown on initialization, it's ok, we don't need 
+                        // it then
+                    }
+                }
             }
+        };
+        textOver.setAutonomousEditingEnabled(stringOverride);
 
-        });
-
+        view.add(textOver);
         view.add(button);
-        view.add(resetButton);
     }
 
     @Override
     public void updateEditorRepresentationForValue(String value) {
-        //label.setText(value);
+        button.setText("Choose...");
         if (value == null) {
-            button.setText("Choose Individual...");
+            textOver.setValue("");
         } else {
-            button.setText(value);
+            textOver.setValue(value);
         }
     }
 
     @Override
     public JComponent getEditor() {
-        //return label;
         return view;
     }
 
@@ -116,9 +116,6 @@ class EditablePatientField extends OnClickEditableField<String> {
 
     @Override
     public void didToggleEditMode(boolean editMode) {
-        if (editMode) {
-            actionListener.actionPerformed(null);
-        }
     }
 
 }
