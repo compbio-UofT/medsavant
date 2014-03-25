@@ -39,6 +39,8 @@ import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.schema;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -386,13 +388,27 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
     
     
+    public static synchronized TableSchema makeTemporaryVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
+        int i = 0;
+        String tableName;
+        final String suffixPrefix="_ib_tmp";
+        String suffix;
+        do{
+            suffix = suffixPrefix + i;
+            tableName = VariantFileTableSchema.TABLE_NAME_PREFIX+suffix;
+            i++;
+        }while(DBUtils.tableExists(sid, tableName));        
+        
+        makeVariantFileTable(sid, true, tableName, BRIGHTHOUSE_ENGINE);        
+        return new MedSavantDatabase.VariantFileTableSchema(schema, suffix);
+        
+    }
+    
     public static void makeVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
         makeVariantFileTable(sid, true);
     }
 
     public static void makeVariantFileTable(String sid, boolean brighthouse) throws IOException, SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.VariantFileTableSchema;
-
         String tableName;
         String engine;
 
@@ -403,7 +419,12 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
             tableName = MedSavantDatabase.VariantFileTableSchema.getTableName();
             engine = MYISAM_ENGINE;
         }
-
+        makeVariantFileTable(sid, brighthouse, tableName, engine);
+    }
+        
+    private static void makeVariantFileTable(String sid, boolean brighthouse, String tableName, String engine) throws IOException, SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.VariantFileTableSchema;
+        
         String extras = "";
         if(!brighthouse){
             extras = ",UNIQUE(upload_id, file_id), UNIQUE(file_id)";

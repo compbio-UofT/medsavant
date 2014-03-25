@@ -658,8 +658,8 @@ public class MedSavantDatabase {
 
     public static class VariantFileTableSchema extends TableSchema {
 
-        private static final String TABLE_NAME_PREFIX = "variant_file";
-
+        public static final String TABLE_NAME_PREFIX = "variant_file";
+        
         public VariantFileTableSchema(DbSchema s){
             this(s, "");
         }
