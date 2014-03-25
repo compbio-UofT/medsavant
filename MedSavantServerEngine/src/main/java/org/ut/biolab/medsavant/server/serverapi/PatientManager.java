@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
@@ -49,9 +49,10 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID;
+import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
-
 
 /**
  *
@@ -60,17 +61,17 @@ import org.ut.biolab.medsavant.shared.serverapi.PatientManagerAdapter;
 public class PatientManager extends MedSavantServerUnicastRemoteObject implements PatientManagerAdapter, BasicPatientColumns {
 
     Log LOG = org.apache.commons.logging.LogFactory.getLog(PatientManager.class);
-    
+
     private static PatientManager instance;
 
     @Override
-    public void test(CustomField[] c) throws RemoteException{
-        System.out.println("Got custom field "+c[0]);
-        System.out.println("Alias: "+c[0].getAlias());
-        System.out.println("Col Name: "+c[0].getColumnName());
-        System.out.println("Col Length: "+c[0].getColumnLength());
+    public void test(CustomField[] c) throws RemoteException {
+        System.out.println("Got custom field " + c[0]);
+        System.out.println("Alias: " + c[0].getAlias());
+        System.out.println("Col Name: " + c[0].getColumnName());
+        System.out.println("Col Length: " + c[0].getColumnLength());
     }
-    
+
     private PatientManager() throws RemoteException, SessionExpiredException {
     }
 
@@ -84,9 +85,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
+        String tablename = getPatientTableName(sid, projectId);
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(
@@ -104,7 +105,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()) {
-            result.add(new Object[] {
+            result.add(new Object[]{
                 rs.getInt(1),
                 rs.getString(2),
                 rs.getString(3),
@@ -121,9 +122,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public List<Object[]> getPatients(String sid, int projectId) throws SQLException, RemoteException, SessionExpiredException {
-        String tablename = getPatientTableName(sid,projectId);
+        String tablename = getPatientTableName(sid, projectId);
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -135,7 +136,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             Object[] o = new Object[rs.getMetaData().getColumnCount()];
             for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
                 try {
-                    o[i] = rs.getObject(i+1);
+                    o[i] = rs.getObject(i + 1);
                 } catch (SQLException e) {
                     //ignore...probably invalid input (ie. date 0000-00-00)
                 }
@@ -148,9 +149,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Object[] getPatientRecord(String sid, int projectId, int patientId) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
+        String tablename = getPatientTableName(sid, projectId);
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -184,7 +185,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         List<String> result = new ArrayList<String>();
 
-        for (CustomField af: REQUIRED_PATIENT_FIELDS) {
+        for (CustomField af : REQUIRED_PATIENT_FIELDS) {
             result.add(af.getAlias());
         }
 
@@ -248,14 +249,13 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         return rs.getString(1);
     }
 
-
     @Override
     public void createPatientTable(String sessID, int projID, CustomField[] fields) throws SQLException, SessionExpiredException {
 
         // Create basic fields.
         String tableName = DBSettings.createPatientTableName(projID);
         TableSchema patientSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicPatientColumns.class);
-        for (CustomField field: fields) {
+        for (CustomField field : fields) {
             patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength(), field.getColumnScale());
         }
 
@@ -265,7 +265,6 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.executeUpdate(patientSchema.getCreateQuery() + " ENGINE=MyISAM;");
-
 
             //add to tablemap
             TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
@@ -299,15 +298,15 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void removePatient(String sid, int projectId, int[] patientIds) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        String tablename = getPatientTableName(sid, projectId);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
         PooledConnection conn = ConnectionController.connectPooled(sid);
         try {
             conn.setAutoCommit(false);
             for (int id : patientIds) {
                 //remove all references
-                CohortManager.getInstance().removePatientReferences(sid,projectId, id);
+                CohortManager.getInstance().removePatientReferences(sid, projectId, id);
 
                 //remove from patient patientFormatTable
                 DeleteQuery query = new DeleteQuery(table.getTable());
@@ -321,27 +320,26 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    
     // TODO: write JavaDoc, variables names cols and values are meaningless
     @Override
     public void addPatient(String sid, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        String tablename = getPatientTableName(sid, projectId);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
         InsertQuery query = new InsertQuery(table.getTable());
         for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
             query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getTypeString(), 100, 0), values.get(i));
         }
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
-    
+
     @Override
     public void updatePatient(String sid, int projectId, int patientID, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        String tablename = getPatientTableName(sid, projectId);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(PATIENT_ID), patientID));
@@ -349,15 +347,15 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             query.addSetClause(table.getDBColumn(cols.get(i).getColumnName()), values.get(i));
         }
 
-        ConnectionController.executeUpdate(sid,  query.toString());
+        ConnectionController.executeUpdate(sid, query.toString());
     }
 
     @Override
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projID, String columnName) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sessID,projID);
+        String tablename = getPatientTableName(sessID, projID);
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
         DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
@@ -372,10 +370,16 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         Map<Object, List<String>> map = new HashMap<Object, List<String>>();
         while (rs.next()) {
             Object o = rs.getObject(columnName);
-            if (o == null) o = "";
-            if (map.get(o) == null) map.put(o, new ArrayList<String>());
+            if (o == null) {
+                o = "";
+            }
+            if (map.get(o) == null) {
+                map.put(o, new ArrayList<String>());
+            }
             String dnaIdsString = rs.getString(DNA_IDS.getColumnName());
-            if (dnaIdsString == null) continue;
+            if (dnaIdsString == null) {
+                continue;
+            }
             String[] dnaIds = dnaIdsString.split(",");
             for (String id : dnaIds) {
                 if (!map.get(o).contains(id)) {
@@ -389,7 +393,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getDNAIDsWithValuesInRange(String sessID, int projID, String columnName, Range r) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sessID,projID);
+        String tablename = getPatientTableName(sessID, projID);
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
@@ -455,7 +459,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         List<String> result = new ArrayList<String>();
         while (rs.next()) {
             String current = rs.getString(1);
-            if (current == null) continue;
+            if (current == null) {
+                continue;
+            }
             String[] dnaIDs = current.split(",");
             for (String id : dnaIDs) {
                 if (!result.contains(id)) {
@@ -522,18 +528,20 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         c.commit();
         c.setAutoCommit(true);
 
-        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID,tablename, true);
+        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablename, true);
         List<DbColumn> columns = patientTable.getColumns();
         c.setAutoCommit(false);
         int i = 0;
         for (DbColumn col : columns) {
             boolean isDefault = false;
-            for (CustomField a: BasicPatientColumns.REQUIRED_PATIENT_FIELDS) {
+            for (CustomField a : BasicPatientColumns.REQUIRED_PATIENT_FIELDS) {
                 if (col.getColumnNameSQL().equals(a.getColumnName())) {
                     isDefault = true;
                 }
             }
-            if (isDefault) continue;
+            if (isDefault) {
+                continue;
+            }
 
             UpdateQuery q = new UpdateQuery(patientFormatTable.getTable());
             q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i++);
@@ -554,8 +562,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Object> getValuesFromField(String sid, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tablename = getPatientTableName(sid,projectId);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        String tablename = getPatientTableName(sid, projectId);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(columnNameB));
@@ -578,7 +586,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getDNAIDsFromField(String sessID, int projID, String columnNameA, List<Object> values) throws SQLException, RemoteException, SessionExpiredException {
 
-        List<Object> l1 = getValuesFromField(sessID,projID, columnNameA, DNA_IDS.getColumnName(), values);
+        List<Object> l1 = getValuesFromField(sessID, projID, columnNameA, DNA_IDS.getColumnName(), values);
         List<String> result = new ArrayList<String>();
         for (Object o : l1) {
             String[] dnaIds = ((String) o).split(",");
@@ -592,7 +600,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<String,String> getValuesFromDNAIDs(String sessID, int projID, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException {
+    public Map<String, String> getValuesFromDNAIDs(String sessID, int projID, String columnNameB, List<String> ids) throws SQLException, RemoteException, SessionExpiredException {
 
         String tablename = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
@@ -609,7 +617,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String s = query.toString();
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
-        Map<String,String> result = new HashMap<String,String>();
+        Map<String, String> result = new HashMap<String, String>();
         while (rs.next()) {
             result.put(rs.getString(1), rs.getString(2));
         }
@@ -655,7 +663,6 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         return result;
     }
 
-
     @Override
     public List<Object[]> getFamilyOfPatient(String sessID, int projID, int patID) throws SQLException, RemoteException, SessionExpiredException {
 
@@ -664,13 +671,13 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             return new ArrayList<Object[]>();
         }
 
-        return getFamily(sessID,projID, famID);
+        return getFamily(sessID, projID, famID);
     }
 
     @Override
     public String getFamilyIDOfPatient(String sessID, int projID, int patID) throws SQLException, RemoteException, SessionExpiredException {
-        String tablename = getPatientTableName(sessID,projID);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
+        String tablename = getPatientTableName(sessID, projID);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
@@ -689,7 +696,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getFamilyIDs(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException {
 
-        String tableName = getPatientTableName(sessID,projID);
+        String tableName = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
 
         SelectQuery q1 = new SelectQuery();
@@ -710,10 +717,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         return ids;
     }
 
-
     //SELECT `dna_ids` FROM `z_patient_proj1` WHERE `family_id` = 'AB0001' AND `dna_ids` IS NOT null;
     @Override
-    public Map<String,String> getDNAIDsForFamily(String sessID, int projID, String famID) throws SQLException, RemoteException, SessionExpiredException {
+    public Map<String, String> getDNAIDsForFamily(String sessID, int projID, String famID) throws SQLException, RemoteException, SessionExpiredException {
 
         String tablename = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
@@ -724,10 +730,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         q1.addColumns(table.getDBColumn(DNA_IDS));
         q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
 
-
         ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
 
-        Map<String,String> patientIDToDNAIDMap = new HashMap<String,String>();
+        Map<String, String> patientIDToDNAIDMap = new HashMap<String, String>();
 
         //List<String> ids = new ArrayList<String>();
         while (rs1.next()) {
@@ -742,7 +747,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void clearPatients(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException{
+    public void clearPatients(String sessID, int projID) throws SQLException, RemoteException, SessionExpiredException {
 
         String tableName = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
@@ -755,7 +760,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> parseDNAIDs(String s) {
         List<String> result = new ArrayList<String>();
-        if (s == null) return result;
+        if (s == null) {
+            return result;
+        }
         String[] dnaIDs = s.split(",");
         for (String id : dnaIDs) {
             if (!result.contains(id)) {
@@ -769,7 +776,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     public List<String> getDNAIDsForHPOID(String sessID, int projID, String id) throws SQLException, RemoteException, SessionExpiredException {
 
         //TODO: make a prepared statement
-        String query = "SELECT dna_ids FROM " + getPatientTableName(sessID, projID)  + " WHERE " + MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO + "='" + id + "';";
+        String query = "SELECT dna_ids FROM " + getPatientTableName(sessID, projID) + " WHERE " + MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO + "='" + id + "';";
 
         ResultSet rs = ConnectionController.executeQuery(sessID, query);
 
@@ -811,5 +818,47 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         return bamURL;
+    }
+
+    @Override
+    public List<Cohort> getCohortsForPatient(String sessID, int projectID, int patientID) throws SQLException, RemoteException, SessionExpiredException {
+
+        TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(cohortTable.getTable());
+
+        TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
+
+        query.addAllColumns();
+
+        Condition joinCondition
+                = BinaryCondition.equalTo(
+                        cohortMembershipTable.getDBColumn(MedSavantDatabase.CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID),
+                        cohortTable.getDBColumn(MedSavantDatabase.CohortTableSchema.COLUMNNAME_OF_COHORT_ID)
+                );
+
+        query.addCustomJoin(SelectQuery.JoinType.INNER, cohortTable.getTable(), cohortMembershipTable.getTable(), joinCondition);
+
+        query.addCondition(
+                BinaryConditionMS.equalTo(
+                        cohortTable.getDBColumn(MedSavantDatabase.CohortTableSchema.COLUMNNAME_OF_PROJECT_ID
+                        ), projectID));
+        
+        query.addCondition(
+                BinaryConditionMS.equalTo(
+                        cohortMembershipTable.getDBColumn(MedSavantDatabase.CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID
+                        ), patientID));
+
+        System.out.println(query);
+
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+
+        List<Cohort> result = new ArrayList<Cohort>();
+        while (rs.next()) {
+            result.add(new Cohort(rs.getInt(MedSavantDatabase.CohortTableSchema.COLUMNNAME_OF_COHORT_ID), rs.getString(MedSavantDatabase.CohortTableSchema.COLUMNNAME_OF_NAME)));
+        }
+        return result;
+        // SELECT cohort.`cohort_id`, cohort.`name` FROM cohort INNER JOIN cohort_membership ON cohort_membership.cohort_id = cohort.cohort_id WHERE patient_id = 1;
+
     }
 }

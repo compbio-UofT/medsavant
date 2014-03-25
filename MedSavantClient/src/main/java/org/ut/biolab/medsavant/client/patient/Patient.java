@@ -52,7 +52,6 @@ public class Patient {
         this.hospitalID = hospitalID;
     }
     
-    
 
     public int getID() {
         return ID;
@@ -66,6 +65,11 @@ public class Patient {
         return hospitalID;
     }
 
+    
+    void setHospitalID(String hospitalID) {
+        this.hospitalID = hospitalID;
+    }
+    
     public String getMotherHospitalID() {
         return motherHospitalID;
     }
@@ -191,5 +195,6 @@ public class Patient {
             Logger.getLogger(Patient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
 
 }

@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view;
 
+import com.explodingpixels.macwidgets.MacButtonFactory;
 import org.ut.biolab.medsavant.client.view.notify.NotificationsPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.Dashboard;
 import java.awt.BorderLayout;
@@ -28,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import com.explodingpixels.macwidgets.MacUtils;
+import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.KeyEvent;
@@ -36,7 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -186,7 +190,7 @@ public class MedSavantFrame extends JFrame {
 
         notificationPanel = new NotificationsPanel();
         view.push(notificationPanel);
-        
+
         AppSwitchPanel switchPanel = new AppSwitchPanel(dashBoardContainer);
         view.push(switchPanel);
 
@@ -212,8 +216,6 @@ public class MedSavantFrame extends JFrame {
                 dashBoardContainer.setLayout(new BorderLayout());
                 dashBoardContainer.add(dash, BorderLayout.CENTER);
                 dashBoardContainer.updateUI();
-
-                
 
                 return null;
             }
@@ -292,5 +294,9 @@ public class MedSavantFrame extends JFrame {
         }
 
         LOG.info("Refusing to quit");
+    }
+
+    public NotificationsPanel getNotificationPanel() {
+        return this.notificationPanel;
     }
 }

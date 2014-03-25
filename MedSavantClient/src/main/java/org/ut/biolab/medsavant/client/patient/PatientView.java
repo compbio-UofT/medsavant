@@ -20,16 +20,29 @@ package org.ut.biolab.medsavant.client.patient;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.patient.pedigree.PedigreeCanvas;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.client.view.util.StandardFixedWidthAppPanel;
@@ -40,6 +53,8 @@ import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.SimplePatient;
 
 /**
  *
@@ -55,7 +70,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
     public static final String MOTHER_ID = "Mother ID";
     public static final String FAMILY_ID = "Family ID";
     public static final String AFFECTED = "Affected";
-    public static final String INDIVIDUAL_ID = "Individual ID";
+    public static final String HOSPITAL_ID = "Hospital ID";
     public static final String SEX = "Sex";
 
     // genetic keys
@@ -67,6 +82,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
     private KeyValuePairPanel geneticsKVP;
     private KeyValuePairPanel phenotypeKVP;
     private StandardFixedWidthAppPanel content;
+    private JPanel cohortListPanel;
 
     public PatientView() {
         initView();
@@ -93,12 +109,11 @@ public class PatientView extends JPanel implements FieldEditedListener {
 
         JPanel subsectionBasicInfo = content.addBlock("Basic Information");
         JPanel subsectionCohort = content.addBlock("Cohort(s)");
-        JPanel subsectionPedigree = content.addBlock("Pedigree");
         JPanel subsectionGenetics = content.addBlock("Genetics");
         JPanel subsectionPhenotypes = content.addBlock("Phenotypes");
 
-        JLabel notCohortMemberLabel = ViewUtil.getGrayItalicizedLabel("This individual is not in a cohort");
         JButton addToCohortButton = ViewUtil.getSoftButton("Add to cohort...");
+        cohortListPanel = ViewUtil.getClearPanel();
         addToCohortButton.addActionListener(new ActionListener() {
 
             @Override
@@ -119,12 +134,12 @@ public class PatientView extends JPanel implements FieldEditedListener {
         });
 
         subsectionCohort.setLayout(new MigLayout("insets 0"));
-        subsectionCohort.add(notCohortMemberLabel, "wrap");
+        subsectionCohort.add(cohortListPanel, "wrap");
         subsectionCohort.add(addToCohortButton);
 
         profileKVP = getKVP();
 
-        profileKVP.addKeyWithValue(INDIVIDUAL_ID,
+        profileKVP.addKeyWithValue(HOSPITAL_ID,
                 "");
         profileKVP.addKeyWithValue(SEX,
                 "");
@@ -154,6 +169,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
                 "");
 
         subsectionPhenotypes.add(phenotypeKVP);
+
     }
 
     void setPatient(Patient patient) {
@@ -166,7 +182,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
         content.setTitle(patient.getHospitalID());
 
         StringEditableField individualIDField = new StringEditableField();
-        individualIDField.setTag(INDIVIDUAL_ID);
+        individualIDField.setTag(HOSPITAL_ID);
         individualIDField.setValue(patient.getHospitalID());
         individualIDField.addFieldEditedListener(this);
 
@@ -195,12 +211,37 @@ public class PatientView extends JPanel implements FieldEditedListener {
         familyIDField.setTag(FAMILY_ID);
         familyIDField.addFieldEditedListener(this);
 
-        profileKVP.setValue(PatientView.INDIVIDUAL_ID, individualIDField);
+        JButton pedigree = ViewUtil.getSoftButton("Pedigree");
+        if (patient.getFamilyID() == null) {
+            pedigree.setEnabled(false);
+        } else {
+            pedigree.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JDialog f = new JDialog(MedSavantFrame.getInstance(), "Pedigree", true);
+                    PedigreeCanvas pc = new PedigreeCanvas();
+                    pc.setFamilyName(patient.getFamilyID());
+                    pc.showPedigreeFor(patient.getID());
+
+                    f.setPreferredSize(new Dimension(650, 500));
+                    f.setLayout(new BorderLayout());
+                    f.add(pc, BorderLayout.CENTER);
+                    f.pack();
+                    f.setLocationRelativeTo(MedSavantFrame.getInstance());
+                    f.setVisible(true);
+                }
+
+            });
+        }
+
+        profileKVP.setValue(PatientView.HOSPITAL_ID, individualIDField);
         profileKVP.setValue(PatientView.SEX, sexField);
         profileKVP.setValue(PatientView.AFFECTED, affectedField);
         profileKVP.setValue(PatientView.MOTHER_ID, motherField);
         profileKVP.setValue(PatientView.FATHER_ID, fatherField);
         profileKVP.setValue(PatientView.FAMILY_ID, familyIDField);
+        profileKVP.setAdditionalColumn(FAMILY_ID, 0, pedigree);
 
         StringEditableField dnaIDField = new StringEditableField();
         dnaIDField.setValue(patient.getDnaID());
@@ -224,58 +265,60 @@ public class PatientView extends JPanel implements FieldEditedListener {
 
         phenotypeKVP.setValue(PatientView.PHENOTYPE, phenotypeField);
 
+        try {
+            List<Cohort> cohorts = MedSavantClient.PatientManager.getCohortsForPatient(LoginController.getSessionID(), ProjectController.getInstance().getCurrentProjectID(), patient.getID());
+
+            cohortListPanel.removeAll();
+            cohortListPanel.setLayout(new MigLayout("wrap, insets 0"));
+            if (cohorts.isEmpty()) {
+                JLabel noCohortMemberLabel = ViewUtil.getGrayItalicizedLabel("This individual is not in a cohort");
+                cohortListPanel.add(noCohortMemberLabel);
+            } else {
+                for (Cohort c : cohorts) {
+                    cohortListPanel.add(new JLabel(c.getName()));
+                }
+            }
+
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         this.updateUI();
     }
 
     @Override
     public void handleEvent(EditableField f) {
-        System.out.println("Field " + f.getTag() + " was edited to " + f.getValue());
 
-        /*
-        // profile keys
-    public static final String FATHER_ID = "Father ID";
-    public static final String MOTHER_ID = "Mother ID";
-    public static final String FAMILY_ID = "Family ID";
-    public static final String AFFECTED = "Affected";
-    public static final String INDIVIDUAL_ID = "Individual ID";
-    public static final String SEX = "Sex";
-
-    // genetic keys
-    public static final String SEX = "DNA ID";
-    public static final String BAM_URL = "Read Alignment URL";
-
-    // phenotype keys
-    public static final String PHENOTYPE = "HPO IDs";
-        */
-        
         if (f.getTag().equals(FATHER_ID)) {
-            patient.setFatherHospitalID((String)f.getValue());
-            
+            patient.setFatherHospitalID((String) f.getValue());
+
         } else if (f.getTag().equals(MOTHER_ID)) {
-            patient.setMotherHospitalID((String)f.getValue());
-            
+            patient.setMotherHospitalID((String) f.getValue());
+
         } else if (f.getTag().equals(FAMILY_ID)) {
-            patient.setFamilyID((String)f.getValue());
-            
+            patient.setFamilyID((String) f.getValue());
+
         } else if (f.getTag().equals(AFFECTED)) {
-            patient.setAffected(((String)f.getValue()).equals("Yes"));
-            
-        } else if (f.getTag().equals(INDIVIDUAL_ID)) {
-            patient.setID((Integer)f.getValue());
-            
+            patient.setAffected(((String) f.getValue()).equals("Yes"));
+
+        } else if (f.getTag().equals(HOSPITAL_ID)) {
+            patient.setHospitalID((String) f.getValue());
+
         } else if (f.getTag().equals(SEX)) {
-            patient.setSex((String)f.getValue());
-            
+            patient.setSex((String) f.getValue());
+
         } else if (f.getTag().equals(DNA_ID)) {
-            patient.setDnaID((String)f.getValue());
-            
+            patient.setDnaID((String) f.getValue());
+
         } else if (f.getTag().equals(BAM_URL)) {
-            patient.setBamURL((String)f.getValue());
-        
+            patient.setBamURL((String) f.getValue());
+
         } else if (f.getTag().equals(PHENOTYPE)) {
-            patient.setPhenotypes((String)f.getValue());
+            patient.setPhenotypes((String) f.getValue());
         }
-        
+
         patient.saveToDatabase();
     }
 }

@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.dialog.ChangePasswordDialog;
@@ -107,6 +108,27 @@ public class AccountManagerApp implements LaunchableApp {
         kvp.setAdditionalColumn("Password", 0, b);
 
         accountBlock.add(kvp);
+        
+        final ActionListener signOutActionListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                MedSavantFrame.getInstance().requestLogoutAndRestart();
+            }
+        };
+
+        JButton signOut = new JButton("Sign Out");
+        signOut.setFocusable(false);
+
+        signOut.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                signOutActionListener.actionPerformed(null);
+            }
+
+        });
+        accountBlock.add(ViewUtil.alignRight(signOut));
     }
 
 }

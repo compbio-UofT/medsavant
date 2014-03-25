@@ -149,11 +149,6 @@ public class AnnotationsPage extends AppSubSection {
             }
         }
 
-        @Override
-        public JPopupMenu createPopup() {
-            return null;
-        }
-
         private synchronized void setDetailsList(List<String[]> info) {
 
             details.removeAll();

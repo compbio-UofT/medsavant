@@ -1,12 +1,20 @@
 package org.ut.biolab.medsavant.client.view.dashboard;
 
+import com.explodingpixels.macwidgets.MacButtonFactory;
+import com.explodingpixels.macwidgets.MacPainterFactory;
+import com.explodingpixels.macwidgets.MacWidgetFactory;
+import com.explodingpixels.macwidgets.TriAreaComponent;
+import com.explodingpixels.macwidgets.UnifiedToolBar;
+import com.explodingpixels.painter.MacWidgetsPainter;
 import java.awt.AlphaComposite;
 import org.ut.biolab.medsavant.client.view.app.MenuFactory;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,6 +22,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
@@ -52,6 +61,7 @@ import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import savant.util.swing.HyperlinkButton;
 import org.apache.commons.httpclient.NameValuePair;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 
 /**
  *
@@ -68,13 +78,15 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
     private LaunchableApp previousApp;
     private final JPanel appLayer;
 
-    private NiceMenu appTopMenu;
-    private NiceMenu homeMenu;
+    //private NiceMenu appTopMenu;
+    //private NiceMenu homeMenu;
     private final LimitedQueue<LaunchableApp> history;
     private final HashSet<LaunchableApp> appHistoryBlackList;
 
     private Image backgroundImage;
     private boolean transparentBackground = true;
+    private TriAreaComponent homeToolbar;
+    private TriAreaComponent appToolbar;
 
     public Dashboard() {
 
@@ -253,12 +265,11 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         });
         bottomDisclaimer.add(userguide, "right");
 
-        homeMenu = new NiceMenu();
-
-        homeMenu.setTitle("MedSavant");
-        homeMenu.addRightComponent(getLogoutButton());
-
-        dashLayer.add(homeMenu, BorderLayout.NORTH);
+        homeToolbar = getToolBar("Home");
+        homeToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
+        homeToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
+        
+        dashLayer.add(homeToolbar.getComponent(), BorderLayout.NORTH);
 
         dashLayer.add(p, BorderLayout.CENTER);
         dashLayer.add(bottomDisclaimer, BorderLayout.SOUTH);
@@ -339,14 +350,13 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         JPanel p = app.getView();
 
-        appTopMenu = new NiceMenu();
+        appToolbar = getToolBar(app.getName());
+        appToolbar.addComponentToLeft((JComponent) Box.createHorizontalStrut(5));
+        appToolbar.addComponentToLeft(getHomeButton());
+        appToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
+        appToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
 
-        appTopMenu.setTitle(app.getName());
-
-        appTopMenu.addLeftComponent(getHomeButton());
-        appTopMenu.addRightComponent(getLogoutButton());
-
-        appLayer.add(appTopMenu, BorderLayout.NORTH);
+        appLayer.add(appToolbar.getComponent(), BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
 
         this.dashLayer.setVisible(false);
@@ -404,13 +414,12 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             }
         });
     }
-    
+
     public static Image getScaledInstance(Image img,
-                                           int targetWidth,
-                                           int targetHeight,
-                                           Object hint,
-                                           boolean higherQuality)
-    {
+            int targetWidth,
+            int targetHeight,
+            Object hint,
+            boolean higherQuality) {
         int type = BufferedImage.TYPE_INT_ARGB;
         Image ret = img;
         int w, h;
@@ -426,7 +435,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             w = targetWidth;
             h = targetHeight;
         }
-        
+
         do {
             if (higherQuality && w > targetWidth) {
                 w /= 2;
@@ -477,18 +486,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         relayout();
     }
 
-    /*private JButton getHomeButton() {
-     JButton b = ViewUtil.getIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DASHBOARD),3);
-     b.addActionListener(new ActionListener() {
-
-     @Override
-     public void actionPerformed(ActionEvent e) {
-     goHome();
-     }
-            
-     });
-     return b;
-     }*/
     private JComponent getHomeButton() {
 
         final ActionListener goHomeActionListener = new ActionListener() {
@@ -499,7 +496,11 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             }
         };
 
-        JButton goHome = ViewUtil.getSoftButton("Home");
+        
+        JButton goHome = new JButton(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "home-20.png"));
+        goHome.setFocusable(false);
+        goHome.putClientProperty("JButton.buttonType", "textured");
+
         goHome.addActionListener(new ActionListener() {
 
             @Override
@@ -510,39 +511,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         });
 
         return goHome;
-
-        /*
-         JLabel homeLabel = ViewUtil.getEmphasizedLabel("HOME", ViewUtil.getMedSavantBlueColor());
-        
-         homeLabel.addMouseListener(new MouseListener() {
-
-         @Override
-         public void mouseClicked(MouseEvent e) {
-         goHomeActionListener.actionPerformed(null);
-         }
-
-         @Override
-         public void mousePressed(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseReleased(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseEntered(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseExited(MouseEvent e) {
-         }
-
-         });
-        
-         homeLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-         return homeLabel;
-         */
     }
 
     private JComponent getLogoutButton() {
@@ -555,7 +523,10 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             }
         };
 
-        JButton signOut = ViewUtil.getSoftButton("Sign Out");
+        JButton signOut = new JButton(IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "exit-20.png"));
+        signOut.setFocusable(false);
+        signOut.putClientProperty("JButton.buttonType", "textured");
+
         signOut.addActionListener(new ActionListener() {
 
             @Override
@@ -566,39 +537,35 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         });
 
         return signOut;
+    }
 
-        /*
-         final JLabel label = ViewUtil.getEmphasizedLabel("SIGN OUT", ViewUtil.getMedSavantBlueColor());
+    private TriAreaComponent getToolBar(String name) {
+                
+        TriAreaComponent bar = new TriAreaComponent(10);
+        bar.setBackgroundPainter(new MacWidgetsPainter<Component>() {
+
+            @Override
+            public void paint(Graphics2D gd, Component t, int i, int i1) {
+                gd.setColor(new Color(221,221,221));
+                gd.fillRect(0, 0, t.getWidth(), t.getHeight());
+               
+            }
+        });
+        bar.getComponent().setBorder(ViewUtil.getBottomLineBorder());
+        JLabel title = MacWidgetFactory.makeEmphasizedLabel(new JLabel(name),new Color(64,64,64), new Color(64,64,64), new Color(230,230,230));
+        title.setFont(title.getFont().deriveFont(Font.PLAIN, 20));
+        //title.setFont(FontFactory.getMenuTitleFont());
+        bar.addComponentToCenter(title);
         
-         label.addMouseListener(new MouseListener() {
+        return bar;
+    }
 
-         @Override
-         public void mouseClicked(MouseEvent e) {
-         goHomeActionListener.actionPerformed(null);
-         }
-
-         @Override
-         public void mousePressed(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseReleased(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseEntered(MouseEvent e) {
-         }
-
-         @Override
-         public void mouseExited(MouseEvent e) {
-         }
-
-         });
-
-         label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        
-         return label;
-         */
+    private JComponent pushUp(JComponent c) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
+        p.add(c);
+        p.add(Box.createVerticalGlue());
+        return p;
     }
 
     private class LimitedQueue<E> extends LinkedList<E> {

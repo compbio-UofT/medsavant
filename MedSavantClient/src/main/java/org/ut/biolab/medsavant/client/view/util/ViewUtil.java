@@ -526,8 +526,13 @@ public final class ViewUtil {
 
         BufferedImage original = convertImageToType(icon.getImage(), BufferedImage.TYPE_4BYTE_ABGR);
 
-        BufferedImage unselectedImage = makeRoundedCorner(original, cornerRadius);
-        BufferedImage selectedImage = makeRoundedCorner(darkenImage(original), cornerRadius);
+        BufferedImage unselectedImage = original;
+        BufferedImage selectedImage = darkenImage(original);
+        
+        if (cornerRadius > 0) {
+            unselectedImage = makeRoundedCorner(unselectedImage, cornerRadius);
+            selectedImage = makeRoundedCorner(selectedImage, cornerRadius);
+        }
 
         final JButton button = new JButton(new ImageIcon(unselectedImage));
         button.setPressedIcon(new ImageIcon(selectedImage));
@@ -652,18 +657,13 @@ public final class ViewUtil {
     }
 
     public static JComponent subTextComponent(JComponent c, String subtext, int fontSize) {
-        int width = c.getPreferredSize().width;
         JPanel p = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(p);
-        p.add(ViewUtil.centerHorizontally(c));
+        p.setLayout(new MigLayout("wrap, insets 0, gap 0"));
+        p.add(c, "align 0 0, grow 0");
         JLabel s = new JLabel(subtext);
         ViewUtil.setFontSize(s, fontSize);
         s.setForeground(Color.darkGray);
-        ViewUtil.makeSmall(s);
-        p.add(ViewUtil.centerHorizontally(ViewUtil.clear(s)));
-
-        FontMetrics fm = s.getFontMetrics(s.getFont());
-        p.setMaximumSize(new Dimension(Math.max(width, fm.stringWidth(subtext)), 23 + c.getPreferredSize().height));
+        p.add(s,"gapy 0, align 0 0, center, grow 0");
         return p;
     }
 
@@ -1123,6 +1123,15 @@ public final class ViewUtil {
             s += "•";
         }
         return s;
+    }
+
+    public static JComponent verticallyAlignComponents(Component[] component) {
+        JPanel p = ViewUtil.getClearPanel();
+        p.setLayout(new MigLayout("center, wrap, insets 0, gapy 1"));
+        for (Component c : component) {
+            p.add(c, "center");
+        }
+        return p;
     }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {

@@ -305,9 +305,9 @@ public class IconFactory {
             case DOCK:
                 return getIcon(ICON_ROOT + "import.png");
             case FONT_INCREASE:
-                return getIcon(ICON_ROOT + "font_increase.png");
+                return getIcon(ICON_ROOT + "increase_font-26.png");
             case FONT_DECREASE:
-                return getIcon(ICON_ROOT + "font_decrease.png");
+                return getIcon(ICON_ROOT + "decrease_font-26.png");
             default:
                 return null;
         }

@@ -5,7 +5,9 @@
  */
 package org.ut.biolab.medsavant.client.view.component;
 
+import com.explodingpixels.macwidgets.MacPainterFactory;
 import com.explodingpixels.macwidgets.MacWidgetFactory;
+import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,7 +40,7 @@ public class NiceMenu extends JPanel {
 
     public NiceMenu(MenuLocation location) {
 
-        this.setBackground(ViewUtil.getPrimaryMenuColor());
+       
 
         if (location == MenuLocation.TOP) {
             this.setBorder(ViewUtil.getBottomLineBorder());
@@ -83,6 +85,7 @@ public class NiceMenu extends JPanel {
         JLabel titleLabel = new JLabel("");
         titleLabel.setText(title);
         titleLabel.setForeground(new Color(64, 64, 64));
+        //titleLabel.setForeground(Color.white);
         titleLabel.setFont(FontFactory.getMenuTitleFont());
         setCenterComponent(titleLabel);
 

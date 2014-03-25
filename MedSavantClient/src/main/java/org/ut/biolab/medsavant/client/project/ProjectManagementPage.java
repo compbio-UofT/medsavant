@@ -232,11 +232,6 @@ public class ProjectManagementPage extends AppSubSection {
             detailsWorker.execute();
         }
 
-        @Override
-        public JPopupMenu createPopup() {
-            return null;    //nothing yet
-        }
-
         private class DetailsWorker extends MedSavantWorker<ProjectDetails[]> {
 
             private String projectName;
