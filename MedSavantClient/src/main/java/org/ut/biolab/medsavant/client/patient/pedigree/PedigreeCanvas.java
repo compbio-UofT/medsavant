@@ -199,6 +199,8 @@ public class PedigreeCanvas extends JPanel {
             }
 
         });
+        
+        JButton help = ViewUtil.getHelpButton("Pedigree Help", "Using the mouse, scroll to zoom and click-and-drag to pan pedigree.", true);
 
         System.out.println("Placing pedigree in view...");
 
@@ -212,6 +214,7 @@ public class PedigreeCanvas extends JPanel {
 
         topBar.add(familyNameLabel, "gpx 10000, growx 10000");
         topBar.add(patientLabels, "growx 0, right, split");
+        topBar.add(help);
         //topBar.add(zoomFont, "growx 0, right");
         //topBar.add(unZoomFont, "growx 0, right");
 

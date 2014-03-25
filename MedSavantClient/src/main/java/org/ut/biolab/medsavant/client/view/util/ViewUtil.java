@@ -256,10 +256,6 @@ public final class ViewUtil {
         return new Color(220, 220, 220);
     }
 
-    public static Color getSecondaryMenuColor() {
-        return new Color(214, 221, 230);
-    }
-
     public static Color getSemiBlackColor() {
         return new Color(64, 64, 64);
     }
@@ -1420,7 +1416,8 @@ public final class ViewUtil {
      * @return the sidebar color
      */
     public static Color getSidebarColor() {
-        return new Color(213, 233, 251);
+        return new Color(214, 221, 230);
+        //return new Color(213, 233, 251);
     }
 
     /**

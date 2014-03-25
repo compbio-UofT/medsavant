@@ -11,6 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
@@ -86,6 +87,7 @@ public class AccountManagerApp implements LaunchableApp {
     private void refreshInfo() {
         accountBlock.removeAll();
         
+        accountBlock.setLayout(new MigLayout("insets 0, wrap"));
         KeyValuePairPanel kvp = new KeyValuePairPanel(1,true);
         
         JButton b = ViewUtil.getSoftButton("Change");

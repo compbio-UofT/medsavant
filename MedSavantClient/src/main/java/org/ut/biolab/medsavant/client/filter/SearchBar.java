@@ -128,7 +128,7 @@ public class SearchBar extends JPanel {
 
     private void initComponents() {
 
-        this.setBackground(ViewUtil.getSecondaryMenuColor());
+        this.setBackground(ViewUtil.getSidebarColor());
         this.setBorder(ViewUtil.getSideLineBorder());
 
         setLayout(new BorderLayout());

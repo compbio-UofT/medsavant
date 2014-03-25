@@ -560,14 +560,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         return bar;
     }
 
-    private JComponent pushUp(JComponent c) {
-        JPanel p = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(p);
-        p.add(c);
-        p.add(Box.createVerticalGlue());
-        return p;
-    }
-
     private class LimitedQueue<E> extends LinkedList<E> {
 
         private int limit;
