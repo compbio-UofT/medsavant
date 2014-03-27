@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
@@ -332,9 +333,23 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         float subMultiplier = 0.0f;
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER), subMultiplier);
 
+       
+       
         if (annotationIDs.length > 0) {
+            //Duplicate annotation IDs should never be passed to this function.  Assert that they aren't 
+            //with the below error check, but don't muck up the database or crash if they are.
+             Set<Integer> annotationIdSet = new HashSet<Integer>();
+             for(int id : annotationIDs){                 
+                 annotationIdSet.add(id);
+             }
+                         
+             if(annotationIdSet.size() < annotationIDs.length){
+                 LOG.error("ERROR: Ignoring duplicate annotation ids in list "+StringUtils.join(annotationIDs, ","));
+             }
+            
             String annIDString = "";
-            for (int id : annotationIDs) {
+            //for (int id : annotationIDs) {
+            for(Integer id : annotationIdSet){
                 annIDString += id + ",";
             }            
             annIDString = annIDString.substring(0, annIDString.length() - 1); // remove the last comma
