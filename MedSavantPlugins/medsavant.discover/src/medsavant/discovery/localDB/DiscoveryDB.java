@@ -116,6 +116,7 @@ public class DiscoveryDB {
 
 			sql=	"CREATE TABLE CGD ( " +
 					"	Gene varchar(20) NOT NULL, " +
+					"	HGNC_Id varchar(20) NOT NULL, " +
 					"	Entrez_Gene_Id varchar(20) NOT NULL, " +
 					"	Condition varchar(500) NOT NULL, " +
 					"	Inheritance varchar(500) NOT NULL, " +

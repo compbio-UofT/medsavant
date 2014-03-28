@@ -1520,8 +1520,8 @@ public class DiscoveryPanel extends JPanel {
 			File propertiesFile= new File(PROPERTIES_FILENAME);
 			if (!propertiesFile.exists()) {
 				/* Set the defaults. */
-				long defaultDate= (new GregorianCalendar(2013, Calendar.NOVEMBER, 
-					27)).getTimeInMillis(); // CGD date at time of coding corresponding to the download date of the embedded CGD file
+				// CGD date at time of coding corresponding to the download date of the embedded CGD file
+				long defaultDate= (new GregorianCalendar(2014, Calendar.MARCH, 25)).getTimeInMillis();
 
 				properties.setProperty("CGD_DB_date", Long.toString(defaultDate));
 				properties.setProperty("CGD_DB_URL", DEFAULT_CGD_URL.toString());
