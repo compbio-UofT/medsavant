@@ -1185,6 +1185,13 @@ public final class ViewUtil {
         return ret;
     }
 
+    public static JLabel getLargeSerifLabel(String title) {
+        JLabel queuedTitle = ViewUtil.getLargeGrayLabel(title);
+        queuedTitle.setFont(FontFactory.getSerifFont().deriveFont(34f));
+        queuedTitle.setForeground(Color.black);
+        return queuedTitle;
+    }
+
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 
         public DetailListCellRenderer() {

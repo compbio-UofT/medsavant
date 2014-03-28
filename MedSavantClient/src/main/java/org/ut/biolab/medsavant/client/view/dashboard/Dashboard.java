@@ -60,6 +60,8 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
     int appIconWidth = 128;
 
     private final ArrayList<DashboardSection> dashboardSections;
+    
+    //private final JTransitionPanel dash;
     private final JPanel dashLayer;
     private LaunchableApp previousApp;
     private final JPanel appLayer;
@@ -178,7 +180,9 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         int gapHorizontal = 30;
         int gapVertical = gapHorizontal;
-        int topAndBottomInsets = 70;
+        
+        int topInset = 100;
+        int bottomInsets = 20;
 
         int widthOfContainer = this.getParent().getSize().width;
 
@@ -189,7 +193,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         int leftInset = widthOfContainer / 2 - (numIconsPerRow * (appIconWidth + gapHorizontal)) / 2;
         int rightInset = 0;
 
-        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
+        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topInset, leftInset, bottomInsets, rightInset)));
 
         dashLayer.setOpaque(true);
 
@@ -232,8 +236,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         bottomDisclaimer.setLayout(new MigLayout("fillx, insets 2"));
 
         TriAreaComponent bottombar = new TriAreaComponent(10);
-        //bottomDisclaimer.setBackground(ViewUtil.getDefaultBackgroundColor());
-        //bottomDisclaimer.setBorder(ViewUtil.getTopLineBorder());
         bottombar.getComponent().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         ImagePanel logo = new ImagePanel("icon/logo/medsavant-icon-mini.png");
