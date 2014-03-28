@@ -18,6 +18,7 @@ import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 
 /**
  * Human Gene Mutation Database (HGMD) SubInspector to display variant details.
@@ -27,13 +28,13 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 public class HGMDSubInspector extends SubInspector {
 	
 	private static final String URL_CHARSET = "UTF-8";
-	private final String HGMD_RSID_TEXT= "hgmd_pro_allmut, dbsnp";
-	private final String HGMD_PMID_TEXT= "hgmd_pro_allmut, pmid";
-	private final String HGMD_OMIM_TEXT= "hgmd_pro_allmut, omimid";
-	private final String HGMD_DISEASE_TEXT= "hgmd_pro_allmut, disease";
-	private final String HGMD_DESCRIPTION_TEXT= "hgmd_pro_allmut, descr";
-	private final String HGMD_ACC_TEXT= "hgmd_pro_allmut, acc_num";
-	private final String HGMD_COMMENTS_TEXT= "hgmd_pro_allmut, comments";
+	private final String HGMD_RSID_TEXT= DBAnnotationColumns.HGMD_RSID_TEXT;
+	private final String HGMD_PMID_TEXT= DBAnnotationColumns.HGMD_PMID_TEXT;
+	private final String HGMD_OMIM_TEXT= DBAnnotationColumns.HGMD_OMIM_TEXT;
+	private final String HGMD_DISEASE_TEXT= DBAnnotationColumns.HGMD_DISEASE_TEXT;
+	private final String HGMD_DESCRIPTION_TEXT= DBAnnotationColumns.HGMD_DESCRIPTION_TEXT;
+	private final String HGMD_ACC_TEXT= DBAnnotationColumns.HGMD_ACC_TEXT;
+	private final String HGMD_COMMENTS_TEXT= DBAnnotationColumns.HGMD_COMMENTS_TEXT;
 	private final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
 	private final String baseOMIMUrl= "http://www.omim.org/entry/";
 	private final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";

@@ -96,8 +96,8 @@ import org.ut.biolab.medsavant.client.query.SearchConditionItem;
 import org.ut.biolab.medsavant.client.query.view.JScrollMenu;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.client.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
@@ -105,6 +105,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -130,7 +131,8 @@ public class SecondaryPanel extends JPanel {
 	private static final double	DEFAULT_HET_RATIO= 0.3;
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
-		"1000g2012apr_all, AnnotationFrequency", "esp6500_all, Score"};
+		DBAnnotationColumns.AF1000g, DBAnnotationColumns.AF6500ex
+	};
 	private static final String DISCOVERY_DB_USER= "incidental_user";
 	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
 	private static final List<String> JANNOVAR_MUTATIONS= Arrays.asList(
@@ -157,14 +159,14 @@ public class SecondaryPanel extends JPanel {
 	private static final String LIKE_KEYWORD= "Like";
 	private static final List<String> OPERATOR_OPTIONS= Arrays.asList(
 		EXIST_KEYWORD, EQUALS_KEYWORD, LESS_KEYWORD, GREATER_KEYWORD, LIKE_KEYWORD);
-	private static final String GENE_COLUMN_KEYWORD= "jannovar gene symbol"; // may change later
+	private static final String GENE_COLUMN_KEYWORD= BasicVariantColumns.JANNOVAR_SYMBOL.getAlias();
 	private static final int TIMEOUT_CONNECTION= 10000; // 10 seconds (10000 milliseconds)
 	private static final int TIMEOUT_DATA_READ= 15000; // 15 seconds (15000 milliseconds)	
 	private static final String ALL_GENE_PANEL= SecondaryFindings.ALL_GENE_PANEL;
 	private static final String LEFT_HIDE_STRING= "<<";
 	private static final String RIGHT_HIDE_STRING= ">>";
-	private static final String CLINVAR_COLUMN_ALIAS= "Clinvar, rsID";
-	private static final String HGMD_COLUMN_ALIAS= "hgmd_pro_allmut, disease";
+	private static final String CLINVAR_COLUMN_ALIAS= DBAnnotationColumns.CLINVAR_RSID_TEXT;
+	private static final String HGMD_COLUMN_ALIAS= DBAnnotationColumns.HGMD_DISEASE_TEXT;
 	private static final String WORKFLOW_IMAGE_PATH= "/medsavant/secondary/images/Secondary Findings Workflow.png";
 	
 	private final int TOP_MARGIN= 0;

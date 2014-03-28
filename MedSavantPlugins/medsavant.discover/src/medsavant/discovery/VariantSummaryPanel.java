@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -68,9 +69,9 @@ public class VariantSummaryPanel extends JScrollPane {
 	private static final String baseOMIMUrl= "http://www.omim.org/entry/";
 	private static final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
 	private static final Color WARNING_ORANGE= new Color(249, 114, 85); // other option: (242, 103, 34);
-	private static final String POLYPHEN2HUMVAR_COLUMN= "ljb2_pp2hvar, Score";
-	private static final String SIFT_COLUMN= "ljb2_sift, Score";
-	private static final String PHYLOP_COLUMN= "ljb2_phylop, Score";
+	private static final String POLYPHEN2HUMVAR_COLUMN= DBAnnotationColumns.POLYPHEN2HUMVAR;
+	private static final String SIFT_COLUMN= DBAnnotationColumns.SIFT;
+	private static final String PHYLOP_COLUMN= DBAnnotationColumns.PHYLOP;
 	private static final List<String> predictorColumns= Arrays.asList(
 		POLYPHEN2HUMVAR_COLUMN, SIFT_COLUMN,PHYLOP_COLUMN
 	); // for now these are hard-coded, but this may be updated later

@@ -104,6 +104,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspec
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
@@ -131,7 +132,7 @@ public class DiscoveryPanel extends JPanel {
 	private static final double	DEFAULT_HET_RATIO= 0.3;
 	private static final double DEFAULT_AF_THRESHOLD= 0.05;
 	private static final String[] DEFAULT_AF_DB_LIST= new String[] {
-		"1000g2012apr_all, Score", "esp6500_all, Score"
+		DBAnnotationColumns.AF1000g, DBAnnotationColumns.AF6500ex
 	};
 	private static final String DISCOVERY_DB_USER= "incidental_user";
 	private static final String DISCOVERY_DB_PASSWORD= "$hazam!2734"; // random password		
