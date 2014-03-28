@@ -44,7 +44,7 @@ public class Patient {
     private String familyID;
     private String dnaID;
     private String sex;
-    private boolean affected;
+    private Boolean affected;
     private String bamURL;
     private String phenotypes;
 
@@ -114,8 +114,8 @@ public class Patient {
         return affected;
     }
 
-    public void setAffected(boolean affected) {
-        this.affected = affected;
+    public void setAffected(Boolean affected) {
+        this.affected = affected == null ? false : affected;
     }
 
     public String getBamURL() {
