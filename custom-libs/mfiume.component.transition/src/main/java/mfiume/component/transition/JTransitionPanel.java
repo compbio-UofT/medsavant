@@ -7,12 +7,17 @@ package mfiume.component.transition;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -22,9 +27,25 @@ import javax.swing.SwingUtilities;
  */
 public class JTransitionPanel extends JPanel {
 
-    private static final float DEFAULT_SLIDE_DURATION = 100.0f;
+    private static final float DEFAULT_SLIDE_DURATION = 50.0f;
 
+    // holds all the layers, including the animation panel
+    private final JLayeredPane layers;
+      
+    // the panel currently on display
     private JPanel currentPanel;
+    
+    private final JPanel placeHolderOne; // holds the incoming panel, for layout purposes
+    private final JPanel placeHolderTwo; // holds the current panel
+    //private final JPanel blankOutCanvas; // blank out the previous panels, while animating
+    private final JPanel animationCanvas; // where animation happens
+
+    private void addPanelAndFill(JComponent child, JComponent parent) {
+        parent.removeAll();
+        parent.setLayout(new BorderLayout());
+        parent.add(child,BorderLayout.CENTER);
+        parent.updateUI();
+    }
 
     public enum TransitionType {
 
@@ -42,10 +63,56 @@ public class JTransitionPanel extends JPanel {
         FADE_OUT,
         NONE
     }
+    
+    @Override
+    public void setBackground(Color c) {
+        //if (blankOutCanvas != null) { blankOutCanvas.setBackground(c); }
+        super.setBackground(c);
+    }
 
     public JTransitionPanel() {
         currentPanel = null;
         this.setDoubleBuffered(true);
+        layers = new JLayeredPane();
+        addPanelAndFill(layers,this);
+        
+        placeHolderOne = new JPanel();
+        placeHolderTwo = new JPanel();
+        //blankOutCanvas = new JPanel();
+        animationCanvas = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                // do nothing
+                System.out.println("Flash");
+            }
+        };
+        animationCanvas.setOpaque(false);
+        
+        //blankOutCanvas.setVisible(true);
+        
+        layers.add(placeHolderOne,0,0);
+        layers.add(placeHolderTwo,1,0);
+        //layers.add(blankOutCanvas,2,0);
+        layers.add(animationCanvas,2,0);
+        
+        this.addComponentListener(new ComponentListener() {
+            public void componentResized(ComponentEvent e) {
+                rebound();
+            }
+            public void componentMoved(ComponentEvent e) {
+            }
+            public void componentShown(ComponentEvent e) {
+            }
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
+    }
+    
+    private void rebound() {
+        for (Component c : layers.getComponents()) {
+            c.setBounds(layers.getBounds());
+        }
+        this.updateUI();
     }
 
     /**
@@ -58,21 +125,24 @@ public class JTransitionPanel extends JPanel {
      */
     public void push(final JPanel newPanel, TransitionType type, final ActionListener doneListener) {
 
-        final JPanel previousPanel = currentPanel;
-
         // TODO: layout the new panel before it is rendered
-        final JTransitionPanel instance = this;
+        //blankOutCanvas.setVisible(true);
+        //addPanelAndFill(newPanel,placeHolderOne);
+
         ActionListener uberListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (previousPanel != null) {
-                    instance.remove(previousPanel);
-                }
+
+                final JTransitionPanel instance = JTransitionPanel.this;
+                
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        instance.setLayout(new BorderLayout());
-                        instance.add(newPanel, BorderLayout.CENTER);
+                        placeHolderOne.removeAll();
+                        addPanelAndFill(newPanel,placeHolderTwo);
+                        //blankOutCanvas.setVisible(false);
+                        animationCanvas.setVisible(false);
+                        instance.setBackground(placeHolderTwo.getBackground());
                         instance.updateUI();
                     }
 
@@ -88,7 +158,7 @@ public class JTransitionPanel extends JPanel {
         switch (type) {
             case SLIDE_LEFT:
                 Animator.animateSlide(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -97,7 +167,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case SLIDE_RIGHT:
                 Animator.animateSlide(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -115,7 +185,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case SLIDE_DOWN:
                 Animator.animateSlide(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -124,7 +194,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case PUSH_LEFT:
                 Animator.animatePush(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -133,7 +203,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case PUSH_RIGHT:
                 Animator.animatePush(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -142,7 +212,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case PUSH_UP:
                 Animator.animatePush(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -151,7 +221,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case PUSH_DOWN:
                 Animator.animatePush(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -160,7 +230,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case FADE_IN:
                 Animator.animateAlpha(
-                        this,
+                        animationCanvas,
                         currentPanel, newPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -169,7 +239,7 @@ public class JTransitionPanel extends JPanel {
                 break;
             case FADE_OUT:
                 Animator.animateAlpha(
-                        this,
+                        animationCanvas,
                         newPanel,currentPanel,
                         DEFAULT_SLIDE_DURATION,
                         uberListener,
@@ -203,7 +273,7 @@ public class JTransitionPanel extends JPanel {
         doIt.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                p.push(yellow, TransitionType.FADE_IN, null);
+                p.push(yellow, TransitionType.PUSH_RIGHT, null);
             }
         });
 
@@ -213,7 +283,7 @@ public class JTransitionPanel extends JPanel {
             doIt2.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    p.push(red, TransitionType.FADE_OUT, null);
+                    p.push(red, TransitionType.PUSH_LEFT, null);
                 }
             });
         }

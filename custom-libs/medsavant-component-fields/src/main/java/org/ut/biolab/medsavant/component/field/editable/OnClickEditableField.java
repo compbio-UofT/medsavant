@@ -134,7 +134,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (v == null || v.toString().isEmpty()) {
             valueLabel.setForeground(nullColor);
             //needs a space of padding to prevent cut off (https://bugs.openjdk.java.net/browse/JDK-4262130?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel)
-            valueLabel.setText("Not Set "); 
+            valueLabel.setText("Not Set ");
             valueLabel.setFont(valueLabel.getFont().deriveFont(Font.ITALIC));
         } else {
             valueLabel.setForeground(Color.black);
@@ -286,6 +286,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (b && editing) {
             rejectChangesButton.setVisible(b);
         }
+        updateButtonPositions();
     }
 
     public void setAcceptButtonVisible(boolean b) {
@@ -293,6 +294,18 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (b && editing) {
             acceptChangesButton.setVisible(b);
         }
+        updateButtonPositions();
+    }
+
+    private void updateButtonPositions() {
+        if (rejectChangesButton.isVisible() && acceptChangesButton.isVisible()) {
+            rejectChangesButton.putClientProperty("JButton.segmentPosition", "first");
+            acceptChangesButton.putClientProperty("JButton.segmentPosition", "last");
+        } else {
+            rejectChangesButton.putClientProperty("JButton.segmentPosition", "only");
+            acceptChangesButton.putClientProperty("JButton.segmentPosition", "only");
+        }
+
     }
 
 }

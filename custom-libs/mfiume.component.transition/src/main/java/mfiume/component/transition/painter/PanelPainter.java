@@ -12,7 +12,7 @@ import java.awt.Graphics;
  *
  * @author mfiume
  */
-interface PanelPainter {
+public interface PanelPainter {
     
     public void paintComponent(Graphics g);
     

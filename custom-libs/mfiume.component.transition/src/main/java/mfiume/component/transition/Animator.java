@@ -78,9 +78,7 @@ public class Animator {
         animationTimer.start();
     }
 
-    static void animatePush(final JTransitionPanel canvas, final JPanel previous, final JPanel current, final float duration, final ActionListener completionCallback, final Point startPoint, final Point endPoint) {
-
-        System.out.println("Start " + startPoint + " End " + endPoint);
+    static void animatePush(final JPanel canvas, final JPanel previous, final JPanel current, final float duration, final ActionListener completionCallback, final Point startPoint, final Point endPoint) {
 
         final PositionBasedPainterPanel painter = new PositionBasedPainterPanel();
 
@@ -144,8 +142,7 @@ public class Animator {
         animationTimer.start();
     }
     
-    static void animateAlpha(final JTransitionPanel canvas, final JPanel previous, final JPanel current, final float duration, final ActionListener completionCallback, final Float startAlpha, final Float endAlpha) {
-
+    static void animateAlpha(final JPanel canvas, final JPanel previous, final JPanel current, final float duration, final ActionListener completionCallback, final Float startAlpha, final Float endAlpha) {
 
         final AlphaBasedPainterPanel painter = new AlphaBasedPainterPanel();
 

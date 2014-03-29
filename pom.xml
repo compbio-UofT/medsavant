@@ -559,5 +559,6 @@
     <module>MedSavantJSONClient</module>
     <module>distribution</module>
     <module>custom-libs/medsavant-component-fields</module>
+    <module>custom-libs/mfiume.component.transition</module>
   </modules>
 </project>
