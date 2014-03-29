@@ -213,7 +213,8 @@ public class PatientView extends JPanel implements FieldEditedListener {
         familyIDField.addFieldEditedListener(this);
 
         JButton pedigree = ViewUtil.getSoftButton("Pedigree");
-        if (patient.getFamilyID() == null) {
+        System.out.println(patient.getFamilyID());
+        if (patient.getFamilyID() == null || patient.getFamilyID().isEmpty()) {
             pedigree.setEnabled(false);
         } else {
             pedigree.addActionListener(new ActionListener() {
