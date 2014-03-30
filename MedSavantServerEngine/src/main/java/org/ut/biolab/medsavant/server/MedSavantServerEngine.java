@@ -465,6 +465,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             new MedSavantServerEngine(host, port, user, password);
         } catch (Exception e) {
             e.printStackTrace();
+            LOG.error("Exiting with exception", e);
             System.exit(1);
         }
     }
