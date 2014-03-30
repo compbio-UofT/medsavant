@@ -18,23 +18,31 @@
  */
 package org.ut.biolab.medsavant.client.patient;
 
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileCommEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
@@ -51,6 +59,7 @@ import org.ut.biolab.medsavant.component.field.editable.EditableField;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
+import org.ut.biolab.medsavant.component.field.validator.URLValidator;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -213,7 +222,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
         familyIDField.addFieldEditedListener(this);
 
         JButton pedigree = ViewUtil.getSoftButton("Pedigree");
-        System.out.println(patient.getFamilyID());
+
         if (patient.getFamilyID() == null || patient.getFamilyID().isEmpty()) {
             pedigree.setEnabled(false);
         } else {
@@ -237,13 +246,47 @@ public class PatientView extends JPanel implements FieldEditedListener {
             });
         }
 
+        JButton bamViewButton = ViewUtil.getSoftButton("Open With...");
+
+        //if (patient.getBamURL() == null || patient.getBamURL().isEmpty()) {
+        //    bamViewButton.setEnabled(false);
+        //} else {
+            bamViewButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JPopupMenu m = new JPopupMenu();
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(BAMFileCommEvent.class);
+                    try {
+                        final BAMFileCommEvent event = new BAMFileCommEvent(null, new URL(patient.getBamURL()));
+                        for (final AppCommHandler handler : handlers) {
+                            JMenuItem item = new JMenuItem(handler.getHandlerName());
+                            ActionListener l = new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    handler.handleCommEvent(event);
+                                }
+
+                            };
+                            item.addActionListener(l);
+                            m.add(item);
+                        }
+                    } catch (MalformedURLException ex) {
+                        m.add(new JLabel("Problem getting handlers"));
+                    }
+                }
+
+            });
+        //}
+
         profileKVP.setValue(PatientView.HOSPITAL_ID, individualIDField);
         profileKVP.setValue(PatientView.SEX, sexField);
         profileKVP.setValue(PatientView.AFFECTED, affectedField);
         profileKVP.setValue(PatientView.MOTHER_ID, motherField);
         profileKVP.setValue(PatientView.FATHER_ID, fatherField);
         profileKVP.setValue(PatientView.FAMILY_ID, familyIDField);
-        profileKVP.setAdditionalColumn(FAMILY_ID, 0, pedigree);
+        profileKVP.setAdditionalColumn(PatientView.FAMILY_ID, 0, pedigree);
 
         StringEditableField dnaIDField = new StringEditableField();
         dnaIDField.setValue(patient.getDnaID());
@@ -252,12 +295,14 @@ public class PatientView extends JPanel implements FieldEditedListener {
         dnaIDField.addFieldEditedListener(this);
 
         StringEditableField bamURLField = new StringEditableField();
+        bamURLField.setValidator(new URLValidator());
         bamURLField.setValue(patient.getBamURL());
         bamURLField.setTag(BAM_URL);
         bamURLField.addFieldEditedListener(this);
 
         geneticsKVP.setValue(PatientView.DNA_ID, dnaIDField);
         geneticsKVP.setValue(PatientView.BAM_URL, bamURLField);
+        geneticsKVP.setAdditionalColumn(PatientView.BAM_URL, 0, bamViewButton);
 
         StringEditableField phenotypeField = new StringEditableField();
         phenotypeField.setValue(patient.getPhenotypes());

@@ -6,6 +6,9 @@
 
 package org.ut.biolab.medsavant.client.view.app.builtin;
 
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileCommEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -70,7 +73,7 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class SavantApp implements LaunchableApp {
+public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileCommEvent> {
     
     private String pageName = "Savant";
     private boolean initialized;
@@ -179,7 +182,7 @@ public class SavantApp implements LaunchableApp {
     private HashMap<String, String> dnaIDToURLMap;
 
     public SavantApp() {
-        
+        AppCommRegistry.getInstance().registerHandler(this, BAMFileCommEvent.class);
     }
 
     public Component[] getSubSectionMenuComponents() {
@@ -472,5 +475,15 @@ public class SavantApp implements LaunchableApp {
 
     @Override
     public void didLogin() {
+    }
+
+    @Override
+    public void handleCommEvent(BAMFileCommEvent value) {
+        System.out.println("Open BAM file " + value.getEventData());
+    }
+
+    @Override
+    public String getHandlerName() {
+        return "Savant Genome Browser";
     }
 }
