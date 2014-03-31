@@ -66,7 +66,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
                 @Override
                 public Object[][] getList(int limit) throws Exception {
-                    Object[][] results = new Object[tasks.size() + 1][]; // 1 default entries
+                    Object[][] results = new Object[tasks.size() + 2][]; // 2 default entries
                     int counter = 0;
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
@@ -75,9 +75,9 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
                     // server general log
                     TaskWorker t;
                     
-                    //t = new ServerLogTaskWorker();
-                    //results[counter] = new Object[]{t.getTaskName(), t};
-                    //counter++;
+                    t = new ServerLogTaskWorker();
+                    results[counter] = new Object[]{t.getTaskName(), t};
+                    counter++;
 
                     // server job log
                     t = new ServerJobMonitorTaskWorker();
