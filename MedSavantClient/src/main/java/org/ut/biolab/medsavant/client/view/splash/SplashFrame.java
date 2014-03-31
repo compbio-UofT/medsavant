@@ -21,32 +21,10 @@ package org.ut.biolab.medsavant.client.view.splash;
 import com.explodingpixels.macwidgets.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Toolkit;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.controller.ServerController;
-import org.ut.biolab.medsavant.client.controller.SettingsController;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
-import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
-import org.ut.biolab.medsavant.client.view.images.IconFactory;
-import org.ut.biolab.medsavant.client.view.images.ImagePanel;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 
 /**

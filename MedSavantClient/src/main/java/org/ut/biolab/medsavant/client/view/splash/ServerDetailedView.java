@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.component.field.editable.EditableField;
+import org.ut.biolab.medsavant.component.field.editable.EditableFieldValidator;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
 import org.ut.biolab.medsavant.component.field.editable.IntegerEditableField;
@@ -100,14 +101,35 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         return new JPopupMenu();
     }
 
-    private KeyValuePairPanel getNiceFormForServer(MedSavantServerInfo server) {
+    private KeyValuePairPanel getNiceFormForServer(final MedSavantServerInfo server) {
 
         final String DBNAME_KEY = "Database name";
 
         final KeyValuePairPanel kvp = new KeyValuePairPanel(1, true);
 
+        final NonEmptyStringValidator nonEmptyStringValidator = new NonEmptyStringValidator("server name");
+        EditableFieldValidator nameValidator = new EditableFieldValidator<String>() {
+
+            @Override
+            public boolean validate(String value) {
+                if (nonEmptyStringValidator.validate(value)) {
+
+                    // check if there's already a different server with this name
+                    return !isDifferentServerWithName(value, server);
+
+                }
+                return true;
+            }
+
+            @Override
+            public String getDescriptionOfValidValue() {
+                return "Invalid name (must not be blank or already exist)";
+            }
+
+        };
+
         nameField = new StringEditableField();
-        nameField.setValidator(new NonEmptyStringValidator("server name"));
+        nameField.setValidator(nameValidator);
         nameField.setValue(server.getNickname());
 
         hostField = new StringEditableField();
@@ -132,7 +154,7 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         rememberPasswordField = new EnumEditableField(new String[]{"No", "Yes"});
         rememberPasswordField.setValue(server.isRememberPassword() ? "Yes" : "No");
 
-        addChangeListenersToFields(nameField, hostField, hostField, databaseField, usernameField, passwordField, rememberPasswordField);
+        addChangeListenersToFields(nameField, hostField, portField, databaseField, usernameField, passwordField, rememberPasswordField);
 
         kvp.addKeyWithValue("Server name", nameField);
         kvp.addKeyWithValue("Host name", hostField);
@@ -190,6 +212,13 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         kvp.toggleDetailVisibility(DBNAME_KEY, adminButton.isSelected());
 
         return kvp;
+    }
+
+    private boolean isDifferentServerWithName(String name, MedSavantServerInfo server) {
+        MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(name);
+        
+        // true if the server with this name exists
+        return existingServer != null && existingServer != server;
     }
 
     private void showServerInfo(final MedSavantServerInfo server) {
@@ -376,6 +405,8 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
     private void doSave() {
 
+        System.out.println("Saving...");
+
         //TODO: validate
         String name = nameField.getValue();
         String host = hostField.getValue();
@@ -396,10 +427,9 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         server.setPassword(password);
         server.setRememberPassword(rememberPass);
 
-        MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(server.getNickname());
-
-        if (existingServer != null && existingServer != server) {
-            DialogUtils.displayMessage("There's already a server named " + name + ".");
+        // check if there's already a different server with this name
+        if (isDifferentServerWithName(server.getNickname(), server)) {
+            System.out.println("Not saving with duplicate server name");
             return;
         }
 
