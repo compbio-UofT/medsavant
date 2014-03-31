@@ -48,6 +48,7 @@ import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.util.list.NiceList;
+import org.ut.biolab.medsavant.client.view.util.list.NiceListColorScheme;
 import org.ut.biolab.medsavant.client.view.util.list.NiceListItem;
 
 /**
@@ -78,6 +79,7 @@ public class ListView extends JPanel {
     private final SourceListControlBar controlBar;
     private boolean searchBarEnabled = false;
     private final WaitPanel wp;
+    private NiceListColorScheme listColorScheme;
 
     public ListView(String page, DetailedListModel model, DetailedView view, DetailedListEditor editor) {
         pageName = page;
@@ -293,8 +295,8 @@ public class ListView extends JPanel {
         while (columnVisibility.length > 0 && firstVisibleColumn == columnVisibility[firstVisibleColumn]) {
             firstVisibleColumn++;
         }
-        
-        Set<NiceListItem> selectedItems; 
+
+        Set<NiceListItem> selectedItems;
         if (list != null) {
             selectedItems = new HashSet<NiceListItem>(list.getSelectedItems());
         } else {
@@ -302,31 +304,32 @@ public class ListView extends JPanel {
         }
 
         list = new NiceList();
+        if (listColorScheme != null) {
+            list.setColorScheme(listColorScheme);
+        }
         list.startTransaction();
-        
+
         List<Integer> selectedIndicies = new ArrayList<Integer>();
-        
+
         int counter = 0;
         for (Object[] row : data) {
             NiceListItem nli = new NiceListItem(row[firstVisibleColumn].toString(), row);
             list.addItem(nli);
-            
+
             if (selectedItems.contains(nli)) {
                 selectedIndicies.add(counter);
             }
             counter++;
         }
-        
+
         /*
-        int[] selectedIndiciesArray = new int[selectedIndicies.size()];
+         int[] selectedIndiciesArray = new int[selectedIndicies.size()];
         
-        System.out.println("Reselecting "  + selectedIndicies.size() + " items");
-        for (int i = 0; i < selectedIndicies.size();i++) {
-            System.out.println("Reselecting "  + list.getItem(selectedIndicies.get(i)).toString() + " at index " + selectedIndicies.get(i));
-            selectedIndiciesArray[i] = selectedIndicies.get(i);
-        }*/
-        
-        
+         System.out.println("Reselecting "  + selectedIndicies.size() + " items");
+         for (int i = 0; i < selectedIndicies.size();i++) {
+         System.out.println("Reselecting "  + list.getItem(selectedIndicies.get(i)).toString() + " at index " + selectedIndicies.get(i));
+         selectedIndiciesArray[i] = selectedIndicies.get(i);
+         }*/
         list.endTransaction();
 
         wp.setBackground(list.getColorScheme().getBackgroundColor());
@@ -369,20 +372,21 @@ public class ListView extends JPanel {
         JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(list);
         jsp.setHorizontalScrollBar(null);
 
-        JPanel topPanel = ViewUtil.getClearPanel();
+        JPanel topPanel = new JPanel();
         topPanel.setLayout(new MigLayout("wrap, fillx"));
-        
+
         topPanel.add(ViewUtil.getEmphasizedLabel(pageName.toUpperCase()));
-        
+        topPanel.setBackground(list.getColorScheme().getBackgroundColor());
+
         if (searchBarEnabled) {
-            topPanel.add(list.getSearchBar(),"growx 1.0");
+            topPanel.add(list.getSearchBar(), "growx 1.0");
         }
-        showCard.add(topPanel,BorderLayout.NORTH);
+        showCard.add(topPanel, BorderLayout.NORTH);
 
         showCard.add(jsp, BorderLayout.CENTER);
 
         showCard.add(controlBar.getComponent(), BorderLayout.SOUTH);
-        
+
     }
 
     public void setSearchBarEnabled(boolean b) {
@@ -427,6 +431,13 @@ public class ListView extends JPanel {
             }
 
         }).start();
-                
+
+    }
+
+    void setColorScheme(NiceListColorScheme cs) {
+        listColorScheme = cs;
+        if (list != null) {
+            updateShowCard();
+        }
     }
 }

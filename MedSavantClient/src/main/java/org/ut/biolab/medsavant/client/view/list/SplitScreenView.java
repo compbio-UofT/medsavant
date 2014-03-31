@@ -28,6 +28,8 @@ import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.client.view.util.list.DefaultNiceListColorScheme;
+import org.ut.biolab.medsavant.client.view.util.list.NiceListColorScheme;
 
 /**
  *
@@ -84,5 +86,9 @@ public class SplitScreenView extends JPanel {
 
     public void selectItemAtIndex(int i) {
         listView.selectItemAtIndex(i);
+    }
+
+    public void setListColorScheme(NiceListColorScheme cs) {
+        listView.setColorScheme(cs);
     }
 }

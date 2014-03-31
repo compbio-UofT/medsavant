@@ -59,7 +59,7 @@ import org.ut.biolab.medsavant.client.query.view.SearchConditionItemView;
 public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
 
     private static final Log LOG = LogFactory.getLog(MedSavantConditionViewGenerator.class);
-    public static String REGIONBASED_CONDITIONS = "Region and Ontology Conditions";
+    public static String REGIONBASED_CONDITIONS = "Region and Ontologies";
     private final HashMap<String, DatabaseFieldStruct> itemToCustomFieldMap;
     private final HashMap<SearchConditionItem, DatabaseConditionGenerator> itemToConditionGeneratorMap;
 
@@ -68,8 +68,8 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
     private Map<String, ComprehensiveConditionGenerator> conditionGenerators;
     //private Map<String, ComprehensiveConditionGenerator> patientConditionGenerators;
     //private Map<String, ComprehensiveConditionGenerator> variantConditionGenerators;
-    public static final String PATIENT_CONDITIONS = "Patient Conditions";
-    public static final String VARIANT_CONDITIONS = "Variant Conditions";
+    public static final String PATIENT_CONDITIONS = "Patients";
+    public static final String VARIANT_CONDITIONS = "Variants";
     public static final String OTHER_CONDITIONS = "Other Conditions";
 
     private MedSavantConditionViewGenerator() {

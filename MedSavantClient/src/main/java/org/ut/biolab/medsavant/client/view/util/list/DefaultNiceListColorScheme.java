@@ -25,7 +25,7 @@ import java.awt.Color;
  *
  * @author mfiume
  */
-class DefaultNiceListColorScheme implements NiceListColorScheme {
+public class DefaultNiceListColorScheme implements NiceListColorScheme {
 
     private final Color backgroundColor = new Color(213, 233, 251);
     private final Color selectedColor = new Color(191, 226, 250);

@@ -104,6 +104,15 @@ public class NiceList extends JList {
         setListData(v);
     }
 
+    public void removeItems() {
+        this.startTransaction();
+        for (NiceListItem i : allItems) {
+            this.removeItem(i);
+        }
+        this.endTransaction();
+    }
+
+    
     private Vector getSearchResults() {
         Vector v = new Vector();
 
@@ -181,6 +190,10 @@ public class NiceList extends JList {
 
     public NiceListColorScheme getColorScheme() {
         return this.colorScheme;
+    }
+
+    public void setColorScheme(NiceListColorScheme colorScheme) {
+        this.colorScheme = colorScheme;
     }
 
     class NiceListCellRenderer implements ListCellRenderer {
