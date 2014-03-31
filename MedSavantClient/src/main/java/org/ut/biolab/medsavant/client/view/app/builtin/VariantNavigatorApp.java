@@ -6,7 +6,8 @@
 package org.ut.biolab.medsavant.client.view.app.builtin;
 
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
-import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.SinglePatientVariantAnalyzeComm;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.PatientVariantAnalyzeComm;
 import java.awt.Component;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +31,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
  *
  * @author mfiume
  */
-public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandler<SinglePatientVariantAnalyzeComm> {
+public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandler<PatientVariantAnalyzeComm> {
 
     public static boolean isInitialized = false;
     private JPanel[] persistencePanels;
@@ -38,6 +39,7 @@ public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandl
     public VariantNavigatorApp() {
         super("Variant Navigator");
         getSectionMenuComponents();
+        AppCommRegistry.getInstance().registerHandler(this, PatientVariantAnalyzeComm.class);
     }
 
     @Override
@@ -93,9 +95,9 @@ public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandl
     }
 
     @Override
-    public void handleCommEvent(SinglePatientVariantAnalyzeComm value) {
+    public void handleCommEvent(PatientVariantAnalyzeComm value) {
         Integer patientID = value.getEventData();
-        QueryUtils.addQueryOnPatients(new int[] {patientID});
+        QueryUtils.addQueryOnPatients(new int[]{patientID});
         MedSavantFrame.getInstance().getDashboard().launchApp(this);
     }
 

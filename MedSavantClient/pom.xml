@@ -217,12 +217,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>mfiume.component.transition</artifactId>
+            <artifactId>medsavant-app-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>medsavant-app-api</artifactId>
+            <artifactId>mfiume-component-transition</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

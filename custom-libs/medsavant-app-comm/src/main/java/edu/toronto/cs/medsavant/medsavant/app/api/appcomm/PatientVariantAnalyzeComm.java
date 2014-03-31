@@ -12,9 +12,9 @@ import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
  *
  * @author mfiume
  */
-public class SinglePatientVariantAnalyzeComm extends AppComm<Integer> {
+public class PatientVariantAnalyzeComm extends AppComm<Integer> {
 
-    public SinglePatientVariantAnalyzeComm(MedSavantApp sender, Integer patientID) {
+    public PatientVariantAnalyzeComm(MedSavantApp sender, Integer patientID) {
         super(sender, patientID);
     }
     

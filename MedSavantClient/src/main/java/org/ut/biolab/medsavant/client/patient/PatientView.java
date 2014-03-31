@@ -21,7 +21,7 @@ package org.ut.biolab.medsavant.client.patient;
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
-import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.SinglePatientVariantAnalyzeComm;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.PatientVariantAnalyzeComm;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -32,7 +32,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -225,7 +224,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    JDialog f = new JDialog(MedSavantFrame.getInstance(), "Pedigree", true);
+                    JDialog f = new JDialog(MedSavantFrame.getInstance(), "Pedigree Viewer", true);
                     PedigreeCanvas pc = new PedigreeCanvas();
                     pc.setFamilyName(patient.getFamilyID());
                     pc.showPedigreeFor(patient.getID());
@@ -241,7 +240,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
             });
         }
         
-        final JButton dnaIDButton = ViewUtil.getSoftButton("Open With...");
+        final JButton dnaIDButton = ViewUtil.getSoftButton("Open with...");
 
         if (patient.getDnaID() == null || patient.getDnaID().isEmpty()) {
             dnaIDButton.setEnabled(false);
@@ -251,13 +250,8 @@ public class PatientView extends JPanel implements FieldEditedListener {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JPopupMenu m = new JPopupMenu();
-                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(SinglePatientVariantAnalyzeComm.class);
-                    URL u = null;
-                    try {
-                        u = new URL(patient.getBamURL());
-                    } catch (MalformedURLException ex) {
-                    }
-                    final SinglePatientVariantAnalyzeComm event = new SinglePatientVariantAnalyzeComm(null, patient.getID());
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(PatientVariantAnalyzeComm.class);
+                    final PatientVariantAnalyzeComm event = new PatientVariantAnalyzeComm(null, patient.getID());
                     for (final AppCommHandler handler : handlers) {
                         JMenuItem item = new JMenuItem(handler.getHandlerName());
 
@@ -292,7 +286,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
             });
         }
 
-        final JButton bamViewButton = ViewUtil.getSoftButton("Open With...");
+        final JButton bamViewButton = ViewUtil.getSoftButton("Open with...");
 
         if (patient.getBamURL() == null || patient.getBamURL().isEmpty()) {
             bamViewButton.setEnabled(false);
