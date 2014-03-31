@@ -185,7 +185,7 @@ public class ImportUpdateManager {
 
                     TableSchema tmpTable = null;
                     try {
-                        //Copy unpublished file table to a temporary infobright table.                                      
+                        //Copy unpublished file table to a temporary infobright table.                            
                         tmpTable = SetupMedSavantDatabase.makeTemporaryVariantFileIBTable(sessionID);
                         SelectQuery query = new SelectQuery();
                         query.addAllTableColumns(unpublishedFileTable.getTable());
@@ -416,6 +416,8 @@ public class ImportUpdateManager {
             tsvFiles[i++] = new TSVFile(new File(t.getOutputFilePath()), t.getNumVariants());
             if (!t.didSucceed()) {
                 LOG.info("At least one parser thread errored out");
+                LOG.error("At least one parser thread errored out", t.getException());
+                t.getException().printStackTrace(); //TEMPORARY
                 throw t.getException();
             }
         }

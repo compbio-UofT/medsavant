@@ -27,12 +27,15 @@ public class FontFactory {
 
     private static final Map<TextAttribute, Object> fontAttributeMap = new Hashtable<TextAttribute, Object>();
 
+    private static final Font serifFontPrimary = loadFont("/font/medio.otf").deriveFont(13f);
+    private static final Font serifFont = (serifFontPrimary != null) ? serifFontPrimary : initFont(new String[]{"Times New Roman"}, 13f);
+
+    
     static{
         fontAttributeMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
     }
 
     private static final Font generalFontPrimary = initFont(new String[]{"HelveticaNeue-Light", "Arial", "Lucida Sans Regular", "Times New Roman"}, fontAttributeMap);
-    //getFont("HelveticaNeue-Light").deriveFont(map);
     private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
 
     private static Font initFont(String[] fontsToTry, Map<? extends AttributedCharacterIterator.Attribute, ?> attributes) {
@@ -72,6 +75,10 @@ public class FontFactory {
         return generalFont;
     }
 
+    public static Font getSerifFont() {
+        return serifFont;
+    }
+    
     private static Font loadFont(String resourcePath) {
         try {
             InputStream is = FontFactory.class.getResourceAsStream(resourcePath);

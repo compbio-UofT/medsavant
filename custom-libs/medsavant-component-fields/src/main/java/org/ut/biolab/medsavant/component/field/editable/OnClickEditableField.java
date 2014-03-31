@@ -8,6 +8,9 @@ package org.ut.biolab.medsavant.component.field.editable;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -16,6 +19,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.FocusManager;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -27,6 +32,64 @@ import net.miginfocom.swing.MigLayout;
  * @author mfiume
  */
 public abstract class OnClickEditableField<T> extends EditableField<T> {
+
+    private JLabel invalidLabel;
+
+    /**
+     * Get a reject button. When clicked, changes made from the editor are not
+     * saved and the field is reverted to the original value, with edit mode
+     * turned off.
+     *
+     * @return A reject button.
+     */
+    protected JButton generateRejectButton(final EditableField field) {
+        JButton b = EditableField.createSegmentButton("segmentedRoundRect", "first");
+        b.setText("Cancel");
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                field.setEditing(false);
+            }
+        });
+        b.setFocusable(false);
+        return b;
+    }
+
+    /**
+     * Get an accept button. When clicked, changes made from the editor are
+     * saved and the field, with edit mode turned off.
+     *
+     * @return An accept button.
+     */
+    protected JButton generateAcceptButton(final EditableField field) {
+        JButton b = EditableField.createSegmentButton("segmentedRoundRect", "last");
+        b.setText("OK");
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveWithValidationWarning();
+            }
+        });
+        b.setFocusable(false);
+        return b;
+    }
+
+    /**
+     * Helper methods
+     */
+    /**
+     * Get an edit button
+     *
+     * @return An edit button.
+     */
+    protected JButton generateEditButton(final EditableField field) {
+        JButton b = new JButton("Edit");
+        b.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                field.setEditing(true);
+            }
+        });
+        b.setFocusable(false);
+        return b;
+    }
 
     // whether the field is a password field
     private boolean passwordField;
@@ -91,12 +154,17 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
     @Override
     protected void updateUIForEditingState(boolean isEditing) {
+        updateUIForEditingState(isEditing, false);
+    }
+    
+    protected void updateUIForEditingState(boolean isEditing, boolean requestFocus) {
 
         // normal state
         setVisibility(new Component[]{valueLabel}, !isEditing);
 
         // edit state
         setVisibility(new Component[]{editorPlaceholder}, isEditing);
+        
         if (acceptButtonVisible) {
             acceptChangesButton.setVisible(isEditing);
         }
@@ -134,7 +202,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (v == null || v.toString().isEmpty()) {
             valueLabel.setForeground(nullColor);
             //needs a space of padding to prevent cut off (https://bugs.openjdk.java.net/browse/JDK-4262130?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel)
-            valueLabel.setText("Not Set "); 
+            valueLabel.setText("Not Set ");
             valueLabel.setFont(valueLabel.getFont().deriveFont(Font.ITALIC));
         } else {
             valueLabel.setForeground(Color.black);
@@ -169,9 +237,25 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
     private void initUI() {
 
-        this.setLayout(new MigLayout("insets 0, hidemode 3, gapx 0"));
+        this.setLayout(new MigLayout("insets 0, hidemode 3, gapx 0, gapy 1"));
 
-        valueLabel = new JLabel();
+        /**
+         * A JLabel that autoellipsizes
+         */
+        valueLabel = new JLabel() {
+            int maxChars = 30;
+            @Override
+            public void setText(String s) {
+                if (s.length() > maxChars) {
+                    this.setToolTipText(s);
+                    super.setText(s.substring(0,maxChars-3) + "...");
+                } else {
+                    super.setText(s);
+                    this.setToolTipText(null);
+                }
+            }
+        };
+        valueLabel.setFocusable(true);
 
         editorPlaceholder = new JPanel();
         editorPlaceholder.setOpaque(false);
@@ -180,8 +264,8 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         this.add(valueLabel);
         this.add(editorPlaceholder);
 
-        rejectChangesButton = EditableField.generateRejectButton(this);
-        acceptChangesButton = EditableField.generateAcceptButton(this);
+        rejectChangesButton = generateRejectButton(this);
+        acceptChangesButton = generateAcceptButton(this);
 
         this.add(rejectChangesButton);
         this.add(acceptChangesButton);
@@ -225,6 +309,11 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         });
 
+        invalidLabel = new JLabel();
+        invalidLabel.setForeground(Color.red);
+        invalidLabel.setFont(invalidLabel.getFont().deriveFont(Font.ITALIC).deriveFont(10f));
+        this.add(invalidLabel, "newline");
+        invalidLabel.setVisible(false);
     }
 
     private void setVisibility(Component[] components, boolean isVisible) {
@@ -246,13 +335,54 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
             }
 
             public void focusLost(FocusEvent e) {
-                if (OnClickEditableField.this.setValueFromEditor()) {
-                    OnClickEditableField.this.setEditing(false);
-                }
-                return;
+                saveWithValidationWarning();
             }
 
         });
+    }
+
+    /**
+     * Validate as usual, but show the invalid label if the value isn't valid
+     *
+     * @return Whether the current value is valid
+     */
+    @Override
+    public boolean validateCurrentValue() {
+
+        boolean result = super.validateCurrentValue();
+        if (this.getValidator() != null) {
+            String description = this.getValidator().getDescriptionOfValidValue();
+            invalidLabel.setText(description);
+            invalidLabel.setVisible(!result);
+        }
+        return result;
+    }
+
+    void saveWithValidationWarning() {
+        if (!this.isEditing()) {
+            return;
+        }
+        if (setValueFromEditor()) {
+            invalidLabel.setVisible(false);
+            setEditing(false);
+        } else {
+            String description = this.getValidator().getDescriptionOfValidValue();
+            invalidLabel.setText(description);
+            invalidLabel.setVisible(true);
+        }
+        return;
+    }
+
+    /**
+     * Set the field's edit state.
+     *
+     * @param isEditing The field's edit state.
+     */
+    @Override
+    public void setEditing(boolean isEditing) {
+        super.setEditing(isEditing);
+        invalidLabel.setVisible(false);
+        this.updateUI();
     }
 
     public void addSaveAndCancelKeyListeners(JComponent c) {
@@ -260,15 +390,12 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
-                    if (OnClickEditableField.this.setValueFromEditor()) {
-                        OnClickEditableField.this.setEditing(false);
-                    }
+                    saveWithValidationWarning();
                     return;
                 }
-
+                
                 if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
                     OnClickEditableField.this.setEditing(false);
-                    return;
                 }
             }
 
@@ -286,6 +413,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (b && editing) {
             rejectChangesButton.setVisible(b);
         }
+        updateButtonPositions();
     }
 
     public void setAcceptButtonVisible(boolean b) {
@@ -293,6 +421,19 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         if (b && editing) {
             acceptChangesButton.setVisible(b);
         }
+        updateButtonPositions();
     }
+
+    private void updateButtonPositions() {
+        if (rejectChangesButton.isVisible() && acceptChangesButton.isVisible()) {
+            rejectChangesButton.putClientProperty("JButton.segmentPosition", "first");
+            acceptChangesButton.putClientProperty("JButton.segmentPosition", "last");
+        } else {
+            rejectChangesButton.putClientProperty("JButton.segmentPosition", "only");
+            acceptChangesButton.putClientProperty("JButton.segmentPosition", "only");
+        }
+
+    }
+
 
 }

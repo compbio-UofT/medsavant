@@ -378,7 +378,7 @@ public class VCFParser {
 
         return result;
     }
-
+    
     private void messageToUser(LogManagerAdapter.LogType logtype, String msg) {
         try {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
@@ -395,9 +395,18 @@ public class VCFParser {
         }
     }
 
+    private static final long MAX_WARNINGS = 1000;
+    private long warningsEmitted = 0;
+    
     private void vcf_warning(String msg) {
-        String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
-        messageToUser(LogManagerAdapter.LogType.WARNING, warning);
+        if(warningsEmitted < MAX_WARNINGS){
+            String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
+            messageToUser(LogManagerAdapter.LogType.WARNING, warning);
+        }else if(warningsEmitted == MAX_WARNINGS){
+            String warning = vcfFile.getName() + ": Further warnings have been truncated.";
+            messageToUser(LogManagerAdapter.LogType.WARNING, warning);
+        }
+        warningsEmitted++;
     }
 
     //These variables control how bad refs are reported or handled.

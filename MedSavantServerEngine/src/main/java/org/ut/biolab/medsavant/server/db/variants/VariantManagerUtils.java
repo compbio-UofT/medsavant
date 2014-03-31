@@ -161,121 +161,137 @@ public class VariantManagerUtils {
         BufferedReader br = new BufferedReader(new FileReader(file));
 
         // TODO: for some reason the connection is closed going into this function
-        Connection c = ConnectionController.connectPooled(sid);
-
-        c.setAutoCommit(false);
-
-        int chunkSize = 100000; // number of lines per chunk (100K lines = ~50MB for a standard VCF file)
+        Connection c = null;
         int lineNumber = 0;
 
-        String parentDirectory = file.getParentFile().getAbsolutePath();
+        try {
+            c = ConnectionController.connectPooled(sid);
 
-        BufferedWriter bw = null;
-        //BufferedWriter sw = null;
-        String subsetFileName = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_subset";
-        /*if (step > 0) { //assert
-         sw = new BufferedWriter(new FileWriter(subsetFileName));
-         } else {
-         throw new IllegalArgumentException("Can't upload TSV file " + file + " to variant table, invalid step size=" + step);
-         }*/
+            c.setAutoCommit(false);
 
-        String currentOutputPath = null;
+            int chunkSize = 100000; // number of lines per chunk (100K lines = ~50MB for a standard VCF file)
 
-        boolean stateOpen = false;
+            String parentDirectory = file.getParentFile().getAbsolutePath();
 
-        String line;
-        while ((line = br.readLine()) != null) {
-            lineNumber++;
+            BufferedWriter bw = null;
+            //BufferedWriter sw = null;
+            String subsetFileName = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_subset";
+            /*if (step > 0) { //assert
+             sw = new BufferedWriter(new FileWriter(subsetFileName));
+             } else {
+             throw new IllegalArgumentException("Can't upload TSV file " + file + " to variant table, invalid step size=" + step);
+             }*/
 
-            // start a new output file
-            if (lineNumber % chunkSize == 1) {
-                currentOutputPath = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
-                LOG.info("Opening new partial file " + currentOutputPath);
-                bw = new BufferedWriter(new FileWriter(currentOutputPath));
-                stateOpen = true;
+            String currentOutputPath = null;
+
+            boolean stateOpen = false;
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                lineNumber++;
+
+                // start a new output file
+                if (lineNumber % chunkSize == 1) {
+                    currentOutputPath = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
+                    LOG.info("Opening new partial file " + currentOutputPath);
+                    bw = new BufferedWriter(new FileWriter(currentOutputPath));
+                    stateOpen = true;
+                }
+
+                /*if (sw != null && ((lineNumber - 1) % step == 0)) {
+                 sw.write(line + "\r\n");
+                 }*/
+                // write line to chunk file
+                bw.write(line + "\r\n");
+
+                // close and upload this output file
+                if (lineNumber % chunkSize == 0) {
+                    bw.close();
+
+                    LOG.info("Closing and uploading final partial file " + currentOutputPath);
+
+                    String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
+                            + "INTO TABLE " + tableName + " "
+                            + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                            + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                            + " LINES TERMINATED BY '\\r\\n'"
+                            + ";";
+
+                    //  LOG.info(query);
+                    Statement s = null;
+                    try {
+                        s = c.createStatement();
+                        s.setQueryTimeout(30 * 60); // 30 minutes
+                        s.execute(query);
+                    } finally {
+                        s.close();
+                    }
+
+
+                    /*if (VariantManager.REMOVE_TMP_FILES) {
+                     boolean deleted = new File(currentOutputPath).delete();
+                     LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                     }*/
+                    stateOpen = false;
+                    (new File(currentOutputPath)).delete();
+                }
             }
 
-            /*if (sw != null && ((lineNumber - 1) % step == 0)) {
-             sw.write(line + "\r\n");
-             }*/
-            // write line to chunk file
-            bw.write(line + "\r\n");
-
-            // close and upload this output file
-            if (lineNumber % chunkSize == 0) {
+            // write the remaining open file
+            if (bw != null && stateOpen) {
                 bw.close();
-
-                LOG.info("Closing and uploading partial file " + currentOutputPath);
-
                 String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
                         + "INTO TABLE " + tableName + " "
-                        + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                        + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
                         + " LINES TERMINATED BY '\\r\\n'"
                         + ";";
 
-                //  LOG.info(query);
-                Statement s = c.createStatement();
-                s.setQueryTimeout(30 * 60); // 30 minutes
-                s.execute(query);
+                LOG.info("Closing and uploading last partial file " + currentOutputPath);
 
+                LOG.info(query);
+                Statement s = null;
+                try {
+                    s = c.createStatement();
+                    s.setQueryTimeout(60 * 60); // 1 hour
+                    s.execute(query);
+                } finally {
+                    s.close();
+                }
+
+                (new File(currentOutputPath)).delete();
                 /*if (VariantManager.REMOVE_TMP_FILES) {
                  boolean deleted = new File(currentOutputPath).delete();
                  LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
                  }*/
-                stateOpen = false;
-                (new File(currentOutputPath)).delete();
             }
+            LOG.info("Imported " + lineNumber + " lines of variants in total");
+            /*
+             if (sw != null) {
+             sw.close();
+
+             String query = "LOAD DATA LOCAL INFILE '" + subsetFileName.replaceAll("\\\\", "/") + "' "
+             + "INTO TABLE " + subTableName + " "
+             + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+             + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
+             + " LINES TERMINATED BY '\\r\\n'"
+             + ";";
+
+             LOG.info("Closing and uploading subset file " + subsetFileName);
+             LOG.info(query);
+             Statement s = c.createStatement();
+             s.setQueryTimeout(60 * 60); // 1 hour
+             s.execute(query);
+             LOG.info("Subset table import done");
+             (new File(subsetFileName)).delete();
+             }
+             */
+            c.commit();
+            c.setAutoCommit(true);
+        } finally {
+            c.close();
         }
 
-        // write the remaining open file
-        if (bw != null && stateOpen) {
-            bw.close();
-            String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
-                    + "INTO TABLE " + tableName + " "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
-                    + " LINES TERMINATED BY '\\r\\n'"
-                    + ";";
-
-            LOG.info("Closing and uploading last partial file " + currentOutputPath);
-
-            LOG.info(query);
-            Statement s = c.createStatement();
-            s.setQueryTimeout(60 * 60); // 1 hour
-            s.execute(query);
-
-            (new File(currentOutputPath)).delete();
-            /*if (VariantManager.REMOVE_TMP_FILES) {
-             boolean deleted = new File(currentOutputPath).delete();
-             LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
-             }*/
-        }
-        LOG.info("Imported " + lineNumber + " lines of variants in total");
-        /*
-         if (sw != null) {
-         sw.close();
-
-         String query = "LOAD DATA LOCAL INFILE '" + subsetFileName.replaceAll("\\\\", "/") + "' "
-         + "INTO TABLE " + subTableName + " "
-         + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-         + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
-         + " LINES TERMINATED BY '\\r\\n'"
-         + ";";
-
-         LOG.info("Closing and uploading subset file " + subsetFileName);
-         LOG.info(query);
-         Statement s = c.createStatement();
-         s.setQueryTimeout(60 * 60); // 1 hour
-         s.execute(query);
-         LOG.info("Subset table import done");
-         (new File(subsetFileName)).delete();
-         }
-         */
-        c.commit();
-        c.setAutoCommit(true);
-
-        c.close();
 
         /*if (VariantManager.REMOVE_TMP_FILES) {
          boolean deleted = file.delete();

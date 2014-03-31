@@ -74,7 +74,7 @@ public class StandardFixableWidthAppPanel extends JPanel {
         StandardAppContainer sac = new StandardAppContainer(fixedWidthContainer, doesScroll);
         sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
-        titleLabel = ViewUtil.getLargeGrayLabel("");
+        titleLabel =  ViewUtil.getLargeSerifLabel("");
         titleLabel.setVisible(false);
         if (title != null) {
             setTitle(title);

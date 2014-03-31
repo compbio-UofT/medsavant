@@ -208,7 +208,7 @@ public class PedigreeCanvas extends JPanel {
 
         JPanel topBar = ViewUtil.getClearPanel();
 
-        familyNameLabel = ViewUtil.getLargeGrayLabel(familyName);
+        familyNameLabel = ViewUtil.getLargeSerifLabel(familyName);
 
         topBar.setLayout(new MigLayout("fillx, insets 0"));
 

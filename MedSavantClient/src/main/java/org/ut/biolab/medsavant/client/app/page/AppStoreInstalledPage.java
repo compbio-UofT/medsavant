@@ -20,6 +20,7 @@
 package org.ut.biolab.medsavant.client.app.page;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +45,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.notify.Notification;
 
 /**
@@ -110,7 +112,9 @@ public class AppStoreInstalledPage implements AppStorePage {
             container.add(Box.createVerticalStrut(20));
         }
 
-        JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installed");
+        //JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installed");
+        JLabel queuedTitle = ViewUtil.getLargeSerifLabel("Installed");
+        
         container.add(queuedTitle);
 
         Set<AppInfo> installedApps = installer.getInstallRegistry();

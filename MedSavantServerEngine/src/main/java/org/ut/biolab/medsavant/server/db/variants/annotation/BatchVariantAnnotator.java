@@ -612,6 +612,7 @@ public class BatchVariantAnnotator {
             for (AnnotationCursor cursor : cursors) {
                 cursor.cleanup();
             }
+            jobProgress.setMessage("Finished.");
         }
         
         @Override
