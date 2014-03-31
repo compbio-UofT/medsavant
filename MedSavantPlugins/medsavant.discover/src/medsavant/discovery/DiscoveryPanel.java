@@ -1,5 +1,6 @@
 package medsavant.discovery;
 
+import org.ut.biolab.medsavant.shared.appdevapi.GenePanel;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.jidesoft.grid.SortableTable;
