@@ -31,5 +31,10 @@
             <version>4.2</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.4.0</version>
+        </dependency>
     </dependencies>
 </project>

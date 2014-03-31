@@ -39,10 +39,7 @@ public class EnumEditableField extends OnClickEditableField<Object> {
 
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    if (EnumEditableField.this.setValueFromEditor()) {
-                        EnumEditableField.this.setEditing(false);
-                    }
-                    return;
+                    saveWithValidationWarning();
                 }
             }
         });

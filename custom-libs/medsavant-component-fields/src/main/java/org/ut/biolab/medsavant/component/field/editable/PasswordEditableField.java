@@ -7,7 +7,6 @@ package org.ut.biolab.medsavant.component.field.editable;
 
 import javax.swing.JComponent;
 import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 /**
  *

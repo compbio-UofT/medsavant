@@ -37,6 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import mfiume.component.transition.JTransitionPanel;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,6 +61,8 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
     int appIconWidth = 128;
 
     private final ArrayList<DashboardSection> dashboardSections;
+
+    private final JTransitionPanel transitionCanvas;
     private final JPanel dashLayer;
     private LaunchableApp previousApp;
     private final JPanel appLayer;
@@ -89,8 +92,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         appLayer.setBackground(this.getBackground());
         appLayer.setLayout(new BorderLayout());
 
-        this.push(appLayer);
-
+        //this.push(appLayer);
         dashLayer = new JPanel() {
             public void paintComponent(Graphics g) {
 
@@ -108,30 +110,14 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
                             g.drawImage(backgroundImage, x, y, this);
                         }
                     }
-
-                    /*
-                    BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g2 = resizedImage.createGraphics();
-                    g2.drawImage(backgroundImage, 0, 0, width, height, null);
-                    g.drawImage(resizedImage, 0, 0, null);
-                    */
                     return;
                 }
-
-                /*if (transparentBackground) {
-                 int width = this.getWidth();
-                 int height = this.getHeight();
-
-                 g.setColor(new Color(255, 255, 255, 240));
-                 g.fillRect(0, 0, width, height);
-                 }*/
             }
         };
 
         dashLayer.setBackground(this.getBackground());
 
-        this.push(dashLayer);
-
+        //this.push(dashLayer);
         this.addComponentListener(new ComponentListener() {
 
             @Override
@@ -151,6 +137,10 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             public void componentHidden(ComponentEvent e) {
             }
         });
+
+        transitionCanvas = new JTransitionPanel();
+        transitionCanvas.push(dashLayer, JTransitionPanel.TransitionType.NONE, null);
+        this.push(transitionCanvas);
     }
 
     public void setBackground(Color c) {
@@ -178,7 +168,9 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         int gapHorizontal = 30;
         int gapVertical = gapHorizontal;
-        int topAndBottomInsets = 70;
+
+        int topInset = 100;
+        int bottomInsets = 20;
 
         int widthOfContainer = this.getParent().getSize().width;
 
@@ -189,7 +181,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         int leftInset = widthOfContainer / 2 - (numIconsPerRow * (appIconWidth + gapHorizontal)) / 2;
         int rightInset = 0;
 
-        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topAndBottomInsets, leftInset, topAndBottomInsets, rightInset)));
+        middlePane.setLayout(new MigLayout(String.format("gapy %d, insets %d %d %d %d", 0, topInset, leftInset, bottomInsets, rightInset)));
 
         dashLayer.setOpaque(true);
 
@@ -232,8 +224,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         bottomDisclaimer.setLayout(new MigLayout("fillx, insets 2"));
 
         TriAreaComponent bottombar = new TriAreaComponent(10);
-        //bottomDisclaimer.setBackground(ViewUtil.getDefaultBackgroundColor());
-        //bottomDisclaimer.setBorder(ViewUtil.getTopLineBorder());
         bottombar.getComponent().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         ImagePanel logo = new ImagePanel("icon/logo/medsavant-icon-mini.png");
@@ -243,7 +233,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         //JLabel copy = new JLabel("Developed at University of Toronto");
         //copy.setForeground(ViewUtil.getSubtleTitleColor());
         //bottombar.addComponentToLeft(copy);
-        
         JComponent feedback = ViewUtil.createHyperlinkButton("Send Feedback", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -329,19 +318,21 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             previousApp.viewWillUnload();
         }
 
-        this.dashLayer.setVisible(true);
-
         if (previousApp != null) {
             previousApp.viewDidUnload();
         }
 
         previousApp = null;
+        
+        transitionCanvas.push(dashLayer, JTransitionPanel.TransitionType.NONE, null);
 
         this.updateUI();
     }
 
     public void launchApp(LaunchableApp app) {
 
+        boolean appToApp = this.getCurrentApp() != null;
+        
         history.add(app);
 
         if (previousApp != null) {
@@ -362,8 +353,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         appLayer.add(appToolbar.getComponent(), BorderLayout.NORTH);
         appLayer.add(p, BorderLayout.CENTER);
 
-        this.dashLayer.setVisible(false);
-
         if (previousApp != null) {
             previousApp.viewDidUnload();
         }
@@ -372,6 +361,10 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         previousApp = app;
 
         appLayer.updateUI();
+        
+        //JTransitionPanel.TransitionType type = appToApp ? JTransitionPanel.TransitionType.SLIDE_RIGHT : JTransitionPanel.TransitionType.NONE;
+        
+        transitionCanvas.push(appLayer, JTransitionPanel.TransitionType.NONE, null);
     }
 
     public static JPanel getRepresentationForLauncher(String name, ImageIcon icon, int iconWidth, ActionListener actionListener) {

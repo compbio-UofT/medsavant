@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -41,6 +42,7 @@ import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 
 /**
  *
@@ -105,7 +107,10 @@ public class AppStoreLandingPage implements AppStorePage {
 
         appListView = ViewUtil.getClearPanel();
         appListView.setLayout(new MigLayout("wrap, fillx, insets 0"));
-        container.add(ViewUtil.getLargeGrayLabel("Available apps"),"wrap");
+        
+        JLabel titleLabel = ViewUtil.getLargeSerifLabel("Available Apps");
+        
+        container.add(titleLabel,"wrap");
         container.add(appListView,"growx 1.0");
         
         JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);

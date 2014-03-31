@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.client.view.app.builtin;
 
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -37,14 +39,14 @@ import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
-import org.ut.biolab.medsavant.client.view.app.AppDirectory;
-import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.GenericStringChooser;
 import org.ut.biolab.medsavant.client.view.component.SelectableListView;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.variants.BrowserPage;
@@ -70,8 +72,8 @@ import savant.view.variation.VariationController;
  *
  * @author mfiume
  */
-public class SavantApp implements LaunchableApp {
-    
+public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
+
     private String pageName = "Savant";
     private boolean initialized;
 
@@ -79,59 +81,58 @@ public class SavantApp implements LaunchableApp {
         if (!initialized) {
             instance = this;
 
-        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
-            @Override
-            public void handleEvent(FilterEvent event) {
-                updateContents();
-            }
-        });
-
-        ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
-            @Override
-            public void handleEvent(ReferenceEvent event) {
-                if (event.getType() == ReferenceEvent.Type.CHANGED) {
+            FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+                @Override
+                public void handleEvent(FilterEvent event) {
                     updateContents();
                 }
-            }
-        });
+            });
 
-        startMappingDNAIdsToBAMURLs();
+            ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
+                @Override
+                public void handleEvent(ReferenceEvent event) {
+                    if (event.getType() == ReferenceEvent.Type.CHANGED) {
+                        updateContents();
+                    }
+                }
+            });
 
-        GenomeController.getInstance()
-                .addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
-                    @Override
-                    public void handleEvent(GenomeChangedEvent event) {
-                        if (!variantTrackLoaded) {
-                            // load a gene track if it exists
+            startMappingDNAIdsToBAMURLs();
 
-                            try {
-                                LOG.debug("Loading gene track");
-                                String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
-                                String urlOfTrack = getTrackURL(referenceName, "gene");
-                                addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL);
-                            } catch (Exception ex) {
-                                LOG.error("Error loading gene track", ex);
-                            }
+            GenomeController.getInstance()
+                    .addListener(new savant.api.util.Listener<GenomeChangedEvent>() {
+                        @Override
+                        public void handleEvent(GenomeChangedEvent event) {
+                            if (!variantTrackLoaded) {
+                                // load a gene track if it exists
+                                try {
+                                    LOG.debug("Loading gene track");
+                                    String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
+                                    String urlOfTrack = getTrackURL(referenceName, "gene");
+                                    addTrackFromURLString(urlOfTrack, DataFormat.GENERIC_INTERVAL, false);
+                                } catch (Exception ex) {
+                                    LOG.error("Error loading gene track", ex);
+                                }
 
-                            // load the MedSavant variant track
-                            try {
-                                LOG.debug("Loading MedSavant variant track");
-                                msds = new MedSavantDataSource();
-                                LOG.debug("Subscribing selection change listener");
-                                //gsc.addListener(msds);
-                                Track t = TrackFactory.createTrack(msds);
-                                FrameController c = FrameController.getInstance();
-                                c.createFrame(new Track[]{t});
-                                variantTrackLoaded = true;
+                                // load the MedSavant variant track
+                                try {
+                                    LOG.debug("Loading MedSavant variant track");
+                                    msds = new MedSavantDataSource();
+                                    LOG.debug("Subscribing selection change listener");
+                                    //gsc.addListener(msds);
+                                    Track t = TrackFactory.createTrack(msds);
+                                    FrameController c = FrameController.getInstance();
+                                    c.createFrame(new Track[]{t});
+                                    variantTrackLoaded = true;
 
-                            } catch (SavantTrackCreationCancelledException ex) {
-                                LOG.error("Error loading MedSavant variant track", ex);
-                            } catch (Exception ex) {
-                                LOG.error("Misc. error loading MedSavant variant track", ex);
+                                } catch (SavantTrackCreationCancelledException ex) {
+                                    LOG.error("Error loading MedSavant variant track", ex);
+                                } catch (Exception ex) {
+                                    LOG.error("Misc. error loading MedSavant variant track", ex);
+                                }
                             }
                         }
-                    }
-                });
+                    });
         }
         initialized = true;
     }
@@ -154,7 +155,7 @@ public class SavantApp implements LaunchableApp {
     public String getName() {
         return "Genome Browser";
     }
-    
+
     private static final Log LOG = LogFactory.getLog(SavantApp.class);
     private JPanel view;
     private JPanel browserPanel;
@@ -179,7 +180,7 @@ public class SavantApp implements LaunchableApp {
     private HashMap<String, String> dnaIDToURLMap;
 
     public SavantApp() {
-        
+        AppCommRegistry.getInstance().registerHandler(this, BAMFileComm.class);
     }
 
     public Component[] getSubSectionMenuComponents() {
@@ -223,7 +224,7 @@ public class SavantApp implements LaunchableApp {
         try {
 
             String buttonStyle = "segmentedCapsule";
-            
+
             JButton dnaButton = ViewUtil.getTexturedButton("Open Patient BAMs");
             //JButton dnaButton = new JButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BAMFILE));
             dnaButton.setToolTipText("Open BAM File(s)");
@@ -242,11 +243,11 @@ public class SavantApp implements LaunchableApp {
                                 List selections = event.getSelections();
                                 for (Object o : selections) {
                                     String url = dnaIDToURLMap.get(o.toString());
-                                    addTrackFromURLString(url, DataFormat.ALIGNMENT);
+                                    addTrackFromURLString(url, DataFormat.ALIGNMENT, false);
                                 }
                             }
                         });
-                        
+
                         bamFileChooser.setVisible(true);
 
                     } else {
@@ -254,12 +255,11 @@ public class SavantApp implements LaunchableApp {
                     }
                 }
             });
-            
+
             ViewUtil.makeMini(dnaButton);
 
             //pluginToolbar.add(dnaButton);
             //pluginToolbar.setVisible(true);
-
         } catch (Exception e) {
             LOG.error("ERROR ", e);
         }
@@ -335,7 +335,7 @@ public class SavantApp implements LaunchableApp {
                             Thread t = new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE);
+                                    addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE, false);
                                     trackAdditionLock.release();
                                 }
                             });
@@ -359,8 +359,37 @@ public class SavantApp implements LaunchableApp {
         }
         return view;
     }
-
+    
+    
     public void addTrackFromURLString(String urlString, final DataFormat format) {
+        addTrackFromURLString(urlString,format,true);
+    }
+    
+    public void addTrackFromURLString(String urlString, final DataFormat format, boolean showNotification) {
+    
+        LOG.info("Adding track from " + urlString);
+
+        final Notification n = new Notification();
+        n.setName("Importing Track...");
+        n.setDescription(urlString);
+        n.setIcon(this.getIcon());
+        n.setIsIndeterminateProgress(true);
+        n.setHideDoesClose(true);
+        
+        ActionListener openApp = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MedSavantFrame.getInstance().getDashboard().launchApp(SavantApp.this);
+            }
+            
+        };
+        n.setAction("Open", openApp);
+        
+        if (showNotification && MedSavantFrame.getInstance().getDashboard().getCurrentApp() != this) {
+            MedSavantFrame.getInstance().showNotification(n);
+        }
+
         try {
             final URL url = new URL(urlString);
             if (!TrackController.getInstance().containsTrack(urlString)) {
@@ -372,6 +401,8 @@ public class SavantApp implements LaunchableApp {
                                 trackAdditionLock.acquire();
                                 FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
                                 trackAdditionLock.release();
+                                n.setIsIndeterminateProgress(false);
+                                n.setProgress(1.0);
                             } catch (Exception ex) {
                                 LOG.error(ex);
                             }
@@ -380,6 +411,8 @@ public class SavantApp implements LaunchableApp {
                     t.start();
                 } else {
                     FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
+                    n.setIsIndeterminateProgress(false);
+                    n.setProgress(1.0);
                 }
             }
         } catch (Exception ex) {
@@ -473,4 +506,28 @@ public class SavantApp implements LaunchableApp {
     @Override
     public void didLogin() {
     }
+
+    @Override
+    public void handleCommEvent(BAMFileComm value) {
+        System.out.println("Launching genome browser and openning BAM file " + value.getEventData());
+        try {
+            addTrackFromURLString(value.getEventData().toString(), DataFormat.ALIGNMENT, false);
+            MedSavantFrame.getInstance().getDashboard().launchApp(this);
+        } catch (NullPointerException e) {
+            DialogUtils.displayError("Error loading BAM file at URL: null");
+        } catch (Exception e) {
+            DialogUtils.displayError("Error loading BAM file at URL: " + value.getEventData().getPath());
+        }
+    }
+
+    @Override
+    public String getHandlerName() {
+        return "Savant Genome Browser";
+    }
+
+    @Override
+    public ImageIcon getHandlerIcon() {
+        return this.getIcon();
+    }
+
 }
