@@ -560,6 +560,6 @@
     <module>distribution</module>
     <module>custom-libs/medsavant-component-fields</module>
     <module>custom-libs/mfiume-component-transition</module>
-    <module>custom-libs/mfiume-app-api</module>
+    <module>custom-libs/mfiume-app-comm</module>
   </modules>
 </project>

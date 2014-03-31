@@ -33,6 +33,7 @@ public class AppCommRegistry {
     }
     
     public void registerHandler(AppCommHandler handler, Class eventClass) {
+        System.out.println("Registering handler for " + eventClass);
         Set<AppCommHandler> handlers = classToHandlerMap.get(eventClass);
         if (handlers == null) {
             handlers = new HashSet<AppCommHandler>();
@@ -42,10 +43,13 @@ public class AppCommRegistry {
     }
     
     public Set<AppCommHandler> getHandlersForEvent(Class eventClass) {
+        System.out.println("Getting handlers of type " + eventClass);
         Set<AppCommHandler> handlers = classToHandlerMap.get(eventClass);
         if (handlers == null) {
+            System.out.println("No handlers of type " + eventClass);
             return new HashSet<AppCommHandler>();
         }
+        System.out.println(handlers.size() + " handlers of type " + eventClass);
         return handlers;
     }
     

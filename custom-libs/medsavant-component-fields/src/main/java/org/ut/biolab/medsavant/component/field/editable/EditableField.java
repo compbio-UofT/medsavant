@@ -54,8 +54,12 @@ public abstract class EditableField<T> extends JPanel {
     public EditableField() {
         this.setOpaque(false);
         changeListeners = new ArrayList<FieldEditedListener>();
-        this.setFocusable(true);
-        this.addFocusListener(getEditOnFocusListener());
+        
+        // Temporarily disabled because, when enabled, the escape
+        // key listener causes the field to lose focus 
+        // and focus is given to the next field
+        // this.setFocusable(true);
+        // this.addFocusListener(getEditOnFocusListener());
     }
 
     /**
@@ -71,8 +75,10 @@ public abstract class EditableField<T> extends JPanel {
      *
      * }
      * }/
-     *
-     * /**
+     */ 
+    
+    
+     /**
      * Set the field's edit state.
      *
      * @param isEditing The field's edit state.

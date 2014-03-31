@@ -20,25 +20,22 @@ package org.ut.biolab.medsavant.client.patient;
 
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
 import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
-import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileCommEvent;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.SinglePatientVariantAnalyzeComm;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -60,10 +57,8 @@ import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 import org.ut.biolab.medsavant.component.field.validator.URLValidator;
-import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.model.SimplePatient;
 
 /**
  *
@@ -245,40 +240,108 @@ public class PatientView extends JPanel implements FieldEditedListener {
 
             });
         }
+        
+        final JButton dnaIDButton = ViewUtil.getSoftButton("Open With...");
 
-        JButton bamViewButton = ViewUtil.getSoftButton("Open With...");
+        if (patient.getDnaID() == null || patient.getDnaID().isEmpty()) {
+            dnaIDButton.setEnabled(false);
+        } else {
+            dnaIDButton.addActionListener(new ActionListener() {
 
-        //if (patient.getBamURL() == null || patient.getBamURL().isEmpty()) {
-        //    bamViewButton.setEnabled(false);
-        //} else {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JPopupMenu m = new JPopupMenu();
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(SinglePatientVariantAnalyzeComm.class);
+                    URL u = null;
+                    try {
+                        u = new URL(patient.getBamURL());
+                    } catch (MalformedURLException ex) {
+                    }
+                    final SinglePatientVariantAnalyzeComm event = new SinglePatientVariantAnalyzeComm(null, patient.getID());
+                    for (final AppCommHandler handler : handlers) {
+                        JMenuItem item = new JMenuItem(handler.getHandlerName());
+
+                        ImageIcon icon = handler.getHandlerIcon();
+
+                        if (icon != null) {
+                            int iconSize = 22;
+                            Image img = ViewUtil.getScaledInstance(
+                                    icon.getImage(),
+                                    iconSize,
+                                    iconSize,
+                                    RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+                                    true);
+                            item.setIcon(new ImageIcon(img));
+                        }
+
+                        ActionListener l = new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                handler.handleCommEvent(event);
+                            }
+
+                        };
+                        item.addActionListener(l);
+                        m.add(item);
+                    }
+
+                    m.show(dnaIDButton, 0, (int) dnaIDButton.getSize().getHeight());
+                }
+
+            });
+        }
+
+        final JButton bamViewButton = ViewUtil.getSoftButton("Open With...");
+
+        if (patient.getBamURL() == null || patient.getBamURL().isEmpty()) {
+            bamViewButton.setEnabled(false);
+        } else {
             bamViewButton.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JPopupMenu m = new JPopupMenu();
-                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(BAMFileCommEvent.class);
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(BAMFileComm.class);
+                    URL u = null;
                     try {
-                        final BAMFileCommEvent event = new BAMFileCommEvent(null, new URL(patient.getBamURL()));
-                        for (final AppCommHandler handler : handlers) {
-                            JMenuItem item = new JMenuItem(handler.getHandlerName());
-                            ActionListener l = new ActionListener() {
-
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    handler.handleCommEvent(event);
-                                }
-
-                            };
-                            item.addActionListener(l);
-                            m.add(item);
-                        }
+                        u = new URL(patient.getBamURL());
                     } catch (MalformedURLException ex) {
-                        m.add(new JLabel("Problem getting handlers"));
                     }
+                    final BAMFileComm event = new BAMFileComm(null, u);
+                    for (final AppCommHandler handler : handlers) {
+                        JMenuItem item = new JMenuItem(handler.getHandlerName());
+
+                        ImageIcon icon = handler.getHandlerIcon();
+
+                        if (icon != null) {
+                            int iconSize = 22;
+                            Image img = ViewUtil.getScaledInstance(
+                                    icon.getImage(),
+                                    iconSize,
+                                    iconSize,
+                                    RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+                                    true);
+                            item.setIcon(new ImageIcon(img));
+                        }
+
+                        ActionListener l = new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                handler.handleCommEvent(event);
+                            }
+
+                        };
+                        item.addActionListener(l);
+                        m.add(item);
+                    }
+
+                    m.show(bamViewButton, 0, (int) bamViewButton.getSize().getHeight());
                 }
 
             });
-        //}
+        }
 
         profileKVP.setValue(PatientView.HOSPITAL_ID, individualIDField);
         profileKVP.setValue(PatientView.SEX, sexField);
@@ -301,6 +364,8 @@ public class PatientView extends JPanel implements FieldEditedListener {
         bamURLField.addFieldEditedListener(this);
 
         geneticsKVP.setValue(PatientView.DNA_ID, dnaIDField);
+        geneticsKVP.setAdditionalColumn(PatientView.DNA_ID, 0, dnaIDButton);
+
         geneticsKVP.setValue(PatientView.BAM_URL, bamURLField);
         geneticsKVP.setAdditionalColumn(PatientView.BAM_URL, 0, bamViewButton);
 

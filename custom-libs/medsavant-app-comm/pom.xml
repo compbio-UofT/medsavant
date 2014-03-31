@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>edu.toronto.cs.medsavant</groupId>
-  <artifactId>medsavant-app-api</artifactId>
+  <artifactId>medsavant-app-comm</artifactId>
   <version>1.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>medsavant-app-api</name>
+  <name>medsavant-app-comm</name>
   <url>http://maven.apache.org</url>
 
   <properties>

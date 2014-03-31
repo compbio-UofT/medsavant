@@ -165,13 +165,6 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         // edit state
         setVisibility(new Component[]{editorPlaceholder}, isEditing);
         
-        if (!isEditing) {
-            System.out.println("Inadvertently releasing focus of " + this.valueLabel.getText());
-            valueLabel.requestFocus();
-        } else {
-            System.out.println("Grabbing focus for item " + this.valueLabel.getText());
-        }
-        
         if (acceptButtonVisible) {
             acceptChangesButton.setVisible(isEditing);
         }
@@ -190,8 +183,6 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
 
         didToggleEditMode(isEditing);
-        
-        
     }
 
     @Override
@@ -248,7 +239,22 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         this.setLayout(new MigLayout("insets 0, hidemode 3, gapx 0, gapy 1"));
 
-        valueLabel = new JLabel();
+        /**
+         * A JLabel that autoellipsizes
+         */
+        valueLabel = new JLabel() {
+            int maxChars = 30;
+            @Override
+            public void setText(String s) {
+                if (s.length() > maxChars) {
+                    this.setToolTipText(s);
+                    super.setText(s.substring(0,maxChars-3) + "...");
+                } else {
+                    super.setText(s);
+                    this.setToolTipText(null);
+                }
+            }
+        };
         valueLabel.setFocusable(true);
 
         editorPlaceholder = new JPanel();

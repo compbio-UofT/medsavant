@@ -110,23 +110,8 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
                             g.drawImage(backgroundImage, x, y, this);
                         }
                     }
-
-                    /*
-                     BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                     Graphics2D g2 = resizedImage.createGraphics();
-                     g2.drawImage(backgroundImage, 0, 0, width, height, null);
-                     g.drawImage(resizedImage, 0, 0, null);
-                     */
                     return;
                 }
-
-                /*if (transparentBackground) {
-                 int width = this.getWidth();
-                 int height = this.getHeight();
-
-                 g.setColor(new Color(255, 255, 255, 240));
-                 g.fillRect(0, 0, width, height);
-                 }*/
             }
         };
 

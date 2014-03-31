@@ -6,6 +6,8 @@
 
 package edu.toronto.cs.medsavant.medsavant.app.api.appcomm;
 
+import javax.swing.ImageIcon;
+
 /**
  * Handler for communication events
  * @author mfiume
@@ -14,6 +16,7 @@ package edu.toronto.cs.medsavant.medsavant.app.api.appcomm;
 public interface AppCommHandler<AppCommEvent> {
     
     public String getHandlerName();
+    public ImageIcon getHandlerIcon();
     
     public void handleCommEvent(AppCommEvent value);
     

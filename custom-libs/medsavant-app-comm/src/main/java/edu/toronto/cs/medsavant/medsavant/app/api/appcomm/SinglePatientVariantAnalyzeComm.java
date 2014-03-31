@@ -6,17 +6,16 @@
 
 package edu.toronto.cs.medsavant.medsavant.app.api.appcomm;
 
-import java.net.URL;
 import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 
 /**
  *
  * @author mfiume
  */
-public class BAMFileCommEvent extends AppCommEvent<URL> {
+public class SinglePatientVariantAnalyzeComm extends AppComm<Integer> {
 
-    public BAMFileCommEvent(MedSavantApp sender, URL eventData) {
-        super(sender, eventData);
+    public SinglePatientVariantAnalyzeComm(MedSavantApp sender, Integer patientID) {
+        super(sender, patientID);
     }
     
 }

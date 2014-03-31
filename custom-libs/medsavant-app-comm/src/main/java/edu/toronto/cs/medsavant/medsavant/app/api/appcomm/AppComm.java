@@ -12,12 +12,12 @@ import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
  *
  * @author mfiume
  */
-public class AppCommEvent<T> {
+public class AppComm<T> {
     
     private final MedSavantApp sender;
     private final T eventData;
 
-    public AppCommEvent(MedSavantApp sender, T eventData) {
+    public AppComm(MedSavantApp sender, T eventData) {
         this.sender = sender;
         this.eventData = eventData;
     }
