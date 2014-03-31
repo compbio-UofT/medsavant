@@ -483,7 +483,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
             @Override
             public void paint(Graphics2D gd, Component t, int i, int i1) {
-                gd.setColor(new Color(221, 221, 221));
+                gd.setColor(ViewUtil.getPrimaryMenuColor());
                 gd.fillRect(0, 0, t.getWidth(), t.getHeight());
 
             }

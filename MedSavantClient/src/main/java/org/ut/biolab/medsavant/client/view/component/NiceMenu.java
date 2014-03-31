@@ -36,6 +36,7 @@ public class NiceMenu extends JPanel {
 
     public NiceMenu() {
         this(MenuLocation.TOP);
+        this.setBackground(ViewUtil.getPrimaryMenuColor());
     }
 
     public NiceMenu(MenuLocation location) {

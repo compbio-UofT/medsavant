@@ -75,7 +75,6 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
     public ServerDetailedView(SplashFrame splash, SplashServerManagementComponent serverManagementComponent) {
         super("Servers");
-        System.out.println("Creating detailed view");
         this.serverManagementComponent = serverManagementComponent;
         this.splash = splash;
         setSelectedItem(null);
@@ -242,8 +241,6 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         if (server == null) {
             return;
         }
-
-        System.out.println("Showing information for server: " + server.getNickname());
 
         kvp = getNiceFormForServer(server);
 
