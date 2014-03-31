@@ -260,7 +260,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         bottomDisclaimer.add(bottombar.getComponent(), "width 100%");
 
         homeToolbar = getToolBar();
-        homeToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
+        //homeToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
         homeToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
 
         dashLayer.add(homeToolbar.getComponent(), BorderLayout.NORTH);
@@ -346,7 +346,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         appToolbar = getToolBar();
         appToolbar.addComponentToLeft((JComponent) Box.createHorizontalStrut(5));
         appToolbar.addComponentToLeft(getHomeButton());
-        appToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
+        //appToolbar.addComponentToRight(MedSavantFrame.getInstance().getNotificationPanel().generateMenuButton());
         appToolbar.addComponentToRight((JComponent) Box.createHorizontalStrut(5));
         this.addTitleToBar(appToolbar, app.getName());
 
