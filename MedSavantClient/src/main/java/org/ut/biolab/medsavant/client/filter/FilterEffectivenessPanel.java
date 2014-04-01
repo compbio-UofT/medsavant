@@ -231,15 +231,16 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     }
 
     private void refreshProgressLabel() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+        
+    
+                System.out.println("Refresh progress label "+numTotal+", "+numLeft);
                 double percent = 100.0;
                 if (numTotal > 0) {
                     percent = (numLeft * 100.0) / numTotal;
                 }
                 labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
-            }
-        });   
+                panel.revalidate();
+                panel.repaint();
+              
     }
 }
