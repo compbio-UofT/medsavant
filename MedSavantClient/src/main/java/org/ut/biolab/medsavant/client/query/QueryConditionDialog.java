@@ -18,9 +18,12 @@
  */
 package org.ut.biolab.medsavant.client.query;
 
+import com.explodingpixels.macwidgets.SourceListControlBar;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -30,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -113,8 +118,38 @@ class QueryConditionDialog extends JDialog {
                         searchPanel.add(conditionNameList.getSearchBar(), "width 300, center");
                         searchPanel.setBackground(conditionNameList.getColorScheme().getBackgroundColor());
 
+                        JPanel bottomPanel = new JPanel();
+                        bottomPanel.setBorder(ViewUtil.getTopLineBorder());
+                        ViewUtil.applyHorizontalBoxLayout(bottomPanel);
+                        bottomPanel.add(Box.createHorizontalGlue());
+                        
+                        JButton cancel = new JButton("Cancel");
+                        cancel.addActionListener(new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                chosenConditionName = null;
+                                QueryConditionDialog.this.setVisible(false);
+                            }
+                            
+                        });
+                        bottomPanel.add(cancel,"right");
+                        
+                        JButton ok = new JButton("OK");
+                        ok.addActionListener(new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                chooseSelectedItem();
+                            }
+                            
+                        });
+                        bottomPanel.add(ok,"right");
+                        
+                        
                         this.add(searchPanel, BorderLayout.NORTH);
                         this.add(p, BorderLayout.CENTER);
+                        this.add(bottomPanel,BorderLayout.SOUTH);
                         this.updateUI();
 
                         conditionNameList.addMouseListener(new MouseAdapter() {
@@ -178,7 +213,7 @@ class QueryConditionDialog extends JDialog {
         } else {
             chosenConditionName = null;
         }
-
+        
         this.setVisible(false);
     }
 
