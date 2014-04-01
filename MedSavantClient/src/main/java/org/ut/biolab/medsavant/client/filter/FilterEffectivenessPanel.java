@@ -138,7 +138,6 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         //progressPanel = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
         //panel.add(progressPanel, BorderLayout.SOUTH);
-
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
@@ -187,8 +186,6 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     private void setNumLeft(int num) {
         numLeft = num;
         refreshProgressLabel();
-
-        //progressPanel.animateToValue(num);
     }
 
     private void setMaxValues() {
@@ -231,16 +228,14 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     }
 
     private void refreshProgressLabel() {
-        
-    
-                System.out.println("Refresh progress label "+numTotal+", "+numLeft);
-                double percent = 100.0;
-                if (numTotal > 0) {
-                    percent = (numLeft * 100.0) / numTotal;
-                }
-                labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
-                panel.revalidate();
-                panel.repaint();
-              
+
+        double percent = 100.0;
+        if (numTotal > 0) {
+            percent = (numLeft * 100.0) / numTotal;
+        }
+        labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
+        panel.revalidate();
+        panel.repaint();
+
     }
 }

@@ -88,6 +88,6 @@ public class MendelClinicApp extends MedSavantDashboardApp implements AppCommHan
     @Override
     public void handleCommEvent(VariantResultComm value) {
         // horrible hack
-        MedSavantFrame.getInstance().getDashboard().launchApp(DashboardSectionFactory.getLaunchableAppFromMedSavantApp(this));
+        MedSavantFrame.getInstance().getDashboard().launchApp(this.getTitle());
     }
 }
