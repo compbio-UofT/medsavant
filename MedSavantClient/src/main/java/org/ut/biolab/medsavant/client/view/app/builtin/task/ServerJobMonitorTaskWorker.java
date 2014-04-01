@@ -97,10 +97,10 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
         for (List<MedSavantServerJobProgress> mjpList : m.values()) {
             for (MedSavantServerJobProgress mjp : mjpList) {
                 String msg = mjp.getMessage();
-                if(msg == null){
+                if (msg == null) {
                     msg = "";
-                }else{
-                    msg = " - "+msg;
+                } else {
+                    msg = " - " + msg;
                 }
                 output.add(new GeneralLog(null, tabStr + "(" + mjp.getStatus() + ") " + jid + ". " + mjp.getJobName() + msg, null));
                 if (mjp.childJobProgresses != null && !mjp.childJobProgresses.isEmpty()) {
@@ -112,21 +112,34 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
         return output;
     }
 
+    private List<GeneralLog> logout(SessionExpiredException see) {
+        List<GeneralLog> nl = new ArrayList<GeneralLog>(1);
+        nl.add(new GeneralLog("Session Expired - please quit and login again"));
+        MedSavantExceptionHandler.handleSessionExpiredException(see);
+        return nl; //maybe unreachable, depending on implementation of above.
+    }
+
     @Override
     public List<GeneralLog> getLog() {
-        try {            
-            List<MedSavantServerJobProgress> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(LoginController.getSessionID());
+        String sessionId = LoginController.getSessionID();
+        try {
+            List<MedSavantServerJobProgress> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(sessionId);
             if (mjps == null) {
                 return new ArrayList<GeneralLog>(1);
             } else {
                 return getSortedChildren(mjps, 0);
+            }
+        } catch (SessionExpiredException see) {
+            return logout(see);
+        } catch (Exception ex) {
+            //check if we're still logged in.
+            try {
+                MedSavantClient.SessionManager.testConnection(sessionId);
+            } catch (SessionExpiredException see) {
+                return logout(see);
+            } catch (Exception ex2) {
+
             }          
-        } catch(SessionExpiredException see){
-            List<GeneralLog> nl = new ArrayList<GeneralLog>(1);
-            nl.add(new GeneralLog("Session Expired - please quit and login again"));
-            MedSavantExceptionHandler.handleSessionExpiredException(see);
-            return nl; //maybe unreachable, depending on implementation of above.
-        }catch (Exception ex) {
             String s = "Error retrieving task information";
             List<GeneralLog> r = new ArrayList<GeneralLog>(1);
             r.add(new GeneralLog(null, s, null));
