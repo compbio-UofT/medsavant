@@ -41,6 +41,8 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  */
 public class ServerJobMonitorTaskWorker implements TaskWorker {
 
+    private boolean stop = false;
+    
     public ServerJobMonitorTaskWorker() {
     }
 
@@ -51,7 +53,11 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
 
     @Override
     public TaskStatus getCurrentStatus() {
-        return TaskStatus.PERSISTENT_AUTOREFRESH;
+        if(stop){
+            return TaskStatus.FINISHED;
+        }else{
+            return TaskStatus.PERSISTENT_AUTOREFRESH;
+        }        
     }
 
     /*
@@ -121,6 +127,10 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
 
     @Override
     public List<GeneralLog> getLog() {
+        if(stop){
+            return new ArrayList<GeneralLog>();
+        }
+        
         String sessionId = LoginController.getSessionID();
         try {
             List<MedSavantServerJobProgress> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(sessionId);
@@ -130,8 +140,10 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
                 return getSortedChildren(mjps, 0);
             }
         } catch (SessionExpiredException see) {
+            stop = true;
             return logout(see);
         } catch (Exception ex) {
+            stop = true;
             //check if we're still logged in.
             try {
                 MedSavantClient.SessionManager.testConnection(sessionId);
