@@ -235,8 +235,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             });
 
 
-            FilterEffectivenessPanel fep = new FilterEffectivenessPanel();
-            fep.updateNumRemaining();
+            FilterEffectivenessPanel fep = new FilterEffectivenessPanel();            
 
             blockPanel.add(ViewUtil.centerHorizontally(ringChart));
             blockPanel.add(Box.createVerticalStrut(5));
