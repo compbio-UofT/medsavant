@@ -331,8 +331,6 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
     public void launchApp(LaunchableApp app) {
 
-        boolean appToApp = this.getCurrentApp() != null;
-        
         history.add(app);
 
         if (previousApp != null) {

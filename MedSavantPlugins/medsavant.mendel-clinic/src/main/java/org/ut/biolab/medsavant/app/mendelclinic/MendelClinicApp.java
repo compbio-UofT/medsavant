@@ -15,9 +15,14 @@
  */
 package org.ut.biolab.medsavant.app.mendelclinic;
 
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.VariantResultComm;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.app.mendelclinic.view.MendelPanel;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
 
 /**
@@ -25,12 +30,16 @@ import org.ut.biolab.medsavant.shared.appapi.MedSavantDashboardApp;
  *
  * @author tarkvara
  */
-public class MendelClinicApp extends MedSavantDashboardApp {
+public class MendelClinicApp extends MedSavantDashboardApp implements AppCommHandler<VariantResultComm> {
 
     private MendelPanel fmp;
     
     private static final String iconroot = "/icons/";
     public static ImageIcon icon = getIcon(iconroot + "mendel-icon.png");
+    
+    public MendelClinicApp() {
+        AppCommRegistry.getInstance().registerHandler(this, VariantResultComm.class);
+    }
 
     @Override
     public JPanel getContent() {
@@ -64,5 +73,21 @@ public class MendelClinicApp extends MedSavantDashboardApp {
     
     public static ImageIcon getIcon(String resourcePath) {
         return new ImageIcon(MendelClinicApp.class.getResource(resourcePath));
+    }
+
+    @Override
+    public String getHandlerName() {
+        return this.getTitle();
+    }
+
+    @Override
+    public ImageIcon getHandlerIcon() {
+        return this.getIcon();
+    }
+
+    @Override
+    public void handleCommEvent(VariantResultComm value) {
+        // horrible hack
+        MedSavantFrame.getInstance().getDashboard().launchApp(DashboardSectionFactory.getLaunchableAppFromMedSavantApp(this));
     }
 }

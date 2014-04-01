@@ -57,7 +57,7 @@ public class DashboardSectionFactory {
         return s;
     }
 
-    private static LaunchableApp getLaunchableAppFromMedSavantApp(final MedSavantDashboardApp app) {
+    public static LaunchableApp getLaunchableAppFromMedSavantApp(final MedSavantDashboardApp app) {
         return new LaunchableApp() {
 
             @Override
