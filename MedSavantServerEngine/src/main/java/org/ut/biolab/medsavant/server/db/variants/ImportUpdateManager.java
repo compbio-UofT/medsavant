@@ -415,8 +415,9 @@ public class ImportUpdateManager {
             VariantParser t = (VariantParser) msg;
             tsvFiles[i++] = new TSVFile(new File(t.getOutputFilePath()), t.getNumVariants());
             if (!t.didSucceed()) {
+                
                 LOG.info("At least one parser thread errored out");
-                LOG.error("At least one parser thread errored out", t.getException());
+                LOG.error("At least one parser thread ("+t.getVCF().getAbsolutePath()+") errored out", t.getException());
                 t.getException().printStackTrace(); //TEMPORARY
                 throw t.getException();
             }

@@ -254,7 +254,7 @@ public class VariantManagerUtils {
                 try {
                     s = c.createStatement();
                     s.setQueryTimeout(60 * 60); // 1 hour
-                    s.execute(query);
+                    s.execute(query);                    
                 } finally {
                     s.close();
                 }

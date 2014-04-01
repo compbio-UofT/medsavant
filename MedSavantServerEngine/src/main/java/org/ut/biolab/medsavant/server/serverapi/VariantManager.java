@@ -312,13 +312,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 @Override
                 public boolean accept(File file) {
                     String name = file.getName();
-                    return name.endsWith(".vcf") || name.endsWith(".vcf.gz");
+                    return name.endsWith(".vcf") || name.endsWith(".vcf.gz") || name.endsWith(".vcf.bz2") ||name.endsWith(".tgz");
                 }
             });
 
             if (vcfFiles.length == 0) {
                 LOG.info("Directory exists but contains no .vcf or .vcf.gz files.");
-                return -1;
+                throw new IllegalArgumentException("Directory on server exists, but does not contain any recognized file types");
+                //return -1;
             }
 
             return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);

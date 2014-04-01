@@ -20,14 +20,13 @@
 package org.ut.biolab.medsavant.server.vcf;
 
 import com.google.code.externalsorting.ExternalSort;
+import static com.google.code.externalsorting.ExternalSort.estimateAvailableMemory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +35,7 @@ import org.apache.commons.lang.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -157,17 +157,17 @@ public class VCFParser {
         return parseVariantsFromReader(r, outfile, updateId, fileId, false);
     }
 
-    private Map<String, BufferedWriter> chromOutOfOrderFileMap = new HashMap<String, BufferedWriter>();
+   // private Map<String, BufferedWriter> chromOutOfOrderFileMap = new HashMap<String, BufferedWriter>();
+/*
+     private void writeOutOfOrderLine(String chrom, String[] line, String prefix) throws IOException {
+     BufferedWriter handle = chromOutOfOrderFileMap.get(chrom);
+     if (handle == null) {
+     handle = new BufferedWriter(new FileWriter(prefix + "_" + chrom, true));
+     chromOutOfOrderFileMap.put(chrom, handle);
+     }
 
-    private void writeOutOfOrderLine(String chrom, String[] line, String prefix) throws IOException {
-        BufferedWriter handle = chromOutOfOrderFileMap.get(chrom);
-        if (handle == null) {
-            handle = new BufferedWriter(new FileWriter(prefix + "_" + chrom, true));
-            chromOutOfOrderFileMap.put(chrom, handle);
-        }
-
-    }
-
+     }
+     */
     /**
      * Like parseVariantsFromReader, but use a pre-parsed header object (useful
      * when reusing a header)
@@ -268,7 +268,7 @@ public class VCFParser {
         return numLinesWritten;
     }
 
-    private final static int EXTERNALSORT_MAX_TMPFILES = 128;
+    private final static int EXTERNALSORT_MAX_TMPFILES = 1024;
     private final static Charset EXTERNALSORT_CHARSET = Charset.defaultCharset();
 
     private final static int TDF_INDEX_OF_CHROM = 4;
@@ -331,16 +331,39 @@ public class VCFParser {
 
         //Sort the file, producing up to EXTERNALSORT_MAX_TMPFILES temproary 
         //files.
-        List<File> batch = ExternalSort.sortInBatch(
-                new File(unsortedTDF),
-                comparator,
-                EXTERNALSORT_MAX_TMPFILES,
-                EXTERNALSORT_CHARSET,
-                new File(sortedTDF.getParent()),
+        File uf = new File(unsortedTDF);
+        BufferedReader fbr = new BufferedReader(new InputStreamReader(
+                new FileInputStream(uf), EXTERNALSORT_CHARSET));
+
+        //Use 0.5 * (1/numThreads) * total memory allocated to Java of memory for sorting.
+        long maxMem = (long) (0.5 * Runtime.getRuntime().maxMemory() / (double) MedSavantServerEngine.getMaxThreads());
+
+        //...unless that amount of memory would exceed the available memory, in which case use 75% of the available memory.        
+        long availMem = ExternalSort.estimateAvailableMemory();
+        if (0.75 * availMem < maxMem) {
+            maxMem = (long) 0.75 * availMem;
+            LOG.info("WARNING: Memory is low for sorting, sorting with reduced memory of " + (maxMem >> 20) + " M");
+        } else {
+            LOG.info("Sorting using " + (maxMem >> 20) + "M of memory");
+        }
+
+        List<File> batch = ExternalSort.sortInBatch(fbr, uf.length(), comparator, EXTERNALSORT_MAX_TMPFILES,
+                maxMem, EXTERNALSORT_CHARSET, new File(sortedTDF.getParent()),
                 eliminateDuplicateRows,
                 numHeaderLinesToExcludeFromSort,
                 useGzipForTmpFiles);
 
+        /*
+         List<File> batch = ExternalSort.sortInBatch(
+         new File(unsortedTDF),
+         comparator,
+         EXTERNALSORT_MAX_TMPFILES,
+         EXTERNALSORT_CHARSET,
+         new File(sortedTDF.getParent()),
+         eliminateDuplicateRows,
+         numHeaderLinesToExcludeFromSort,
+         useGzipForTmpFiles);
+         */
         //Merge the temporary files with each other
         //batch.add(sortedTDF);
         String finalOutputFileName = sortedTDF.getCanonicalPath();
@@ -378,7 +401,7 @@ public class VCFParser {
 
         return result;
     }
-    
+
     private void messageToUser(LogManagerAdapter.LogType logtype, String msg) {
         try {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
@@ -397,12 +420,12 @@ public class VCFParser {
 
     private static final long MAX_WARNINGS = 1000;
     private long warningsEmitted = 0;
-    
+
     private void vcf_warning(String msg) {
-        if(warningsEmitted < MAX_WARNINGS){
+        if (warningsEmitted < MAX_WARNINGS) {
             String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
             messageToUser(LogManagerAdapter.LogType.WARNING, warning);
-        }else if(warningsEmitted == MAX_WARNINGS){
+        } else if (warningsEmitted == MAX_WARNINGS) {
             String warning = vcfFile.getName() + ": Further warnings have been truncated.";
             messageToUser(LogManagerAdapter.LogType.WARNING, warning);
         }
@@ -640,10 +663,10 @@ public class VCFParser {
                          }
                          */
                         sampleVariantRecord.setGenotype(gt);
-                        try{
+                        try {
                             sampleVariantRecord.setZygosity(calculateZygosity(sampleVariantRecord));
-                        }catch(IllegalArgumentException iex){
-                            vcf_warning("SKIPPED VARIANT. "+iex.getMessage());
+                        } catch (IllegalArgumentException iex) {
+                            vcf_warning("SKIPPED VARIANT. " + iex.getMessage());
                             continue;
                         }
                         if (sampleVariantRecord.getZygosity() == Zygosity.Hetero) {
@@ -718,13 +741,13 @@ public class VCFParser {
         return -1;
     }
 
-    private static Zygosity calculateZygosity(VariantRecord vr) throws IllegalArgumentException{
+    private static Zygosity calculateZygosity(VariantRecord vr) throws IllegalArgumentException {
         boolean homoRef = (vr.getRef().equals(vr.getAlt()));
 
         String gt = vr.getGenotype();
         String[] split = gt.split("/|\\\\|\\|"); // splits on / or \ or |
         if (split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) {
-            throw new IllegalArgumentException("Invalid genotype field: "+gt);            
+            throw new IllegalArgumentException("Invalid genotype field: " + gt);
         }
 
         try {
@@ -738,7 +761,7 @@ public class VCFParser {
             int b = Integer.parseInt(split[1]);
             if (a == 0 && b == 0) {
                 return Zygosity.HomoRef;
-            } else if(!homoRef){
+            } else if (!homoRef) {
                 if (a == b) {
                     return Zygosity.HomoAlt;
                 } else if (a == 0 || b == 0) {
@@ -746,11 +769,11 @@ public class VCFParser {
                 } else {
                     return Zygosity.HeteroTriallelic;
                 }
-            } else{
-                throw new IllegalArgumentException("Ref and Alt field are equal or Alt=., indicicating HomoRef variant, but genotype ("+gt+") is invalid or indicates differently.");
+            } else {
+                throw new IllegalArgumentException("Ref and Alt field are equal or Alt=., indicicating HomoRef variant, but genotype (" + gt + ") is invalid or indicates differently.");
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid Genotype "+gt);
+            throw new IllegalArgumentException("Invalid Genotype " + gt);
         }
     }
 }

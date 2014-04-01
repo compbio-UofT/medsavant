@@ -67,6 +67,9 @@ public class VariantParser extends MedSavantServerJob{
         }
     }
 
+    public File getVCF(){
+        return this.vcfFile;
+    }
     public String getOutputFilePath() {
         return outFile.getAbsolutePath();
     }
