@@ -18,6 +18,7 @@ public class NiceListItem {
     private final Object item;
     private ImageIcon icon;
     private boolean removable;
+    private String description;
  
     public NiceListItem(Object item) {
         this(null,item);
@@ -75,10 +76,11 @@ public class NiceListItem {
         return hash;
     }
 
-
-
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
-    
-    
-    
+    public String getDescription() {
+        return description;
+    }
 }

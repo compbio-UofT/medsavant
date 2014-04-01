@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import net.miginfocom.swing.MigLayout;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -45,7 +46,7 @@ public class NiceList extends JList {
         public Object getElementAt(int index) {
             return allItems.get(index);
         }
-        
+
     }
 
     public NiceList() {
@@ -100,7 +101,7 @@ public class NiceList extends JList {
         } else {
             v = getSearchResults();
         }
-                
+
         setListData(v);
     }
 
@@ -112,7 +113,6 @@ public class NiceList extends JList {
         this.endTransaction();
     }
 
-    
     private Vector getSearchResults() {
         Vector v = new Vector();
 
@@ -221,13 +221,19 @@ public class NiceList extends JList {
 
             p.setBackground(isSelected ? colorScheme.getSelectedColor() : colorScheme.getUnselectedColor());
 
-            p.setLayout(new MigLayout(String.format("fillx, height %d", cellHeight)));
+            p.setLayout(new MigLayout(String.format("fillx, height %d, hidemode 3, gapy 2", cellHeight)));
 
             JLabel l = new JLabel(mitem.toString());
             l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 16));
             l.setForeground(isSelected ? colorScheme.getSelectedFontColor() : colorScheme.getUnselectedFontColor());
 
-            p.add(l);
+            p.add(l, "wrap");
+
+            String description = mitem.getDescription();
+            if (description != null) {
+                JLabel dl = ViewUtil.getSubtleHeaderLabel(description);
+                p.add(dl, "wrap");
+            }
 
             p.setBorder(BorderFactory.createMatteBorder((index == 0) ? 1 : 0, 0, 1, 0, colorScheme.getBorderColor()));
 

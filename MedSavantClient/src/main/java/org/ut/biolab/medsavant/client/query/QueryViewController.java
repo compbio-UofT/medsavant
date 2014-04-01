@@ -19,50 +19,33 @@
  */
 package org.ut.biolab.medsavant.client.query;
 
-import com.explodingpixels.macwidgets.MacWidgetFactory;
-import com.explodingpixels.macwidgets.SourceListStandardColorScheme;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.ParseException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.httpclient.NameValuePair;
@@ -70,11 +53,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdesktop.swingx.JXSearchField;
-import org.jdesktop.swingx.prompt.PromptSupport;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.controller.AnalyticsController;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -88,17 +67,7 @@ import org.ut.biolab.medsavant.client.query.SearchConditionItem.SearchConditionL
 import org.ut.biolab.medsavant.client.query.medsavant.complex.ConditionUtils;
 import org.ut.biolab.medsavant.client.query.view.PillView;
 import org.ut.biolab.medsavant.client.query.view.ConditionPopupGenerator;
-import org.ut.biolab.medsavant.client.query.view.ScrollableJPopupMenu;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionItemView;
-import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
-import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.client.view.list.DetailedView;
-import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
-import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
-import org.ut.biolab.medsavant.client.view.util.list.DefaultNiceListColorScheme;
-import org.ut.biolab.medsavant.client.view.util.list.NiceList;
-import org.ut.biolab.medsavant.client.view.util.list.NiceListItem;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

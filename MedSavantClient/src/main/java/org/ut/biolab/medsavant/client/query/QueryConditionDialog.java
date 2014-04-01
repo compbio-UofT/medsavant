@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -78,7 +80,7 @@ class QueryConditionDialog extends JDialog {
                     }
                 },
                 new DetailedView("Category") {
-            
+
                     private void setCategory(String category) {
                         this.removeAll();
                         conditionNameList = new NiceList();
@@ -87,7 +89,12 @@ class QueryConditionDialog extends JDialog {
                         Collections.sort(itemNames);
 
                         for (String s : itemNames) {
-                            NiceListItem item = new NiceListItem(s);
+
+                            // 0 has name, 1 has description
+                            String[] nameAndDescription = parseNameAndDescription(s);
+
+                            NiceListItem item = new NiceListItem(nameAndDescription[0], s);
+                            item.setDescription(nameAndDescription[1]);
                             conditionNameList.addItem(item);
                         }
 
@@ -99,13 +106,13 @@ class QueryConditionDialog extends JDialog {
                         p.add(scroll, BorderLayout.CENTER);
 
                         this.setLayout(new BorderLayout());
-                        
+
                         JPanel searchPanel = new JPanel();
                         searchPanel.setLayout(new MigLayout("fillx"));
                         searchPanel.setBorder(ViewUtil.getBottomLineBorder());
-                        searchPanel.add(conditionNameList.getSearchBar(),"width 300, center");
+                        searchPanel.add(conditionNameList.getSearchBar(), "width 300, center");
                         searchPanel.setBackground(conditionNameList.getColorScheme().getBackgroundColor());
-                        
+
                         this.add(searchPanel, BorderLayout.NORTH);
                         this.add(p, BorderLayout.CENTER);
                         this.updateUI();
@@ -130,6 +137,7 @@ class QueryConditionDialog extends JDialog {
                     @Override
                     public void setMultipleSelections(List<Object[]> selectedRows) {
                     }
+
                 },
                 new DetailedListEditor() {
                 });
@@ -144,16 +152,36 @@ class QueryConditionDialog extends JDialog {
         this.setLocationRelativeTo(MedSavantFrame.getInstance());
     }
 
+    private static String[] parseNameAndDescription(String s) {
+        //Pattern p = Pattern.compile("([\\w ]*) \\(([\\w* ]*)\\)", Pattern.CASE_INSENSITIVE);
+        Pattern p = Pattern.compile("([\\w ]*) - ([\\w* ]*)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = p.matcher(s);
+        String name = null;
+        String description = null;
+        if (matcher.find()) {
+            name = matcher.group(1);
+            description = matcher.group(2);
+            return new String[]{name, description};
+        } else {
+            return new String[]{name, null};
+        }
+    }
+
+    public static void main(String[] arg) {
+        String[] result = parseNameAndDescription("Hello there ");
+        System.out.println(result[0] + "\n" + result[1]);
+    }
+
     private void chooseSelectedItem() {
         if (conditionNameList != null) {
             chosenConditionName = (String) ((NiceListItem) conditionNameList.getSelectedValue()).getItem();
         } else {
             chosenConditionName = null;
         }
-        
+
         this.setVisible(false);
     }
-    
+
     String getChosenConditionName() {
         return chosenConditionName;
     }

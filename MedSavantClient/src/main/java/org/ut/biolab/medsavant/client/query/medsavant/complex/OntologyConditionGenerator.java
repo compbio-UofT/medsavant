@@ -77,6 +77,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
     private final OntologyType ontology;
     
     private static final Dimension DEFAULT_DIMENSIONS = new Dimension(600,384);
+
     private class OntologySearchConditionEditorView extends StringSearchConditionEditorView {
 
         private Map<String, JPopupMenu> popupMap;

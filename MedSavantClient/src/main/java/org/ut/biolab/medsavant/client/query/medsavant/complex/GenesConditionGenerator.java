@@ -96,4 +96,5 @@ public class GenesConditionGenerator implements ComprehensiveConditionGenerator 
     public SearchConditionEditorView getViewGeneratorForItem(SearchConditionItem item) {
         return new GeneSearchConditionEditorView(item);
     }
+
 }

@@ -51,6 +51,8 @@ import org.ut.biolab.medsavant.client.query.medsavant.complex.VariantConditionGe
 import org.ut.biolab.medsavant.client.query.value.DatabaseConditionGenerator;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionEditorView;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionItemView;
+import static org.ut.biolab.medsavant.shared.format.AnnotationFormat.ANNOTATION_FORMAT_CUSTOM_VCF;
+import static org.ut.biolab.medsavant.shared.format.AnnotationFormat.ANNOTATION_FORMAT_DEFAULT;
 
 /**
  *
@@ -99,7 +101,7 @@ public class MedSavantConditionViewGenerator implements ConditionViewGenerator {
                         //catHolders.add(new FieldFilterHolder(field, WhichTable.VARIANT, queryID));
 
                         String program = af.getProgram();
-                        program = (program.equals("VCF Conditions") || program.equals("Standard Variant Conditions")) ? "" : " - " + program;
+                        program = (program.equals(ANNOTATION_FORMAT_DEFAULT) || program.equals(ANNOTATION_FORMAT_CUSTOM_VCF)) ? "" : " - " + program;
 
                         String name = field.getAlias() + program;
                         ComprehensiveConditionGenerator variantFieldCondition = new VariantConditionGenerator(name,field);
