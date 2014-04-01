@@ -1,26 +1,29 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -28,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,7 +69,7 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
     private static final String KEY_DBSNP = "dbSNP ID";
     private static final String KEY_ZYGOSITY = "Zygosity";
     private static final String KEY_INFO = "Info";
-    private static final String URL_CHARSET = "UTF-8";    
+    private static final String URL_CHARSET = "UTF-8";
     private KeyValuePairPanel p;
     private JComboBox geneBox;
     private VariantRecord selectedVariant;
@@ -231,6 +235,11 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                 @Override
                 public void actionPerformed(ActionEvent ae) {
 
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(BAMFileComm.class);
+                    if (handlers.isEmpty()) {
+                        return;
+                    }
+
                     String dnaID = selectedVariant.getDnaID();
                     String bamPath;
                     try {
@@ -239,8 +248,11 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 dnaID);
                         if (bamPath != null && !bamPath.equals("")) {
-                            BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
-                            DialogUtils.displayMessage("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
+                            AppCommHandler<BAMFileComm> handler = handlers.iterator().next();
+                            handler.handleCommEvent(new BAMFileComm(null, new URL(bamPath)));
+
+                            //BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                            //DialogUtils.displayMessage("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                         }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Unable to load BAM file: %s", ex);
@@ -272,7 +284,6 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
                 }
             });
             p.setValue(KEY_INFO, button);
-
 
             int col = 0;
 
