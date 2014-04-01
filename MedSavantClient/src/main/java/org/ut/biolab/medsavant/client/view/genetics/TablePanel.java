@@ -43,6 +43,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Box;
@@ -197,6 +198,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         try {
             int numPassingVariants = ResultController.getInstance().getFilteredVariantCount();
 
+            System.out.println("Num passing " + numPassingVariants + " " + (new Date()).toLocaleString());
+            
             final JPanel blockPanel = new JPanel();
             ViewUtil.applyVerticalBoxLayout(blockPanel);
 
@@ -322,8 +325,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         setActivePanel(false);
         showShowCard();
     }
-
-    
 
     private JPopupMenu createPopupMultiple() {
         JPopupMenu menu = new JPopupMenu();
