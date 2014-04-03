@@ -48,4 +48,10 @@ public class AppColors {
 	public static final Color LightWisteria= new Color(190, 144, 212);
 	public static final Color Wisteria= new Color(155, 89, 182);
 	public static final Color Flamingo= new Color(239, 72, 54);
+	public static final Color iCloudBlue= new Color(221, 238, 251);
+	public static final Color iCloudDarkBlue= new Color(202, 232, 251);
+	public static final Color iCloudYellow= new Color(249, 245, 226);
+	public static final Color iCloudDarkYellow= new Color(248, 233, 160);
+	public static final Color iCloudBlack= new Color(56, 56, 54);
+	public static final Color iCloudPurple= new Color(204, 116, 225);
 }
