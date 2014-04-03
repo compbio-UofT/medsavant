@@ -25,6 +25,7 @@ public class MendelPanel {
             view = new JPanel();
             view.setLayout(new BorderLayout());
             view.setBackground(ViewUtil.getLightGrayBackgroundColor());
+            
             fo = new OptionView();
             JPanel p = new StandardAppContainer(fo.getView(), true);
             p.setBackground(ViewUtil.getLightGrayBackgroundColor());

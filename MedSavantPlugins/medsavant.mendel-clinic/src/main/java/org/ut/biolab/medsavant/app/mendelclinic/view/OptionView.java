@@ -60,6 +60,7 @@ import org.ut.biolab.medsavant.app.mendelclinic.view.OptionView.InheritanceStep.
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -203,6 +204,7 @@ public class OptionView {
         private JPanel view;
         private JLabel datasetLabel;
         private List<IncludeExcludeCriteria> criteria;
+        private JButton variantNavigatorButton;
 
         public IncludeExcludeStep() {
             setupView();
@@ -214,6 +216,7 @@ public class OptionView {
 
         public void setDatasetName(String name) {
             datasetLabel.setText(name);
+            variantNavigatorButton.setVisible(false);
         }
 
         public List<IncludeExcludeCriteria> getCriteria() {
@@ -229,8 +232,19 @@ public class OptionView {
             ViewUtil.applyHorizontalBoxLayout(required);
 
             required.add(new JLabel("Select variants from "));
+            
+            variantNavigatorButton = ViewUtil.getSoftButton("Variant Navigator");
+            required.add(variantNavigatorButton);
+            variantNavigatorButton.addActionListener(new ActionListener() {
 
-            datasetLabel = new JLabel("Variant Navigator");
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MedSavantFrame.getInstance().getDashboard().launchApp(AppDirectory.getVariantNavigator());
+                }
+                
+            });
+            
+            datasetLabel = new JLabel("");
             datasetLabel.setFont(ViewUtil.getMediumTitleFont());
 
             required.add(datasetLabel);

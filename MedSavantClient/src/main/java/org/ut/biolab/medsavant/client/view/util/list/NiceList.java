@@ -121,6 +121,8 @@ public class NiceList extends JList {
         for (NiceListItem item : allItems) {
             if (item.toString().toLowerCase().contains(searchTerm)) {
                 v.add(item);
+            } else if (item.getDescription() != null && item.getDescription().toLowerCase().contains(searchTerm)) {
+                v.add(item);
             }
         }
 

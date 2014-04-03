@@ -96,8 +96,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         taskWorker.addLog("Preparing results...");
 
         String pageName = MendelPanel.PAGE_NAME;
-        String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
-        Class[] columnClasses = new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, String.class};
+        String[] columnNames = new String[]{"Chromosome", "Start", "End", "Reference", "Alternate", "Type", "Samples", "Genes"};
+        Class[] columnClasses = new Class[]{String.class, String.class,  String.class, String.class, String.class, String.class, String.class, String.class};
 
         System.out.println(result.keySet().size() + " variants in result set");
 
@@ -159,7 +159,7 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
                         pageName,
                         columnNames,
                         columnClasses,
-                        new int[]{},
+                        new int[]{5},
                         true,
                         false,
                         500,

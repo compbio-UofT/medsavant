@@ -19,6 +19,9 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.SubInspector;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -26,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Set;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -118,6 +122,11 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                 @Override
                 public void actionPerformed(ActionEvent ae) {
 
+                    Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(BAMFileComm.class);
+                    if (handlers.isEmpty()) {
+                        return;
+                    }
+                    
                     String dnaID = selectedVariant.getDnaID();
                     String bamPath;
                     try {
@@ -132,8 +141,10 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                              + "as a track in the genome browser?</html>");*/
                             int response = DialogUtils.YES;
                             if (response == DialogUtils.YES) {
-                                BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
-                                DialogUtils.displayMessage("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
+                                AppCommHandler<BAMFileComm> handler = handlers.iterator().next();
+                                handler.handleCommEvent(new BAMFileComm(null, new URL(bamPath)));
+                                //BrowserPage.getInstance().addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                                //DialogUtils.displayMessage("Read alignments have been loaded into Browser.  Click 'Browser' at left to view.");
                             }
                         }
 
@@ -157,7 +168,6 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
 
             //JLabel l = new JLabel("This will eventually show a chart");
             //p.setDetailComponent(KEY_QUAL, l);
-
             final JToggleButton button = ViewUtil.getTexturedToggleButton("SHOW");
             ViewUtil.makeSmall(button);
             button.setToolTipText("Toggle Info");
@@ -169,7 +179,6 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
                 }
             });
             p.setValue(KEY_INFO, button);
-
 
             int col = 0;
 
@@ -266,7 +275,7 @@ public class BasicVariantSubInspector extends SubInspector implements Listener<V
             Gene g0 = null;
             JComboBox b = geneBox;
             b.removeAllItems();
-            
+
             for (Gene g : genes) {
                 if (g0 == null) {
                     g0 = g;

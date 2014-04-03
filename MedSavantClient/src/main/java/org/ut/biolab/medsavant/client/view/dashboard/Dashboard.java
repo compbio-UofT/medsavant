@@ -328,11 +328,20 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
 
         this.updateUI();
     }
+    
+    public void launchApp(String appName) {
+        for (DashboardSection ds : this.dashboardSections) {
+            for (LaunchableApp app : ds.getApps()) {
+                if (appName.equals(app.getName())) {
+                    launchApp(app);
+                    return;
+                }
+            }
+        }
+    }
 
     public void launchApp(LaunchableApp app) {
 
-        boolean appToApp = this.getCurrentApp() != null;
-        
         history.add(app);
 
         if (previousApp != null) {
