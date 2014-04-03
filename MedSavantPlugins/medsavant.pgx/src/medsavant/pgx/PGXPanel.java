@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.appdevapi.Variant;
 
 /**
@@ -246,6 +247,8 @@ public class PGXPanel extends JPanel {
 		
 		reportJP.add(new JLabel("Record retrieved for DNA ID: " + currentDNAID), "wrap");
 		
+		reportJP.add(new JLabel("Number of records retrieved: " + currentPGXAnalysis.getVariants().size()), "wrap");
+		
 		///// TESTING
 		for (Variant v : currentPGXAnalysis.getVariants()) {
 			reportJP.add(new JLabel("[TESTING]: " + Arrays.toString(v.getRow())), "wrap");
@@ -255,9 +258,11 @@ public class PGXPanel extends JPanel {
 			for (Variant v : currentPGXAnalysis.getVariants()) {
 				reportJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
 					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), v.getGT(),
-					(String) v.getColumn("snp137, RSID")}, " ")), "wrap");
+					(String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT)}, " ")), "wrap");
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		reportPane.setViewportView(reportJP);
 	}	

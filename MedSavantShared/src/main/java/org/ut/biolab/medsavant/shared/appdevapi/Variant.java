@@ -26,6 +26,7 @@ public class Variant {
 	private String chromosome;
 	private String reference;
 	private String alternate;
+	private int alternateNumber;
 	private long start;
 	private long end;
 	private String zygosity;
@@ -49,6 +50,7 @@ public class Variant {
 		chromosome= (String) row[BasicVariantColumns.INDEX_OF_CHROM];
 		reference= (String) row[BasicVariantColumns.INDEX_OF_REF];
 		alternate= (String) row[BasicVariantColumns.INDEX_OF_ALT];
+		alternateNumber= ((Integer) row[BasicVariantColumns.INDEX_OF_ALT_NUMBER]).intValue();
 		start= ((Integer) row[BasicVariantColumns.INDEX_OF_START_POSITION]).longValue();
 		end= ((Integer) row[BasicVariantColumns.INDEX_OF_END_POSITION]).longValue();
 		zygosity= (String) row[BasicVariantColumns.INDEX_OF_ZYGOSITY];
@@ -120,6 +122,15 @@ public class Variant {
 		return alternate;
 	}
 	
+	
+	/**
+	 * Return the alternate allele number. The first alternate allele is 1, the 
+	 * second is 2, etc.
+	 * @return the alternate allele number
+	 */
+	public int getAlternateNumber() {
+		return alternateNumber;
+	}
 	
 	/**
 	 * Return the chromosome for this variant

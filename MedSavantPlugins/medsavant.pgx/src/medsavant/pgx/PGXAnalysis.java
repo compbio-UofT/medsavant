@@ -18,6 +18,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.appdevapi.Variant;
 import org.ut.biolab.medsavant.shared.appdevapi.VariantIterator;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
@@ -34,7 +35,7 @@ import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
  */
 public class PGXAnalysis {
 	
-	private static final String DBSNP_COLUMN= "snp137, RSID";
+	private static final String DBSNP_COLUMN= DBAnnotationColumns.DBSNP_TEXT;
 	private static final int DB_VARIANT_REQUEST_LIMIT= 500;
 	
 	private static Connection pgxdbConn;
@@ -66,6 +67,7 @@ public class PGXAnalysis {
 			standardPGXCondition= buildCondition();
 		}
 		
+		/* Query the DB for this individual's pharmacogenomic genotypes. */
 		queryVariants();
 	}
 	
@@ -87,7 +89,7 @@ public class PGXAnalysis {
 	private static ComboCondition buildCondition() {
 		ComboCondition query= new ComboCondition(ComboCondition.Op.OR);
 		
-		// get all relevant genes
+		/* Get all relevant genes. */
 		List<String> genes= new LinkedList<String>();
 		try {
 			genes= PGXDBFunctions.getGenes();
@@ -95,7 +97,7 @@ public class PGXAnalysis {
 			se.printStackTrace();
 		}
 		
-		// get all relevant markers
+		/* Get all relevant markers. */
 		List<String> markers= new LinkedList<String>();
 		try {
 			for (String g : genes) {
@@ -106,9 +108,9 @@ public class PGXAnalysis {
 		}
 		
 		
-		// add all markers to the ComboCondition
-		// NOTE: this is hardcoded for now, but will need to be changed if the
-		// dbSNP annotation DB is updated
+		/* Add all markers to the ComboCondition.
+		 * NOTE: this is hardcoded for now, but will need to be changed if the
+		 * dbSNP annotation DB is updated. */
 		for (String m : markers) {
 			query.addCondition(
 				BinaryCondition.equalTo(ts.getDBColumn(columns.get(DBSNP_COLUMN)), m));
@@ -130,7 +132,7 @@ public class PGXAnalysis {
 		query.addCondition(standardPGXCondition);
 		
 		// TESTING
-		//System.out.println("[TESTING]: full query= \n" + query.toString(10000, new SqlContext())); //////////////
+		System.out.println("[TESTING]: full query= \n" + query.toString(10000, new SqlContext())); //////////////
 		
 		/* For each query, a VariantIterator will be returned. When the Iterator
 		 * is null, stop getting more VariantIterators. Iterate while

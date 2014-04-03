@@ -25,5 +25,6 @@ public class DBAnnotationColumns {
 	public static final String HGMD_COMMENTS_TEXT= "hgmd_pro_allmut, comments";
 	public static final String CLINVAR_RSID_TEXT= "Clinvar, rsID";
 	public static final String CLINVAR_INFO_TEXT= "Clinvar, info";
+	public static final String DBSNP_TEXT= "snp138, RSID";
 	
 }
