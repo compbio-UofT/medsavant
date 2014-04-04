@@ -24,7 +24,6 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
-import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.appdevapi.AppColors;
 import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.appdevapi.Variant;
@@ -161,7 +160,7 @@ public class PGXPanel extends JPanel {
 		 * "fillx" for the layout to solve this issue. */
 		patientSideJP.setLayout(new MigLayout("insets 10 10 0 0, gapy 0px, fillx"));
 		//patientSideJP.setBackground(ViewUtil.getSidebarColor());
-		patientSideJP.setBackground(AppColors.iCloudBlue);
+		patientSideJP.setBackground(AppColors.iCloudYellow);
 		patientSideJP.setMinimumSize(new Dimension(SIDE_PANE_WIDTH, 0)); // minimum width for panel
 		
 		patientSideJP.add(choosePatientButton, "alignx center, wrap");

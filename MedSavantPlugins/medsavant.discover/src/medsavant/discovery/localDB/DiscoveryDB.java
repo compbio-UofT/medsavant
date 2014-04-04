@@ -81,8 +81,7 @@ public class DiscoveryDB {
 			String sql;
 
 			/* Execute SQL as a batch, rather than individually. This is more efficient
-			 * when processing many 
-			 */
+			 * when processing many. */
 
 			/* // Simple test table
 			sql=	"CREATE TABLE dbtest ( " +
@@ -91,10 +90,13 @@ public class DiscoveryDB {
 					")";
 			s.addBatch(sql);
 			*/
-
 			
-			/* Create all the Incidentalome tables. These will be populated by
-			 * CSV Loader. */
+			/* Enable case insensitivity. According to the hsqldb documentation,
+			 * this must be switched before creating tables. */
+			sql=	"SET IGNORECASE TRUE;";
+			s.addBatch(sql);
+			
+			/* Create all the tables. These will be populated by CSV Loader. */
 			
 			sql=	"CREATE TABLE disease_classification ( " +
 					"  inheritance varchar(45) NOT NULL,  " +

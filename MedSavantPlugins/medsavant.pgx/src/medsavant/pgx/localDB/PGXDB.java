@@ -81,11 +81,16 @@ public class PGXDB {
 			String sql;
 
 			/* Execute SQL as a batch, rather than individually. This is more efficient
-			 * when processing many.
-			 */
+			 * when processing many. */
 			
-			/* Create all the Incidentalome tables. These will be populated by
-			 * CSV Loader. */
+			
+			/* Enable case insensitivity. According to the hsqldb documentation,
+			 * this must be switched before creating tables:
+			 * http://www.hsqldb.org/doc/guide/ch09.html#set_ignorecase-section */
+			sql=	"SET IGNORECASE TRUE";
+			s.addBatch(sql);
+			
+			/* Create all the tables. These will be populated by CSV Loader. */
 			
 			sql=	"CREATE TABLE " + GENE_MARKER_LIST_TABLE_NAME + " ( " +
 					"  Gene varchar(20) NOT NULL, " +

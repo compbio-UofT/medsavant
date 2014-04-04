@@ -105,6 +105,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspec
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SimpleVariant;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.shared.appdevapi.AppColors;
 import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.RegionSet;
@@ -287,7 +288,7 @@ public class DiscoveryPanel extends JPanel {
 		
 		// main view
 		workview= new RoundedPanel(10);
-		workview.setBackground(ViewUtil.getSidebarColor());
+		workview.setBackground(AppColors.iCloudBlue);
 		workview.setLayout(new MigLayout("insets 0px, gapx 0px", "", "top"));
 		
 		choosePatientButton= new JideButton("Choose Patient");

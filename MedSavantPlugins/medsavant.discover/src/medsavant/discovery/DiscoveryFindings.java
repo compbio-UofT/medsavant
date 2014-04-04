@@ -44,7 +44,7 @@ public class DiscoveryFindings {
 	public static final String ACMG_GENE_PANEL= "ACMG";
 	public static final String CGD_GENE_PANEL= "CGD";
 	
-	private final int DB_VARIANT_REQUEST_LIMIT= 500; // shorter limit better for cancelling jobs
+	private final int DB_VARIANT_REQUEST_LIMIT= 50; // shorter limit better for cancelling jobs
 	private final String JANNOVAR_EFFECT= BasicVariantColumns.JANNOVAR_EFFECT.getAlias();
 	private final String JANNOVAR_GENE= BasicVariantColumns.JANNOVAR_SYMBOL.getAlias();
 	

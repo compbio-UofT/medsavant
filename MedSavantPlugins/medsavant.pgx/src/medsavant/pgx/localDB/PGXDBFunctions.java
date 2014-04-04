@@ -25,8 +25,7 @@ public class PGXDBFunctions {
 		String sql=	"SELECT G.gene " +
 					"FROM gene_marker_list G ";
 		
-		ResultSet rs;
-		rs= PGXDB.executeQuery(sql);
+		ResultSet rs= PGXDB.executeQuery(sql);
 
 		/* Grab the first element from each row in the results. */
 		int rowCount= 0;
@@ -54,8 +53,7 @@ public class PGXDBFunctions {
 					"FROM gene_marker_list G " +
 					"WHERE G.gene = '" + geneSymbol + "' "; 
 		
-		ResultSet rs;
-		rs= PGXDB.executeQuery(sql);
+		ResultSet rs= PGXDB.executeQuery(sql);
 
 		int rowCount= 0;
 		String markerString= null;
