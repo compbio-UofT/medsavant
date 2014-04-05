@@ -46,9 +46,10 @@ import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.view.util.list.DefaultNiceListColorScheme;
+import org.ut.biolab.medsavant.client.view.util.list.SubtleBlueNiceListColorScheme;
 import org.ut.biolab.medsavant.client.view.util.list.NiceList;
 import org.ut.biolab.medsavant.client.view.util.list.NiceListItem;
+import org.ut.biolab.medsavant.client.view.util.list.iCloudNiceListColorScheme;
 
 /**
  *
@@ -177,7 +178,7 @@ class QueryConditionDialog extends JDialog {
                 new DetailedListEditor() {
                 });
 
-        view.setListColorScheme(new DefaultNiceListColorScheme());
+        view.setListColorScheme(new SubtleBlueNiceListColorScheme());
 
         //p.add(list.getSearchBar(), BorderLayout.NORTH);
         //p.add(ViewUtil.getClearBorderlessScrollPane(list), BorderLayout.CENTER);

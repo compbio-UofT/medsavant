@@ -87,6 +87,7 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
             showBlockPanel();
             return;
         }
+        
         MedSavantServerInfo server = (MedSavantServerInfo) selectedRow[1];
         showServerInfo(server);
     }
@@ -215,9 +216,9 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
     private boolean isDifferentServerWithName(String name, MedSavantServerInfo server) {
         MedSavantServerInfo existingServer = ServerController.getInstance().getServerNamed(name);
-        
         // true if the server with this name exists
-        return existingServer != null && existingServer != server;
+        boolean result = existingServer != null && !existingServer.equals(server);
+        return result;
     }
 
     private void showServerInfo(final MedSavantServerInfo server) {
@@ -404,7 +405,6 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
         System.out.println("Saving...");
 
-        //TODO: validate
         String name = nameField.getValue();
         String host = hostField.getValue();
 
