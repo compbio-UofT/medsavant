@@ -29,6 +29,7 @@ public class PGXDBTests {
 			se.printStackTrace();
 		}
 		
+		// Tests
 		getAllAlleles();		
 	}
 	
