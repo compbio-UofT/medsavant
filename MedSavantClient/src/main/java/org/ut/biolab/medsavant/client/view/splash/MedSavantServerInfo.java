@@ -16,33 +16,57 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-
 package org.ut.biolab.medsavant.client.view.splash;
 
 import org.ut.biolab.medsavant.client.util.CryptoUtils;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * A class which stores MedSavant Server connection information
+ *
  * @author mfiume
  */
 public final class MedSavantServerInfo implements Serializable, Comparable<MedSavantServerInfo> {
 
+    // create an identifier for this server, to allow comparisons
+    // across serialized / deserialized versions
+    private String uniqueID;
+    
+    // server host name
     private String host;
+    
+    // server port
     private int port;
+    
+    // database on server
     private String database;
+    
+    // nice name to display
     private String nickname;
+    
+    // user name and encoded password
     private String username;
     private String encodedPassword;
+    
+    // whether to remember the password when saved
     private boolean rememberPassword;
+    
+    // whether this server's info should be editable in the UI
+    // 04-01-14: not used, but possible to use in the future
+    // to support public servers
     private boolean isEditable = true;
 
     public MedSavantServerInfo() {
-        this("",0,"","Unnamed Server");
+        this("", 0, "", "Unnamed Server");
     }
 
     public MedSavantServerInfo(String host, int port, String database, String nickname) {
+
+        this.uniqueID = UUID.randomUUID().toString();
+
+        System.out.println((uniqueID) + " Creating server with name " + nickname);
         this.host = host;
         this.port = port;
         this.database = database;
@@ -51,13 +75,22 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
         this.encodedPassword = "";
         this.rememberPassword = false;
     }
-    
+
     public MedSavantServerInfo(MedSavantServerInfo server) {
-        this(server.host,server.port,server.database,server.nickname);
+        this(server.host, server.port, server.database, server.nickname);
+        this.setUniqueID(server.uniqueID);
         this.setEditable(server.isEditable);
         this.setUsername(server.username);
         this.setPassword(CryptoUtils.decrypt(server.encodedPassword));
         this.setRememberPassword(server.rememberPassword);
+    }
+
+    public String getUniqueID() {
+        return uniqueID;
+    }
+
+    private void setUniqueID(String uniqueID) {
+        this.uniqueID = uniqueID;
     }
 
     public void setHost(String host) {
@@ -83,7 +116,7 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
     public void setPassword(String password) {
         this.encodedPassword = CryptoUtils.encrypt(password);
     }
-    
+
     public String getHost() {
         return host;
     }
@@ -131,6 +164,6 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
 
     @Override
     public int compareTo(MedSavantServerInfo o) {
-        return this.getNickname().compareTo(o.getNickname());
+        return this.getUniqueID().compareTo(o.getUniqueID());
     }
 }

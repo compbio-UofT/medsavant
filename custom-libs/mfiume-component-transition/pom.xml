@@ -5,6 +5,9 @@
         <groupId>edu.toronto.cs.medsavant</groupId>
         <artifactId>medsavant-parent</artifactId>
         <version>1.2-SNAPSHOT</version>
+        <relativePath>
+                ../../
+        </relativePath> 
     </parent>
     <groupId>edu.toronto.cs.medsavant</groupId>
     <artifactId>mfiume-component-transition</artifactId>

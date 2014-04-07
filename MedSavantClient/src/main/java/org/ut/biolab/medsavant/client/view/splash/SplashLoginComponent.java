@@ -147,7 +147,7 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
         loginSettingsPanel = initLoginSettingsPanel();
         loggingInPanel = initLoggingInPanel();
 
-        leftSide.add(noServerAtAllPanel);
+        rightSide.add(noServerAtAllPanel);
         rightSide.add(loginSettingsPanel);
         rightSide.add(loggingInPanel);
 

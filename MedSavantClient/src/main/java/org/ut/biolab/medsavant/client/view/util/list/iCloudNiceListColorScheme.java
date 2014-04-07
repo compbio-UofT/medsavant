@@ -25,7 +25,7 @@ import java.awt.Color;
  *
  * @author mfiume
  */
-public class DefaultNiceListColorScheme implements NiceListColorScheme {
+public class iCloudNiceListColorScheme implements NiceListColorScheme {
 
     private final Color backgroundColor = new Color(213, 233, 251);
     private final Color selectedColor = new Color(191, 226, 250);
@@ -34,7 +34,7 @@ public class DefaultNiceListColorScheme implements NiceListColorScheme {
     private final Color unselectedFontColor = new Color(98, 119, 136);
     private final Color borderColor = new Color(203, 226, 243);
     
-    public DefaultNiceListColorScheme() {
+    public iCloudNiceListColorScheme() {
     }
 
     public Color getBackgroundColor() {
