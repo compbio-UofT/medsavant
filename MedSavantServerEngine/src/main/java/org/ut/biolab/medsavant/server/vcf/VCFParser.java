@@ -336,12 +336,12 @@ public class VCFParser {
                 new FileInputStream(uf), EXTERNALSORT_CHARSET));
 
         //Use 0.5 * (1/numThreads) * total memory allocated to Java of memory for sorting.
-        long maxMem = (long) (0.5 * Runtime.getRuntime().maxMemory() / (double) MedSavantServerEngine.getMaxThreads());
+        long maxMem = (long) (0.3 * Runtime.getRuntime().maxMemory() / (double) MedSavantServerEngine.getMaxThreads());
 
         //...unless that amount of memory would exceed the available memory, in which case use 75% of the available memory.        
         long availMem = ExternalSort.estimateAvailableMemory();
         if (0.75 * availMem < maxMem) {
-            maxMem = (long) 0.75 * availMem;
+            maxMem = (long) 0.5 * availMem;
             LOG.info("WARNING: Memory is low for sorting, sorting with reduced memory of " + (maxMem >> 20) + " M");
         } else {
             LOG.info("Sorting using " + (maxMem >> 20) + "M of memory");
