@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
@@ -91,15 +92,16 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
         UserManager userMgr = UserManager.getInstance();
 
-        // Grant the admin user privileges first so that they can give grants to everybody else.
-        userMgr.grantPrivileges(sessID, adminName, UserLevel.ADMIN);
-
+        
         createTables(sessID);
+
         try {
             addRootUser(sessID, conn, rootPassword);
-
             addDefaultReferenceGenomes(sessID);
             addDBSettings(sessID, VersionSettings.getVersionString());
+            // Grant the admin user privileges first so that they can give grants to everybody else.
+            userMgr.grantPrivileges(sessID, adminName, UserLevel.ADMIN);
+
             populateGenes(sessID);
 
             // Grant permissions to everybody else.
@@ -148,7 +150,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`timestamp` datetime NOT NULL,"
                     + "PRIMARY KEY (`id`)"
                     + ") ENGINE=MyISAM;");
-            String[] users = UserManager.getInstance().getUserNames(sessID);
+            Set<String> users = UserManager.getInstance().getAllUserNames(sessID);
             for (String u : users) {
                 conn.executePreparedUpdate(String.format("GRANT INSERT ON %s TO ?@'localhost'", MedSavantDatabase.ServerlogTableSchema.getTableName()), u);
             }
