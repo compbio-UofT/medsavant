@@ -258,9 +258,7 @@
             msInvoke('AnnotationManager', 'getAnnotationFormats', [projectId, refId], function(annotationFormats){                
                var conditions = getOrionConditions(annotationFormats, projectId, refId);
                 //Conditions are passed as row major matrix.  Within each row, conditions are ANDed together.  The rows are then
-                //OR'd together.
-                
-                //Get number of purine->purine and pyramidine->pyramidine transitions.
+                //OR'd together.                                
                 
                 msInvoke('JSONUtilities', 'getVariantsWithStatistics', [projectId, refId, conditions, 0, 10], processFilteredVariants);
             });//end msInvoke(...getCustomVariantFields...)         
