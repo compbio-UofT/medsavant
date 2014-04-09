@@ -1,8 +1,11 @@
 package org.ut.biolab.medsavant;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.List;
+import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 
@@ -32,4 +35,23 @@ public interface JSONUtilitiesAdapter {
      * @throws Exception      
      */
     public int replaceWithTransferredVCF(String sessID, int projID, int refID, List<SimpleVariantFile> files, int[] fileIDs, String[][] variantTags, String email) throws RemoteException, IOException, LockException, Exception;
+    
+    /**
+     * Fetches variants subject to the given conditions, and returns an instance of JSONVariants with those results and statistics 
+     * about the results.  (Statistics are computed over all results, not just those with an offset in the
+     * interval [offset offset+limit].
+     * 
+     * @param sessID - The sessionID, automatically filed in by the Servlet
+     * @param projID - The project identifier
+     * @param refID - The identifier of the reference genome.
+     * @param conditions - row major matrix of conditions where rows are OR'd together, and the cells of each row are AND'd together.
+     * @param start - offset
+     * @param limit - number of items to return.
+     * @return JSONVariants object with summary of results.
+     * @throws SQLException
+     * @throws RemoteException
+     * @throws SessionExpiredException 
+     * @see JSONVariants
+     */
+    public JSONVariants getVariantsWithStatistics(String sessID, int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
 }
