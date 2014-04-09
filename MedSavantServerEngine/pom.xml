@@ -67,7 +67,7 @@
             <!-- This version of Jannovar has been modified to only accumulate a max of 1000 warning messages in memory -->
             <groupId>edu.toronto.cs.medsavant</groupId>
             <artifactId>jannovar-medsavant-modified</artifactId>
-            <version>0.6-beta-3-modified</version>
+            <version>0.6-beta-3-modified-2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
