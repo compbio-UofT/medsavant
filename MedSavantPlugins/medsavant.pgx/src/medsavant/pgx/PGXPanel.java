@@ -248,25 +248,20 @@ public class PGXPanel extends JPanel {
 		
 		reportJP.add(new JLabel("Record retrieved for DNA ID: " + currentDNAID), "wrap");
 		
-		reportJP.add(new JLabel("Number of records retrieved: " + currentPGXAnalysis.getVariants().size()), "wrap");
-		
 		///// TESTING
-		for (Variant v : currentPGXAnalysis.getVariants()) {
-			reportJP.add(new JLabel("[TESTING]: " + Arrays.toString(v.getRow())), "wrap");
-		}
-		
-		try{
-			for (Variant v : currentPGXAnalysis.getVariants()) {
+		for (PGXGeneAndVariants gav : currentPGXAnalysis.getVariants()) {
+			reportJP.add(new JLabel("Gene is: " + gav.getGene()), "wrap");
+			for (Variant v : gav.getVariants()) {
 				reportJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
-					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), v.getGT(),
+					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), 
+					Integer.toString(v.getAlternateNumber()), v.getGT(),
 					(String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT)}, " ")), "wrap");
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		////// END TESTING
 		
 		reportPane.setViewportView(reportJP);
-	}	
+	}
 	
 	
 	/**

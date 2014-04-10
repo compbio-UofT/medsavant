@@ -495,14 +495,9 @@ public class VariantSummaryPanel extends JScrollPane {
 					dnaIDPanel.add(new JLabel(dnaID), "wrap");
 				}
 				
-				/* Collapse the pane if there are more then 5 individuals,
-				 * otherwise, expand it. */
-				if (dnaIDList.size() > 5) {
-					otherIndividualsPane.collapse(true);
-				} else {
-					otherIndividualsPane.collapse(false);
-				}
-				
+				/* Collapse the pane because it takes up a lot of space. The 
+				 * pane title should be informative enough to start. */
+				otherIndividualsPane.collapse(true);
 				otherIndividualsPane.add(dnaIDPanel);
 				otherIndividualsPane.revalidate();
 				

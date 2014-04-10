@@ -74,7 +74,7 @@ public class DiscoveryFindings {
 	
 	private Pattern dp4Pattern= Pattern.compile(";?DP4=([^;]+);?", Pattern.CASE_INSENSITIVE);	
 	private Pattern geneSymbolPattern= Pattern.compile("^([^:]+)");
-	private Pattern formatFieldPattern= Pattern.compile("([^;]*AD[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
+	private Pattern adFieldPattern= Pattern.compile("([^;]*AD[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AD" in format
 	private Pattern aoFieldPattern= Pattern.compile("([^;]*AO[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "AO" in format
 	private Pattern dpFieldPattern= Pattern.compile("([^;]*DP[^;]*)", Pattern.CASE_INSENSITIVE); // must contain "DP" in format
 	
@@ -382,9 +382,15 @@ public class DiscoveryFindings {
 		String sampleInfoFieldText= (String) row[INDEX_OF_SAMPLE_INFO];
 		
 		Matcher dp4Matcher= dp4Pattern.matcher(info_field);
-		Matcher formatFieldMatcher= formatFieldPattern.matcher(format_field);
+		Matcher formatFieldMatcher= adFieldPattern.matcher(format_field);
 		Matcher aoFieldMatcher= aoFieldPattern.matcher(format_field);
 		Matcher dpFieldMatcher= dpFieldPattern.matcher(format_field);
+		
+		/* Check that the number of columns in the FORMAT and SAMPLE_INFO fields
+		 * matches up. If not, don't parse those lines or you'll get an 
+		 * ArrayIndexOutOfBoundsException. */
+		int formatColumnNumber= format_field.split(":").length;
+		int sampleInfoColumnNumber= sampleInfoFieldText.split(":").length;				
 		
 		/* Process DP4 or AD or AO text (from VCF INFO or Format columns) if present. */
 		if (dp4Matcher.find()) { // NOTE: need to run find() to get group() below
@@ -412,13 +418,14 @@ public class DiscoveryFindings {
 				result= true;
 			} 
 			
-		} else if (formatFieldMatcher.find()) { // NOTE: need to run find() to get group() below
+		} else if (formatFieldMatcher.find() // NOTE: need to run find() to get group() below
+			&& formatColumnNumber == sampleInfoColumnNumber) {
 			
 			String formatFieldText= formatFieldMatcher.group(1);
 			
 			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
-			String[] adDelimited= formatFieldText.split(":");			
-			int adIndex= Arrays.asList(adDelimited).indexOf("AD");
+			String[] formatDelimited= formatFieldText.split(":");			
+			int adIndex= Arrays.asList(formatDelimited).indexOf("AD");
 			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
 			int refCount= Integer.parseInt(adCoverageDelimited[0]);
 			int altCount= Integer.parseInt(adCoverageDelimited[1]);
@@ -428,19 +435,20 @@ public class DiscoveryFindings {
 				result= true;
 			}
 			
-		} else if (aoFieldMatcher.find() && dpFieldMatcher.find()) { // NOTE: need to run find() to get group() below
+		} else if (aoFieldMatcher.find() && dpFieldMatcher.find()  // NOTE: need to run find() to get group() below
+			&& formatColumnNumber == sampleInfoColumnNumber) {
 		
 			// if both patterns match, you only need to grab one of the strings.
 			String formatFieldText= aoFieldMatcher.group(1);
 			//String formatFieldText= dpFieldMatcher.group(1); // can also use this
 			
 			// Split on ":" and check if 1) alt >= threshold, 2) alt/total >= ratio_threshold
-			String[] delimited= formatFieldText.split(":");			
-			int aoIndex= Arrays.asList(delimited).indexOf("AO");
-			int dpIndex= Arrays.asList(delimited).indexOf("DP");
+			String[] formatDelimited= formatFieldText.split(":");
+			int aoIndex= Arrays.asList(formatDelimited).indexOf("AO");
+			int dpIndex= Arrays.asList(formatDelimited).indexOf("DP");
 			
 			String[] sampleInfo= sampleInfoFieldText.split(":");
-			int totalCount= Integer.parseInt(sampleInfo[dpIndex]);;
+			int totalCount= Integer.parseInt(sampleInfo[dpIndex]);
 			
 			/* Sometimes the AO count can be comma separated for multiple alternate
 			 * alleles. In this case, due to the way we import these in MedSavant,

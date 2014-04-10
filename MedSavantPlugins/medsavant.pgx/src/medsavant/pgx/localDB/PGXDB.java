@@ -100,11 +100,13 @@ public class PGXDB {
 			s.addBatch(sql);
 
 			
+			/* By default *1 (no markers in the marker_info column) is an empty
+			 * string, rather than NULL */
 			sql=	"CREATE TABLE " + HAPLOTYPE_MARKERS_TABLE_NAME + " ( " +
 					"	Gene varchar(20) NOT NULL, " + 
 					"	Haplotype_ID varchar(1000) DEFAULT NULL, " +
 					"	Haplotype_Symbol varchar(100) NOT NULL, " + 
-					"	Marker_info varchar(50000) DEFAULT NULL, " + // could be a very long field
+					"	Marker_info varchar(50000) DEFAULT '', " + // could be a very long field
 					"	PRIMARY KEY (Gene,Haplotype_Symbol)  " +
 					")";
 			s.addBatch(sql);

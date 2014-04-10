@@ -14,6 +14,7 @@ import medsavant.pgx.PGXException;
  */
 public class PGXDBFunctions {
 	
+	
 	/** 
 	 * Get all genes in the database.
 	 * @return a List of all genes in this DB.

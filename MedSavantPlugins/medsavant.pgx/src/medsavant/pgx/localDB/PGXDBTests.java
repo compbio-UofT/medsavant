@@ -30,7 +30,8 @@ public class PGXDBTests {
 		}
 		
 		// Tests
-		getAllAlleles();		
+		getAllAlleles();
+		getAllGenes();
 	}
 	
 	
@@ -70,6 +71,53 @@ public class PGXDBTests {
 		
 		/* Output all the haplotype star alleles to stdout. */
 		printSQLResults(sql, test2);
+		
+		
+		String test3= "Testing retrieving the *1;*1A alleles which should have no markers (all ref calls)";
+		stdout(test3);
+		
+		/* Query the *1 (no variants) allele. */
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT H.gene, H.haplotype_symbol " +
+				"FROM haplotype_markers H " +
+				"WHERE gene = 'CYP2C19' " +
+				"	AND marker_info LIKE '' ";
+		
+		/* Output all the haplotype star alleles to stdout. */
+		printSQLResults(sql, test3);
+		
+		
+		String test4= "Testing retrieving all alleles with NULL marker_info fields. The *1;*1A alleles " +
+			"which have no markers (all ref calls), store an empty string ''.";
+		stdout(test4);
+		
+		/* Test to see what comes up with a NULL marker_info field. Should be empty. */
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT H.gene, H.haplotype_symbol " +
+				"FROM haplotype_markers H " +
+				"WHERE gene = 'CYP2C19' " +
+				"	AND marker_info IS NULL ";
+		
+		/* Output all the haplotype star alleles to stdout. */
+		printSQLResults(sql, test4);
+	}
+	
+	
+	/**
+	 * Query the DB and get all genes that have pharmacogenomic variants.
+	 * This is a test to obtain all gene symbols from the local PGx DB.
+	 */
+	private static void getAllGenes() {
+		String sql;
+		
+		String test1= "Testing retrieving all PGx genes";
+		stdout(test1);
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT G.gene " +
+				"FROM gene_marker_list G ";
+		
+		printSQLResults(sql, test1);
 	}
 	
 	
