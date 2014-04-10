@@ -273,6 +273,10 @@ public class ListView extends JPanel {
                 synchronized (fetch) {
                     fetch.notifyAll();
                 }
+                if (result.length == 0) {
+                    System.out.println("Clearing selections");
+                    detailedView.setSelectedItem(new Object[]{});
+                }
             }
 
             @Override

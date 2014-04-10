@@ -16,7 +16,8 @@ public class URLValidator extends EditableFieldValidator<String> {
 
     @Override
     public boolean validate(String value) {
-        String[] schemes = {"http", "https"};
+        System.out.println("Validating " + value);
+        String[] schemes = {"http", "https", "ftp"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         return value.isEmpty() || urlValidator.isValid(value);
     }

@@ -212,20 +212,16 @@
             }
         }
         
-        function getOrionFilteredVariants(projectId, refId){                                
-            //To construct the filters, we need to know the column names of thousand genomes and polyphen.  These
-            //are 'custom' annotations, and the column names can vary.  Other columns, like 'quality' are fixed and are always present
-            //with the same name, so they can be hardcoded.
-            msInvoke('AnnotationManager', 'getAnnotationFormats', [projectId, refId], function(annotationFormats){                
-                var thousandGProgram = "1000g2012apr_all";
+        function getOrionConditions(annotationFormats, projectId, refId){
+             var thousandGProgram = "1000g2012apr_all";
                 var thousandGAlias = thousandGProgram+", Score";
-                var polyphenProgram = "ljb2_pp2hvar";
+                var polyphenProgram = "ljb23_pp2hvar";
                 var polyphenAlias = polyphenProgram+", Score";                
 
                 var thousandGColumn = getAnnotationColumnName(annotationFormats, thousandGProgram, thousandGAlias);
                 var polyphenColumn = getAnnotationColumnName(annotationFormats, polyphenProgram, polyphenAlias);                                                          
                 var qualityColumn = "qual";
-                var effectColumn = "effect"; //from Jannovar
+                var effectColumn = "EFFECT"; //from Jannovar
                 alert('Got thousandGColumn name as ' + thousandGColumn + " and polyphen column as "+polyphenColumn);                                
                 
                 //filtering parameters.  Note: use strings for MSCondition.  
@@ -252,9 +248,19 @@
                         [[excludeSynCondition, excludeIntronCondition, excludeRNAIntronCondition, qualityCondition, thousandGCondition, polyphenCondition1],
                     [excludeSynCondition, excludeIntronCondition, excludeRNAIntronCondition, qualityCondition, thousandGCondition, polyphenCondition2]];
 
+                return conditions;
+        }
+        
+        function getOrionFilteredVariants(projectId, refId){                                
+            //To construct the filters, we need to know the column names of thousand genomes and polyphen.  These
+            //are 'custom' annotations, and the column names can vary.  Other columns, like 'quality' are fixed and are always present
+            //with the same name, so they can be hardcoded.
+            msInvoke('AnnotationManager', 'getAnnotationFormats', [projectId, refId], function(annotationFormats){                
+               var conditions = getOrionConditions(annotationFormats, projectId, refId);
                 //Conditions are passed as row major matrix.  Within each row, conditions are ANDed together.  The rows are then
-                //OR'd together.
-                msInvoke('VariantManager', 'getVariants', [projectId, refId, conditions, 0, 10], processFilteredVariants);
+                //OR'd together.                                
+                
+                msInvoke('JSONUtilities', 'getVariantsWithStatistics', [projectId, refId, conditions, 0, 10], processFilteredVariants);
             });//end msInvoke(...getCustomVariantFields...)         
      }
 
