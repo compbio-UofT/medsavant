@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 public class EnumEditableField extends OnClickEditableField<Object> {
 
     private final JComboBox comboBox;
+    private boolean saveOnSelection = true;
 
     public EnumEditableField() {
         this(null);
@@ -38,7 +39,8 @@ public class EnumEditableField extends OnClickEditableField<Object> {
         comboBox.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (saveOnSelection && e.getStateChange() == ItemEvent.SELECTED) {
+                    System.out.println("Saving");
                     saveWithValidationWarning();
                 }
             }
@@ -57,11 +59,14 @@ public class EnumEditableField extends OnClickEditableField<Object> {
 
     @Override
     public void updateEditorRepresentationForValue(Object value) {
+        saveOnSelection = false;
         comboBox.setSelectedItem(value);
+        saveOnSelection = true;
     }
 
     @Override
     public JComponent getEditor() {
+        System.out.println("Getting combobox");
         return comboBox;
     }
 

@@ -84,6 +84,7 @@ public abstract class EditableField<T> extends JPanel {
      * @param isEditing The field's edit state.
      */
     public void setEditing(boolean isEditing) {
+        //System.out.println("Setting editing to " + isEditing);
         this.editing = isEditing;
         updateUIForEditingState(isEditing);
         updateUI();
@@ -338,7 +339,7 @@ public abstract class EditableField<T> extends JPanel {
             public void focusGained(FocusEvent e) {
                 if (!EditableField.this.isEditing()) {
                     if (EditableField.this.isAutonomousEditingEnabled()) {
-                        System.out.println("Big brother forcing " + EditableField.this.getValue() + " into edit mode");
+                        //System.out.println("Big brother forcing " + EditableField.this.getValue() + " into edit mode");
                         EditableField.this.setEditing(true);
                     }
                 }
