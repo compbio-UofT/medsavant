@@ -101,7 +101,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
         @Override
         public void addItems() {
-            NewUserDialog npd = new NewUserDialog();
+            CreateUserDialog npd = new CreateUserDialog();
             npd.setVisible(true);
         }
 
@@ -112,9 +112,9 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             String name = null;
             if (items.size() == 1) {
                 name = (String) items.get(0)[0];
-                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>" + name + "</i>?<br>This cannot be undone.</html>");
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>" + name + "</i>?<br><br>This cannot be undone.</html>");
             } else {
-                result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these " + items.size() + " users?\nThis cannot be undone.");
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove these " + items.size() + " users?<br><br>This cannot be undone.</html>");
             }
 
             if (result == DialogUtils.YES) {
@@ -138,7 +138,11 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
                             }
                             setVisible(false);
                             if (numCouldntRemove != items.size()) {
-                                DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " user(s)");
+                                if (items.size() == 1) {
+                                    DialogUtils.displayMessage("<html>Removed <i>" + items.get(0)[0] + "</i></html>");
+                                } else {
+                                    DialogUtils.displayMessage("Removed " + (items.size() - numCouldntRemove) + " user(s)");
+                                }
                             }
                         } catch (Throwable ex) {
                             setVisible(false);

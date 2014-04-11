@@ -109,14 +109,6 @@ public abstract class EditableField<T> extends JPanel {
         updateUIForAutonomousEditingState(b);
     }
 
-    /**
-     * Whether autonomous editing is enabled for the field.
-     *
-     * @return Whether autonomous editing is enabled for the field.
-     */
-    public boolean isAutomousEditingEnabled() {
-        return autonomousEditingEnabled;
-    }
 
     /**
      * Get the identifier for this field.
@@ -345,7 +337,7 @@ public abstract class EditableField<T> extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 if (!EditableField.this.isEditing()) {
-                    if (EditableField.this.isAutomousEditingEnabled()) {
+                    if (EditableField.this.isAutonomousEditingEnabled()) {
                         System.out.println("Big brother forcing " + EditableField.this.getValue() + " into edit mode");
                         EditableField.this.setEditing(true);
                     }

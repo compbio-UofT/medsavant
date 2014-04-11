@@ -146,7 +146,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         setValue(null);
         updateUIForEditingState(this.isEditing());
-        updateUIForAutonomousEditingState(this.isAutomousEditingEnabled());
+        updateUIForAutonomousEditingState(this.isAutonomousEditingEnabled());
 
         setAcceptButtonVisible(false); // usually, the editable component configures acceptance
         setRejectButtonVisible(true);
@@ -156,7 +156,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
     protected void updateUIForEditingState(boolean isEditing) {
         updateUIForEditingState(isEditing, false);
     }
-    
+
     protected void updateUIForEditingState(boolean isEditing, boolean requestFocus) {
 
         // normal state
@@ -164,7 +164,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         // edit state
         setVisibility(new Component[]{editorPlaceholder}, isEditing);
-        
+
         if (acceptButtonVisible) {
             acceptChangesButton.setVisible(isEditing);
         }
@@ -244,11 +244,12 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
          */
         valueLabel = new JLabel() {
             int maxChars = 30;
+
             @Override
             public void setText(String s) {
                 if (s.length() > maxChars) {
                     this.setToolTipText(s);
-                    super.setText(s.substring(0,maxChars-3) + "...");
+                    super.setText(s.substring(0, maxChars - 3) + "...");
                 } else {
                     super.setText(s);
                     this.setToolTipText(null);
@@ -329,16 +330,18 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
     }
 
     public void addSaveFocusListener(JComponent c) {
-        c.addFocusListener(new FocusListener() {
+        if (OnClickEditableField.this.isAutonomousEditingEnabled()) {
+            c.addFocusListener(new FocusListener() {
 
-            public void focusGained(FocusEvent e) {
-            }
+                public void focusGained(FocusEvent e) {
+                }
 
-            public void focusLost(FocusEvent e) {
-                saveWithValidationWarning();
-            }
+                public void focusLost(FocusEvent e) {
+                    saveWithValidationWarning();
+                }
 
-        });
+            });
+        }
     }
 
     /**
@@ -389,13 +392,15 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         c.addKeyListener(new KeyListener() {
 
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
-                    saveWithValidationWarning();
-                    return;
-                }
-                
-                if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-                    OnClickEditableField.this.setEditing(false);
+                if (OnClickEditableField.this.isAutonomousEditingEnabled()) {
+                    if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
+                        saveWithValidationWarning();
+                        return;
+                    }
+
+                    if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
+                        OnClickEditableField.this.setEditing(false);
+                    }
                 }
             }
 
@@ -434,6 +439,5 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
 
     }
-
 
 }
