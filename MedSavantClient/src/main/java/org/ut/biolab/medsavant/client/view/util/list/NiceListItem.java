@@ -14,7 +14,7 @@ import javax.swing.ImageIcon;
  */
 public class NiceListItem {
     
-    private final String label;
+    private String label;
     private final Object item;
     private ImageIcon icon;
     private boolean removable;
@@ -37,6 +37,10 @@ public class NiceListItem {
         return icon;
     }
 
+    public void setLabel(String label) {
+        this.label = label;
+    }
+    
     public void setIcon(ImageIcon icon) {
         this.icon = icon;
     }

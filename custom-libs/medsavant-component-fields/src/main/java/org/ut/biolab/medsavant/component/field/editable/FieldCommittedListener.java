@@ -10,7 +10,7 @@ package org.ut.biolab.medsavant.component.field.editable;
  *
  * @author mfiume
  */
-public interface FieldEditedListener {
+public interface FieldCommittedListener {
     
-    public void handleEditEvent(EditableField f);
+    public void handleCommitEvent(EditableField f);
 }

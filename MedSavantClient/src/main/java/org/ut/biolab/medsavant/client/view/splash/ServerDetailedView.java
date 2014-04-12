@@ -46,21 +46,23 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.component.field.editable.EditableField;
 import org.ut.biolab.medsavant.component.field.editable.EditableFieldValidator;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
+import org.ut.biolab.medsavant.component.field.editable.FieldCommittedListener;
 import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
-import org.ut.biolab.medsavant.component.field.editable.IntegerEditableField;
 import org.ut.biolab.medsavant.component.field.editable.PasswordEditableField;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
+import org.ut.biolab.medsavant.component.field.validator.HostnameValidator;
 import org.ut.biolab.medsavant.component.field.validator.NonEmptyStringValidator;
+import org.ut.biolab.medsavant.component.field.validator.PositiveNumberValidator;
 
 /**
  *
  * @author mfiume
  */
-public class ServerDetailedView extends DetailedView implements FieldEditedListener {
+public class ServerDetailedView extends DetailedView implements FieldCommittedListener, FieldEditedListener {
 
     private StringEditableField nameField;
     private StringEditableField hostField;
-    private IntegerEditableField portField;
+    private StringEditableField portField;
     private StringEditableField databaseField;
     private StringEditableField usernameField;
     private PasswordEditableField passwordField;
@@ -70,8 +72,10 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
     private MedSavantServerInfo server;
 
     private JButton chooseButton;
+    
     private KeyValuePairPanel kvp;
     private final SplashFrame splash;
+    
 
     public ServerDetailedView(SplashFrame splash, SplashServerManagementComponent serverManagementComponent) {
         super("Servers");
@@ -113,12 +117,10 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
             @Override
             public boolean validate(String value) {
                 if (nonEmptyStringValidator.validate(value)) {
-
                     // check if there's already a different server with this name
                     return !isDifferentServerWithName(value, server);
-
                 }
-                return true;
+                return false;
             }
 
             @Override
@@ -129,31 +131,48 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
         };
 
         nameField = new StringEditableField();
+        nameField.setName("Server name");
+        nameField.setAutonomousEditingEnabled(false);
+        nameField.setEditing(true);
         nameField.setValidator(nameValidator);
         nameField.setValue(server.getNickname());
 
         hostField = new StringEditableField();
-        hostField.setValidator(new NonEmptyStringValidator("host name"));
+        hostField.setAutonomousEditingEnabled(false);
+        hostField.setEditing(true);
+        hostField.setValidator(new HostnameValidator());
         hostField.setValue(server.getHost());
-
-        portField = new IntegerEditableField();
-        portField.setValue(server.getPort());
+        
+        portField = new StringEditableField();
+        portField.setAutonomousEditingEnabled(false);
+        portField.setEditing(true);
+        portField.setValidator(new PositiveNumberValidator("port"));
+        portField.setValue(server.getPort() + "");
 
         databaseField = new StringEditableField();
+        databaseField.setAutonomousEditingEnabled(false);
+        databaseField.setEditing(true);
         databaseField.setValidator(new NonEmptyStringValidator("database name"));
         databaseField.setValue(server.getDatabase());
 
         usernameField = new StringEditableField();
+        usernameField.setAutonomousEditingEnabled(false);
+        usernameField.setEditing(true);
         usernameField.setValidator(new NonEmptyStringValidator("username"));
         usernameField.setValue(server.getUsername());
 
         passwordField = new PasswordEditableField();
+        passwordField.setAutonomousEditingEnabled(false);
+        passwordField.setEditing(true);
         passwordField.setValidator(new NonEmptyStringValidator("password"));
         passwordField.setValue(server.getPassword());
 
         rememberPasswordField = new EnumEditableField(new String[]{"No", "Yes"});
+        rememberPasswordField.setAutonomousEditingEnabled(false);
+        rememberPasswordField.setEditing(true);
         rememberPasswordField.setValue(server.isRememberPassword() ? "Yes" : "No");
 
+        addCommitListenersToFields(nameField, hostField, portField, databaseField, usernameField, passwordField, rememberPasswordField);
         addChangeListenersToFields(nameField, hostField, portField, databaseField, usernameField, passwordField, rememberPasswordField);
 
         kvp.addKeyWithValue("Server name", nameField);
@@ -223,6 +242,14 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
     private void showServerInfo(final MedSavantServerInfo server) {
 
+        if (this.server != null && server.getUniqueID().equals(this.server.getUniqueID())) {
+            System.out.println("Same thing...");
+            return;
+        }
+        
+        System.out.println("Setting server to " + server.getNickname());
+        
+        
         this.server = server;
 
         this.removeAll();
@@ -258,7 +285,7 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
                 }
             }
         });
-
+        
         bottomMenu.addRightComponent(chooseButton);
 
         this.add(container, BorderLayout.CENTER);
@@ -290,7 +317,7 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
     private void createDatabaseSpecifiedByForm() {
 
         String host = hostField.getValue();
-        int port = portField.getValue();
+        int port = Integer.parseInt(portField.getValue());
         String database = databaseField.getValue();
         String username = usernameField.getValue();
         String password = passwordField.getValue();
@@ -301,7 +328,7 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
     private void deleteDatabaseSpecifiedByForm() {
 
         String host = hostField.getValue();
-        int port = portField.getValue();
+        int port = Integer.parseInt(portField.getValue());
         String database = databaseField.getValue();
         String username = usernameField.getValue();
         String password = passwordField.getValue();
@@ -403,12 +430,10 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
 
     private void doSave() {
 
-        System.out.println("Saving...");
-
         String name = nameField.getValue();
         String host = hostField.getValue();
 
-        Integer portInt = portField.getValue();
+        Integer portInt = Integer.parseInt(portField.getValue());
         int port = portInt == null ? 0 : portInt;
 
         String database = databaseField.getValue();
@@ -435,15 +460,35 @@ public class ServerDetailedView extends DetailedView implements FieldEditedListe
     }
 
     @Override
-    public void handleEvent(EditableField f) {
-        System.out.println("Field with value " + f.getValue() + "  was edited");
-        System.out.println("Saving");
+    public void handleCommitEvent(EditableField f) {
         doSave();
     }
+    
+    @Override
+    public void handleEditEvent(EditableField f) {
+        System.out.println("Field " + f.getName() + " changed to " + f.getValue());
+        
+        if (f.validateCurrentValue()) {
+            System.out.println("Saving...!");
+            
+            doSave();
+            
+            if (f.getName() != null && f.getName().equals("Server name")) {
+                parent.setSelectedItemText(f.getValue().toString());
+            }
+        }
+    }
 
+    private void addCommitListenersToFields(EditableField... fields) {
+        for (EditableField f : fields) {
+            f.addFieldComittedListener(this);
+        }
+    }
+    
     private void addChangeListenersToFields(EditableField... fields) {
         for (EditableField f : fields) {
             f.addFieldEditedListener(this);
+            
         }
     }
 

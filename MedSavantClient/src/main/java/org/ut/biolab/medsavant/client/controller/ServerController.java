@@ -102,7 +102,7 @@ public class ServerController {
     
     public synchronized void saveServers() {
 
-        LOG.info("Serializing " + servers.size() + " servers");
+        //LOG.info("Serializing " + servers.size() + " servers");
         FileOutputStream fileout = null;
         Writer out = null;
         
@@ -110,7 +110,6 @@ public class ServerController {
         List<MedSavantServerInfo> serversWithPasswordsRemoved = new ArrayList<MedSavantServerInfo>();
         for (MedSavantServerInfo s : servers) {
             MedSavantServerInfo clone = new MedSavantServerInfo(s);
-            System.out.println("Cloning server " + s.getNickname());
             if (!clone.isRememberPassword()) {
                 clone.setPassword("");
             }

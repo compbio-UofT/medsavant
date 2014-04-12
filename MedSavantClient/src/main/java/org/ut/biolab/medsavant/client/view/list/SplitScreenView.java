@@ -88,4 +88,8 @@ public class SplitScreenView extends JPanel {
     public void setListColorScheme(NiceListColorScheme cs) {
         listView.setColorScheme(cs);
     }
+    
+    public void setSelectedItemText(String text) {
+        listView.setSelectedItemText(text);
+    }
 }

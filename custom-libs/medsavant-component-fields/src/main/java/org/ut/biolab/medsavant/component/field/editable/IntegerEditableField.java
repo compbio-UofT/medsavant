@@ -22,6 +22,8 @@ public class IntegerEditableField extends OnClickEditableField<Integer> {
         
         addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
+        addFieldChangeKeyListener(textField);
+        
         this.setRejectButtonVisible(false);
     }
     

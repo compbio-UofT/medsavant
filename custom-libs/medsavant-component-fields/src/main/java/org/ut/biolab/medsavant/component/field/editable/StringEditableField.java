@@ -22,6 +22,8 @@ public class StringEditableField extends OnClickEditableField<String> {
 
         addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
+        addFieldChangeKeyListener(textField);
+        
         this.setRejectButtonVisible(false);
     }
 

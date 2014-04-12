@@ -63,10 +63,7 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
     }
 
     public MedSavantServerInfo(String host, int port, String database, String nickname) {
-
         this.uniqueID = UUID.randomUUID().toString();
-
-        System.out.println((uniqueID) + " Creating server with name " + nickname);
         this.host = host;
         this.port = port;
         this.database = database;

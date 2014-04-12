@@ -39,5 +39,11 @@
             <artifactId>commons-validator</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>jide</groupId>
+            <artifactId>jide-components</artifactId>
+            <version>3.5.6</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

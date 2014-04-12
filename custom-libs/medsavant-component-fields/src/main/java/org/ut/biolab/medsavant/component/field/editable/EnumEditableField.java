@@ -40,8 +40,11 @@ public class EnumEditableField extends OnClickEditableField<Object> {
 
             public void itemStateChanged(ItemEvent e) {
                 if (saveOnSelection && e.getStateChange() == ItemEvent.SELECTED) {
-                    System.out.println("Saving");
-                    saveWithValidationWarning();
+                    if (EnumEditableField.this.isAutonomousEditingEnabled()) {
+                        saveWithValidationWarning();
+                        setEditing(false);
+                    }
+                    EnumEditableField.this.fireFieldEditedEvent();
                 }
             }
         });
@@ -66,7 +69,6 @@ public class EnumEditableField extends OnClickEditableField<Object> {
 
     @Override
     public JComponent getEditor() {
-        System.out.println("Getting combobox");
         return comboBox;
     }
 

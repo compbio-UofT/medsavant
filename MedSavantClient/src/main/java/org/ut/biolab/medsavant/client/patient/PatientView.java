@@ -53,7 +53,7 @@ import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.component.field.editable.EditableField;
 import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
-import org.ut.biolab.medsavant.component.field.editable.FieldEditedListener;
+import org.ut.biolab.medsavant.component.field.editable.FieldCommittedListener;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 import org.ut.biolab.medsavant.component.field.validator.URLValidator;
 import org.ut.biolab.medsavant.shared.model.Cohort;
@@ -63,7 +63,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
  *
  * @author mfiume
  */
-public class PatientView extends JPanel implements FieldEditedListener {
+public class PatientView extends JPanel implements FieldCommittedListener {
 
     private Patient patient;
     private KeyValuePairPanel profileKVP;
@@ -188,32 +188,32 @@ public class PatientView extends JPanel implements FieldEditedListener {
         StringEditableField individualIDField = new StringEditableField();
         individualIDField.setTag(HOSPITAL_ID);
         individualIDField.setValue(patient.getHospitalID());
-        individualIDField.addFieldEditedListener(this);
+        individualIDField.addFieldComittedListener(this);
 
         EnumEditableField sexField = new EnumEditableField(new String[]{"Undesignated", "Male", "Female"});
         sexField.setValue(patient.getSex());
         sexField.setTag(SEX);
-        sexField.addFieldEditedListener(this);
+        sexField.addFieldComittedListener(this);
 
         EnumEditableField affectedField = new EnumEditableField(new String[]{"Yes", "No"});
         affectedField.setValue(patient.isAffected() ? "Yes" : "No");
         affectedField.setTag(AFFECTED);
-        affectedField.addFieldEditedListener(this);
+        affectedField.addFieldComittedListener(this);
 
         EditablePatientField motherField = new EditablePatientField(true);
         motherField.setValue(patient.getMotherHospitalID());
         motherField.setTag(MOTHER_ID);
-        motherField.addFieldEditedListener(this);
+        motherField.addFieldComittedListener(this);
 
         EditablePatientField fatherField = new EditablePatientField(true);
         fatherField.setValue(patient.getFatherHospitalID());
         fatherField.setTag(FATHER_ID);
-        fatherField.addFieldEditedListener(this);
+        fatherField.addFieldComittedListener(this);
 
         StringEditableField familyIDField = new StringEditableField();
         familyIDField.setValue(patient.getFamilyID());
         familyIDField.setTag(FAMILY_ID);
-        familyIDField.addFieldEditedListener(this);
+        familyIDField.addFieldComittedListener(this);
 
         JButton pedigree = ViewUtil.getSoftButton("Pedigree");
 
@@ -349,13 +349,13 @@ public class PatientView extends JPanel implements FieldEditedListener {
         dnaIDField.setValue(patient.getDnaID());
         dnaIDField.setTag(DNA_ID);
         dnaIDField.setValue(patient.getDnaID());
-        dnaIDField.addFieldEditedListener(this);
+        dnaIDField.addFieldComittedListener(this);
 
         StringEditableField bamURLField = new StringEditableField();
         bamURLField.setValidator(new URLValidator());
         bamURLField.setValue(patient.getBamURL());
         bamURLField.setTag(BAM_URL);
-        bamURLField.addFieldEditedListener(this);
+        bamURLField.addFieldComittedListener(this);
 
         geneticsKVP.setValue(PatientView.DNA_ID, dnaIDField);
         geneticsKVP.setAdditionalColumn(PatientView.DNA_ID, 0, dnaIDButton);
@@ -367,7 +367,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
         phenotypeField.setValue(patient.getPhenotypes());
         phenotypeField.setTag(PHENOTYPE);
         phenotypeField.setValue(patient.getPhenotypes());
-        phenotypeField.addFieldEditedListener(this);
+        phenotypeField.addFieldComittedListener(this);
 
         phenotypeKVP.setValue(PatientView.PHENOTYPE, phenotypeField);
 
@@ -395,7 +395,7 @@ public class PatientView extends JPanel implements FieldEditedListener {
     }
 
     @Override
-    public void handleEvent(EditableField f) {
+    public void handleCommitEvent(EditableField f) {
 
         if (f.getTag().equals(FATHER_ID)) {
             patient.setFatherHospitalID((String) f.getValue());
