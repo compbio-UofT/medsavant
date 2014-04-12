@@ -78,10 +78,8 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
         
          if (uniqueID == null) {
             this.uniqueID = UUID.randomUUID().toString();
-            System.out.println("GENERATING NEW SERVER WITH UUID " + this.getUniqueID() + " AND NICKNAME " + this.getNickname());
         } else {
             this.uniqueID = uniqueID;
-            System.out.println("CLONING SERVER WITH UUID " + this.getUniqueID() + " AND NICKNAME " + this.getNickname());
         }
     }
 

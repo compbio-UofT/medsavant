@@ -248,7 +248,6 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
         
         System.out.println("Setting server to " + server.getNickname());
         
-        
         this.server = server;
 
         this.removeAll();
