@@ -243,7 +243,6 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
     private void showServerInfo(final MedSavantServerInfo server) {
 
         if (this.server != null && server.getUniqueID().equals(this.server.getUniqueID())) {
-            System.out.println("Same thing...");
             return;
         }
         
@@ -455,7 +454,7 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
             return;
         }
 
-        System.out.println("Edited server, new name is " + server.getNickname());
+        //System.out.println("Edited server, new name is " + server.getNickname());
         
         ServerController.getInstance().saveServers();
         serverManagementComponent.getServerList().selectItemWithKey(name);
@@ -468,10 +467,8 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
     
     @Override
     public void handleEditEvent(EditableField f) {
-        System.out.println("Field " + f.getName() + " changed to " + f.getValue());
         
         if (f.validateCurrentValue()) {
-            System.out.println("Saving...!");
             
             doSave();
             

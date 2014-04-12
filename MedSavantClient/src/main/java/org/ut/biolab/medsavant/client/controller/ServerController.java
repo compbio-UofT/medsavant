@@ -119,7 +119,7 @@ public class ServerController {
             if (!clone.isRememberPassword()) {
                 clone.setPassword("");
             }
-            LOG.info("Saved " + clone.getNickname());
+            //LOG.info("Saved " + clone.getNickname());
             serversWithPasswordsRemoved.add(clone);
         }
 
@@ -178,9 +178,6 @@ public class ServerController {
                 }
                 in.close();
                 filein.close();
-            }
-            for (MedSavantServerInfo server : servers) {
-                LOG.info("Loaded " + server.getNickname() + " (" + server.getUniqueID() + ")");
             }
 
             LOG.info("Loaded " + servers.size() + " servers");

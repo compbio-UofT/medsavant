@@ -268,7 +268,7 @@ public class ListView extends JPanel {
 
             @Override
             protected void showSuccess(Object[][] result) {
-                System.out.println("Fetched new list");
+                //System.out.println("Fetched new list");
                 setList(result);
                 isFetching = false;
                 synchronized (fetch) {
