@@ -455,6 +455,8 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
             return;
         }
 
+        System.out.println("Edited server, new name is " + server.getNickname());
+        
         ServerController.getInstance().saveServers();
         serverManagementComponent.getServerList().selectItemWithKey(name);
     }

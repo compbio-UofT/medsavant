@@ -63,7 +63,11 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
     }
 
     public MedSavantServerInfo(String host, int port, String database, String nickname) {
-        this.uniqueID = UUID.randomUUID().toString();
+        this(host, port, database, nickname, null);
+    }
+    
+    private MedSavantServerInfo(String host, int port, String database, String nickname, String uniqueID) {
+        
         this.host = host;
         this.port = port;
         this.database = database;
@@ -71,11 +75,18 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
         this.username = "";
         this.encodedPassword = "";
         this.rememberPassword = false;
+        
+         if (uniqueID == null) {
+            this.uniqueID = UUID.randomUUID().toString();
+            System.out.println("GENERATING NEW SERVER WITH UUID " + this.getUniqueID() + " AND NICKNAME " + this.getNickname());
+        } else {
+            this.uniqueID = uniqueID;
+            System.out.println("CLONING SERVER WITH UUID " + this.getUniqueID() + " AND NICKNAME " + this.getNickname());
+        }
     }
 
     public MedSavantServerInfo(MedSavantServerInfo server) {
-        this(server.host, server.port, server.database, server.nickname);
-        this.setUniqueID(server.uniqueID);
+        this(server.host, server.port, server.database, server.nickname, server.uniqueID);
         this.setEditable(server.isEditable);
         this.setUsername(server.username);
         this.setPassword(CryptoUtils.decrypt(server.encodedPassword));
@@ -104,6 +115,7 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+        System.out.println("SETTING UUID " + this.getUniqueID() + " NICKNAME TO " + this.getNickname());
     }
 
     public void setUsername(String username) {

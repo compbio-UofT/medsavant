@@ -398,7 +398,9 @@ public class ListView extends JPanel {
     }
 
     void selectItemWithKey(final String key) {
-        //System.out.println("Selecting item with key " + key);
+        
+        System.out.println("Selecting item with key " + key);
+        
         new Thread(new Runnable() {
 
             @Override

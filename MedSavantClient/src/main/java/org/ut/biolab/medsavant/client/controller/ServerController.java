@@ -12,6 +12,9 @@ import org.ut.biolab.medsavant.client.view.splash.MedSavantServerInfo;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by mfiume on 2/3/2014.
@@ -30,7 +33,10 @@ public class ServerController {
     private static ServerController instance;
     private MedSavantServerInfo currentServer;
 
-    public static  ServerController getInstance() {
+    //private final Semaphore semaphore = new Semaphore(1, true);
+    //private static final Object initializationLock = new Object();
+    
+    public synchronized static ServerController getInstance() {
         if (instance == null) {
             instance = new ServerController();
         }
@@ -38,7 +44,7 @@ public class ServerController {
     }
 
     private ServerController() {
-
+        
         listeners = new ArrayList<Listener<ServerController>>();
         loadServers();
 
@@ -113,6 +119,7 @@ public class ServerController {
             if (!clone.isRememberPassword()) {
                 clone.setPassword("");
             }
+            LOG.info("Saved " + clone.getNickname());
             serversWithPasswordsRemoved.add(clone);
         }
 
@@ -156,6 +163,7 @@ public class ServerController {
             } else {
                 filein = new FileInputStream(getServerFile());
                 in = new InputStreamReader(filein);
+                LOG.info("Deserializing servers");
                 try {
                     Gson gson = new GsonBuilder().create();
                     java.lang.reflect.Type type = new TypeToken<List<MedSavantServerInfo>>(){}.getType();
@@ -170,6 +178,9 @@ public class ServerController {
                 }
                 in.close();
                 filein.close();
+            }
+            for (MedSavantServerInfo server : servers) {
+                LOG.info("Loaded " + server.getNickname() + " (" + server.getUniqueID() + ")");
             }
 
             LOG.info("Loaded " + servers.size() + " servers");
