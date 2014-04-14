@@ -20,6 +20,7 @@
 package org.ut.biolab.medsavant.client.login;
 
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
@@ -35,7 +36,6 @@ import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.project.ProjectChooser;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.project.ProjectWizard;
-import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter.LogType;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
@@ -183,7 +183,7 @@ public class LoginController extends Controller<LoginEvent> {
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error signing in: %s", ex);
             fireEvent(new LoginEvent(ex));
-        }
+        }                
     }
     private Semaphore semLogin = new Semaphore(1, true);
     private MedSavantWorker<Void> currentLoginThread;
