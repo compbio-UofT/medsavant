@@ -100,6 +100,20 @@ public class PGXDBTests {
 		
 		/* Output all the haplotype star alleles to stdout. */
 		printSQLResults(sql, test4);
+		
+		String test5= "Testing getting * nomenclature for this haplotype from GS000035328-ASM.";
+		stdout(test5);
+		
+		/* Test to see what comes up with a NULL marker_info field. Should be empty. */
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT H.gene, H.haplotype_symbol " +
+				"FROM haplotype_markers H " +
+				"WHERE gene = 'CYP2C19' " +
+				"	AND marker_info LIKE '%rs7902257=g%' ";
+		
+		/* Output all the haplotype star alleles to stdout. */
+		printSQLResults(sql, test5);
+		
 	}
 	
 	

@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import medsavant.pgx.localDB.PGXDBFunctions;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -249,14 +250,16 @@ public class PGXPanel extends JPanel {
 		reportJP.add(new JLabel("Record retrieved for DNA ID: " + currentDNAID), "wrap");
 		
 		///// TESTING
-		for (PGXGeneAndVariants gav : currentPGXAnalysis.getVariants()) {
-			reportJP.add(new JLabel("Gene is: " + gav.getGene()), "wrap");
-			for (Variant v : gav.getVariants()) {
+		for (PGXGeneAndVariants pgav : currentPGXAnalysis.getVariants()) {
+			reportJP.add(new JLabel("Gene is: " + pgav.getGene()), "wrap");
+			for (Variant v : pgav.getVariants()) {
 				reportJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
 					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), 
 					Integer.toString(v.getAlternateNumber()), v.getGT(),
 					(String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT)}, " ")), "wrap");
 			}
+			
+			reportJP.add(new JLabel("Diplotype is " + PGXDBFunctions.getDiplotype(pgav)));
 		}
 		////// END TESTING
 		

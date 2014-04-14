@@ -106,7 +106,7 @@ public class PGXDB {
 					"	Gene varchar(20) NOT NULL, " + 
 					"	Haplotype_ID varchar(1000) DEFAULT NULL, " +
 					"	Haplotype_Symbol varchar(100) NOT NULL, " + 
-					"	Marker_info varchar(50000) DEFAULT '', " + // could be a very long field
+					"	Marker_info varchar(50000) DEFAULT NULL, " + // could be a very long field
 					"	PRIMARY KEY (Gene,Haplotype_Symbol)  " +
 					")";
 			s.addBatch(sql);
