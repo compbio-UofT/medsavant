@@ -54,4 +54,5 @@ public class AppColors {
 	public static final Color iCloudDarkYellow= new Color(248, 233, 160);
 	public static final Color iCloudBlack= new Color(56, 56, 54);
 	public static final Color iCloudPurple= new Color(204, 116, 225);
+	public static final Color gmailGreen= new Color(221, 240, 228);
 }

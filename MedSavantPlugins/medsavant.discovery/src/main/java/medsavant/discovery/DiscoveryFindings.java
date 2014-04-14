@@ -427,14 +427,20 @@ public class DiscoveryFindings {
 			String[] formatDelimited= formatFieldText.split(":");			
 			int adIndex= Arrays.asList(formatDelimited).indexOf("AD");
 			String[] adCoverageDelimited= sampleInfoFieldText.split(":")[adIndex].split(",");
-			int refCount= Integer.parseInt(adCoverageDelimited[0]);
-			int altCount= Integer.parseInt(adCoverageDelimited[1]);
-			double ratio= ((double) altCount)/(altCount + refCount);
 			
-			if (altCount >= coverageThreshold && ratio >= hetRatio) {
+			// Sometimes AD values are = ".", which is not a number.
+			try {
+				int refCount= Integer.parseInt(adCoverageDelimited[0]);
+				int altCount= Integer.parseInt(adCoverageDelimited[1]);
+				double ratio= ((double) altCount)/(altCount + refCount);
+
+				if (altCount >= coverageThreshold && ratio >= hetRatio) {
+					result= true;
+				}
+			} catch (NumberFormatException nfe) {
+				hasAllelicCoverage= false;
 				result= true;
 			}
-			
 		} else if (aoFieldMatcher.find() && dpFieldMatcher.find()  // NOTE: need to run find() to get group() below
 			&& formatColumnNumber == sampleInfoColumnNumber) {
 		

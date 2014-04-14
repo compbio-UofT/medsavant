@@ -21,6 +21,7 @@ public class Variant {
 	private static final String DP= "DP";
 	private static final String GT= "GT";
 	private static final Pattern geneSymbolPattern= Pattern.compile("^([^:]+)");
+	private static final String VCF_MISSING_VALUE= ".";
 	
 	private Object[] row;
 	private String chromosome;
@@ -261,9 +262,13 @@ public class Variant {
 	
 	
 	/**
-	 * Extract field from FORMAT and SAMPLE_INFO columns.
+	 * * Extract field from FORMAT and SAMPLE_INFO columns.
 	 * @param key the key for the field within the FORMAT column
 	 * @return the value corresponding to the key from the SAMPLE_INFO column, null if key is absent
+	 * @throws org.ut.biolab.medsavant.shared.appdevapi.Variant.FieldNotFoundException 
+	 *	if the number of format columns differs from the sample_info columns, which is
+	 *	acceptible by VCF 4.1 spec. the only field that has to be present of all the
+	 *	format columns is the GT field; all others can be missing.
 	 */
 	public String extractFromFormatColumn(String key) throws FieldNotFoundException {
 		List<String> formatKeys= Arrays.asList(formatColumn.split(":"));
@@ -322,12 +327,12 @@ public class Variant {
 			referenceDepth= Integer.parseInt(delimited[0]) + Integer.parseInt(delimited[1]);
 			alternateDepth= Integer.parseInt(delimited[2]) + Integer.parseInt(delimited[3]);
 			
-		} else if (adText != null) {
+		} else if (adText != null && adText != VCF_MISSING_VALUE) {
 			String[] adCoverageDelimited= adText.split(",");
 			referenceDepth= Integer.parseInt(adCoverageDelimited[0]);
 			alternateDepth= Integer.parseInt(adCoverageDelimited[1]);
 			
-		} else if (aoText != null && dpText != null) {
+		} else if (aoText != null && dpText != null && aoText != VCF_MISSING_VALUE && dpText != VCF_MISSING_VALUE) {
 			int totalCount= Integer.parseInt(dpText);
 			String[] aoCoverageDelimited= aoText.split(",");
 			
