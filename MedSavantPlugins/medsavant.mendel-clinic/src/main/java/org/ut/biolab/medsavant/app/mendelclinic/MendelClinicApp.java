@@ -67,7 +67,7 @@ public class MendelClinicApp extends MedSavantDashboardApp implements AppCommHan
     }
     
     @Override
-    public ImageIcon getIcon() {        
+    public ImageIcon getIcon() {              
         return icon;
     }
     

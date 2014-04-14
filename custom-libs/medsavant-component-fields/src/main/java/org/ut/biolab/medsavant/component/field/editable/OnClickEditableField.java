@@ -25,6 +25,9 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -34,6 +37,10 @@ import net.miginfocom.swing.MigLayout;
 public abstract class OnClickEditableField<T> extends EditableField<T> {
 
     private JLabel invalidLabel;
+
+    // a lock to prevent subclass methods from being called until
+    // they are initialized
+    private boolean extenderShouldBeInitialized = false;
 
     /**
      * Get a reject button. When clicked, changes made from the editor are not
@@ -66,6 +73,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         b.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveWithValidationWarning();
+                setEditing(false);
             }
         });
         b.setFocusable(false);
@@ -146,17 +154,19 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         setValue(null);
         updateUIForEditingState(this.isEditing());
-        updateUIForAutonomousEditingState(this.isAutomousEditingEnabled());
+        updateUIForAutonomousEditingState(this.isAutonomousEditingEnabled());
 
         setAcceptButtonVisible(false); // usually, the editable component configures acceptance
         setRejectButtonVisible(true);
+
+        extenderShouldBeInitialized = true; // the extending class should finish its constructor imediately after this call
     }
 
     @Override
     protected void updateUIForEditingState(boolean isEditing) {
         updateUIForEditingState(isEditing, false);
     }
-    
+
     protected void updateUIForEditingState(boolean isEditing, boolean requestFocus) {
 
         // normal state
@@ -164,12 +174,12 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         // edit state
         setVisibility(new Component[]{editorPlaceholder}, isEditing);
-        
+
         if (acceptButtonVisible) {
-            acceptChangesButton.setVisible(isEditing);
+            acceptChangesButton.setVisible(isEditing && this.isAutonomousEditingEnabled());
         }
         if (rejectButtonVisible) {
-            rejectChangesButton.setVisible(isEditing);
+            rejectChangesButton.setVisible(isEditing && this.isAutonomousEditingEnabled());
         }
 
         if (isEditing) {
@@ -183,6 +193,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
 
         didToggleEditMode(isEditing);
+
     }
 
     @Override
@@ -214,6 +225,9 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
             valueLabel.setFont(valueLabel.getFont().deriveFont(Font.PLAIN));
         }
 
+        if (extenderShouldBeInitialized) {
+            this.updateEditorRepresentationForValue(value);
+        }
     }
 
     /**
@@ -232,6 +246,9 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
     @Override
     public T getValue() {
+        if (this.isEditing()) {
+            return this.getValueFromEditor();
+        }
         return value;
     }
 
@@ -244,11 +261,12 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
          */
         valueLabel = new JLabel() {
             int maxChars = 30;
+
             @Override
             public void setText(String s) {
                 if (s.length() > maxChars) {
                     this.setToolTipText(s);
-                    super.setText(s.substring(0,maxChars-3) + "...");
+                    super.setText(s.substring(0, maxChars - 3) + "...");
                 } else {
                     super.setText(s);
                     this.setToolTipText(null);
@@ -311,9 +329,9 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
         invalidLabel = new JLabel();
         invalidLabel.setForeground(Color.red);
-        invalidLabel.setFont(invalidLabel.getFont().deriveFont(Font.ITALIC).deriveFont(10f));
+        invalidLabel.setFont(invalidLabel.getFont().deriveFont(Font.PLAIN).deriveFont(10f));
         this.add(invalidLabel, "newline");
-        invalidLabel.setVisible(false);
+        //invalidLabel.setVisible(false);
     }
 
     private void setVisibility(Component[] components, boolean isVisible) {
@@ -330,14 +348,15 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
 
     public void addSaveFocusListener(JComponent c) {
         c.addFocusListener(new FocusListener() {
-
             public void focusGained(FocusEvent e) {
             }
 
             public void focusLost(FocusEvent e) {
-                saveWithValidationWarning();
+                if (OnClickEditableField.this.isAutonomousEditingEnabled()) {
+                    saveWithValidationWarning();
+                    setEditing(false);
+                }
             }
-
         });
     }
 
@@ -354,6 +373,8 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
             String description = this.getValidator().getDescriptionOfValidValue();
             invalidLabel.setText(description);
             invalidLabel.setVisible(!result);
+        } else {
+            invalidLabel.setText("");
         }
         return result;
     }
@@ -364,7 +385,7 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
         if (setValueFromEditor()) {
             invalidLabel.setVisible(false);
-            setEditing(false);
+
         } else {
             String description = this.getValidator().getDescriptionOfValidValue();
             invalidLabel.setText(description);
@@ -385,17 +406,40 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         this.updateUI();
     }
 
+    public void addFieldChangeKeyListener(final JTextField fieldToListenOn) {
+        // Listen for changes in the text
+        fieldToListenOn.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                OnClickEditableField.this.fireFieldEditedEvent();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                OnClickEditableField.this.fireFieldEditedEvent();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                OnClickEditableField.this.fireFieldEditedEvent();
+            }
+        });
+    }
+
     public void addSaveAndCancelKeyListeners(JComponent c) {
         c.addKeyListener(new KeyListener() {
 
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
-                    saveWithValidationWarning();
-                    return;
-                }
-                
-                if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-                    OnClickEditableField.this.setEditing(false);
+                if (OnClickEditableField.this.isAutonomousEditingEnabled()) {
+                    if (e.getKeyChar() == KeyEvent.VK_ENTER || e.getKeyChar() == KeyEvent.VK_TAB) {
+                        saveWithValidationWarning();
+                        setEditing(false);
+                        return;
+                    }
+
+                    if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
+                        OnClickEditableField.this.setEditing(false);
+                    }
                 }
             }
 
@@ -416,7 +460,23 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         updateButtonPositions();
     }
 
+    /**
+     * Hide helper buttons. Assumes autonomous editing is turned off (and never
+     * turned back on).
+     *
+     * @param b Whether to permit autonomous editing.
+     */
+    @Override
+    public void setAutonomousEditingEnabled(boolean b) {
+        super.setAutonomousEditingEnabled(b);
+        if (!b) {
+            acceptChangesButton.setVisible(false);
+            rejectChangesButton.setVisible(false);
+        }
+    }
+
     public void setAcceptButtonVisible(boolean b) {
+
         acceptButtonVisible = b;
         if (b && editing) {
             acceptChangesButton.setVisible(b);
@@ -434,6 +494,5 @@ public abstract class OnClickEditableField<T> extends EditableField<T> {
         }
 
     }
-
 
 }

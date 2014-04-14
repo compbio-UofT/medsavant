@@ -6,27 +6,30 @@
 
 package org.ut.biolab.medsavant.component.field.validator;
 
-import org.apache.commons.validator.UrlValidator;
 import org.ut.biolab.medsavant.component.field.editable.EditableFieldValidator;
 
 /**
  *
  * @author mfiume
  */
-public class NonEmptyStringValidator extends EditableFieldValidator<String> {
+public class PositiveNumberValidator extends EditableFieldValidator<String> {
     private String name;
 
-    public NonEmptyStringValidator() {
+    public PositiveNumberValidator() {
         this("value");
     }
     
-    public NonEmptyStringValidator(String name) {
+    public PositiveNumberValidator(String name) {
         this.name = name;
     }
     
     @Override
     public boolean validate(String value) {
-        return value != null && !value.isEmpty();
+        try {
+            return value != null && !value.isEmpty() && (Integer.parseInt(value) >= 0);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     @Override

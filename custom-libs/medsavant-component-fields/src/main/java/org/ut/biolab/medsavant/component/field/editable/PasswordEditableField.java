@@ -18,12 +18,14 @@ public class PasswordEditableField extends OnClickEditableField<String> {
 
     public PasswordEditableField() {
         super(true);
-        
+
         textField = new JPasswordField();
         textField.setColumns(15);
 
         addSaveFocusListener(textField);
         addSaveAndCancelKeyListeners(textField);
+        addFieldChangeKeyListener(textField);
+        
         this.setRejectButtonVisible(false);
     }
 
@@ -41,11 +43,9 @@ public class PasswordEditableField extends OnClickEditableField<String> {
     public String getValueFromEditor() {
         return new String(textField.getPassword());
     }
-    
+
     @Override
     public void didToggleEditMode(boolean editMode) {
     }
-
-    
 
 }

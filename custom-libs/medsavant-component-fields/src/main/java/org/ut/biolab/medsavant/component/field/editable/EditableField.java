@@ -45,16 +45,20 @@ public abstract class EditableField<T> extends JPanel {
     // validates values entered in edit mode
     private EditableFieldValidator<T> validator;
 
-    // responders to changes field values
-    private List<FieldEditedListener> changeListeners;
+    // responders to commits of field values
+    private final List<FieldCommittedListener> commitListeners;
+
+    // responders to edits (event transient ones) of field values
+    private final List<FieldEditedListener> editListeners;
 
     /**
      * Constructor
      */
     public EditableField() {
         this.setOpaque(false);
-        changeListeners = new ArrayList<FieldEditedListener>();
-        
+        commitListeners = new ArrayList<FieldCommittedListener>();
+        editListeners = new ArrayList<FieldEditedListener>();
+
         // Temporarily disabled because, when enabled, the escape
         // key listener causes the field to lose focus 
         // and focus is given to the next field
@@ -75,15 +79,14 @@ public abstract class EditableField<T> extends JPanel {
      *
      * }
      * }/
-     */ 
-    
-    
-     /**
+     */
+    /**
      * Set the field's edit state.
      *
      * @param isEditing The field's edit state.
      */
     public void setEditing(boolean isEditing) {
+        //System.out.println("Setting editing to " + isEditing);
         this.editing = isEditing;
         updateUIForEditingState(isEditing);
         updateUI();
@@ -107,15 +110,6 @@ public abstract class EditableField<T> extends JPanel {
     public void setAutonomousEditingEnabled(boolean b) {
         this.autonomousEditingEnabled = b;
         updateUIForAutonomousEditingState(b);
-    }
-
-    /**
-     * Whether autonomous editing is enabled for the field.
-     *
-     * @return Whether autonomous editing is enabled for the field.
-     */
-    public boolean isAutomousEditingEnabled() {
-        return autonomousEditingEnabled;
     }
 
     /**
@@ -189,7 +183,7 @@ public abstract class EditableField<T> extends JPanel {
         T value = getValueFromEditor();
         if (validateValue(value)) {
             setValue(value);
-            fireFieldEditedEvent();
+            fireFieldCommittedEvent();
             return true;
         }
         return false;
@@ -244,21 +238,48 @@ public abstract class EditableField<T> extends JPanel {
     }
 
     /**
-     * Notify listeners that the field was edited
+     * Notify listeners that the field was committed
      */
-    private void fireFieldEditedEvent() {
-        for (FieldEditedListener l : this.changeListeners) {
-            l.handleEvent(this);
+    private void fireFieldCommittedEvent() {
+        for (FieldCommittedListener l : this.commitListeners) {
+            l.handleCommitEvent(this);
         }
     }
 
     /**
-     * Add a listener that is notified on changes to the field's value.
+     * Notify listeners that the field was edited
+     */
+    protected void fireFieldEditedEvent() {
+        for (FieldEditedListener l : this.editListeners) {
+            l.handleEditEvent(this);
+        }
+    }
+
+    /**
+     * Add a listener that is notified on commits to the field's value.
+     *
+     * @param l A listener.
+     */
+    public void addFieldComittedListener(FieldCommittedListener l) {
+        this.commitListeners.add(l);
+    }
+
+    /**
+     * Remove a listener that is notified on commits to the field's value.
+     *
+     * @param l A listener.
+     */
+    public void removeFieldCommittedListener(FieldCommittedListener l) {
+        this.commitListeners.remove(l);
+    }
+
+    /**
+     * Add a listener that is notified on edits to the field's value.
      *
      * @param l A listener.
      */
     public void addFieldEditedListener(FieldEditedListener l) {
-        this.changeListeners.add(l);
+        this.editListeners.add(l);
     }
 
     /**
@@ -266,8 +287,8 @@ public abstract class EditableField<T> extends JPanel {
      *
      * @param l A listener.
      */
-    public void removeFieldEditedListener(FieldEditedListener l) {
-        this.changeListeners.remove(l);
+    public void removeFieldCommittedListener(FieldEditedListener l) {
+        this.editListeners.remove(l);
     }
 
     /**
@@ -345,8 +366,7 @@ public abstract class EditableField<T> extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 if (!EditableField.this.isEditing()) {
-                    if (EditableField.this.isAutomousEditingEnabled()) {
-                        System.out.println("Big brother forcing " + EditableField.this.getValue() + " into edit mode");
+                    if (EditableField.this.isAutonomousEditingEnabled()) {
                         EditableField.this.setEditing(true);
                     }
                 }

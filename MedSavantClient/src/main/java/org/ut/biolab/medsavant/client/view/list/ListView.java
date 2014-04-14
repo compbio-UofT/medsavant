@@ -146,7 +146,7 @@ public class ListView extends JPanel {
 
             });
         }
-
+        
         if (detailedEditor.doesImplementDeleting()) {
 
             controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
@@ -268,13 +268,13 @@ public class ListView extends JPanel {
 
             @Override
             protected void showSuccess(Object[][] result) {
+                //System.out.println("Fetched new list");
                 setList(result);
                 isFetching = false;
                 synchronized (fetch) {
                     fetch.notifyAll();
                 }
                 if (result.length == 0) {
-                    System.out.println("Clearing selections");
                     detailedView.setSelectedItem(new Object[]{});
                 }
             }
@@ -398,7 +398,9 @@ public class ListView extends JPanel {
     }
 
     void selectItemWithKey(final String key) {
-        //System.out.println("Selecting item with key " + key);
+        
+        System.out.println("Selecting item with key " + key);
+        
         new Thread(new Runnable() {
 
             @Override
@@ -437,6 +439,13 @@ public class ListView extends JPanel {
         }).start();
 
     }
+    
+    public void setSelectedItemText(String text) {
+        NiceListItem item = list.getSelectedItems().get(0);
+        item.setLabel(text);
+        list.updateUI();
+    }
+
 
     void setColorScheme(NiceListColorScheme cs) {
         listColorScheme = cs;

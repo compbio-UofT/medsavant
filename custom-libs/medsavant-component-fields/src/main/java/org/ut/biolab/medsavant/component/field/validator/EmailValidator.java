@@ -3,35 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.component.field.validator;
 
-import org.apache.commons.validator.UrlValidator;
 import org.ut.biolab.medsavant.component.field.editable.EditableFieldValidator;
 
 /**
  *
  * @author mfiume
  */
-public class NonEmptyStringValidator extends EditableFieldValidator<String> {
-    private String name;
+public class EmailValidator extends EditableFieldValidator<String> {
 
-    public NonEmptyStringValidator() {
-        this("value");
-    }
-    
-    public NonEmptyStringValidator(String name) {
-        this.name = name;
-    }
-    
     @Override
     public boolean validate(String value) {
-        return value != null && !value.isEmpty();
+        return org.apache.commons.validator.EmailValidator.getInstance().isValid(value);
     }
 
     @Override
     public String getDescriptionOfValidValue() {
-        return "Invalid " + name;
+        return "Invalid Email Address";
     }
 
 }
