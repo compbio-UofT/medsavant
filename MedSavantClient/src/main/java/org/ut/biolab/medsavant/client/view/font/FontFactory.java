@@ -6,19 +6,26 @@
 package org.ut.biolab.medsavant.client.view.font;
 
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.awt.font.TextAttribute;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.AttributedCharacterIterator;
 import java.util.Hashtable;
 import java.util.Map;
+import javax.swing.JLabel;
 import javax.swing.UIManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  *
  * @author mfiume
  */
 public class FontFactory {
+    
+    private static Log LOG = LogFactory.getLog(FontFactory.class);
 
     //fonts, in order of preference.        
     private static final Font titleFontPrimary = initFont(new String[]{"HelveticaNeue-Medium", "Arial", "Lucida Sans Regular", "Times New Roman"}, 20f);
@@ -30,13 +37,16 @@ public class FontFactory {
     private static final Font serifFontPrimary = loadFont("/font/medio.otf").deriveFont(13f);
     private static final Font serifFont = (serifFontPrimary != null) ? serifFontPrimary : initFont(new String[]{"Times New Roman"}, 13f);
 
-    
     static{
         fontAttributeMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
     }
 
     private static final Font generalFontPrimary = initFont(new String[]{"HelveticaNeue-Light", "Arial", "Lucida Sans Regular", "Times New Roman"}, fontAttributeMap);
-    private static final Font generalFont = (generalFontPrimary != null) ? generalFontPrimary : loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
+    private static final Font generalFontSecondary = loadFont("/font/OpenSans-Regular.ttf").deriveFont(13f);
+    private static final Font generalFont = 
+            (generalFontPrimary != null) ? generalFontPrimary : 
+            ((generalFontSecondary != null) ? generalFontSecondary : 
+            (new JLabel().getFont())); // last resort
 
     private static Font initFont(String[] fontsToTry, Map<? extends AttributedCharacterIterator.Attribute, ?> attributes) {
         Font f = initFont(fontsToTry);
@@ -85,8 +95,11 @@ public class FontFactory {
             Font font = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(12f);
             System.out.println("Loaded font " + font.getFamily());
             return font;
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (FontFormatException ex) {
+            LOG.info("Error loading font");
+            return null;
+        } catch (IOException ex) {
+            LOG.info("Error loading font");
             return null;
         }
     }
