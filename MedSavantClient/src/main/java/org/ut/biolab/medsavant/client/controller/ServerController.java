@@ -107,6 +107,10 @@ public class ServerController {
     }
     
     public synchronized void saveServers() {
+        saveServers(true);
+    }
+    
+    public synchronized void saveServers(boolean notifyListeners) {
 
         //LOG.info("Serializing " + servers.size() + " servers");
         FileOutputStream fileout = null;
@@ -148,7 +152,9 @@ public class ServerController {
             }
         }
 
-        notifyListeners();
+        if (notifyListeners) {
+            notifyListeners();
+        }
     }
 
     private synchronized void loadServers() {
