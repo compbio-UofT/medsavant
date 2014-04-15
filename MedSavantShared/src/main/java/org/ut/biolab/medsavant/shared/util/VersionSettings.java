@@ -20,12 +20,11 @@
 package org.ut.biolab.medsavant.shared.util;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,11 +61,10 @@ public class VersionSettings {
 
     public static String getVersionString() {        
         String version = UNDEFINED_VERSION;
-
         Package aPackage = VersionSettings.class.getPackage();
         if (aPackage != null) {
             version = aPackage.getImplementationVersion();
-            if (version == null) {
+            if (version == null) {                
                 version = aPackage.getSpecificationVersion();
             }
         }
@@ -77,7 +75,16 @@ public class VersionSettings {
         return System.getProperty("medsavant.version", version);                    
     }
 
-    public static boolean isCompatible(URL url, String queryVersion, String hostVersion, boolean exactMatchByPass) throws SAXException, IOException {
+    //The first connection will wait this long.
+    private static final int FIRST_TIMEOUT = 10000;
+    
+    //Second, third, etc. connections will wait this long.  The timeout is 
+    //reset to FIRST_TIMEOUT after one successful connection is made.
+    private static final int SUBSEQUENT_TIMEOUT = 1000;
+    
+    private static int timeoutVal = FIRST_TIMEOUT;
+    
+    public static boolean isCompatible(URL url, String queryVersion, String hostVersion, boolean exactMatchByPass) throws SAXException, SocketTimeoutException, IOException {
 
         LOG.info("Checking compatibility between " + queryVersion + " and host: " + hostVersion);
 
@@ -97,11 +104,20 @@ public class VersionSettings {
         } catch (ParserConfigurationException ex) {
             ex.printStackTrace();
             return false;
+        }   
+        Document doc = null;        
+        
+        try{
+            doc = dBuilder.parse(NetworkUtils.openStream(url, timeoutVal, timeoutVal));
+        }catch(SocketTimeoutException sto){            
+            LOG.info("Timed out after "+timeoutVal+" seconds");
+            timeoutVal = SUBSEQUENT_TIMEOUT;
+            throw sto;            
         }
-        Document doc = dBuilder.parse(NetworkUtils.openStream(url, 10000, 10000));
-
+        timeoutVal = FIRST_TIMEOUT;
+        
         doc.getDocumentElement().normalize();
-
+        System.out.println("Document element normalized");
         Map<String, Set<String>> versionMap = new HashMap<String, Set<String>>();
         String nodeName = "host"; //(isServer ? "server" : "client");
         NodeList nodes = doc.getElementsByTagName(nodeName);
@@ -120,17 +136,17 @@ public class VersionSettings {
 
     }
 
-    public static boolean isClientCompatibleWithServer(String clientVersion, String serverVersion) throws IOException, SAXException {
+    public static boolean isClientCompatibleWithServer(String clientVersion, String serverVersion) throws IOException, SAXException, SocketTimeoutException {
         LOG.info("Checking client->server compatibility");
         return isCompatible(WebResources.CLIENT_SERVER_VERSION_COMPATIBILITY_URL,clientVersion,serverVersion,true);
     }
 
-    public static boolean isDatabaseCompatibleWithServer(String dbVersion, String serverVersion) throws IOException, SAXException {
+    public static boolean isDatabaseCompatibleWithServer(String dbVersion, String serverVersion) throws IOException, SAXException, SocketTimeoutException {
         LOG.info("Checking database->server compatibility");
         return isCompatible(WebResources.DATABASE_SERVER_VERSION_COMPATIBILITY_URL,dbVersion,serverVersion,true);
     }
 
-    public static boolean isAppSDKCompatibleWithClient(String appSDKVersion, String clientVersion) throws IOException, SAXException {
+    public static boolean isAppSDKCompatibleWithClient(String appSDKVersion, String clientVersion) throws IOException, SAXException, SocketTimeoutException {
         LOG.info("Checking app->client compatibility");
         return isCompatible(WebResources.APPSDK_CLIENT_VERSION_COMPATIBILITY_URL,appSDKVersion,clientVersion,false);
     }
