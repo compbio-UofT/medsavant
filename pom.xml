@@ -24,7 +24,7 @@
 
   <groupId>edu.toronto.cs.medsavant</groupId>
   <artifactId>medsavant-parent</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2-rc-4</version>
   <packaging>pom</packaging>
 
   <name>MedSavant - Parent POM</name>
@@ -44,7 +44,7 @@
     <connection>scm:git:git://github.com/compbio-UofT/medsavant.git</connection>
     <developerConnection>scm:git:git@github.com:compbio-UofT/medsavant.git</developerConnection>
     <url>https://github.com/compbio-UofT/medsavant.git/tree/master/</url>
-    <tag>HEAD</tag>
+    <tag>medsavant-1.2-rc-4</tag>
   </scm>
 
   <organization>
@@ -294,7 +294,7 @@
                   <argument>-Xmx4G</argument>
                   <argument>-jar</argument>
                   <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
-                  <classpath/>
+                  <classpath />
                 </arguments>
               </configuration>
             </execution>
@@ -540,7 +540,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
