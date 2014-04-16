@@ -183,8 +183,23 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
         restartCommand = restartCommandList.toArray(new String[restartCommandList.size()]);
     }
+    
+    /**
+     * Ensure the user is running Java 1.7+
+     */
+    static public void checkJavaVersion() {
+        System.out.println(System.getProperty("java.specification.version"));
+        String javaVersion = System.getProperty("java.specification.version");
+        if (javaVersion.equals("1.7") || javaVersion.equals("1.8")) {
+            return;
+        }
+        DialogUtils.displayError("Incompatible Java Version", "Please upgrade your version of Java to 1.7 or greater.");
+        System.exit(1);
+    }
 
-    static public void main(String args[]) {        
+    static public void main(String args[]) {    
+        
+        checkJavaVersion();      
         new MedSavantWorker<Void>("Analytics Start"){
 
             @Override
