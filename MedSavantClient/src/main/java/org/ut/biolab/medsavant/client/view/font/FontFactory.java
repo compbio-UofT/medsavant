@@ -34,8 +34,8 @@ public class FontFactory {
 
     private static final Map<TextAttribute, Object> fontAttributeMap = new Hashtable<TextAttribute, Object>();
 
-    private static final Font serifFontPrimary = null;//loadFont("/font/medio.otf").deriveFont(13f);
-    private static final Font serifFont = (serifFontPrimary != null) ? serifFontPrimary : initFont(new String[]{"HelveticaNeue-Medium", "Times New Roman"}, 13f);
+    private static final Font serifFontPrimary = loadFont("/font/medio.otf").deriveFont(13f);
+    private static final Font serifFont = (serifFontPrimary != null) ? serifFontPrimary : initFont(new String[]{"Times New Roman"}, 13f);
 
     static{
         fontAttributeMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);

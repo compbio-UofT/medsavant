@@ -66,10 +66,9 @@ public class SearchConditionPanel extends JPanel{
         conditionsEditorPanel.add(ViewUtil.centerHorizontally(new JLabel("Preparing condition,")));
         conditionsEditorPanel.add(Box.createVerticalStrut(5));
         conditionsEditorPanel.add(ViewUtil.centerHorizontally(new JLabel("please wait...")));
-        conditionsEditorPanel.add(Box.createVerticalStrut(5));
         conditionsEditorPanel.add(ViewUtil.centerHorizontally(waitForConditions));
 
-        add(ViewUtil.centerHorizontally(conditionsEditorPanel));
+        add(conditionsEditorPanel);
         setBorder(new EmptyBorder(BORDER_PADDING, BORDER_PADDING, BORDER_PADDING, BORDER_PADDING));
 
         

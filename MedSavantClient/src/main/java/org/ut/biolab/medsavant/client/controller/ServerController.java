@@ -135,6 +135,8 @@ public class ServerController {
             out.close();
             fileout.close();
 
+            LOG.info("Saved " + serversWithPasswordsRemoved.size() + " servers");
+            
         } catch (Exception ex) {
             LOG.error("Problem saving servers", ex);
             ex.printStackTrace();
@@ -167,6 +169,7 @@ public class ServerController {
             } else {
                 filein = new FileInputStream(getServerFile());
                 in = new InputStreamReader(filein);
+                LOG.info("Deserializing servers");
                 try {
                     Gson gson = new GsonBuilder().create();
                     java.lang.reflect.Type type = new TypeToken<List<MedSavantServerInfo>>(){}.getType();
