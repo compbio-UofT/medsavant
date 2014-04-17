@@ -46,8 +46,11 @@ public class DashboardSectionFactory {
         s.addLaunchableApp(AppDirectory.getRegionsApp());
         s.addLaunchableApp(AppDirectory.getTaskManager());
         
-        if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
+        if (LoginController.getInstance().getUserLevel() != UserLevel.GUEST) {
             s.addLaunchableApp(new VCFUploadApp());
+        }
+        
+        if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
             s.addLaunchableApp(new SettingsApp());
         }
         

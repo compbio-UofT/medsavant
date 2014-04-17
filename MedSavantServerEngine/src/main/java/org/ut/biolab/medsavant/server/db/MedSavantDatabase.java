@@ -594,6 +594,7 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
         }
     }
+    
 
     public static class VariantStarredTableSchema extends TableSchema {
 

@@ -47,6 +47,7 @@ import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import org.apache.commons.httpclient.NameValuePair;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 
@@ -229,7 +230,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         ImagePanel logo = new ImagePanel("icon/logo/medsavant-icon-mini.png");
 
         bottombar.addComponentToLeft(logo);
-
+       
         //JLabel copy = new JLabel("Developed at University of Toronto");
         //copy.setForeground(ViewUtil.getSubtleTitleColor());
         //bottombar.addComponentToLeft(copy);

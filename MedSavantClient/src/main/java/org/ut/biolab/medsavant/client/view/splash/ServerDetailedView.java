@@ -248,7 +248,6 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
         
         System.out.println("Setting server to " + server.getNickname());
         
-        
         this.server = server;
 
         this.removeAll();
@@ -428,6 +427,10 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
     }
 
     private void doSave() {
+        doSave(true);
+    }
+    
+    private void doSave(boolean requiresListRefresh) {
 
         String name = nameField.getValue();
         String host = hostField.getValue();
@@ -456,7 +459,7 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
 
         //System.out.println("Edited server, new name is " + server.getNickname());
         
-        ServerController.getInstance().saveServers();
+        ServerController.getInstance().saveServers(requiresListRefresh);
         serverManagementComponent.getServerList().selectItemWithKey(name);
     }
 
@@ -470,7 +473,7 @@ public class ServerDetailedView extends DetailedView implements FieldCommittedLi
         
         if (f.validateCurrentValue()) {
             
-            doSave();
+            doSave(false);
             
             if (f.getName() != null && f.getName().equals("Server name")) {
                 parent.setSelectedItemText(f.getValue().toString());

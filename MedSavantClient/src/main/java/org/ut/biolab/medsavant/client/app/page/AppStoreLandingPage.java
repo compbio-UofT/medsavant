@@ -19,15 +19,12 @@
  */
 package org.ut.biolab.medsavant.client.app.page;
 
-import org.ut.biolab.medsavant.client.app.component.FlowView;
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -42,7 +39,7 @@ import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
-import org.ut.biolab.medsavant.client.view.font.FontFactory;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  *

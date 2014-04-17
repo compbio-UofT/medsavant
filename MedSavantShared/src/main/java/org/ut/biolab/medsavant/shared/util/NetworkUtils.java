@@ -91,7 +91,7 @@ public class NetworkUtils {
      * Open a stream for the given URL with custom timeouts
      * @throws IOException
      */
-    public static InputStream openStream(URL url, int connectTimeout, int readTimeout) throws IOException {
+    public static InputStream openStream(URL url, int connectTimeout, int readTimeout) throws IOException, SocketTimeoutException {
         //URLConnection conn = url.openConnection();
        // conn.setConnectTimeout(connectTimeout);
         //conn.setReadTimeout(readTimeout);
