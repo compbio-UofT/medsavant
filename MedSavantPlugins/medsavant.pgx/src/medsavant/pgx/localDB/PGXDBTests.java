@@ -6,7 +6,8 @@ package medsavant.pgx.localDB;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,6 +33,12 @@ public class PGXDBTests {
 		// Tests
 		getAllAlleles();
 		getAllGenes();
+		getMarkerPositionsForGene("CYP2C19");
+		
+		// Specific tests
+		
+		printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs3758580=C%' 	AND marker_info LIKE '%rs17878459=G%' 	AND marker_info LIKE '%rs4986894=T%' 	AND marker_info LIKE '%rs12769205=A%' 	AND marker_info LIKE '%rs4417205=C%' 	AND marker_info LIKE '%rs181297724=G%' 	AND marker_info LIKE '%rs12571421=A%' 	AND marker_info LIKE '%rs28399513=T%' 	AND marker_info LIKE '%rs4986893=A%' 	AND marker_info LIKE '%rs17886522=C%' 	AND marker_info LIKE '%rs11568732=G%' 	AND marker_info LIKE '%rs17884832=G%' 	AND marker_info LIKE '%rs17878649=A%' 	AND marker_info LIKE '%rs17879992=C%' 	AND marker_info LIKE '%rs7088784=G%' 	AND marker_info LIKE '%rs144036596=G%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs17884712=G%' 	AND marker_info LIKE '%rs6413438=C%' 	AND marker_info LIKE '%rs58973490=G%' 	AND marker_info LIKE '%rs55640102=A%' 	AND marker_info LIKE '%rs17879685=C%' 	AND marker_info LIKE '%rs55752064=T%' 	AND marker_info LIKE '%rs17882687=A%' 	AND marker_info LIKE '%rs192154563=C%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%' 	AND marker_info LIKE '%rs138142612=G%' 	AND marker_info LIKE '%rs4917623=T%' 	AND marker_info LIKE '%rs140278421=G%' 	AND marker_info LIKE '%rs118203756=G%' 	AND marker_info LIKE '%rs118203757=G%' 	AND marker_info LIKE '%rs118203759=C%' 	AND marker_info LIKE '%rs7902257=G%' 	AND marker_info LIKE '%rs7916649=A%' 	AND marker_info LIKE '%rs3758581=G%' 	AND marker_info LIKE '%rs17885098=C%' 	AND marker_info LIKE '%rs113164681=C%' 	AND marker_info LIKE '%rs111490789=C%' 	AND marker_info LIKE '%rs17878739=T%' 	AND marker_info LIKE '%rs113934938=G%'", "");
+		printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs3758580=C%' 	AND marker_info LIKE '%rs17878459=G%' 	AND marker_info LIKE '%rs4986894=T%' 	AND marker_info LIKE '%rs12769205=A%' 	AND marker_info LIKE '%rs4417205=C%' 	AND marker_info LIKE '%rs181297724=G%' 	AND marker_info LIKE '%rs12571421=A%' 	AND marker_info LIKE '%rs28399513=T%' 	AND marker_info LIKE '%rs4986893=A%' 	AND marker_info LIKE '%rs17886522=C%' 	AND marker_info LIKE '%rs11568732=G%' 	AND marker_info LIKE '%rs17884832=G%' 	AND marker_info LIKE '%rs17878649=A%' 	AND marker_info LIKE '%rs17879992=C%' 	AND marker_info LIKE '%rs7088784=G%'", "");
 	}
 	
 	
@@ -133,6 +140,47 @@ public class PGXDBTests {
 		
 		printSQLResults(sql, test1);
 	}
+	
+	
+	/**
+	 * Query the DB and get all marker coordinates for the given gene symbol.
+	 * @param gene The gene symbol
+	 */
+	private static void getMarkerPositionsForGene(String gene) {
+		String sql;
+		
+		String test1= "Testing retrieving all markers for gene " + gene;
+		stdout(test1);
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT marker_list " +
+				"FROM gene_marker_list " +
+				"WHERE gene = '" + gene + "' ";
+		
+		List<String> markerList= new ArrayList<String>();
+		try {
+			ResultSet rs= PGXDB.executeQuery(sql);
+			
+			/* Just get the first line. According to the Java API:
+			 * "A ResultSet cursor is initially positioned before the first row;
+			 * the first call to the method next makes the first row the current row" */
+			if (rs.next())
+				markerList= Arrays.asList(((String) PGXDB.getRowAsList(rs).get(0)).split(";"));
+					
+		} catch (SQLException se) {
+			stderr(test1);
+			se.printStackTrace();
+		}
+		
+		/* Get the marker coordinates for each marker. */
+		for (String marker : markerList) {
+			sql=	"SELECT M.chromosome, M.position, M.ref, M.alt " +
+					"FROM marker_coordinates M " +
+					"WHERE M.marker = '" + marker + "' ";
+			printSQLResults(sql, test1 + " for marker " + marker);
+		}
+	}
+	
 	
 	
 	/**

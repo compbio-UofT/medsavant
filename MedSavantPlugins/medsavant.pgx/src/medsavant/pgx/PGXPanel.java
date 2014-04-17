@@ -259,7 +259,14 @@ public class PGXPanel extends JPanel {
 					(String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT)}, " ")), "wrap");
 			}
 			
-			reportJP.add(new JLabel("Diplotype is " + PGXDBFunctions.getDiplotype(pgav)));
+			try {
+				JLabel diplotype= new JLabel("Diplotype is " + PGXDBFunctions.getDiplotype(pgav));
+				diplotype.setFont(new Font(diplotype.getFont().getName(), Font.PLAIN, 18));
+				reportJP.add(diplotype);
+			} catch (Exception e) {
+				errorDialog(e.getMessage());
+				e.printStackTrace();
+			}
 		}
 		////// END TESTING
 		

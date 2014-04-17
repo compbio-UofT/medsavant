@@ -26,8 +26,10 @@ public class PGXDB {
 	private static final String DB_URL= "jdbc:hsqldb:" + db_path_prefix;
 	private static final String GENE_MARKER_LIST_FILE_PATH= "/medsavant/pgx/localDBFiles/gene_marker_list.txt";
 	private static final String HAPLOTYPE_MARKERS_FILE_PATH= "/medsavant/pgx/localDBFiles/haplotype_markers.txt";
+	private static final String MARKER_COORDINATES_FILE_PATH= "/medsavant/pgx/localDBFiles/marker_coordinates.txt";
 	private static final String GENE_MARKER_LIST_TABLE_NAME= "gene_marker_list";
 	private static final String HAPLOTYPE_MARKERS_TABLE_NAME= "haplotype_markers";
+	private static final String MARKER_COORDINATES_TABLE_NAME= "marker_coordinates";
 	
 	private static Connection conn;
 	
@@ -111,6 +113,18 @@ public class PGXDB {
 					")";
 			s.addBatch(sql);
 			
+			sql=	"CREATE TABLE " + MARKER_COORDINATES_TABLE_NAME + " ( " +
+					"	Marker varchar(40) NOT NULL, " + 
+					"	Chromosome varchar(20) NOT NULL, " +
+					"	Position int NOT NULL, " +
+					"	Ref varchar(10000) NOT NULL, " + // ref and alt can be very long nucleotide strings
+					"	Alt varchar(10000) NOT NULL, " +			
+					"	PRIMARY KEY (Marker)  " +
+					")";
+			s.addBatch(sql);
+			
+			
+			
 			
 			s.executeBatch();
 			s.close();
@@ -138,6 +152,11 @@ public class PGXDB {
 			loader.setSeprator('\t');
 			loader.loadCSV(PGXDB.class.getResourceAsStream(HAPLOTYPE_MARKERS_FILE_PATH),
 				HAPLOTYPE_MARKERS_TABLE_NAME, false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			loader.loadCSV(PGXDB.class.getResourceAsStream(MARKER_COORDINATES_FILE_PATH),
+				MARKER_COORDINATES_TABLE_NAME, false);
 			
 		} catch (Exception e) {
 			System.err.println("[" + PGXDB.class.getSimpleName() + "]: Error loading tables " + e.toString());

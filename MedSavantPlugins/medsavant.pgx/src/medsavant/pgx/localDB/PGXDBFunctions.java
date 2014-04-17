@@ -97,7 +97,7 @@ public class PGXDBFunctions {
 	 * @return a String of the diplotype in the form "*1/*17" NOT with the gene
 	 *	like "CYP2C19*1/*17"; null if this gene has no * diplotypes.
 	 */
-	public static String getDiplotype(PGXGeneAndVariants pgav) {	
+	public static String getDiplotype(PGXGeneAndVariants pgav) throws PGXException, SQLException {	
 		String diplotype= null;
 		
 		/* Hash of marker, nucleotide (ref/alt) pairs. */
@@ -160,16 +160,33 @@ public class PGXDBFunctions {
 	 * @param markerGenotypePairs a hash of marker-genotype pairs
 	 * @return a string representing the * nomenclature haplotype for this hash
 	 */
-	private static String getHaplotype(String gene, Map<String, String> markerGenotypePairs) {
+	private static String getHaplotype(String gene, Map<String, String> markerGenotypePairs)
+		throws PGXException, SQLException {
+		
+		Map<String, String> markerRef= getMarkerRefMap(gene);
+		
 		String sql=	"SELECT H.haplotype_symbol " +
 					"FROM haplotype_markers H " +
 					"WHERE gene = '" + gene + "' ";
 		
 		/* Iterate over the markers and construct a query for the local DB.
 		 * Marker order doesn't affect the query. */
-		for (String marker : markerGenotypePairs.keySet()) {
-			sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerGenotypePairs.get(marker) +"%' ";
+		for (String marker : getMarkers(gene)) {
+			
+			/* If the marker was found, use the reported variant call. If it is
+			 * not found, assume it is a reference call, and append a ref call
+			 * to the marker list "profile". */
+			if (markerGenotypePairs.containsKey(marker)) {
+				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerGenotypePairs.get(marker) +"%' ";
+			} else if (markerRef.containsKey(marker)) { // some markers don't have a ref call, ignore for now
+				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerRef.get(marker) +"%' ";
+			}
+				
 		}
+		
+		// TESTING //////////
+		System.out.println("[TESTING]: " + sql);
+		
 		
 		/* Get all * alleles that can be retrieved with this query (>= 1). */
 		List<String> allPossibleAlleles= new ArrayList<String>();
@@ -190,5 +207,33 @@ public class PGXDBFunctions {
 		String haplotype= StringUtils.join(allPossibleAlleles);
 		
 		return haplotype;
+	}
+	
+	
+	/**
+	 * Return a map of reference nucleotides keyed by marker ID, for this gene.
+	 * @param gene The gene symbol
+	 * @return a Map of reference nucleotides keyed by marker ID
+	 */
+	private static Map<String, String> getMarkerRefMap(String gene) throws PGXException, SQLException {
+		Map<String, String> output= new HashMap<String, String>();
+		
+		List<String> markerList= getMarkers(gene);
+		String sql;
+		for (String marker : markerList) {
+			sql=	"SELECT M.ref " +
+					"FROM marker_coordinates M " +
+					"WHERE M.marker = '" + marker + "' ";	
+			ResultSet rs= PGXDB.executeQuery(sql);
+			
+			/* Just get the first line. According to the Java API:
+			 * "A ResultSet cursor is initially positioned before the first row;
+			 * the first call to the method next makes the first row the current row".
+			 * NOTE: not all markers have corresponding coordinates or ref/alt calls. */
+			if (rs.next())
+				output.put(marker, (String) PGXDB.getRowAsList(rs).get(0));
+		}
+				
+		return output;
 	}
 }
