@@ -57,7 +57,7 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
 
     private static final Log LOG = LogFactory.getLog(SetupMedSavantDatabase.class);
-    
+
     //public static final boolean ENGINE_INFINIDB = false;
     private static SetupMedSavantDatabase instance;
     private static final String BRIGHTHOUSE_ENGINE = "BRIGHTHOUSE";
@@ -92,7 +92,6 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
         UserManager userMgr = UserManager.getInstance();
 
-        
         createTables(sessID);
 
         try {
@@ -301,6 +300,71 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "UNIQUE KEY `hospital_id` (`hospital_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
+            /*
+             String q = 
+             "CREATE TABLE "+MedSavantDatabase.LocusCommentTableSchema.getTableName()+"("
+             + "	project_id INTEGER,"
+             + "	reference_id INTEGER,"
+             + "	chrom varchar(5),"
+             + "	start_position integer,"
+             + "	end_position integer,"
+             + "	ref varchar(255),"
+             + "	alt varchar(255),	"
+             + "	ontology_id integer, "
+             + "	user varchar(200),"
+             + "	is_approved boolean not null default false,"
+             + "	is_included boolean not null default false,"
+             + "	is_pending_review boolean not null default false,"
+             + "	creation_date DATE,"
+             + "	last_modified TIMESTAMP,"
+             + "	variant_comment text,"
+             + "	primary key(chrom, start_position, end_position, ref, alt),"
+             + "	FOREIGN KEY(ontology_id) REFERENCES ontology(id) ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
+             + "	FOREIGN KEY(project_id) REFERENCES project(project_id) ON UPDATE CASCADE ON DELETE CASCADE,"
+             + "	FOREIGN KEY(reference_id) REFERENCES reference(reference_id) ON UPDATE RESTRICT ON DELETE RESTRICT"
+             + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Disease-specific comments, diseases are ontology terms.'"
+             ;
+             */
+            String q = "CREATE TABLE " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("
+                    + " locus_comment_group_id	INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "	project_id INTEGER,"
+                    + "	reference_id INTEGER,"
+                    + "	chrom varchar(5),"
+                    + "	start_position integer,"
+                    + "	end_position integer,"
+                    + "	ref varchar(255),"
+                    + "	alt varchar(255),	"                    
+                    + "	UNIQUE(project_id, reference_id, chrom, start_position, end_position, ref, alt),"                    
+                    + "	FOREIGN KEY(project_id) REFERENCES " + MedSavantDatabase.ProjectTableSchema.getTableName() + "(" + MedSavantDatabase.ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID + ") ON UPDATE CASCADE ON DELETE CASCADE,"
+                    + "	FOREIGN KEY(reference_id) REFERENCES " + MedSavantDatabase.ReferenceTableSchema.getTableName() + "(" + MedSavantDatabase.ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + " KEY(chrom) "
+                    + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Disease-specific comments, diseases are ontology terms.'";
+
+            LOG.info(q);
+            conn.executeUpdate(q);
+
+            q = "CREATE TABLE " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("
+                    + " locus_comment_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY "
+                    + " fk_locus_comment_group_id INTEGER NOT NULL "
+                    + " fk_locus_parent_comment_id INTEGER NOT NULL "
+                    + "	user varchar(200),"
+                    + " ontology varchar(10), "
+                    + "	ontology_id varchar(30), "
+                    + "	is_approved boolean not null default false,"
+                    + "	is_included boolean not null default false,"
+                    + "	is_pending_review boolean not null default false,"
+                    + " is_deleted boolean not null default false,"
+                    + "	creation_date DATE,"
+                    + "	last_modified TIMESTAMP,"
+                    + "	variant_comment text,"
+                    + " FOREIGN KEY(ontology) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ONTOLOGY + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
+                    + "	FOREIGN KEY(ontology_id) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ID + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
+                    + "	FOREIGN KEY(fk_locus_comment_group_id) REFERENCES " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + "	FOREIGN KEY(fk_locus_parent_comment_id) REFERENCES " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
+            LOG.info(q);
+            conn.executeUpdate(q);
+
             String createVariantStatement;
             if (MedSavantServerEngine.USE_INFINIDB_ENGINE) {
 
@@ -386,26 +450,25 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
     public static String getVariantFileIBTableName() {
         TableSchema table = MedSavantDatabase.VariantFileIBTableSchema;
-        return table.getTableName();        
+        return table.getTableName();
     }
-    
-    
+
     public static synchronized TableSchema makeTemporaryVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
         int i = 0;
         String tableName;
-        final String suffixPrefix="_ib_tmp";
+        final String suffixPrefix = "_ib_tmp";
         String suffix;
-        do{
+        do {
             suffix = suffixPrefix + i;
-            tableName = VariantFileTableSchema.TABLE_NAME_PREFIX+suffix;
+            tableName = VariantFileTableSchema.TABLE_NAME_PREFIX + suffix;
             i++;
-        }while(DBUtils.tableExists(sid, tableName));        
-        
-        makeVariantFileTable(sid, true, tableName, BRIGHTHOUSE_ENGINE);        
+        } while (DBUtils.tableExists(sid, tableName));
+
+        makeVariantFileTable(sid, true, tableName, BRIGHTHOUSE_ENGINE);
         return new MedSavantDatabase.VariantFileTableSchema(schema, suffix);
-        
+
     }
-    
+
     public static void makeVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
         makeVariantFileTable(sid, true);
     }
@@ -423,27 +486,26 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
         makeVariantFileTable(sid, brighthouse, tableName, engine);
     }
-        
+
     private static void makeVariantFileTable(String sid, boolean brighthouse, String tableName, String engine) throws IOException, SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
-        
+
         String extras = "";
-        if(!brighthouse){
+        if (!brighthouse) {
             extras = ",UNIQUE(upload_id, file_id), UNIQUE(file_id)";
         }
         ConnectionController.executeUpdate(sid, "DROP TABLE IF EXISTS " + tableName);
         String query = "CREATE TABLE  `" + tableName + "` ("
                 + "`upload_id` int(11) NOT NULL,"
-                + "`file_id` int(11) NOT NULL "+(brighthouse?"":"AUTO_INCREMENT")+","
+                + "`file_id` int(11) NOT NULL " + (brighthouse ? "" : "AUTO_INCREMENT") + ","
                 + "`project_id` int(11) NOT NULL,"
                 + "`reference_id` int(11) NOT NULL,"
                 + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL"
-                + extras 
+                + extras
                 + ") ENGINE=" + engine + " DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
-        
+
         LOG.info(query);
-        ConnectionController.executeUpdate(sid,query);
-                
+        ConnectionController.executeUpdate(sid, query);
 
         if (brighthouse) {
             DBUtils.copyTable(sid, MedSavantDatabase.VariantFileTableSchema.getTableName(), getVariantFileIBTableName());

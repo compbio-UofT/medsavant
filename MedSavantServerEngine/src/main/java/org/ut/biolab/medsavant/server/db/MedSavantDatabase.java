@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db;
 
@@ -564,11 +564,11 @@ public class MedSavantDatabase {
     }
 
     public interface VariantTagColumns {
+
         static final ColumnDef UPLOAD_ID = new ColumnDef("upload_id", ColumnType.INTEGER, 11);
         static final ColumnDef TAGKEY = new ColumnDef("tagkey", ColumnType.VARCHAR, 500);
         static final ColumnDef TAGVALUE = new ColumnDef("tagvalue", ColumnType.VARCHAR, 1000);
     }
-
 
     public static class SettingsTableSchema extends TableSchema {
 
@@ -594,7 +594,159 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
         }
     }
-    
+
+    public static class LocusCommentGroupTableSchema extends TableSchema {
+
+        public static final String TABLE_NAME = "locus_comment_group";
+
+        public static final int INDEX_OF_LOCUS_COMMENT_GROUP_ID = 0;
+        public static final ColumnType TYPE_OF_LOCUS_COMMENT_GROUP_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_LOCUS_COMMENT_GROUP_ID = 11;
+        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "locus_column_group_id";
+
+        public static final int INDEX_OF_PROJECT_ID = 1;
+        public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_PROJECT_ID = 11;
+        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
+
+        public static final int INDEX_OF_REFERENCE_ID = 2;
+        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_REFERENCE_ID = 11;
+        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
+
+        public static final int INDEX_OF_CHROMOSOME = 3;
+        public static final ColumnType TYPE_OF_CHROMOSOME = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_CHROMOSOME = 5;
+        public static final String COLUMNNAME_OF_CHROMOSOME = "chrom";
+
+        public static final int INDEX_OF_START_POSITION = 4;
+        public static final ColumnType TYPE_OF_START_POSITION = ColumnType.INTEGER;
+        public static final int LENGTH_OF_START_POSITION = 11;
+        public static final String COLUMNNAME_OF_START_POSITION = "start_position";
+
+        public static final int INDEX_OF_END_POSITION = 5;
+        public static final ColumnType TYPE_OF_END_POSITION = ColumnType.INTEGER;
+        public static final int LENGTH_OF_END_POSITION = 11;
+        public static final String COLUMNNAME_OF_END_POSITION = "end_position";
+
+        public static final int INDEX_OF_REF = 6;
+        public static final ColumnType TYPE_OF_REF = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_REF = 255;
+        public static final String COLUMNNAME_OF_REF = "ref";
+
+        public static final int INDEX_OF_ALT = 7;
+        public static final ColumnType TYPE_OF_ALT = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_ALT = 255;
+        public static final String COLUMNNAME_OF_ALT = "alt";
+
+        public LocusCommentGroupTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID, TYPE_OF_LOCUS_COMMENT_GROUP_ID, LENGTH_OF_LOCUS_COMMENT_GROUP_ID);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, TYPE_OF_PROJECT_ID, LENGTH_OF_PROJECT_ID);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, TYPE_OF_REFERENCE_ID, LENGTH_OF_REFERENCE_ID);
+            addColumn(COLUMNNAME_OF_CHROMOSOME, TYPE_OF_CHROMOSOME, LENGTH_OF_CHROMOSOME);
+            addColumn(COLUMNNAME_OF_START_POSITION, TYPE_OF_START_POSITION, LENGTH_OF_START_POSITION);
+            addColumn(COLUMNNAME_OF_END_POSITION, TYPE_OF_END_POSITION, LENGTH_OF_END_POSITION);
+            addColumn(COLUMNNAME_OF_REF, TYPE_OF_REF, LENGTH_OF_REF);
+            addColumn(COLUMNNAME_OF_ALT, TYPE_OF_ALT, LENGTH_OF_ALT);
+        }
+    }
+
+    public static class LocusCommentTableSchema extends TableSchema {
+
+        public static final String TABLE_NAME = "locus_comment";
+
+        public static final int INDEX_OF_LOCUS_COMMENT_ID = 0;
+        public static final ColumnType TYPE_OF_LOCUS_COMMENT_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_LOCUS_COMMENT_ID = 11;
+        public static final String COLUMNNAME_OF_LOCUS_COMMENT_ID = "locus_comment_id";
+
+        public static final int INDEX_OF_LOCUS_COMMENT_GROUP_ID = 1;
+        public static final ColumnType TYPE_OF_LOCUS_COMMENT_GROUP_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_LOCUS_COMMENT_GROUP_ID = 11;
+        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "locus_comment_group_id";
+
+        public static final int INDEX_OF_LOCUS_PARENT_COMMENT_ID = 2;
+        public static final ColumnType TYPE_OF_LOCUS_PARENT_COMMENT_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_LOCUS_PARENT_COMMENT_ID = 11;
+        public static final String COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID = "locus_parent_comment_id";
+
+        
+        public static final int INDEX_OF_USER = 3;
+        public static final ColumnType TYPE_OF_USER = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_USER = 200;
+        public static final String COLUMNNAME_OF_USER = "user";
+
+        public static final int INDEX_OF_ONTOLOGY_ID = 4;
+        public static final ColumnType TYPE_OF_ONTOLOGY_ID = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_ONTOLOGY_ID = 10;
+        public static final String COLUMNNAME_OF_ONTOLOGY_ID = "ontology_id";
+
+        public static final int INDEX_OF_ONTOLOGY = 5;
+        public static final ColumnType TYPE_OF_ONTOLOGY = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_ONTOLOGY = 30;
+        public static final String COLUMNNAME_OF_ONTOLOGY = "ontology";
+
+        public static final int INDEX_OF_APPROVED = 6;
+        public static final ColumnType TYPE_OF_APPROVED = ColumnType.BOOLEAN;
+        public static final String COLUMNNAME_OF_APPROVED = "is_approved";
+        public static final int LENGTH_OF_APPROVED = 1;
+
+        public static final int INDEX_OF_INCLUDE = 7;
+        public static final ColumnType TYPE_OF_INCLUDE = ColumnType.BOOLEAN;
+        public static final String COLUMNNAME_OF_INCLUDE = "is_included";
+        public static final int LENGTH_OF_INCLUDE = 1;
+
+        public static final int INDEX_OF_REVIEW = 8;
+        public static final ColumnType TYPE_OF_REVIEW = ColumnType.BOOLEAN;
+        public static final String COLUMNNAME_OF_REVIEW = "is_pending_review";
+        public static final int LENGTH_OF_REVIEW = 1;
+
+        public static final int INDEX_OF_DELETED = 9;
+        public static final ColumnType TYPE_OF_DELETED = ColumnType.BOOLEAN;
+        public static final String COLUMNNAME_OF_DELETED = "is_deleted";
+        public static final int LENGTH_OF_DELETED = 1;
+
+        public static final int INDEX_OF_CREATION_DATE = 10;
+        public static final ColumnType TYPE_OF_CREATION_DATE = ColumnType.DATETIME;
+        public static final String COLUMNNAME_OF_CREATION_DATE = "creation_date";
+        public static final int LENGTH_OF_CREATION_DATE = 0;
+
+        public static final int INDEX_OF_MODIFICATION_DATE = 11;
+        public static final ColumnType TYPE_OF_MODIFICATION_DATE = ColumnType.TIMESTAMP;
+        public static final String COLUMNNAME_OF_MODIFICATION_DATE = "last_modified";
+        public static final int LENGTH_OF_MODIFICATION_DATE = 0;
+
+        public static final int INDEX_OF_COMMENT = 12;
+        public static final ColumnType TYPE_OF_COMMENT = ColumnType.TEXT;
+        public static final String COLUMNNAME_OF_COMMENT = "variant_comment";
+        public static final int LENGTH_OF_COMMENT = 0;
+
+        public LocusCommentTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_LOCUS_COMMENT_ID, TYPE_OF_LOCUS_COMMENT_ID, LENGTH_OF_LOCUS_COMMENT_ID);
+            addColumn(COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID, TYPE_OF_LOCUS_COMMENT_GROUP_ID, LENGTH_OF_LOCUS_COMMENT_GROUP_ID);
+            addColumn(COLUMNNAME_OF_USER, TYPE_OF_USER, LENGTH_OF_USER);
+            addColumn(COLUMNNAME_OF_ONTOLOGY, TYPE_OF_ONTOLOGY, LENGTH_OF_ONTOLOGY);
+            addColumn(COLUMNNAME_OF_ONTOLOGY_ID, TYPE_OF_ONTOLOGY_ID, LENGTH_OF_ONTOLOGY_ID);
+            addColumn(COLUMNNAME_OF_APPROVED, TYPE_OF_APPROVED, LENGTH_OF_APPROVED);
+            addColumn(COLUMNNAME_OF_INCLUDE, TYPE_OF_INCLUDE, LENGTH_OF_INCLUDE);
+            addColumn(COLUMNNAME_OF_REVIEW, TYPE_OF_REVIEW, LENGTH_OF_REVIEW);
+            addColumn(COLUMNNAME_OF_DELETED, TYPE_OF_DELETED, LENGTH_OF_DELETED);
+            addColumn(COLUMNNAME_OF_CREATION_DATE, TYPE_OF_CREATION_DATE, LENGTH_OF_CREATION_DATE);
+            addColumn(COLUMNNAME_OF_MODIFICATION_DATE, TYPE_OF_MODIFICATION_DATE, LENGTH_OF_MODIFICATION_DATE);
+            addColumn(COLUMNNAME_OF_COMMENT, TYPE_OF_COMMENT, LENGTH_OF_COMMENT);
+
+        }
+    }
 
     public static class VariantStarredTableSchema extends TableSchema {
 
@@ -660,13 +812,13 @@ public class MedSavantDatabase {
     public static class VariantFileTableSchema extends TableSchema {
 
         public static final String TABLE_NAME_PREFIX = "variant_file";
-        
-        public VariantFileTableSchema(DbSchema s){
+
+        public VariantFileTableSchema(DbSchema s) {
             this(s, "");
         }
-        
+
         public VariantFileTableSchema(DbSchema s, String suffix) {
-            super(s.addTable(TABLE_NAME_PREFIX+suffix));
+            super(s.addTable(TABLE_NAME_PREFIX + suffix));
             addColumns();
         }
         // variant_file.upload_id
@@ -727,4 +879,6 @@ public class MedSavantDatabase {
     public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
     public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
     public static final VariantFileTableSchema VariantFileIBTableSchema = new VariantFileTableSchema(schema, "_ib");
+    public static final LocusCommentGroupTableSchema LocusCommentGroupTableSchema = new LocusCommentGroupTableSchema(schema);
+    public static final LocusCommentTableSchema LocusCommentTableSchema = new LocusCommentTableSchema(schema);
 }

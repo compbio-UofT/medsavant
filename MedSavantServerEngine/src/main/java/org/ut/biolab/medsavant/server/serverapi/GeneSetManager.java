@@ -141,7 +141,31 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
 
         return result;
     }
+    
+    public Gene[] getGenesInRegion(String sessID, GeneSet geneSet, String chrom, int start_position, int end_position) throws SQLException, SessionExpiredException{
+        TableSchema table = MedSavantDatabase.GeneSetTableSchema;
+        
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType(), CHROM, chrom, CODING_START, start_position, CODING_END, end_position).groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+        BinaryCondition dumbNameCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%");
+        query.addCondition(dumbNameCondition);
 
+        LOG.info(query);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+
+        Gene[] result = new Gene[geneSet.getSize()];
+        int i = 0;
+        while (rs.next()) {
+            Gene g = new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), null);
+            result[i++] = g;
+        }
+        if (i != result.length) {
+            LOG.info("There were " + result.length + " genes, but only " + i + " were loaded.");
+        }
+        result = Arrays.copyOf(result, i);
+
+        return result;
+    }
+    
     @Override
     public Gene[] getTranscripts(String sessID, GeneSet geneSet) throws SQLException, SessionExpiredException {
 

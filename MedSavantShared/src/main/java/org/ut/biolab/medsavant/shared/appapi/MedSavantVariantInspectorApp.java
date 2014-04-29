@@ -30,11 +30,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
  * @author mfiume
  */
 public abstract class MedSavantVariantInspectorApp extends MedSavantApp {
-
-    public abstract void setVariantRecord(VariantRecord r);
-    
+    public abstract void setVariantRecord(VariantRecord r);    
     public abstract String getName();
     public abstract JPanel getInfoPanel();
-
-
 }
