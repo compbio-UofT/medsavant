@@ -80,6 +80,7 @@
             <mapping>
               <directory>/usr/local/medsavant-client-${project.version}/lib</directory>
               <filemode>644</filemode>
+              <directoryIncluded>false</directoryIncluded>
               <username>root</username>
               <groupname>root</groupname>
               <dependency>
@@ -125,6 +126,7 @@
             <mapping>
               <directory>/usr/share/applications</directory>
               <filemode>644</filemode>
+              <directoryIncluded>false</directoryIncluded>
               <username>root</username>
               <groupname>root</groupname>
               <sources>
