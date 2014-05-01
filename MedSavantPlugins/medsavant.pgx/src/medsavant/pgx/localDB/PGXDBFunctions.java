@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import medsavant.pgx.PGXException;
-import medsavant.pgx.PGXGeneAndVariants;
+import medsavant.pgx.PGXGene;
 import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.appdevapi.Variant;
@@ -22,6 +24,10 @@ import org.ut.biolab.medsavant.shared.appdevapi.Variant;
  * @author rammar
  */
 public class PGXDBFunctions {
+	
+	/* The maximum number of markers to drop when search for similar haplotypes. */
+	public static final int SIMILAR_HAPLOTYPE_DEPTH= 3;
+	public static final String UNKNOWN_HAPLOTYPE= "UNKNOWN";
 	
 	
 	/** 
@@ -92,17 +98,15 @@ public class PGXDBFunctions {
 	
 	
 	/**
-	 * Return a string of the diplotype for this gene-variants pair using star (*) nomenclature.
-	 * @param pgav the PGXGeneAndVariants gene-variants pair.
-	 * @return a String of the diplotype in the form "*1/*17" NOT with the gene
-	 *	like "CYP2C19*1/*17"; null if this gene has no * diplotypes.
+	 * Assign the maternal and paternal phased genotypes for this gene.
+	 * Once assigned, the input object stores these phased genotype hashes/maps
+	 * of marker, nucleotide (ref/alt) pairs.
+	 * @param pg the gene-variants pair object
 	 */
-	public static String getDiplotype(PGXGeneAndVariants pgav) throws PGXException, SQLException {	
-		String diplotype= null;
-		
+	public static void assignParentalGenotypes(PGXGene pg) {
 		/* Hash of marker, nucleotide (ref/alt) pairs. */
-		Map<String, String> maternalMarkers= new HashMap<String, String>();
-		Map<String, String> paternalMarkers= new HashMap<String, String>();
+		Map<String, String> maternalGenotypes= new HashMap<String, String>();
+		Map<String, String> paternalGenotypes= new HashMap<String, String>();
 		
 		/* Iterate through the Variants and grab the haplotypes. Look for the
 		 * correct alternate number when processing the GT fields. So, if the 
@@ -113,7 +117,7 @@ public class PGXDBFunctions {
 		 * as having 1/2 will refer to two different alt positions, and since 
 		 * the PGXAnalysis queries by rsID, I don't anticipate GT fields like
 		 * this. However, I'm adding a check in here anyway. */
-		for (Variant v : pgav.getVariants()) {
+		for (Variant v : pg.getVariants()) {
 			// populate an array of ref and alt for this allele- not all values 
 			// will be initialized, it's just for simplicity below.
 			String[] refAndAlts= new String[v.getAlternateNumber() + 1];
@@ -126,29 +130,62 @@ public class PGXDBFunctions {
 			int paternalGT= Integer.parseInt(gt[1]);
 			
 			String currentRsID= (String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT);
-			maternalMarkers.put(currentRsID, refAndAlts[maternalGT]);
-			paternalMarkers.put(currentRsID, refAndAlts[paternalGT]);
-			
-			// TESTING
-			//System.out.println("[TESTING]: " + StringUtils.join(new Object[]{v.getGT(), currentRsID,
-			//	maternalMarkers.toString(), paternalMarkers.toString()}, " "));
+			maternalGenotypes.put(currentRsID, refAndAlts[maternalGT]);
+			paternalGenotypes.put(currentRsID, refAndAlts[paternalGT]);
+		}
+		
+		/* Update the gene object with the phased genotypes. */
+		pg.setMaternalGenotypes(maternalGenotypes);
+		pg.setPaternalGenotypes(paternalGenotypes);
+	}
+	
+	
+	
+	
+	/**
+	 * Return a string of the diplotype for this gene-variants pair using star (*) nomenclature.
+	 * @param pg the gene-variants pair object
+	 * @return a String of the diplotype in the form "*1/*17" NOT with the gene
+	 *	like "CYP2C19*1/*17"; null if this gene has no * diplotypes.
+	 */
+	public static String getDiplotype(PGXGene pg) throws PGXException, SQLException {	
+		String diplotype= null;
+		
+		/* Assign the phased parental genotypes to be used for haplotype translation. */
+		assignParentalGenotypes(pg);
+		Map<String, String> maternalGenotypes= pg.getMaternalGenotypes();
+		Map<String, String> paternalGenotypes= pg.getPaternalGenotypes();
+		
+		/* Get the haplotypes and check for novel ones (ie. no match found).
+		 * If a haplotype is novel, output "UNKNOWN" and then append the most
+		 * similar haplotype. */
+		pg.setMaternalHaplotype(getHaplotype(pg.getGene(), maternalGenotypes));
+		String maternalHaplotype= new String(pg.getMaternalHaplotype()); // create a copy, since we're going to modify the string
+		if (maternalHaplotype.equals(UNKNOWN_HAPLOTYPE)) {
+			List<String> maternalSimilar= getSimilarHaplotypes(
+				pg.getGene(), maternalGenotypes, SIMILAR_HAPLOTYPE_DEPTH);
+			if (maternalSimilar.size() > 0) {
+				maternalHaplotype += " (similar to " + StringUtils.join(maternalSimilar, ',') + ")";
+			}
+		}
+		
+		pg.setPaternalHaplotype(getHaplotype(pg.getGene(), paternalGenotypes));
+		String paternalHaplotype= new String(pg.getPaternalHaplotype()); // create a copy, since we're going to modify the string
+		if (paternalHaplotype.equals(UNKNOWN_HAPLOTYPE)) {
+			List<String> paternalSimilar= getSimilarHaplotypes(
+				pg.getGene(), paternalGenotypes, SIMILAR_HAPLOTYPE_DEPTH);
+			if (paternalSimilar.size() > 0) {
+				 paternalHaplotype += " (similar to " + StringUtils.join(paternalSimilar, ',') + ")";
+			}
 		}
 		
 		/* Create a list of diplotypes and sort these naturally/lexicographically
 		 * so that diplotypes appear as "*1/*17" instead of "*17/*1". */
 		List<String> haplotypes= new ArrayList<String>();
-		haplotypes.add(getHaplotype(pgav.getGene(), maternalMarkers));
-		haplotypes.add(getHaplotype(pgav.getGene(), paternalMarkers));
+		haplotypes.add(maternalHaplotype);
+		haplotypes.add(paternalHaplotype);
 		Collections.sort(haplotypes, new NaturalOrderComparator());			
-		diplotype= haplotypes.get(0) + "/" + haplotypes.get(1); // there are only 2 haplotypes - added above
-		
-		
-		// TO DO ////////////////////
-		
-		// Also need to deal with *1 - how is that query formed?
-		
-		// check if gene is in the haplotype table and then output
-		// null if not in the table.
+		diplotype= haplotypes.get(0) + "/" + haplotypes.get(1);
 		
 		return diplotype;
 	}
@@ -158,7 +195,9 @@ public class PGXDBFunctions {
 	 * Convert marker-genotype pairs into a * nomenclature haplotype for this gene.
 	 * @param gene the gene name/symbol
 	 * @param markerGenotypePairs a hash of marker-genotype pairs
-	 * @return a string representing the * nomenclature haplotype for this hash
+	 * @return a string representing the * nomenclature haplotype for this hash, empty string if no haplotype found
+	 * @throws PGXException
+	 * @throws SQLException 
 	 */
 	private static String getHaplotype(String gene, Map<String, String> markerGenotypePairs)
 		throws PGXException, SQLException {
@@ -175,18 +214,17 @@ public class PGXDBFunctions {
 			
 			/* If the marker was found, use the reported variant call. If it is
 			 * not found, assume it is a reference call, and append a ref call
-			 * to the marker list "profile". */
+			 * to the marker list "profile". This ensures specificity. For example,
+			 * if a marker is missing and it is one marker off from being called 
+			 * a specific haplotype, it is not a match. Filling in missing markers
+			 * with reference calls makes this difference. */
 			if (markerGenotypePairs.containsKey(marker)) {
 				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerGenotypePairs.get(marker) +"%' ";
 			} else if (markerRef.containsKey(marker)) { // some markers don't have a ref call, ignore for now
 				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerRef.get(marker) +"%' ";
 			}
 				
-		}
-		
-		// TESTING //////////
-		System.out.println("[TESTING]: " + sql);
-		
+		}		
 		
 		/* Get all * alleles that can be retrieved with this query (>= 1). */
 		List<String> allPossibleAlleles= new ArrayList<String>();
@@ -194,8 +232,8 @@ public class PGXDBFunctions {
 			ResultSet rs= PGXDB.executeQuery(sql);
 			
 			while (rs.next()) {
-				// only grab the first element because we're only querying it
-				// above in the SELECT statement
+				// only grab the first column because we're only SELECTing it
+				// above in the SQL statement
 				allPossibleAlleles.add((String) PGXDB.getRowAsList(rs).get(0));
 			}
 		} catch (SQLException se) {
@@ -204,7 +242,9 @@ public class PGXDBFunctions {
 		
 		/* Sort the list of haplotypes naturally/lexicographically. */
 		Collections.sort(allPossibleAlleles, new NaturalOrderComparator());
-		String haplotype= StringUtils.join(allPossibleAlleles);
+		String haplotype= StringUtils.join(allPossibleAlleles, ',');
+		if (haplotype.equals(""))
+			haplotype= UNKNOWN_HAPLOTYPE;
 		
 		return haplotype;
 	}
@@ -236,4 +276,188 @@ public class PGXDBFunctions {
 				
 		return output;
 	}
+	
+	
+	/**
+	 * Get the * nomenclature haplotypes that are most similar to the marker-genotype pairs.
+	 * @param gene the gene name/symbol
+	 * @param markerGenotypePairs a hash of marker-genotype pairs
+	 * @param remove the maximum number of markers to remove to find similar haplotypes
+	 * @return a List of possible haplotypes that are similar.
+	 * @throws PGXException
+	 * @throws SQLException 
+	 */
+	private static List<String> getSimilarHaplotypes(String gene, Map<String, String> markerGenotypePairs, int remove)
+		throws PGXException, SQLException {
+		
+		/* Initialize the output list. */
+		Set<String> similarAlleles= new HashSet<String>();
+		
+		/* Get the reference calls for all markers for this gene. */
+		Map<String, String> markerRef= getMarkerRefMap(gene);
+
+		
+		/* Create a List of Pair objects from all the markers. I need a list 
+		 * because that's what my sublists method takes. */
+		List<Pair> originalMarkers= new ArrayList<Pair>();
+		for (String marker : markerGenotypePairs.keySet()) {
+			originalMarkers.add(new Pair(marker, markerGenotypePairs.get(marker)));
+		}
+		
+		/* Create all possible sublists of this original marker list, iterating 
+		 * through specified depth. Then try to find a most similar haplotype.
+		 * This means that if the specified max number of markers to remove was 
+		 * 3, first try to remove 1 and find a match, then try 2, then 3. If a 
+		 * similar haplotype is found by removing 1 marker, it's more similar
+		 * than those that can only be found after removing 3. */
+		boolean found= false;
+		for (int depth= 0; depth <= remove && !found; ++depth) {
+			Set<List<Pair>> similarMarkers= Sublists.Sublists.sublists(originalMarkers, remove);
+		
+			/* For each of the sublists, look for a matching haplotype. */
+			for (List<Pair> lop : similarMarkers) { // "lop" = "list of pairs"
+				/* Create the query beginning. */
+				String sql=	"SELECT H.haplotype_symbol " +
+							"FROM haplotype_markers H " +
+							"WHERE gene = '" + gene + "' ";
+				
+				// Convert the List<Pair> back to a Map<String, String>
+				Map<String, String> sublistMap= convertListOfPairsToMap(lop);
+				//List<String> sublistOmitted= getOmitted(markerGenotypePairs, sublistMap);
+				
+				/* Iterate over the markers and construct a query for the local DB.
+				 * Marker order doesn't affect the query. */
+				for (String marker : getMarkers(gene)) {
+
+					/* This is where things start to get a little tricky. Unlike 
+					 * in getHaplotype(), things need not be as precise when
+					 * identifying a "similar" haplotype, since it is not intended
+					 * to be an exact match. In this case, we start off with the
+					 * list of variants but do not add any reference calls for
+					 * missing markers. If nothing is identified in this "loose"
+					 * matching query, remove a marker and try again. */				
+					if (sublistMap.containsKey(marker)) {
+						sql +=	"	AND marker_info LIKE '%" + marker + "=" + sublistMap.get(marker) +"%' ";
+					//} else if (!sublistOmitted.contains(marker) && markerRef.containsKey(marker)) { // some markers don't have a ref call, ignore for now
+					//	sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerRef.get(marker) +"%' ";
+					}
+				}
+				
+				/* Get all * alleles that can be retrieved with this query (>= 1). */
+				try {
+					ResultSet rs= PGXDB.executeQuery(sql);
+
+					while (rs.next()) {
+						// only grab the first column because we're only SELECTing it
+						// above in the SQL statement
+						similarAlleles.add((String) PGXDB.getRowAsList(rs).get(0));
+					}
+				} catch (SQLException se) {
+					se.printStackTrace();
+				}
+			}
+			
+			/* If this depth found a marker, stop search. Otherwise, continue. */
+			if (similarAlleles.size() > 1) {
+				found= true;
+				System.out.println("Similar haplotype found at depth = " + depth); // Testing
+			}
+		}
+		
+		/* Sort the list of haplotypes naturally/lexicographically. */
+		List<String> output= new ArrayList<String>();
+		output.addAll(similarAlleles);
+		Collections.sort(output, new NaturalOrderComparator());
+		
+		return output;	
+	}	
+	
+	
+	/**
+	 * Inner class to represent gene and marker pairs as a single object.
+	 */
+	private static class Pair {
+		
+		String genotype;
+		String marker;
+		
+		public Pair(String marker, String genotype) {
+			this.marker= marker;
+			this.genotype= genotype;
+		}
+	}
+	
+	
+	/**
+	 * Convert a List<Pair> to Map<String, String> with marker as key genotype as value.
+	 * Intended to be a private method for convenience.
+	 */
+	private static Map<String, String> convertListOfPairsToMap(List<Pair> lop) {
+		Map<String, String> map= new HashMap<String, String>();
+		for (Pair p : lop) {
+			map.put(p.marker, p.genotype);
+		}
+		return map;
+	}
+
+	
+	/**
+	 * Get a List of markers that are absent from the sublist but present in the original.
+	 */
+	private static List<String> getOmitted(Map<String, String> original, Map<String, String> sublist) {
+		List<String> omitted= new ArrayList<String>();
+		for (String key : original.keySet()) {
+			if (!sublist.containsKey(key))
+				omitted.add(key);
+		}
+		return omitted;
+	}
+	
+	
+	/**
+	 * Inner class to represent PGx markers.
+	 */
+	public static class PGXMarker {
+		public String markerID;
+		public String chromosome;
+		public String position;
+		public String ref;
+		public String alt;
+		
+		public PGXMarker(String markerID, String chromosome, String position, String ref, String alt) {
+			this.markerID= markerID;
+			this.chromosome= chromosome;
+			this.position= position;
+			this.ref= ref;
+			this.alt= alt;
+		}
+	}
+	
+	
+	/**
+	 * Return a list of all PGx markers, for this gene.
+	 * @param gene The gene symbol
+	 * @return a List of pgxMarker objects
+	 */
+	public static List<PGXMarker> getMarkerInfo(String gene) throws PGXException, SQLException {
+		List<PGXMarker> output= new LinkedList<PGXMarker>();
+		
+		List<String> markerList= getMarkers(gene);
+		String sql;
+		for (String marker : markerList) {
+			sql=	"SELECT M.chromosome, M.position, M.ref, M.alt " +
+					"FROM marker_coordinates M " +
+					"WHERE M.marker = '" + marker + "' ";	
+			ResultSet rs= PGXDB.executeQuery(sql);
+			
+			if (rs.next()) {
+				List row= PGXDB.getRowAsList(rs);
+				output.add(new PGXMarker(marker, (String) row.get(0),
+					(String) row.get(1), (String) row.get(2), (String) row.get(3)));
+			}
+		}
+				
+		return output;
+	}
+	
 }

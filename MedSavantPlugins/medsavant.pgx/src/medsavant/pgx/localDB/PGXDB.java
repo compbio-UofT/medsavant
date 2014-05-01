@@ -119,7 +119,7 @@ public class PGXDB {
 					"	Position int NOT NULL, " +
 					"	Ref varchar(10000) NOT NULL, " + // ref and alt can be very long nucleotide strings
 					"	Alt varchar(10000) NOT NULL, " +			
-					"	PRIMARY KEY (Marker)  " +
+					"	PRIMARY KEY (Marker,Position, Alt)  " + // same rsID can indicate multiple alt calls and have multiple positions (see rs72558184)
 					")";
 			s.addBatch(sql);
 			
