@@ -59,7 +59,7 @@ public interface GeneSetManagerAdapter extends Remote {
      * @throws SQLException
      * @throws SessionExpiredException
      */
-    public Gene[] getGenesInRegion(String sessID, GeneSet geneSet, String chrom, int start_position, int end_position) throws SQLException, SessionExpiredException;
+    public Gene[] getGenesInRegion(String sessID, GeneSet geneSet, String chrom, int start_position, int end_position) throws SQLException, RemoteException, SessionExpiredException;
 
     /**
      * Get a list of all transcripts for the given set.

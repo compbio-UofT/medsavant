@@ -601,8 +601,8 @@ public class MedSavantDatabase {
 
         public static final int INDEX_OF_LOCUS_COMMENT_GROUP_ID = 0;
         public static final ColumnType TYPE_OF_LOCUS_COMMENT_GROUP_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_LOCUS_COMMENT_GROUP_ID = 11;
-        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "locus_column_group_id";
+        public static final int LENGTH_OF_LOCUS_COMMENT_GROUP_ID = 11;        
+        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "locus_comment_group_id";
 
         public static final int INDEX_OF_PROJECT_ID = 1;
         public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;

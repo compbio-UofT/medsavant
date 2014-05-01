@@ -142,6 +142,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         return result;
     }
     
+    @Override
     public Gene[] getGenesInRegion(String sessID, GeneSet geneSet, String chrom, int start_position, int end_position) throws SQLException, SessionExpiredException{
         TableSchema table = MedSavantDatabase.GeneSetTableSchema;
         

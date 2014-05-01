@@ -336,7 +336,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "	alt varchar(255),	"                    
                     + "	UNIQUE(project_id, reference_id, chrom, start_position, end_position, ref, alt),"                    
                     + "	FOREIGN KEY(project_id) REFERENCES " + MedSavantDatabase.ProjectTableSchema.getTableName() + "(" + MedSavantDatabase.ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID + ") ON UPDATE CASCADE ON DELETE CASCADE,"
-                    + "	FOREIGN KEY(reference_id) REFERENCES " + MedSavantDatabase.ReferenceTableSchema.getTableName() + "(" + MedSavantDatabase.ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + "	FOREIGN KEY(reference_id) REFERENCES " + MedSavantDatabase.ReferenceTableSchema.getTableName() + "(" + MedSavantDatabase.ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT,"
                     + " KEY(chrom) "
                     + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Disease-specific comments, diseases are ontology terms.'";
 
@@ -344,12 +344,12 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
             conn.executeUpdate(q);
 
             q = "CREATE TABLE " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("
-                    + " locus_comment_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY "
-                    + " fk_locus_comment_group_id INTEGER NOT NULL "
-                    + " fk_locus_parent_comment_id INTEGER NOT NULL "
+                    + " locus_comment_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                    + " fk_locus_comment_group_id INTEGER NOT NULL, "
+                    + " fk_locus_parent_comment_id INTEGER, "
                     + "	user varchar(200),"
                     + " ontology varchar(10), "
-                    + "	ontology_id varchar(30), "
+                    + "	ontology_id varchar(30), "                    
                     + "	is_approved boolean not null default false,"
                     + "	is_included boolean not null default false,"
                     + "	is_pending_review boolean not null default false,"
@@ -357,9 +357,9 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "	creation_date DATE,"
                     + "	last_modified TIMESTAMP,"
                     + "	variant_comment text,"
-                    + " FOREIGN KEY(ontology) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ONTOLOGY + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
-                    + "	FOREIGN KEY(ontology_id) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ID + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
-                    + "	FOREIGN KEY(fk_locus_comment_group_id) REFERENCES " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + " FOREIGN KEY(ontology) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ONTOLOGY.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
+                    + "	FOREIGN KEY(ontology_id) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ID.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
+                    + "	FOREIGN KEY(fk_locus_comment_group_id) REFERENCES " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT,"
                     + "	FOREIGN KEY(fk_locus_parent_comment_id) REFERENCES " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
                     + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
             LOG.info(q);
