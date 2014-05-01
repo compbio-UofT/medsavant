@@ -41,12 +41,12 @@ public class PGXAnalysis {
 	private static Map<String, String> columns= getDbToHumanReadableMap();
 	
 	private String dnaID;
-	private List<PGXGeneAndVariants> pgxVariants= new LinkedList<PGXGeneAndVariants>();
+	private List<PGXGene> pgxVariants= new LinkedList<PGXGene>();
 	private VariantManagerAdapter vma= MedSavantClient.VariantManager;
 	
 	
 	/**
-	 * Initiate a pharmacogenomic analysis.
+	 * Perform a pharmacogenomic analysis.
 	 * @param dnaID the DNA ID for this individual
 	 */
 	public PGXAnalysis(String dnaID) throws SQLException, RemoteException, SessionExpiredException {
@@ -67,6 +67,9 @@ public class PGXAnalysis {
 		
 		/* Query the DB for this individual's pharmacogenomic genotypes. */
 		queryVariants();
+		
+		/* Assign the diplotypes for this individual's genes. */
+		getDiplotypes();
 	}
 	
 	
@@ -74,7 +77,7 @@ public class PGXAnalysis {
 	 * Get the pharmacogenomic variants.
 	 * @return a List of PGXGeneAndVariants objects
 	 */
-	public List<PGXGeneAndVariants> getVariants() {
+	public List<PGXGene> getGenes() {
 		return pgxVariants;
 	}
 	
@@ -163,7 +166,7 @@ public class PGXAnalysis {
 		/* Iterate through all gene conditions. */
 		for (String geneKey : standardPGXConditions.keySet()) {
 			/* The variants for this gene. */
-			PGXGeneAndVariants currentVariants= new PGXGeneAndVariants(geneKey);
+			PGXGene currentVariants= new PGXGene(geneKey);
 			
 			/* Take the standard combocondition and AND it to the DNA ID for this
 			 * individual before submitting for variants. */
@@ -171,9 +174,6 @@ public class PGXAnalysis {
 			query.addCondition(
 				BinaryCondition.equalTo(ts.getDBColumn(BasicVariantColumns.DNA_ID), dnaID));
 			query.addCondition(standardPGXConditions.get(geneKey));
-
-			// TESTING
-			//System.out.println("[TESTING]: full query= \n" + query.toString(10000, new SqlContext())); //////////////
 
 			/* For each query, a VariantIterator will be returned. When the Iterator
 			 * is null, stop getting more VariantIterators. Iterate while
@@ -209,6 +209,20 @@ public class PGXAnalysis {
 			
 			/* Add the current gene-variant pair to the list. */
 			pgxVariants.add(currentVariants);
+		}
+	}
+	
+	
+	/**
+	 * Get diplotypes for all the PGx genes.
+	 */
+	private void getDiplotypes() {
+		for (PGXGene pg : pgxVariants) {
+			try {
+				pg.setDiplotype(PGXDBFunctions.getDiplotype(pg));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
