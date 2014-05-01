@@ -54,6 +54,7 @@ import org.ut.biolab.medsavant.client.view.variants.MedSavantDataSource;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.util.ServerRequest;
+import savant.api.adapter.DataSourceAdapter;
 import savant.api.data.DataFormat;
 import savant.api.event.GenomeChangedEvent;
 import savant.api.util.DialogUtils;
@@ -359,14 +360,23 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
         }
         return view;
     }
-    
-    
+
     public void addTrackFromURLString(String urlString, final DataFormat format) {
-        addTrackFromURLString(urlString,format,true);
+        addTrackFromURLString(urlString, format, true);
     }
-    
+
+    public void addTrackFromDataSource(DataSourceAdapter dsa) {
+        try {
+            Track t = TrackFactory.createTrack(dsa);
+            FrameController c = FrameController.getInstance();
+            c.createFrame(new Track[]{t});
+        } catch (SavantTrackCreationCancelledException ex) {
+            LOG.error(ex);
+        }
+    }
+
     public void addTrackFromURLString(String urlString, final DataFormat format, boolean showNotification) {
-    
+
         LOG.info("Adding track from " + urlString);
 
         final Notification n = new Notification();
@@ -375,17 +385,17 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
         n.setIcon(this.getIcon());
         n.setIsIndeterminateProgress(true);
         n.setHideDoesClose(true);
-        
+
         ActionListener openApp = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 MedSavantFrame.getInstance().getDashboard().launchApp(SavantApp.this);
             }
-            
+
         };
         n.setAction("Open", openApp);
-        
+
         if (showNotification && MedSavantFrame.getInstance().getDashboard().getCurrentApp() != this) {
             MedSavantFrame.getInstance().showNotification(n);
         }
