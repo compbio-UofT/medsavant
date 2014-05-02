@@ -199,7 +199,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     static public void main(String args[]) {    
         
-        checkJavaVersion();      
+        //checkJavaVersion();      
         new MedSavantWorker<Void>("Analytics Start"){
 
             @Override

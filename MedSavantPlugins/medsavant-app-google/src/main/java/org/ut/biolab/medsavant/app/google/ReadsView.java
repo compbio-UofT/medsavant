@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -53,12 +54,70 @@ class ReadsView extends JPanel {
     private Genomics genomics;
     private JPanel datasetBlock;
 
+    private GoogleDataset dataset = null;
+    private Thread fetcher;
+
+    private class GoogleDataset {
+
+        private final String id;
+        private final String name;
+
+        public GoogleDataset(String id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
     public ReadsView() {
         this.setLayout(new BorderLayout());
         StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Reads", false);
-        datasetBlock = p.addBlock("Alignment Datasets");
-        datasetBlock.setLayout(new MigLayout("insets 0, fillx, filly"));
 
+        JPanel datasetChooserBlock = p.addBlock("Datasest");
+        datasetChooserBlock.setLayout(new MigLayout("insets 0, fillx, filly, wrap"));
+
+        GoogleDataset defaultDataset = new GoogleDataset("376902546192", "1000 Genomes");
+
+        final JComboBox datasetChooser = new JComboBox();
+        datasetChooser.addItem(defaultDataset);
+        datasetChooser.addItem(new GoogleDataset("383928317087", "PGP"));
+        datasetChooser.addItem(new GoogleDataset("461916304629", "Simons Foundation"));
+        //datasetChooser.addItem(new GoogleDataset("SRP034507", "SRP034507"));
+        //datasetChooser.addItem(new GoogleDataset("SRP029392", "SRP029392"));
+        datasetChooser.setSelectedItem(defaultDataset);
+
+        datasetChooser.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dataset = (GoogleDataset) datasetChooser.getSelectedItem();
+                try {
+                    refreshReadsets();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+        });
+
+        datasetChooserBlock.add(datasetChooser);
+
+        datasetBlock = ViewUtil.getClearPanel();
+        datasetBlock.setLayout(new MigLayout("insets 0, fillx, filly"));
+        datasetChooserBlock.add(datasetBlock,"growx 1.0, width 100%");
+        
         try {
             genomics = GoogleAuthenticate.buildService();
         } catch (Exception ex) {
@@ -68,6 +127,7 @@ class ReadsView extends JPanel {
         this.add(p, BorderLayout.CENTER);
 
         try {
+            dataset = defaultDataset;
             refreshReadsets();
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -77,17 +137,30 @@ class ReadsView extends JPanel {
     private void refreshReadsets() throws IOException {
 
         datasetBlock.removeAll();
-        datasetBlock.add(new WaitPanel("Retrieving readsets"), "growx 1.0, width 100%");
+
+        if (dataset == null) {
+            datasetBlock.add(ViewUtil.getGrayItalicizedLabel("Choose a dataset"));
+            datasetBlock.invalidate();
+            return;
+        }
+
+        final WaitPanel p = new WaitPanel("Retrieving readsets");
+        datasetBlock.add(p, "growx 1.0, width 100%");
         datasetBlock.invalidate();
 
-        Thread t = new Thread(new Runnable() {
+        if (fetcher != null) {
+            System.out.println("Interrupting Google Genomics readset fetcher");
+            fetcher.interrupt();
+        }
+
+        fetcher = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try {
 
                     java.util.List<java.lang.String> datasetIds = new ArrayList<java.lang.String>();
-                    datasetIds.add("376902546192");
+                    datasetIds.add(dataset.getId());
                     SearchReadsetsRequest content = new SearchReadsetsRequest().setDatasetIds(datasetIds);
                     String pageToken = null;
 
@@ -95,13 +168,19 @@ class ReadsView extends JPanel {
                     niceList.setColorScheme(new WhiteNiceListColorScheme());
                     niceList.startTransaction();
 
+                    int pageCount = 0;
                     while (true) {
+
+                        if (Thread.currentThread().isInterrupted()) {
+                            System.out.println("Google Genomics readset fetcher interrupted");
+                            return;
+                        }
 
                         content.setPageToken(pageToken);
                         Genomics.Readsets.Search req = genomics.readsets().search(content);
                         SearchReadsetsResponse o = req.execute();
                         java.util.List<Readset> readsets = o.getReadsets();
-                        
+
                         if (readsets == null || readsets.isEmpty()) {
                             break;
                         } else {
@@ -110,12 +189,15 @@ class ReadsView extends JPanel {
                                 //item.setDescription(rs.getId());
                                 niceList.addItem(item);
                             }
-                            
+
                             pageToken = o.getNextPageToken();
                             if (pageToken == null) {
                                 break;
                             }
                         }
+
+                        pageCount++;
+                        p.setStatus(pageCount + " " + ((pageCount == 1) ? "page" : "pages") + " received...");
                     }
 
                     niceList.endTransaction();
@@ -145,7 +227,7 @@ class ReadsView extends JPanel {
                                     String readSetName = niceList.getSelectedItems().get(0).toString();
                                     String readsetID = niceList.getSelectedItems().get(0).getItem().toString();
                                     SavantApp app = AppDirectory.getGenomeBrowser();
-                                    GoogleBAMDataSource ds = new GoogleBAMDataSource(readSetName, readsetID);
+                                    GoogleBAMDataSource ds = new GoogleBAMDataSource(dataset.getId(), readSetName, readsetID);
                                     app.addTrackFromDataSource(ds);
                                     MedSavantFrame.getInstance().getDashboard().launchApp(app);
                                 } else {
@@ -178,6 +260,6 @@ class ReadsView extends JPanel {
 
         }
         );
-        t.start();
+        fetcher.start();
     }
 }

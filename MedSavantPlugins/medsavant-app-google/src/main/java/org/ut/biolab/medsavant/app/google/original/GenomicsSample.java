@@ -346,6 +346,7 @@ public class GenomicsSample {
             throws IOException, IllegalArgumentException {
         SearchReadsRequest content = new SearchReadsRequest()
                 .setReadsetIds(cmdLine.readsetIds)
+                .setDatasetIds(cmdLine.datasetIds)
                 .setPageToken(cmdLine.pageToken);
 
         // Range parameters must all be specified or none.

@@ -7,6 +7,9 @@ package org.ut.biolab.medsavant.app.google.original;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.genomics.Genomics;
+import com.google.api.services.genomics.Genomics.Datasets;
+import com.google.api.services.genomics.model.Dataset;
+import com.google.api.services.genomics.model.ListDatasetsResponse;
 import com.google.api.services.genomics.model.Read;
 import com.google.api.services.genomics.model.SearchReadsRequest;
 import com.google.api.services.genomics.model.SearchReadsResponse;
@@ -15,6 +18,8 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import savant.api.adapter.RangeAdapter;
 import savant.api.util.Resolution;
 import savant.data.types.BAMIntervalRecord;
@@ -26,17 +31,20 @@ import savant.util.Range;
  */
 public class GoogleReadSearch {
 
-    private Genomics genomics;
+    private final Genomics genomics;
 
     public GoogleReadSearch(Genomics genomics) {
         this.genomics = genomics;
     }
 
-    SearchReadsResponse searchReads(List<String> readsetIds, String sequenceName, int sequenceStart, int sequenceEnd, String pageToken)
+    SearchReadsResponse searchReads(List<String> datasetIDs, List<String> readsetIds, String sequenceName, int sequenceStart, int sequenceEnd, String pageToken)
             throws IOException, IllegalArgumentException {
+        
         SearchReadsRequest content = new SearchReadsRequest()
+                .setDatasetIds(datasetIDs)
                 .setReadsetIds(readsetIds);
         
+        System.out.println("Searching reads for " + content.getDatasetIds().get(0) + " " + content.getReadsetIds().get(0));
 
         // Range parameters must all be specified or none.
         if (!sequenceName.isEmpty() || sequenceStart > 0 || sequenceEnd > 0) {
@@ -49,6 +57,7 @@ public class GoogleReadSearch {
                     .setSequenceStart(BigInteger.valueOf(sequenceStart))
                     .setSequenceEnd(BigInteger.valueOf(sequenceEnd)).setPageToken(pageToken);
         }
+        
         return genomics.reads().search(content).execute();
     }
 
@@ -59,8 +68,9 @@ public class GoogleReadSearch {
     }
 
     public static void main(String[] argv) throws IOException, GeneralSecurityException, InterruptedException {
-
-        GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample","CJ_ppJ-WCxDxrtDr5fGIhBA");
+        //GoogleBAMDataSource ds = new GoogleBAMDataSource("383928317087", "Sample", "CJ_ppJ-WCxDxrtDr5fGIhBA");
+        System.out.println("SEARCHING READS");
+        GoogleBAMDataSource ds = new GoogleBAMDataSource("461916304629","Sample","CPXp7eK4DRCchIy-5774w0k");
         List<BAMIntervalRecord> results = ds.getRecords("chr20", new Range(68198,69000), Resolution.HIGH, null);
         for (BAMIntervalRecord r : results) {
             System.out.println(r);

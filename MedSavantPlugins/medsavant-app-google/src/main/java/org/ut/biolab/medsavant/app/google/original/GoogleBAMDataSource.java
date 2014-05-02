@@ -39,13 +39,17 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
     private final GoogleReadSearch search;
     private final ArrayList<String> readsetIds;
     private final String readSetName;
+    private final ArrayList<String> datasetIds;
 
-    public GoogleBAMDataSource(String readSetName, String readSetID) throws IOException, GeneralSecurityException {
+    public GoogleBAMDataSource(String datasetID, String readSetName, String readSetID) throws IOException, GeneralSecurityException {
         
         Genomics genomics = GoogleAuthenticate.buildService();
         search = new GoogleReadSearch(genomics);
 
         this.readSetName = readSetName;
+        
+        datasetIds = new ArrayList<String>();
+        datasetIds.add(datasetID);
         
         readsetIds = new ArrayList<String>();
         readsetIds.add(readSetID);
@@ -77,7 +81,9 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
         }
 
         while (true) {
-            SearchReadsResponse searchReadsResponse = search.searchReads(readsetIds, ref, range.getFrom(), range.getTo(), pageToken);
+            
+            System.out.println("Fetching reads for " + readsetIds.get(0) + " " + ref + " " + range + " token = " + pageToken);
+            SearchReadsResponse searchReadsResponse = search.searchReads(datasetIds, readsetIds, ref, range.getFrom(), range.getTo(), pageToken);
             pageToken = searchReadsResponse.getNextPageToken();
             List<Read> reads = searchReadsResponse.getReads();
 
