@@ -37,15 +37,12 @@ public class GoogleReadSearch {
         this.genomics = genomics;
     }
 
-    SearchReadsResponse searchReads(List<String> datasetIDs, List<String> readsetIds, String sequenceName, int sequenceStart, int sequenceEnd, String pageToken)
+    SearchReadsResponse searchReads(List<String> readsetIds, String sequenceName, int sequenceStart, int sequenceEnd, String pageToken)
             throws IOException, IllegalArgumentException {
         
         SearchReadsRequest content = new SearchReadsRequest()
-                .setDatasetIds(datasetIDs)
                 .setReadsetIds(readsetIds);
         
-        System.out.println("Searching reads for " + content.getDatasetIds().get(0) + " " + content.getReadsetIds().get(0));
-
         // Range parameters must all be specified or none.
         if (!sequenceName.isEmpty() || sequenceStart > 0 || sequenceEnd > 0) {
             assertOrThrow(!sequenceName.isEmpty(), "Must specify a sequence_name");
@@ -68,9 +65,9 @@ public class GoogleReadSearch {
     }
 
     public static void main(String[] argv) throws IOException, GeneralSecurityException, InterruptedException {
-        //GoogleBAMDataSource ds = new GoogleBAMDataSource("383928317087", "Sample", "CJ_ppJ-WCxDxrtDr5fGIhBA");
+        GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample", "CJDmkYn8ChCcnc7i4KaWqmQ");
         System.out.println("SEARCHING READS");
-        GoogleBAMDataSource ds = new GoogleBAMDataSource("461916304629","Sample","CPXp7eK4DRCchIy-5774w0k");
+        //GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample","CPXp7eK4DRCchIy-5774w0k");
         List<BAMIntervalRecord> results = ds.getRecords("chr20", new Range(68198,69000), Resolution.HIGH, null);
         for (BAMIntervalRecord r : results) {
             System.out.println(r);

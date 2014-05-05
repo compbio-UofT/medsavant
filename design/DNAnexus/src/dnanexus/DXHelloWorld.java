@@ -1,0 +1,50 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package dnanexus;
+
+import java.io.IOException;
+
+import com.dnanexus.DXJSON;
+import com.dnanexus.DXUtil;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+
+public class DXHelloWorld {
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class HelloWorldInput {
+        @JsonProperty
+        private String name;
+    }
+
+    private static class HelloWorldOutput {
+        @JsonProperty
+        private String greeting;
+
+        public HelloWorldOutput(String greeting) {
+            this.greeting = greeting;
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        System.out.println("This is the DNAnexus Java Demo App");
+
+        System.out.println("A");
+        HelloWorldInput input = DXUtil.getJobInput(HelloWorldInput.class);
+
+         System.out.println("B");
+        String name = input.name;
+        String greeting = "Hello, " + (name == null ? "World" : name) + "!";
+
+         System.out.println("C");
+        DXUtil.writeJobOutput(new HelloWorldOutput(greeting));
+         System.out.println("D");
+    }
+
+}

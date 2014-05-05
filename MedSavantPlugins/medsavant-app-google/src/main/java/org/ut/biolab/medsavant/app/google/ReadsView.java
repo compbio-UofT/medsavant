@@ -85,7 +85,7 @@ class ReadsView extends JPanel {
         this.setLayout(new BorderLayout());
         StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Reads", false);
 
-        JPanel datasetChooserBlock = p.addBlock("Datasest");
+        JPanel datasetChooserBlock = p.addBlock("Dataset");
         datasetChooserBlock.setLayout(new MigLayout("insets 0, fillx, filly, wrap"));
 
         GoogleDataset defaultDataset = new GoogleDataset("376902546192", "1000 Genomes");
@@ -149,7 +149,6 @@ class ReadsView extends JPanel {
         datasetBlock.invalidate();
 
         if (fetcher != null) {
-            System.out.println("Interrupting Google Genomics readset fetcher");
             fetcher.interrupt();
         }
 
@@ -172,7 +171,6 @@ class ReadsView extends JPanel {
                     while (true) {
 
                         if (Thread.currentThread().isInterrupted()) {
-                            System.out.println("Google Genomics readset fetcher interrupted");
                             return;
                         }
 
@@ -227,7 +225,7 @@ class ReadsView extends JPanel {
                                     String readSetName = niceList.getSelectedItems().get(0).toString();
                                     String readsetID = niceList.getSelectedItems().get(0).getItem().toString();
                                     SavantApp app = AppDirectory.getGenomeBrowser();
-                                    GoogleBAMDataSource ds = new GoogleBAMDataSource(dataset.getId(), readSetName, readsetID);
+                                    GoogleBAMDataSource ds = new GoogleBAMDataSource(readSetName, readsetID);
                                     app.addTrackFromDataSource(ds);
                                     MedSavantFrame.getInstance().getDashboard().launchApp(app);
                                 } else {
