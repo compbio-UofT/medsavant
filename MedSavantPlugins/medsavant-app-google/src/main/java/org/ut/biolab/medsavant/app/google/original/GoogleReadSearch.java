@@ -7,6 +7,9 @@ package org.ut.biolab.medsavant.app.google.original;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.genomics.Genomics;
+import com.google.api.services.genomics.Genomics.Datasets;
+import com.google.api.services.genomics.model.Dataset;
+import com.google.api.services.genomics.model.ListDatasetsResponse;
 import com.google.api.services.genomics.model.Read;
 import com.google.api.services.genomics.model.SearchReadsRequest;
 import com.google.api.services.genomics.model.SearchReadsResponse;
@@ -15,6 +18,8 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import savant.api.adapter.RangeAdapter;
 import savant.api.util.Resolution;
 import savant.data.types.BAMIntervalRecord;
@@ -26,7 +31,7 @@ import savant.util.Range;
  */
 public class GoogleReadSearch {
 
-    private Genomics genomics;
+    private final Genomics genomics;
 
     public GoogleReadSearch(Genomics genomics) {
         this.genomics = genomics;
@@ -34,10 +39,10 @@ public class GoogleReadSearch {
 
     SearchReadsResponse searchReads(List<String> readsetIds, String sequenceName, int sequenceStart, int sequenceEnd, String pageToken)
             throws IOException, IllegalArgumentException {
+        
         SearchReadsRequest content = new SearchReadsRequest()
                 .setReadsetIds(readsetIds);
         
-
         // Range parameters must all be specified or none.
         if (!sequenceName.isEmpty() || sequenceStart > 0 || sequenceEnd > 0) {
             assertOrThrow(!sequenceName.isEmpty(), "Must specify a sequence_name");
@@ -49,6 +54,7 @@ public class GoogleReadSearch {
                     .setSequenceStart(BigInteger.valueOf(sequenceStart))
                     .setSequenceEnd(BigInteger.valueOf(sequenceEnd)).setPageToken(pageToken);
         }
+        
         return genomics.reads().search(content).execute();
     }
 
@@ -59,8 +65,9 @@ public class GoogleReadSearch {
     }
 
     public static void main(String[] argv) throws IOException, GeneralSecurityException, InterruptedException {
-
-        GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample","CJ_ppJ-WCxDxrtDr5fGIhBA");
+        GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample", "CJDmkYn8ChCcnc7i4KaWqmQ");
+        System.out.println("SEARCHING READS");
+        //GoogleBAMDataSource ds = new GoogleBAMDataSource("Sample","CPXp7eK4DRCchIy-5774w0k");
         List<BAMIntervalRecord> results = ds.getRecords("chr20", new Range(68198,69000), Resolution.HIGH, null);
         for (BAMIntervalRecord r : results) {
             System.out.println(r);

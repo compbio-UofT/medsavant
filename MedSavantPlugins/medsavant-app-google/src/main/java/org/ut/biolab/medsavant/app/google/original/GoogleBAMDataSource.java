@@ -29,6 +29,7 @@ import savant.api.adapter.RecordFilterAdapter;
 import savant.api.data.DataFormat;
 import savant.api.util.Resolution;
 import savant.data.types.BAMIntervalRecord;
+import savant.util.MiscUtils;
 
 /**
  *
@@ -65,9 +66,13 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
         return chroms;
     }
 
+    private enum HomogenizeState { UNKNOWN, DONT_HOMOGENIZE, DO_HOMOGENIZE };
+    private HomogenizeState homogenizeSequence = HomogenizeState.UNKNOWN;
+    
     @Override
     public List<BAMIntervalRecord> getRecords(String ref, RangeAdapter range, Resolution resolution, RecordFilterAdapter<BAMIntervalRecord> filter) throws IOException, InterruptedException {
 
+        
         List<BAMIntervalRecord> results = new ArrayList<BAMIntervalRecord>();
         String pageToken = null;
         
@@ -76,11 +81,41 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
             return results;
         }
 
+        int iteration = 0;
+        
         while (true) {
+            
+            iteration++;
+            
+            // homogenize the sequence if it was determined to help
+            if (homogenizeSequence == HomogenizeState.DO_HOMOGENIZE) {
+                ref = MiscUtils.homogenizeSequence(ref);
+            }
+            
             SearchReadsResponse searchReadsResponse = search.searchReads(readsetIds, ref, range.getFrom(), range.getTo(), pageToken);
             pageToken = searchReadsResponse.getNextPageToken();
             List<Read> reads = searchReadsResponse.getReads();
 
+            // test homogenization
+            if (iteration == 1 && homogenizeSequence == HomogenizeState.UNKNOWN) {
+                
+                // homogenization may work, if the alternative didn't
+                if (reads == null || reads.isEmpty()) {
+                    ref = MiscUtils.homogenizeSequence(ref);
+                    searchReadsResponse = search.searchReads(readsetIds, ref, range.getFrom(), range.getTo(), pageToken);
+                    pageToken = searchReadsResponse.getNextPageToken();
+                    reads = searchReadsResponse.getReads();
+                    
+                    if (reads != null && !reads.isEmpty()) {
+                        homogenizeSequence = HomogenizeState.DO_HOMOGENIZE;
+                    }
+                    
+                // don't homogenize, we already got reads
+                } else {
+                    homogenizeSequence = HomogenizeState.DONT_HOMOGENIZE;
+                }
+            }
+            
             if (reads == null || reads.isEmpty()) {
                 break;
             } else {
@@ -111,7 +146,7 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
 
     @Override
     public String getName() {
-        return "Google Genomics Readeset (" + readSetName + ")";
+        return "Google Genomics Readset (" + readSetName + ")";
     }
 
     @Override
