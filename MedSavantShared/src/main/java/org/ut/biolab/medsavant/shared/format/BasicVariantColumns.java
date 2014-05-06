@@ -56,7 +56,7 @@ public interface BasicVariantColumns {
     public static final CustomField CHROM = new CustomField("chrom", ColumnType.VARCHAR, 5, false, true, false, "", true, "Chromosome", "");
     public static final CustomField START_POSITION = new CustomField("position", ColumnType.INTEGER, 11, false, true, false, null, true, "Position", "");
     public static final CustomField END_POSITION = new CustomField("end", ColumnType.INTEGER, 11, false, true, false, null, true, "End Position", "");
-    public static final CustomField DBSNP_ID = new CustomField("dbsnp_id", ColumnType.VARCHAR, 45, false, false, false, null, true, "dbSNP ID", "");
+    public static final CustomField DBSNP_ID = new CustomField("dbsnp_id", ColumnType.VARCHAR, 200, false, false, false, null, true, "dbSNP ID", "");
     public static final CustomField REF = new CustomField("ref", ColumnType.VARCHAR, 10000, false, false, false, null, true, "Reference", "");
     public static final CustomField ALT = new CustomField("alt", ColumnType.VARCHAR, 10000, false, false, false, null, true, "Alternate", "");
     public static final CustomField ALT_NUMBER = new CustomField("alt_number", ColumnType.INTEGER, 11, false, true, false, null, true, "Alternate Number", "");

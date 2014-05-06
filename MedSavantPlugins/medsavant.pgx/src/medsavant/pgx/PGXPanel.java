@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -66,6 +67,7 @@ public class PGXPanel extends JPanel {
 	private ProgressWheel statusWheel;
 	private JPanel reportInitJP;
 	private JLabel reportStartLabel;
+	private JCheckBox assumeRefCheckBox;
 	
 	
 	public PGXPanel() {
@@ -164,6 +166,9 @@ public class PGXPanel extends JPanel {
 		status.setVisible(false);
 		statusWheel.setVisible(false);
 		
+		// Checkbox governing assumptions about missing markers
+		assumeRefCheckBox= new JCheckBox("Treat missing markers as Reference calls", true);
+		
 		/* Layout notes:
 		 * Create a bit of inset spacing top and left, no space between 
 		 * components unless explicitly specified.
@@ -181,7 +186,8 @@ public class PGXPanel extends JPanel {
 		
 		patientSideJP.add(choosePatientButton, "alignx center, wrap");
 		patientSideJP.add(new JLabel("This app uses the CPIC guidelines"), "alignx center, gapy 20px, wrap");
-		patientSideJP.add(new JLabel("ONLY USE WGS FILES - NO EXOMES YET"), "alignx center, gapy 20px, wrap");
+		patientSideJP.add(new JLabel("BETA TESTING! ONLY WORKS WITH WGS NOT EXOMES."), "alignx center, gapy 20px, wrap");
+		patientSideJP.add(assumeRefCheckBox, "alignx center, gapy 20px, wrap");
 		patientSideJP.add(status, "alignx center, gapy 50px, wrap");
 		patientSideJP.add(statusWheel, "alignx center, wrap");
 		
@@ -246,7 +252,7 @@ public class PGXPanel extends JPanel {
 			protected Object doInBackground() throws Exception {
 				/* Create and perform a new analysis. */
 				try {
-					currentPGXAnalysis= new PGXAnalysis(currentDNAID);
+					currentPGXAnalysis= new PGXAnalysis(currentDNAID, assumeRefCheckBox.isSelected());
 				} catch (SQLException se) {
 					errorDialog(se.getMessage());
 					se.printStackTrace();
@@ -295,8 +301,11 @@ public class PGXPanel extends JPanel {
 			haplotypesJP.setLayout(new MigLayout("gapy 0px, fillx"));
 			haplotypesJP.add(new JLabel("Maternal haplotype: " + pg.getMaternalHaplotype()), "wrap");
 			haplotypesJP.add(new JLabel("Paternal haplotype: " + pg.getPaternalHaplotype()), "wrap");
+			haplotypesJP.add(new JLabel("Maternal activity: " + pg.getMaternalActivity()), "wrap");
+			haplotypesJP.add(new JLabel("Paternal activity: " + pg.getPaternalActivity()), "wrap");
 			haplotypesJP.add(new JLabel("Maternal markers: " + pg.getMaternalGenotypes()), "wrap");
 			haplotypesJP.add(new JLabel("Paternal markers: " + pg.getPaternalGenotypes()), "wrap");
+			haplotypesJP.add(new JLabel("Phased: " + pg.isPhased()), "wrap");
 			for (Variant v : pg.getVariants()) {
 				haplotypesJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
 					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), 

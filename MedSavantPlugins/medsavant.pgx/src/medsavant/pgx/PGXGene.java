@@ -19,6 +19,9 @@ public class PGXGene {
 	private String paternalHaplotype;
 	private Map<String, String> maternalGenotypes;
 	private Map<String, String> paternalGenotypes;
+	private String maternalActivity;
+	private String paternalActivity;
+	private boolean isPhased= true; // default is phased
 	
 	
 	/**
@@ -145,5 +148,58 @@ public class PGXGene {
 	 */
 	public Map<String, String> getPaternalGenotypes() {
 		return this.paternalGenotypes;
+	}
+	
+	
+	/**
+	 * Set this gene's genotypes as unphased. They are marked as phased by default.
+	 */
+	public void setUnphased() {
+		this.isPhased= false;
+	}
+	
+	
+	/**
+	 * Find out if this gene's genotypes are phased.
+	 * @return true is phased, false otherwise
+	 */
+	public boolean isPhased() {
+		return this.isPhased;
+	}
+	
+	
+	/**
+	 * Set maternal activity.
+	 * @param activity the activity string
+	 */
+	public void setMaternalActivity(String activity) {
+		this.maternalActivity= activity;
+	}
+	
+	
+	/**
+	 * Set paternal activity.
+	 * @param activity the activity string
+	 */
+	public void setPaternalActivity(String activity) {
+		this.paternalActivity= activity;
+	}
+	
+	
+	/** 
+	 * Get the maternal activity.
+	 * @return the activity string
+	 */
+	public String getMaternalActivity() {
+		return this.maternalActivity;
+	}
+	
+	
+	/** 
+	 * Get the paternal activity.
+	 * @return the activity string
+	 */
+	public String getPaternalActivity() {
+		return this.paternalActivity;
 	}
 }

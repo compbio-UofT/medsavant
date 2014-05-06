@@ -34,11 +34,12 @@ public class PGXDBTests {
 		getAllAlleles();
 		getAllGenes();
 		getMarkerPositionsForGene("CYP2C19");
+		getMetabolizer();
 		
 		// Specific tests
-		
-		printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs4986893=G%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%'", "");
-		printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs4986893=A%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%'", "");
+		//printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs4986893=G%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%'", "");
+		//printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs4986893=A%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%'", "");
+		//printSQLResults("SELECT activity_phenotype FROM haplotype_activity WHERE gene = 'CYP2D6' AND haplotype = '*17'", "");
 	}
 	
 	
@@ -181,6 +182,96 @@ public class PGXDBTests {
 		}
 	}
 	
+	
+	/**
+	 * Query the DB to test for metabolism class interpretations.
+	 */
+	private static void getMetabolizer() {
+		String sql;
+		
+		String test1= "Testing the activity scores of CYP2D6 extensive metabolizer at score 0.8";
+		stdout(test1);
+		
+		double totalActivity= 0.8;
+		
+		/* Get the activity score that is the highest score just below our total activity. */
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT total_activity_score_minimum, metabolizer_class " +
+				"FROM activity_to_metabolizer " +
+				"WHERE total_activity_score_minimum = (SELECT MAX(total_activity_score_minimum) " +
+				"										FROM activity_to_metabolizer " +
+				"										WHERE total_activity_score_minimum <= " + totalActivity + ")";
+		
+		printSQLResults(sql, test1);
+		
+		String test2= "Testing the activity scores of CYP2D6 extensive metabolizer at score 2.0." +
+			" Should be classified as extensive. >2.0 is Ultrarapid.";
+		stdout(test2);
+		
+		totalActivity= 2.0;
+		
+		/* Get the activity score that is the highest score just below our total activity. */
+		sql=	"SELECT total_activity_score_minimum, metabolizer_class " +
+				"FROM activity_to_metabolizer " +
+				"WHERE total_activity_score_minimum = (SELECT MAX(total_activity_score_minimum) " +
+				"										FROM activity_to_metabolizer " +
+				"										WHERE total_activity_score_minimum <= " + totalActivity + ")";
+		
+		printSQLResults(sql, test2);
+
+		String test3= "Getting the total activity score for CYP2D6 *1/*1, should be 2.0.";
+		stdout(test3);
+		
+		String hap1= "*1";
+		String hap2= "*1";
+		
+		/* Only works for diplotypes. Not if there are >2 haplotypes. */
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT SUM(activity_score) "+
+				"FROM (SELECT * " +
+				"		FROM haplotype_activity " +
+				"		WHERE gene = 'cyp2d6' " +
+				"			AND haplotype = '" + hap1 + "' " +
+				"		UNION ALL " +
+				"		SELECT * " +
+				"		FROM haplotype_activity " +
+				"		WHERE gene = 'cyp2d6' " +
+				"			AND haplotype = '" + hap2 + "') ";
+		
+		printSQLResults(sql, test3);
+		
+		// TEST 4
+		hap1= "*3";
+		hap2= "*6";
+		String test4= "Testing the metabolizer class of CYP2D6 " + hap1 + "/" + hap2;
+		stdout(test4);
+		
+		/* I don't like this query - it might be better to make multiple queries
+		 * and process the remainder in Java code. */
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT total_activity_score_minimum, metabolizer_class " +
+				"FROM activity_to_metabolizer " +
+				"WHERE total_activity_score_minimum = " +
+				"	(SELECT MAX(total_activity_score_minimum) " +
+				"	FROM activity_to_metabolizer " +
+				"	WHERE total_activity_score_minimum <= " +
+				"		(SELECT SUM(activity_score) "+
+				"		FROM (SELECT * " +
+				"			FROM haplotype_activity " +
+				"			WHERE gene = 'cyp2d6' " +
+				"				AND haplotype = '" + hap1 + "' " +
+				"			UNION ALL " +
+				"			SELECT * " +
+				"			FROM haplotype_activity " +
+				"			WHERE gene = 'cyp2d6' " +
+				"				AND haplotype = '" + hap2 + "')) " +
+				"	)";
+		
+		printSQLResults(sql, test4);
+	}
 	
 	
 	/**

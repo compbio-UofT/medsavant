@@ -17,6 +17,9 @@ import java.sql.Types;
 /**
  * Parse CSV file using OpenCSV library and load in given database table. 
  * 
+ * NOTE: I think this class treats all values as text. Does not guarantee that
+ * SQL types will be maintained. So far, haven't encountered any errors.
+ * 
  * @author viralpatel.net, rammar
  */
 public class CSVLoader {
@@ -135,7 +138,7 @@ public class CSVLoader {
 							
 							/* Section modified by rammar to allow NULL values 
 							 * to be input into the DB. */
-							if (!string.equals("\\N")) {
+							if (string.length() > 0 && !string.equals("\\N")) {								
 								ps.setString(index++, string);
 							} else {
 								ps.setNull(index++, Types.VARCHAR);

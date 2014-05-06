@@ -41,16 +41,18 @@ public class PGXAnalysis {
 	private static Map<String, String> columns= getDbToHumanReadableMap();
 	
 	private String dnaID;
-	private List<PGXGene> pgxVariants= new LinkedList<PGXGene>();
+	private List<PGXGene> pgxGenes= new LinkedList<PGXGene>();
 	private VariantManagerAdapter vma= MedSavantClient.VariantManager;
-	
+	private boolean assumeRef; // if true, assume reference calls for missing PGx markers
 	
 	/**
 	 * Perform a pharmacogenomic analysis.
 	 * @param dnaID the DNA ID for this individual
+	 * @param assumeRef if true and a marker is missing, assumes reference nucleotide. If false, marker is left blank.
 	 */
-	public PGXAnalysis(String dnaID) throws SQLException, RemoteException, SessionExpiredException {
+	public PGXAnalysis(String dnaID, boolean assumeRef) throws SQLException, RemoteException, SessionExpiredException {
 		this.dnaID= dnaID;
+		this.assumeRef= assumeRef;
 		
 		/* If no connection exists, initialize the local HyperSQL database for 
 		 * analyses. */
@@ -70,6 +72,9 @@ public class PGXAnalysis {
 		
 		/* Assign the diplotypes for this individual's genes. */
 		getDiplotypes();
+		
+		/* Assign the activity scores/phenotypes and metabolizer class. */
+		getActivities();
 	}
 	
 	
@@ -78,7 +83,7 @@ public class PGXAnalysis {
 	 * @return a List of PGXGeneAndVariants objects
 	 */
 	public List<PGXGene> getGenes() {
-		return pgxVariants;
+		return pgxGenes;
 	}
 	
 	
@@ -208,7 +213,7 @@ public class PGXAnalysis {
 			}
 			
 			/* Add the current gene-variant pair to the list. */
-			pgxVariants.add(currentVariants);
+			pgxGenes.add(currentVariants);
 		}
 	}
 	
@@ -217,12 +222,23 @@ public class PGXAnalysis {
 	 * Get diplotypes for all the PGx genes.
 	 */
 	private void getDiplotypes() {
-		for (PGXGene pg : pgxVariants) {
+		for (PGXGene pg : pgxGenes) {
 			try {
-				pg.setDiplotype(PGXDBFunctions.getDiplotype(pg));
+				pg.setDiplotype(PGXDBFunctions.getDiplotype(pg, this.assumeRef));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	
+	/**
+	 * Get the haplotype activity scores/phenotypes for all PGx genes.
+	 */
+	private void getActivities() {
+		for (PGXGene pg : pgxGenes) {
+			pg.setMaternalActivity(PGXDBFunctions.getActivities(pg.getGene(), pg.getMaternalHaplotype()));
+			pg.setPaternalActivity(PGXDBFunctions.getActivities(pg.getGene(), pg.getPaternalHaplotype()));
 		}
 	}
 	

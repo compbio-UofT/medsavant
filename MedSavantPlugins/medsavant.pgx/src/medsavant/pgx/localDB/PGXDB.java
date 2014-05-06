@@ -27,9 +27,15 @@ public class PGXDB {
 	private static final String GENE_MARKER_LIST_FILE_PATH= "/medsavant/pgx/localDBFiles/gene_marker_list.txt";
 	private static final String HAPLOTYPE_MARKERS_FILE_PATH= "/medsavant/pgx/localDBFiles/haplotype_markers.txt";
 	private static final String MARKER_COORDINATES_FILE_PATH= "/medsavant/pgx/localDBFiles/marker_coordinates.txt";
+	private static final String HAPLOTYPE_ACTIVITY_FILE_PATH= "/medsavant/pgx/localDBFiles/haplotype_activity.txt";
+	private static final String ACTIVITY_TO_METABOLIZER_FILE_PATH= "/medsavant/pgx/localDBFiles/activity_to_metabolizer.txt";
+	private static final String PHENOTYPE_TO_METABOLIZER_FILE_PATH= "/medsavant/pgx/localDBFiles/phenotype_to_metabolizer.txt";
 	private static final String GENE_MARKER_LIST_TABLE_NAME= "gene_marker_list";
 	private static final String HAPLOTYPE_MARKERS_TABLE_NAME= "haplotype_markers";
 	private static final String MARKER_COORDINATES_TABLE_NAME= "marker_coordinates";
+	private static final String HAPLOTYPE_ACTIVITY_TABLE_NAME= "haplotype_activity";
+	private static final String ACTIVITY_TO_METABOLIZER_TABLE_NAME= "activity_to_metabolizer";
+	private static final String PHENOTYPE_TO_METABOLIZER_TABLE_NAME= "phenotype_to_metabolizer";
 	
 	private static Connection conn;
 	
@@ -123,8 +129,28 @@ public class PGXDB {
 					")";
 			s.addBatch(sql);
 			
+			sql=	"CREATE TABLE " + HAPLOTYPE_ACTIVITY_TABLE_NAME + " ( " +
+					"	Gene varchar(20) NOT NULL, " +
+					"	Haplotype varchar(10) NOT NULL, " +
+					"	Activity_Score double DEFAULT NULL, " +
+					"	Activity_Phenotype varchar(100) NOT NULL, " +
+					"	Pubmed_ID varchar(1000) NOT NULL, " +
+					"	PRIMARY KEY (Gene, Haplotype) " +
+					")";
+			s.addBatch(sql);
+
+			sql=	"CREATE TABLE " + ACTIVITY_TO_METABOLIZER_TABLE_NAME + " ( " +
+					"	Total_Activity_Score_Minimum double NOT NULL, " +
+					"	Metabolizer_class varchar(100) NOT NULL, " +
+					")";
+			s.addBatch(sql);
 			
-			
+			sql=	"CREATE TABLE " + PHENOTYPE_TO_METABOLIZER_TABLE_NAME + " ( " +
+					"	Haplotype_1_activity varchar(100) NOT NULL, " +
+					"	Haplotype_2_activity varchar(100) NOT NULL, " +
+					"	Metabolizer_class varchar(100) NOT NULL, " +
+					")";
+			s.addBatch(sql);
 			
 			s.executeBatch();
 			s.close();
@@ -157,6 +183,21 @@ public class PGXDB {
 			loader.setSeprator('\t');
 			loader.loadCSV(PGXDB.class.getResourceAsStream(MARKER_COORDINATES_FILE_PATH),
 				MARKER_COORDINATES_TABLE_NAME, false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			loader.loadCSV(PGXDB.class.getResourceAsStream(HAPLOTYPE_ACTIVITY_FILE_PATH),
+				HAPLOTYPE_ACTIVITY_TABLE_NAME, false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			loader.loadCSV(PGXDB.class.getResourceAsStream(ACTIVITY_TO_METABOLIZER_FILE_PATH),
+				ACTIVITY_TO_METABOLIZER_TABLE_NAME, false);
+			
+			loader= new CSVLoader(connectionToServer()); // pass a new connection since it auto-closes it.
+			loader.setSeprator('\t');
+			loader.loadCSV(PGXDB.class.getResourceAsStream(PHENOTYPE_TO_METABOLIZER_FILE_PATH),
+				PHENOTYPE_TO_METABOLIZER_TABLE_NAME, false);
 			
 		} catch (Exception e) {
 			System.err.println("[" + PGXDB.class.getSimpleName() + "]: Error loading tables " + e.toString());

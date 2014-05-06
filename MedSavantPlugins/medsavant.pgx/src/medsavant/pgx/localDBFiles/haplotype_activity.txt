@@ -1,0 +1,74 @@
+Gene	Haplotype	Activity_Score	Activity_Phenotype	Pubmed_ID
+CYP2D6	*1	1	normal	23486447
+CYP2D6	*2	1	normal	23486447
+CYP2D6	*27	1	normal	23486447
+CYP2D6	*33	1	normal	23486447
+CYP2D6	*35	1	normal	23486447
+CYP2D6	*45	1	normal	23486447
+CYP2D6	*46	1	normal	23486447
+CYP2D6	*39	1	normal	23486447
+CYP2D6	*48	1	normal	23486447
+CYP2D6	*53	1	normal	23486447
+CYP2D6	*9	0.5	decreased	23486447
+CYP2D6	*10	0.5	decreased	23486447
+CYP2D6	*17	0.5	decreased	23486447
+CYP2D6	*29	0.5	decreased	23486447
+CYP2D6	*41	0.5	decreased	23486447
+CYP2D6	*49	0.5	decreased	23486447
+CYP2D6	*50	0.5	decreased	23486447
+CYP2D6	*54	0.5	decreased	23486447
+CYP2D6	*55	0.5	decreased	23486447
+CYP2D6	*59	0.5	decreased	23486447
+CYP2D6	*69	0.5	decreased	23486447
+CYP2D6	*72	0.5	decreased	23486447
+CYP2D6	*3	0	no activity	23486447
+CYP2D6	*4	0	no activity	23486447
+CYP2D6	*5	0	no activity	23486447
+CYP2D6	*6	0	no activity	23486447
+CYP2D6	*7	0	no activity	23486447
+CYP2D6	*8	0	no activity	23486447
+CYP2D6	*11	0	no activity	23486447
+CYP2D6	*12	0	no activity	23486447
+CYP2D6	*13	0	no activity	23486447
+CYP2D6	*14	0	no activity	23486447
+CYP2D6	*15	0	no activity	23486447
+CYP2D6	*16	0	no activity	23486447
+CYP2D6	*18	0	no activity	23486447
+CYP2D6	*19	0	no activity	23486447
+CYP2D6	*20	0	no activity	23486447
+CYP2D6	*21	0	no activity	23486447
+CYP2D6	*31	0	no activity	23486447
+CYP2D6	*36	0	no activity	23486447
+CYP2D6	*38	0	no activity	23486447
+CYP2D6	*40	0	no activity	23486447
+CYP2D6	*42	0	no activity	23486447
+CYP2D6	*44	0	no activity	23486447
+CYP2D6	*47	0	no activity	23486447
+CYP2D6	*51	0	no activity	23486447
+CYP2D6	*56	0	no activity	23486447
+CYP2D6	*57	0	no activity	23486447
+CYP2D6	*62	0	no activity	23486447
+CYP2C19	*1		normal	23486447
+CYP2C19	*2		decreased	23486447
+CYP2C19	*3		decreased	23486447
+CYP2C19	*4		decreased	23486447
+CYP2C19	*5		decreased	23486447
+CYP2C19	*6		decreased	23486447
+CYP2C19	*7		decreased	23486447
+CYP2C19	*8		decreased	23486447
+CYP2C19	*17		increased	23486447
+TPMT	*1		normal	21270794
+TPMT	*2		no activity	21270794
+TPMT	*3A		no activity	21270794
+TPMT	*3B		no activity	21270794
+TPMT	*3C		no activity	21270794
+TPMT	*4		no activity	21270794
+TPMT	*6		decreased	21270794
+TPMT	*9		decreased	21270794
+TPMT	*10		decreased	21270794
+TPMT	*11		decreased	21270794
+TPMT	*12		decreased	21270794
+TPMT	*13		decreased	21270794
+TPMT	*16		decreased	21270794
+TPMT	*17		decreased	21270794
+TPMT	*18		decreased	21270794
