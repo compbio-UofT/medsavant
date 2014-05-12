@@ -1725,7 +1725,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
-        UpdateQuery uq = new UpdateQuery(lcTable);
+        UpdateQuery uq = new UpdateQuery(lcTable.getTable());
         uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED), true);
         uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), locusCommentId));
         ConnectionController.executeUpdate(sessID, uq.toString());
@@ -1739,13 +1739,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public LocusCommentGroup createLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
         LocusCommentGroup lcg = getLocusCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, true);
-        if (lcg == null) {
+        if (lcg != null) {
             throw new IllegalArgumentException("A comment group already exists at chrom=" + chrom + ", start=" + start_position + " end=" + end_position + " ref=" + ref + " alt=" + alt);
         }
 
         //insert, get groupId and modDate
         TableSchema lcgTable = MedSavantDatabase.LocusCommentGroupTableSchema;
-        InsertQuery iq = new InsertQuery(lcgTable);
+        InsertQuery iq = new InsertQuery(lcgTable.getTable());
         iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
         iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId);
         iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom);
@@ -1758,12 +1758,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ResultSet res = null;
         int groupId = -1;
         try {
+            LOG.info(iq.toString());
             stmt = conn.prepareStatement(iq.toString(), Statement.RETURN_GENERATED_KEYS);
             stmt.execute();
             res = stmt.getGeneratedKeys();
             res.next();
             groupId = res.getInt(1);
-        } finally {
+        }catch(SQLException sqe){
+            LOG.error("SQL Error ", sqe);
+            throw sqe;
+        }finally {
             if (conn != null) {
                 conn.close();
             }
@@ -1819,7 +1823,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {        
         TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
-        UpdateQuery uq = new UpdateQuery(lcTable);
+        UpdateQuery uq = new UpdateQuery(lcTable.getTable());
         uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), commentId));
         uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
         uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
@@ -1845,11 +1849,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Boolean isPendingReview = locusComment.isPendingReview();
         Boolean isDeleted = locusComment.isDeleted();
         String commentText = locusComment.getCommentText();
-
+        String ontology = locusComment.getOntologyTerm().getOntology().name();
         TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
-        InsertQuery iq = new InsertQuery(lcTable);
+        InsertQuery iq = new InsertQuery(lcTable.getTable());
         
+        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), locusCommentGroupId);
         iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID), ontologyId);
+        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
         iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_USER), username);
         iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
         iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
@@ -1881,7 +1887,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + locusCommentGroupId);
 
             return commentId;
-        } finally {
+        } catch(SQLException sqe){
+            LOG.error("SQL Error", sqe);
+            throw sqe;
+        }finally {
             if (conn != null) {
                 conn.close();
             }
@@ -1913,12 +1922,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             sq.addFromTable(lcgTable.getTable());
             sq.addAllColumns();
             sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), groupId));
-            ConnectionController.executeQuery(sessID, sq.toString());
-            if (!rs.next()) {
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
+            if (rs==null || !rs.next()) {
                 throw new IllegalArgumentException("There is no comment group with the given identifier " + groupId);
             }
-        } finally {
-            rs.close();
+        }catch(SQLException sqe){
+            LOG.error("SQL Error", sqe);
+            throw sqe;
+        }finally {
+            if(rs !=null){
+                rs.close();
+            }
         }
 
         //List<LocusComment> comments = new ArrayList<LocusComment>();
@@ -1928,7 +1942,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             SelectQuery sq = new SelectQuery();
             sq.addFromTable(lcTable.getTable());
             sq.addAllColumns();
-            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID, groupId));
+            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), groupId));
             String querySuffix = "";
             if (loadOnlyMostRecentComment) {
                 sq.addCondition(UnaryCondition.isNotNull(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID)));
@@ -1937,6 +1951,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             } else {                
                 sq.addOrdering(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), Dir.ASCENDING);
             }
+            LOG.info(sq.toString()+querySuffix);
+            
             rs = ConnectionController.executeQuery(sessID, sq.toString() + querySuffix);
             Map<Integer, LocusComment> parentCommentMap = new TreeMap<Integer, LocusComment>();
             Map<Integer, Set<LocusComment>> childCommentMap = new HashMap<Integer, Set<LocusComment>>();
@@ -1993,13 +2009,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 comments.add(parentComment);
                 
                 Set<LocusComment> childComments = childCommentMap.get(parentId);
-                if(childComments == null){
+                if(childComments != null){
                     comments.addAll(childComments);                    
                 }
             }
             
             return comments;            
-        } finally {
+        } catch(SQLException sqe){
+            LOG.error("SQL Error", sqe);
+            throw sqe;                    
+        }finally {
             if (rs != null) {
                 rs.close();
             }
@@ -2051,51 +2070,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             modDate = lastComment.getModificationDate();
         }
 
-        return new LocusCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);
-        /*
-         List<LocusComment> comments = new ArrayList<LocusComment>();
-         rs = null;
-         try {
-         Date modDate = null;
-
-         TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
-         sq = new SelectQuery();
-         sq.addFromTable(lcTable.getTable());
-         sq.addAllColumns();
-         sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID, groupId));
-         String querySuffix = "";
-         if (loadOnlyMostRecentComment) {
-         sq.addOrdering(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), Dir.DESCENDING);
-         querySuffix = " LIMIT 1";
-         } else {
-         sq.addOrdering(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), Dir.ASCENDING);
-         }
-         rs = ConnectionController.executeQuery(sessID, sq.toString() + querySuffix);
-         while (rs.next()) {
-         int commentId = rs.getInt(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID);
-         String ontologyId = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID);
-         String user = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_USER);
-         Boolean isApproved = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED);
-         Boolean isIncluded = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE);
-         Boolean isPendingReview = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_REVIEW);
-         Boolean isDeleted = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED);
-         Date creationDate = rs.getDate(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_CREATION_DATE);
-         Timestamp ts = rs.getTimestamp(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_MODIFICATION_DATE);
-         modDate = new Date(ts.getTime());
-         String commentText = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_COMMENT);
-
-         OntologyTerm ot = OntologyManager.getInstance().getOntologyTerm(sessID, LocusComment.ONTOLOGY_TYPE, ontologyId);
-         LocusComment lc = new LocusComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot);
-         comments.add(lc);
-         }
-
-         return new LocusCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);
-         } finally {
-         if (rs != null) {
-         rs.close();
-         }
-         }
-         */
+        return new LocusCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);      
     }
 
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException, SessionExpiredException {

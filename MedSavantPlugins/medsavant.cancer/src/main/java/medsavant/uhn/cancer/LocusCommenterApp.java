@@ -1,29 +1,40 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package medsavant.uhn.cancer;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -36,227 +47,253 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.appapi.MedSavantVariantInspectorApp;
 import org.ut.biolab.medsavant.shared.model.LocusComment;
 import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
+import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
-/**
- *
- * @author jim
- */
+
 public class LocusCommenterApp extends MedSavantVariantInspectorApp {
-
     private static final Log LOG = LogFactory.getLog(LocusCommenterApp.class);
-
+    private static final OntologyType DEFAULT_ONTOLOGY_TYPE = OntologyType.HPO;
     private static final String NAME = "Cancer Workflow - LocusCommenter";
     private static final String TITLE = "Comments for this Locus";
-    //private static final JSeparator ICON_PLACE_HOLDER = new JSeparator();
     private static final int ICON_WIDTH = 16;
     private static final int ICON_HEIGHT = 16;
-    private static final int ICON_SPACING = 8;
-
-    private static final Color INNER_BORDER_COLOR = Color.BLACK;
-    private static final int INNER_BORDER_WIDTH = 1;
-    //Icons that reflect the comment's status.  Note only the colored icons are explicitly set.
-    //"Not XXX" is the default -- it does not mean 'rejected', but rather 'unset'.
-    private static final ImageIcon PENDING_REVIEW_ICON = getScaledImageIcon("/pending.png");
-    private static final ImageIcon APPROVED_ICON = getScaledImageIcon("/approved.png");
-    private static final ImageIcon INCLUDED_ICON = getScaledImageIcon("/include_in_report.png");
-
-    //private static final ImageIcon REPLY_TO_ONTOLOGY_ICON = getScaledImageIcon("reply.png"); //could be large
-    //private static final ImageIcon EDIT_STATUS_BUTTON_ICON = getScaledImageIcon("/include_in_report.png");
+    private static final int COMMENT_SEPARATOR_HEIGHT = 10;
+    private static final int ONTOLOGY_SEPARATOR_HEIGHT = 20;  
     private static final ImageIcon REPLY_TO_ONTOLOGY_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR);
     private static final ImageIcon EDIT_STATUS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT);
-    private static final ImageIcon NOT_PENDING_REVIEW_ICON = getScaledImageIcon("/gray_pending.png");
-    private static final ImageIcon NOT_APPROVED_ICON = getScaledImageIcon("/gray_approved.png");
-    private static final ImageIcon NOT_INCLUDED_ICON = getScaledImageIcon("/gray_include_in_report.png");
+    
+    private final JPanel panel;
 
-    //Comments will alternate between the given colors in this array.
-    private static final Color[] BACKGROUND_COLORS = {new Color(0, 0, 128), new Color(128, 128, 128)};
-
-    //  private static final Color BORDER_COLOR = Color.BLACK;
-    //  private static final int BORDER_THICKNESS = 1;
-    private JPanel panel;
-
-    /*
-     static {
-     ICON_PLACE_HOLDER.setPreferredSize(new Dimension(ICON_WIDTH, ICON_HEIGHT));        
-     }
-     */
-    private static ImageIcon getScaledImageIcon(String filename) {
-        URL resource = LocusCommenterApp.class.getResource(filename);
-        if (resource == null) {
-            System.err.println("Couldn't load resource given by " + filename);
-        }
-        ImageIcon ii = new ImageIcon(resource);
-        Image im = ii.getImage().getScaledInstance(ICON_WIDTH, ICON_WIDTH, java.awt.Image.SCALE_SMOOTH);
-        return new ImageIcon(im);
+   
+    public static OntologyType getDefaultOntologyType() {
+        return DEFAULT_ONTOLOGY_TYPE;
     }
 
     public LocusCommenterApp() {
         System.out.println("Locus Commenter App initialized.");
         panel = new JPanel();
+        panel.setLayout(new BorderLayout());
         JPanel innerPanel = new WaitPanel("Loading...");
-        panel.add(innerPanel);
-
+        panel.add(innerPanel, BorderLayout.CENTER);        
     }
 
-    private JPanel getNewHistoryPanel() {
-        JPanel historyPanel = new JPanel();
-        historyPanel.setBorder(BorderFactory.createLineBorder(INNER_BORDER_COLOR, INNER_BORDER_WIDTH));
-        return historyPanel;
+    private void replyToOntology(VariantRecord vr, OntologyTerm ot) {
+        JDialog acd = new AddNewCommentDialog(MedSavantFrame.getInstance(), vr, ot);
+        acd.setVisible(true);
     }
 
-    private void replyToOntology(OntologyTerm ot) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private void editStatus(LocusCommentGroup lcg, LocusComment lc) {        
+        JDialog scd = new SetCommentStatusDialog(MedSavantFrame.getInstance(), lcg, lc);
+        scd.setVisible(true);
     }
 
-    private void editStatus(LocusComment lc) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    //Define horizontal panel with ontology title, and button to
+    //post to the ontology.
+    private JPanel getOntologyTitlePanel(final VariantRecord vr, final OntologyTerm ot) {
+        String header = ot.getID() + " - " + ot.getName(); //ontology title.
+
+        JPanel ontologyTitlePanel = new JPanel();
+        ontologyTitlePanel.setLayout(new BoxLayout(ontologyTitlePanel, BoxLayout.X_AXIS));
+        JLabel headerLabel = new JLabel("<html><body style='width: " + panel.getPreferredSize().width + "px'>" + header + "</body></html>");
+        //headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD));
+        ontologyTitlePanel.add(new JLabel(header));
+        ontologyTitlePanel.add(Box.createHorizontalGlue());
+
+        JButton replyToOntologyButton = new JButton(new ImageIcon(REPLY_TO_ONTOLOGY_ICON.getImage().getScaledInstance(
+                ICON_WIDTH, ICON_HEIGHT, java.awt.Image.SCALE_SMOOTH
+        )));
+
+        replyToOntologyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                replyToOntology(vr, ot);
+            }
+        });
+
+        ontologyTitlePanel.add(replyToOntologyButton);
+        return ontologyTitlePanel;
     }
 
-    private JPanel getMainCommentPanel(Map<OntologyTerm, Set<LocusComment>> otCommentMap) {
+    private JSeparator getCommentSeparator() {
+        JSeparator js = new JSeparator();
+        js.setPreferredSize(new Dimension(panel.getWidth(), COMMENT_SEPARATOR_HEIGHT));
+        return js;
+    }
+
+    private JSeparator getOntologySeparator() {
+        JSeparator js = new JSeparator();
+        js.setPreferredSize(new Dimension(panel.getWidth(), ONTOLOGY_SEPARATOR_HEIGHT));
+        return js;
+    }
+
+    private JPanel getHeaderPanel(LocusComment lc) {
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        JPanel leftJustPanel = new JPanel();
+        leftJustPanel.setLayout(new BoxLayout(leftJustPanel, BoxLayout.X_AXIS));
+        leftJustPanel.add(new JLabel("Posted " + lc.getModificationDate().toString() + " by: "));
+        leftJustPanel.add(Box.createHorizontalGlue());
+        headerPanel.add(leftJustPanel);
+
+        leftJustPanel = new JPanel();
+        leftJustPanel.setLayout(new BoxLayout(leftJustPanel, BoxLayout.X_AXIS));
+        leftJustPanel.add(new JLabel(lc.getUser()));
+        leftJustPanel.add(Box.createHorizontalGlue());
+        headerPanel.add(leftJustPanel);
+        headerPanel.add(Box.createHorizontalGlue());
+        return headerPanel;
+    }
+
+    private JPanel getStatusIconPanel(final LocusCommentGroup lcg, final LocusComment lc) {
+        JPanel sip = new JPanel();
+        sip.setLayout(new BoxLayout(sip, BoxLayout.X_AXIS));
+
+        JPanel statusIconPanel = new StatusIconPanel(ICON_WIDTH, ICON_HEIGHT, false,
+                lc.isApproved(), lc.isIncluded(), lc.isPendingReview());
+
+        sip.add(statusIconPanel);
+        sip.add(Box.createHorizontalGlue());
+        //For admin users only, the statusIconPanel should also have an 'edit' button.
+        if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
+            JButton statusEditButton
+                    = new JButton(new ImageIcon(EDIT_STATUS_BUTTON_ICON.getImage().getScaledInstance(
+                                            ICON_WIDTH, ICON_HEIGHT, java.awt.Image.SCALE_SMOOTH
+                                    )));
+
+            statusEditButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    editStatus(lcg, lc);
+                }
+            });
+            sip.add(statusEditButton);
+        }        
+        return sip;
+    }
+
+    private JPanel getCommentPanel(LocusComment lc) {
+        JTextArea commentText = new JTextArea();
+        commentText.setText(lc.getCommentText());
+        commentText.setEditable(false);
+        commentText.setLineWrap(true);
+
+        JPanel commentPanel = new JPanel(); 
+        commentPanel.setLayout(new BoxLayout(commentPanel, BoxLayout.Y_AXIS));
+        commentPanel.add(commentText);
+        return commentPanel;
+    }
+
+    private static final int STATUS_COMMENT_INDENT_WIDTH = 20;
+
+    private JPanel oldStatusPanel;
+
+    private void updateStatusPanel(LocusComment oldComment) {
+        //Write the from-to status to the last comment's status panel.
+        if (oldComment != null && oldComment.getOriginalComment() != null) {//status change comment.            
+            //System.out.println("Updating statusPanel with "+oldComment.isApproved()+","+oldComment.isIncluded()+","+oldComment.isPendingReview());
+            JPanel statusIconPanel = new StatusIconPanel(ICON_WIDTH, ICON_HEIGHT, false,
+                    oldComment.getOriginalComment().isApproved(),
+                    oldComment.getOriginalComment().isIncluded(),
+                    oldComment.getOriginalComment().isPendingReview());
+
+            oldStatusPanel.add(new JLabel(" to "));
+            oldStatusPanel.add(statusIconPanel);
+            oldStatusPanel.add(Box.createHorizontalGlue());
+            oldStatusPanel = null;
+        }
+    }
+
+    private JPanel getCommentBlock(LocusCommentGroup lcg, LocusComment lc/*, LocusComment oldComment*/) {
+        
         JPanel innerPanel = new JPanel();
         innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-        //Iterate through the mapping to display the comments.            
-        for (final Map.Entry<OntologyTerm, Set<LocusComment>> e : otCommentMap.entrySet()) {
-            String header = e.getKey().getID() + " - " + e.getKey().getName(); //ontology title.
 
-            //Define horizontal panel with ontology title and reply to ontology icon.
-            JPanel ontologyTitlePanel = new JPanel();
-            ontologyTitlePanel.setLayout(new BoxLayout(ontologyTitlePanel, BoxLayout.X_AXIS));
-            ontologyTitlePanel.add(new JLabel(header));
-            ontologyTitlePanel.add(Box.createHorizontalGlue());
-            JButton replyToOntologyButton = new JButton(REPLY_TO_ONTOLOGY_ICON);
-            replyToOntologyButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    replyToOntology(e.getKey());
-                }
+        JPanel headerPanel = getHeaderPanel(lc);
+        JPanel commentPanel = getCommentPanel(lc);
+        
+        if (lc.getOriginalComment() == null) { //root level comment.
+            innerPanel.add(headerPanel);
+            innerPanel.add(getStatusIconPanel(lcg, lc));
+            innerPanel.add(commentPanel);
+            innerPanel.add(getCommentSeparator());
 
-            });
-            ontologyTitlePanel.add(replyToOntologyButton);
-            innerPanel.add(ontologyTitlePanel);
+            return innerPanel;
+        } else { //status comment.
+            JPanel outerPanel = new JPanel();
+            outerPanel.setLayout(new BoxLayout(outerPanel, BoxLayout.X_AXIS));
+            JSeparator js = new JSeparator();
+            js.setPreferredSize(new Dimension(STATUS_COMMENT_INDENT_WIDTH, 1));
+            outerPanel.add(js);
 
-            //JPanel commentPanel = new JPanel();
-            //commentPanel.setLayout(new BoxLayout(commentPanel, BoxLayout.Y_AXIS));
-            //commentPanel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, BORDER_THICKNESS));
-            int i = 0;
+            innerPanel.add(headerPanel);
 
-            LocusComment lastRootComment = null;
-            JPanel lastStatusChangePanel = null;
-            boolean isRootComment = false;
-            JPanel currentPanel = innerPanel;
-            JPanel iconPanel = null;
-            for (final LocusComment lc : e.getValue()) {
-                if (lc.isDeleted()) {
-                    //for now, we don't display deleted comments.
-                    continue;
-                }
+            //System.out.println("Constructing statusIconPanel with "+lc.isApproved()+","+lc.isIncluded()+","+lc.isPendingReview());
+            JPanel statusIconPanel = new StatusIconPanel(ICON_WIDTH, ICON_HEIGHT, false,
+                    lc.isApproved(), lc.isIncluded(), lc.isPendingReview());
 
-                //Setup header panel showing the posting date, user, and icons that reflect this comment's 
-                //status
-                JPanel headerPanel = new JPanel();
-                headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
-                headerPanel.add(new JLabel("Posted " + lc.getModificationDate().toString() + " by " + lc.getUser() + ":"));
-                headerPanel.add(Box.createHorizontalGlue());
-
-                iconPanel = new JPanel();
-                iconPanel.setLayout(new BoxLayout(iconPanel, BoxLayout.X_AXIS));
-                iconPanel.setPreferredSize(new Dimension(ICON_WIDTH * 3 + ICON_SPACING * 2, ICON_HEIGHT));
-                iconPanel.add(lc.isPendingReview() ? new JLabel(PENDING_REVIEW_ICON) : new JLabel(NOT_PENDING_REVIEW_ICON));
-                iconPanel.add(lc.isIncluded() ? new JLabel(INCLUDED_ICON) : new JLabel(NOT_INCLUDED_ICON));
-                iconPanel.add(lc.isApproved() ? new JLabel(APPROVED_ICON) : new JLabel(NOT_APPROVED_ICON));
-                if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
-                    JButton statusEditButton = new JButton(EDIT_STATUS_BUTTON_ICON);
-                    statusEditButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            editStatus(lc);
-                        }
-
-                    });
-                    iconPanel.add(statusEditButton);
-                }
-
-                if (lc.getOriginalComment() == null) { //Not a status-change comment.
-                    if (lastStatusChangePanel != null) {
-                        lastStatusChangePanel.add(new JLabel(" to "));
-                        lastStatusChangePanel.add(iconPanel);
-                        currentPanel.add(lastStatusChangePanel);
-                    }
-                    lastRootComment = lc;
-                    //root level comment.                        
-                    lastStatusChangePanel = null;
-                    isRootComment = true;
-                    currentPanel = innerPanel;
-                } else if (lastStatusChangePanel == null) { //status change comment.
-                    isRootComment = false;
-                    //first status change comment.
-                    currentPanel = getNewHistoryPanel();
-                }
-
-                if (isRootComment) {
-                    headerPanel.add(iconPanel);
-                } else {
-                    JPanel statusChangePanel = new JPanel();
-                    statusChangePanel.setLayout(new BoxLayout(statusChangePanel, BoxLayout.X_AXIS));
-
-                    if (lastStatusChangePanel != null) {
-                        lastStatusChangePanel.add(new JLabel(" to "));
-                        lastStatusChangePanel.add(iconPanel);
-                        currentPanel.add(lastStatusChangePanel);
-                    }
-                    statusChangePanel.add(new JLabel("Status changed from: "));
-                    statusChangePanel.add(iconPanel);
-
-                    lastStatusChangePanel = statusChangePanel;
-                }
-
-                currentPanel.add(headerPanel);
-
-                //Add the actual comment as a JTextArea.
-                JPanel commentPanel = new JPanel();
-                commentPanel.setBackground(BACKGROUND_COLORS[i++ % BACKGROUND_COLORS.length]);
-                JTextArea commentText = new JTextArea();
-                commentText.setText(lc.getCommentText());
-                commentText.setEditable(false);
-                commentText.setLineWrap(true);
-                commentPanel.add(commentText);
-                currentPanel.add(commentPanel);
-
-            }
-            if (!isRootComment) {
-                lastStatusChangePanel.add(new JLabel(" to "));
-                lastStatusChangePanel.add(iconPanel);
-                currentPanel.add(lastStatusChangePanel);
-            }
-            innerPanel.add(new JSeparator());
+            JPanel centeredLabel = new JPanel();
+            centeredLabel.setLayout(new BoxLayout(centeredLabel, BoxLayout.X_AXIS));
+            centeredLabel.add(Box.createHorizontalGlue());
+            centeredLabel.add(new JLabel("Status Change:"));
+            centeredLabel.add(Box.createHorizontalGlue());
+            innerPanel.add(centeredLabel);
+            oldStatusPanel = new JPanel();
+            oldStatusPanel.setLayout(new BoxLayout(oldStatusPanel, BoxLayout.X_AXIS));            
+            oldStatusPanel.add(Box.createHorizontalGlue());
+            oldStatusPanel.add(statusIconPanel);
+            innerPanel.add(oldStatusPanel);
+            innerPanel.add(commentPanel);
+            innerPanel.add(getCommentSeparator());
+            outerPanel.add(innerPanel);
+            return outerPanel;
         }
-        return innerPanel;
     }
 
-    private void newComment(VariantRecord r) {
-      //  HERE: need to popup a dialog to add new comment
-        //choose a disease associated with this variant.
+    private JPanel getMainCommentPanel(Map<OntologyTerm, Collection<LocusComment>> otCommentMap, final LocusCommentGroup lcg, final VariantRecord vr) {
+        JPanel innerPanel = new JPanel(); //Todo: may need to specify width of this panel?                
+        innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+        for (final Map.Entry<OntologyTerm, Collection<LocusComment>> e : otCommentMap.entrySet()) {
+            OntologyTerm ot = e.getKey();
+            Collection<LocusComment> locusComments = e.getValue();
+
+            JPanel otPanel = new JPanel();
+            otPanel.setLayout(new BoxLayout(otPanel, BoxLayout.Y_AXIS));
+            //otPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            
+            
+            //Define horizontal panel with ontology title and reply to ontology icon.
+            JPanel ontologyTitlePanel = getOntologyTitlePanel(vr, ot);            
+            otPanel.add(ontologyTitlePanel);
+            LocusComment oldComment = null;
+            for (final LocusComment locusComment : locusComments) {
+                if(locusComment.isDeleted()){
+                    continue;
+                }
+                updateStatusPanel(oldComment);                
+                otPanel.add(getCommentBlock(lcg, locusComment));
+                oldComment = locusComment;
+            }
+            updateStatusPanel(oldComment);            
+            otPanel.add(getOntologySeparator());
+            innerPanel.add(otPanel);
+        }
         
-        //set text for this comment.
-        //LocusComment lc = public LocusComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
-        final Boolean isApproved = false;
-        final Boolean isIncluded = false;
-        final Boolean isPendingReview = false;
-        final Boolean isDeleted = false;
-        
-       // OntologyTerm ot = ??;
-        //String comment = "???";
-                
-       // LocusComment lc = new LocusComment(isApproved, isIncluded, isPendingReview, isDeleted, comment, ontologyTerm);
+        return innerPanel;
+    }  
+
+    private void newComment(VariantRecord vr) {
+        JDialog acd = new AddNewCommentDialog(MedSavantFrame.getInstance(), vr);
+        acd.setVisible(true);
     }
 
     private JPanel getNoCommentsPanel() {
@@ -269,45 +306,40 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
     }
 
     @Override
-    public void setVariantRecord(final VariantRecord variantRecord) {
-        //getLocusCommentGroup(String sessID, int projectId, int refId, String chrom, int start_position, int end_position, String ref, String alt)
-        try {
-            System.out.println("LocusCommenterApp: Setting variant record to " + variantRecord);
+    public void setVariantRecord(final VariantRecord variantRecord) {        
+        try {            
             //Get comment group associated with this variant.
             LocusCommentGroup lcg = MedSavantClient.VariantManager.getLocusCommentGroup(
                     LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     variantRecord);
-            int numComments = 0;
+            boolean hasComments = false;
             JPanel innerPanel = null;
-            if (lcg != null) {
+            if (lcg != null) {                
                 //Build a mapping from ontology terms to all comments pertaining to that ontology term.
                 //Iterating through this map will return the ontology terms in alphabetical order, and the comments
-                //within each ontology will be ordered by modification date.
-                Map<OntologyTerm, Set<LocusComment>> otCommentMap = new TreeMap<OntologyTerm, Set<LocusComment>>();
+                //within each ontology will be ordered by their insertion id.
+                Map<OntologyTerm, Collection<LocusComment>> otCommentMap = new TreeMap<OntologyTerm, Collection<LocusComment>>();
 
                 for (Iterator<LocusComment> li = lcg.iterator(); li.hasNext();) {
                     LocusComment lc = li.next();
-                    Set<LocusComment> ontologyComments = otCommentMap.get(lc.getOntologyTerm());
+                    System.out.println("Got comment " + lc.getCommentText());
+                    Collection<LocusComment> ontologyComments = otCommentMap.get(lc.getOntologyTerm());                    
                     if (ontologyComments == null) {
-                        ontologyComments = new TreeSet<LocusComment>(new Comparator<LocusComment>() {
-                            @Override
-                            public int compare(LocusComment o1, LocusComment o2) {
-                                return o1.getModificationDate().compareTo(o2.getModificationDate());
-                            }
-                        });
-                        numComments++;
-                        ontologyComments.add(lc);
+                        ontologyComments = new ArrayList<LocusComment>();                       
+                        hasComments = true;
                     }
+                    ontologyComments.add(lc);
+                    //System.out.println("Mapping " + lc.getOntologyTerm().getName() + " to " + ontologyComments.size() + " comments");
                     otCommentMap.put(lc.getOntologyTerm(), ontologyComments);
                 }
-                if (numComments > 0) {
-                    innerPanel = getMainCommentPanel(otCommentMap);
+                if (hasComments) {
+                    innerPanel = getMainCommentPanel(otCommentMap, lcg, variantRecord);
                 }
             }
 
-            if (numComments == 0) {
+            if (innerPanel == null) {
                 innerPanel = getNoCommentsPanel();
             }
 
@@ -318,6 +350,13 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
                     newComment(variantRecord);
                 }
             });
+
+            JPanel cp = new JPanel();
+            cp.setLayout(new BoxLayout(cp, BoxLayout.X_AXIS));
+            cp.add(Box.createHorizontalGlue());
+            cp.add(newCommentButton);
+            cp.add(Box.createHorizontalGlue());
+            innerPanel.add(cp);                       
             final JScrollPane jsp = new JScrollPane(innerPanel);
 
             SwingUtilities.invokeLater(new Runnable() {

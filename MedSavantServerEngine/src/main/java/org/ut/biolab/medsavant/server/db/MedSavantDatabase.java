@@ -668,13 +668,12 @@ public class MedSavantDatabase {
         public static final int INDEX_OF_LOCUS_COMMENT_GROUP_ID = 1;
         public static final ColumnType TYPE_OF_LOCUS_COMMENT_GROUP_ID = ColumnType.INTEGER;
         public static final int LENGTH_OF_LOCUS_COMMENT_GROUP_ID = 11;
-        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "locus_comment_group_id";
+        public static final String COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID = "fk_locus_comment_group_id";
 
         public static final int INDEX_OF_LOCUS_PARENT_COMMENT_ID = 2;
         public static final ColumnType TYPE_OF_LOCUS_PARENT_COMMENT_ID = ColumnType.INTEGER;
         public static final int LENGTH_OF_LOCUS_PARENT_COMMENT_ID = 11;
-        public static final String COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID = "locus_parent_comment_id";
-
+        public static final String COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID = "fk_locus_parent_comment_id";        
         
         public static final int INDEX_OF_USER = 3;
         public static final ColumnType TYPE_OF_USER = ColumnType.VARCHAR;
@@ -734,6 +733,7 @@ public class MedSavantDatabase {
         private void addColumns() {
             addColumn(COLUMNNAME_OF_LOCUS_COMMENT_ID, TYPE_OF_LOCUS_COMMENT_ID, LENGTH_OF_LOCUS_COMMENT_ID);
             addColumn(COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID, TYPE_OF_LOCUS_COMMENT_GROUP_ID, LENGTH_OF_LOCUS_COMMENT_GROUP_ID);
+            addColumn(COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID, TYPE_OF_LOCUS_PARENT_COMMENT_ID, LENGTH_OF_LOCUS_PARENT_COMMENT_ID);
             addColumn(COLUMNNAME_OF_USER, TYPE_OF_USER, LENGTH_OF_USER);
             addColumn(COLUMNNAME_OF_ONTOLOGY, TYPE_OF_ONTOLOGY, LENGTH_OF_ONTOLOGY);
             addColumn(COLUMNNAME_OF_ONTOLOGY_ID, TYPE_OF_ONTOLOGY_ID, LENGTH_OF_ONTOLOGY_ID);

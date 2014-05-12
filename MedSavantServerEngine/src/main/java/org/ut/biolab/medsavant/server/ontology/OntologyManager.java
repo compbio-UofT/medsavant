@@ -254,7 +254,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         ResultSet rs = null;
         try {
             conn = ConnectionController.connectPooled(sessID);
-            rs = conn.executePreparedQuery("SELECT id,name,def,alt_ids,parents FROM ontology WHERE ontology=? AND id=", ont.toString(), ontologyId);
+            rs = conn.executePreparedQuery("SELECT id,name,def,alt_ids,parents FROM ontology WHERE ontology=? AND id=?", ont.toString(), ontologyId);
             if (rs.next()) {
                return new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ','));
             } else {

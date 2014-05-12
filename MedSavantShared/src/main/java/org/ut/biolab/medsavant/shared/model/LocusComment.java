@@ -28,13 +28,17 @@ import java.util.Date;
 public class LocusComment implements Serializable {
 
     public static final OntologyType ONTOLOGY_TYPE = OntologyType.HPO;
-
+    private static final boolean DEFAULT_APPROVED_STATUS = false;
+    private static final boolean DEFAULT_INCLUDED_STATUS = false;
+    private static final boolean DEFAULT_PENDING_REVIEW_STATUS = false;
+    private static final boolean DEFAULT_DELETED_STATUS = false;
+    
     protected final Integer commentId; 
     private final String user; //Ignored by server
-    private final Boolean isApproved; //Only used by server if user has permission
-    private final Boolean isIncluded;//Only used by server if user has permission
-    private final Boolean isPendingReview;//Only used by server if user has permission
-    private final Boolean isDeleted;//Only used by server if user has permission, or if user owns comment
+    private final boolean isApproved; //Only used by server if user has permission
+    private final boolean isIncluded;//Only used by server if user has permission
+    private final boolean isPendingReview;//Only used by server if user has permission
+    private final boolean isDeleted;//Only used by server if user has permission, or if user owns comment
     private final Date creationDate;//ignored by server
     private final Date modificationDate; //ignored by server.
     private final String commentText;
@@ -42,6 +46,7 @@ public class LocusComment implements Serializable {
 
     private LocusComment parentComment;
 
+    
     public LocusComment(LocusComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {
         //Status change comment tracks the original status of the parent comment.  
         this(parentComment.isApproved(),
@@ -53,9 +58,14 @@ public class LocusComment implements Serializable {
                 new LocusComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm()));
 
         //Parent comment contains the new status.
-        this.parentComment = new LocusComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm());
+        this.parentComment = new LocusComment(parentComment.getCommentID(), null, approveParent, includeParent, markParentPending, markParentDeleted, null, null, parentComment.getCommentText(), parentComment.getOntologyTerm(), null);        
     }
 
+    public LocusComment(String comment, OntologyTerm ontologyTerm){
+        this(DEFAULT_APPROVED_STATUS, DEFAULT_INCLUDED_STATUS, DEFAULT_PENDING_REVIEW_STATUS, DEFAULT_DELETED_STATUS, comment, ontologyTerm);
+    }
+    
+    //
     public LocusComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
         this(null, null, isApproved, isIncluded, isPendingReview, isDeleted, null, null, comment, ontologyTerm, null);
     }
@@ -78,9 +88,6 @@ public class LocusComment implements Serializable {
         this.parentComment = parentComment;
     }
 
-    /*public void changeStatus(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String commentForChange){
-     statusChangeComment = new LocusComment(isApproved, isIncluded, isPendingReview, isDeleted, commentForChange, ontologyTerm);
-     }*/
     public OntologyTerm getOntologyTerm() {
         return ontologyTerm;
     }
