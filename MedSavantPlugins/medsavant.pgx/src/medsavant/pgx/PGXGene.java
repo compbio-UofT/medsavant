@@ -17,11 +17,12 @@ public class PGXGene {
 	private String diplotype;
 	private String maternalHaplotype;
 	private String paternalHaplotype;
-	private Map<String, String> maternalGenotypes;
-	private Map<String, String> paternalGenotypes;
+	private Map<String, PGXGenotype> maternalGenotypes;
+	private Map<String, PGXGenotype> paternalGenotypes;
 	private String maternalActivity;
 	private String paternalActivity;
 	private boolean isPhased= true; // default is phased
+	private String metabolizerClass;
 	
 	
 	/**
@@ -91,8 +92,9 @@ public class PGXGene {
 	/**
 	 * Set the phased maternal genotypes.
 	 * @param genotypesMap the Map of genotypes.
+	 * @precondition the key is an rsID, the value is the genotype
 	 */
-	public void setMaternalGenotypes(Map<String, String> genotypesMap) {
+	public void setMaternalGenotypes(Map<String, PGXGenotype> genotypesMap) {
 		this.maternalGenotypes= genotypesMap;
 	}
 	
@@ -100,8 +102,9 @@ public class PGXGene {
 	/**
 	 * Set the phased paternal genotypes.
 	 * @param genotypesMap the Map of genotypes.
+	 * @precondition the key is an rsID, the value is the genotype
 	 */
-	public void setPaternalGenotypes(Map<String, String> genotypesMap) {
+	public void setPaternalGenotypes(Map<String, PGXGenotype> genotypesMap) {
 		this.paternalGenotypes= genotypesMap;
 	}
 	
@@ -135,18 +138,20 @@ public class PGXGene {
 	
 	/**
 	 * Get the phased maternal genotypes.
+	 * The key is an rsID, the value is the genotype.
 	 * @return the Map of genotypes.
 	 */
-	public Map<String, String> getMaternalGenotypes() {
+	public Map<String, PGXGenotype> getMaternalGenotypes() {
 		return this.maternalGenotypes;
 	}
 	
 	
 	/**
 	 * Get the phased paternal genotypes.
+	 * The key is an rsID, the value is the genotype.
 	 * @return the Map of genotypes.
 	 */
-	public Map<String, String> getPaternalGenotypes() {
+	public Map<String, PGXGenotype> getPaternalGenotypes() {
 		return this.paternalGenotypes;
 	}
 	
@@ -201,5 +206,23 @@ public class PGXGene {
 	 */
 	public String getPaternalActivity() {
 		return this.paternalActivity;
+	}
+	
+	
+	/**
+	 * Set the metabolizer class.
+	 * @param metabolizer The metabolizer class string
+	 */
+	public void setMetabolizerClass(String metabolizer) {
+		this.metabolizerClass= metabolizer;
+	}
+	
+	
+	/**
+	 * Get the metabolizer class.
+	 * @return The metabolizer class string
+	 */
+	public String getMetabolizerClass() {
+		return this.metabolizerClass;
 	}
 }

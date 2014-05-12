@@ -233,12 +233,16 @@ public class PGXAnalysis {
 	
 	
 	/**
-	 * Get the haplotype activity scores/phenotypes for all PGx genes.
+	 * Get the haplotype activity scores/phenotypes and metabolizer classes for all PGx genes.
 	 */
 	private void getActivities() {
 		for (PGXGene pg : pgxGenes) {
+			/* Set the haplotype activities. */
 			pg.setMaternalActivity(PGXDBFunctions.getActivities(pg.getGene(), pg.getMaternalHaplotype()));
 			pg.setPaternalActivity(PGXDBFunctions.getActivities(pg.getGene(), pg.getPaternalHaplotype()));
+			
+			/* Set the metabolizer class based on the haplotype activities. */
+			pg.setMetabolizerClass(PGXDBFunctions.getMetabolizerClass(pg.getMaternalActivity(), pg.getPaternalActivity()));
 		}
 	}
 	

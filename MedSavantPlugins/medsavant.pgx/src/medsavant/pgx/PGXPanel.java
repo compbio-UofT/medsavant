@@ -10,10 +10,14 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -25,7 +29,6 @@ import javax.swing.ScrollPaneConstants;
 import medsavant.pgx.localDB.PGXDBFunctions;
 import medsavant.pgx.localDB.PGXDBFunctions.PGXMarker;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -36,8 +39,6 @@ import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.appdevapi.AppColors;
-import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
-import org.ut.biolab.medsavant.shared.appdevapi.Variant;
 
 /**
  * Default panel for Pharmacogenomics app.
@@ -50,6 +51,7 @@ public class PGXPanel extends JPanel {
 	private final int SIDE_PANE_WIDTH= 380;
 	private final int SIDE_PANE_WIDTH_OFFSET= 20;
 	private static final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
+	private static final Color DEFAULT_LABEL_COLOUR= (new JTextField()).getForeground();
 	
 	/* Patient information. */
 	private String currentHospitalID;
@@ -168,6 +170,7 @@ public class PGXPanel extends JPanel {
 		
 		// Checkbox governing assumptions about missing markers
 		assumeRefCheckBox= new JCheckBox("Treat missing markers as Reference calls", true);
+		assumeRefCheckBox.addActionListener(toggleReferenceAction());
 		
 		/* Layout notes:
 		 * Create a bit of inset spacing top and left, no space between 
@@ -279,16 +282,31 @@ public class PGXPanel extends JPanel {
 	 * Update the report panel.
 	 */
 	private void updateReportPane() {
-		/* For each PGx gene, create a separate tab. */
 		JTabbedPane tabs= ViewUtil.getMSTabedPane();
 		
+		/* Create a summary tab. */
+		JPanel summary= new JPanel();
+		summary.setLayout(new MigLayout("gapx 30px"));
+		summary.add(createLabel("Gene", true, 20));
+		summary.add(createLabel("Diplotype", true, 20));
+		summary.add(createLabel("Metabolizer class", true, 20), "wrap");
+		for (PGXGene pg : currentPGXAnalysis.getGenes()) {
+			summary.add(createLabel(pg.getGene(), false, 20));
+			summary.add(createLabel(pg.getDiplotype(), false, 20));
+			summary.add(createLabel(pg.getMetabolizerClass(), false, 20), "wrap");
+		}
+		tabs.addTab("Summary", summary);
+
+		/* For each PGx gene, create a separate tab. */
 		for (PGXGene pg : currentPGXAnalysis.getGenes()) {
 			JPanel reportJP= new JPanel();
-			reportJP.setLayout(new MigLayout("gapy 0px, fillx"));
+			reportJP.setLayout(new MigLayout("gapx 30px"));
 			
-			JLabel diplotype= new JLabel("Diplotype is " + pg.getDiplotype());
-			diplotype.setFont(new Font(diplotype.getFont().getName(), Font.PLAIN, 20));
-			reportJP.add(diplotype, "wrap");
+			reportJP.add(createLabel("Diplotype", true, 22));
+			reportJP.add(createLabel(pg.getDiplotype(), false, 22), "wrap");
+			
+			reportJP.add(createLabel("Metabolizer class", true, 22));
+			reportJP.add(createLabel(pg.getMetabolizerClass(), false, 22), "wrap");
 			
 			/* Add a subpanel of tabs. */
 			JTabbedPane subtabs= ViewUtil.getMSTabedPane();
@@ -296,23 +314,54 @@ public class PGXPanel extends JPanel {
 			subtabs.setMinimumSize(new Dimension(subtabs.getMaximumSize().width, 
 				subtabs.getPreferredSize().height));
 			
-			/* Subpanel describing the individuals haplotypes/markers for this individual. */
-			JPanel haplotypesJP= new JPanel();
-			haplotypesJP.setLayout(new MigLayout("gapy 0px, fillx"));
-			haplotypesJP.add(new JLabel("Maternal haplotype: " + pg.getMaternalHaplotype()), "wrap");
-			haplotypesJP.add(new JLabel("Paternal haplotype: " + pg.getPaternalHaplotype()), "wrap");
-			haplotypesJP.add(new JLabel("Maternal activity: " + pg.getMaternalActivity()), "wrap");
-			haplotypesJP.add(new JLabel("Paternal activity: " + pg.getPaternalActivity()), "wrap");
-			haplotypesJP.add(new JLabel("Maternal markers: " + pg.getMaternalGenotypes()), "wrap");
-			haplotypesJP.add(new JLabel("Paternal markers: " + pg.getPaternalGenotypes()), "wrap");
-			haplotypesJP.add(new JLabel("Phased: " + pg.isPhased()), "wrap");
-			for (Variant v : pg.getVariants()) {
-				haplotypesJP.add(new JTextField(StringUtils.join(new String[] {v.getGene(), v.getChromosome(), 
-					Long.toString(v.getStart()), Long.toString(v.getEnd()), v.getReference(), v.getAlternate(), 
-					Integer.toString(v.getAlternateNumber()), v.getGT(),
-					(String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT)}, " ")), "wrap");
+			/* Subpanel describing the individual's haplotypes/markers for this individual. */
+			JPanel geneSummaryJP= new JPanel();
+			geneSummaryJP.setLayout(new MigLayout("gapx 30px"));
+			geneSummaryJP.add(createLabel("Haplotype #1", true, 16));
+			geneSummaryJP.add(createLabel(pg.getMaternalHaplotype(), false, 16), "wrap");
+			geneSummaryJP.add(createLabel("Haplotype #2", true, 16));
+			geneSummaryJP.add(createLabel(pg.getPaternalHaplotype(), false, 16), "wrap");
+			geneSummaryJP.add(createLabel("Haplotype #1 activity", true, 16));
+			geneSummaryJP.add(createLabel(pg.getMaternalActivity(), false, 16), "wrap");
+			geneSummaryJP.add(createLabel("Haplotype #2 activity", true, 16));
+			geneSummaryJP.add(createLabel(pg.getPaternalActivity(), false, 16), "wrap");
+			String phasedTextAddition= "";
+			if (!pg.isPhased())
+				phasedTextAddition= "NOT ";	
+			geneSummaryJP.add(createLabel("Genotypes are " + phasedTextAddition +
+				"phased.", true, 16), "alignx center, span");
+			subtabs.addTab(pg.getGene() + " summary", geneSummaryJP);
+			
+			/* Subpanel displaying all detected variants. */
+			JPanel hapDetails= new JPanel();
+			hapDetails.setLayout(new MigLayout("gapx 30px"));
+			hapDetails.add(createLabel("Marker ID", true, 16));
+			hapDetails.add(createLabel("Haplotype #1", true, 16));
+			hapDetails.add(createLabel("Haplotype #2", true, 16));
+			hapDetails.add(createLabel("Observed/Inferred genotype", true, 16), "wrap");
+					
+			// Haplotype 1 and 2 have the same rsIDs
+			Map<String, PGXGenotype> hap1Genotypes= pg.getMaternalGenotypes();
+			Map<String, PGXGenotype> hap2Genotypes= pg.getPaternalGenotypes();
+			List<String> allRsIDs= new ArrayList(hap1Genotypes.keySet());
+			Collections.sort(allRsIDs); // sort the list of markers
+			for (String rsID : allRsIDs) {
+				PGXGenotype genotype1= hap1Genotypes.get(rsID);
+				PGXGenotype genotype2= hap2Genotypes.get(rsID);
+				
+				String genotypeStatus= "observerd";
+				Color fontColour= AppColors.Salem;
+				if (genotype1.getInferredStatus() || genotype2.getInferredStatus()) {
+					genotypeStatus= "inferred";
+					fontColour= DEFAULT_LABEL_COLOUR;
+				}
+				
+				hapDetails.add(createLabel(rsID, false, 16, hapDetails.getBackground(), fontColour));
+				hapDetails.add(createLabel(genotype1.getGenotype(), false, 16, hapDetails.getBackground(), fontColour));
+				hapDetails.add(createLabel(genotype2.getGenotype(), false, 16, hapDetails.getBackground(), fontColour));
+				hapDetails.add(createLabel(genotypeStatus, false, 16, hapDetails.getBackground(), fontColour), "wrap");
 			}
-			subtabs.addTab("Detailed haplotype info", haplotypesJP);
+			subtabs.addTab("Haplotype details", hapDetails);
 			
 			/* Subpanel describing all the markers tested for this gene. */
 			JPanel testedMarkersJP= new JPanel();
@@ -329,10 +378,10 @@ public class PGXPanel extends JPanel {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			subtabs.addTab("Tested markers for " + pg.getGene(),testedMarkersJP); 
+			subtabs.addTab("Tested markers for " + pg.getGene(), testedMarkersJP); 
 			
 			/* Add subtabs to the main report panel. */
-			reportJP.add(subtabs, "gapy 100px");
+			reportJP.add(subtabs, "gapy 100px, span"); // need span here for column formatting of diplotype and metabolizer fields
 			
 			/* Add the main report panel for this gene to the tabs. */
 			tabs.addTab(pg.getGene(), reportJP);
@@ -356,18 +405,41 @@ public class PGXPanel extends JPanel {
 	 * Add a row of JLabels with the text from the input list.
 	 * @param container the parent container where the JLabels will be added
 	 * @param textList the list of text
+	 * @param markerIDFirst true if the first element of textList is an dbSNP ID (rsID), false otherwise
+	 * @param bg the background colour for this row
 	 * @precondition the container is using MigLayout layout; method doesn't check
 	 */
-	private void makeJPanelRow(JComponent container, List<String> textList, boolean markerIDFirst) {
+	private void makeJPanelRow(JComponent container, List<String> textList, 
+		boolean markerIDFirst, Color bg) {
+		
+		int fontSize= 16;
+		boolean isBold= false;
+		
+		/* Header row of the table is in bold. */
+		if (!markerIDFirst)
+			isBold= true;
+		
 		for (int i= 0; i != textList.size(); ++i) {
 			if (markerIDFirst && i == 0) {
-				container.add(getURLButton(textList.get(i), baseDBSNPUrl, textList.get(i), false));
+				JButton jb= getURLButton(textList.get(i), baseDBSNPUrl, textList.get(i), false);
+				jb.setFont(new Font(jb.getFont().getName(), Font.PLAIN, fontSize));
+				jb.setBackground(bg);
+				container.add(jb);
 			} else if (i < textList.size() - 1) {
-				container.add(new JLabel(textList.get(i)));
+				container.add(createLabel(textList.get(i), isBold, fontSize, bg, DEFAULT_LABEL_COLOUR));
 			} else { // wrap at the end of this JPanel row
-				container.add(new JLabel(textList.get(i)), "wrap");
+				container.add(createLabel(textList.get(i), isBold, fontSize, bg, DEFAULT_LABEL_COLOUR), "wrap");
 			}
 		}
+	}
+	
+	
+	/**
+	 * Add a row of JLabels with the text from the input list with the background colour of
+	 * the container.
+	 */
+	private void makeJPanelRow(JComponent container, List<String> textList, boolean markerIDFirst) {
+		makeJPanelRow(container, textList, markerIDFirst, container.getBackground());
 	}
 	
 	
@@ -407,5 +479,57 @@ public class PGXPanel extends JPanel {
 		});
 		
 		return urlButton;
+	}
+	
+	
+	/**
+	 * Action to perform when reference genotype checkbox is toggled.
+	 * @return the ActionListener for this checkbox
+	 */
+	private ActionListener toggleReferenceAction() {
+		// create an anonymous class
+		ActionListener outputAL= new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {	
+				// only restart an analysis if a patient has already been selected
+				if (currentDNAID != null) {				
+					/* Perform a new pharmacogenomic analysis for this DNA ID
+					 * with the currently selected options. */
+					analyzePatient();
+				}
+			}
+		};
+		
+		return outputAL;
+	}
+	
+	
+	/**
+	 * Create a custom text field that looks like a JLabel and isn't editable.
+	 * @param text the field text
+	 * @param isBold true if bold; false otherwise
+	 * @param size font size
+	 * @param background the background color (default is white)
+	 * @return the text field object
+	 */
+	private JTextField createLabel(String text, boolean isBold, int size, Color background, Color foreground) {
+		JTextField output= new JTextField(text);
+		int fontStyle= Font.PLAIN;
+		if (isBold)
+			fontStyle= Font.BOLD;
+		output.setFont(new Font(output.getFont().getName(), fontStyle, size));
+		output.setEditable(false);
+		output.setBackground(background); // instead of the default white
+		output.setForeground(foreground);
+		output.setBorder(BorderFactory.createEmptyBorder()); // eliminate the border
+		return output;
+	}
+	
+	
+	/**
+	 * Create a custom text field using createLabel() with a default background colour.
+	 */
+	private JTextField createLabel(String text, boolean isBold, int size) {
+		return createLabel(text, isBold, size, this.reportInitJP.getBackground(), DEFAULT_LABEL_COLOUR);
 	}
 }

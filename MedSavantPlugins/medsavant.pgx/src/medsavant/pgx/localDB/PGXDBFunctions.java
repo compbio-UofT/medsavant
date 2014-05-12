@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import medsavant.pgx.PGXException;
 import medsavant.pgx.PGXGene;
+import medsavant.pgx.PGXGenotype;
 import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
 import org.ut.biolab.medsavant.shared.appdevapi.Variant;
@@ -108,8 +109,8 @@ public class PGXDBFunctions {
 	 */
 	public static void assignParentalGenotypes(PGXGene pg) {
 		/* Hash of marker, nucleotide (ref/alt) pairs. */
-		Map<String, String> maternalGenotypes= new HashMap<String, String>();
-		Map<String, String> paternalGenotypes= new HashMap<String, String>();
+		Map<String, PGXGenotype> maternalGenotypes= new HashMap<String, PGXGenotype>();
+		Map<String, PGXGenotype> paternalGenotypes= new HashMap<String, PGXGenotype>();
 		
 		/* Iterate through the Variants and grab the haplotypes. Look for the
 		 * correct alternate number when processing the GT fields. So, if the 
@@ -138,8 +139,8 @@ public class PGXDBFunctions {
 				int paternalGT= Integer.parseInt(gt[1]);
 			
 				String currentRsID= (String) v.getColumn(DBAnnotationColumns.DBSNP_TEXT);
-				maternalGenotypes.put(currentRsID, refAndAlts[maternalGT]);
-				paternalGenotypes.put(currentRsID, refAndAlts[paternalGT]);
+				maternalGenotypes.put(currentRsID, new PGXGenotype(refAndAlts[maternalGT], false));
+				paternalGenotypes.put(currentRsID, new PGXGenotype(refAndAlts[paternalGT], false));
 			} else if (v.getGT().length() > 1) {
 				pg.setUnphased();
 			}
@@ -167,8 +168,8 @@ public class PGXDBFunctions {
 		
 		/* Continue only if the genotypes are phased. */
 		if (pg.isPhased()) {
-			Map<String, String> maternalGenotypes= pg.getMaternalGenotypes();
-			Map<String, String> paternalGenotypes= pg.getPaternalGenotypes();
+			Map<String, PGXGenotype> maternalGenotypes= pg.getMaternalGenotypes();
+			Map<String, PGXGenotype> paternalGenotypes= pg.getPaternalGenotypes();
 
 			/* Get the haplotypes and check for novel ones (ie. no match found).
 			 * If a haplotype is novel, output "UNKNOWN" and then append the most
@@ -215,7 +216,7 @@ public class PGXDBFunctions {
 	 * @throws PGXException
 	 * @throws SQLException 
 	 */
-	private static String getHaplotype(String gene, Map<String, String> markerGenotypePairs, boolean assumeRef)
+	private static String getHaplotype(String gene, Map<String, PGXGenotype> markerGenotypePairs, boolean assumeRef)
 		throws PGXException, SQLException {
 		
 		Map<String, String> markerRef= getMarkerRefMap(gene);
@@ -240,9 +241,12 @@ public class PGXDBFunctions {
 			 * match. Filling in missing markers with reference calls makes 
 			 * this difference. */
 			if (markerGenotypePairs.containsKey(marker)) {
-				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerGenotypePairs.get(marker) +"%' ";
+				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerGenotypePairs.get(marker).getGenotype() +"%' ";
 			} else if (assumeRef && markerRef.containsKey(marker)) { // some markers don't have a ref call, ignore for now
 				sql +=	"	AND marker_info LIKE '%" + marker + "=" + markerRef.get(marker) +"%' ";
+				
+				// Add this marker to the list of inferred markers for this haplotype
+				markerGenotypePairs.put(marker, new PGXGenotype(markerRef.get(marker), true));
 			}
 				
 		}		
@@ -308,7 +312,7 @@ public class PGXDBFunctions {
 	 * @throws PGXException
 	 * @throws SQLException 
 	 */
-	private static List<String> getSimilarHaplotypes(String gene, Map<String, String> markerGenotypePairs, int remove)
+	private static List<String> getSimilarHaplotypes(String gene, Map<String, PGXGenotype> markerGenotypePairs, int remove)
 		throws PGXException, SQLException {
 		
 		/* Initialize the output list. */
@@ -322,7 +326,7 @@ public class PGXDBFunctions {
 		 * because that's what my sublists method takes. */
 		List<Pair> originalMarkers= new ArrayList<Pair>();
 		for (String marker : markerGenotypePairs.keySet()) {
-			originalMarkers.add(new Pair(marker, markerGenotypePairs.get(marker)));
+			originalMarkers.add(new Pair(marker, markerGenotypePairs.get(marker).getGenotype()));
 		}
 		
 		/* Create all possible sublists of this original marker list, iterating 
@@ -399,6 +403,7 @@ public class PGXDBFunctions {
 	 * @param gene The gene symbol
 	 * @param haplotype The haplotype symbol
 	 * @return the activity value, null if it doesn't exist
+	 * 
 	 */
 	public static String getActivities(String gene, String haplotype) {
 		String activity= null;
@@ -422,6 +427,40 @@ public class PGXDBFunctions {
 		}
 		
 		return activity;
+	}
+	
+	
+	/**
+	 * Get the metabolizer class for a diplotype.
+	 * @param hap1Activity Activity phenotype for haplotype 1; haplotype order is irrelevant
+	 * @param hap2Activity Activity phenotype for haplotype 2; haplotype order is irrelevant
+	 * @return the metabolizer class, null if it doesn't exist
+	 * 
+	 */
+	public static String getMetabolizerClass(String hap1Activity, String hap2Activity) {
+		String metabolizer= "unknown";
+		
+		String sql=	"SELECT metabolizer_class " +
+					"FROM phenotype_to_metabolizer " +
+					"WHERE (haplotype_1_activity = '" + hap1Activity + "' " +
+					"	AND haplotype_2_activity = '" + hap2Activity + "') " +
+					"	OR (haplotype_1_activity = '" + hap2Activity + "' " +
+					"	AND haplotype_2_activity = '" + hap1Activity + "') ";
+		
+		/* There should only be a single activity value for this haplotype. */
+		try {
+			ResultSet rs= PGXDB.executeQuery(sql);
+
+			while (rs.next()) {
+				// only grab the first column because we're only SELECTing it
+				// above in the SQL statement
+				metabolizer= (String) PGXDB.getRowAsList(rs).get(0);
+			}
+		} catch (SQLException se) {
+			se.printStackTrace();
+		}
+		
+		return metabolizer;
 	}
 	
 	
@@ -495,6 +534,8 @@ public class PGXDBFunctions {
 		List<PGXMarker> output= new LinkedList<PGXMarker>();
 		
 		List<String> markerList= getMarkers(gene);
+		Collections.sort(markerList); // sort the list of markers
+		
 		String sql;
 		for (String marker : markerList) {
 			sql=	"SELECT M.chromosome, M.position, M.ref, M.alt " +
