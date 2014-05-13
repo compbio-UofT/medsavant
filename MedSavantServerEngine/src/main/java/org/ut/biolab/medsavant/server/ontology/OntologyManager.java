@@ -56,6 +56,7 @@ import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 
 /**
@@ -482,11 +483,11 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     try {
                         LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
                         LOG.info("Adding GO Ontology");
-                        addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
+                        addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, WebResources.GO_OBO_URL, WebResources.GO_TO_GENES_URL);
                         LOG.info("Adding HPO Ontology");
-                        addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
+                        addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, WebResources.HPO_OBO_URL, WebResources.HPO_TO_GENES_URL);
                         LOG.info("Adding OMIM Ontology");
-                        addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
+                        addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, WebResources.OMIM_OBO_URL, WebResources.OMIM_TO_HPO_URL);
                         SessionManager.getInstance().unregisterSession(sessID);
                         return true;
                     } catch (Exception ex) {

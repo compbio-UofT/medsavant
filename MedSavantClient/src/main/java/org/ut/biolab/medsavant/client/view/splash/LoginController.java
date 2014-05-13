@@ -161,7 +161,7 @@ public class LoginController extends Controller<LoginEvent> {
             String serverVersion = MedSavantClient.SettingsManager.getServerVersion();
 
             if (!VersionSettings.isClientCompatibleWithServer(clientVersion, serverVersion)) {
-                LoginEvent e = new LoginEvent(new Exception("<html>Your client version (" + clientVersion + ") is not compatible with the server (" + serverVersion + ").<br>Visit " + WebResources.URL + " to get the correct version.</html>"));
+                LoginEvent e = new LoginEvent(new Exception("<html>Your client version (" + clientVersion + ") is not compatible with the server (" + serverVersion + ").<br>Visit " + WebResources.WEB_URL + " to get the correct version.</html>"));
                 fireEvent(e);
                 return;
             }

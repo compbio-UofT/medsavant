@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.ServerController;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
+import org.ut.biolab.medsavant.client.util.CryptoUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
@@ -388,9 +389,10 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
     }
 
     private void doSignIntoServer(MedSavantServerInfo server) {
+        System.out.println("Logging in with "+usernameField.getText()+"/"+String.copyValueOf(passwordField.getPassword()));
         // save username
         server.setUsername(usernameField.getText());
-
+                
         // save password
         server.setPassword(new String(passwordField.getPassword()));
 
@@ -437,11 +439,14 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
         if (server == null) {
             return;
         }
-
+        if(server.getPassword() == null){
+            return;
+        }
         this.server = server;
 
-        usernameField.setText(server.getUsername());
-        passwordField.setText(server.getPassword());
+        //System.out.println("Setting server with username "+server.getUsername()+" and pw "+server.getPassword());        
+        usernameField.setText(server.getUsername());                
+        passwordField.setText(server.getPassword());                
         rememberPasswordCheckbox.setSelected(server.isRememberPassword());
         serverNameLabel.setText(ViewUtil.ellipsize(server.getNickname(), 23));
 
