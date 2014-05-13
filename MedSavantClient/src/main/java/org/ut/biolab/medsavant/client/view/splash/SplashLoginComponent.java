@@ -395,7 +395,9 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
         server.setUsername(usernameField.getText());
 
         // save password
-        server.setPassword(new String(passwordField.getPassword()));
+        if (server.isRememberPassword()) {
+            server.setPassword(new String(passwordField.getPassword()));
+        }
 
         // save remember
         server.setRememberPassword(rememberPasswordCheckbox.isSelected());

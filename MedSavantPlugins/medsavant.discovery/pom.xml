@@ -56,11 +56,6 @@
             <artifactId>medsavant-client</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>medsavant-app-comm</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

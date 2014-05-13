@@ -87,7 +87,7 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
         this(server.host, server.port, server.database, server.nickname, server.uniqueID);
         this.setEditable(server.isEditable);
         this.setUsername(server.username);
-        this.setPassword(CryptoUtils.decrypt(server.encodedPassword));
+        this.setPassword(server.getPassword());
         this.setRememberPassword(server.rememberPassword);
     }
 
@@ -121,7 +121,11 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
     }
 
     public void setPassword(String password) {
-        this.encodedPassword = CryptoUtils.encrypt(password);
+        if (password.isEmpty()) {
+            this.encodedPassword = "";
+        } else {
+            this.encodedPassword = CryptoUtils.encrypt(password);
+        }
     }
 
     public String getHost() {
@@ -154,6 +158,9 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
 
     public void setRememberPassword(boolean rememberPassword) {
         this.rememberPassword = rememberPassword;
+        if (!this.rememberPassword) {
+            this.setPassword("");
+        }
     }
 
     public boolean isEditable() {

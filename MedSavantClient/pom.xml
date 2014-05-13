@@ -213,21 +213,6 @@
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>medsavant-component-fields</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>mfiume-component-transition</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>medsavant-app-comm</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
@@ -253,6 +238,21 @@
             <artifactId>google-api-client</artifactId>
             <version>1.17.0-rc</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>mfiume</groupId>
+            <artifactId>app-comm</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>mfiume</groupId>
+            <artifactId>transitions</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>mfiume</groupId>
+            <artifactId>component-fields</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
