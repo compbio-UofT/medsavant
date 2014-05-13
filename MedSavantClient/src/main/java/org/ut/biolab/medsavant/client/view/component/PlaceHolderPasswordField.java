@@ -43,6 +43,7 @@ import javax.swing.text.Document;
  */
 public class PlaceHolderPasswordField extends JPasswordField {
 
+
     public static void main(final String[] args) {
         final org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField tf = new org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField("");
         tf.setColumns(20);
