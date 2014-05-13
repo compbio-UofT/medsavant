@@ -25,17 +25,17 @@ import java.util.Date;
  *
  * @author jim
  */
-public class LocusCommentStatusChange extends LocusComment{
-    private final LocusComment parentComment;
+public class LocusCommentStatusChange extends UserComment{
+    private final UserComment parentComment;
            
-    public LocusCommentStatusChange(LocusComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {                       
+    public LocusCommentStatusChange(UserComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {                       
         //super(approveParent, includeParent, markParentPending, markParentDeleted, comment, parentComment.getOntologyTerm());
         
         //Status change comment tracks the original status of the parent comment.  
         super(parentComment.isApproved(), parentComment.isIncluded(), parentComment.isPendingReview(), parentComment.isDeleted(), comment, parentComment.getOntologyTerm());
 
         //Parent comment contains the new status.
-        this.parentComment = new LocusComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm());                
+        this.parentComment = new UserComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm());                
     }
     
     public boolean statusChanged() {
@@ -46,7 +46,7 @@ public class LocusCommentStatusChange extends LocusComment{
                 && parentComment.isPendingReview() == isPendingReview());
     }
 
-    public LocusComment getOriginalComment(){
+    public UserComment getOriginalComment(){
         return parentComment;
     }      
     

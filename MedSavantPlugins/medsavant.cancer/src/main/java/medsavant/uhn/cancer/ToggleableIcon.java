@@ -67,7 +67,7 @@ public class ToggleableIcon extends JButton{
     }
 
     private ImageIcon getImageIcon(String location, int iconWidth, int iconHeight) {
-        URL resource = LocusCommenterApp.class.getResource(location);
+        URL resource = UserCommentApp.class.getResource(location);
         if (resource == null) {
             System.err.println("Couldn't load resource given by " + location);
         }

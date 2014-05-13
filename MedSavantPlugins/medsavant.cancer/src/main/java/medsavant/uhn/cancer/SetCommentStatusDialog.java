@@ -35,16 +35,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.shared.model.LocusComment;
-import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import savant.api.util.DialogUtils;
 
 public class SetCommentStatusDialog extends JDialog {
 
     private Log LOG = LogFactory.getLog(SetCommentStatusDialog.class);
-    private final LocusCommentGroup lcg;
-    private final LocusComment parentComment;
+    private final UserCommentGroup lcg;
+    private final UserComment parentComment;
     private JTextArea comment;
     private StatusIconPanel statusIconPanel;
 
@@ -55,7 +55,7 @@ public class SetCommentStatusDialog extends JDialog {
     private static final int ICON_WIDTH = 64;
     private final int mainPanelWidth;
     private final int mainPanelHeight;
-    public SetCommentStatusDialog(JFrame parentFrame, LocusCommentGroup lcg, LocusComment parentComment) {
+    public SetCommentStatusDialog(JFrame parentFrame, UserCommentGroup lcg, UserComment parentComment) {
         super(parentFrame);
         System.out.println("Constructing setcomment status dialog with parentComment id="+parentComment.getCommentID());
         this.parentComment = parentComment;
@@ -134,13 +134,13 @@ public class SetCommentStatusDialog extends JDialog {
 
     private void updateStatus() throws SessionExpiredException, SQLException, RemoteException {
         String sessID = LoginController.getSessionID();        
-        LocusComment lc = new LocusComment(parentComment,
+        UserComment lc = new UserComment(parentComment,
                 statusIconPanel.getApprovedIcon().getState(),
                 statusIconPanel.getIncludedIcon().getState(),
                 statusIconPanel.getPendingReviewIcon().getState(),
                 statusIconPanel.getDeletedIcon().getState(),
                 comment.getText());
-        //System.out.println("Invoking replyToLocusCommentGroup.  parentComment id="+parentComment.getCommentID()+" == "+lc.getOriginalComment().getCommentID());
-        MedSavantClient.VariantManager.replyToLocusCommentGroup(sessID, lcg.getLocusCommentGroupId(), lc);
+        //System.out.println("Invoking replyToUserCommentGroup.  parentComment id="+parentComment.getCommentID()+" == "+lc.getOriginalComment().getCommentID());
+        MedSavantClient.VariantManager.replyToUserCommentGroup(sessID, lcg.getUserCommentGroupId(), lc);
     }
 }

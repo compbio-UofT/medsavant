@@ -31,7 +31,7 @@ import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
  *
  * @author jim
  */
-public class LocusCommentGroup implements Serializable {    
+public class UserCommentGroup implements Serializable {    
     
     private final int projectId;
     private final int referenceId;
@@ -41,12 +41,12 @@ public class LocusCommentGroup implements Serializable {
     private final String ref;
     private final String alt;
     
-    private final int locusCommentGroupId;
+    private final int userCommentGroupId;
     private final Set<OntologyTerm> ontologyTermsCovered;
-    private List<LocusComment> comments;
+    private List<UserComment> comments;
 
-    public LocusCommentGroup(int groupId, int projectId, int referenceId, String chrom, long startPosition, long endPosition, String ref, String alt, Date modification, List<LocusComment> comments) {
-        this.locusCommentGroupId = groupId;
+    public UserCommentGroup(int groupId, int projectId, int referenceId, String chrom, long startPosition, long endPosition, String ref, String alt, Date modification, List<UserComment> comments) {
+        this.userCommentGroupId = groupId;
         this.projectId = projectId;
         this.referenceId = referenceId;
         this.chrom = chrom;
@@ -57,12 +57,12 @@ public class LocusCommentGroup implements Serializable {
         this.ontologyTermsCovered = new HashSet<OntologyTerm>();
                 
         if(comments != null){            
-            for(LocusComment lc : comments){
+            for(UserComment lc : comments){
                 this.ontologyTermsCovered.add(lc.getOntologyTerm());
             }
             this.comments = comments;
         }else{
-            this.comments = new ArrayList<LocusComment>(0);
+            this.comments = new ArrayList<UserComment>(0);
         }
     }
 
@@ -75,17 +75,17 @@ public class LocusCommentGroup implements Serializable {
         return ontologyTermsCovered;
     }
     
-    public int getLocusCommentGroupId(){
-        return this.locusCommentGroupId;
+    public int getUserCommentGroupId(){
+        return this.userCommentGroupId;
     }
     
     public int getNumComments() {
         return comments.size();
     }
     
-    public Iterator<LocusComment> iterator() {
-        return new Iterator<LocusComment>() {
-            private final Iterator<LocusComment> it = comments.iterator();
+    public Iterator<UserComment> iterator() {
+        return new Iterator<UserComment>() {
+            private final Iterator<UserComment> it = comments.iterator();
 
             @Override
             public boolean hasNext() {
@@ -93,7 +93,7 @@ public class LocusCommentGroup implements Serializable {
             }
 
             @Override
-            public LocusComment next() {
+            public UserComment next() {
                 return it.next();
             }
 

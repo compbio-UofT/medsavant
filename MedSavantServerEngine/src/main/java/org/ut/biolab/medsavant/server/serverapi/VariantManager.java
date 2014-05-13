@@ -67,8 +67,8 @@ import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
-import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
-import org.ut.biolab.medsavant.shared.model.LocusComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
@@ -1709,7 +1709,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return dnaIDMap;
     }
 
-    private boolean isAuthorizedForLocusComments(String sessID) throws SecurityException, SessionExpiredException, SQLException, RemoteException {
+    private boolean isAuthorizedForUserComments(String sessID) throws SecurityException, SessionExpiredException, SQLException, RemoteException {
         //Temporary authorization: require admin access.        
         UserLevel ul = UserManager.getInstance().getSessionUsersLevel(sessID);
         if (ul.ADMIN != ul || UserManager.getInstance().isUserOfThisDatabase(sessID)) {
@@ -1719,40 +1719,40 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return true;
     }
 
-    public void deleteComment(String sessID, int locusCommentId) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
-        if (!isAuthorizedForLocusComments(sessID)) {
+    public void deleteComment(String sessID, int userCommentId) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
             throw new SecurityException("This user does not have access to view comments");
         }
 
-        TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         UpdateQuery uq = new UpdateQuery(lcTable.getTable());
-        uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED), true);
-        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), locusCommentId));
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), true);
+        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), userCommentId));
         ConnectionController.executeUpdate(sessID, uq.toString());
     }
 
     @Override
-    public LocusCommentGroup createLocusCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
-        return createLocusCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
+        return createUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
     }
 
     @Override
-    public LocusCommentGroup createLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
-        LocusCommentGroup lcg = getLocusCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, true);
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
+        UserCommentGroup lcg = getUserCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, true);
         if (lcg != null) {
             throw new IllegalArgumentException("A comment group already exists at chrom=" + chrom + ", start=" + start_position + " end=" + end_position + " ref=" + ref + " alt=" + alt);
         }
 
         //insert, get groupId and modDate
-        TableSchema lcgTable = MedSavantDatabase.LocusCommentGroupTableSchema;
+        TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
         InsertQuery iq = new InsertQuery(lcgTable.getTable());
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_REF), ref);
-        iq.addColumn(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REF), ref);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt);
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = null;
         ResultSet res = null;
@@ -1787,11 +1787,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //no comments yet, modstamp is null.
         //Date modStamp = DBUtils.getCurrentDatabaseTime(sessID);
         Date modStamp = null;
-        lcg = new LocusCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modStamp, null);
+        lcg = new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modStamp, null);
         return lcg;
     }
 
-    public void setLocusCommentStatus(String sessID, int locusCommentGroupId, LocusComment statusChangeComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException, IllegalArgumentException {
+    public void setUserCommentStatus(String sessID, int userCommentGroupId, UserComment statusChangeComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException, IllegalArgumentException {
         if (!statusChangeComment.statusChanged()) {
             throw new IllegalArgumentException("Can't update the comment's status because it hasn't changed.");
         }
@@ -1801,7 +1801,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             throw new IllegalArgumentException("Can't update the comment's status because comment could not be located in the database");
         }
 
-        int statusChangeCommentId = replyToLocusCommentGroup(sessID, locusCommentGroupId, statusChangeComment);
+        int statusChangeCommentId = replyToUserCommentGroup(sessID, userCommentGroupId, statusChangeComment);
 
         //Overwrite the original status of the comment with the new status.        
         updateCommentStatus(sessID,
@@ -1822,56 +1822,55 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {        
-        TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         UpdateQuery uq = new UpdateQuery(lcTable.getTable());
-        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), commentId));
-        uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
-        uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
-        uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
-        uq.addSetClause(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
+        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), commentId));
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
         ConnectionController.executeUpdate(sessID, uq.toString());        
     }
     
     @Override
-    public int replyToLocusCommentGroup(String sessID, int locusCommentGroupId, LocusComment locusComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
-        if (!isAuthorizedForLocusComments(sessID)) {
+    public int replyToUserCommentGroup(String sessID, int userCommentGroupId, UserComment userComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
             throw new SecurityException("This user does not have access to view comments");
         }
-
-        //LocusComment lastComment = getLocusCommentsForGroup(sessID, locusCommentGroupId, true).get(0);
+        
         String username = SessionManager.getInstance().getUserForSession(sessID);
-        String ontologyId = locusComment.getOntologyTerm().getID();
+        String ontologyId = userComment.getOntologyTerm().getID();
 
         //TODO: Insert checks here to make sure user has permissions to change flags.      
         //If they don't, use the flags in 'lastComment' commented out above.       
-        Boolean isApproved = locusComment.isApproved();
-        Boolean isIncluded = locusComment.isIncluded();
-        Boolean isPendingReview = locusComment.isPendingReview();
-        Boolean isDeleted = locusComment.isDeleted();
-        String commentText = locusComment.getCommentText();
-        String ontology = locusComment.getOntologyTerm().getOntology().name();
-        TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
+        Boolean isApproved = userComment.isApproved();
+        Boolean isIncluded = userComment.isIncluded();
+        Boolean isPendingReview = userComment.isPendingReview();
+        Boolean isDeleted = userComment.isDeleted();
+        String commentText = userComment.getCommentText();
+        String ontology = userComment.getOntologyTerm().getOntology().name();
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         InsertQuery iq = new InsertQuery(lcTable.getTable());
         
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), locusCommentGroupId);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID), ontologyId);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_USER), username);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_CREATION_DATE), (new FunctionCall(new CustomSql("NOW"))).addCustomParams());
-        iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_COMMENT), commentText);
-        if(locusComment.getOriginalComment() != null){
-            Integer commentId = locusComment.getOriginalComment().getCommentID();
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), userCommentGroupId);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID), ontologyId);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER), username);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE), (new FunctionCall(new CustomSql("NOW"))).addCustomParams());
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT), commentText);
+        if(userComment.getOriginalComment() != null){
+            Integer commentId = userComment.getOriginalComment().getCommentID();
             if(commentId == null){
                 throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a null identifier");
             }
             if(commentId < 1){
                 throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a non-positive identifier: "+commentId);
             }
-            iq.addColumn(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID), commentId);
+            iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID), commentId);
         }
         
         PreparedStatement stmt = null;
@@ -1884,7 +1883,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             res = stmt.getGeneratedKeys();
             res.next();
             commentId = res.getInt(1);
-            LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + locusCommentGroupId);
+            LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + userCommentGroupId);
 
             return commentId;
         } catch(SQLException sqe){
@@ -1904,24 +1903,24 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public LocusCommentGroup getLocusCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
-        return getLocusCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        return getUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
     }
 
     @Override
-    public LocusCommentGroup getLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
-        return getLocusCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, false);
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        return getUserCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, false);
     }
 
-    private List<LocusComment> getLocusCommentsForGroup(String sessID, int groupId, boolean loadOnlyMostRecentComment) throws SQLException, SessionExpiredException, RemoteException {
+    private List<UserComment> getUserCommentsForGroup(String sessID, int groupId, boolean loadOnlyMostRecentComment) throws SQLException, SessionExpiredException, RemoteException {
 
         ResultSet rs = null;
         try {
-            TableSchema lcgTable = MedSavantDatabase.LocusCommentGroupTableSchema;
+            TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
             SelectQuery sq = new SelectQuery();//lcgTable.getTable());
             sq.addFromTable(lcgTable.getTable());
             sq.addAllColumns();
-            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), groupId));
+            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), groupId));
             rs = ConnectionController.executeQuery(sessID, sq.toString());
             if (rs==null || !rs.next()) {
                 throw new IllegalArgumentException("There is no comment group with the given identifier " + groupId);
@@ -1934,46 +1933,45 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 rs.close();
             }
         }
-
-        //List<LocusComment> comments = new ArrayList<LocusComment>();
+        
         rs = null;
         try {
-            TableSchema lcTable = MedSavantDatabase.LocusCommentTableSchema;
+            TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
             SelectQuery sq = new SelectQuery();
             sq.addFromTable(lcTable.getTable());
             sq.addAllColumns();
-            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID), groupId));
+            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), groupId));
             String querySuffix = "";
             if (loadOnlyMostRecentComment) {
-                sq.addCondition(UnaryCondition.isNotNull(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID)));
-                sq.addOrdering(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), Dir.DESCENDING);
+                sq.addCondition(UnaryCondition.isNotNull(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID)));
+                sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.DESCENDING);
                 querySuffix = " LIMIT 1";
             } else {                
-                sq.addOrdering(MedSavantDatabase.LocusCommentTableSchema.getDBColumn(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID), Dir.ASCENDING);
+                sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.ASCENDING);
             }
             LOG.info(sq.toString()+querySuffix);
             
             rs = ConnectionController.executeQuery(sessID, sq.toString() + querySuffix);
-            Map<Integer, LocusComment> parentCommentMap = new TreeMap<Integer, LocusComment>();
-            Map<Integer, Set<LocusComment>> childCommentMap = new HashMap<Integer, Set<LocusComment>>();
+            Map<Integer, UserComment> parentCommentMap = new TreeMap<Integer, UserComment>();
+            Map<Integer, Set<UserComment>> childCommentMap = new HashMap<Integer, Set<UserComment>>();
             
             while (rs.next()) {
-                int commentId = rs.getInt(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID);
-                int parentCommentId = rs.getInt(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_PARENT_COMMENT_ID);
-                String ontologyId = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID);
-                String user = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_USER);
-                Boolean isApproved = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_APPROVED);
-                Boolean isIncluded = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_INCLUDE);
-                Boolean isPendingReview = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_REVIEW);
-                Boolean isDeleted = rs.getBoolean(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_DELETED);
-                Date creationDate = rs.getDate(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_CREATION_DATE);
-                Timestamp ts = rs.getTimestamp(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_MODIFICATION_DATE);
+                int commentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID);
+                int parentCommentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID);
+                String ontologyId = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID);
+                String user = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER);
+                Boolean isApproved = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED);
+                Boolean isIncluded = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE);
+                Boolean isPendingReview = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW);
+                Boolean isDeleted = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED);
+                Date creationDate = rs.getDate(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE);
+                Timestamp ts = rs.getTimestamp(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_MODIFICATION_DATE);
                 Date modDate = new Date(ts.getTime());
-                String commentText = rs.getString(MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_COMMENT);
-                OntologyTerm ot = OntologyManager.getInstance().getOntologyTerm(sessID, LocusComment.ONTOLOGY_TYPE, ontologyId);
+                String commentText = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT);
+                OntologyTerm ot = OntologyManager.getInstance().getOntologyTerm(sessID, UserComment.ONTOLOGY_TYPE, ontologyId);
                                 
                 
-                LocusComment parentComment = null;
+                UserComment parentComment = null;
                 if(parentCommentId > 0){
                     parentComment = parentCommentMap.get(parentCommentId);
                     if(parentComment == null){
@@ -1981,12 +1979,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                         throw new SQLException("Invalid comment detected in database with id "+commentId+" (Refers to non-existant comment with id "+parentCommentId+")");
                     }else{
                         //this is a child comment
-                        LocusComment lc = new LocusComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, parentComment);
-                        Set<LocusComment> lcSet = childCommentMap.get(commentId);
+                        UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, parentComment);
+                        Set<UserComment> lcSet = childCommentMap.get(commentId);
                         if(lcSet == null){
-                            lcSet = new TreeSet<LocusComment>(new Comparator<LocusComment>(){
+                            lcSet = new TreeSet<UserComment>(new Comparator<UserComment>(){
                                 @Override
-                                public int compare(LocusComment o1, LocusComment o2) {
+                                public int compare(UserComment o1, UserComment o2) {
                                     return o1.getModificationDate().compareTo(o2.getModificationDate());                                    
                                 }                                
                             });                                  
@@ -1996,19 +1994,19 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     }
                 }else{
                     //this is a parent comment.
-                    LocusComment lc = new LocusComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);                    
+                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);                    
                     parentCommentMap.put(commentId, lc);
                 }                                
             }
                        
-            List<LocusComment> comments = new ArrayList<LocusComment>();
+            List<UserComment> comments = new ArrayList<UserComment>();
             
-            for(Map.Entry<Integer, LocusComment> e : parentCommentMap.entrySet()){
+            for(Map.Entry<Integer, UserComment> e : parentCommentMap.entrySet()){
                 Integer parentId = e.getKey();
-                LocusComment parentComment = e.getValue();
+                UserComment parentComment = e.getValue();
                 comments.add(parentComment);
                 
-                Set<LocusComment> childComments = childCommentMap.get(parentId);
+                Set<UserComment> childComments = childCommentMap.get(parentId);
                 if(childComments != null){
                     comments.addAll(childComments);                    
                 }
@@ -2025,34 +2023,34 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    private LocusCommentGroup getLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt, boolean loadOnlyMostRecentComment) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
-        if (!isAuthorizedForLocusComments(sessID)) {
+    private UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt, boolean loadOnlyMostRecentComment) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
             throw new SecurityException("This user does not have access to view comments");
         }
 
         //Select VariantCommentGroup
-        TableSchema lcgTable = MedSavantDatabase.LocusCommentGroupTableSchema;
+        TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
         SelectQuery sq = new SelectQuery();//lcgTable.getTable());
         sq.addFromTable(lcgTable.getTable());
         ComboCondition cc
                 = ComboCondition.and(
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_REF), ref),
-                        BinaryCondition.equalTo(MedSavantDatabase.LocusCommentGroupTableSchema.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt)
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REF), ref),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt)
                 );
         sq.addCondition(cc);
-        sq.addColumns(lcgTable.getDBColumn(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID));
+        sq.addColumns(lcgTable.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID));
         ResultSet rs = null;
         int groupId = 0;
         try {
             rs = ConnectionController.executeQuery(sessID, sq.toString());
 
             if (rs.next()) {
-                groupId = rs.getInt(MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID);
+                groupId = rs.getInt(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID);
             } else {
                 //No comments started for this variant! 
                 return null;
@@ -2064,13 +2062,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         Date modDate = null;
-        List<LocusComment> comments = getLocusCommentsForGroup(sessID, groupId, loadOnlyMostRecentComment);
+        List<UserComment> comments = getUserCommentsForGroup(sessID, groupId, loadOnlyMostRecentComment);
         if (comments.size() > 0) {
-            LocusComment lastComment = comments.get(comments.size() - 1);
+            UserComment lastComment = comments.get(comments.size() - 1);
             modDate = lastComment.getModificationDate();
         }
 
-        return new LocusCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);      
+        return new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);      
     }
 
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException, SessionExpiredException {

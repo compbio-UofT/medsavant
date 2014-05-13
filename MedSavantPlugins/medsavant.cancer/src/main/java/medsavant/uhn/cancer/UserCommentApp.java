@@ -51,8 +51,8 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.shared.appapi.MedSavantVariantInspectorApp;
-import org.ut.biolab.medsavant.shared.model.LocusComment;
-import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -60,11 +60,11 @@ import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
-public class LocusCommenterApp extends MedSavantVariantInspectorApp {
-    private static final Log LOG = LogFactory.getLog(LocusCommenterApp.class);
+public class UserCommentApp extends MedSavantVariantInspectorApp {
+    private static final Log LOG = LogFactory.getLog(UserCommentApp.class);
     private static final OntologyType DEFAULT_ONTOLOGY_TYPE = OntologyType.HPO;
-    private static final String NAME = "Cancer Workflow - LocusCommenter";
-    private static final String TITLE = "Comments for this Locus";
+    private static final String NAME = "Cancer Workflow - User Comments";
+    private static final String TITLE = "User Comments for this position ";
     private static final int ICON_WIDTH = 16;
     private static final int ICON_HEIGHT = 16;
     private static final int COMMENT_SEPARATOR_HEIGHT = 10;
@@ -79,8 +79,8 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         return DEFAULT_ONTOLOGY_TYPE;
     }
 
-    public LocusCommenterApp() {
-        System.out.println("Locus Commenter App initialized.");
+    public UserCommentApp() {
+        System.out.println("User Comment App initialized.");
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         JPanel innerPanel = new WaitPanel("Loading...");
@@ -92,7 +92,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         acd.setVisible(true);
     }
 
-    private void editStatus(LocusCommentGroup lcg, LocusComment lc) {        
+    private void editStatus(UserCommentGroup lcg, UserComment lc) {        
         JDialog scd = new SetCommentStatusDialog(MedSavantFrame.getInstance(), lcg, lc);
         scd.setVisible(true);
     }
@@ -136,7 +136,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         return js;
     }
 
-    private JPanel getHeaderPanel(LocusComment lc) {
+    private JPanel getHeaderPanel(UserComment lc) {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         JPanel leftJustPanel = new JPanel();
@@ -154,7 +154,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         return headerPanel;
     }
 
-    private JPanel getStatusIconPanel(final LocusCommentGroup lcg, final LocusComment lc) {
+    private JPanel getStatusIconPanel(final UserCommentGroup lcg, final UserComment lc) {
         JPanel sip = new JPanel();
         sip.setLayout(new BoxLayout(sip, BoxLayout.X_AXIS));
 
@@ -181,7 +181,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         return sip;
     }
 
-    private JPanel getCommentPanel(LocusComment lc) {
+    private JPanel getCommentPanel(UserComment lc) {
         JTextArea commentText = new JTextArea();
         commentText.setText(lc.getCommentText());
         commentText.setEditable(false);
@@ -197,7 +197,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
 
     private JPanel oldStatusPanel;
 
-    private void updateStatusPanel(LocusComment oldComment) {
+    private void updateStatusPanel(UserComment oldComment) {
         //Write the from-to status to the last comment's status panel.
         if (oldComment != null && oldComment.getOriginalComment() != null) {//status change comment.            
             //System.out.println("Updating statusPanel with "+oldComment.isApproved()+","+oldComment.isIncluded()+","+oldComment.isPendingReview());
@@ -213,7 +213,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         }
     }
 
-    private JPanel getCommentBlock(LocusCommentGroup lcg, LocusComment lc/*, LocusComment oldComment*/) {
+    private JPanel getCommentBlock(UserCommentGroup lcg, UserComment lc/*, UserComment oldComment*/) {
         
         JPanel innerPanel = new JPanel();
         innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
@@ -259,12 +259,12 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
         }
     }
 
-    private JPanel getMainCommentPanel(Map<OntologyTerm, Collection<LocusComment>> otCommentMap, final LocusCommentGroup lcg, final VariantRecord vr) {
+    private JPanel getMainCommentPanel(Map<OntologyTerm, Collection<UserComment>> otCommentMap, final UserCommentGroup lcg, final VariantRecord vr) {
         JPanel innerPanel = new JPanel(); //Todo: may need to specify width of this panel?                
         innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-        for (final Map.Entry<OntologyTerm, Collection<LocusComment>> e : otCommentMap.entrySet()) {
+        for (final Map.Entry<OntologyTerm, Collection<UserComment>> e : otCommentMap.entrySet()) {
             OntologyTerm ot = e.getKey();
-            Collection<LocusComment> locusComments = e.getValue();
+            Collection<UserComment> userComments = e.getValue();
 
             JPanel otPanel = new JPanel();
             otPanel.setLayout(new BoxLayout(otPanel, BoxLayout.Y_AXIS));
@@ -274,14 +274,14 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
             //Define horizontal panel with ontology title and reply to ontology icon.
             JPanel ontologyTitlePanel = getOntologyTitlePanel(vr, ot);            
             otPanel.add(ontologyTitlePanel);
-            LocusComment oldComment = null;
-            for (final LocusComment locusComment : locusComments) {
-                if(locusComment.isDeleted()){
+            UserComment oldComment = null;
+            for (final UserComment userComment : userComments) {
+                if(userComment.isDeleted()){
                     continue;
                 }
                 updateStatusPanel(oldComment);                
-                otPanel.add(getCommentBlock(lcg, locusComment));
-                oldComment = locusComment;
+                otPanel.add(getCommentBlock(lcg, userComment));
+                oldComment = userComment;
             }
             updateStatusPanel(oldComment);            
             otPanel.add(getOntologySeparator());
@@ -309,7 +309,7 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
     public void setVariantRecord(final VariantRecord variantRecord) {        
         try {            
             //Get comment group associated with this variant.
-            LocusCommentGroup lcg = MedSavantClient.VariantManager.getLocusCommentGroup(
+            UserCommentGroup lcg = MedSavantClient.VariantManager.getUserCommentGroup(
                     LoginController.getSessionID(),
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
@@ -320,14 +320,14 @@ public class LocusCommenterApp extends MedSavantVariantInspectorApp {
                 //Build a mapping from ontology terms to all comments pertaining to that ontology term.
                 //Iterating through this map will return the ontology terms in alphabetical order, and the comments
                 //within each ontology will be ordered by their insertion id.
-                Map<OntologyTerm, Collection<LocusComment>> otCommentMap = new TreeMap<OntologyTerm, Collection<LocusComment>>();
+                Map<OntologyTerm, Collection<UserComment>> otCommentMap = new TreeMap<OntologyTerm, Collection<UserComment>>();
 
-                for (Iterator<LocusComment> li = lcg.iterator(); li.hasNext();) {
-                    LocusComment lc = li.next();
+                for (Iterator<UserComment> li = lcg.iterator(); li.hasNext();) {
+                    UserComment lc = li.next();
                     System.out.println("Got comment " + lc.getCommentText());
-                    Collection<LocusComment> ontologyComments = otCommentMap.get(lc.getOntologyTerm());                    
+                    Collection<UserComment> ontologyComments = otCommentMap.get(lc.getOntologyTerm());                    
                     if (ontologyComments == null) {
-                        ontologyComments = new ArrayList<LocusComment>();                       
+                        ontologyComments = new ArrayList<UserComment>();                       
                         hasComments = true;
                     }
                     ontologyComments.add(lc);

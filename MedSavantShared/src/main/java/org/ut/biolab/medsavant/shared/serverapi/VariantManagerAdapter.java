@@ -43,8 +43,8 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.util.Modifier;
 import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
-import org.ut.biolab.medsavant.shared.model.LocusComment;
-import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
@@ -119,10 +119,10 @@ public interface VariantManagerAdapter extends Remote {
     public boolean willApproximateCountsForConditions(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
     
     @Modifier(type = LOCUS_COMMENT)
-    public int replyToLocusCommentGroup(String sessID, int locusCommentGroupId, LocusComment locusComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException;
-    public LocusCommentGroup getLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException;    
-    public LocusCommentGroup getLocusCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
-    public LocusCommentGroup createLocusCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
-    public LocusCommentGroup createLocusCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
+    public int replyToUserCommentGroup(String sessID, int locusCommentGroupId, UserComment locusComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException;
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException;    
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
 }
 

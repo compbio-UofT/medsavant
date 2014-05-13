@@ -25,7 +25,7 @@ import java.util.Date;
  *
  * @author jim
  */
-public class LocusComment implements Serializable {
+public class UserComment implements Serializable {
 
     public static final OntologyType ONTOLOGY_TYPE = OntologyType.HPO;
     private static final boolean DEFAULT_APPROVED_STATUS = false;
@@ -44,10 +44,10 @@ public class LocusComment implements Serializable {
     private final String commentText;
     private final OntologyTerm ontologyTerm;
 
-    private LocusComment parentComment;
+    private UserComment parentComment;
 
     
-    public LocusComment(LocusComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {
+    public UserComment(UserComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {
         //Status change comment tracks the original status of the parent comment.  
         this(parentComment.isApproved(),
                 parentComment.isIncluded(),
@@ -55,26 +55,26 @@ public class LocusComment implements Serializable {
                 parentComment.isDeleted(),
                 comment,
                 parentComment.getOntologyTerm(),
-                new LocusComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm()));
+                new UserComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm()));
 
         //Parent comment contains the new status.
-        this.parentComment = new LocusComment(parentComment.getCommentID(), null, approveParent, includeParent, markParentPending, markParentDeleted, null, null, parentComment.getCommentText(), parentComment.getOntologyTerm(), null);        
+        this.parentComment = new UserComment(parentComment.getCommentID(), null, approveParent, includeParent, markParentPending, markParentDeleted, null, null, parentComment.getCommentText(), parentComment.getOntologyTerm(), null);        
     }
 
-    public LocusComment(String comment, OntologyTerm ontologyTerm){
+    public UserComment(String comment, OntologyTerm ontologyTerm){
         this(DEFAULT_APPROVED_STATUS, DEFAULT_INCLUDED_STATUS, DEFAULT_PENDING_REVIEW_STATUS, DEFAULT_DELETED_STATUS, comment, ontologyTerm);
     }
     
     //
-    public LocusComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
+    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
         this(null, null, isApproved, isIncluded, isPendingReview, isDeleted, null, null, comment, ontologyTerm, null);
     }
 
-    public LocusComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm, LocusComment parentComment) {
+    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm, UserComment parentComment) {
         this(null, null, isApproved, isIncluded, isPendingReview, isDeleted, null, null, comment, ontologyTerm, parentComment);
     }
 
-    public LocusComment(Integer commentId, String user, Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, Date creationDate, Date modificationDate, String commentText, OntologyTerm ontologyTerm, LocusComment parentComment) {
+    public UserComment(Integer commentId, String user, Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, Date creationDate, Date modificationDate, String commentText, OntologyTerm ontologyTerm, UserComment parentComment) {
         this.commentId = commentId;
         this.user = user;
         this.isApproved = isApproved;
@@ -132,7 +132,7 @@ public class LocusComment implements Serializable {
                 && parentComment.isPendingReview() == isPendingReview());
     }
 
-    public LocusComment getOriginalComment() {
+    public UserComment getOriginalComment() {
         return parentComment;
     }
 

@@ -45,8 +45,8 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
-import org.ut.biolab.medsavant.shared.model.LocusComment;
-import org.ut.biolab.medsavant.shared.model.LocusCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
@@ -67,12 +67,12 @@ public class AddNewCommentDialog extends JDialog {
     private final int mainPanelWidth;
     private final int mainPanelHeight;    
     
-    private void submitComment(LocusCommentGroup lcg, OntologyTerm term) throws SessionExpiredException, RemoteException, SQLException{
-            LocusComment lc = new LocusComment(commentBox.getText(), term);
-            MedSavantClient.VariantManager.replyToLocusCommentGroup(LoginController.getSessionID(), lcg.getLocusCommentGroupId(), lc);
+    private void submitComment(UserCommentGroup lcg, OntologyTerm term) throws SessionExpiredException, RemoteException, SQLException{
+            UserComment lc = new UserComment(commentBox.getText(), term);
+            MedSavantClient.VariantManager.replyToUserCommentGroup(LoginController.getSessionID(), lcg.getUserCommentGroupId(), lc);
     }
     
-    private void submitComment(LocusCommentGroup lcg) throws SessionExpiredException, RemoteException, SQLException {
+    private void submitComment(UserCommentGroup lcg) throws SessionExpiredException, RemoteException, SQLException {
         if(selectedOntologyTerm != null){
             submitComment(lcg, selectedOntologyTerm);
         }else{
@@ -176,7 +176,7 @@ public class AddNewCommentDialog extends JDialog {
             }
             Set<OntologyTerm> ontologyTermSet = new TreeSet<OntologyTerm>();
             for (Gene gene : genesOverlappingVariant) {
-                OntologyTerm[] ontologyTerms = MedSavantClient.OntologyManager.getTermsForGene(sessID, LocusCommenterApp.getDefaultOntologyType(), gene.getName());
+                OntologyTerm[] ontologyTerms = MedSavantClient.OntologyManager.getTermsForGene(sessID, UserCommentApp.getDefaultOntologyType(), gene.getName());
                 if (ontologyTerms != null && ontologyTerms.length > 0) {
                     ontologyTermSet.addAll(Arrays.asList(ontologyTerms));
                 }
@@ -215,7 +215,7 @@ public class AddNewCommentDialog extends JDialog {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         if(selectedOntologyTerm == null){
-            mainPanel.add(getHeader(LocusCommenterApp.getDefaultOntologyType().name()+" terms associated with this variant"));
+            mainPanel.add(getHeader(UserCommentApp.getDefaultOntologyType().name()+" terms associated with this variant"));
             JButton selectNoneButton = new JButton("Clear Selections");
             selectNoneButton.addActionListener(new ActionListener(){
                 @Override
@@ -227,7 +227,7 @@ public class AddNewCommentDialog extends JDialog {
             mainPanel.add(getOntologyTermsForThisVariant());
             mainPanel.add(getHeader("Comment"));
         }else{
-            mainPanel.add(getHeader("Comment for "+LocusCommenterApp.getDefaultOntologyType().name()+" term "+selectedOntologyTerm.getName()));
+            mainPanel.add(getHeader("Comment for "+UserCommentApp.getDefaultOntologyType().name()+" term "+selectedOntologyTerm.getName()));
         }
         
         commentBox = new JTextArea("", DEFAULT_COMMENTBOX_WIDTH, DEFAULT_COMMENTBOX_HEIGHT);
@@ -251,9 +251,9 @@ public class AddNewCommentDialog extends JDialog {
                     String sessID = LoginController.getSessionID();
                     int projId = ProjectController.getInstance().getCurrentProjectID();
                     int refId = ReferenceController.getInstance().getCurrentReferenceID();
-                    LocusCommentGroup lcg = MedSavantClient.VariantManager.getLocusCommentGroup(sessID, projId, refId, variantRecord);
+                    UserCommentGroup lcg = MedSavantClient.VariantManager.getUserCommentGroup(sessID, projId, refId, variantRecord);
                     if (lcg == null) {
-                        lcg = MedSavantClient.VariantManager.createLocusCommentGroup(sessID, projId, refId, variantRecord);
+                        lcg = MedSavantClient.VariantManager.createUserCommentGroup(sessID, projId, refId, variantRecord);
                     }
                     submitComment(lcg);
                     dispose();

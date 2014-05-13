@@ -302,7 +302,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
             /*
              String q = 
-             "CREATE TABLE "+MedSavantDatabase.LocusCommentTableSchema.getTableName()+"("
+             "CREATE TABLE "+MedSavantDatabase.UserCommentTableSchema.getTableName()+"("
              + "	project_id INTEGER,"
              + "	reference_id INTEGER,"
              + "	chrom varchar(5),"
@@ -325,8 +325,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
              + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Disease-specific comments, diseases are ontology terms.'"
              ;
              */
-            String q = "CREATE TABLE " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("
-                    + " locus_comment_group_id	INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+            String q = "CREATE TABLE " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "("
+                    + " user_comment_group_id	INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "	project_id INTEGER,"
                     + "	reference_id INTEGER,"
                     + "	chrom varchar(5),"
@@ -343,10 +343,10 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
             LOG.info(q);
             conn.executeUpdate(q);
 
-            q = "CREATE TABLE " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("
-                    + " locus_comment_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, "
-                    + " fk_locus_comment_group_id INTEGER NOT NULL, "
-                    + " fk_locus_parent_comment_id INTEGER, "
+            q = "CREATE TABLE " + MedSavantDatabase.UserCommentTableSchema.getTableName() + "("
+                    + " user_comment_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                    + " fk_user_comment_group_id INTEGER NOT NULL, "
+                    + " fk_parent_user_comment_id INTEGER, "
                     + "	user varchar(200),"
                     + " ontology varchar(10), "
                     + "	ontology_id varchar(30), "                    
@@ -359,8 +359,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "	variant_comment text,"
                     + " FOREIGN KEY(ontology) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ONTOLOGY.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
                     + "	FOREIGN KEY(ontology_id) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ID.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
-                    + "	FOREIGN KEY(fk_locus_comment_group_id) REFERENCES " + MedSavantDatabase.LocusCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentGroupTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT,"
-                    + "	FOREIGN KEY(fk_locus_parent_comment_id) REFERENCES " + MedSavantDatabase.LocusCommentTableSchema.getTableName() + "("+MedSavantDatabase.LocusCommentTableSchema.COLUMNNAME_OF_LOCUS_COMMENT_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + "	FOREIGN KEY(fk_user_comment_group_id) REFERENCES " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT,"
+                    + "	FOREIGN KEY(fk_parent_user_comment_id) REFERENCES " + MedSavantDatabase.UserCommentTableSchema.getTableName() + "("+MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
                     + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
             LOG.info(q);
             conn.executeUpdate(q);
