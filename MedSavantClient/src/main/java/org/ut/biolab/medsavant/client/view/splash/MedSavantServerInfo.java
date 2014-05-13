@@ -144,7 +144,7 @@ public final class MedSavantServerInfo implements Serializable, Comparable<MedSa
         return username;
     }
 
-    public String getPassword() {
+    protected String getPassword() {
         return CryptoUtils.decrypt(encodedPassword);
     }
 

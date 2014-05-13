@@ -99,7 +99,6 @@ public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandl
         Integer patientID = value.getEventData();
         MedSavantFrame.getInstance().getDashboard().launchApp(this);
         QueryUtils.addQueryOnPatients(new int[]{patientID});
-        MedSavantFrame.getInstance().revalidate();
         MedSavantFrame.getInstance().repaint();
 
     }
