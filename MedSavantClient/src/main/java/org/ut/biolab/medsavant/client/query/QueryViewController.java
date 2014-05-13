@@ -610,7 +610,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         return view;
     }
 
-    public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {
+    public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {               
         registerViewWithItem(view, item);
         parent.addItem(item);
     }

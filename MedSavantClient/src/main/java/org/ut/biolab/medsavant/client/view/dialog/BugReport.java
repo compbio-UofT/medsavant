@@ -34,6 +34,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 /**
  *
@@ -41,8 +42,8 @@ import org.ut.biolab.medsavant.shared.util.VersionSettings;
  */
 public class BugReport {
 
-    public static String bugreportURL = "http://www.genomesavant.com/p/assets/include/form/both/bugreport-post.php";
-    public static String feedbackreportURL = "http://www.genomesavant.com/p/assets/include/form/both/feedbackreport-post.php";
+    //public static String bugreportURL = "http://www.genomesavant.com/p/assets/include/form/both/bugreport-post.php";
+    //public static String feedbackreportURL = "http://www.genomesavant.com/p/assets/include/form/both/feedbackreport-post.php";
 
     public static boolean reportBug(String tool, String version, String name, String email, String institute, String problem, Throwable t) throws UnsupportedEncodingException {
 
@@ -72,7 +73,7 @@ public class BugReport {
                     + "&exception=" + getStackTrace(t)
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
 */
-            postRequest(new URL(bugreportURL),params);
+            postRequest(WebResources.BUGREPORT_URL, params);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,7 +181,7 @@ public class BugReport {
                     + "&feedback=" + feedbackStr
                     + "&clientinfo=" + kvp("program-version",version) + ", " + kvp("java-version", getJDKVersion()) + ", " + kvp("os", getOS()) + ", " + kvp("time",(new Date()).toLocaleString());
 */
-            postRequest(new URL(feedbackreportURL),params);
+            postRequest(WebResources.FEEDBACK_FORM_URL, params);
             return true;
 
         } catch (Exception e) {

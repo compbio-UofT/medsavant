@@ -97,8 +97,11 @@ public class VariantNavigatorApp extends MultiSectionApp implements AppCommHandl
     @Override
     public void handleCommEvent(PatientVariantAnalyzeComm value) {
         Integer patientID = value.getEventData();
-        QueryUtils.addQueryOnPatients(new int[]{patientID});
         MedSavantFrame.getInstance().getDashboard().launchApp(this);
+        QueryUtils.addQueryOnPatients(new int[]{patientID});
+        MedSavantFrame.getInstance().revalidate();
+        MedSavantFrame.getInstance().repaint();
+
     }
 
 }

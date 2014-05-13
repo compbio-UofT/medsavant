@@ -210,7 +210,7 @@ public class AppController extends Controller {
             public void run() {
                 String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
                 if (!(new File(directoryPath + "/done.txt")).exists()) {
-                    URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
+                    URL pathToGMData = WebResources.GENEMANIA_DATA_URL;
                     System.out.println("Downloding GeneMania data from " + pathToGMData.toString());
                     try {
                         if (true) {

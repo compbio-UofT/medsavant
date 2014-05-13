@@ -50,6 +50,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 /**
  *
@@ -238,8 +239,8 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    URI uri = URI.create(MedSavantFrame.FEEDBACK_URI);
-                    Desktop.getDesktop().mail(uri);
+//                //    URI uri = URI.create(MedSavantFrame.FEEDBACK_URI);
+                    Desktop.getDesktop().mail(WebResources.USERGUIDE_URL.toURI());
                 } catch (Exception ex) {
                 }
             }
@@ -249,9 +250,8 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
         JComponent userguide = ViewUtil.createHyperlinkButton("User Guide", ViewUtil.getMedSavantBlueColor(), new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    URI uri = URI.create(MedSavantFrame.USERGUIDE_URI);
-                    Desktop.getDesktop().browse(uri);
+                try {                    
+                    Desktop.getDesktop().browse(WebResources.USERGUIDE_URL.toURI());
                 } catch (Exception ex) {
                 }
             }

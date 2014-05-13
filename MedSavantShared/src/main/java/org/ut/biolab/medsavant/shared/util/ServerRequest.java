@@ -20,17 +20,10 @@
 package org.ut.biolab.medsavant.shared.util;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -40,7 +33,7 @@ import org.json.simple.parser.JSONParser;
  */
 public class ServerRequest {
 
-    private static final String rootRequest = "http://genomesavant.com/q/medsavant";
+    //private static final String rootRequest = "http://genomesavant.com/q/medsavant";
 
     public static final String TRACK_PATH = "browser/track";
 
@@ -53,7 +46,7 @@ public class ServerRequest {
             started = true;
         }
 
-        String urlString = rootRequest + "/" + serverPath + "/" + getString;//URLEncoder.encode(getString,"UTF-8");
+        String urlString = WebResources.SAVANT_ROOTREQUEST_URL + "/" + serverPath + "/" + getString;//URLEncoder.encode(getString,"UTF-8");
         String data = readUrl(urlString);
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(data);

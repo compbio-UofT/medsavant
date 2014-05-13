@@ -145,6 +145,7 @@ public class QueryUtils {
         QueryViewController qvc = SearchBar.getInstance().getQueryViewController();
         String desc = StringConditionEncoder.getDescription(selections);
         qvc.replaceFirstLevelItem(alias, StringConditionEncoder.encodeConditions(selections), desc);
+        qvc.refreshView();
     }
 
     public static void addNumericQuery(String alias, double low, double high, boolean includeNull){
@@ -152,6 +153,7 @@ public class QueryUtils {
         String encodedConditions = NumericConditionEncoder.encodeConditions(low, high, includeNull);
         String desc = NumericConditionEncoder.getDescription(new double[]{low, high});
         qvc.replaceFirstLevelItem(alias, encodedConditions, desc);
+        qvc.refreshView();
     }
 
     public static void addQueryOnPatients(int[] patientIds) {
