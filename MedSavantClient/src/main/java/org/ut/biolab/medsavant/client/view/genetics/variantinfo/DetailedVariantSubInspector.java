@@ -315,7 +315,8 @@ public class DetailedVariantSubInspector extends SubInspector implements BasicVa
 
         p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
         p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
-        p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
+        //p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
+        p.simpleEllipsify();
 
         KeyValuePairPanel infoPanel = getInfoKVPPanel(r.getCustomInfo());
         infoPanel.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);

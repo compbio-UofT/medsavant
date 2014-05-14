@@ -492,6 +492,20 @@ public class KeyValuePairPanel extends JPanel {
         return button;
     }
 
+    public void simpleEllipsify(){
+        for(String k : keyValueComponentMap.keySet()){
+            JComponent comp = getComponent(k);
+            if(comp instanceof JLabel){
+                JLabel l = (JLabel)comp;
+                String s = l.getText();
+                if(s.length() > 25){
+                    s = s.substring(0, 20)+"...";
+                }
+                l.setText(s);
+            }
+
+        }
+    }
     public void ellipsifyValues(int width) {
         int maxKeyWidth = 0;
         int[] maxAdditionalColumnsWidth = new int[additionalColumns];

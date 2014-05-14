@@ -240,7 +240,7 @@ public class Dashboard extends StackableJPanelContainer implements Listener<Dash
             public void actionPerformed(ActionEvent ae) {
                 try {
 //                //    URI uri = URI.create(MedSavantFrame.FEEDBACK_URI);
-                    Desktop.getDesktop().mail(WebResources.USERGUIDE_URL.toURI());
+                    Desktop.getDesktop().mail(WebResources.FEEDBACK_URL.toURI());
                 } catch (Exception ex) {
                 }
             }

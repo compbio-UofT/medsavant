@@ -134,7 +134,6 @@ public class SimpleVariantSubInspector extends SubInspector {
 
             col++;
             p.setAdditionalColumn(KEY_POSITION, col, genomeBrowserButton);
-
         }
         return p;
     }
@@ -280,14 +279,16 @@ public class SimpleVariantSubInspector extends SubInspector {
         }
 
         selectedVariant = r;
-        p.setValue(KEY_POSITION, r.getChromosome() + ":" + ViewUtil.numToString(r.getStartPosition())+" - "+r.getEndPosition());
+        
+        String posVal = r.getChromosome() + ":" + ViewUtil.numToString(r.getStartPosition())+" - "+r.getEndPosition();
+        p.setValue(KEY_POSITION, posVal);
         p.setValue(KEY_REF, r.getReference());
         p.setValue(KEY_ALT, r.getAlternate());
 
         p.setValue(KEY_TYPE, checkNull(r.getType()));
 
-        p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
-
+        p.simpleEllipsify();
+              //     p.ellipsifyValues(StaticInspectorPanel.INSPECTOR_INNER_WIDTH);
         generateGeneIntersections(r);
     }
 }
