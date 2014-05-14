@@ -80,7 +80,7 @@ import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.font.FontFactory;
-import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
+import org.ut.biolab.medsavant.client.view.login.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;

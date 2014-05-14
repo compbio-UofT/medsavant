@@ -63,7 +63,7 @@ import org.ut.biolab.medsavant.client.filter.FilterEffectivenessPanel;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
-import org.ut.biolab.medsavant.client.view.splash.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.client.project.ProjectController;

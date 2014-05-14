@@ -11,17 +11,34 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-package edu.toronto.cs.medsavant.medsavant.app.api.appcomm;
-
-import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
+package org.ut.biolab.medsavant.client.view.login;
 
 /**
  *
  * @author mfiume
  */
-public class VariantResultComm extends AppComm {
+public class LoginEvent {
 
-    public VariantResultComm(MedSavantApp sender) {
-        super(sender, null);
+    public enum Type { LOGGED_IN, LOGGED_OUT, LOGIN_FAILED, LOGIN_CANCELLED };
+
+    private final Type type;
+    private final Exception exception;
+
+    public LoginEvent(Type type) {
+        this.type = type;
+        this.exception = null;
+    }
+
+    public LoginEvent(Exception ex) {
+        this.type = Type.LOGIN_FAILED;
+        this.exception = ex;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public Type getType() {
+        return type;
     }
 }

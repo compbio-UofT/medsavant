@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.ResultController;
-import org.ut.biolab.medsavant.client.view.splash.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
