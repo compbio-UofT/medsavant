@@ -384,7 +384,7 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
     }
 
     private void doSignIntoServer(MedSavantServerInfo server) {
-        System.out.println("Logging in with "+usernameField.getText()+"/"+String.copyValueOf(passwordField.getPassword()));
+
         // save username
         server.setUsername(usernameField.getText());
                 
