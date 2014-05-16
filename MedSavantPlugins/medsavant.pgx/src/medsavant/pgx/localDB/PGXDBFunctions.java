@@ -552,4 +552,36 @@ public class PGXDBFunctions {
 				
 		return output;
 	}
+	
+	
+	/**
+	 * Return a list of Pubmed IDs for the specified genes.
+	 * @param gene The gene symbol
+	 * @return A list of the pmIDs. Empty list if gene not found.
+	 */
+	public static List<String> getPubMedIDs(String gene) {
+		List<String> pmIDs= new ArrayList<String>();
+		
+		String sql;
+		
+		sql=	"SELECT DISTINCT(pubmed_id) " +
+				"FROM haplotype_activity " +
+				"WHERE gene = '" + gene + "' ";
+		
+		/* There should only be a single pubmed ID for this haplotype. */
+		try {
+			ResultSet rs= PGXDB.executeQuery(sql);
+
+			while (rs.next()) {
+				// only grab the first column because we're only SELECTing it
+				// above in the SQL statement
+				String pmidString= (String) PGXDB.getRowAsList(rs).get(0);
+				pmIDs= Arrays.asList(pmidString.split(";"));
+			}
+		} catch (SQLException se) {
+			se.printStackTrace();
+		}
+		
+		return pmIDs;
+	}
 }

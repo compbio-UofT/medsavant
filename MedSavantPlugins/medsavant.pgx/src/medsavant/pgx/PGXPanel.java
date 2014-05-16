@@ -7,12 +7,16 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,13 +36,20 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.appdevapi.AppColors;
+import org.ut.biolab.medsavant.shared.appdevapi.DBAnnotationColumns;
+import org.ut.biolab.medsavant.shared.appdevapi.Variant;
+import org.ut.biolab.medsavant.shared.db.TableSchema;
+import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 
 /**
  * Default panel for Pharmacogenomics app.
@@ -48,10 +59,13 @@ public class PGXPanel extends JPanel {
 
 	private static Log log= LogFactory.getLog(MedSavantClient.class);
 	private static final int CHOOSE_PATIENT_BUTTON_WIDTH= 250;
-	private final int SIDE_PANE_WIDTH= 380;
-	private final int SIDE_PANE_WIDTH_OFFSET= 20;
+	private static final int SIDE_PANE_WIDTH= 380;
+	private static final int SIDE_PANE_WIDTH_OFFSET= 20;
 	private static final String baseDBSNPUrl= "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
+	private static final String basePubmedUrl= "http://www.ncbi.nlm.nih.gov/pubmed/";
 	private static final Color DEFAULT_LABEL_COLOUR= (new JTextField()).getForeground();
+	
+	private static List<String> afColumnNames;	
 	
 	/* Patient information. */
 	private String currentHospitalID;
@@ -101,6 +115,28 @@ public class PGXPanel extends JPanel {
 		// Add all the components to the main app view
 		appView.add(patientSidePane);
 		appView.add(reportPane);
+		
+		// set the preferred size once the component is displayed.
+		appView.addComponentListener(new ComponentListener()
+			{				
+				@Override
+				public void componentShown(ComponentEvent e) {
+					Dimension d= appView.getSize();
+					reportPane.setPreferredSize(new Dimension(d.width - SIDE_PANE_WIDTH, d.height));
+					reportPane.setMinimumSize(new Dimension(d.width - SIDE_PANE_WIDTH, d.height));
+					reportPane.setMaximumSize(new Dimension(d.width - SIDE_PANE_WIDTH, d.height));
+					appView.updateUI();
+				}
+				
+				@Override
+				public void componentResized(ComponentEvent e) {
+					componentShown(e);
+				}
+				
+				@Override public void componentHidden(ComponentEvent e) {}
+				@Override public void componentMoved(ComponentEvent e) {}
+			}
+		);
 	}
 	
 	
@@ -220,9 +256,11 @@ public class PGXPanel extends JPanel {
 		
 		reportPane= new JScrollPane();
 		reportPane.setBorder(BorderFactory.createEmptyBorder());
-		reportPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		reportPane.setPreferredSize(reportPane.getMaximumSize().getSize());
+		//reportPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		reportPane.setViewportView(reportInitJP);
+		
+		/* NOTE: reportPane size preferences are set upon appView component 
+		 * shown or resizing actions. */
 	}
 	
 	
@@ -308,28 +346,48 @@ public class PGXPanel extends JPanel {
 			reportJP.add(createLabel("Metabolizer class", true, 22));
 			reportJP.add(createLabel(pg.getMetabolizerClass(), false, 22), "wrap");
 			
+			/* Add pubmed links. */
+			reportJP.add(createLabel("Publications", true, 22), "gapy 30px, aligny top");
+			List<String> pubmedIDs= PGXDBFunctions.getPubMedIDs(pg.getGene());
+			for (int i= 0; i != pubmedIDs.size(); ++i) {
+				JButton jb= getURLButton(pubmedIDs.get(i), basePubmedUrl, pubmedIDs.get(i), true);
+				jb.setFont(new Font(jb.getFont().getName(), Font.PLAIN, 22));
+				String constraintText= "gapy 30px, aligny top, ";
+				// Set some spacing constraints for the pubmed links
+				if (i == 0 && pubmedIDs.size() > 1) {
+					constraintText += "split"; // if there are more than 1 IDs, stick them together visually
+				} else if (i == pubmedIDs.size() - 1) {
+					constraintText += "wrap";
+				}
+				reportJP.add(jb, constraintText);
+			}
+			
 			/* Add a subpanel of tabs. */
-			JTabbedPane subtabs= ViewUtil.getMSTabedPane();
-			// span the entire panel width
-			subtabs.setMinimumSize(new Dimension(subtabs.getMaximumSize().width, 
-				subtabs.getPreferredSize().height));
+			final JTabbedPane subtabs= ViewUtil.getMSTabedPane();
+			// span the entire panel width minus 50 pixels to make up for the gapx inset
+			subtabs.setPreferredSize(new Dimension(
+				reportPane.getSize().width - 50, subtabs.getPreferredSize().height));
 			
 			/* Subpanel describing the individual's haplotypes/markers for this individual. */
+			// phased genotype status
 			JPanel geneSummaryJP= new JPanel();
-			geneSummaryJP.setLayout(new MigLayout("gapx 30px"));
+			geneSummaryJP.setLayout(new MigLayout("gapx 20px"));
+			String phasedTextAddition= "";
+			if (!pg.isPhased())
+				phasedTextAddition= "NOT ";	
+			geneSummaryJP.add(createLabel("Genotypes are " + phasedTextAddition +
+				"phased.", true, 20), "alignx center, span");
+			
+			// haplotype details
 			geneSummaryJP.add(createLabel("Haplotype #1", true, 16));
-			geneSummaryJP.add(createLabel(pg.getMaternalHaplotype(), false, 16), "wrap");
+			geneSummaryJP.add(createLabel(pg.getMaternalHaplotype(), false, 16), "gapy 20px, wrap");
 			geneSummaryJP.add(createLabel("Haplotype #2", true, 16));
 			geneSummaryJP.add(createLabel(pg.getPaternalHaplotype(), false, 16), "wrap");
 			geneSummaryJP.add(createLabel("Haplotype #1 activity", true, 16));
 			geneSummaryJP.add(createLabel(pg.getMaternalActivity(), false, 16), "wrap");
 			geneSummaryJP.add(createLabel("Haplotype #2 activity", true, 16));
 			geneSummaryJP.add(createLabel(pg.getPaternalActivity(), false, 16), "wrap");
-			String phasedTextAddition= "";
-			if (!pg.isPhased())
-				phasedTextAddition= "NOT ";	
-			geneSummaryJP.add(createLabel("Genotypes are " + phasedTextAddition +
-				"phased.", true, 16), "alignx center, span");
+			
 			subtabs.addTab(pg.getGene() + " summary", geneSummaryJP);
 			
 			/* Subpanel displaying all detected variants. */
@@ -349,7 +407,7 @@ public class PGXPanel extends JPanel {
 				PGXGenotype genotype1= hap1Genotypes.get(rsID);
 				PGXGenotype genotype2= hap2Genotypes.get(rsID);
 				
-				String genotypeStatus= "observerd";
+				String genotypeStatus= "observed";
 				Color fontColour= AppColors.Salem;
 				if (genotype1.getInferredStatus() || genotype2.getInferredStatus()) {
 					genotypeStatus= "inferred";
@@ -380,6 +438,10 @@ public class PGXPanel extends JPanel {
 			}
 			subtabs.addTab("Tested markers for " + pg.getGene(), testedMarkersJP); 
 			
+			/* Subpanel showing all the novel Variants for this gene. */
+			JPanel novelVariantsJP= getNovelVariantsPanel(pg);
+			subtabs.addTab("Novel variants", novelVariantsJP);
+			
 			/* Add subtabs to the main report panel. */
 			reportJP.add(subtabs, "gapy 100px, span"); // need span here for column formatting of diplotype and metabolizer fields
 			
@@ -388,6 +450,74 @@ public class PGXPanel extends JPanel {
 		}
 		
 		reportPane.setViewportView(tabs);
+	}
+	
+	
+	private JPanel getNovelVariantsPanel(PGXGene pg) {
+		int FONT_SIZE= 14;
+		
+		/* Subpanel showing all the novel Variants for this gene. */
+		JPanel novelVariantsJP= new JPanel();
+		novelVariantsJP.setLayout(new MigLayout("fillx"));
+		
+		/* Get the names of the allele frequency columns, if not done already. */
+		if (afColumnNames == null) {
+			afColumnNames= new LinkedList<String>();
+			
+			TableSchema ts= ProjectController.getInstance().getCurrentVariantTableSchema();
+			AnnotationManagerAdapter am= MedSavantClient.AnnotationManagerAdapter;
+			Map<String, Set<CustomField>> fieldMap= null;
+			try {
+				fieldMap= 
+					am.getAnnotationFieldsByTag(LoginController.getInstance().getSessionID(), true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Set<CustomField> columnNames= fieldMap.get(CustomField.ALLELE_FREQUENCY_TAG);
+			
+			for (CustomField cf : columnNames) {
+				//DbColumn afColumn= ts.getDBColumn(cf.getColumnName());
+				afColumnNames.add(cf.getAlias());
+			}
+		}
+		
+		/* Short message describing how these variants are selected. */
+		novelVariantsJP.add(createLabel(
+			"Novel variants are non-synonymous mutations with allele frequencies " +
+			"<= 0.05 (or N/A) across all available AF databases"
+			, false, FONT_SIZE), "alignx center, span");
+		
+		/* Create the table header. */
+		if (pg.getNovelVariants().size() > 0) {
+			novelVariantsJP.add(createLabel("Chrom", true, FONT_SIZE));
+			novelVariantsJP.add(createLabel("Position", true, FONT_SIZE));
+			novelVariantsJP.add(createLabel("Effect", true, FONT_SIZE));
+			for (String afName : afColumnNames) {
+				novelVariantsJP.add(createLabel(afName, true, FONT_SIZE));
+			}
+			novelVariantsJP.add(createLabel("dbSNP", true, FONT_SIZE), "wrap");
+		} else { // no novel variants
+			novelVariantsJP.add(createLabel("No rare novel variants detected.", true, 18), "alignx center");
+		}
+		
+		/* Output the variant rows. */
+		for (Variant var : pg.getNovelVariants()) {
+			novelVariantsJP.add(createLabel(var.getChromosome(), false, FONT_SIZE));
+			novelVariantsJP.add(createLabel(Long.toString(var.getStart()), false, FONT_SIZE));
+			novelVariantsJP.add(createLabel(var.getMutationType(), false, FONT_SIZE));
+			for (String afName : afColumnNames) {
+				BigDecimal afValue= (BigDecimal) var.getColumn(afName);
+				String afValueString= "N/A";
+				if (afValue != null) {
+					afValueString= afValue.toString();
+				}
+				novelVariantsJP.add(createLabel(afValueString, false, FONT_SIZE));
+			}
+			novelVariantsJP.add(createLabel(
+				(String) var.getColumn(DBAnnotationColumns.DBSNP_TEXT), false, FONT_SIZE), "wrap");
+		}
+		
+		return novelVariantsJP;
 	}
 	
 	

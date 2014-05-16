@@ -1,8 +1,11 @@
 Haplotype_1_activity	Haplotype_2_activity	Metabolizer_class
 increased	increased	Ultrarapid
 increased	normal	Ultrarapid
+increased	decreased	Intermediate
+increased	no activity	Intermediate
 normal	normal	Extensive
 normal	decreased	Intermediate
 normal	no activity	Intermediate
 decreased	decreased	Poor
+decreased	no activity	Poor
 no activity	no activity	Poor

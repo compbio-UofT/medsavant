@@ -23,6 +23,7 @@ public class PGXGene {
 	private String paternalActivity;
 	private boolean isPhased= true; // default is phased
 	private String metabolizerClass;
+	private List<Variant> novelVariants;
 	
 	
 	/**
@@ -32,6 +33,7 @@ public class PGXGene {
 	public PGXGene(String gene) {
 		this.gene= gene;
 		this.variants= new LinkedList<Variant>();
+		this.novelVariants= new LinkedList<Variant>();
 	}
 	
 	
@@ -224,5 +226,23 @@ public class PGXGene {
 	 */
 	public String getMetabolizerClass() {
 		return this.metabolizerClass;
+	}
+	
+	
+	/**
+	 * Get the list of novel Variants.
+	 * @return the list of novel Variants
+	 */
+	public List<Variant> getNovelVariants() {
+		return this.novelVariants;
+	}
+	
+	
+	/**
+	 * Add a new variant to the list of novel Variants.
+	 * @param novelVar the new variant
+	 */
+	public void addNovelVariant(Variant novelVar) {
+		novelVariants.add(novelVar);
 	}
 }

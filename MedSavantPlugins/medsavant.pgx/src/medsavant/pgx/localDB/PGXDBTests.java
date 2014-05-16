@@ -35,6 +35,7 @@ public class PGXDBTests {
 		getAllGenes();
 		getMarkerPositionsForGene("CYP2C19");
 		getMetabolizer();
+		getPubmedIDs();
 		
 		// Specific tests
 		//printSQLResults("SELECT H.haplotype_symbol FROM haplotype_markers H WHERE gene = 'CYP2C19' 	AND marker_info LIKE '%rs4244285=G%' 	AND marker_info LIKE '%rs4986893=G%' 	AND marker_info LIKE '%rs28399504=A%' 	AND marker_info LIKE '%rs56337013=C%' 	AND marker_info LIKE '%rs72552267=G%' 	AND marker_info LIKE '%rs72558186=T%' 	AND marker_info LIKE '%rs41291556=T%' 	AND marker_info LIKE '%rs12248560=C%' 	AND marker_info LIKE '%rs11188072=C%'", "");
@@ -271,6 +272,34 @@ public class PGXDBTests {
 				"	)";
 		
 		printSQLResults(sql, test4);
+	}
+	
+	
+	/**
+	 * Get the PubmedIDs for a gene symbol.
+	 */
+	private static void getPubmedIDs() {
+		String sql;
+		
+		String gene= "cyp2d6";
+		String test1= "Testing retrieving the pubmed IDs for " + gene + ".";
+		stdout(test1);		
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT DISTINCT(pubmed_id) " +
+				"FROM haplotype_activity " +
+				"WHERE gene = '" + gene + "' ";
+		
+		printSQLResults(sql, test1);
+		
+		String test2= "Testing retrieving the pubmed IDs for all genes.";
+		stdout(test2);
+		
+		// MUST use single quotes for HyperSQL (hsql) SQL syntax
+		sql=	"SELECT DISTINCT(pubmed_id) " +
+				"FROM haplotype_activity ";
+		
+		printSQLResults(sql, test2);
 	}
 	
 	
