@@ -1,26 +1,26 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,13 +44,13 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 
-
 /**
  * Server-side implementation of class which managed GeneSets.
  *
  * @author tarkvara
  */
 public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetManagerAdapter, GeneSetColumns {
+
     private static final Log LOG = LogFactory.getLog(GeneSetManager.class);
 
     private static GeneSetManager instance;
@@ -65,9 +65,9 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     private GeneSetManager() throws RemoteException, SessionExpiredException {
     }
 
-
     /**
      * Get a list of all available gene sets.
+     *
      * @param sessID
      * @return
      * @throws SQLException
@@ -89,6 +89,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
 
     /**
      * Get the gene set for the given reference genome.
+     *
      * @param sessID session ID
      * @param refName reference name (not ID)
      * @return
@@ -120,6 +121,40 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
 
         TableSchema table = MedSavantDatabase.GeneSetTableSchema;
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+
+        BinaryCondition dumbChrsCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\_%");
+        query.addCondition(dumbChrsCondition);
+        BinaryCondition dumbNameCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%");
+        query.addCondition(dumbNameCondition);
+
+        return getGenes(sessID, table, geneSet, query);     
+    }
+
+    @Override
+    public Gene[] getGenesInRegion(String sessID, GeneSet geneSet, String chrom, int start_position, int end_position) throws SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.GeneSetTableSchema;
+        ComboCondition restrictToRegion
+                = ComboCondition.and(
+                        BinaryCondition.equalTo(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), chrom),
+                        ComboCondition.or(
+                                ComboCondition.and(
+                                        BinaryCondition.lessThan(table.getDBColumn(MedSavantDatabase.GeneSetColumns.START), start_position, true),
+                                        BinaryCondition.greaterThan(table.getDBColumn(MedSavantDatabase.GeneSetColumns.END), start_position, true)
+                                ),
+                                ComboCondition.and(
+                                        BinaryCondition.lessThan(table.getDBColumn(MedSavantDatabase.GeneSetColumns.START), end_position, true),
+                                        BinaryCondition.greaterThan(table.getDBColumn(MedSavantDatabase.GeneSetColumns.END), end_position, true)
+                                )
+                        ),
+                        BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%") //dumb name condition
+                );
+        
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getReference(), TYPE, geneSet.getType()).groupBy(CHROM).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+        query.addCondition(restrictToRegion);
+        return getGenes(sessID, table, geneSet, query);
+    }
+
+    private Gene[] getGenes(String sessID, TableSchema table, GeneSet geneSet, SelectQuery query) throws SQLException, SessionExpiredException {
         BinaryCondition dumbChrsCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.CHROM), "%\\_%");
         query.addCondition(dumbChrsCondition);
         BinaryCondition dumbNameCondition = BinaryConditionMS.notlike(table.getDBColumn(MedSavantDatabase.GeneSetColumns.NAME), "%-%");

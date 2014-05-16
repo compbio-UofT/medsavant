@@ -14,6 +14,7 @@
 package org.ut.biolab.medsavant.client.view.login;
 
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.concurrent.Semaphore;

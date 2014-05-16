@@ -97,7 +97,8 @@ public class TableSchema implements Serializable {
     }
     
     public final DbColumn addColumn(String dbName, ColumnType t, int length, int scale){
-        DbColumn c = table.addColumn(dbName, t.toString(), length, (scale > 0) ? scale : null);
+        Integer l = (length > 0) ? length : null;
+        DbColumn c = table.addColumn(dbName, t.toString(), l, (scale > 0) ? scale : null);
         nameToColumn.put(dbName, c);
         return c;
     }

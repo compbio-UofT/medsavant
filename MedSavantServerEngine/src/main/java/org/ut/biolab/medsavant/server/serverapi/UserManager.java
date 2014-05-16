@@ -103,6 +103,17 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         return results.toArray(new String[0]);
     }
 
+    public boolean isUserOfThisDatabase(String sessID) throws SQLException, SessionExpiredException, RemoteException{
+        String thisUser = SessionManager.getInstance().getUserForSession(sessID);
+        String[] users = getUserNames(sessID);
+        for(String user : users){
+            if(user.equalsIgnoreCase(thisUser)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public boolean userExists(String sessID, String user) throws SQLException, SessionExpiredException {
         return ConnectionController.executePreparedQuery(sessID, "SELECT user FROM mysql.user WHERE user=?;", user).next();

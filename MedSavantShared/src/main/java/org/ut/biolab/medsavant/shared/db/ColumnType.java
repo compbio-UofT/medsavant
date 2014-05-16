@@ -31,8 +31,10 @@ public enum ColumnType {
     INTEGER,
     FLOAT,
     DECIMAL,
-    DATE,
-    TEXT;
+    DATE,   
+    TEXT,
+    DATETIME,
+    TIMESTAMP;
 
     @Override
     public String toString() {
@@ -51,6 +53,10 @@ public enum ColumnType {
                 return "decimal";
             case DATE:
                 return "date";
+            case DATETIME:
+                return "datetime";
+            case TIMESTAMP:
+                return "timestamp";
             case TEXT:
                 return "text";
             default:
@@ -80,6 +86,10 @@ public enum ColumnType {
             return ColumnType.DATE;
         } else if (typeNameSQL.contains("text")) {
             return ColumnType.TEXT;
+        }else if(typeNameSQL.contains("datetime")){
+            return ColumnType.DATETIME;
+        }else if(typeNameSQL.contains("timestamp")){
+            return ColumnType.TIMESTAMP;
         }
         throw new IllegalArgumentException("Unable to parse \"" + typeNameSQL + "\" as column type.");
     }
