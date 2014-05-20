@@ -196,7 +196,8 @@ public class AddNewCommentDialog extends JDialog {
             p.add(jsp);
             return p;
         }catch(Exception ex){
-            LOG.error(ex);
+            ex.printStackTrace();
+            LOG.error("Error: ", ex);
             DialogUtils.displayException("Error", ex.getMessage(), ex);
             dispose();
             return null;
@@ -258,7 +259,8 @@ public class AddNewCommentDialog extends JDialog {
                     submitComment(lcg);
                     dispose();
                 } catch (Exception ex) {
-                    LOG.error(ex);
+                    ex.printStackTrace();
+                    LOG.error("Error: ", ex);
                     DialogUtils.displayException("Error", ex.getLocalizedMessage(), ex);
                 }
             }

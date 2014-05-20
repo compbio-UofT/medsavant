@@ -71,6 +71,8 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
     private static final int ONTOLOGY_SEPARATOR_HEIGHT = 20;  
     private static final ImageIcon REPLY_TO_ONTOLOGY_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ACTION_ON_TOOLBAR);
     private static final ImageIcon EDIT_STATUS_BUTTON_ICON = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT);
+    private static final int COMMENTTEXT_PREFERRED_WIDTH = 200;
+    private static final int COMMENTTEXT_PREFERRED_HEIGHT = 100;
     
     private final JPanel panel;
 
@@ -84,7 +86,8 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         JPanel innerPanel = new WaitPanel("Loading...");
-        panel.add(innerPanel, BorderLayout.CENTER);        
+        panel.add(innerPanel, BorderLayout.CENTER);          
+        
     }
 
     private void replyToOntology(VariantRecord vr, OntologyTerm ot) {
@@ -103,9 +106,7 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
         String header = ot.getID() + " - " + ot.getName(); //ontology title.
 
         JPanel ontologyTitlePanel = new JPanel();
-        ontologyTitlePanel.setLayout(new BoxLayout(ontologyTitlePanel, BoxLayout.X_AXIS));
-        JLabel headerLabel = new JLabel("<html><body style='width: " + panel.getPreferredSize().width + "px'>" + header + "</body></html>");
-        //headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD));
+        ontologyTitlePanel.setLayout(new BoxLayout(ontologyTitlePanel, BoxLayout.X_AXIS));        
         ontologyTitlePanel.add(new JLabel(header));
         ontologyTitlePanel.add(Box.createHorizontalGlue());
 
@@ -181,16 +182,20 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
         return sip;
     }
 
+    
     private JPanel getCommentPanel(UserComment lc) {
-        JTextArea commentText = new JTextArea();
+        JTextArea commentText = new JTextArea();        
         commentText.setText(lc.getCommentText());
         commentText.setEditable(false);
-        commentText.setLineWrap(true);
-
-        JPanel commentPanel = new JPanel(); 
-        commentPanel.setLayout(new BoxLayout(commentPanel, BoxLayout.Y_AXIS));
-        commentPanel.add(commentText);
-        return commentPanel;
+        commentText.setLineWrap(true);        
+        commentText.setPreferredSize(new Dimension(COMMENTTEXT_PREFERRED_WIDTH, COMMENTTEXT_PREFERRED_HEIGHT));
+        JScrollPane jsp = new JScrollPane(commentText);        
+        
+        JPanel outerCommentPanel = new JPanel();
+        outerCommentPanel.setLayout(new BoxLayout(outerCommentPanel, BoxLayout.X_AXIS));
+        outerCommentPanel.add(jsp);
+        outerCommentPanel.add(Box.createHorizontalGlue());
+        return outerCommentPanel;
     }
 
     private static final int STATUS_COMMENT_INDENT_WIDTH = 20;
@@ -199,8 +204,7 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
 
     private void updateStatusPanel(UserComment oldComment) {
         //Write the from-to status to the last comment's status panel.
-        if (oldComment != null && oldComment.getOriginalComment() != null) {//status change comment.            
-            //System.out.println("Updating statusPanel with "+oldComment.isApproved()+","+oldComment.isIncluded()+","+oldComment.isPendingReview());
+        if (oldComment != null && oldComment.getOriginalComment() != null) {//status change comment.                        
             JPanel statusIconPanel = new StatusIconPanel(ICON_WIDTH, ICON_HEIGHT, false,
                     oldComment.getOriginalComment().isApproved(),
                     oldComment.getOriginalComment().isIncluded(),
@@ -278,7 +282,7 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
             for (final UserComment userComment : userComments) {
                 if(userComment.isDeleted()){
                     continue;
-                }
+                }                
                 updateStatusPanel(oldComment);                
                 otPanel.add(getCommentBlock(lcg, userComment));
                 oldComment = userComment;
@@ -323,15 +327,14 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
                 Map<OntologyTerm, Collection<UserComment>> otCommentMap = new TreeMap<OntologyTerm, Collection<UserComment>>();
 
                 for (Iterator<UserComment> li = lcg.iterator(); li.hasNext();) {
-                    UserComment lc = li.next();
-                    System.out.println("Got comment " + lc.getCommentText());
+                    UserComment lc = li.next();                    
                     Collection<UserComment> ontologyComments = otCommentMap.get(lc.getOntologyTerm());                    
                     if (ontologyComments == null) {
                         ontologyComments = new ArrayList<UserComment>();                       
                         hasComments = true;
                     }
                     ontologyComments.add(lc);
-                    //System.out.println("Mapping " + lc.getOntologyTerm().getName() + " to " + ontologyComments.size() + " comments");
+                    
                     otCommentMap.put(lc.getOntologyTerm(), ontologyComments);
                 }
                 if (hasComments) {

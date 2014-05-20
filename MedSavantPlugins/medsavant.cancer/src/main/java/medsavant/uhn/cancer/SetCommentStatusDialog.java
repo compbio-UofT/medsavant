@@ -50,14 +50,15 @@ public class SetCommentStatusDialog extends JDialog {
 
     private static final int MINIMUM_WIDTH = 640;
     private static final int MINIMUM_HEIGHT = 480;
-    
+
     private static final int ICON_HEIGHT = 64;
     private static final int ICON_WIDTH = 64;
     private final int mainPanelWidth;
     private final int mainPanelHeight;
+
     public SetCommentStatusDialog(JFrame parentFrame, UserCommentGroup lcg, UserComment parentComment) {
         super(parentFrame);
-        System.out.println("Constructing setcomment status dialog with parentComment id="+parentComment.getCommentID());
+        System.out.println("Constructing setcomment status dialog with parentComment id=" + parentComment.getCommentID());
         this.parentComment = parentComment;
         this.lcg = lcg;
         JPanel mainPanel = getMainPanel();
@@ -133,14 +134,14 @@ public class SetCommentStatusDialog extends JDialog {
     }
 
     private void updateStatus() throws SessionExpiredException, SQLException, RemoteException {
-        String sessID = LoginController.getSessionID();        
+        String sessID = LoginController.getSessionID();
         UserComment lc = new UserComment(parentComment,
                 statusIconPanel.getApprovedIcon().getState(),
                 statusIconPanel.getIncludedIcon().getState(),
                 statusIconPanel.getPendingReviewIcon().getState(),
                 statusIconPanel.getDeletedIcon().getState(),
                 comment.getText());
-        //System.out.println("Invoking replyToUserCommentGroup.  parentComment id="+parentComment.getCommentID()+" == "+lc.getOriginalComment().getCommentID());
+                                        
         MedSavantClient.VariantManager.replyToUserCommentGroup(sessID, lcg.getUserCommentGroupId(), lc);
     }
 }

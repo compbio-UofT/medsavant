@@ -1764,10 +1764,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             res = stmt.getGeneratedKeys();
             res.next();
             groupId = res.getInt(1);
-        }catch(SQLException sqe){
+        } catch (SQLException sqe) {
             LOG.error("SQL Error ", sqe);
             throw sqe;
-        }finally {
+        } finally {
             if (conn != null) {
                 conn.close();
             }
@@ -1821,7 +1821,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     }
 
-    private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {        
+    private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {
         TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         UpdateQuery uq = new UpdateQuery(lcTable.getTable());
         uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), commentId));
@@ -1829,15 +1829,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
         uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
         uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
-        ConnectionController.executeUpdate(sessID, uq.toString());        
+        ConnectionController.executeUpdate(sessID, uq.toString());
     }
-    
+
     @Override
     public int replyToUserCommentGroup(String sessID, int userCommentGroupId, UserComment userComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
         if (!isAuthorizedForUserComments(sessID)) {
             throw new SecurityException("This user does not have access to view comments");
         }
-        
+
         String username = SessionManager.getInstance().getUserForSession(sessID);
         String ontologyId = userComment.getOntologyTerm().getID();
 
@@ -1851,7 +1851,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String ontology = userComment.getOntologyTerm().getOntology().name();
         TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         InsertQuery iq = new InsertQuery(lcTable.getTable());
-        
+
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), userCommentGroupId);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID), ontologyId);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
@@ -1862,17 +1862,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE), (new FunctionCall(new CustomSql("NOW"))).addCustomParams());
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT), commentText);
-        if(userComment.getOriginalComment() != null){
+        if (userComment.getOriginalComment() != null) {
             Integer commentId = userComment.getOriginalComment().getCommentID();
-            if(commentId == null){
+            if (commentId == null) {
                 throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a null identifier");
             }
-            if(commentId < 1){
-                throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a non-positive identifier: "+commentId);
+            if (commentId < 1) {
+                throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a non-positive identifier: " + commentId);
             }
             iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID), commentId);
         }
-        
+
         PreparedStatement stmt = null;
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         ResultSet res = null;
@@ -1883,13 +1883,24 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             res = stmt.getGeneratedKeys();
             res.next();
             commentId = res.getInt(1);
-            LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + userCommentGroupId);
+            //LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + userCommentGroupId);
 
+            //update original comment's status if necessary.
+            if (userComment.getOriginalComment() != null) {
+                UpdateQuery uq = new UpdateQuery(lcTable.getTable());
+                uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), userComment.getOriginalComment().getCommentID()));
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), userComment.getOriginalComment().isApproved());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), userComment.getOriginalComment().isIncluded());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), userComment.getOriginalComment().isPendingReview());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), userComment.getOriginalComment().isDeleted());
+                stmt = conn.prepareStatement(uq.toString());
+                stmt.execute();
+            }
             return commentId;
-        } catch(SQLException sqe){
+        } catch (SQLException sqe) {
             LOG.error("SQL Error", sqe);
             throw sqe;
-        }finally {
+        } finally {
             if (conn != null) {
                 conn.close();
             }
@@ -1922,18 +1933,18 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             sq.addAllColumns();
             sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), groupId));
             rs = ConnectionController.executeQuery(sessID, sq.toString());
-            if (rs==null || !rs.next()) {
+            if (rs == null || !rs.next()) {
                 throw new IllegalArgumentException("There is no comment group with the given identifier " + groupId);
             }
-        }catch(SQLException sqe){
+        } catch (SQLException sqe) {
             LOG.error("SQL Error", sqe);
             throw sqe;
-        }finally {
-            if(rs !=null){
+        } finally {
+            if (rs != null) {
                 rs.close();
             }
         }
-        
+
         rs = null;
         try {
             TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
@@ -1946,15 +1957,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 sq.addCondition(UnaryCondition.isNotNull(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID)));
                 sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.DESCENDING);
                 querySuffix = " LIMIT 1";
-            } else {                
+            } else {
                 sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.ASCENDING);
             }
-            LOG.info(sq.toString()+querySuffix);
-            
+            LOG.info(sq.toString() + querySuffix);
+
             rs = ConnectionController.executeQuery(sessID, sq.toString() + querySuffix);
             Map<Integer, UserComment> parentCommentMap = new TreeMap<Integer, UserComment>();
             Map<Integer, Set<UserComment>> childCommentMap = new HashMap<Integer, Set<UserComment>>();
-            
+
             while (rs.next()) {
                 int commentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID);
                 int parentCommentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID);
@@ -1969,54 +1980,54 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 Date modDate = new Date(ts.getTime());
                 String commentText = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT);
                 OntologyTerm ot = OntologyManager.getInstance().getOntologyTerm(sessID, UserComment.ONTOLOGY_TYPE, ontologyId);
-                                
-                
+
                 UserComment parentComment = null;
-                if(parentCommentId > 0){
+                if (parentCommentId > 0) {
                     parentComment = parentCommentMap.get(parentCommentId);
-                    if(parentComment == null){
-                        LOG.error("Comment with id "+commentId+" refers to a comment with an unknown identifier ("+parentCommentId+")");
-                        throw new SQLException("Invalid comment detected in database with id "+commentId+" (Refers to non-existant comment with id "+parentCommentId+")");
-                    }else{
+                    if (parentComment == null) {
+                        LOG.error("Comment with id " + commentId + " refers to a comment with an unknown identifier (" + parentCommentId + ")");
+                        throw new SQLException("Invalid comment detected in database with id " + commentId + " (Refers to non-existant comment with id " + parentCommentId + ")");
+                    } else {
                         //this is a child comment
                         UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, parentComment);
-                        Set<UserComment> lcSet = childCommentMap.get(commentId);
-                        if(lcSet == null){
-                            lcSet = new TreeSet<UserComment>(new Comparator<UserComment>(){
+                        Set<UserComment> lcSet = childCommentMap.get(parentCommentId);
+                        if (lcSet == null) {
+                            lcSet = new TreeSet<UserComment>(new Comparator<UserComment>() {
                                 @Override
                                 public int compare(UserComment o1, UserComment o2) {
-                                    return o1.getModificationDate().compareTo(o2.getModificationDate());                                    
-                                }                                
-                            });                                  
+                                    return o1.getModificationDate().compareTo(o2.getModificationDate());
+                                }
+                            });
                         }
-                        lcSet.add(lc);
+                        
+                        lcSet.add(lc);                        
                         childCommentMap.put(parentCommentId, lcSet);
                     }
-                }else{
+                } else {
                     //this is a parent comment.
-                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);                    
+                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);
                     parentCommentMap.put(commentId, lc);
-                }                                
+                }
             }
-                       
+
             List<UserComment> comments = new ArrayList<UserComment>();
-            
-            for(Map.Entry<Integer, UserComment> e : parentCommentMap.entrySet()){
+
+            for (Map.Entry<Integer, UserComment> e : parentCommentMap.entrySet()) {
                 Integer parentId = e.getKey();
                 UserComment parentComment = e.getValue();
                 comments.add(parentComment);
-                
+
                 Set<UserComment> childComments = childCommentMap.get(parentId);
-                if(childComments != null){
-                    comments.addAll(childComments);                    
+                if (childComments != null) {
+                    comments.addAll(childComments);
                 }
             }
-            
-            return comments;            
-        } catch(SQLException sqe){
+
+            return comments;
+        } catch (SQLException sqe) {
             LOG.error("SQL Error", sqe);
-            throw sqe;                    
-        }finally {
+            throw sqe;
+        } finally {
             if (rs != null) {
                 rs.close();
             }
@@ -2068,7 +2079,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             modDate = lastComment.getModificationDate();
         }
 
-        return new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);      
+        return new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);
     }
 
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException, SessionExpiredException {

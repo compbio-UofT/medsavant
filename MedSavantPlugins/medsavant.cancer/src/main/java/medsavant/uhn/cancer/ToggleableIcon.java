@@ -1,4 +1,3 @@
-
 /**
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.
@@ -27,38 +26,33 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-public class ToggleableIcon extends JButton{
+public class ToggleableIcon extends JButton {
+
     private boolean currentState;
     private ImageIcon[] icons;
-    
-    public ToggleableIcon(String active_location, String inactive_location, int iconWidth, int iconHeight, boolean toggleable, boolean currentState) {            
+
+    public ToggleableIcon(String active_location, String inactive_location, int iconWidth, int iconHeight, boolean toggleable, boolean currentState) {
         this.icons = new ImageIcon[]{
-            getImageIcon(inactive_location, iconWidth, iconHeight), 
+            getImageIcon(inactive_location, iconWidth, iconHeight),
             getImageIcon(active_location, iconWidth, iconHeight)
-        };          
-        addActionListener(new ActionListener(){
+        };
+        addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleState();
-            }           
+            }
         });
         this.currentState = currentState;
-        if(currentState){
-            System.out.println("Setting icon to "+active_location);
-        }else{
-            System.out.println("Setting icon to "+inactive_location);
-        }
-        
-       
-        if(!toggleable){
+
+        if (!toggleable) {
             this.setEnabled(false);
-            System.out.println("Setting button to untogglable");            
+
         }
         this.setIcon(icons[currentState ? 1 : 0]);
         this.setDisabledIcon(icons[currentState ? 1 : 0]);
     }
-       
-    private void toggleState(){
+
+    private void toggleState() {
         currentState = !currentState;
         this.setIcon(icons[currentState ? 1 : 0]);
         this.setDisabledIcon(icons[currentState ? 1 : 0]);
@@ -74,10 +68,10 @@ public class ToggleableIcon extends JButton{
         ImageIcon ii = new ImageIcon(resource);
         Image im = ii.getImage().getScaledInstance(iconWidth, iconHeight, java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(im);
-    }    
+    }
 
     public boolean getState() {
         return currentState;
     }
-    
+
 }
