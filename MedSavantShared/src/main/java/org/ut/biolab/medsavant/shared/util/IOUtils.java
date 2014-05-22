@@ -41,13 +41,14 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.FileExistsException;
+import org.apache.commons.io.FileUtils;
 
 /**
  * I/O-related utility methods. Functions for manipulating Savant files are in
@@ -276,6 +277,27 @@ public class IOUtils {
         }
         return null;
     }
+        
+    /**
+     * Moves a file from one location to another using apache io library.
+     * Use this instead of File.renameTo
+     * 
+     * @param src - the path to the source file
+     * @param dst - the path to the destination file
+     * @return 
+     */
+    public static boolean moveFile(File src, File dst){
+        try{
+            FileUtils.moveFile(src, dst);
+        }catch(FileExistsException fee){
+            LOG.error("Error while moving file", fee);
+            return false;
+        }catch(IOException ie){
+            LOG.error("Error while moving File", ie);
+            return false;
+        }
+        return true;
+    }
     
     /**
      * @return true if the File is a compressed file, archive, or compressed archive.
@@ -333,7 +355,9 @@ public class IOUtils {
             if(!(is instanceof BufferedInputStream)){                
                 IOUtils.copyStream(is, bos);
             }else{
-                f.renameTo(outputFile);
+                if(!moveFile(f, outputFile)){
+                    throw new IOException("Couldn't move file "+f.getAbsolutePath()+" to "+outputFile.getAbsolutePath());
+                }
             }
             
             bos.close();

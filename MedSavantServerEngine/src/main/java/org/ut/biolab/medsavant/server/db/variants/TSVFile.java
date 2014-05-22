@@ -22,6 +22,7 @@ package org.ut.biolab.medsavant.server.db.variants;
 import java.io.File;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  * Tracks the file and number of lines for an annotated TSV File.  
@@ -59,7 +60,7 @@ public class TSVFile {
     public TSVFile moveTo(File dst) {
         File f = this.getFile();
         LOG.info("Renaming " + f.getAbsolutePath() + " to " + dst.getAbsolutePath());
-        if (!f.renameTo(dst)) {
+        if (!IOUtils.moveFile(f, dst)){
             LOG.error("Couldn't rename " + f.getAbsolutePath() + " to " + dst.getAbsolutePath());
         }
         this.file = dst;

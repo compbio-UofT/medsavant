@@ -376,7 +376,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 if (isVCF41File(inputFile)) {
                     if (IOUtils.isInDirectory(inputFile, DirectorySettings.getTmpDirectory())) {
                         File dest = getVCFDestination(inputFile, database, projectID);
-                        if (!inputFile.renameTo(dest)) {
+                        if (!IOUtils.moveFile(inputFile, dest)) {
                             throw new IOException("Cannot move VCF file to genotype storage.");
                         }
                         LOG.info("Moved input VCF " + inputFile + " to " + dest);
@@ -406,7 +406,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 for (File putativeVCF : files) {
                     if (isVCF41File(putativeVCF)) {
                         File dest = getVCFDestination(putativeVCF, database, projectID);
-                        if (!putativeVCF.renameTo(dest)) {
+                        if (!IOUtils.moveFile(putativeVCF, dest)) {
                             throw new IOException("Cannot move VCF file in compressed file to genotype storage.");
                         }
                         LOG.info("Moved input VCF " + putativeVCF + " contained in compressed file to " + dest);

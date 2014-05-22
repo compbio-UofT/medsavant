@@ -14,7 +14,6 @@
 package org.ut.biolab.medsavant.server.vcf;
 
 import com.google.code.externalsorting.ExternalSort;
-import static com.google.code.externalsorting.ExternalSort.estimateAvailableMemory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
@@ -34,6 +33,7 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
+import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
@@ -367,7 +367,7 @@ public class VCFParser {
         ExternalSort.mergeSortedFiles(batch, outputFile, comparator, EXTERNALSORT_CHARSET,
                 eliminateDuplicateRows, false, useGzipForTmpFiles);
 
-        if (!outputFile.renameTo(sortedTDF)) {
+        if (!IOUtils.moveFile(outputFile, sortedTDF)) {
             throw new IOException("Can't rename merged file " + outputFile.getCanonicalPath() + " to " + sortedTDF.getCanonicalPath());
         } else {
             LOG.info("Outputted sorted TDF file to " + sortedTDF);
