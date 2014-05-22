@@ -123,14 +123,18 @@ public class IOUtils {
     public static void copyStream(InputStream input, OutputStream output) throws IOException {
         byte[] buf = new byte[8192];
         int len;
+        long tot = 0;
         try {
             while ((len = input.read(buf)) > 0) {
+                tot+=len;              
                 output.write(buf, 0, len);
             }
+            LOG.info("Copied/extracted "+tot+" bytes");            
         } catch (IOException x) {
             // There's a bug in BlockCompressedInputStream where it throws an IOException instead of doing a proper EOF.
             // Suppress this exception, but throw real ones.
             if (!x.getMessage().equals("Unexpected compressed block length: 1")) {
+                x.printStackTrace();
                 throw x;
             }
         } finally {
@@ -303,9 +307,9 @@ public class IOUtils {
 
         //Detect compression type.
         if (lcfn.endsWith(".gz") || lcfn.endsWith(".tgz")) {
-            is = new GzipCompressorInputStream(is);
+            is = new GzipCompressorInputStream(is, true);
         } else if (lcfn.endsWith(".bz2")) {
-            is = new BZip2CompressorInputStream(is);
+            is = new BZip2CompressorInputStream(is, true);
         }
 
         //Detect archive type.
