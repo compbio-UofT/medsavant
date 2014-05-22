@@ -209,6 +209,24 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      }
      */
 
+    public static Date getCurrentDatabaseTime(String sessID) throws SQLException, SessionExpiredException {
+        //The modification time is the time when a change was made to the last comment.  Since there are 
+        //no comments yet, take the modification time as the current database server time.
+        ResultSet rs = null;
+        try {
+            rs = ConnectionController.executeQuery(sessID, "SELECT NOW()+0");
+            Date currentDate = null;
+            if (rs.next()) {
+                currentDate = new Date(rs.getTimestamp(1).getTime());
+            }
+            return currentDate;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException, SessionExpiredException {
         ResultSet rs = ConnectionController.executeQuery(sid, "SHOW COLUMNS IN " + tableName);
 
