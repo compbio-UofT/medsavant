@@ -1,5 +1,0 @@
-Total_Activity_Score_Minimum	Metabolizer_class
-2.00000001	Ultrarapid
-1.0	Extensive
-0.5	Intermediate
-0.0	Poor
