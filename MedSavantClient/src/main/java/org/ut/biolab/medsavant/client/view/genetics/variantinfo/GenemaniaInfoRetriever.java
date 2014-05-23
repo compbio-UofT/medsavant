@@ -19,7 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
-import cytoscape.CytoscapeVersion;
+//import cytoscape.CytoscapeVersion;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  * @author khushi
  */
 public class GenemaniaInfoRetriever {
-
+/*
     private Compatibility createCompatibility(CytoscapeVersion cytoscapeVersion) {
         String[] parts = cytoscapeVersion.getMajorVersion().split("[.]");
         if (!parts[0].equals("2")) {
@@ -75,7 +75,7 @@ public class GenemaniaInfoRetriever {
         }
         return new CompatibilityImpl();
     }
-
+*/
     public static class NoRelatedGenesInfoException extends Exception {
 
         public NoRelatedGenesInfoException() {
