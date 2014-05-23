@@ -3,14 +3,14 @@
   <parent>
         <groupId>edu.toronto.cs.medsavant</groupId>
         <artifactId>medsavant-parent</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2.2</version>
         <relativePath>
                 ../../
         </relativePath> 
   </parent>
   <groupId>edu.toronto.cs.medsavant</groupId>
   <artifactId>medsavant-app-comm</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2.2</version>
   <packaging>jar</packaging>
 
   <name>medsavant-app-comm</name>

@@ -26,7 +26,7 @@
   <parent>
     <groupId>edu.toronto.cs.medsavant</groupId>
     <artifactId>medsavant-utilities</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.2</version>
   </parent>
 
   <artifactId>annotation-formatter</artifactId>
