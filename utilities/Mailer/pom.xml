@@ -4,11 +4,11 @@
   <parent>
     <groupId>edu.toronto.cs.medsavant</groupId>
     <artifactId>medsavant-utilities</artifactId>
-    <version>1.2.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <groupId>com.medsavant</groupId>
   <artifactId>Mailer</artifactId>
-  <version>1.2.1</version>
+  <version>1.2-SNAPSHOT</version>
   <name>MedSavant - Mailer</name>
   <url>http://maven.apache.org</url>
   <properties>

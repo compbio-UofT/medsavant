@@ -24,7 +24,7 @@
 
   <groupId>edu.toronto.cs.medsavant</groupId>
   <artifactId>medsavant-parent</artifactId>
-  <version>1.2.1</version>
+  <version>1.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>MedSavant - Parent POM</name>
@@ -44,7 +44,7 @@
     <connection>scm:git:git://github.com/compbio-UofT/medsavant.git</connection>
     <developerConnection>scm:git:git@github.com:compbio-UofT/medsavant.git</developerConnection>
     <url>https://github.com/compbio-UofT/medsavant.git/tree/master/</url>
-    <tag>medsavant-1.2.1</tag>
+    <tag>medsavant-1.2-SNAPSHOT</tag>
   </scm>
 
   <organization>
