@@ -19,7 +19,7 @@
  */
 package org.ut.biolab.medsavant.client.view.genetics.variantinfo;
 
-import cytoscape.CytoscapeVersion;
+//import cytoscape.CytoscapeVersion;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,6 +54,7 @@ import org.genemania.type.CombiningMethod;
 import org.genemania.util.NullProgressReporter;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 import org.xml.sax.SAXException;
 
 /**
@@ -61,7 +62,7 @@ import org.xml.sax.SAXException;
  * @author khushi
  */
 public class GenemaniaInfoRetriever {
-
+/*
     private Compatibility createCompatibility(CytoscapeVersion cytoscapeVersion) {
         String[] parts = cytoscapeVersion.getMajorVersion().split("[.]");
         if (!parts[0].equals("2")) {
@@ -74,7 +75,7 @@ public class GenemaniaInfoRetriever {
         }
         return new CompatibilityImpl();
     }
-
+*/
     public static class NoRelatedGenesInfoException extends Exception {
 
         public NoRelatedGenesInfoException() {
@@ -99,7 +100,7 @@ public class GenemaniaInfoRetriever {
     private SearchResult options;
     private static Map<Long, Integer> sequenceNumbers;
     private RelatedGenesEngineResponseDto response;
-    private static String GM_URL = "http://compbio.cs.toronto.edu/savant/data/dropbox/genemania/gmdata.zip";
+    //private static String GM_URL = "http://compbio.cs.toronto.edu/savant/data/dropbox/genemania/gmdata.zip";
     private static final Log LOG = LogFactory.getLog(GenemaniaInfoRetriever.class);
     private static GeneManiaDownloadTask geneManiaDownloadTask;
 
@@ -170,7 +171,7 @@ public class GenemaniaInfoRetriever {
 
         if (geneManiaDownloadTask == null || geneManiaDownloadTask.isCancelled()) {
             String dstPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-            geneManiaDownloadTask = new GeneManiaDownloadTask(GM_URL, dstPath, "Downloading GeneMANIA...");
+            geneManiaDownloadTask = new GeneManiaDownloadTask(WebResources.GENEMANIA_DATA_URL.toString(), dstPath, "Downloading GeneMANIA...");
         }
         return geneManiaDownloadTask;
     }

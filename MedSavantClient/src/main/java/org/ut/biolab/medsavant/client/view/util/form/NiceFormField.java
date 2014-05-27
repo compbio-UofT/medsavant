@@ -9,6 +9,14 @@ public class NiceFormField {
     private String name;
     private NiceForm.FieldType type;
     private boolean isRequired;
+    
+    public NiceFormField(String name) {
+        this(false,name,NiceForm.FieldType.STRING);
+    }
+    
+    public NiceFormField(String name, Object value) {
+        this(false,name,NiceForm.FieldType.STRING, value);
+    }
 
     public NiceFormField(boolean isRequired, String name, NiceForm.FieldType type) {
         this(isRequired, name, type, null);

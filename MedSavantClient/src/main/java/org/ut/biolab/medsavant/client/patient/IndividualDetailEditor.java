@@ -37,7 +37,7 @@ import org.broad.igv.tdf.TDFDataset.DataType;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.shared.db.ColumnType;
 import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.project.ProjectController;

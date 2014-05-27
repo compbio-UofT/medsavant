@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;

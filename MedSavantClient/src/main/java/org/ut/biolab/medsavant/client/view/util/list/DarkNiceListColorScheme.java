@@ -25,7 +25,7 @@ import java.awt.Color;
  *
  * @author mfiume
  */
-class DarkNiceListColorScheme implements NiceListColorScheme {
+public class DarkNiceListColorScheme implements NiceListColorScheme {
 
     private final Color backgroundColor = new Color(56, 56, 56);
     private final Color selectedColor = new Color(45,45,45);

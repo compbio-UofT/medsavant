@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
@@ -50,7 +50,6 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
-
 /**
  *
  * @author Andrew
@@ -60,6 +59,7 @@ public class VariantManagerUtils {
     private static final Log LOG = LogFactory.getLog(VariantManagerUtils.class);
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
+
     public static final String FIELD_DELIMITER = "\t";
     public static final String ENCLOSED_BY = "\"";
     public static final String ESCAPE_CHAR = "\\";
@@ -76,15 +76,15 @@ public class VariantManagerUtils {
         reader.close();
     }
 
-
     private static final String varchar = DbColumn.getTypeName(java.sql.Types.VARCHAR);
+
     private static boolean isVarchar(String typeNameSQL) {
         return typeNameSQL.equals(varchar);
     }
 
-     private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
+    private static File cleanVariantFile(File inputFile, String tableName, String sessionId) throws SQLException, RemoteException, IOException, SessionExpiredException {
 
-         LOG.info("Cleaning file " + inputFile.getAbsolutePath() + " for table " + tableName);
+        LOG.info("Cleaning file " + inputFile.getAbsolutePath() + " for table " + tableName);
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, tableName);
         BufferedReader br = new BufferedReader(new FileReader(inputFile));
@@ -148,11 +148,160 @@ public class VariantManagerUtils {
 
         bw.close();
         br.close();
+        if (inputFile.exists()) {
+            inputFile.delete();
+        }
         return outputFile;
     }
 
+    public static int uploadTSVFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException, SessionExpiredException {
 
-    public static void uploadTSVFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException, SessionExpiredException {
+        file = cleanVariantFile(file, tableName, sid);
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+
+        // TODO: for some reason the connection is closed going into this function
+        Connection c = null;
+        int lineNumber = 0;
+
+        try {
+            c = ConnectionController.connectPooled(sid);
+
+            c.setAutoCommit(false);
+
+            int chunkSize = 100000; // number of lines per chunk (100K lines = ~50MB for a standard VCF file)
+
+            String parentDirectory = file.getParentFile().getAbsolutePath();
+
+            BufferedWriter bw = null;
+            //BufferedWriter sw = null;
+            String subsetFileName = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_subset";
+            /*if (step > 0) { //assert
+             sw = new BufferedWriter(new FileWriter(subsetFileName));
+             } else {
+             throw new IllegalArgumentException("Can't upload TSV file " + file + " to variant table, invalid step size=" + step);
+             }*/
+
+            String currentOutputPath = null;
+
+            boolean stateOpen = false;
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                lineNumber++;
+
+                // start a new output file
+                if (lineNumber % chunkSize == 1) {
+                    currentOutputPath = parentDirectory + "/" + MiscUtils.extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
+                    LOG.info("Opening new partial file " + currentOutputPath);
+                    bw = new BufferedWriter(new FileWriter(currentOutputPath));
+                    stateOpen = true;
+                }
+
+                /*if (sw != null && ((lineNumber - 1) % step == 0)) {
+                 sw.write(line + "\r\n");
+                 }*/
+                // write line to chunk file
+                bw.write(line + "\r\n");
+
+                // close and upload this output file
+                if (lineNumber % chunkSize == 0) {
+                    bw.close();
+
+                    LOG.info("Closing and uploading final partial file " + currentOutputPath);
+
+                    String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
+                            + "INTO TABLE " + tableName + " "
+                            + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                            + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                            + " LINES TERMINATED BY '\\r\\n'"
+                            + ";";
+
+                    //  LOG.info(query);
+                    Statement s = null;
+                    try {
+                        s = c.createStatement();
+                        s.setQueryTimeout(30 * 60); // 30 minutes
+                        s.execute(query);
+                    } finally {
+                        s.close();
+                    }
+
+
+                    /*if (VariantManager.REMOVE_TMP_FILES) {
+                     boolean deleted = new File(currentOutputPath).delete();
+                     LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                     }*/
+                    stateOpen = false;
+                    (new File(currentOutputPath)).delete();
+                }
+            }
+
+            // write the remaining open file
+            if (bw != null && stateOpen) {
+                bw.close();
+                String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
+                        + "INTO TABLE " + tableName + " "
+                        + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+                        + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
+                        + " LINES TERMINATED BY '\\r\\n'"
+                        + ";";
+
+                LOG.info("Closing and uploading last partial file " + currentOutputPath);
+
+                LOG.info(query);
+                Statement s = null;
+                try {
+                    s = c.createStatement();
+                    s.setQueryTimeout(60 * 60); // 1 hour
+                    s.execute(query);                    
+                } finally {
+                    s.close();
+                }
+
+                (new File(currentOutputPath)).delete();
+                /*if (VariantManager.REMOVE_TMP_FILES) {
+                 boolean deleted = new File(currentOutputPath).delete();
+                 LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                 }*/
+            }
+            LOG.info("Imported " + lineNumber + " lines of variants in total");
+            /*
+             if (sw != null) {
+             sw.close();
+
+             String query = "LOAD DATA LOCAL INFILE '" + subsetFileName.replaceAll("\\\\", "/") + "' "
+             + "INTO TABLE " + subTableName + " "
+             + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
+             + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "'"
+             + " LINES TERMINATED BY '\\r\\n'"
+             + ";";
+
+             LOG.info("Closing and uploading subset file " + subsetFileName);
+             LOG.info(query);
+             Statement s = c.createStatement();
+             s.setQueryTimeout(60 * 60); // 1 hour
+             s.execute(query);
+             LOG.info("Subset table import done");
+             (new File(subsetFileName)).delete();
+             }
+             */
+            c.commit();
+            c.setAutoCommit(true);
+        } finally {
+            c.close();
+        }
+
+
+        /*if (VariantManager.REMOVE_TMP_FILES) {
+         boolean deleted = file.delete();
+         LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+         }*/
+        return lineNumber;
+    }
+
+    @Deprecated
+    public static int uploadTSVFileToVariantTableOld(String sid, File file, String tableName) throws SQLException, IOException, SessionExpiredException {
 
         file = cleanVariantFile(file, tableName, sid);
 
@@ -201,15 +350,15 @@ public class VariantManagerUtils {
                         + " LINES TERMINATED BY '\\r\\n'"
                         + ";";
 
-              //  LOG.info(query);
+                //  LOG.info(query);
                 Statement s = c.createStatement();
                 s.setQueryTimeout(30 * 60); // 30 minutes
                 s.execute(query);
 
                 /*if (VariantManager.REMOVE_TMP_FILES) {
-                    boolean deleted = new File(currentOutputPath).delete();
-                    LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
-                }*/
+                 boolean deleted = new File(currentOutputPath).delete();
+                 LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+                 }*/
                 stateOpen = false;
             }
         }
@@ -232,9 +381,9 @@ public class VariantManagerUtils {
             s.execute(query);
 
             /*if (VariantManager.REMOVE_TMP_FILES) {
-                boolean deleted = new File(currentOutputPath).delete();
-                LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
-            }*/
+             boolean deleted = new File(currentOutputPath).delete();
+             LOG.info("Deleting " + currentOutputPath + " - " + (deleted ? "successful" : "failed"));
+             }*/
         }
 
         LOG.info("Imported " + lineNumber + " lines of variants in total");
@@ -245,36 +394,27 @@ public class VariantManagerUtils {
         c.close();
 
         /*if (VariantManager.REMOVE_TMP_FILES) {
-            boolean deleted = file.delete();
-            LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-        }*/
+         boolean deleted = file.delete();
+         LOG.info("Deleting " + file.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
+         }*/
+        return lineNumber;
     }
 
-    public static void variantTableToTSVFile(String sid, String tableName, File file, String conditions, boolean complete, int step) throws SQLException, SessionExpiredException {
-        String query;
+    public static void variantTableToTSVFile(String sid, String tableName, File file) throws SQLException, SessionExpiredException {
+        variantTableToTSVFile(sid, tableName, file, null);
+    }
 
-        if (complete) {
-            query = "SELECT *";
-        } else {
-            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `end`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
-        }
+    public static void variantTableToTSVFile(String sid, String tableName, File file, String conditions) throws SQLException, SessionExpiredException {
+
+        String query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `end`, `dbsnp_id`, `ref`, `alt`, `alt_number`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
 
         query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
                 + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(FIELD_DELIMITER) + "' ENCLOSED BY '\"' "
-                + "ESCAPED BY '"+StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR)+"' "
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
                 //+ " LINES TERMINATED BY '\\r\\n'"
                 + "FROM " + tableName;
 
-
-        if (step > 1) {
-            if (conditions != null && conditions.length()> 1) {
-                conditions += " AND `variant_id`%" + step + "=0";
-            } else {
-                conditions = "`variant_id`%" + step + "=0";
-            }
-        }
-
-        if (conditions != null && conditions.length()> 1) {
+        if (conditions != null && conditions.length() > 1) {
             query += " WHERE " + conditions;
         }
 
@@ -293,12 +433,15 @@ public class VariantManagerUtils {
         }
     }
 
+    public static void dropViewIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
+        ConnectionController.executeUpdate(sessID, "DROP VIEW IF EXISTS " + tableName);
+    }
+
     public static void dropTableIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
         ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName);
     }
 
-
-    static File[] splitFileOnColumns(File splitDir, String inputFile, int[] cols) throws FileNotFoundException, IOException  {
+    static File[] splitFileOnColumns(File splitDir, String inputFile, int[] cols) throws FileNotFoundException, IOException {
 
         BufferedReader br = new BufferedReader(new FileReader(inputFile));
 
@@ -320,14 +463,14 @@ public class VariantManagerUtils {
             String[] parsedLine = line.split(FIELD_DELIMITER + "");
 
             String id = "";
-            for (int i : cols)  {
-               // LOG.info("Trying to parse column "+i+" from line "+line+" in file "+inputFile);
+            for (int i : cols) {
+                // LOG.info("Trying to parse column "+i+" from line "+line+" in file "+inputFile);
                 id += parsedLine[i] + "-";
             }
 
             if (!outputFileMap.containsKey(id)) {
-                File f = new File(splitDir, (id + "part").replace("\"",""));
-                outputFileMap.put(id, new BufferedWriter(new FileWriter(f,true)));
+                File f = new File(splitDir, (id + "part").replace("\"", ""));
+                outputFileMap.put(id, new BufferedWriter(new FileWriter(f, true)));
 
                 String path = f.getAbsolutePath();
                 filesOpened++;
@@ -405,7 +548,9 @@ public class VariantManagerUtils {
         String line;
         for (File inFile : fromDir.listFiles()) {
 
-            if (inFile.getName().startsWith(".")) { continue; }
+            if (inFile.getName().startsWith(".")) {
+                continue;
+            }
 
             LOG.info("Merging " + inFile.getAbsolutePath() + " with to the result file " + (new File(outputPath)).getAbsolutePath());
             BufferedReader br = new BufferedReader(new FileReader(inFile));
@@ -457,7 +602,6 @@ public class VariantManagerUtils {
     public static void addCustomVCFFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
 
         //System.out.println("Adding custom VCF fields infile=" + infile + " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
-
         String[] infoFields = new String[customFields.length];
         Class[] infoClasses = new Class[customFields.length];
         for (int i = 0; i < customFields.length; i++) {
@@ -470,7 +614,7 @@ public class VariantManagerUtils {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] split = line.split(FIELD_DELIMITER + "");
-            String info = split[customInfoIndex].substring(1, split[customInfoIndex].length()-1); //remove quotes
+            String info = split[customInfoIndex].substring(1, split[customInfoIndex].length() - 1); //remove quotes
             writer.write(line + FIELD_DELIMITER + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "\n");
         }
         reader.close();
@@ -485,18 +629,20 @@ public class VariantManagerUtils {
         }
     }
 
-    public static int determineStepForSubset(long length) {
-        int step;
-        if (length <= MIN_SUBSET_SIZE) {
-            step = 1;
-        } else {
-            long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
-            step = (int)Math.ceil((double)length / (double)targetSize);
-        }
-        return step;
-    }
-
-    public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException{
+    /*
+     @Deprecated
+     public static int determineStepForSubset(long length) {
+     int step;
+     if (length <= MIN_SUBSET_SIZE) {
+     step = 1;
+     } else {
+     long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
+     step = (int) Math.ceil((double) length / (double) targetSize);
+     }
+     return step;
+     }
+     */
+    public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException {
 
         System.out.println("generate subset");
         long length = inFile.length();
@@ -505,7 +651,7 @@ public class VariantManagerUtils {
             step = 1;
         } else {
             long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
-            step = (int)Math.ceil((double)length / (double)targetSize);
+            step = (int) Math.ceil((double) length / (double) targetSize);
         }
 
         System.out.println("length: " + length + "  step: " + step);
@@ -515,7 +661,7 @@ public class VariantManagerUtils {
 
         int i = 1;
         String line;
-        while((line = in.readLine()) != null) {
+        while ((line = in.readLine()) != null) {
             if (i >= step) {
                 out.write(line + "\n");
                 i = 1;
@@ -532,18 +678,18 @@ public class VariantManagerUtils {
 
     /**
      * This function can BLOCK for a long time.
+     *
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
-    public static File[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, MedSavantServerJob parentJob) throws Exception {
-
+    public static TSVFile[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, MedSavantServerJob parentJob) throws Exception {
         LOG.info("Annotating " + tsvFiles.length + " TSV files");
 
         try {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
                     sessID,
                     LogManagerAdapter.LogType.INFO,
-                  "Annotating " + tsvFiles.length + " TSV files");
+                    "Annotating " + tsvFiles.length + " TSV files");
         } catch (RemoteException ex) {
         } catch (SessionExpiredException ex) {
         }
@@ -561,13 +707,14 @@ public class VariantManagerUtils {
         MedSavantServerEngine.submitLongJobsAndWait(annotationThreads);
         //LOG.info("DEBUG: All annotation threads done");
 
-        File[] annotatedTsvFiles = new File[annotationThreads.size()];
+        TSVFile[] annotatedTsvFiles = new TSVFile[annotationThreads.size()];
+        //File[] annotatedTsvFiles = new File[annotationThreads.size()];
 
         int i = 0;
         for (MedSavantServerJob msj : annotationThreads) {
-            VariantAnnotator t = (VariantAnnotator)msj;
+            VariantAnnotator t = (VariantAnnotator) msj;
             File f = new File(t.getOutputFilePath());
-            annotatedTsvFiles[i++] = f;
+            annotatedTsvFiles[i++] = new TSVFile(f, t.getNumVariantsWritten());
 
             if (!t.didSucceed()) {
                 LOG.info("At least one annotation thread errored out");
@@ -587,6 +734,5 @@ public class VariantManagerUtils {
         LOG.info("Splitting " + tsvFile + " by DNA and FileIDs");
         return VariantManagerUtils.splitFileOnColumns(splitDir, tsvFile.getAbsolutePath(), new int[]{0, 1, 3});
     }
-
 
 }

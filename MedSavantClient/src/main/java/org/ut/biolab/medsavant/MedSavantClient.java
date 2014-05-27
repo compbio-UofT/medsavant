@@ -75,11 +75,12 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.controller.SettingsController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
+import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.util.ServerModificationInvocationHandler;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.font.FontFactory;
-import org.ut.biolab.medsavant.client.view.splash.SplashFrame;
+import org.ut.biolab.medsavant.client.view.login.SplashFrame;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -109,13 +110,11 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static SetupAdapter SetupManager;
     public static VariantManagerAdapter VariantManager; //proxy
     public static NotificationManagerAdapter NotificationManager;
-    public static boolean initialized = false;
-    //private static MedSavantFrame frame;
-    //private static String restartCommand;
+    private static boolean initialized = false;
     private static String[] restartCommand;
     private static boolean restarting = false;
     private static final Object managerLock = new Object();
-
+    
     //Proxy the adapters to process annotations and fire events to the cache controller.
     private static void initProxies() {
         VariantManager = (VariantManagerAdapter) Proxy.newProxyInstance(
@@ -184,10 +183,42 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
         restartCommand = restartCommandList.toArray(new String[restartCommandList.size()]);
     }
+    
+    /**
+     * Ensure the user is running Java 1.7+
+     */
+    static public void checkJavaVersion() {
+        System.out.println(System.getProperty("java.specification.version"));
+        String javaVersion = System.getProperty("java.specification.version");
+        if (javaVersion.equals("1.7") || javaVersion.equals("1.8")) {
+            return;
+        }
+        DialogUtils.displayError("Incompatible Java Version", "Please upgrade your version of Java to 1.7 or greater.");
+        System.exit(1);
+    }
 
-    static public void main(String args[]) {
-        AnalyticsAgent.onStartSession("MedSavant", VersionSettings.getVersionString());
+    static public void main(String args[]) {    
+        
+        //checkJavaVersion();      
+        new MedSavantWorker<Void>("Analytics Start"){
 
+            @Override
+            protected Void doInBackground() throws Exception {
+                try{
+                    AnalyticsAgent.onStartSession("MedSavant", VersionSettings.getVersionString());
+                }catch(Exception ex){
+                    LOG.error("Couldn't connect to analytics agent.");
+                }
+                return null;
+            }
+
+            @Override
+            protected void showSuccess(Void result) {
+                
+            }
+            
+        }.execute();
+        
         // Avoids "Comparison method violates its general contract" bug.
         // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7075600
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
@@ -238,6 +269,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         DirectorySettings.setMedSavantDirectory((new File(System.getProperty("user.home"), MiscUtils.WINDOWS ? "medsavant" : ".medsavant")).getAbsolutePath());
 
         LOG.info("MedSavant booted");
+        System.out.println("READY.");
         SplashFrame loginFrame = new SplashFrame();
         loginFrame.setVisible(true);
 

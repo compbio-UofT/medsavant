@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.client.filter.Filter;
 import org.ut.biolab.medsavant.client.filter.FilterController;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.filter.FilterState;
 import org.ut.biolab.medsavant.client.filter.TabularFilterView;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;

@@ -53,8 +53,8 @@ import javax.swing.event.PopupMenuListener;
 import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
+import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.client.query.img.ImagePanel;
 
 /**
  *
@@ -420,9 +420,9 @@ public class PillView extends JPanel {
         }
         if (this.isDisclosureVisible) {
             if (this.isSelected) {
-                setLeftPanel(new ImagePanel("disclosure.png"));
+                setLeftPanel(new ImagePanel("icon/ui/disclosure.png"));
             } else {
-                setLeftPanel(new ImagePanel("disclosure-gray.png"));
+                setLeftPanel(new ImagePanel("icon/ui/disclosure-gray.png"));
             }
         } else {
             setLeftPanel(null);

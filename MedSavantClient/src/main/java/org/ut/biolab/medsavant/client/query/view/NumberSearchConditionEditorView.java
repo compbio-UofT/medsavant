@@ -69,8 +69,6 @@ public class NumberSearchConditionEditorView extends SearchConditionEditorView {
     @Override
     public void loadViewFromSearchConditionParameters(String encoding) throws ConditionRestorationException {
 
-        System.out.println("Loading number search confition editor with encoding " + encoding);
-
         double[] selectedValues;
         if (encoding == null) {
             selectedValues = null;

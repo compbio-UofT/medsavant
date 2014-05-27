@@ -255,8 +255,7 @@ public class ChartView extends JPanel implements BasicPatientColumns, BasicVaria
                         || field.getColumnName().equals(VARIANT_ID.getColumnName())) {
 
                     String program = af.getProgram();
-                    program = (program.equals("VCF Conditions") || program.equals("Standard Variant Conditions")) ? "" : " - " + program;
-                    String name = field.getAlias() + program;
+                    String name = field.getAlias() + " (" + program + ")";
                     addCMG(name, VariantFieldChartMapGenerator.createVariantChart(field));
                 }
             }

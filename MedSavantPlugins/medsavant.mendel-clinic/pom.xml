@@ -25,7 +25,7 @@
     <parent>
         <groupId>edu.toronto.cs.medsavant</groupId>
         <artifactId>medsavant-parent</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.3-SNAPSHOT</version>
     </parent>
     <artifactId>medsavant-app-mendelclinic</artifactId>
     <name>MedSavant-App - Mendel</name>
@@ -34,15 +34,15 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>medsavant-shared</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+        </dependency>       
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>medsavant-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>medsavant-app-comm</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

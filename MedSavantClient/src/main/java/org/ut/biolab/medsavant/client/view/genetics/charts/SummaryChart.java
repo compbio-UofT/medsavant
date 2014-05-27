@@ -61,7 +61,7 @@ import org.ut.biolab.medsavant.client.filter.SearchBar;
 import org.ut.biolab.medsavant.client.filter.WhichTable;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
 import org.ut.biolab.medsavant.client.project.ProjectController;

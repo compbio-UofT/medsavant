@@ -25,7 +25,6 @@ import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.ScatterChartMap;
 import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.shared.model.Annotation;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -35,12 +34,18 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.*;
+import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import jannovar.exception.JannovarException;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.server.MedSavantServerEngine;
+import org.ut.biolab.medsavant.server.MedSavantServerJob;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
@@ -56,11 +61,15 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.LockController;
+import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileIBTableSchema;
+import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
-import org.ut.biolab.medsavant.server.db.variants.Jannovar;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
-import org.ut.biolab.medsavant.shared.model.ProjectDetails;
+import org.ut.biolab.medsavant.server.ontology.OntologyManager;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
@@ -69,7 +78,9 @@ import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 /**
  *
@@ -78,6 +89,8 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter, BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
+    //approximate maximium size of the subset table, in # of variants.    
+    private static final int APPROX_MAX_SUBSET_SIZE = 1000000;
     // thresholds for querying and drawing
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 1000000;
@@ -109,12 +122,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
-            //get update ids and references
             LOG.info("Getting map of update ids");
             int[] refIDs = ProjectManager.getInstance().getReferenceIDsForProject(sessID, projectID);
             Map<Integer, Integer> ref2Update = new HashMap<Integer, Integer>();
             for (int refID : refIDs) {
                 ref2Update.put(refID, ProjectManager.getInstance().getNewestUpdateID(sessID, projectID, refID, false));
+                ProjectManager.getInstance().publishVariantTable(sessID, conn, projectID, refID);
             }
 
             //update annotation log table
@@ -123,13 +136,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, ref2Update.get(refId), Status.PUBLISHED);
             }
 
-            //publish
+            //publish            
+            LOG.info("Publishing tables");
+            ProjectManager.getInstance().publishVariantTable(sessID, conn, projectID, refIDs);
+
             LOG.info("Terminating active sessions");
             SessionManager.getInstance().terminateSessionsForDatabase(SessionManager.getInstance().getDatabaseForSession(sessID), "Administrator (" + SessionManager.getInstance().getUserForSession(sessID) + ") published new variants");
-            LOG.info("Publishing tables");
-            for (Integer refId : ref2Update.keySet()) {
-                ProjectManager.getInstance().publishVariantTable(conn, projectID, refId, ref2Update.get(refId));
-            }
 
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Published " + ProjectManager.getInstance().getProjectName(sessID, projectID));
 
@@ -141,44 +153,63 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     /**
-     * Make a variant table live. All users accessing this database will be
-     * logged out.
+     * Publishes the variant table corresponding to the given project and
+     * reference ID, then logs all users out.
      */
-    @Override
-    public void publishVariants(String sessID, int projID, int refID, int updID) throws Exception, LockException {
+    public void publishVariants(String sessID, int projID, int refID) throws Exception, LockException {
 
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(sessID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
-        LOG.info("Publishing table. pid:" + projID + " refid:" + refID + " upid:" + updID);
+        //LOG.info("Publishing table. pid:" + projID + " refid:" + refID + " upid:" + updID);
+        LOG.info("Publishing table. pid:" + projID + " refid:" + refID);
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             LOG.info("Setting log status to published");
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updID, Status.PUBLISHED);
+            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, refID, Status.PUBLISHED);
             LOG.info("Terminating active sessions");
+            ProjectManager.getInstance().publishVariantTable(sessID, conn, projID, refID);
+            LOG.info("Publish complete");
             SessionManager.getInstance().terminateSessionsForDatabase(SessionManager.getInstance().getDatabaseForSession(sessID), "Administrator (" + SessionManager.getInstance().getUserForSession(sessID) + ") published new variants");
             LOG.info("Publishing table");
-            ProjectManager.getInstance().publishVariantTable(conn, projID, refID, updID);
-            LOG.info("Publish complete");
-
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Published " + ProjectManager.getInstance().getProjectName(sessID, projID));
-
+        } catch (Exception ex) {
+            LOG.error(ex);
+            ex.printStackTrace();
         } finally {
             conn.close();
             LockController.getInstance().releaseLock(database, projID);
         }
     }
 
+    /**
+     * Make a variant table live. All users accessing this database will be
+     * logged out.
+     *
+     * @param updID - this argument is IGNORED and will be removed in the near
+     * future.
+     */
+    @Deprecated
+    @Override
+    public void publishVariants(String sessID, int projID, int refID, int updID) throws Exception, LockException {
+        //The updID argument is deprecated and should be removed at a later date.
+        publishVariants(sessID, projID, refID);
+    }
 
-    /*
-     * Remove an unpublished variant table.
+    /**
+     * Cancel publishing. Note updateID is ignored and will be removed in a
+     * future version.
      */
     @Override
+    @Deprecated
     public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception, LockException {
         final String database = SessionManager.getInstance().getDatabaseForSession(sid);
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(sid), projectID);
 
-        LOG.info("Cancelling publish. pid:" + projectID + " refid:" + referenceID + " upid:" + updateID);
-        ProjectManager.getInstance().removeTables(sid, projectID, referenceID, updateID, updateID);
+        LOG.info("Cancelling publish. pid:" + projectID + " refid:" + referenceID);
+
+        ProjectManager.getInstance().cancelPublish(sid, projectID, referenceID);
+        //ProjectManager.getInstance().removeTables(sid, projectID, referenceID, updateID, updateID);
+        //this.publishVariants(sid, projectID, referenceID);
         LOG.info("Cancel complete");
 
         LockController.getInstance().releaseLock(database, projectID);
@@ -222,17 +253,27 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     }
 
+    /**
+     * Adds variants that have been transferred to the server. Variants are
+     * appended to the existing table. The variant view will only be updated to
+     * include these new variants upon publication, or if autopublish is true.
+     */
     @Override
     public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
         return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
     }
 
     /**
-     * Import variant files which have been transferred from a client.
+     * Import variant files which have been transferred from a client. Variants
+     * are appended to the existing table. The variant view will only be updated
+     * to include these new variants upon publication, or if autopublish is
+     * true.
      */
     @Override
     public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
-
+        if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
+            throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
+        }
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
@@ -261,11 +302,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     /**
      * Use when variant files are already on the server. Performs variant import
-     * of an entire directory.
+     * of an entire directory. Variants are appended to the existing table. The
+     * variant view will only be updated to include these new variants upon
+     * publication, or if autopublish is true.
      */
     @Override
     public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
-
+        if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
+            throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
+        }
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
@@ -283,13 +328,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 @Override
                 public boolean accept(File file) {
                     String name = file.getName();
-                    return name.endsWith(".vcf") || name.endsWith(".vcf.gz");
+                    return name.endsWith(".vcf") || name.endsWith(".vcf.gz") || name.endsWith(".vcf.bz2") || name.endsWith(".tgz");
                 }
             });
 
             if (vcfFiles.length == 0) {
                 LOG.info("Directory exists but contains no .vcf or .vcf.gz files.");
-                return -1;
+                throw new IllegalArgumentException("Directory on server exists, but does not contain any recognized file types");
+                //return -1;
             }
 
             return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
@@ -303,13 +349,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //For now, check is simple.
         return f.getName().toLowerCase().endsWith(".vcf");
     }
-   
+
     public static File getVCFDestinationDir(String database, int projectID) {
         //Get destination file
         File gd = DirectorySettings.getGenoTypeDirectory(database, projectID);
-        if (!gd.exists()) {
-            gd.mkdirs();
-        }
         return gd;
     }
 
@@ -334,7 +377,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    public int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar) throws Exception, LockException {
+    private int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar) throws Exception, LockException {
 
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projectID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
@@ -349,8 +392,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 if (isVCF41File(inputFile)) {
                     if (IOUtils.isInDirectory(inputFile, DirectorySettings.getTmpDirectory())) {
                         File dest = getVCFDestination(inputFile, database, projectID);
-                        if (!inputFile.renameTo(dest)) {
-                            throw new IOException("Can't move VCF file to genotype storage.");
+                        if (!IOUtils.moveFile(inputFile, dest)) {
+                            throw new IOException("Cannot move VCF file to genotype storage.");
                         }
                         LOG.info("Moved input VCF " + inputFile + " to " + dest);
                         inputFile = dest;
@@ -373,14 +416,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 }
 
                 if (!outputDir.mkdirs()) {
-                    throw new IOException("Can't make target directory " + outputDir);
+                    throw new IOException("Cannot make target directory " + outputDir);
                 }
                 List<File> files = IOUtils.decompressAndDelete(inputFile, outputDir);
                 for (File putativeVCF : files) {
                     if (isVCF41File(putativeVCF)) {
                         File dest = getVCFDestination(putativeVCF, database, projectID);
-                        if (!putativeVCF.renameTo(dest)) {
-                            throw new IOException("Can't move VCF file in compressed file to genotype storage.");
+                        if (!IOUtils.moveFile(putativeVCF, dest)) {
+                            throw new IOException("Cannot move VCF file in compressed file to genotype storage.");
                         }
                         LOG.info("Moved input VCF " + putativeVCF + " contained in compressed file to " + dest);
                         putativeVCF = dest;
@@ -397,27 +440,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             EmailLogger.logByEmail("Upload started", "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.", email);
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
-
-            File[] janVcfFiles = vcfFiles;
             int updateID = -1;
             try {
-                if (preAnnotateWithJannovar) {
-                    org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
-                    janVcfFiles = new Jannovar(ReferenceManager.getInstance().getReferenceName(userSessionID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID);
-                }
-
-                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, janVcfFiles, includeHomoRef, tags);
-                addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
+                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, tags);
+                // addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
                 EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
             } finally {
-                if(preAnnotateWithJannovar){
-                    for(File f : janVcfFiles){
-                        File p = f.getParentFile();
-                        f.delete();
-                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
-                    }
-                }
+
             }
             //clean up.
             //never delete vcf files
@@ -447,7 +477,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         } catch (Exception e) {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID) + ". " + e.getLocalizedMessage());
             EmailLogger.logByEmail("Upload failed", "Upload failed with error: " + MiscUtils.getStackTrace(e), email);
-            LOG.error(e);
+            LOG.error("Could not annotate variant file: ", e);
             throw e;
         } finally {
             LockController.getInstance().releaseLock(database, projectID);
@@ -455,150 +485,188 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    public static void addVariantFilesToDatabase(String sessionID, int updateID, int projectID, int referenceID, File[] vcfFiles) throws SQLException, SessionExpiredException {
-        for (int i = 0; i < vcfFiles.length; i++) {
-            addEntryToFileTable(sessionID, updateID, i, projectID, referenceID, vcfFiles[i].getAbsolutePath());
+    /**
+     * Returns the size of the subset table as a fraction of the main variant
+     * view, (@see DBSettings.getVariantViewName), where the maintable contains
+     * 'nv' rows.
+     *
+     * @param nv The number of variants in the main variant view.
+     */
+    public static double getSubsetFraction(int nv) {
+        if (nv > APPROX_MAX_SUBSET_SIZE) {
+            double fractionOfOriginalTable = APPROX_MAX_SUBSET_SIZE / (double) nv;
+            return fractionOfOriginalTable;
+        } else {
+            return 1;
         }
     }
 
+    /**
+     *
+     * @param nv The number of variants in the main variant view.
+     * @return a query condition to randomly sample approximately
+     * nv*getSubsetFraction(nv) variants from the main variant view (@see
+     * DBSettings.getVariantViewName).
+     */
+    public static Condition getSubsetRestrictionCondition(int nv) {
+        LOG.info("getting subset restriction condition for " + nv + " variants");
+        return BinaryCondition.lessThan(new FunctionCall(new CustomSql("RAND")), getSubsetFraction(nv), true);
+    }
+
+    /**
+     * Removes variants associated with the given list of files. These files are
+     * deleted from the file (MyISAM) table. Upon publication, this table is
+     * copied over the file "join table" (Infobright). If publication is
+     * cancelled, the file "join table" is used to restore the MyISAM table to
+     * it's pre-removal state.
+     *
+     * File Table: @see MedSavantDatabase.VariantFileTableSchema File "join
+     * table": @see MedSavantDatabase.VariantFileIBTableSchema
+     *
+     * @see ProjectController.publishVariants
+     * @throws Exception
+     * @throws LockException
+     */
     @Override
-    public int removeVariants(String userSessionID, int projID, int refID, List<SimpleVariantFile> files, boolean autoPublish, String email) throws Exception, LockException {
+    public int removeVariants(final String userSessionID, final int projID, final int refID, final List<SimpleVariantFile> files, final boolean autoPublish, final String email) throws Exception, LockException {
         LOG.info("Beginning removal of variants");
-        final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
-        LockController.getInstance().requestLock(database, projID);
+        if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
+            throw new IllegalArgumentException("Can't remove variants for this project and reference until unpublished changes are published.");
+        }
 
-        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing " + files.size() + " files");
+        final int[] returnVal = new int[]{1};
+        MedSavantServerJob msj
+                = new MedSavantServerJob(SessionManager.getInstance().getUserForSession(userSessionID),
+                        "Removing variants", null) {
+                    @Override
+                    public boolean run() throws Exception {
+                        final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
+                        LockController.getInstance().requestLock(database, projID);
 
-        String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
+                        org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing " + files.size() + " files");
 
-        //add log
-        LOG.info("Adding log and generating update id");
-        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(backgroundSessionID, projID, refID, org.ut.biolab.medsavant.shared.model.AnnotationLog.Action.REMOVE_VARIANTS);
-        //generate directory
-        LOG.info("Generating base directory");
-        File baseDir = DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory());
-        try {
+                        int oldUpdateId = ProjectManager.getInstance().getNewestUpdateID(userSessionID, projID, refID, true);
+                        int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(userSessionID, projID, refID, org.ut.biolab.medsavant.shared.model.AnnotationLog.Action.REMOVE_VARIANTS);
 
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
+                        try {
 
-            EmailLogger.logByEmail("Removal started", "Removal started. " + files.size() + " files(s) will be removed. You will be notified again upon completion.", email);
+                            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing variants from " + ProjectManager.getInstance().getProjectName(userSessionID, projID));
 
-            LOG.info("Base directory: " + baseDir.getCanonicalPath());
-            Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
-            p.waitFor();
+                            //guarantee the file table reflects the published files.
+                            ProjectManager.getInstance().restorePublishedFileTable(userSessionID);
+                            removeEntriesFromFileTable(userSessionID, files);
 
-            //dump existing except for files
-            ProjectManager projMgr = ProjectManager.getInstance();
-            String existingTableName = projMgr.getVariantTableName(backgroundSessionID, projID, refID, false);
-            File existingVariantsFile = new File(baseDir, "proj" + projID + "_ref" + refID + "_update" + updateId);
-            LOG.info("Dumping variants to file");
-            String conditions = "";
-            for (int i = 0; i < files.size(); i++) {
-                conditions
-                        += "!(" + UPLOAD_ID.getColumnName() + "=" + files.get(i).getUploadId()
-                        + " AND " + FILE_ID.getColumnName() + "=" + files.get(i).getFileId() + ")";
-                if (i != files.size() - 1) {
-                    conditions += " AND ";
-                }
-            }
-            VariantManagerUtils.variantTableToTSVFile(backgroundSessionID, existingTableName, existingVariantsFile, conditions, true, 0);
+                            //Calculate the total number of variants that will remain in the main variant view after deletion and publication.
+                            String viewName = DBSettings.getVariantViewName(projID, refID);
+                            int numVariantsInFiles = countPublishedVariantsInFiles(userSessionID, projID, refID, files);
+                            int numTotalVariants = getNumFilteredVariantsHelper(userSessionID, viewName, new Condition[0][]);
+                            int numVariantsAfterDeletion = numTotalVariants - numVariantsInFiles;
+                            //LOG.info("Number variants before deletion: " + numTotalVariants);
+                            //LOG.info("Number varaints after deletion: " + numVariantsAfterDeletion);
 
-            //create the staging table
-            LOG.info("Creating new variant table for resulting variants");
-            projMgr.setCustomVariantFields(
-                    backgroundSessionID, projID, refID, updateId,
-                    projMgr.getCustomVariantFields(backgroundSessionID, projID, refID, projMgr.getNewestUpdateID(backgroundSessionID, projID, refID, false)));
-            String tableName = projMgr.createVariantTable(backgroundSessionID, projID, refID, updateId, AnnotationManager.getInstance().getAnnotationIDs(backgroundSessionID, projID, refID), true);
-            String tableNameSub = projMgr.createVariantTable(backgroundSessionID, projID, refID, updateId, AnnotationManager.getInstance().getAnnotationIDs(backgroundSessionID, projID, refID), false, true);
+                            //Create a new subset table, using the configuration of the last published table.                      
+                            int[] annIDs = AnnotationManager.getInstance().getAnnotationIDs(userSessionID, projID, refID);
+                            CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(userSessionID, projID, refID, oldUpdateId);
+                            String newSubsetTableName = ProjectManager.getInstance().addVariantTableToDatabase(userSessionID, projID, refID, updateId, annIDs, customFields, true);
+                            TableSchema viewSchema = CustomTables.getInstance().getCustomTableSchema(userSessionID, viewName);
+                            Condition[] conditions = new Condition[files.size() + 1];
+                            int i = 0;
+                            for (SimpleVariantFile svf : files) {
+                                conditions[i++] = BinaryCondition.notEqualTo(viewSchema.getDBColumn(BasicVariantColumns.FILE_ID), svf.getFileId());
+                            }
 
-            //upload to staging table
-            LOG.info("Uploading variants to table: " + tableName);
-            VariantManagerUtils.uploadTSVFileToVariantTable(backgroundSessionID, existingVariantsFile, tableName);
+                            //Fill the subset table by sampling from the (main view excluding rows with file_ids that are to be deleted).
+                            conditions[i] = getSubsetRestrictionCondition(numVariantsAfterDeletion);
 
-            //upload to sub table
-            File subFile = new File(existingVariantsFile.getAbsolutePath() + "_subset");
-            LOG.info("Generating sub file: " + subFile.getAbsolutePath());
-            VariantManagerUtils.generateSubset(existingVariantsFile, subFile);
-            LOG.info("Importing to: " + tableNameSub);
-            VariantManagerUtils.uploadTSVFileToVariantTable(backgroundSessionID, subFile, tableNameSub);
+                            LOG.info("Creating new subset table called " + newSubsetTableName);
+                            getJobProgress().setMessage("Creating new subset table...");
+                            SelectQuery sq = new SelectQuery();
+                            sq.addAllColumns();
+                            sq.addFromTable(viewSchema.getTable());
+                            sq.addCondition(ComboCondition.and(conditions));
 
-            /*if (REMOVE_TMP_FILES) {
-             boolean deleted = existingVariantsFile.delete();
-             LOG.info("Deleting " + existingVariantsFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-             deleted = subFile.delete();
-             LOG.info("Deleting " + subFile.getAbsolutePath() + " - " + (deleted ? "successful" : "failed"));
-             }*/
-            //get annotation ids
-            AnnotationManager annotMgr = AnnotationManager.getInstance();
-            int[] annotIDs = annotMgr.getAnnotationIDs(backgroundSessionID, projID, refID);
+                            DBUtils.copyQueryResultToNewTable(userSessionID, sq, newSubsetTableName);
 
-            //add entries to tablemap
-            projMgr.addTableToMap(backgroundSessionID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
+                            //set as pending
+                            AnnotationLogManager.getInstance().setAnnotationLogStatus(userSessionID, updateId, Status.PENDING);
 
-            //cleanup
-            LOG.info("Dropping old table(s)");
-            int newestId = projMgr.getNewestUpdateID(backgroundSessionID, projID, refID, true);
-            int minId = -1;
-            int maxId = newestId - 1;
-            projMgr.removeTables(backgroundSessionID, projID, refID, minId, maxId);
+                            //Reconfigure the variant tablemap (MedSavantDatabase.VarianttablemapTableSchema)
+                            ProjectManager.getInstance().setupTablesForVariantRemoval(userSessionID, projID, refID, updateId, newSubsetTableName);
 
-            // remove variant files from table
-            for (SimpleVariantFile f : files) {
-                removeEntryFromFileTable(backgroundSessionID, f.getUploadId(), f.getFileId());
-                //boolean didDelete = new File(f.getPath()).delete();
-                //LOG.info(String.format("Deleting variant file %s - %s",f.getPath(),didDelete ? "SUCCESS" : "FAIL"));
-            }
+                            //Set the custom fields for this update to be those of the previously published update.
+                            CustomField[] cf = ProjectManager.getInstance().getCustomVariantFields(userSessionID, projID, refID, oldUpdateId);
+                            if (cf != null) {
+                                ProjectManager.getInstance().setCustomVariantFields(userSessionID, projID, refID, updateId, cf);
+                            }
 
-            //set as pending
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(backgroundSessionID, updateId, Status.PENDING);
+                            if (autoPublish) {
+                                publishVariants(userSessionID, projID);
+                                SessionManager.getInstance().unregisterSession(userSessionID);
+                            }
 
-            if (autoPublish) {
-                publishVariants(backgroundSessionID, projID);
-            }
+                            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Done removing variants from " + ProjectManager.getInstance().getProjectName(userSessionID, projID));
+                            returnVal[0] = updateId;
+                            //return updateId;
+                            return true;
+                        } catch (Exception e) {
 
-            EmailLogger.logByEmail("Removal finished", "Removal completed. " + files.size() + " file(s) were removed.", email);
+                            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.ERROR, "Error removing variants from " + ProjectManager.getInstance().getProjectName(userSessionID, projID));
 
-            SessionManager.getInstance().unregisterSession(backgroundSessionID);
+                            AnnotationLogManager.getInstance().setAnnotationLogStatus(userSessionID, updateId, Status.ERROR);
+                            EmailLogger.logByEmail("Removal failed", "Removal failed with error: " + MiscUtils.getStackTrace(e), email);
+                            throw e;
+                        } finally {
+                            //remove VCF files.
+                            for (SimpleVariantFile svf : files) {
+                                File f = new File(svf.getPath());
+                                if (f.exists()) {
+                                    if (IOUtils.isInDirectory(f, DirectorySettings.getTmpDirectory())) {
+                                        File p = f.getParentFile();
+                                        f.delete();
+                                        IOUtils.deleteEmptyParents(p, DirectorySettings.getTmpDirectory());
+                                    } else if (IOUtils.isInDirectory(f, DirectorySettings.getGenoTypeDirectory())) {
+                                        File p = f.getParentFile();
+                                        f.delete();
+                                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
+                                    } else {
+                                        LOG.info("Not removing .vcf file " + svf.getPath() + " -- not in a MedSavant directory.");
+                                    }
+                                } else {
+                                    LOG.info("Not removing .vcf file " + svf.getPath() + " -- does not exist on file system.");
+                                }
+                            }
 
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
+                            LockController.getInstance().releaseLock(database, projID);
+                            //SessionManager.getInstance().unregisterSesion(backgroundSessionID);
+                        }
+                    }//end run
+                };//end MedSavantServerJob
 
-            return updateId;
+        MedSavantServerEngine.runJobInCurrentThread(msj);
+        return returnVal[0]; //delete me
+    }
 
-        } catch (Exception e) {
+    //Returns the number of variants that were taken from the given list of files AND that were published (i.e. exist in the main variant view)
+    private int countPublishedVariantsInFiles(String sid, int projID, int refID, Collection<SimpleVariantFile> files) throws RemoteException, SQLException, SessionExpiredException {
+        String viewName = DBSettings.getVariantViewName(projID, refID);
+        TableSchema vtable = CustomTables.getInstance().getCustomTableSchema(sid, viewName);
 
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.ERROR, "Error removing variants from " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
+        int i = 0;
+        Condition[] conditions = new Condition[files.size()];
+        for (SimpleVariantFile f : files) {
+            conditions[i++] = BinaryConditionMS.equalTo(vtable.getDBColumn(BasicVariantColumns.FILE_ID), f.getFileId());
+        }
 
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(backgroundSessionID, updateId, Status.ERROR);
-            EmailLogger.logByEmail("Removal failed", "Removal failed with error: " + MiscUtils.getStackTrace(e), email);
-            throw e;
-        } finally {
-            //remove VCF files.
-            for (SimpleVariantFile svf : files) {
-                File f = new File(svf.getPath());
-                if (f.exists()){
-                    if(IOUtils.isInDirectory(f, DirectorySettings.getTmpDirectory())) {
-                        File p = f.getParentFile();
-                        f.delete();
-                        IOUtils.deleteEmptyParents(p, DirectorySettings.getTmpDirectory());
-                    }else if(IOUtils.isInDirectory(f, DirectorySettings.getGenoTypeDirectory())){
-                        File p = f.getParentFile();
-                        f.delete();
-                        IOUtils.deleteEmptyParents(p, DirectorySettings.getGenoTypeDirectory());
-                    }else{
-                        LOG.info("Not removing .vcf file "+svf.getPath()+" -- not in a MedSavant directory.");
-                    }
-                } else {
-                    LOG.info("Not removing .vcf file " + svf.getPath() + " -- does not exist on file system.");
-                }
-            }
-
-            //remove working directory
-            if (VariantManager.REMOVE_WORKING_DIR) {
-                MiscUtils.deleteDirectory(baseDir);
-            }
-
-            LockController.getInstance().releaseLock(database, projID);
-            SessionManager.getInstance().unregisterSession(backgroundSessionID);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(vtable.getTable());
+        query.addCustomColumns(FunctionCall.countAll());
+        addConditionsToQuery(query, new Condition[][]{{ComboCondition.or(conditions)}});
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        if (rs.next()) {
+            return rs.getInt(1);
+        } else {
+            LOG.error("Couldn't count published variants, query: " + query.toString());
+            throw new SQLException("Couldn't count published variants");
         }
     }
 
@@ -727,12 +795,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private int getFilteredVariantCount(String sid, int projectId, int referenceId, Condition[][] conditions, boolean forceExact) throws SQLException, RemoteException, SessionExpiredException {
 
         //String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String) variantTableInfo[0];
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sid, projectId, referenceId);
+        String tableViewName = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float subMultiplier = (Float) variantTableInfo[2];
 
-        if (tablename == null) {
+        if (tableViewName == null) {
             return -1;
         }
 
@@ -745,11 +813,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         // Approximation not good enough; use actual data.
-        return getNumFilteredVariantsHelper(sid, tablename, conditions);
+        return getNumFilteredVariantsHelper(sid, tableViewName, conditions);
     }
 
-    public int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
+    public int getNumFilteredVariantsHelper(String sessID, String tableViewName, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException {
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableViewName);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -803,7 +871,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sid, projectId, referenceId);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float multiplier = (Float) variantTableInfo[2];
@@ -856,7 +924,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sessID, projID, refID, conditions);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sessID, projID, refID);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float multiplier = (Float) variantTableInfo[2];
@@ -901,7 +969,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sid, projectId, referenceId);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float multiplier = (Float) variantTableInfo[2];
@@ -1030,7 +1098,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //pick table from approximate or exact
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sid, projectId, referenceId);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float multiplier = (Float) variantTableInfo[2];
@@ -1082,34 +1150,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return results;
     }
 
-    /*
-     private boolean intersectsPosition(String chrom, long start, long end) {                        
-     if(this.chrom.equals(chrom)){                                
-     if(this.start < start){
-     if(this.end < start){
-     return false;
-     }else{ 
-     return true;
-     }                    
-     }else if(start < this.start){ //start >= start
-     if(end < this.end){
-     return false;
-     }else{
-     return true;
-     }
-     }
-     return true;                                
-                
-     }
-     return false;
-     }
-    
-     private Condition getIntersectCondition(int s_start, int s_end, DbColumn t_start, DbColumn t_end) {
-     return ComboCondition.and(
-     new BinaryCondition(BinaryCondition.Op.LESS_THAN_OR_EQUAL_TO, t_start, s_end),
-     new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t_end, s_start));
-     }
-     */
     /**
      *
      * Returns a count of all patients that have a variant within the given
@@ -1369,15 +1409,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public SimpleVariantFile[] getUploadedFiles(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException {
 
-        TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
+        TableSchema fileTable = MedSavantDatabase.VariantFileIBTableSchema;
 
         SelectQuery query = new SelectQuery();
         query.addFromTable(fileTable.getTable());
         query.setIsDistinct(true);
-        query.addColumns(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME));
+        query.addColumns(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), fileTable.getDBColumn(VariantFileIBTableSchema.COLUMNNAME_OF_FILE_ID), fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME));
 
-        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
+        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileIBTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
+        query.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileIBTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
 
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
@@ -1537,27 +1577,60 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return rs.getInt(1);
     }
 
-    public static void addEntryToFileTable(String sid, int uploadId, int fileId, int projectID, int referenceID, String fileName) throws SQLException, SessionExpiredException {
-
+    /**
+     * Adds a new entry to the file table, returning a unique file_id.
+     *
+     * @param sid
+     * @param uploadId
+     * @param projectID
+     * @param referenceID
+     * @param file
+     * @return
+     * @throws SQLException
+     * @throws SessionExpiredException
+     */
+    public static synchronized int addEntryToFileTable(String sid, int uploadId, int projectID, int referenceID, File file) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
 
         InsertQuery q = new InsertQuery(table.getTable());
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId);
-        q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
+        //q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_PROJECT_ID), projectID);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceID);
-        q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), fileName);
-
+        q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), file.getAbsolutePath());
         ConnectionController.executeUpdate(sid, q.toString());
+
+        String query = "SELECT last_insert_id() AS last_id from " + table.getTableName();
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
+        if (!rs.first()) {
+            throw new SQLException("Couldn't fetch file_id for file " + file.getAbsolutePath() + " on project " + projectID + ", ref " + referenceID);
+        }
+
+        int file_id = rs.getInt(1);
+        if (file_id < 1) {//assert
+            throw new SQLException("Invalid file_id for file " + file.getAbsolutePath() + " on project " + projectID + ", ref " + referenceID);
+        }
+
+        return file_id;
     }
 
-    public void removeEntryFromFileTable(String sessID, int uploadID, int fileID) throws SQLException, SessionExpiredException {
+    //public void removeEntriesFromFileTable(String sessID, int uploadID, int fileID) throws SQLException, SessionExpiredException {
+    private void removeEntriesFromFileTable(String sessID, Collection<SimpleVariantFile> files) throws SQLException, SessionExpiredException {
+        int i = 0;
+        for (SimpleVariantFile svf : files) {
+            //removeEntryFromFileTable(sessID, svf.getUploadId(), svf.getFileId());
+            removeEntryFromFileTable(sessID, svf.getFileId());
+
+        }
+    }
+
+    private void removeEntryFromFileTable(String sessID, int fileID) throws SQLException, SessionExpiredException {
 
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
 
         DeleteQuery q = new DeleteQuery(table.getTable());
         q.addCondition(ComboCondition.and(new Condition[]{
-            BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID),
+            //BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID),
             BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileID)
         }));
 
@@ -1601,7 +1674,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Map<String, Integer> dnaIDMap = new HashMap<String, Integer>();
 
         if (!dnaIDs.isEmpty()) {
-            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
+            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableViewInfo(sessID, projID, refID);
             String tablename = (String) variantTableInfo[0];
             String tablenameSub = (String) variantTableInfo[1];
             float multiplier = (Float) variantTableInfo[2];
@@ -1636,6 +1709,379 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return dnaIDMap;
     }
 
+    private boolean isAuthorizedForUserComments(String sessID) throws SecurityException, SessionExpiredException, SQLException, RemoteException {
+        //Temporary authorization: require admin access.        
+        UserLevel ul = UserManager.getInstance().getSessionUsersLevel(sessID);
+        if (ul.ADMIN != ul || UserManager.getInstance().isUserOfThisDatabase(sessID)) {
+            return false;
+
+        }
+        return true;
+    }
+
+    public void deleteComment(String sessID, int userCommentId) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
+            throw new SecurityException("This user does not have access to view comments");
+        }
+
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
+        UpdateQuery uq = new UpdateQuery(lcTable.getTable());
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), true);
+        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), userCommentId));
+        ConnectionController.executeUpdate(sessID, uq.toString());
+    }
+
+    @Override
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
+        return createUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
+    }
+
+    @Override
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
+        UserCommentGroup lcg = getUserCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, true);
+        if (lcg != null) {
+            throw new IllegalArgumentException("A comment group already exists at chrom=" + chrom + ", start=" + start_position + " end=" + end_position + " ref=" + ref + " alt=" + alt);
+        }
+
+        //insert, get groupId and modDate
+        TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
+        InsertQuery iq = new InsertQuery(lcgTable.getTable());
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REF), ref);
+        iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt);
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        PreparedStatement stmt = null;
+        ResultSet res = null;
+        int groupId = -1;
+        try {
+            LOG.info(iq.toString());
+            stmt = conn.prepareStatement(iq.toString(), Statement.RETURN_GENERATED_KEYS);
+            stmt.execute();
+            res = stmt.getGeneratedKeys();
+            res.next();
+            groupId = res.getInt(1);
+        } catch (SQLException sqe) {
+            LOG.error("SQL Error ", sqe);
+            throw sqe;
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+            if (res != null) {
+                res.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+
+        if (groupId < 0) {
+            throw new SQLException("Unable to create new group - invalid insertion id");
+        }
+
+        //The modification time is the time when a change was made to the last comment.  Since there are 
+        //no comments yet, modstamp is null.
+        //Date modStamp = DBUtils.getCurrentDatabaseTime(sessID);
+        Date modStamp = null;
+        lcg = new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modStamp, null);
+        return lcg;
+    }
+
+    public void setUserCommentStatus(String sessID, int userCommentGroupId, UserComment statusChangeComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException, IllegalArgumentException {
+        if (!statusChangeComment.statusChanged()) {
+            throw new IllegalArgumentException("Can't update the comment's status because it hasn't changed.");
+        }
+
+        Integer parentCommentId = statusChangeComment.getOriginalComment().getCommentID();
+        if (parentCommentId == null) {
+            throw new IllegalArgumentException("Can't update the comment's status because comment could not be located in the database");
+        }
+
+        int statusChangeCommentId = replyToUserCommentGroup(sessID, userCommentGroupId, statusChangeComment);
+
+        //Overwrite the original status of the comment with the new status.        
+        updateCommentStatus(sessID,
+                parentCommentId,
+                statusChangeComment.getOriginalComment().isApproved(),
+                statusChangeComment.getOriginalComment().isIncluded(),
+                statusChangeComment.getOriginalComment().isPendingReview(),
+                statusChangeComment.getOriginalComment().isDeleted());
+
+        //Associate the original status of the comment with the status change comment.
+        updateCommentStatus(sessID,
+                statusChangeCommentId,
+                statusChangeComment.isApproved(),
+                statusChangeComment.isIncluded(),
+                statusChangeComment.isPendingReview(),
+                statusChangeComment.isDeleted());
+
+    }
+
+    private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
+        UpdateQuery uq = new UpdateQuery(lcTable.getTable());
+        uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), commentId));
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
+        ConnectionController.executeUpdate(sessID, uq.toString());
+    }
+
+    @Override
+    public int replyToUserCommentGroup(String sessID, int userCommentGroupId, UserComment userComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
+            throw new SecurityException("This user does not have access to view comments");
+        }
+
+        String username = SessionManager.getInstance().getUserForSession(sessID);
+        String ontologyId = userComment.getOntologyTerm().getID();
+
+        //TODO: Insert checks here to make sure user has permissions to change flags.      
+        //If they don't, use the flags in 'lastComment' commented out above.       
+        Boolean isApproved = userComment.isApproved();
+        Boolean isIncluded = userComment.isIncluded();
+        Boolean isPendingReview = userComment.isPendingReview();
+        Boolean isDeleted = userComment.isDeleted();
+        String commentText = userComment.getCommentText();
+        String ontology = userComment.getOntologyTerm().getOntology().name();
+        TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
+        InsertQuery iq = new InsertQuery(lcTable.getTable());
+
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), userCommentGroupId);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID), ontologyId);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER), username);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE), (new FunctionCall(new CustomSql("NOW"))).addCustomParams());
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT), commentText);
+        if (userComment.getOriginalComment() != null) {
+            Integer commentId = userComment.getOriginalComment().getCommentID();
+            if (commentId == null) {
+                throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a null identifier");
+            }
+            if (commentId < 1) {
+                throw new IllegalArgumentException("Cannot post this comment as it refers to a comment with a non-positive identifier: " + commentId);
+            }
+            iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID), commentId);
+        }
+
+        PreparedStatement stmt = null;
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        ResultSet res = null;
+        int commentId = -1; //Not returned for now.
+        try {
+            stmt = conn.prepareStatement(iq.toString(), Statement.RETURN_GENERATED_KEYS);
+            stmt.execute();
+            res = stmt.getGeneratedKeys();
+            res.next();
+            commentId = res.getInt(1);
+            //LOG.info("Inserted new comment with id " + commentId + " for comment group with id " + userCommentGroupId);
+
+            //update original comment's status if necessary.
+            if (userComment.getOriginalComment() != null) {
+                UpdateQuery uq = new UpdateQuery(lcTable.getTable());
+                uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), userComment.getOriginalComment().getCommentID()));
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), userComment.getOriginalComment().isApproved());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), userComment.getOriginalComment().isIncluded());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), userComment.getOriginalComment().isPendingReview());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), userComment.getOriginalComment().isDeleted());
+                stmt = conn.prepareStatement(uq.toString());
+                stmt.execute();
+            }
+            return commentId;
+        } catch (SQLException sqe) {
+            LOG.error("SQL Error", sqe);
+            throw sqe;
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (res != null) {
+                res.close();
+            }
+        }
+    }
+
+    @Override
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        return getUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
+    }
+
+    @Override
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        return getUserCommentGroup(sessID, projectId, refId, chrom, start_position, end_position, ref, alt, false);
+    }
+
+    private List<UserComment> getUserCommentsForGroup(String sessID, int groupId, boolean loadOnlyMostRecentComment) throws SQLException, SessionExpiredException, RemoteException {
+
+        ResultSet rs = null;
+        try {
+            TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
+            SelectQuery sq = new SelectQuery();//lcgTable.getTable());
+            sq.addFromTable(lcgTable.getTable());
+            sq.addAllColumns();
+            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), groupId));
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
+            if (rs == null || !rs.next()) {
+                throw new IllegalArgumentException("There is no comment group with the given identifier " + groupId);
+            }
+        } catch (SQLException sqe) {
+            LOG.error("SQL Error", sqe);
+            throw sqe;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+
+        rs = null;
+        try {
+            TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
+            SelectQuery sq = new SelectQuery();
+            sq.addFromTable(lcTable.getTable());
+            sq.addAllColumns();
+            sq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID), groupId));
+            String querySuffix = "";
+            if (loadOnlyMostRecentComment) {
+                sq.addCondition(UnaryCondition.isNotNull(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID)));
+                sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.DESCENDING);
+                querySuffix = " LIMIT 1";
+            } else {
+                sq.addOrdering(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), Dir.ASCENDING);
+            }
+            LOG.info(sq.toString() + querySuffix);
+
+            rs = ConnectionController.executeQuery(sessID, sq.toString() + querySuffix);
+            Map<Integer, UserComment> parentCommentMap = new TreeMap<Integer, UserComment>();
+            Map<Integer, Set<UserComment>> childCommentMap = new HashMap<Integer, Set<UserComment>>();
+
+            while (rs.next()) {
+                int commentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID);
+                int parentCommentId = rs.getInt(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_PARENT_USER_COMMENT_ID);
+                String ontologyId = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID);
+                String user = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER);
+                Boolean isApproved = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED);
+                Boolean isIncluded = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE);
+                Boolean isPendingReview = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW);
+                Boolean isDeleted = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED);
+                Date creationDate = rs.getDate(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE);
+                Timestamp ts = rs.getTimestamp(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_MODIFICATION_DATE);
+                Date modDate = new Date(ts.getTime());
+                String commentText = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT);
+                OntologyTerm ot = OntologyManager.getInstance().getOntologyTerm(sessID, UserComment.ONTOLOGY_TYPE, ontologyId);
+
+                UserComment parentComment = null;
+                if (parentCommentId > 0) {
+                    parentComment = parentCommentMap.get(parentCommentId);
+                    if (parentComment == null) {
+                        LOG.error("Comment with id " + commentId + " refers to a comment with an unknown identifier (" + parentCommentId + ")");
+                        throw new SQLException("Invalid comment detected in database with id " + commentId + " (Refers to non-existant comment with id " + parentCommentId + ")");
+                    } else {
+                        //this is a child comment
+                        UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, parentComment);
+                        Set<UserComment> lcSet = childCommentMap.get(parentCommentId);
+                        if (lcSet == null) {
+                            lcSet = new TreeSet<UserComment>(new Comparator<UserComment>() {
+                                @Override
+                                public int compare(UserComment o1, UserComment o2) {
+                                    return o1.getModificationDate().compareTo(o2.getModificationDate());
+                                }
+                            });
+                        }
+                        
+                        lcSet.add(lc);                        
+                        childCommentMap.put(parentCommentId, lcSet);
+                    }
+                } else {
+                    //this is a parent comment.
+                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);
+                    parentCommentMap.put(commentId, lc);
+                }
+            }
+
+            List<UserComment> comments = new ArrayList<UserComment>();
+
+            for (Map.Entry<Integer, UserComment> e : parentCommentMap.entrySet()) {
+                Integer parentId = e.getKey();
+                UserComment parentComment = e.getValue();
+                comments.add(parentComment);
+
+                Set<UserComment> childComments = childCommentMap.get(parentId);
+                if (childComments != null) {
+                    comments.addAll(childComments);
+                }
+            }
+
+            return comments;
+        } catch (SQLException sqe) {
+            LOG.error("SQL Error", sqe);
+            throw sqe;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+
+    private UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt, boolean loadOnlyMostRecentComment) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        if (!isAuthorizedForUserComments(sessID)) {
+            throw new SecurityException("This user does not have access to view comments");
+        }
+
+        //Select VariantCommentGroup
+        TableSchema lcgTable = MedSavantDatabase.UserCommentGroupTableSchema;
+        SelectQuery sq = new SelectQuery();//lcgTable.getTable());
+        sq.addFromTable(lcgTable.getTable());
+        ComboCondition cc
+                = ComboCondition.and(
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REFERENCE_ID), refId),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_CHROMOSOME), chrom),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_START_POSITION), start_position),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REF), ref),
+                        BinaryCondition.equalTo(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt)
+                );
+        sq.addCondition(cc);
+        sq.addColumns(lcgTable.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID));
+        ResultSet rs = null;
+        int groupId = 0;
+        try {
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
+
+            if (rs.next()) {
+                groupId = rs.getInt(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID);
+            } else {
+                //No comments started for this variant! 
+                return null;
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+
+        Date modDate = null;
+        List<UserComment> comments = getUserCommentsForGroup(sessID, groupId, loadOnlyMostRecentComment);
+        if (comments.size() > 0) {
+            UserComment lastComment = comments.get(comments.size() - 1);
+            modDate = lastComment.getModificationDate();
+        }
+
+        return new UserCommentGroup(groupId, projectId, refId, chrom, start_position, end_position, ref, alt, modDate, comments);
+    }
+
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException, SessionExpiredException {
 
         //generate conditions from dna ids
@@ -1666,13 +2112,4 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryCondition.equalTo(column, "T"));
     }
 
-    private Annotation[] getAnnotationsFromIDs(int[] annotIDs, String sessID) throws RemoteException, SessionExpiredException, SQLException {
-        int numAnnotations = annotIDs.length;
-        Annotation[] annotations = new Annotation[numAnnotations];
-        for (int i = 0; i < numAnnotations; i++) {
-            annotations[i] = AnnotationManager.getInstance().getAnnotation(sessID, annotIDs[i]);
-            LOG.info("\t" + (i + 1) + ". " + annotations[i].getProgram() + " " + annotations[i].getReferenceName() + " " + annotations[i].getVersion());
-        }
-        return annotations;
-    }
 }

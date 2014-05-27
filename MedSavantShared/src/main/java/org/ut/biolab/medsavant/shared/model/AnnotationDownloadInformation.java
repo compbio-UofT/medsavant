@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.NetworkUtils;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 
 /**
@@ -102,13 +103,13 @@ public class AnnotationDownloadInformation implements Serializable {
      * Static helper variables / methods
      */    
     
-    private static final String databaseURL = "http://compbio.cs.toronto.edu/savant/data/dropbox/newAnnotationDirectory.xml";
+    //private static final String databaseURL = "http://compbio.cs.toronto.edu/savant/data/dropbox/newAnnotationDirectory.xml";
     private static File downloadAnnotationDatabase() throws IOException {
         String targetFileName = "AnnotationDatabase.xml";
         File targetDir = DirectorySettings.getTmpDirectory();
         File tgt = new File(targetDir, targetFileName);
         //if(!tgt.exists()){         
-        NetworkUtils.downloadFile(new URL(databaseURL), targetDir, targetFileName);
+        NetworkUtils.downloadFile(WebResources.ANNOTATION_DIRECTORY_URL, targetDir, targetFileName);
         //}
         return tgt;
     }

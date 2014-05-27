@@ -1,32 +1,25 @@
 /**
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- *
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.app.page;
 
-import org.ut.biolab.medsavant.client.app.component.FlowView;
 import java.awt.BorderLayout;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -40,6 +33,7 @@ import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  *
@@ -49,7 +43,7 @@ public class AppStoreLandingPage implements AppStorePage {
 
     private final AppStoreInstalledPage installedPage;
     private final AppInfoFetcher fetcher;
-    private FlowView flowView;
+    private JPanel appListView;
     private final JTabbedPane parent;
     private final AppInstaller installer;
 
@@ -100,20 +94,27 @@ public class AppStoreLandingPage implements AppStorePage {
         p.setLayout(new BorderLayout());
         
         JPanel container = ViewUtil.getClearPanel();
-        container.setLayout(new MigLayout("fillx,insets 30"));
+        container.setLayout(new MigLayout("fillx,insets 0"));
 
-        flowView = new FlowView();
-        flowView.setBorder(BorderFactory.createEmptyBorder());
-        container.add(ViewUtil.getLargeGrayLabel("Available apps"),"wrap");
-        container.add(flowView,"growx 1.0");
+        appListView = ViewUtil.getClearPanel();
+        appListView.setLayout(new MigLayout("wrap, fillx, insets 0"));
         
-        p.add(new StandardAppContainer(container),BorderLayout.CENTER);
+        JLabel titleLabel = ViewUtil.getLargeSerifLabel("Available Apps");
+        
+        container.add(titleLabel,"wrap");
+        container.add(appListView,"growx 1.0");
+        
+        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
+        
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        p.add(sac,BorderLayout.CENTER);
+        sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         return p;
     }
 
     private synchronized void setAppInfo(List<AppInfo> info) {
-        flowView.removeAll();
+        appListView.removeAll();
 
         Set<AppInfo> installRegistry = installer.getInstallRegistry();
 
@@ -127,9 +128,9 @@ public class AppStoreLandingPage implements AppStorePage {
                 }
             }
             AppInfoFlowView infoBox = new AppInfoFlowView(i, parent, installedPage, installedAlready, canUpdate);
-            flowView.add(infoBox);
+            appListView.add(infoBox, "width 100%");
         }
 
-        flowView.updateUI();
+        appListView.updateUI();
     }
 }

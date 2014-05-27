@@ -29,8 +29,8 @@ import java.io.Serializable;
  */
 public class AnnotationFormat implements Serializable {
 
-    public static final String ANNOTATION_FORMAT_DEFAULT = "Standard Variant Conditions";
-    public static final String ANNOTATION_FORMAT_CUSTOM_VCF = "VCF Conditions";
+    public static final String ANNOTATION_FORMAT_DEFAULT = "VCF";
+    public static final String ANNOTATION_FORMAT_CUSTOM_VCF = "VCF Info";
 
     private final String program;
     private final String version;

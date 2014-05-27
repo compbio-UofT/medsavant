@@ -1,7 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.app.mendelclinic.controller;
 
@@ -35,13 +43,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.patient.PedigreeFields;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.client.patient.pedigree.PedigreeFields;
 import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.DataRetriever;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
-import org.ut.biolab.medsavant.client.view.SplitScreenPanel;
+import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.SearchableTablePanel;
 
 import org.ut.biolab.medsavant.app.mendelclinic.controller.MendelWorker.SimplePatientSet;
@@ -96,8 +104,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         taskWorker.addLog("Preparing results...");
 
         String pageName = MendelPanel.PAGE_NAME;
-        String[] columnNames = new String[]{"Chromosome", "Position", "Reference", "Alternate", "Type", "Samples", "Genes"};
-        Class[] columnClasses = new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, String.class};
+        String[] columnNames = new String[]{"Chromosome", "Start", "End", "Reference", "Alternate", "Type", "Samples", "Genes"};
+        Class[] columnClasses = new Class[]{String.class, String.class,  String.class, String.class, String.class, String.class, String.class, String.class};
 
         System.out.println(result.keySet().size() + " variants in result set");
 
@@ -159,7 +167,7 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
                         pageName,
                         columnNames,
                         columnClasses,
-                        new int[]{},
+                        new int[]{5},
                         true,
                         false,
                         500,
@@ -210,6 +218,8 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
         stp.forceRefreshData();
         f.setPreferredSize(new Dimension(600, 600));
         f.setMinimumSize(new Dimension(600, 600));
+        
+        taskWorker.addLog("Done");
 
         if (completionLock != null) {
             synchronized (completionLock) {

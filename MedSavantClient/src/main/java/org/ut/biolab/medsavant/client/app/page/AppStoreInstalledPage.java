@@ -1,25 +1,20 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.app.page;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +39,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.font.FontFactory;
 import org.ut.biolab.medsavant.client.view.notify.Notification;
 
 /**
@@ -92,14 +88,12 @@ public class AppStoreInstalledPage implements AppStorePage {
 
     protected void updateInstalledList() {
         
-        System.out.println("Updating download list " + this.installQueue.size() + " installs in queue");
-
         view.removeAll();
         view.setLayout(new BorderLayout());
         
         JPanel container = ViewUtil.getClearPanel();
         
-        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3");
+        MigLayout ml = new MigLayout("wrap 1, gapy 5, hidemode 3, insets 0");
         container.setLayout(ml);
 
         if (!installQueue.isEmpty()) {
@@ -112,7 +106,9 @@ public class AppStoreInstalledPage implements AppStorePage {
             container.add(Box.createVerticalStrut(20));
         }
 
-        JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installed");
+        //JLabel queuedTitle = ViewUtil.getLargeGrayLabel("Installed");
+        JLabel queuedTitle = ViewUtil.getLargeSerifLabel("Installed");
+        
         container.add(queuedTitle);
 
         Set<AppInfo> installedApps = installer.getInstallRegistry();
@@ -133,7 +129,7 @@ public class AppStoreInstalledPage implements AppStorePage {
         }
 
         if (installedApps.isEmpty()) {
-            container.add(new JLabel("No apps installed"));
+            container.add(ViewUtil.getGrayItalicizedLabel("No apps installed"));
         }
 
         if (!recentlyInstalled.isEmpty() || !recentlyUninstalled.isEmpty()) {
@@ -149,7 +145,11 @@ public class AppStoreInstalledPage implements AppStorePage {
                     }));
         }
         
-        view.add(new StandardAppContainer(container),BorderLayout.CENTER);
+        JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
+        
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        view.add(sac,BorderLayout.CENTER);
+        sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
         view.updateUI();
     }

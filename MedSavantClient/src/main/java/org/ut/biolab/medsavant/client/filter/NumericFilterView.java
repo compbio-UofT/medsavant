@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.RangeCondition;

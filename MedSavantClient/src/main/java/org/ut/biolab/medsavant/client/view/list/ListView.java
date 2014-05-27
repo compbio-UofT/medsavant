@@ -27,9 +27,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -38,16 +39,16 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.util.list.NiceList;
+import org.ut.biolab.medsavant.client.view.util.list.NiceListColorScheme;
 import org.ut.biolab.medsavant.client.view.util.list.NiceListItem;
 
 /**
@@ -78,6 +79,7 @@ public class ListView extends JPanel {
     private final SourceListControlBar controlBar;
     private boolean searchBarEnabled = false;
     private final WaitPanel wp;
+    private NiceListColorScheme listColorScheme;
 
     public ListView(String page, DetailedListModel model, DetailedView view, DetailedListEditor editor) {
         pageName = page;
@@ -109,9 +111,7 @@ public class ListView extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     detailedEditor.addItems();
-                    // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
-
-                    if (detailedEditor.doesRefreshAfterAdding() && LoginController.getInstance().isLoggedIn()) {
+                    if (detailedEditor.doesRefreshAfterAdding()) {
                         refreshList();
                     }
                 }
@@ -146,7 +146,7 @@ public class ListView extends JPanel {
 
             });
         }
-
+        
         if (detailedEditor.doesImplementDeleting()) {
 
             controlBar.createAndAddButton(MacIcons.MINUS, new ActionListener() {
@@ -156,7 +156,7 @@ public class ListView extends JPanel {
                     detailedEditor.deleteItems(getSelectedRows());
                     // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
 
-                    if (detailedEditor.doesRefreshAfterDeleting() && LoginController.getInstance().isLoggedIn()) {
+                    if (detailedEditor.doesRefreshAfterDeleting()) {
                         refreshList();
                     }
                 }
@@ -268,10 +268,14 @@ public class ListView extends JPanel {
 
             @Override
             protected void showSuccess(Object[][] result) {
+                //System.out.println("Fetched new list");
                 setList(result);
                 isFetching = false;
                 synchronized (fetch) {
                     fetch.notifyAll();
+                }
+                if (result.length == 0) {
+                    detailedView.setSelectedItem(new Object[]{});
                 }
             }
 
@@ -296,11 +300,40 @@ public class ListView extends JPanel {
             firstVisibleColumn++;
         }
 
-        list = new NiceList();
-        list.startTransaction();
-        for (Object[] row : data) {
-            list.addItem(new NiceListItem(row[firstVisibleColumn].toString(), row));
+        Set<NiceListItem> selectedItems;
+        if (list != null) {
+            selectedItems = new HashSet<NiceListItem>(list.getSelectedItems());
+        } else {
+            selectedItems = new HashSet<NiceListItem>(); // empty set, for simplicity of not having to null check later on
         }
+
+        list = new NiceList();
+        if (listColorScheme != null) {
+            list.setColorScheme(listColorScheme);
+        }
+        list.startTransaction();
+
+        List<Integer> selectedIndicies = new ArrayList<Integer>();
+
+        int counter = 0;
+        for (Object[] row : data) {
+            NiceListItem nli = new NiceListItem(row[firstVisibleColumn].toString(), row);
+            list.addItem(nli);
+
+            if (selectedItems.contains(nli)) {
+                selectedIndicies.add(counter);
+            }
+            counter++;
+        }
+
+        /*
+         int[] selectedIndiciesArray = new int[selectedIndicies.size()];
+        
+         System.out.println("Reselecting "  + selectedIndicies.size() + " items");
+         for (int i = 0; i < selectedIndicies.size();i++) {
+         System.out.println("Reselecting "  + list.getItem(selectedIndicies.get(i)).toString() + " at index " + selectedIndicies.get(i));
+         selectedIndiciesArray[i] = selectedIndicies.get(i);
+         }*/
         list.endTransaction();
 
         wp.setBackground(list.getColorScheme().getBackgroundColor());
@@ -334,20 +367,25 @@ public class ListView extends JPanel {
             });
         }
 
-        list.getSelectionModel().setSelectionInterval(0, 0);
+        if (selectedIndicies.isEmpty()) {
+            list.selectItemAtIndex(0);
+        } else {
+            list.selectItemsAtIndicies(selectedIndicies);
+        }
 
         JScrollPane jsp = ViewUtil.getClearBorderlessScrollPane(list);
         jsp.setHorizontalScrollBar(null);
 
-        JPanel topPanel = ViewUtil.getClearPanel();
+        JPanel topPanel = new JPanel();
         topPanel.setLayout(new MigLayout("wrap, fillx"));
-        
+
         topPanel.add(ViewUtil.getEmphasizedLabel(pageName.toUpperCase()));
-        
+        topPanel.setBackground(list.getColorScheme().getBackgroundColor());
+
         if (searchBarEnabled) {
-            topPanel.add(list.getSearchBar(),"growx 1.0");
+            topPanel.add(list.getSearchBar(), "growx 1.0");
         }
-        showCard.add(topPanel,BorderLayout.NORTH);
+        showCard.add(topPanel, BorderLayout.NORTH);
 
         showCard.add(jsp, BorderLayout.CENTER);
 
@@ -360,6 +398,9 @@ public class ListView extends JPanel {
     }
 
     void selectItemWithKey(final String key) {
+        
+        System.out.println("Selecting item with key " + key);
+        
         new Thread(new Runnable() {
 
             @Override
@@ -379,6 +420,7 @@ public class ListView extends JPanel {
     }
 
     void selectItemAtIndex(final int i) {
+        //System.out.println("Selecting item at index " + i);
         new Thread(new Runnable() {
 
             @Override
@@ -395,5 +437,20 @@ public class ListView extends JPanel {
             }
 
         }).start();
+
+    }
+    
+    public void setSelectedItemText(String text) {
+        NiceListItem item = list.getSelectedItems().get(0);
+        item.setLabel(text);
+        list.updateUI();
+    }
+
+
+    void setColorScheme(NiceListColorScheme cs) {
+        listColorScheme = cs;
+        if (list != null) {
+            updateShowCard();
+        }
     }
 }

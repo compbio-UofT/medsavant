@@ -67,4 +67,5 @@ public interface CohortManagerAdapter extends Remote {
     @Modifier(type=COHORT)
     public void removePatientReferences(String sessID, int projID, int patientId) throws SQLException, RemoteException, SessionExpiredException;
     public int getNumVariantsInCohort(String sessID, int projID, int referenceId, int cohID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException, SessionExpiredException;
+
 }

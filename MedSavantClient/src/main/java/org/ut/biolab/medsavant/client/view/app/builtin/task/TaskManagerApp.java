@@ -1,7 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.view.app.builtin.task;
 
@@ -32,6 +40,7 @@ import org.ut.biolab.medsavant.client.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.client.view.list.DetailedView;
 import org.ut.biolab.medsavant.client.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 
@@ -70,15 +79,18 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
                     for (TaskWorker t : tasks) {
                         results[counter++] = new Object[]{t.getTaskName(), t};
                     }
-                    
+
                     // server general log
-                    TaskWorker t = new ServerLogTaskWorker();
+                    TaskWorker t;
+                    
+                    t = new ServerLogTaskWorker();
                     results[counter] = new Object[]{t.getTaskName(), t};
                     counter++;
-                    
+
                     // server job log
                     t = new ServerJobMonitorTaskWorker();
-                    results[counter] = new Object[]{t.getTaskName(), t};                    
+                    results[counter++] = new Object[]{t.getTaskName(), t};
+                    
                     return results;
                 }
 
@@ -111,8 +123,8 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
         });
     }
-    
-     public void showErrorForTask(final TaskWorker t, final Exception e) {
+
+    public void showErrorForTask(final TaskWorker t, final Exception e) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -177,14 +189,30 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             detailedView.updateView(t);
         }
     }
-    
+
     class TaskDetailedView extends DetailedView {
+
         private static final int REFRESH_DELAY = 2000;
         private TaskWorker selectedWorker;
-        private Timer refreshTimer;        
+        private Timer refreshTimer;
+        private StandardFixableWidthAppPanel container;
+        private final JPanel logPanel;
+        private final BlockingPanel blockingPanel;
+        private final JPanel statusPanel;
+
         public TaskDetailedView() {
             super("Task Manager");
             refreshTimer = null;
+
+            container = new StandardFixableWidthAppPanel(true, false);
+            this.setLayout(new BorderLayout());
+            this.add(container, BorderLayout.CENTER);
+
+            statusPanel = container.addBlock();
+            logPanel = container.addBlock();
+
+            blockingPanel = new BlockingPanel("No item selected", container);
+            this.add(blockingPanel, BorderLayout.CENTER);
         }
 
         @Override
@@ -215,39 +243,33 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
 
         private void updateView(final TaskWorker t) {
 
-            if(refreshTimer != null){
+            if (refreshTimer != null) {
                 refreshTimer.stop();
                 refreshTimer = null;
             }
             // show a block panel
             if (t == null) {
-                this.removeAll();
-                BlockingPanel p;
-                this.add(p = new BlockingPanel("No item selected", new JPanel()));
-                p.block();
+                blockingPanel.block();
                 this.updateUI();
                 return;
             }
 
+            blockingPanel.unblock();
+
             // show task information
-            this.removeAll();
-
-            this.setLayout(new BorderLayout());
-
-            JPanel view = new JPanel();
-            view.setBackground(ViewUtil.getDefaultBackgroundColor());
+            statusPanel.removeAll();
+            logPanel.removeAll();
 
             MigLayout l = new MigLayout("fillx, nogrid, insets 0");
-            view.setLayout(l);
+            logPanel.setLayout(l);
 
-            JLabel taskTitle = ViewUtil.getLargeGrayLabel(t.getTaskName());
-            view.add(taskTitle, "wrap");
+            container.setTitle(t.getTaskName());
 
             if (t.getCurrentStatus() != TaskStatus.PERSISTENT && t.getCurrentStatus() != TaskStatus.PERSISTENT_AUTOREFRESH) {
-                view.add(new JLabel(t.getCurrentStatus().toString()));
+                statusPanel.add(new JLabel(t.getCurrentStatus().toString()));
 
                 if (t.getCurrentStatus() == TaskStatus.INPROGRESS) {
-                    view.add(ViewUtil.getIndeterminateProgressBar());
+                    statusPanel.add(ViewUtil.getIndeterminateProgressBar());
                 }
             }
 
@@ -262,7 +284,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
                     }
 
                 });
-                view.add(appButton);
+                statusPanel.add(appButton);
             }
 
             // add a refresh button
@@ -276,14 +298,14 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
                     }
 
                 };
-                
+
                 refreshButton.addActionListener(al);
-                view.add(refreshButton);
-                if(t.getCurrentStatus() == TaskStatus.PERSISTENT_AUTOREFRESH){
+                statusPanel.add(refreshButton);
+                if (t.getCurrentStatus() == TaskStatus.PERSISTENT_AUTOREFRESH) {
                     refreshTimer = new Timer(REFRESH_DELAY, al);
-                    SwingUtilities.invokeLater(new Runnable(){
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
-                        public void run(){
+                        public void run() {
                             refreshTimer.start();
                         }
                     });
@@ -294,7 +316,7 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             if (t.getCurrentStatus() == TaskWorker.TaskStatus.INPROGRESS) {
 
                 JButton cancelButton;
-                view.add(cancelButton = new JButton("Cancel"));
+                statusPanel.add(cancelButton = new JButton("Cancel"));
                 cancelButton.addActionListener(new ActionListener() {
 
                     @Override
@@ -311,19 +333,20 @@ public class TaskManagerApp implements LaunchableApp, Listener<TaskWorker> {
             for (GeneralLog s : log) {
                 tableData[counter++] = new Object[]{
                     // a timestamped string
-                    (s.getTimestamp() == null ? "" : new Date(s.getTimestamp().getTime()).toLocaleString() + " - ") 
-                        + s.getDescription()};
+                    (s.getTimestamp() == null ? "" : new Date(s.getTimestamp().getTime()).toLocaleString() + " - ")
+                    + s.getDescription()};
             }
 
-            StripyTable table = new StripyTable(tableData, new String[]{"Log"});
-            table.disableSelection();
-            view.add(table.getTableHeader(), "newline, growx");
-            view.add(ViewUtil.getClearBorderlessScrollPane(table), "newline 0, growx 1.0, height 100%");
+            if (tableData.length > 0) {
+                StripyTable table = new StripyTable(tableData, new String[]{"Log"});
+                table.disableSelection();
+                logPanel.add(table, "newline 0, growx 1.0");
+                table.setRowSelectionAllowed(false);
+            } else {
+                logPanel.add(ViewUtil.getGrayItalicizedLabel("No logs"));
+            }
 
-            table.setRowSelectionAllowed(false);
-
-            JPanel container = new StandardAppContainer(view);
-            this.add(container, BorderLayout.CENTER);
+            
 
             this.updateUI();
         }

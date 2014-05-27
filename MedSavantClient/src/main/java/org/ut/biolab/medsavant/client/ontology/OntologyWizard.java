@@ -35,15 +35,12 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
@@ -53,6 +50,7 @@ import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 /**
  *
@@ -131,16 +129,16 @@ public class OntologyWizard extends WizardDialog {
                         type = ((OntologyListItem)typeCombo.getSelectedItem()).getType();
                         switch (type) {
                             case GO:
-                                oboField.setText(OntologyManagerAdapter.GO_OBO_URL.toString());
-                                mappingField.setText(OntologyManagerAdapter.GO_TO_GENES_URL.toString());
+                                oboField.setText(WebResources.GO_OBO_URL.toString());
+                                mappingField.setText(WebResources.GO_TO_GENES_URL.toString());
                                 break;
                             case HPO:
-                                oboField.setText(OntologyManagerAdapter.HPO_OBO_URL.toString());
-                                mappingField.setText(OntologyManagerAdapter.HPO_TO_GENES_URL.toString());
+                                oboField.setText(WebResources.HPO_OBO_URL.toString());
+                                mappingField.setText(WebResources.HPO_TO_GENES_URL.toString());
                                 break;
                             case OMIM:
-                                oboField.setText(OntologyManagerAdapter.OMIM_OBO_URL.toString());
-                                mappingField.setText(OntologyManagerAdapter.OMIM_TO_HPO_URL.toString());
+                                oboField.setText(WebResources.OMIM_OBO_URL.toString());
+                                mappingField.setText(WebResources.OMIM_TO_HPO_URL.toString());
                                 break;
                         }
                     }

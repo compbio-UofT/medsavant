@@ -44,28 +44,6 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  */
 public interface OntologyManagerAdapter extends Remote {
 
-
-    public static final String basePath = "http://medsavant.com/serve/ontology/";
-
-    public static final URL GO_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "gene_ontology.1_2.obo");
-    public static final URL HPO_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "human-phenotype-ontology.obo");
-    public static final URL OMIM_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "omim.obo");
-
-    public static final URL GO_TO_GENES_URL = NetworkUtils.getKnownGoodURL(basePath + "gene_association.goa_human.gz");
-    public static final URL HPO_TO_GENES_URL = NetworkUtils.getKnownGoodURL(basePath + "phenotype_to_genes.txt");
-    public static final URL OMIM_TO_HPO_URL = NetworkUtils.getKnownGoodURL(basePath + "phenotype_annotation.tab");
-
-
-    /*
-    public static final URL GO_OBO_URL = NetworkUtils.getKnownGoodURL("http://geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo");
-    public static final URL HPO_OBO_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/ontology/human-phenotype-ontology.obo");
-    public static final URL OMIM_OBO_URL = NetworkUtils.getKnownGoodURL("http://obo.svn.sourceforge.net/viewvc/obo/phenotype-commons/annotations/OMIM/omim.obo");
-
-    public static final URL GO_TO_GENES_URL = NetworkUtils.getKnownGoodURL("http://www.geneontology.org/gene-associations/gene_association.goa_human.gz");
-    public static final URL HPO_TO_GENES_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/annotation/phenotype_to_genes.txt");
-    public static final URL OMIM_TO_HPO_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/annotation/phenotype_annotation.tab");
-    *
-    */
     /**
      * Check the status of a lengthy process, giving the user the option to cancel.
      */

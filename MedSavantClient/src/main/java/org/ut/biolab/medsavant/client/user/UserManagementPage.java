@@ -30,7 +30,7 @@ import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
@@ -43,6 +43,8 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.component.BlockingPanel;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -99,7 +101,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
         @Override
         public void addItems() {
-            NewUserDialog npd = new NewUserDialog();
+            CreateUserDialog npd = new CreateUserDialog();
             npd.setVisible(true);
         }
 
@@ -110,9 +112,9 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             String name = null;
             if (items.size() == 1) {
                 name = (String) items.get(0)[0];
-                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>" + name + "</i>?<br>This cannot be undone.</html>");
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>" + name + "</i>?<br><br>This cannot be undone.</html>");
             } else {
-                result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these " + items.size() + " users?\nThis cannot be undone.");
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove these " + items.size() + " users?<br><br>This cannot be undone.</html>");
             }
 
             if (result == DialogUtils.YES) {
@@ -136,7 +138,11 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
                             }
                             setVisible(false);
                             if (numCouldntRemove != items.size()) {
-                                DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " user(s)");
+                                if (items.size() == 1) {
+                                    DialogUtils.displayMessage("<html>Removed <i>" + items.get(0)[0] + "</i></html>");
+                                } else {
+                                    DialogUtils.displayMessage("Removed " + (items.size() - numCouldntRemove) + " user(s)");
+                                }
                             }
                         } catch (Throwable ex) {
                             setVisible(false);
@@ -155,48 +161,20 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
 
         private final String[] FIELD_NAMES = new String[]{"User Level"};
         private final JPanel details;
-        private final JPanel content;
         private String name;
         private DetailsWorker worker;
-        private CollapsiblePane infoPanel;
         private final BlockingPanel blockingPanel;
+        private final StandardFixableWidthAppPanel canvas;
 
         public UserDetailedView() {
             super(pageName);
-
-            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-            viewContainer.setLayout(new BorderLayout());
-
-            JPanel infoContainer = ViewUtil.getClearPanel();
-            ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-            blockingPanel = new BlockingPanel("No user selected",ViewUtil.getClearBorderlessScrollPane(infoContainer));
-            viewContainer.add(blockingPanel, BorderLayout.CENTER);
-
-            CollapsiblePanes panes = new CollapsiblePanes();
-            panes.setOpaque(false);
-            infoContainer.add(panes);
-
-            infoPanel = new CollapsiblePane();
-            infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-
-            infoPanel.setCollapsible(false);
-            panes.add(infoPanel);
-            panes.addExpansion();
-
-            content = new JPanel();
-            content.setLayout(new BorderLayout());
-            infoPanel.setLayout(new BorderLayout());
-            infoPanel.add(content, BorderLayout.CENTER);
-
-            details = ViewUtil.getClearPanel();
-
-            //content.setLayout(new BorderLayout());
-
-            //content.add(details, BorderLayout.CENTER);
-            content.add(details);
-            
+            canvas = new StandardFixableWidthAppPanel();
+            blockingPanel = new BlockingPanel("No user selected",canvas);
+            details = canvas.addBlock();
             blockingPanel.block();
+            
+            this.setLayout(new BorderLayout());
+            this.add(blockingPanel,BorderLayout.CENTER);
         }
 
         @Override
@@ -208,7 +186,7 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
             }
             
             name = (String) item[0];
-            infoPanel.setTitle(name);
+            canvas.setTitle(name);
 
             details.removeAll();
             details.updateUI();
@@ -246,9 +224,9 @@ public class UserManagementPage extends AppSubSection implements Listener<UserEv
         @Override
         public void setMultipleSelections(List<Object[]> items) {
             if (items.isEmpty()) {
-                infoPanel.setTitle("");
+                canvas.setTitle("");
             } else {
-                infoPanel.setTitle("Multiple users (" + items.size() + ")");
+                canvas.setTitle("Multiple users (" + items.size() + ")");
             }
             details.removeAll();
             details.updateUI();

@@ -25,7 +25,7 @@ import java.awt.Color;
  *
  * @author mfiume
  */
-class GrayscaleNiceListColorScheme implements NiceListColorScheme {
+public class GrayscaleNiceListColorScheme implements NiceListColorScheme {
 
     private final Color backgroundColor = new Color(237,237,237);//new Color(213, 233, 251);
     private final Color selectedColor = new Color(220,220,220);//new Color(191, 226, 250);

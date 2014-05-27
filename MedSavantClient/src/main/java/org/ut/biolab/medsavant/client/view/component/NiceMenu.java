@@ -1,11 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.view.component;
 
+import com.explodingpixels.macwidgets.MacPainterFactory;
 import com.explodingpixels.macwidgets.MacWidgetFactory;
+import com.explodingpixels.macwidgets.UnifiedToolBar;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -34,11 +44,12 @@ public class NiceMenu extends JPanel {
 
     public NiceMenu() {
         this(MenuLocation.TOP);
+        this.setBackground(ViewUtil.getPrimaryMenuColor());
     }
 
     public NiceMenu(MenuLocation location) {
 
-        this.setBackground(ViewUtil.getPrimaryMenuColor());
+       
 
         if (location == MenuLocation.TOP) {
             this.setBorder(ViewUtil.getBottomLineBorder());
@@ -83,7 +94,8 @@ public class NiceMenu extends JPanel {
         JLabel titleLabel = new JLabel("");
         titleLabel.setText(title);
         titleLabel.setForeground(new Color(64, 64, 64));
-        titleLabel.setFont(FontFactory.getTitleFont());
+        //titleLabel.setForeground(Color.white);
+        titleLabel.setFont(FontFactory.getMenuTitleFont());
         setCenterComponent(titleLabel);
 
         centerComponent.invalidate();

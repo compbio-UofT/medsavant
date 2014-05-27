@@ -43,6 +43,9 @@ import org.ut.biolab.medsavant.shared.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
 import org.ut.biolab.medsavant.shared.util.Modifier;
 import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
+import org.ut.biolab.medsavant.shared.model.UserComment;
+import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
+import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
 
 
 /**
@@ -81,7 +84,7 @@ public interface VariantManagerAdapter extends Remote {
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException, SessionExpiredException;
-    public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException;
+    public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException, SessionExpiredException;	
     public int getVariantCount(String sessID, int projID, int refID) throws SQLException, RemoteException, SessionExpiredException;
     public int getFilteredVariantCount(String sessID,int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
     public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException, SessionExpiredException;
@@ -114,5 +117,12 @@ public interface VariantManagerAdapter extends Remote {
     public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException, SessionExpiredException;
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException, SessionExpiredException;
     public boolean willApproximateCountsForConditions(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type = LOCUS_COMMENT)
+    public int replyToUserCommentGroup(String sessID, int locusCommentGroupId, UserComment locusComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException;
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException;    
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
 }
 

@@ -333,7 +333,16 @@ public class PooledConnection implements Connection {
 
     public void executeUpdate(String query) throws SQLException {
         //LOG.debug(query);
-        createStatement().executeUpdate(query);
+        Statement st = null;
+        try{
+            st = createStatement();
+            st.executeUpdate(query);
+        }finally{
+            if(st != null){
+                st.close();
+            }
+        }
+        //createStatement().executeUpdate(query);
     }
 
     public void executeUpdate(String query, Object... args) throws SQLException {

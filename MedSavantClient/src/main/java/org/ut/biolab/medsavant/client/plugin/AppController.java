@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +40,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.client.app.MedSavantAppFetcher;
 
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -55,14 +56,14 @@ import org.ut.biolab.medsavant.shared.util.WebResources;
  * @author mfiume, tarkvara
  */
 public class AppController extends Controller {
-    
+
     private static final Log LOG = LogFactory.getLog(AppController.class);
     private static final String UNINSTALL_FILENAME = ".uninstall_apps";
     private static AppController instance;
     private File uninstallFile;
     private List<String> pluginsToRemove = new ArrayList<String>();
     private Map<String, AppDescriptor> knownPlugins = new HashMap<String, AppDescriptor>();
-    private Map<String, MedSavantApp> loadedPlugins = new HashMap<String, MedSavantApp>();
+    private Map<String, MedSavantApp> loadedPlugins = new ConcurrentHashMap<String, MedSavantApp>();
     private Map<String, String> pluginErrors = new LinkedHashMap<String, String>();
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
@@ -83,7 +84,7 @@ public class AppController extends Controller {
     private AppController() {
         try {
             uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
-            
+
             LOG.debug(String.format("Uninstall list %s.", UNINSTALL_FILENAME));
             if (uninstallFile.exists()) {
                 deleteFileList(uninstallFile);
@@ -149,7 +150,7 @@ public class AppController extends Controller {
                 }
             }
         }
-        
+
         Set<URL> jarURLs = new HashSet<URL>();
         for (AppDescriptor desc : knownPlugins.values()) {
             try {
@@ -161,7 +162,8 @@ public class AppController extends Controller {
         }
         if (jarURLs.size() > 0) {
             pluginLoader = new PluginLoader(jarURLs.toArray(new URL[0]), getClass().getClassLoader());
-            
+
+            final Semaphore waitSem = new Semaphore(-knownPlugins.size() + 1);
             for (final AppDescriptor desc : knownPlugins.values()) {
                 if (!pluginErrors.containsKey(desc.getID())) {
                     new Thread("PluginLoader-" + desc) {
@@ -169,6 +171,7 @@ public class AppController extends Controller {
                         public void run() {
                             try {
                                 loadPlugin(desc);
+                                waitSem.release();
                             } catch (Throwable x) {
                                 LOG.error(String.format("Unable to load %s.", desc.getName()), x);
                                 pluginErrors.put(desc.getID(), x.getClass().getName());
@@ -176,11 +179,21 @@ public class AppController extends Controller {
                             }
                         }
                     }.start();
+                }else{
+                    waitSem.release();
                 }
             }
+            LOG.info("Waiting for Apps to load...");
+            try{
+                waitSem.acquire();
+            }catch(InterruptedException ie){
+                LOG.error("Interrupted while waiting for apps to load");
+            }
+            LOG.info("All Apps loaded.");
+            waitSem.release();
         }
     }
-    
+
     public List<AppDescriptor> getDescriptors() {
         List<AppDescriptor> result = new ArrayList<AppDescriptor>();
         result.addAll(knownPlugins.values());
@@ -197,7 +210,7 @@ public class AppController extends Controller {
             public void run() {
                 String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
                 if (!(new File(directoryPath + "/done.txt")).exists()) {
-                    URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
+                    URL pathToGMData = WebResources.GENEMANIA_DATA_URL;
                     System.out.println("Downloding GeneMania data from " + pathToGMData.toString());
                     try {
                         if (true) {
@@ -245,17 +258,17 @@ public class AppController extends Controller {
         in.close();
         out.close();
     }
-    
+
     public MedSavantApp getPlugin(String id) {
         return loadedPlugins.get(id);
     }
-    
-    public List<MedSavantApp> getPluginsOfClass(Class c) {
+
+    public List<MedSavantApp> getPluginsOfClass(Class c) {        
         List<MedSavantApp> results = new ArrayList<MedSavantApp>();
-        for (AppDescriptor ad : this.getDescriptors()) {
+        for (AppDescriptor ad : this.getDescriptors()) {            
             try {
                 MedSavantApp appInstance = getPlugin(ad.getID());
-                if (c.isInstance(appInstance)) {
+                if (c.isInstance(appInstance)) {                    
                     results.add(appInstance);
                 }
             } catch (Exception e) {
@@ -265,14 +278,14 @@ public class AppController extends Controller {
         LOG.info(results.size() + " apps of class " + c.getSimpleName());
         return results;
     }
-    
+
     public boolean queuePluginForRemoval(String id) {
         FileWriter fstream = null;
         boolean success = false;
         try {
             AppDescriptor info = knownPlugins.get(id);
             LOG.info(String.format("Adding plugin %s to uninstall list %s.", info.getFile().getAbsolutePath(), uninstallFile.getPath()));
-            
+
             if (!uninstallFile.exists()) {
                 uninstallFile.createNewFile();
             }
@@ -282,11 +295,11 @@ public class AppController extends Controller {
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(info.getFile().getAbsolutePath() + "\n");
             out.close();
-            
+
             pluginsToRemove.add(id);
-            
+
             fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
-            
+
             success = true;
         } catch (IOException ex) {
             LOG.error(String.format("Error uninstalling plugin: %s.", uninstallFile), ex);
@@ -296,14 +309,14 @@ public class AppController extends Controller {
             } catch (IOException ignored) {
             }
         }
-        
+
         return success;
     }
-    
+
     public boolean isPluginQueuedForRemoval(String id) {
         return pluginsToRemove.contains(id);
     }
-    
+
     public String getPluginStatus(String id) {
         if (pluginsToRemove.contains(id)) {
             return "Queued for removal";
@@ -321,13 +334,13 @@ public class AppController extends Controller {
         }
         return "Unknown";
     }
-    
+
     private void deleteFileList(File fileListFile) {
         BufferedReader br = null;
         String line = "";
         try {
             br = new BufferedReader(new FileReader(fileListFile));
-            
+
             while ((line = br.readLine()) != null) {
                 LOG.info(String.format("Uninstalling %s.", line));
                 if (!new File(line).delete()) {
@@ -344,7 +357,7 @@ public class AppController extends Controller {
         }
         fileListFile.delete();
     }
-    
+
     private void copyBuiltInPlugins() {
         File destDir = DirectorySettings.getPluginsDirectory();
         File srcDir = null;
@@ -366,15 +379,22 @@ public class AppController extends Controller {
             LOG.error(String.format("Unable to copy builtin plugins from %s to %s.", srcDir.getAbsolutePath(), destDir), x);
         }
     }
-    
-    private void loadPlugin(AppDescriptor desc) throws Throwable {
+
+    private void loadPlugin(AppDescriptor desc) throws Throwable {                
         LOG.debug(String.format("loadPlugin(\"%s\")", desc.getID()));
-        Class pluginClass = pluginLoader.loadClass(desc.getClassName());
-        MedSavantApp plugin = (MedSavantApp) pluginClass.newInstance();
+        try {
+            Class pluginClass = pluginLoader.loadClass(desc.getClassName());
+            MedSavantApp plugin = (MedSavantApp) pluginClass.newInstance();
+            //System.out.println(Thread.currentThread().getId()+": "+"Got title from loaded plugin: "+plugin.getTitle());                        
+            loadedPlugins.put(desc.getID(), plugin);
+            LOG.debug(String.format("Firing LOADED event to %s listeners.", listeners.size()));
+            fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
         //plugin.setDescriptor(desc);
-        loadedPlugins.put(desc.getID(), plugin);
-        LOG.debug(String.format("Firing LOADED event to %s listeners.", listeners.size()));
-        fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID()));
+
     }
 
     /**
@@ -392,14 +412,14 @@ public class AppController extends Controller {
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
-            
+
             boolean isCompatible;
             try {
                 isCompatible = VersionSettings.isAppSDKCompatibleWithClient(desc.getSDKVersion(), VersionSettings.getVersionString());
             } catch (Exception ex) {
                 throw new PluginVersionException("Could not determine compatibility between " + desc.getSDKVersion() + " and " + VersionSettings.getVersionString());
             }
-            
+
             if (isCompatible) {
                 if (existingDesc != null) {
                     LOG.debug(String.format("   Replaced %s.", existingDesc));
@@ -424,22 +444,21 @@ public class AppController extends Controller {
         LOG.info("Copying file " + selectedFile.getAbsolutePath() + " to " + pluginFile.getAbsolutePath());
         IOUtils.copyFile(selectedFile, pluginFile);
         LOG.info("Getting plugin information...");
-        
-        
+
         // removed February 27th 2014 by mfiume, wasn't working , TODO: re-enable and fix
         /*AppDescriptor desc = addPlugin(pluginFile);
-        LOG.info("Got plugin information");
-        if (desc != null) {
-            LOG.info("Loading plugin...");
-            if (pluginLoader == null) {
-                pluginLoader = new PluginLoader(new URL[]{pluginFile.toURI().toURL()}, getClass().getClassLoader());
-            }
-            pluginLoader.addJar(pluginFile);
-            loadPlugin(desc);
-            LOG.info("Done loading plugin");
-        }*/
+         LOG.info("Got plugin information");
+         if (desc != null) {
+         LOG.info("Loading plugin...");
+         if (pluginLoader == null) {
+         pluginLoader = new PluginLoader(new URL[]{pluginFile.toURI().toURL()}, getClass().getClassLoader());
+         }
+         pluginLoader.addJar(pluginFile);
+         loadPlugin(desc);
+         LOG.info("Done loading plugin");
+         }*/
     }
-    
+
     private boolean checkForPluginUpdate(String id) {
         try {
             if (repositoryIndex == null) {
@@ -458,13 +477,12 @@ public class AppController extends Controller {
             LOG.error(String.format("Update for %s not loaded.", id));
         }
         return false;
-        
-    }
-    
 
-     public AppDescriptor getDescriptorFromFile(File f) throws PluginVersionException {
+    }
+
+    public AppDescriptor getDescriptorFromFile(File f) throws PluginVersionException {
         XMLStreamReader reader;
-         
+
         try {
             JarFile jar = new JarFile(f);
             ZipEntry entry = jar.getEntry("plugin.xml");
@@ -524,8 +542,8 @@ public class AppController extends Controller {
                                         }
                                     }
 
-                                    if ("category".equals(readAttribute(reader,AppDescriptor.PluginXMLAttribute.NAME))) {
-                                        category = readAttribute(reader,AppDescriptor.PluginXMLAttribute.VALUE);
+                                    if ("category".equals(readAttribute(reader, AppDescriptor.PluginXMLAttribute.NAME))) {
+                                        category = readAttribute(reader, AppDescriptor.PluginXMLAttribute.VALUE);
                                         if (category == null) {
                                             currentElement = "category";
                                         }
@@ -550,9 +568,9 @@ public class AppController extends Controller {
                                         name = currentText;
                                     } else if (currentElement.equals("sdk-version")) {
                                         sdkVersion = currentText;
-                                    }else if(currentElement.equals("category")){
+                                    } else if (currentElement.equals("category")) {
                                         category = currentText;
-                                    }else if(currentElement.equals("version")){
+                                    } else if (currentElement.equals("version")) {
                                         version = currentText;
                                     }
                                 }
@@ -575,7 +593,7 @@ public class AppController extends Controller {
                 }
             }
         } catch (Exception x) {
-            LOG.error("Error parsing plugin.xml from "+f.getAbsolutePath()+": "+x);
+            LOG.error("Error parsing plugin.xml from " + f.getAbsolutePath() + ": " + x);
         }
         throw new PluginVersionException(f.getName() + " did not contain a valid plugin");
     }
@@ -593,13 +611,13 @@ public class AppController extends Controller {
     private static String readAttribute(XMLStreamReader reader, AppDescriptor.PluginXMLAttribute attr) {
         return reader.getAttributeValue(null, attr.toString().toLowerCase());
     }
-    
+
     class PluginLoader extends URLClassLoader {
-        
+
         PluginLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }
-        
+
         void addJar(File f) {
             try {
                 addURL(f.toURI().toURL());

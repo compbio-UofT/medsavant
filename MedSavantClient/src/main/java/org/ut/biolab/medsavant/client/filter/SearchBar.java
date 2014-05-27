@@ -20,12 +20,18 @@
 package org.ut.biolab.medsavant.client.filter;
 
 import com.explodingpixels.macwidgets.SourceListControlBar;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommHandler;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.AppCommRegistry;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.BAMFileComm;
+import edu.toronto.cs.medsavant.medsavant.app.api.appcomm.VariantResultComm;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
@@ -128,12 +134,12 @@ public class SearchBar extends JPanel {
 
     private void initComponents() {
 
-        this.setBackground(ViewUtil.getSecondaryMenuColor());
+        this.setBackground(ViewUtil.getSidebarColor());
         this.setBorder(ViewUtil.getSideLineBorder());
 
         setLayout(new BorderLayout());
 
-        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
+        //FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(new Color(20, 20, 20));
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
@@ -159,20 +165,6 @@ public class SearchBar extends JPanel {
         final JDialog dSave = new JDialog(MedSavantFrame.getInstance(), true);
         dSave.setTitle("Load Search Conditions");
         dSave.setResizable(false);
-
-        final JPopupMenu actionPopup = new JPopupMenu();
-        JMenuItem exportAction = new JMenuItem("Export VCF");
-        exportAction.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    new ExportVCFWizard().setVisible(true);
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Unable to launch Variant Export wizard: %s", ex);
-                }
-            }
-        });
-        actionPopup.add(exportAction);
 
         final SourceListControlBar controlbar = new SourceListControlBar();
 
@@ -253,6 +245,54 @@ public class SearchBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                final JPopupMenu actionPopup = new JPopupMenu();
+                JMenuItem exportAction = new JMenuItem("Export VCF");
+                exportAction.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        try {
+                            new ExportVCFWizard().setVisible(true);
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError("Unable to launch Variant Export wizard: %s", ex);
+                        }
+                    }
+                });
+                actionPopup.add(exportAction);
+                JMenu analyzeWith = new JMenu("Analyze with...");
+                actionPopup.add(analyzeWith);
+
+                Set<AppCommHandler> handlers = AppCommRegistry.getInstance().getHandlersForEvent(VariantResultComm.class);
+
+                final VariantResultComm event = new VariantResultComm(null);
+                for (final AppCommHandler handler : handlers) {
+                    JMenuItem item = new JMenuItem(handler.getHandlerName());
+
+                    ImageIcon icon = handler.getHandlerIcon();
+
+                    if (icon != null) {
+                        int iconSize = 22;
+                        Image img = ViewUtil.getScaledInstance(
+                                icon.getImage(),
+                                iconSize,
+                                iconSize,
+                                RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+                                true);
+                        item.setIcon(new ImageIcon(img));
+                    }
+
+                    ActionListener l = new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            handler.handleCommEvent(event);
+                        }
+
+                    };
+                    item.addActionListener(l);
+                    analyzeWith.add(item);
+                }
+
                 // 124 empirically determined to be the x position of the action button on controlbar
                 actionPopup.show(controlbar.getComponent(), 124, 0);
             }

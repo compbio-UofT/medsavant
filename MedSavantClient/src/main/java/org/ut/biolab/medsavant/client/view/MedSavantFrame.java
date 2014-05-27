@@ -29,13 +29,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import com.explodingpixels.macwidgets.MacUtils;
 import java.awt.Color;
-import java.awt.Desktop;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -44,8 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -55,6 +51,7 @@ import org.ut.biolab.medsavant.client.settings.DirectorySettings;
 import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.DashboardSectionFactory;
 import org.ut.biolab.medsavant.client.view.component.StackableJPanelContainer;
+import org.ut.biolab.medsavant.client.view.dashboard.AppSwitchPanel;
 
 /**
  *
@@ -68,8 +65,8 @@ public class MedSavantFrame extends JFrame {
     private Dashboard sessionDashboard;
     private static Map<String, Runnable> debugFunctions = new HashMap<String, Runnable>();
 
-    public static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
-    public static final String USERGUIDE_URI = "http://genomesavant.com/p/medsavant/learn";
+    //public static final String FEEDBACK_URI = "mailto:feedback@genomesavant.com?subject=MedSavant%20Feedback";
+    //public static final String USERGUIDE_URI = "http://genomesavant.com/p/medsavant/learn";   
 
     //Adds a new function under the 'Debug' menu. The debug menu is not shown if
     //it is empty
@@ -131,25 +128,6 @@ public class MedSavantFrame extends JFrame {
         AppController pc = AppController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
 
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("File");
-
-        if (!ClientMiscUtils.MAC) {
-
-            JMenuItem closeItem = new JMenuItem("Exit");
-            closeItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    instance.requestClose();
-                }
-            });
-            fileMenu.add(closeItem);
-
-        }
-
-        //bottomBar = new BottomBar();
-        //add(bottomBar, BorderLayout.SOUTH);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -157,10 +135,8 @@ public class MedSavantFrame extends JFrame {
                 requestClose();
             }
         });
-        
-        initializeSessionView();
     }
-    
+
     public void showNotification(Notification n) {
         notificationPanel.addNotification(n);
     }
@@ -175,13 +151,13 @@ public class MedSavantFrame extends JFrame {
 
         final JPanel dashBoardContainer = ViewUtil.getClearPanel();
         view.push(dashBoardContainer);
-        
+
         notificationPanel = new NotificationsPanel();
         view.push(notificationPanel);
-        
-        //bannerNotficationsPanel = new BannerNotificationsPanel();
-        //view.push(bannerNotficationsPanel);
-        
+
+        AppSwitchPanel switchPanel = new AppSwitchPanel(dashBoardContainer);
+        view.push(switchPanel);
+
         new MedSavantWorker<Void>("MedSavantFrame") {
             @Override
             protected void showProgress(double fract) {
@@ -194,12 +170,13 @@ public class MedSavantFrame extends JFrame {
             @Override
             protected Void doInBackground() throws Exception {
 
+                System.out.println("Creating dashboard");
                 Dashboard dash = new Dashboard();
                 dash.addDashboardSection(DashboardSectionFactory.getUberSection());
-
                 sessionDashboard = dash;
+                
                 dashBoardContainer.setLayout(new BorderLayout());
-                dashBoardContainer.add(dash,BorderLayout.CENTER);
+                dashBoardContainer.add(dash, BorderLayout.CENTER);
                 dashBoardContainer.updateUI();
 
                 return null;
@@ -211,7 +188,7 @@ public class MedSavantFrame extends JFrame {
     public Dashboard getDashboard() {
         return sessionDashboard;
     }
-    
+
     public void forceRestart() {
         requestRestart(false);
     }
@@ -279,5 +256,9 @@ public class MedSavantFrame extends JFrame {
         }
 
         LOG.info("Refusing to quit");
+    }
+
+    public NotificationsPanel getNotificationPanel() {
+        return this.notificationPanel;
     }
 }

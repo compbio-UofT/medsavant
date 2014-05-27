@@ -34,8 +34,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginEvent;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.project.ProjectEvent;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;

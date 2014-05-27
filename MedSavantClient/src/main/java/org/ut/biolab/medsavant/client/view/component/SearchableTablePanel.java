@@ -120,7 +120,7 @@ public class SearchableTablePanel extends JPanel {
     private JButton helpButton;
     private List<Integer> selectedRows;
     private Set<Integer> toggledRows;
-    private static Color SELECTED_COLOUR = new Color(244, 237, 147);
+    private static Color SELECTED_COLOUR = ViewUtil.getMedSavantBlueColor();
     private static Color DARK_COLOUR = ViewUtil.getAlternateRowColor();
     private final JPanel bottomPanel;
     private final JButton chooseColumnButton;
@@ -159,6 +159,7 @@ public class SearchableTablePanel extends JPanel {
                         comp.setBackground(new Color(178, 225, 92));
                     } else if (isCellSelected(row, col)) {
                         //comp.setBackground(new Color(75, 149, 229));
+                         comp.setBackground(SELECTED_COLOUR);
                     } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
                         //comp.setBackground(SELECTED_COLOUR);
                     } else if (row % 2 == 0 && !isCellSelected(row, col)) {

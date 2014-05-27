@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.client.view.util.form;
 
 import eu.hansolo.custom.SteelCheckBox;
 import java.awt.Color;
+import java.awt.Font;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderPasswordField;
@@ -27,7 +28,13 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
     private LinkedHashMap<NiceFormField, JComponent> map; // keeps elements in order of insertion
     private boolean showEditButton;
     private boolean isInEditMode;
+    
     private final List<Listener<FormEvent>> listeners;
+    
+    private Font valueFont = new Font(ViewUtil.getDefaultFontFamily(),Font.PLAIN,13);
+    private Font keyFont = new Font(ViewUtil.getDefaultFontFamily(),Font.PLAIN,11);
+    private Color valueFontColor = ViewUtil.getMedSavantBlueColor();
+    private Color keyFontColor = new Color(0,0,0);
 
     public void focus() {
         try {
@@ -38,13 +45,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
         }
     }
 
-    private String bulletStringOfLength(int length) {
-        String s = "";
-        while (length-- > 0) {
-            s += "•";
-        }
-        return s;
-    }
+    
 
     public enum FormEvent {
 
@@ -185,7 +186,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                         c = f2;
                     } else {
                         if (field.getValue() != null) {
-                            c = new JLabel(bulletStringOfLength(field.getValue().toString().length()));
+                            c = new JLabel(ViewUtil.bulletStringOfLength(field.getValue().toString().length()));
                         }
                     }
                     break;
@@ -202,14 +203,17 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
             }
 
             if (addLabel) {
-                this.add(ViewUtil.makeSmall(ViewUtil.getEmphasizedSemiBlackLabel(field.getName().toUpperCase())));
+                JLabel label = new JLabel(field.getName().toUpperCase());
+                label.setFont(keyFont);
+                label.setForeground(keyFontColor);
+                this.add(label);
             } else {
                 this.add(Box.createHorizontalStrut(1));
             }
 
             if (c != null) {
 
-                c.setFont(ViewUtil.getBigInputFont());
+                c.setFont(valueFont);
 
                 // in non-edit mode, add the textual representation
                 /*if (!isInEditMode) {
@@ -218,8 +222,7 @@ public class NiceForm extends JPanel implements Listener<NiceFormModel> {
                  }
                  c.setEnabled(false);
                  }*/
-                Color color = ViewUtil.getSemiBlackColor();
-                c.setForeground(color);
+                c.setForeground(valueFontColor);
                 this.add(c, "wrap");
                 map.put(field, c);
             }

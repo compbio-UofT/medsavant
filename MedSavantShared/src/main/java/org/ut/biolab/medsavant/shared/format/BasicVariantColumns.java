@@ -40,12 +40,13 @@ public interface BasicVariantColumns {
     public static int INDEX_OF_DBSNP_ID = 7;
     public static int INDEX_OF_REF = 8;
     public static int INDEX_OF_ALT = 9;
-    public static int INDEX_OF_QUAL = 10;
-    public static int INDEX_OF_FILTER = 11;
-    public static int INDEX_OF_VARIANT_TYPE = 12;
-    public static int INDEX_OF_ZYGOSITY = 13;
-    public static int INDEX_OF_GT = 14;
-    public static int INDEX_OF_CUSTOM_INFO = 15;
+    public static int INDEX_OF_ALT_NUMBER=10;
+    public static int INDEX_OF_QUAL = 11;
+    public static int INDEX_OF_FILTER = 12;
+    public static int INDEX_OF_VARIANT_TYPE = 13;
+    public static int INDEX_OF_ZYGOSITY = 14;
+    public static int INDEX_OF_GT = 15;
+    public static int INDEX_OF_CUSTOM_INFO = 16;
 
     // Required fields
     public static final CustomField UPLOAD_ID = new CustomField("upload_id", ColumnType.INTEGER, 11, false, true, false, null, true, "Upload ID", "");
@@ -55,9 +56,10 @@ public interface BasicVariantColumns {
     public static final CustomField CHROM = new CustomField("chrom", ColumnType.VARCHAR, 5, false, true, false, "", true, "Chromosome", "");
     public static final CustomField START_POSITION = new CustomField("position", ColumnType.INTEGER, 11, false, true, false, null, true, "Position", "");
     public static final CustomField END_POSITION = new CustomField("end", ColumnType.INTEGER, 11, false, true, false, null, true, "End Position", "");
-    public static final CustomField DBSNP_ID = new CustomField("dbsnp_id", ColumnType.VARCHAR, 45, false, false, false, null, true, "dbSNP ID", "");
+    public static final CustomField DBSNP_ID = new CustomField("dbsnp_id", ColumnType.VARCHAR, 200, false, false, false, null, true, "dbSNP ID", "");
     public static final CustomField REF = new CustomField("ref", ColumnType.VARCHAR, 10000, false, false, false, null, true, "Reference", "");
     public static final CustomField ALT = new CustomField("alt", ColumnType.VARCHAR, 10000, false, false, false, null, true, "Alternate", "");
+    public static final CustomField ALT_NUMBER = new CustomField("alt_number", ColumnType.INTEGER, 11, false, true, false, null, true, "Alternate Number", "");
     public static final CustomField QUAL = new CustomField("qual", ColumnType.FLOAT, 10, false, false, false, null, true, "Quality", "");
     public static final CustomField FILTER = new CustomField("filter", ColumnType.VARCHAR, 500, false, false, false, null, true, "Filter", "");
     public static final CustomField VARIANT_TYPE = new CustomField("variant_type", ColumnType.VARCHAR, 10, false, false, false, null, true, "Variant Type", "");
@@ -88,6 +90,6 @@ public interface BasicVariantColumns {
 	public static final CustomField SAMPLE_INFO= new CustomField("SAMPLE_INFO", ColumnType.VARCHAR, 5000, false, false, false, null, false, "Sample Info", "");
 
     public static CustomField[] REQUIRED_VARIANT_FIELDS = new CustomField[] {//end position?
-        UPLOAD_ID, FILE_ID, VARIANT_ID, DNA_ID, CHROM, START_POSITION, END_POSITION, DBSNP_ID, REF, ALT, QUAL, FILTER, VARIANT_TYPE, ZYGOSITY, GT, CUSTOM_INFO
+        UPLOAD_ID, FILE_ID, VARIANT_ID, DNA_ID, CHROM, START_POSITION, END_POSITION, DBSNP_ID, REF, ALT, ALT_NUMBER, QUAL, FILTER, VARIANT_TYPE, ZYGOSITY, GT, CUSTOM_INFO
     };
 }

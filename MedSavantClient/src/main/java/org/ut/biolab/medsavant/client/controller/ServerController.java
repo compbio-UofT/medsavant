@@ -1,14 +1,20 @@
 package org.ut.biolab.medsavant.client.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.settings.DirectorySettings;
-import org.ut.biolab.medsavant.client.view.splash.MedSavantServerInfo;
+import org.ut.biolab.medsavant.client.view.login.MedSavantServerInfo;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by mfiume on 2/3/2014.
@@ -21,14 +27,16 @@ public class ServerController {
     List<MedSavantServerInfo> servers;
     MedSavantServerInfo tmpServer;
     
-    private String SERVER_FILE_NAME = ".servers";
-
-    private static String KEY_SETTING_LASTSERVER_NICKNAME = "server-nickname";
+    private final String SERVER_FILE_NAME = ".servers";
+    private static final String KEY_SETTING_LASTSERVER_NICKNAME = "server-nickname";
 
     private static ServerController instance;
     private MedSavantServerInfo currentServer;
 
-    public static  ServerController getInstance() {
+    //private final Semaphore semaphore = new Semaphore(1, true);
+    //private static final Object initializationLock = new Object();
+    
+    public synchronized static ServerController getInstance() {
         if (instance == null) {
             instance = new ServerController();
         }
@@ -36,7 +44,7 @@ public class ServerController {
     }
 
     private ServerController() {
-
+        
         listeners = new ArrayList<Listener<ServerController>>();
         loadServers();
 
@@ -83,6 +91,7 @@ public class ServerController {
     }
 
     private File getServerFile() {
+        
         return new File(DirectorySettings.getMedSavantDirectory(), SERVER_FILE_NAME);
     }
 
@@ -98,10 +107,14 @@ public class ServerController {
     }
     
     public synchronized void saveServers() {
+        saveServers(true);
+    }
+    
+    public synchronized void saveServers(boolean notifyListeners) {
 
-        LOG.info("Serializing " + servers.size() + " servers");
+        //LOG.info("Serializing " + servers.size() + " servers");
         FileOutputStream fileout = null;
-        ObjectOutputStream out = null;
+        Writer out = null;
         
         // remove passwords before saving
         List<MedSavantServerInfo> serversWithPasswordsRemoved = new ArrayList<MedSavantServerInfo>();
@@ -110,19 +123,24 @@ public class ServerController {
             if (!clone.isRememberPassword()) {
                 clone.setPassword("");
             }
+            //LOG.info("Saved " + clone.getNickname());
             serversWithPasswordsRemoved.add(clone);
         }
 
         try {
             fileout = new FileOutputStream(getServerFile());
-            out = new ObjectOutputStream(fileout);
-            out.writeObject(serversWithPasswordsRemoved);
+            out = new OutputStreamWriter(fileout,"UTF-8");
+            Gson gson = new GsonBuilder().create();
+            gson.toJson(serversWithPasswordsRemoved, out);
             out.close();
             fileout.close();
 
             LOG.info("Saved " + serversWithPasswordsRemoved.size() + " servers");
+            
         } catch (Exception ex) {
             LOG.error("Problem saving servers", ex);
+            ex.printStackTrace();
+            
         } finally {
             try {
                 out.close();
@@ -134,12 +152,14 @@ public class ServerController {
             }
         }
 
-        notifyListeners();
+        if (notifyListeners) {
+            notifyListeners();
+        }
     }
 
     private synchronized void loadServers() {
         FileInputStream filein = null;
-        ObjectInputStream in = null;
+        Reader in = null;
         try {
             // create the server file
             if (!getServerFile().exists()) {
@@ -148,13 +168,16 @@ public class ServerController {
                 // load the server file
             } else {
                 filein = new FileInputStream(getServerFile());
-                in = new ObjectInputStream(filein);
+                in = new InputStreamReader(filein);
+                LOG.info("Deserializing servers");
                 try {
-                    servers = (List<MedSavantServerInfo>) in.readObject();
+                    Gson gson = new GsonBuilder().create();
+                    java.lang.reflect.Type type = new TypeToken<List<MedSavantServerInfo>>(){}.getType();
+                    servers = gson.fromJson(in, type);
 
                 // happens if the server class changes, nuke the file and start again
-                } catch (InvalidClassException e) {
-                    LOG.info("Corrupted server file, recreating");
+                } catch (Exception e) {
+                    LOG.info("Corrupted server file, recreating " + e);
                     getServerFile().delete();
                     servers = new ArrayList<MedSavantServerInfo>();
                     saveServers();
@@ -164,6 +187,7 @@ public class ServerController {
             }
 
             LOG.info("Loaded " + servers.size() + " servers");
+            
         } catch (Exception ex) {
             LOG.error("Problem loading servers", ex);
             servers = new ArrayList<MedSavantServerInfo>();

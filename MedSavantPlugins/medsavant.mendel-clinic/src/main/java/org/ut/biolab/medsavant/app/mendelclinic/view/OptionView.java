@@ -1,3 +1,16 @@
+/**
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 package org.ut.biolab.medsavant.app.mendelclinic.view;
 
 import org.ut.biolab.medsavant.client.view.dialog.IndividualSelector;
@@ -41,18 +54,18 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.app.mendelclinic.MendelClinicApp;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.filter.FilterEvent;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.client.util.ExportVCF;
-import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dialog.FamilySelector;
 import org.ut.biolab.medsavant.app.mendelclinic.controller.MendelWorker;
 import org.ut.biolab.medsavant.app.mendelclinic.model.Locks;
@@ -60,6 +73,7 @@ import org.ut.biolab.medsavant.app.mendelclinic.view.OptionView.InheritanceStep.
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.TaskWorker;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
@@ -87,7 +101,7 @@ public class OptionView {
 
     protected class ZygosityStepViewGenerator {
 
-        private RoundedPanel inheritanceModelView;
+        private JPanel inheritanceModelView;
 
         public ZygosityStepViewGenerator() {
             setupView();
@@ -99,7 +113,7 @@ public class OptionView {
 
         private void setupView() {
 
-            inheritanceModelView = new RoundedPanel(10);
+            inheritanceModelView = ViewUtil.getWhiteLineBorderedPanel();
 
             inheritanceModelView.add(new JLabel("and has zygosity"));
             final JComboBox b = new JComboBox();
@@ -144,7 +158,7 @@ public class OptionView {
 
         private void setupView() {
 
-            inheritanceModelView = new RoundedPanel(10);
+            inheritanceModelView = ViewUtil.getWhiteLineBorderedPanel();
             inheritanceModelView.add(new JLabel("and follows"));
 
             familyDialog = new FamilySelector();
@@ -203,6 +217,7 @@ public class OptionView {
         private JPanel view;
         private JLabel datasetLabel;
         private List<IncludeExcludeCriteria> criteria;
+        private JButton variantNavigatorButton;
 
         public IncludeExcludeStep() {
             setupView();
@@ -214,6 +229,7 @@ public class OptionView {
 
         public void setDatasetName(String name) {
             datasetLabel.setText(name);
+            variantNavigatorButton.setVisible(false);
         }
 
         public List<IncludeExcludeCriteria> getCriteria() {
@@ -222,17 +238,26 @@ public class OptionView {
 
         private void setupView() {
 
-            view = new RoundedPanel(10);
-
-            ViewUtil.applyVerticalBoxLayout(view);
-            view.setBorder(ViewUtil.getMediumBorder());
+            view = ViewUtil.getWhiteLineBorderedPanel();
+            view.setLayout(new MigLayout("wrap, center"));
 
             JPanel required = ViewUtil.getClearPanel();
             ViewUtil.applyHorizontalBoxLayout(required);
 
             required.add(new JLabel("Select variants from "));
+            
+            variantNavigatorButton = ViewUtil.getSoftButton("Variant Navigator");
+            required.add(variantNavigatorButton);
+            variantNavigatorButton.addActionListener(new ActionListener() {
 
-            datasetLabel = new JLabel("Variant Navigator");
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MedSavantFrame.getInstance().getDashboard().launchApp(AppDirectory.getVariantNavigator());
+                }
+                
+            });
+            
+            datasetLabel = new JLabel("");
             datasetLabel.setFont(ViewUtil.getMediumTitleFont());
 
             required.add(datasetLabel);
@@ -241,33 +266,31 @@ public class OptionView {
 
             IncludeExcludeCriteria c = new IncludeExcludeCriteria();
 
-            view.add(required);
+            view.add(required, "width 100%");
             view.add(c.getView());
 
             criteria = new ArrayList<IncludeExcludeCriteria>();
             criteria.add(c);
 
-            JLabel addButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
-            addButton.setToolTipText("Add criteria to this step");
+            JButton addButton = ViewUtil.getSoftButton("Add criteria to this step");
 
-            view.add(ViewUtil.alignRight(addButton));
+            view.add(addButton,"right");
 
-            addButton.addMouseListener(new MouseListener() {
+            addButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     final IncludeExcludeCriteria c = new IncludeExcludeCriteria();
                     criteria.add(c);
 
-                    JLabel removeButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
-                    removeButton.setToolTipText("Remove criteria from this step");
+                    JButton removeButton = ViewUtil.getSoftButton("Remove criteria from this step");
 
-                    final JPanel criteriaPanel = new JPanel();
-                    ViewUtil.applyHorizontalBoxLayout(criteriaPanel);
-
+                    final JPanel criteriaPanel = ViewUtil.getClearPanel();
+                    criteriaPanel.setLayout(new MigLayout("fillx, insets 0"));
+                    
                     criteriaPanel.add(new JLabel(" and "));
                     criteriaPanel.add(c.getView());
-                    criteriaPanel.add(removeButton);
+                    criteriaPanel.add(removeButton,"pushx 1.0, gpx 100, right");
 
-                    view.add(criteriaPanel, view.getComponentCount() - 1);
+                    view.add(criteriaPanel, "width 100%", view.getComponentCount() - 1);
 
                     removeButton.addMouseListener(new MouseListener() {
                         public void actionPerformed(ActionEvent ae) {
@@ -301,27 +324,6 @@ public class OptionView {
 
                     view.updateUI();
                     view.invalidate();
-                }
-
-                @Override
-                public void mouseClicked(MouseEvent me) {
-                }
-
-                @Override
-                public void mousePressed(MouseEvent me) {
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent me) {
-                    actionPerformed(null);
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent me) {
-                }
-
-                @Override
-                public void mouseExited(MouseEvent me) {
                 }
             });
         }
@@ -868,113 +870,57 @@ public class OptionView {
 
     private void setupView() {
         view = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(view);
+        view.setLayout(new MigLayout("wrap 2, fillx"));
 
         IncludeExcludeStep s = new IncludeExcludeStep();
-        view.add(s.getView());
+        view.add(s.getView(),"skip 1, width 100%");
 
         steps = new ArrayList<IncludeExcludeStep>();
         steps.add(s);
 
-        JLabel addButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
-        addButton.setToolTipText("Add step");
+        JButton addButton = ViewUtil.getSoftButton("Add step");
 
-        view.add(Box.createVerticalStrut(10));
-        view.add(ViewUtil.alignLeft(addButton));
+        view.add(addButton,"skip 1, center, wrap");
 
-        addButton.addMouseListener(new MouseListener() {
+        addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 final IncludeExcludeStep c = new IncludeExcludeStep();
                 c.setDatasetName("previous step");
 
                 steps.add(c);
 
-                JLabel removeButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
-                removeButton.setToolTipText("Remove step");
+                final JButton removeButton = ViewUtil.getSoftButton("Remove step");
 
-                final JPanel criteriaPanel = ViewUtil.getClearPanel();
-                ViewUtil.applyHorizontalBoxLayout(criteriaPanel);
+                int indexFromBack = 4;
+                view.add(removeButton, view.getComponentCount() - indexFromBack);
+                view.add(c.getView(), "width 100%", view.getComponentCount() - indexFromBack);
 
-                criteriaPanel.add(removeButton);
-                criteriaPanel.add(Box.createHorizontalStrut(10));
-                criteriaPanel.add(c.getView());
+                //int indexFromBack = 4;
+                //view.add(criteriaPanel, view.getComponentCount() - indexFromBack);
 
-                final Component strut = Box.createVerticalStrut(10);
-
-                int indexFromBack = 7;
-
-                view.add(strut, view.getComponentCount() - indexFromBack);
-                view.add(criteriaPanel, view.getComponentCount() - indexFromBack);
-
-                removeButton.addMouseListener(new MouseListener() {
+                removeButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
                         steps.remove(c);
-                        view.remove(strut);
-                        view.remove(criteriaPanel);
+                        view.remove(removeButton);
+                        view.remove(c.getView());
                         view.updateUI();
                         view.invalidate();
-                    }
-
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                    }
-
-                    @Override
-                    public void mousePressed(MouseEvent me) {
-                    }
-
-                    @Override
-                    public void mouseReleased(MouseEvent me) {
-                        actionPerformed(null);
-                    }
-
-                    @Override
-                    public void mouseEntered(MouseEvent me) {
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent me) {
                     }
                 });
 
                 view.updateUI();
                 view.invalidate();
             }
-
-            @Override
-            public void mouseClicked(MouseEvent me) {
-            }
-
-            @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent me) {
-                actionPerformed(null);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent me) {
-            }
         });
 
-        view.add(Box.createVerticalStrut(10));
 
         ZygosityStepViewGenerator zygosity = new ZygosityStepViewGenerator();
 
-        view.add(zygosity.getView());
-        view.add(Box.createVerticalStrut(10));
+        view.add(zygosity.getView(),"skip 1, width 100%");
 
         InheritanceStepViewGenerator inheritance = new InheritanceStepViewGenerator();
 
-        view.add(inheritance.getView());
-
-        view.add(Box.createVerticalStrut(10));
+        view.add(inheritance.getView(),"skip 1, width 100%");
 
         JButton runButton = new JButton("Run");
 
@@ -1291,7 +1237,7 @@ public class OptionView {
             }
         });
 
-        view.add(ViewUtil.centerHorizontally(runButton));
+        view.add(runButton,"skip 1, right");
 
     }
 }

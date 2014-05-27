@@ -39,7 +39,7 @@ import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;

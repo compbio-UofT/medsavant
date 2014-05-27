@@ -24,8 +24,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,28 +37,35 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.component.ProgressWheel;
+import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  * A container for notifications that indicate a process' status
+ *
  * @author mfiume
  */
 public class NotificationsPanel extends JPanel {
 
     private Log LOG = LogFactory.getLog(NotificationsPanel.class);
-    
+
     int verticalOffset = 44;
     int inset = 10;
-    int gap = 10;
-    
+    int gap = 4;
+
     private final ArrayList<Notification> notifications;
     private final HashMap<Notification, NotificationPanel> map;
     private JPanel npanelContainer;
+    private List<JButton> menuButtons;
+    private ImageIcon inactiveButtonIcon;
+    private ImageIcon activeButtonIcon;
+    private boolean isHidden = false;
 
     public NotificationsPanel() {
         notifications = new ArrayList<Notification>();
         map = new HashMap<Notification, NotificationPanel>();
+        menuButtons = new ArrayList<JButton>();
         initUI();
     }
 
@@ -91,23 +100,65 @@ public class NotificationsPanel extends JPanel {
 
     private void initUI() {
         this.setOpaque(false);
-        
+
         this.setLayout(new BorderLayout());
         npanelContainer = ViewUtil.getClearPanel();
-        
-        npanelContainer.setLayout(new MigLayout(String.format("insets %d %d %d %d, gapy %d, fillx, alignx trailing, wrap, hidemode 3",this.verticalOffset+inset,inset,inset,inset,gap)));
-        
-        this.add(npanelContainer,BorderLayout.EAST);
+
+        npanelContainer.setLayout(new MigLayout(String.format("insets %d %d %d %d, gapy %d, fillx, alignx trailing, wrap, hidemode 3", this.verticalOffset + inset, inset, inset, inset, gap)));
+
+        this.add(npanelContainer, BorderLayout.EAST);
+
+        inactiveButtonIcon = IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "notifications-inactive.png");
+        activeButtonIcon = IconFactory.getInstance().getIcon(IconFactory.ICON_ROOT + "notifications-active.png");
+    }
+    
+    private void toggleVisibility() {
+        isHidden = !isHidden;
+        updateView();
     }
 
     private void updateView() {
+        refreshButtonIcons();
         npanelContainer.removeAll();
-        for (Notification n : notifications) {
-            npanelContainer.add(map.get(n));
+        if (!isHidden) {
+            for (Notification n : notifications) {
+                npanelContainer.add(map.get(n));
+            }
         }
         npanelContainer.updateUI();
     }
 
+    private void refreshButtonIcons() {
+        if (isHidden) {
+            for (JButton menuButton : menuButtons) {
+                menuButton.setIcon(inactiveButtonIcon);
+                menuButton.setToolTipText("Show notifications");
+            }
+        } else {
+            for (JButton menuButton : menuButtons) {
+                menuButton.setIcon(activeButtonIcon);
+                menuButton.setToolTipText("Hide notifications");
+            }
+        }
+    }
+
+    public JButton generateMenuButton() {
+        
+        JButton menuButton = ViewUtil.getTexturedButton("");
+        menuButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleVisibility();
+            }
+            
+        });
+        
+        menuButtons.add(menuButton);
+        
+        refreshButtonIcons();
+        return menuButton;
+    }
 
     private static class NotificationPanel extends JPanel implements Listener<Notification> {
 
@@ -115,19 +166,18 @@ public class NotificationsPanel extends JPanel {
         int leftWidth = 65;
         int middleWidth = 140;
         int rightWidth = 55;
-        
-        int insets = 3;
+
+        int insets = 8;
         int innerinsets = 2;
-        
+
         //int width = 280;
-        
         private final Notification notification;
         private JLabel nameLabel;
         private JLabel subTextLabel;
         private JButton closeButton;
         private NotificationsPanel parentPanel;
         private JProgressBar progress;
-        
+
         private Color subTextErrorColor = Color.red;
         private Color subTextNormalColor; // a light gray, set later
         private ActionListener closeActionListener;
@@ -142,7 +192,7 @@ public class NotificationsPanel extends JPanel {
             initUI();
             refreshUI();
         }
-        
+
         void setParent(NotificationsPanel parent) {
             this.parentPanel = parent;
         }
@@ -153,67 +203,67 @@ public class NotificationsPanel extends JPanel {
         }
 
         private void refreshUI() {
-            
+
             if (notification.isClosed()) {
                 closeActionListener.actionPerformed(null);
             }
-            
+
             setVisible(!notification.isHidden());
-            
+
             nameLabel.setText(notification.getName());
-            
+
             // set the subtext color to red if the description contains the word "error"
             subTextLabel.setText(notification.getDescription());
             subTextLabel.setForeground(notification.getDescription().toLowerCase().contains("error") ? subTextErrorColor : subTextNormalColor);
-            
+
             closeButton.setVisible(notification.canHide());
-            
-            ViewUtil.ellipsizeLabel(nameLabel, middleWidth-2*innerinsets);
-            ViewUtil.ellipsizeLabel(subTextLabel, middleWidth-2*innerinsets);
-            
+
+            ViewUtil.ellipsizeLabel(nameLabel, middleWidth - 2 * innerinsets);
+            ViewUtil.ellipsizeLabel(subTextLabel, middleWidth - 2 * innerinsets);
+
             if (notification.isShowsProgress()) {
                 progressIndifinite.setVisible(notification.isIndeterminateProgress());
                 progress.setVisible(!notification.isIndeterminateProgress());
-                progress.setValue((int) (notification.getProgress()*100));
+                progress.setValue((int) (notification.getProgress() * 100));
             } else {
                 progressIndifinite.setVisible(false);
                 progress.setVisible(false);
             }
-            
+
             if (notification.getAction() != null) {
                 actionButton.removeActionListener(notification.getAction());
                 actionButton.addActionListener(notification.getAction());
-                actionButton.setText(ViewUtil.ellipsize(notification.getActionName(), rightWidth-innerinsets-actionButton.getInsets().left-actionButton.getInsets().right));
+                actionButton.setText(ViewUtil.ellipsize(notification.getActionName(), rightWidth - innerinsets - actionButton.getInsets().left - actionButton.getInsets().right));
                 actionButton.setVisible(true);
             }
-            
+
             this.updateUI();
         }
 
         private void initUI() {
             this.setOpaque(false);
-            JPanel p = ViewUtil.getSemiTransparentPanel(Color.white, 0.95f, 10, new Color(230,230,230));
+            JPanel p = ViewUtil.getRoundedShadowedPanel(Color.white, new Color(245, 245, 245), 0.95f, 10, new Color(200, 200, 200), 7);
             ViewUtil.consumeMouseEventsForComponent(p);
-            p.setLayout(new MigLayout(String.format("fillx, insets %d, height %d",insets, height)));
+            p.setLayout(new MigLayout(String.format("fillx, insets %d, height %d", insets, height)));
 
             this.setLayout(new BorderLayout());
-            this.add(p,BorderLayout.CENTER);
+            this.add(p, BorderLayout.CENTER);
 
             JPanel leftSide = ViewUtil.getClearPanel();
             JPanel middle = ViewUtil.getClearPanel();
             JPanel rightSide = ViewUtil.getClearPanel();
-            
+
             leftSide.setLayout(new MigLayout(String.format("width %d, insets %d, hidemode 3", leftWidth, innerinsets)));
             middle.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, fillx, wrap, gapy 2", middleWidth, innerinsets)));
             rightSide.setLayout(new MigLayout(String.format("width %d, insets %d, alignx left, wrap, hidemode 3, wrap 1, gapy 2", rightWidth, innerinsets)));
-            
+
             p.add(leftSide);
             p.add(middle);
             p.add(rightSide);
-           
+
             nameLabel = ViewUtil.getSettingsHeaderLabel("");
             subTextLabel = ViewUtil.getSettingsHelpLabel("");
-            
+
             closeActionListener = new ActionListener() {
 
                 @Override
@@ -222,35 +272,35 @@ public class NotificationsPanel extends JPanel {
                         parentPanel.removeNotification(notification);
                     }
                 }
-                
+
             };
-            
+
             closeButton = ViewUtil.getTexturedButton("Hide");
             closeButton.addActionListener(closeActionListener);
-            
+
             actionButton = ViewUtil.getTexturedButton("");
             actionButton.setVisible(false);
-            
+
             progress = (JProgressBar) ViewUtil.makeMini(new JProgressBar());
             progressIndifinite = ViewUtil.getIndeterminateProgressBar();
-                    
+
             middle.add(nameLabel, "growx 1.0");
             middle.add(subTextLabel);
-            middle.add(progress,"width 100%, hidemode 3");
-            middle.add(progressIndifinite,"hidemode 3");
-            
+            middle.add(progress, "width 100%, hidemode 3");
+            middle.add(progressIndifinite, "hidemode 3");
+
             subTextNormalColor = subTextLabel.getForeground();
-            
+
             progress.setVisible(false);
             progressIndifinite.setVisible(false);
-            
+
             rightSide.add(closeButton);
             rightSide.add(actionButton);
-            
+
             if (notification.getIcon() != null) {
                 leftSide.removeAll();
-                int dim = Math.min(height-2*insets-2*innerinsets, leftWidth-2*innerinsets);
-                leftSide.add(new ImagePanel(notification.getIcon().getImage(),dim,dim));
+                int dim = Math.min(height - 2 * insets - 2 * innerinsets, leftWidth - 2 * innerinsets);
+                leftSide.add(new ImagePanel(notification.getIcon().getImage(), dim, dim));
             }
         }
     }

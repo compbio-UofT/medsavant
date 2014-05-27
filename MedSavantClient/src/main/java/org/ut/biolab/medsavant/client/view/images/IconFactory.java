@@ -19,6 +19,10 @@
  */
 package org.ut.biolab.medsavant.client.view.images;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 /**
@@ -29,7 +33,6 @@ public class IconFactory {
 
     static IconFactory instance;
     public static final String ICON_ROOT = "/org/ut/biolab/medsavant/client/view/images/icon/";
-
 
     public IconFactory() {
     }
@@ -45,7 +48,10 @@ public class IconFactory {
         return new ImageIcon(getClass().getResource(resourcePath));
     }
 
+ 
+
     public enum StandardIcon {
+
         REFRESH,
         HOME,
         ADDKVP,
@@ -131,8 +137,7 @@ public class IconFactory {
         DASHBOARD,
         BTN_MENU
     };
-    
-    
+
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
             case REFRESH:
@@ -159,9 +164,9 @@ public class IconFactory {
                 return getIcon(ICON_ROOT + "icon-taskmanager.png");
             case APP_PHENOTIPS:
                 return getIcon(ICON_ROOT + "icon-phenotips.png");
-             case APP_ADMIN:
+            case APP_ADMIN:
                 return getIcon(ICON_ROOT + "icon-admin.png");
-             case APP_APPSTORE:
+            case APP_APPSTORE:
                 return getIcon(ICON_ROOT + "icon-appstore.png");
             case APP_VARIANTNAVIGATOR:
                 return getIcon(ICON_ROOT + "icon-variantnavigator.png");
@@ -300,9 +305,9 @@ public class IconFactory {
             case DOCK:
                 return getIcon(ICON_ROOT + "import.png");
             case FONT_INCREASE:
-                return getIcon(ICON_ROOT + "font_increase.png");
+                return getIcon(ICON_ROOT + "increase_font-26.png");
             case FONT_DECREASE:
-                return getIcon(ICON_ROOT + "font_decrease.png");
+                return getIcon(ICON_ROOT + "decrease_font-26.png");
             default:
                 return null;
         }

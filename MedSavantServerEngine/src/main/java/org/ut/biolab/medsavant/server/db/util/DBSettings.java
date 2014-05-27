@@ -24,11 +24,19 @@ package org.ut.biolab.medsavant.server.db.util;
  * @author mfiume
  */
 public class DBSettings {
-
+    public static String getVariantViewName(int projectID, int refID) {
+        return "view_variants_" + projectID+"_"+refID;
+    }
+         
+    public static String getVariantSubsetViewName(int projectID, int refID){
+        return getVariantViewName(projectID, refID) + "_subset";
+    }
+    
     public static String getVariantTableName(int projectId, int referenceId, int updateId){
         return "z_variant_proj" + projectId + "_ref" + referenceId + "_update" + updateId;
     }
 
+    @Deprecated
     public static String getVariantStagingTableName(int projectId, int referenceId, int updateId){
         return "z_variant_staging_proj" + projectId + "_ref" + referenceId + "_update" + updateId;
     }

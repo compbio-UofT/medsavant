@@ -37,8 +37,8 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
-import org.ut.biolab.medsavant.client.login.LoginController;
-import org.ut.biolab.medsavant.client.login.LoginEvent;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginEvent;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
@@ -362,7 +362,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             if(msg != null){
                 DialogUtils.displayMessage(msg);
             }
-            if(referenceID > 0 && updateID>0){
+            if(referenceID > 0 && updateID>0){               
                 MedSavantClient.VariantManager.publishVariants(sessionID, projectID, referenceID, updateID);
             }else{
                 MedSavantClient.VariantManager.publishVariants(sessionID, projectID);

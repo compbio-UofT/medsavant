@@ -49,7 +49,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.geneset.GeneSetController;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
@@ -77,6 +77,7 @@ public class OntologyConditionGenerator implements ComprehensiveConditionGenerat
     private final OntologyType ontology;
     
     private static final Dimension DEFAULT_DIMENSIONS = new Dimension(600,384);
+
     private class OntologySearchConditionEditorView extends StringSearchConditionEditorView {
 
         private Map<String, JPopupMenu> popupMap;

@@ -1,7 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.view.util.list;
 
@@ -21,6 +29,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import net.miginfocom.swing.MigLayout;
+import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
  *
@@ -33,7 +42,8 @@ public class NiceList extends JList {
     private final Vector<NiceListItem> allItems;
     private JTextField searchBar;
     private boolean inTransaction;
-    private class NiceListModel extends AbstractListModel{
+
+    private class NiceListModel extends AbstractListModel {
 
         @Override
         public int getSize() {
@@ -44,11 +54,11 @@ public class NiceList extends JList {
         public Object getElementAt(int index) {
             return allItems.get(index);
         }
-        
+
     }
+
     public NiceList() {
         allItems = new Vector<NiceListItem>();
-
         this.setCellRenderer(new NiceListCellRenderer());
         this.setModel(new NiceListModel());
         initSearchBar();
@@ -62,6 +72,10 @@ public class NiceList extends JList {
     public void removeItem(final NiceListItem item) {
         allItems.remove(item);
         updateListItems();
+    }
+
+    public NiceListItem getItem(int index) {
+        return allItems.get(index);
     }
 
     public JTextField getSearchBar() {
@@ -89,20 +103,22 @@ public class NiceList extends JList {
 
         this.setBackground(colorScheme.getBackgroundColor());
 
-        final Vector v;
+        final Vector<NiceListItem> v;
         if (searchBar.getText().isEmpty()) {
-            v = new Vector(allItems);
+            v = new Vector<NiceListItem>(allItems);
         } else {
             v = getSearchResults();
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
+        setListData(v);
+    }
 
-            @Override
-            public void run() {
-                setListData(v);
-            }
-        });
+    public void removeItems() {
+        this.startTransaction();
+        for (NiceListItem i : allItems) {
+            this.removeItem(i);
+        }
+        this.endTransaction();
     }
 
     private Vector getSearchResults() {
@@ -112,6 +128,8 @@ public class NiceList extends JList {
 
         for (NiceListItem item : allItems) {
             if (item.toString().toLowerCase().contains(searchTerm)) {
+                v.add(item);
+            } else if (item.getDescription() != null && item.getDescription().toLowerCase().contains(searchTerm)) {
                 v.add(item);
             }
         }
@@ -158,14 +176,34 @@ public class NiceList extends JList {
         }
     }
 
+    public void selectItemsAtIndicies(List<Integer> indicies) {
+        int[] indiciesArray = new int[indicies.size()];
+        for (int i = 0; i < indicies.size(); i++) {
+            indiciesArray[i] = indicies.get(i);
+        }
+        selectItemsAtIndicies(indiciesArray);
+    }
+
+    private void selectItemsAtIndicies(int[] indicies) {
+        clearSearch();
+        this.setSelectedIndices(indicies);
+    }
+
     public void selectItemAtIndex(int i) {
         clearSearch();
-        NiceListItem item = this.allItems.get(i);
-        this.setSelectedValue(item, true);
+        try {
+            NiceListItem item = this.allItems.get(i);
+            this.setSelectedValue(item, true);
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
     }
 
     public NiceListColorScheme getColorScheme() {
         return this.colorScheme;
+    }
+
+    public void setColorScheme(NiceListColorScheme colorScheme) {
+        this.colorScheme = colorScheme;
     }
 
     class NiceListCellRenderer implements ListCellRenderer {
@@ -193,13 +231,19 @@ public class NiceList extends JList {
 
             p.setBackground(isSelected ? colorScheme.getSelectedColor() : colorScheme.getUnselectedColor());
 
-            p.setLayout(new MigLayout(String.format("fillx, height %d", cellHeight)));
+            p.setLayout(new MigLayout(String.format("fillx, height %d, hidemode 3, gapy 2", cellHeight)));
 
             JLabel l = new JLabel(mitem.toString());
             l.setFont(new Font(l.getFont().getFamily(), Font.PLAIN, 16));
             l.setForeground(isSelected ? colorScheme.getSelectedFontColor() : colorScheme.getUnselectedFontColor());
 
-            p.add(l);
+            p.add(l, "wrap");
+
+            String description = mitem.getDescription();
+            if (description != null) {
+                JLabel dl = ViewUtil.getSubtleHeaderLabel(description);
+                p.add(dl, "wrap");
+            }
 
             p.setBorder(BorderFactory.createMatteBorder((index == 0) ? 1 : 0, 0, 1, 0, colorScheme.getBorderColor()));
 

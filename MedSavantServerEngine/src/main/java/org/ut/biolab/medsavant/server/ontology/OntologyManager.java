@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.ontology;
 
@@ -56,7 +56,7 @@ import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.util.RemoteFileCache;
-
+import org.ut.biolab.medsavant.shared.util.WebResources;
 
 /**
  * Concrete implementation of ontology manager.
@@ -145,9 +145,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             double prog = 0.2;
-            makeProgress(sessID, "Executing query...", prog);                        
-            String q  = ontologySchema.where(ONTOLOGY, ont.toString()).whereNotNull(GENES).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString();
-            LOG.info("Getting all ontology terms: "+q);
+            makeProgress(sessID, "Executing query...", prog);
+            String q = ontologySchema.where(ONTOLOGY, ont.toString()).whereNotNull(GENES).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString();
+            LOG.info("Getting all ontology terms: " + q);
             ResultSet rs = conn.executePreparedQuery(q);
             while (rs.next()) {
                 prog = 0.5 + prog * 0.5;    // Just for fun, to converge on 1.0
@@ -159,7 +159,6 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         }
         return result.toArray(new OntologyTerm[0]);
     }
-
 
     @Override
     public String[] getGenesForTerm(String sessID, OntologyTerm term, String refID) throws SQLException, SessionExpiredException {
@@ -184,7 +183,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     /**
-     * When loading an ontology it's more efficient to do a single big-ass query instead of a whack of small ones.
+     * When loading an ontology it's more efficient to do a single big-ass query
+     * instead of a whack of small ones.
+     *
      * @param terms an array of terms whose genes are to be fetched
      * @return an map of term IDs to arrays of genes
      */
@@ -222,7 +223,8 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     /**
      * @param sessID login session
-     * @param ont ontology to be searched (pass null to search across all ontologies)
+     * @param ont ontology to be searched (pass null to search across all
+     * ontologies)
      * @param geneName name of the gene whose terms we want
      * @throws SQLException
      */
@@ -248,16 +250,39 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         return result.toArray(new OntologyTerm[0]);
     }
 
+    public OntologyTerm getOntologyTerm(String sessID, OntologyType ont, String ontologyId) throws SQLException, SessionExpiredException{
+        PooledConnection conn = null;
+        ResultSet rs = null;
+        try {
+            conn = ConnectionController.connectPooled(sessID);
+            rs = conn.executePreparedQuery("SELECT id,name,def,alt_ids,parents FROM ontology WHERE ontology=? AND id=?", ont.toString(), ontologyId);
+            if (rs.next()) {
+               return new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ','));
+            } else {
+                return null;
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
     /**
      * Populate the tables with Gene Ontology data
+     *
      * @param oboData an OBO file containing gene ontology terms
-     * @param goToGeneData a gzipped GAF file (http://www.geneontology.org/GO.format.gaf-2_0.shtml)
+     * @param goToGeneData a gzipped GAF file
+     * (http://www.geneontology.org/GO.format.gaf-2_0.shtml)
      * @throws IOException
      */
     private void populateGOTables(String sessID, String name, URL oboData, URL goToGeneData) throws IOException, SQLException, SessionExpiredException {
-        LOG.info("Parsing OBO "+oboData);
+        LOG.info("Parsing OBO " + oboData);
         Map<String, OntologyTerm> terms = new OBOParser(OntologyType.GO).load(oboData);
-        
+
         connection = ConnectionController.connectPooled(sessID);
         LOG.info("Session " + sessID + " made connection");
         try {
@@ -267,7 +292,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             // Expecting a GZIPped tab-delimited text file in GAF (GO Annotation File) format.
             // We are only interested in columns 2 (gene), 3 (qualifier), and 4 (GO term).
 
-            LOG.info("Reading annotation file "+goToGeneData+ " (Cache: "+RemoteFileCache.getCacheFile(goToGeneData)+")");
+            LOG.info("Reading annotation file " + goToGeneData + " (Cache: " + RemoteFileCache.getCacheFile(goToGeneData) + ")");
             BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(RemoteFileCache.getCacheFile(goToGeneData)))));
             try {
                 String line;
@@ -280,7 +305,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     }
                 }
                 PreparedStatement updateStatement = connection.prepareStatement("UPDATE ontology SET genes=? WHERE id=?");
-                for (String t: allGenes.keySet()) {
+                for (String t : allGenes.keySet()) {
                     Set<String> termGenes = allGenes.get(t);
                     String geneString = StringUtils.join(termGenes, '|');
                     connection.executePreparedUpdate(updateStatement, "|" + geneString + "|", t);
@@ -305,7 +330,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
         OntologyTerm term2 = allTerms.get(term);
         if (term2 != null) {
-            for (String p: term2.getParentIDs()) {
+            for (String p : term2.getParentIDs()) {
                 addGenesToTerm(allTerms, allGenes, gene, p);
             }
         }
@@ -334,7 +359,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                             line = line.substring(genesStart + 2, line.length() - 1);
                             String[] genes = line.split(", ");
                             String geneString = "|";
-                            for (String g: genes) {
+                            for (String g : genes) {
                                 geneString += g.substring(0, g.indexOf('(')) + "|";
                             }
                             connection.executePreparedUpdate(updStmt, geneString, term);
@@ -394,7 +419,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                             }
                             hpoGeneCache.put(hpoTerm, hpoGenes);
                         }
-                        for (String g: hpoGenes) {
+                        for (String g : hpoGenes) {
                             if (g.length() > 0) {
                                 g = "|" + g + "|";
                                 if (omimGenes == null) {
@@ -411,7 +436,9 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 connection.executePreparedUpdate(updStmt, omimGenes, omimTerm);
             }
         } finally {
-            if (connection != null) { connection.close(); }
+            if (connection != null) {
+                connection.close();
+            }
         }
     }
 
@@ -424,7 +451,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         PreparedStatement prep5b = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, PARENTS).toString());
         PreparedStatement prep6 = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, ALT_IDS, PARENTS).toString());
         int mostAltIDs = 1;
-        for (OntologyTerm t: terms.values()) {
+        for (OntologyTerm t : terms.values()) {
             PreparedStatement prep;
             if (t.getAltIDs().length > 0) {
                 if (t.getParentIDs().length > 0) {
@@ -460,7 +487,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     private static OntologyTerm findTermByID(OntologyTerm[] terms, String termID) {
-        for (OntologyTerm t: terms) {
+        for (OntologyTerm t : terms) {
             if (t.getID().equals(termID)) {
                 return t;
             }
@@ -469,24 +496,24 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     /**
-     * Called from <code>createDatabase()</code> to create all the ontology tables on
-     * a BLOCKING background thread.
+     * Called from <code>createDatabase()</code> to create all the ontology
+     * tables on a BLOCKING background thread.
      *
      * @param sessID
      */
-    public void populate(final String sessID){
-        try{
-            MedSavantServerEngine.submitShortJob(new MedSavantServerJob(SessionManager.getInstance().getUserForSession(sessID), "Ontology Populator", null){        
+    public void populate(final String sessID) {
+        try {
+            MedSavantServerEngine.submitShortJob(new MedSavantServerJob(SessionManager.getInstance().getUserForSession(sessID), "Ontology Populator", null) {
                 @Override
-                public boolean run(){
+                public boolean run() {
                     try {
                         LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
                         LOG.info("Adding GO Ontology");
-                        addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
+                        addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, WebResources.GO_OBO_URL, WebResources.GO_TO_GENES_URL);
                         LOG.info("Adding HPO Ontology");
-                        addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
+                        addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, WebResources.HPO_OBO_URL, WebResources.HPO_TO_GENES_URL);
                         LOG.info("Adding OMIM Ontology");
-                        addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
+                        addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, WebResources.OMIM_OBO_URL, WebResources.OMIM_TO_HPO_URL);
                         SessionManager.getInstance().unregisterSession(sessID);
                         return true;
                     } catch (Exception ex) {
@@ -495,8 +522,8 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     }
                 }
             });
-        }catch(Exception ex){
-            LOG.error("Error populating ontology tables.", ex);            
+        } catch (Exception ex) {
+            LOG.error("Error populating ontology tables.", ex);
         }
-    }    
+    }
 }

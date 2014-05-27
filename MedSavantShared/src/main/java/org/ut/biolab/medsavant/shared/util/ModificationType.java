@@ -9,6 +9,6 @@ package org.ut.biolab.medsavant.shared.util;
  * @author jim
  */
 public enum ModificationType {
-    VARIANT, VARIANT_COMMENT, COHORT, PATIENT, REGIONSET, ONTOLOGY
+    VARIANT, VARIANT_COMMENT, COHORT, PATIENT, REGIONSET, ONTOLOGY, LOCUS_COMMENT
     
 }

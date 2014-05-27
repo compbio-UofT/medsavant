@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.GeneSet;
 import org.ut.biolab.medsavant.shared.serverapi.GeneSetManagerAdapter;
 import org.ut.biolab.medsavant.client.util.GeneFetcher;

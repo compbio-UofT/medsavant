@@ -19,29 +19,17 @@
  */
 package org.ut.biolab.medsavant.client.query;
 
-import com.explodingpixels.macwidgets.MacWidgetFactory;
-import com.explodingpixels.macwidgets.SourceListStandardColorScheme;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.ParseException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,7 +45,6 @@ import javax.swing.JScrollPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import net.miginfocom.swing.MigLayout;
@@ -66,12 +53,9 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdesktop.swingx.JXSearchField;
-import org.jdesktop.swingx.prompt.PromptSupport;
-import org.jdesktop.swingx.prompt.PromptSupport.FocusBehavior;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.view.genetics.QueryUtils;
@@ -83,7 +67,6 @@ import org.ut.biolab.medsavant.client.query.SearchConditionItem.SearchConditionL
 import org.ut.biolab.medsavant.client.query.medsavant.complex.ConditionUtils;
 import org.ut.biolab.medsavant.client.query.view.PillView;
 import org.ut.biolab.medsavant.client.query.view.ConditionPopupGenerator;
-import org.ut.biolab.medsavant.client.query.view.ScrollableJPopupMenu;
 import org.ut.biolab.medsavant.client.query.view.SearchConditionItemView;
 import org.ut.biolab.savant.analytics.savantanalytics.AnalyticsAgent;
 import org.w3c.dom.Element;
@@ -627,7 +610,7 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         return view;
     }
 
-    public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {
+    public void addItemToGroup(SearchConditionItem item, SearchConditionItemView view, SearchConditionGroupItem parent) {               
         registerViewWithItem(view, item);
         parent.addItem(item);
     }
@@ -650,35 +633,20 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             allPossible.addAll(possible.get(key));
         }
 
-        final JXSearchField field = new JXSearchField();
-        PromptSupport.setPrompt("Add search condition...", field);
-        PromptSupport.setFocusBehavior(FocusBehavior.SHOW_PROMPT, field);
-        field.setToolTipText("<html>Type a search condition into the search box, e.g. \"Chromosome\".<br/>"
-                + "Press Enter / Return to accept the selected condition name.<br/>"
-                + "You\'ll then be prompted to specify parameters for this condition.</html>");
-
-        //final Dimension focusedDim = new Dimension(width, field.getPreferredSize().height);
-        //field.setPreferredSize(focusedDim);
-        final CustomKeyListener keyListener = new CustomKeyListener(this, field, possible, allPossible, g);
-
-        field.addKeyListener(keyListener);
-
-        field.addFocusListener(new FocusListener() {
+        final JButton addCondition = ViewUtil.getSoftButton("Add search condition...");
+        final CustomKeyListener keyListener = new CustomKeyListener(this, possible, allPossible, g);
+        addCondition.addActionListener(new ActionListener() {
 
             @Override
-            public void focusGained(FocusEvent e) {
-                keyListener.refreshPopup();
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
+            public void actionPerformed(ActionEvent e) {
+                keyListener.refreshPopup(addCondition);
             }
 
         });
 
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
-        p.add(field);
+        p.add(addCondition);
 
         return p;
     }
@@ -724,35 +692,27 @@ public class QueryViewController extends JPanel implements SearchConditionListen
         }
     }
 
-    private static class CustomKeyListener implements KeyListener {
+    private static class CustomKeyListener {
 
-        private final JXSearchField field;
         private final Map<String, List<String>> possible;
         private final CaseInsensitiveArrayList allPossible;
         private SearchConditionGroupItem group;
         private QueryViewController qvc;
 
-        public CustomKeyListener(QueryViewController qvc, JXSearchField f, Map<String, List<String>> p, CaseInsensitiveArrayList ap, SearchConditionGroupItem g) {
+        public CustomKeyListener(QueryViewController qvc, Map<String, List<String>> p, CaseInsensitiveArrayList ap, SearchConditionGroupItem g) {
             this.qvc = qvc;
-            this.field = f;
             this.possible = p;
             this.allPossible = ap;
             this.group = g;
         }
 
-        ScrollableJPopupMenu m;
+        ;
         private ArrayList<JComponent> menuComponents;
         List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
         int currentlySelectedIndex;
 
-        @Override
-        public void keyTyped(KeyEvent ke) {
-        }
-
         public void addItemBasedOnField(String validTerm) {
             final SearchConditionItemView view = qvc.generateItemViewAndAddToGroup(validTerm, group);
-            m.setVisible(false);
-            field.setText("");
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -761,182 +721,94 @@ public class QueryViewController extends JPanel implements SearchConditionListen
             });
         }
 
-        public void refreshPopup() {
+        public void refreshPopup(JComponent parent) {
 
-            currentlySelectedIndex = -1;
-
-            Dimension d = new Dimension(field.getWidth(), 23);
-
-            menuComponents = new ArrayList<JComponent>();
-
-            menuItems.removeAll(menuItems);
-
-            for (String key : possible.keySet()) {
-                JMenuItem l = new JMenuItem(key.toUpperCase());
-                Font f = new Font(l.getFont().getFamily(), Font.PLAIN, 10);
-                l.setFont(f);
-                l.setEnabled(false);
-                l.setBackground(new Color(179, 189, 199));
-                l.setForeground(Color.white);
-                Dimension d2 = new Dimension(d.width, d.height - 5);
-                l.setMinimumSize(d2);
-                l.setMaximumSize(d2);
-                l.setPreferredSize(d2);
-
-                int headerIndex = menuComponents.size();
-                boolean sectionHasMatch = false;
-
-                Collections.sort(possible.get(key));
-
-                for (String s : possible.get(key)) {
-                    int indexOfMatch = s.toLowerCase().indexOf(field.getText().toLowerCase());
-                    if (indexOfMatch > -1) {
-                        sectionHasMatch = true;
-                        int to = indexOfMatch + field.getText().length();
-
-                        final JMenuItem i = new JMenuItem("<html>"
-                                + s.substring(0, indexOfMatch)
-                                + "<b>" + s.substring(indexOfMatch, to) + "</b>"
-                                + s.substring(to) + "</html>");
-                        fixSize(i, d);
-                        i.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent ae) {
-                                field.setText(i.getText().replaceAll("\\<.*?>", ""));
-                            }
-                        });
-                        menuItems.add(i);
-                        menuComponents.add(i);
-                    }
-                }
-
-                if (sectionHasMatch) {
-                    menuComponents.add(headerIndex, l);
-                }
+            QueryConditionDialog m = new QueryConditionDialog(possible);
+            m.setVisible(true);
+            String choice = m.getChosenConditionName();
+            if (choice != null) {
+                addItemBasedOnField(choice);
             }
 
-            int originalheight = 0;
-            for (Component c : menuComponents) {
-                originalheight += c.getPreferredSize().getHeight();
-            }
+            
+            /*
+             currentlySelectedIndex = -1;
 
-            //int maxHeight = 100;
-            int adjustedheight = originalheight;
+             Dimension d = new Dimension(field.getWidth(), 23);
 
-            m = new ScrollableJPopupMenu(15);
-            m.setFocusable(false);
-            m.removeAll();
+             menuComponents = new ArrayList<JComponent>();
 
-            for (JComponent c : menuComponents) {
-                m.addComponent(c);
-            }
+             menuItems.removeAll(menuItems);
 
-            Dimension dadjusted = new Dimension(m.getPreferredSize().width, adjustedheight + 10);
-            //fixSize(m, dadjusted);
+             for (String key : possible.keySet()) {
+             JMenuItem l = new JMenuItem(key.toUpperCase());
+             Font f = new Font(l.getFont().getFamily(), Font.PLAIN, 10);
+             l.setFont(f);
+             l.setEnabled(false);
+             l.setBackground(new Color(179, 189, 199));
+             l.setForeground(Color.white);
+             Dimension d2 = new Dimension(d.width, d.height - 5);
+             l.setMinimumSize(d2);
+             l.setMaximumSize(d2);
+             l.setPreferredSize(d2);
 
-            m.pack();
-            m.show(field, 0, 23);
-            m.updateUI();
-        }
+             int headerIndex = menuComponents.size();
+             boolean sectionHasMatch = false;
 
-        private void moveUpOrDown(int increment) {
+             Collections.sort(possible.get(key));
 
-            // the new, non-header index to be selected
-            int newIndex;
+             for (String s : possible.get(key)) {
+             int indexOfMatch = s.toLowerCase().indexOf(field.getText().toLowerCase());
+             if (indexOfMatch > -1) {
+             sectionHasMatch = true;
+             int to = indexOfMatch + field.getText().length();
 
-            // disarm previous
-            if (currentlySelectedIndex != -1) {
+             final JMenuItem i = new JMenuItem("<html>"
+             + s.substring(0, indexOfMatch)
+             + "<b>" + s.substring(indexOfMatch, to) + "</b>"
+             + s.substring(to) + "</html>");
+             fixSize(i, d);
+             i.addActionListener(new ActionListener() {
+             @Override
+             public void actionPerformed(ActionEvent ae) {
+             field.setText(i.getText().replaceAll("\\<.*?>", ""));
+             }
+             });
+             menuItems.add(i);
+             menuComponents.add(i);
+             }
+             }
 
-                menuItems.get(currentlySelectedIndex).setArmed(false);
-                newIndex = (currentlySelectedIndex + increment) % menuItems.size();
+             if (sectionHasMatch) {
+             menuComponents.add(headerIndex, l);
+             }
+             }
 
-                if (newIndex < 0) {
-                    newIndex = menuItems.size() - 1;
-                }
+             int originalheight = 0;
+             for (Component c : menuComponents) {
+             originalheight += c.getPreferredSize().getHeight();
+             }
 
-                // always start at the first position
-            } else {
-                newIndex = 0; //increment > 1 ? 0 : menuItems.size() - 1;
-            }
+             //int maxHeight = 100;
+             int adjustedheight = originalheight;
 
-            // arm the index
-            menuItems.get(newIndex).setArmed(true);
+             m = new ScrollableJPopupMenu(15);
+            
+             m.setFocusable(false);
+             m.removeAll();
 
-            // adjust the text
-            field.setText(menuItems.get(newIndex).getText().replaceAll("\\<.*?>", ""));
+             for (JComponent c : menuComponents) {
+             m.addComponent(c);
+             }
 
-            // set the index
-            currentlySelectedIndex = newIndex;
+             Dimension dadjusted = new Dimension(m.getPreferredSize().width, adjustedheight + 10);
+             //fixSize(m, dadjusted);
 
-            // scroll if necessary
-            int scrollToIndex = menuComponents.indexOf(menuItems.get(newIndex));
-
-            // include headers
-            if (scrollToIndex > 0) {
-                int aboveIndex = scrollToIndex - 1;
-                if (!menuComponents.get(aboveIndex).isEnabled()) {
-                    scrollToIndex = aboveIndex;
-                }
-            }
-
-            m.scrollToItem(scrollToIndex);
-        }
-
-        @Override
-        public void keyPressed(KeyEvent ke) {
-
-            // accept item
-            if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-
-                String match = allPossible.getInsensitiveMatch(field.getText());
-
-                if (match != null) {
-                    addItemBasedOnField(match);
-                }
-
-                // scroll
-            } else if (ke.getKeyCode() == KeyEvent.VK_DOWN || ke.getKeyCode() == KeyEvent.VK_UP) {
-
-                if (m == null || !m.isVisible()) {
-                    refreshPopup();
-                    return;
-                }
-
-                // if things to scroll through
-                if (m.getComponentCount() > 0 && m.isVisible()) {
-
-                    // which direction
-                    int increment = ke.getKeyCode() == KeyEvent.VK_DOWN ? 1 : -1;
-                    moveUpOrDown(increment);
-                }
-
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent ke) {
-
-            // handled above
-            if (ke.getKeyCode() == KeyEvent.VK_DOWN || ke.getKeyCode() == KeyEvent.VK_UP) {
-                return;
-            }
-
-            // hide the popup
-            if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                if (m != null) {
-                    m.setVisible(false);
-                }
-                return;
-            }
-
-            refreshPopup();
-
-        }
-
-        private void fixSize(JComponent m, Dimension d3) {
-            m.setMinimumSize(d3);
-            m.setMaximumSize(d3);
-            m.setPreferredSize(d3);
+             //m.pack();
+             m.setPopupSize(200, 400);
+             m.show(field, 0, 23);
+             m.updateUI();
+             */
         }
     }
 

@@ -24,11 +24,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import javax.swing.BorderFactory;
+import java.util.concurrent.Semaphore;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,12 +35,11 @@ import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.controller.ResultController;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
-import org.ut.biolab.medsavant.client.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 
@@ -60,6 +58,10 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     private WaitPanel waitPanel;
     private JPanel panel;
 
+    private static Listener<FilterEvent> filterEventListener = null;
+    private static Listener<ReferenceEvent> referenceEventListener = null;
+
+    //private static int sid = 0; //debug variable
     public FilterEffectivenessPanel() {
         this(Color.black);
 
@@ -135,34 +137,54 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
         panel.add(infoPanel, BorderLayout.NORTH);
 
+        initListeners();
+
+    }
+
+    private synchronized void initListeners() {
         //progressPanel = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
         //panel.add(progressPanel, BorderLayout.SOUTH);
-
-        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+        //Clear out old event listeners.
+        if (filterEventListener != null) {
+            FilterController.getInstance().removeListener(filterEventListener);
+        }
+        if (referenceEventListener != null) {
+            ReferenceController.getInstance().removeListener(referenceEventListener);
+        }
+        setMaxValues();
+        updateNumRemaining();
+        filterEventListener = new Listener<FilterEvent>() {
+            //private int i = sid++;
             @Override
             public void handleEvent(FilterEvent event) {
+                //System.out.println(i + ": Got filterevent " + event);
                 updateNumRemaining();
             }
-        });
-        ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
+        };
+
+        FilterController.getInstance().addListener(filterEventListener);
+
+        referenceEventListener = new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
                 if (event.getType() == ReferenceEvent.Type.CHANGED) {
                     setMaxValues();
                 }
             }
-        });
-
-        setMaxValues();
+        };
+        ReferenceController.getInstance().addListener(referenceEventListener);
     }
 
-    public void updateNumRemaining() {
+    private Semaphore updateSem = new Semaphore(1);
+
+    public final void updateNumRemaining() {
         showWaitCard();
 
         new MedSavantWorker<Integer>("Filters") {
             @Override
             protected Integer doInBackground() throws Exception {
+                updateSem.acquire();
                 return ResultController.getInstance().getFilteredVariantCount();
             }
 
@@ -174,12 +196,14 @@ public class FilterEffectivenessPanel extends JLayeredPane {
             protected void showSuccess(Integer result) {
                 showShowCard();
                 setNumLeft(result);
+                updateSem.release();
             }
 
             @Override
             protected void showFailure(Throwable ex) {
                 showShowCard();
                 LOG.error("Error getting filtered variant count.", ex);
+                updateSem.release();
             }
         }.execute();
     }
@@ -187,14 +211,19 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     private void setNumLeft(int num) {
         numLeft = num;
         refreshProgressLabel();
-
-        //progressPanel.animateToValue(num);
     }
 
     private void setMaxValues() {
         labelVariantsRemaining.setText("Calculating...");
 
         new MedSavantWorker<Integer>("Filters") {
+            @Override
+            protected void showFailure(Throwable ex) {
+                showShowCard();
+                LOG.error("Error getting total variant count.", ex);
+                updateSem.release();
+            }
+
             @Override
             protected void showProgress(double fraction) {
             }
@@ -205,10 +234,12 @@ public class FilterEffectivenessPanel extends JLayeredPane {
                 //progressPanel.setMaxValue(numTotal);
                 //progressPanel.setToValue(numTotal);
                 setNumLeft(numTotal);
+                updateSem.release();
             }
 
             @Override
             protected Integer doInBackground() throws Exception {
+                updateSem.acquire();
                 return ResultController.getInstance().getTotalVariantCount();
             }
         }.execute();
@@ -231,15 +262,14 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     }
 
     private void refreshProgressLabel() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                double percent = 100.0;
-                if (numTotal > 0) {
-                    percent = (numLeft * 100.0) / numTotal;
-                }
-                labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
-            }
-        });   
+        //System.out.println("Refresh progress label " + numTotal + ", " + numLeft);
+        double percent = 100.0;
+        if (numTotal > 0) {
+            percent = (numLeft * 100.0) / numTotal;
+        }
+        labelVariantsRemaining.setText(String.format("%,d (%.1f%%)", numLeft, percent));
+        panel.revalidate();
+        panel.repaint();
+
     }
 }

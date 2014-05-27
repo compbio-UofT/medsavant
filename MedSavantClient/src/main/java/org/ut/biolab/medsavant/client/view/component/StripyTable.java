@@ -50,6 +50,8 @@ public class StripyTable extends JTable {
             } else {
                 comp.setBackground(ViewUtil.oddRowColor);
             }
+        } else {
+            comp.setBackground(ViewUtil.getMedSavantBlueColor());
         }
         return comp;
     }

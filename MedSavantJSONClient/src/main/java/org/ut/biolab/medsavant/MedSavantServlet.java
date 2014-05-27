@@ -102,7 +102,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
     private CustomTablesAdapter customTablesManager;
 
-    private AnnotationManagerAdapter annotationManagerAdapter;
+    private AnnotationManagerAdapter annotationManager;
 
     private GeneSetManagerAdapter geneSetManager;
 
@@ -168,8 +168,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         return customTablesManager;
     }
 
-    public AnnotationManagerAdapter getAnnotationManagerAdapter() {
-        return annotationManagerAdapter;
+    public AnnotationManagerAdapter getAnnotationManager() {
+        return annotationManager;
     }
 
     public GeneSetManagerAdapter getGeneSetManager() {
@@ -357,12 +357,12 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
     }
 
     private void setLocalAdapters() {
-        this.jsonUtilities = new JSONUtilities(this.variantManager);
+        this.jsonUtilities = new JSONUtilities(this.variantManager, this.annotationManager);
     }
 
     private void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException,
             NoRouteToHostException, ConnectIOException {
-        this.annotationManagerAdapter = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
+        this.annotationManager = (AnnotationManagerAdapter) registry.lookup(ANNOTATION_MANAGER);
         this.cohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
         this.logManager = (LogManagerAdapter) registry.lookup(LOG_MANAGER);
         this.networkManager = (NetworkManagerAdapter) registry.lookup(NETWORK_MANAGER);
@@ -380,6 +380,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         this.setupManager = (SetupAdapter) registry.lookup(SETUP_MANAGER);
         this.customTablesManager = (CustomTablesAdapter) registry.lookup(CUSTOM_TABLES_MANAGER);
         this.notificationManager = (NotificationManagerAdapter) registry.lookup(NOTIFICATION_MANAGER);
+        this.jsonUtilities = new JSONUtilities(variantManager, annotationManager);
     }
 
     private void setExceptionHandler() {

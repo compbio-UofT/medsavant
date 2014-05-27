@@ -19,15 +19,14 @@
  */
 package org.ut.biolab.medsavant.client.view.list;
 
-import com.explodingpixels.macwidgets.SourceListItem;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
-import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.client.view.util.list.NiceListColorScheme;
 
 /**
  *
@@ -84,5 +83,13 @@ public class SplitScreenView extends JPanel {
 
     public void selectItemAtIndex(int i) {
         listView.selectItemAtIndex(i);
+    }
+
+    public void setListColorScheme(NiceListColorScheme cs) {
+        listView.setColorScheme(cs);
+    }
+    
+    public void setSelectedItemText(String text) {
+        listView.setSelectedItemText(text);
     }
 }

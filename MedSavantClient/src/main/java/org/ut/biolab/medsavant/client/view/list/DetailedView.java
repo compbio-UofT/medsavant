@@ -68,7 +68,7 @@ public abstract class DetailedView extends JPanel {
 
     public abstract void setMultipleSelections(List<Object[]> selectedRows);
 
-    public abstract JPopupMenu createPopup();
+    public JPopupMenu createPopup() { return null; }
 
     public JPanel getContentPanel() {
         return contentPanel;

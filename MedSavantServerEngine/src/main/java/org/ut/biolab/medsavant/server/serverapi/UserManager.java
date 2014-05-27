@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
@@ -23,9 +23,10 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +39,6 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.exception.UnauthorizedException;
 import org.ut.biolab.medsavant.shared.serverapi.UserManagerAdapter;
 
-
 /**
  *
  * @author mfiume
@@ -47,6 +47,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     private static final Log LOG = LogFactory.getLog(UserManager.class);
 
+    private static final String DATABASE_USER_KEY_PREFIX = "_dbuser_";
     private static UserManager instance;
 
     public static synchronized UserManager getInstance() throws RemoteException, SessionExpiredException {
@@ -58,19 +59,61 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     private UserManager() throws RemoteException, SessionExpiredException {
     }
-    
+
+    public Set<String> getAllUserNames(String sessID) throws SQLException, SessionExpiredException {
+        Set<String> results = new HashSet<String>();
+        ResultSet rs = ConnectionController.executePreparedQuery(sessID, "SELECT DISTINCT user FROM mysql.user");
+        
+        while (rs.next()) {
+            String user = rs.getString(1);
+            results.add(user);
+            //results.add(rs.getString(1));
+        }
+        return results;
+    }
+
     @Override
     public String[] getUserNames(String sessID) throws SQLException, SessionExpiredException {
-
-        List<String> results = new ArrayList<String>();
-        ResultSet rs = ConnectionController.executePreparedQuery(sessID, "SELECT DISTINCT user FROM mysql.user");
-        while (rs.next()) {
-            results.add(rs.getString(1));
+        Map<String, String> validUsers = null;
+        try {
+            validUsers = SettingsManager.getInstance().getSettingsForKeyPrefix(sessID, DATABASE_USER_KEY_PREFIX);
+        } catch (RemoteException re) {
+            throw new SQLException("Unable to find valid users for this database ", re);
         }
 
+        if (validUsers == null) {
+            return new String[]{};
+        }
+        
+        Set<String> users = getAllUserNames(sessID);
+        List<String> results = new ArrayList<String>();
+        
+       /* for(String au : users){
+            System.out.println("All user: "+au);
+        }
+        for(String vu : validUsers.keySet()){
+            System.out.println("Valid user: "+vu);
+        }*/
+        for(String user : users){
+            if(validUsers.containsKey(user) && !user.equalsIgnoreCase("root")){
+                results.add(user);
+            }
+        }
+               
         return results.toArray(new String[0]);
     }
 
+    public boolean isUserOfThisDatabase(String sessID) throws SQLException, SessionExpiredException, RemoteException{
+        String thisUser = SessionManager.getInstance().getUserForSession(sessID);
+        String[] users = getUserNames(sessID);
+        for(String user : users){
+            if(user.equalsIgnoreCase(thisUser)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public boolean userExists(String sessID, String user) throws SQLException, SessionExpiredException {
         return ConnectionController.executePreparedQuery(sessID, "SELECT user FROM mysql.user WHERE user=?;", user).next();
@@ -89,6 +132,9 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     public synchronized void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
+            if (user.startsWith(DATABASE_USER_KEY_PREFIX)) {
+                throw new SQLException("Can't create user " + user + " -- illegal username");
+            }
             // TODO: Transactions aren't supported for MyISAM, so this has no effect.
             conn.setAutoCommit(false);
 
@@ -108,34 +154,31 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public synchronized void changePassword(String sessID, String userName, char[] oldPass, char[] newPass) throws SQLException, RemoteException, SessionExpiredException {        
+    public synchronized void changePassword(String sessID, String userName, char[] oldPass, char[] newPass) throws SQLException, RemoteException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sessID);
-        try {            
-            conn.setAutoCommit(true);            
-            
+        try {
+            conn.setAutoCommit(true);
+
             //Check that old password is valid.
             ConnectionController.revalidate(userName, new String(oldPass), sessID);
-                         
-            
+
             //TODO: Check the new password against the current mysql password policy.                                                
-            
             //Change the password
-            conn.executePreparedUpdate("SET PASSWORD FOR ?@'localhost' = PASSWORD(?)", userName, new String(newPass));                                
-        } finally {                        
-            for(int i = 0; i < oldPass.length; ++i){
+            conn.executePreparedUpdate("SET PASSWORD FOR ?@'localhost' = PASSWORD(?)", userName, new String(newPass));
+        } finally {
+            for (int i = 0; i < oldPass.length; ++i) {
                 oldPass[i] = 0;
             }
-            for(int i = 0; i < newPass.length; ++i){
+            for (int i = 0; i < newPass.length; ++i) {
                 newPass[i] = 0;
-            }            
+            }
             conn.close();
         }
     }
-    
-    
 
     /**
      * Grant the user the privileges appropriate to their level
+     *
      * @param name user name from <code>mysql.user</code> table
      * @param level ADMIN, USER, or GUEST
      * @throws SQLException
@@ -148,42 +191,47 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             LOG.info("Granting " + level + " privileges to " + name + " on " + dbName + "...");
             switch (level) {
                 case ADMIN:
-                    conn.executePreparedUpdate("GRANT ALTER, RELOAD, CREATE, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
+                    conn.executePreparedUpdate("GRANT ALTER, RELOAD, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
                     conn.executePreparedUpdate(String.format("GRANT GRANT OPTION ON %s.* TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, DELETE, DROP, INSERT, SELECT, UPDATE ON %s.* TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT ALTER, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, DELETE, DROP, INSERT, SELECT, UPDATE ON %s.* TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate("GRANT SELECT ON mysql.user TO ?@'localhost'", name);
                     conn.executePreparedUpdate("GRANT SELECT ON mysql.db TO ?@'localhost'", name);
                     break;
                 case USER:
                     conn.executePreparedUpdate(String.format("GRANT CREATE TEMPORARY TABLES, SELECT ON %s.* TO ?@'localhost'", dbName), name);
-                    
+
                     //grant read/write/delete on region sets.
                     conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set_membership TO ?@'localhost'", dbName), name);
-                    
+
                     //Grant read/write/delete on cohorts.
                     conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort_membership TO ?@'localhost'", dbName), name);
-                    
+
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);                    
-                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);                    
+                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
+                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);
                     break;
                 case GUEST:
                     conn.executePreparedUpdate(String.format("GRANT SELECT ON %s.* TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);                    
+                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);
 
                     break;
             }
+
+            SettingsManager.getInstance().addSetting(sessID, DATABASE_USER_KEY_PREFIX + name, level.name());
             LOG.info("... granted.");
+        } catch (Exception ex) {
+            LOG.error("Problem creating user", ex);
+            throw new SQLException("Can't setup privileges for user " + name, ex);
         } finally {
             conn.executeQuery("FLUSH PRIVILEGES");
             conn.close();
         }
     }
-    
+
     @Override
     public UserLevel getSessionUsersLevel(String sessID) throws SQLException, RemoteException, SessionExpiredException {
         // username for this session
@@ -193,7 +241,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     @Override
     public UserLevel getUserLevel(String sessID, String name) throws SQLException, SessionExpiredException {
-        
+
         if (userExists(sessID, name)) {
             // If the user can create other users, they're assumed to be admin.
             PooledConnection conn = ConnectionController.connectPooled(sessID);
@@ -222,30 +270,31 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     public void removeUser(String sid, String name) throws SQLException, SessionExpiredException {
         PooledConnection conn = ConnectionController.connectPooled(sid);
         conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
-        
-        conn.executeQuery("FLUSH PRIVILEGES");        
+
+        conn.executeQuery("FLUSH PRIVILEGES");
     }
 
     /**
-     * Check whether the user associated with the session
-     * is an administrator.
+     * Check whether the user associated with the session is an administrator.
+     *
      * @param sessionID The session to check.
      * @return Whether the user associated with the session is an administrator.
      */
     public boolean isAdmin(String sessionID) throws SQLException, RemoteException, SessionExpiredException {
         try {
-            return isAdmin(sessionID,false);
+            return isAdmin(sessionID, false);
         } catch (UnauthorizedException ex) {
             // this will never happen because we specified not to throw exceptions above
             return false;
         }
     }
-    
+
     /**
-     * Check whether the user associated with the session
-     * is an administrator.
+     * Check whether the user associated with the session is an administrator.
+     *
      * @param sessionID The session to check.
-     * @param throwAccessDeniedIfNot Whether or not to throw an exception if the user is not an admin.
+     * @param throwAccessDeniedIfNot Whether or not to throw an exception if the
+     * user is not an admin.
      * @return Whether the user associated with the session is an administrator.
      */
     public boolean isAdmin(String sessionID, boolean throwUnauthorizedExceptionIfNot) throws SQLException, RemoteException, SessionExpiredException, UnauthorizedException {
@@ -254,7 +303,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             return true;
         } else {
             if (throwUnauthorizedExceptionIfNot) {
-                throw new UnauthorizedException("You do not have administrative privledges.");
+                throw new UnauthorizedException("You do not have administrative priviledges.");
             } else {
                 return false;
             }

@@ -31,7 +31,7 @@ import java.util.List;
  *
  * @author tarkvara
  */
-public class OntologyTerm implements Serializable {
+public class OntologyTerm implements Serializable, Comparable<OntologyTerm> {
     private final OntologyType ontology;
     private final String id;
     private final String name;
@@ -47,6 +47,17 @@ public class OntologyTerm implements Serializable {
         this.altIDs = altIDs;
         this.parentIDs = parentIDs;
     }
+
+    @Override
+    public int compareTo(OntologyTerm t) {
+        int c = ontology.name().compareTo(t.ontology.name());        
+        if(c == 0){ //same ontology type, sort by id.
+            return id.compareTo(t.id);
+        }else{
+            return c;
+        }        
+    }
+    
 
     @Override
     public int hashCode() {
@@ -122,7 +133,7 @@ public class OntologyTerm implements Serializable {
             case HPO:
                 return new URL("http://www.human-phenotype-ontology.org/hpoweb/showterm?id=" + id);
             case OMIM:
-                return new URL("http://http://omim.org/entry/" + id.substring(4));
+                return new URL("http://omim.org/entry/" + id.substring(4));
             default:
                 return null;
         }

@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -77,6 +79,32 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
+    //Method for that enables UserManager to fetch valid users (keys in the settings table with 
+    //prefix UserManager.DATABASE_USER_KEY_PREFIX). This should not be used for any other purpose as it
+    //may be deprecated in the near future.
+    Map<String, String> getSettingsForKeyPrefix(String sid, String keyPrefix) throws SQLException, SessionExpiredException{
+        TableSchema table = MedSavantDatabase.SettingsTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY));
+
+        query.addColumns(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE));
+        query.addCondition(BinaryConditionMS.like(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), keyPrefix+"%"));
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
+        Map<String, String> results = new HashMap<String, String>();
+        
+        while(rs.next()) {
+            String user = rs.getString(1);
+            user=user.replace(keyPrefix, "");
+            String val = rs.getString(2);            
+            results.put(user, val);
+            
+        }   
+        return results;
+    }
+    
     @Override
     public String getSetting(String sid, String key) throws SQLException, SessionExpiredException {
 

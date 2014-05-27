@@ -1,21 +1,21 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.client.view.app.builtin.settings;
 
@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.annotation.InstallAnnotationWizard;
 
 import org.ut.biolab.medsavant.client.controller.ExternalAnnotationController;
-import org.ut.biolab.medsavant.client.login.LoginController;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
@@ -52,6 +52,7 @@ import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;
 import org.ut.biolab.medsavant.client.view.app.AppSubSection;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import static org.ut.biolab.medsavant.client.view.util.DialogUtils.getFrontWindow;
+import org.ut.biolab.medsavant.client.view.util.StandardFixableWidthAppPanel;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**
@@ -59,6 +60,7 @@ import org.ut.biolab.medsavant.client.view.util.ViewUtil;
  * @author mfiume
  */
 public class AnnotationsPage extends AppSubSection {
+
     private static final Log LOG = LogFactory.getLog(AnnotationsPage.class);
     private SplitScreenView view;
 
@@ -71,11 +73,11 @@ public class AnnotationsPage extends AppSubSection {
         if (view == null) {
             view = new SplitScreenView(
                     new SimpleDetailedListModel<Annotation>("Program") {
-                @Override
-                public Annotation[] getData() throws Exception {
-                    return ExternalAnnotationController.getInstance().getExternalAnnotations();
-                }
-            },
+                        @Override
+                        public Annotation[] getData() throws Exception {
+                            return ExternalAnnotationController.getInstance().getExternalAnnotations();
+                        }
+                    },
                     new ExternalAnnotationDetailedView(),
                     new ExternalAnnotationDetailedListEditor());
         }
@@ -92,46 +94,17 @@ public class AnnotationsPage extends AppSubSection {
     private class ExternalAnnotationDetailedView extends DetailedView {
 
         private final JPanel details;
-        private final JPanel content;
-        private CollapsiblePane infoPanel;
         private final BlockingPanel blockPanel;
+        private final StandardFixableWidthAppPanel canvas;
 
         public ExternalAnnotationDetailedView() {
             super(pageName);
-
-            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-            viewContainer.setLayout(new BorderLayout());
-
-            JPanel contentPanel = new JPanel();
-            contentPanel.setLayout(new BorderLayout());
-
-            JPanel infoContainer = ViewUtil.getClearPanel();
-            ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-            contentPanel.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
-
-            CollapsiblePanes panes = new CollapsiblePanes();
-            panes.setOpaque(false);
-            infoContainer.add(panes);
-
-            infoPanel = new CollapsiblePane();
-            infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-            infoPanel.setCollapsible(false);
-            panes.add(infoPanel);
-            panes.addExpansion();
-
-            content = new JPanel();
-            content.setLayout(new BorderLayout());
-            infoPanel.setLayout(new BorderLayout());
-            infoPanel.add(content, BorderLayout.CENTER);
-
-
-            details = ViewUtil.getClearPanel();
-
-            content.add(details);
-
-            blockPanel = new BlockingPanel("No annotation selected", contentPanel);
-            viewContainer.add(blockPanel, BorderLayout.CENTER);
+            canvas = new StandardFixableWidthAppPanel();
+            blockPanel = new BlockingPanel("No annotation selected", canvas);
+            details = canvas.addBlock();
+            blockPanel.block();
+            this.setLayout(new BorderLayout());
+            this.add(blockPanel, BorderLayout.CENTER);
         }
 
         @Override
@@ -144,7 +117,7 @@ public class AnnotationsPage extends AppSubSection {
                 Annotation annotation = (Annotation) item[0];
 
                 String title = annotation.toString();
-                infoPanel.setTitle(title);
+                canvas.setTitle(title);
 
                 details.removeAll();
                 details.updateUI();
@@ -167,18 +140,13 @@ public class AnnotationsPage extends AppSubSection {
             } else {
 
                 if (selectedRows.isEmpty()) {
-                    infoPanel.setTitle("");
+                    canvas.setTitle("");
                 } else {
-                    infoPanel.setTitle("Multiple annotations (" + selectedRows.size() + ")");
+                    canvas.setTitle("Multiple annotations (" + selectedRows.size() + ")");
                 }
                 details.removeAll();
                 details.updateUI();
             }
-        }
-
-        @Override
-        public JPopupMenu createPopup() {
-            return null;
         }
 
         private synchronized void setDetailsList(List<String[]> info) {
@@ -249,7 +217,7 @@ public class AnnotationsPage extends AppSubSection {
                                 dispose();
                                 if (!inUse) {
                                     //int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
-                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall "+an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                                    int response = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance().getRootPane(), "Are you sure you want to uninstall " + an.getProgram(), "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
                                     if (response == DialogUtils.YES) {
                                         try {
@@ -259,7 +227,7 @@ public class AnnotationsPage extends AppSubSection {
                                             ClientMiscUtils.reportError("Error uninstalling annotations", ex);
                                         }
                                     }
-                                }else{
+                                } else {
                                     JOptionPane.showMessageDialog(MedSavantFrame.getInstance().getRootPane(), "This annotation is being used by other projects and cannot be uninstalled.  Please remove this annotation from these projects first.", "Notice", JOptionPane.PLAIN_MESSAGE);
                                 }
 
@@ -267,15 +235,14 @@ public class AnnotationsPage extends AppSubSection {
                         });
                     }
                 };
-                try{
+                try {
                     dialog.showDialog();
-                }catch(Exception e){
+                } catch (Exception e) {
                     LOG.error(e);
                 }
                 //dialog.setVisible(true);
 
             }
-
 
         }
     }

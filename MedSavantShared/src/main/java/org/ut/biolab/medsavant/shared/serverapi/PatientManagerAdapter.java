@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
+import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.ClientPermission;
@@ -57,6 +58,9 @@ public interface PatientManagerAdapter extends Remote {
     public void removePatient(String sessID, int projectId, int[] patientIds) throws SQLException, RemoteException, SessionExpiredException;
     
     @Modifier(type=PATIENT)
+    public void updatePatient(String sessID, int projectID, int patientID, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException;
+    
+    @Modifier(type=PATIENT)
     public void addPatient(String sessID, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException, SessionExpiredException;   
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projectId, String columnName) throws SQLException, RemoteException, SessionExpiredException;
     public List<String> getDNAIDsWithValuesInRange(String sessID, int projectId, String columnName, Range r) throws SQLException, RemoteException, SessionExpiredException;
@@ -80,6 +84,8 @@ public interface PatientManagerAdapter extends Remote {
     public List<String> getDNAIDsForHPOID(String sessID, int pid, String id) throws SQLException, RemoteException, SessionExpiredException;
     public boolean hasOptionalField(String sessID, int pid, String fieldName) throws SQLException, RemoteException, SessionExpiredException;
     public String getReadAlignmentPathForDNAID(String sessID, int pid, String dnaID) throws SQLException, RemoteException, SessionExpiredException;
+    
+    public List<Cohort> getCohortsForPatient(String sessID, int projectID, int patientID) throws SQLException, RemoteException, SessionExpiredException;
     
     public void test(CustomField[] f) throws RemoteException;
 }
