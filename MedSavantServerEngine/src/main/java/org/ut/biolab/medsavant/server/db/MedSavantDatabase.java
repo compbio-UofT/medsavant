@@ -594,7 +594,61 @@ public class MedSavantDatabase {
         }
     }
     
+    public static class UserRoleTableSchema extends TableSchema {
+        public static final String TABLE_NAME="user_role";
+        
+        public static final int INDEX_OF_ID = 0;
+        public static final ColumnType TYPE_OF_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_ID = 11;
+        public static final String COLUMNNAME_OF_ID = "user_role_id";
+        
+        public static final int INDEX_OF_ROLENAME = 1;
+        public static final ColumnType TYPE_OF_ROLENAME = ColumnType.VARCHAR;
+        public static final int LENGTH_OF_ROLENAME = 64;                
+        public static final String COLUMNNAME_OF_ROLENAME = "role_name";
+        
+        public static final int INDEX_OF_ROLE_DESCRIPTION = 2;
+        public static final ColumnType TYPE_OF_ROLE_DESCRIPTION= ColumnType.TEXT;        
+        public static final String COLUMNNAME_OF_ROLE_DESCRIPTION = "role_description";
+        public static final int LENGTH_OF_ROLE_DESCRIPTION = 0;
+        
+        public UserRoleTableSchema(DbSchema s){
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+        
+        private void addColumns(){
+            addColumn(COLUMNNAME_OF_ID, ColumnType.INTEGER, LENGTH_OF_ID);
+            addColumn(COLUMNNAME_OF_ROLENAME, ColumnType.VARCHAR, LENGTH_OF_ROLENAME);
+            addColumn(COLUMNNAME_OF_ROLE_DESCRIPTION, ColumnType.TEXT, LENGTH_OF_ROLE_DESCRIPTION);
+        }
+        
+    }
 
+    public static class UserRoleAssignmentTableSchema extends TableSchema{
+        public static final String TABLE_NAME = "user_role_assignment";
+        
+        public static final int INDEX_OF_USERNAME = 0;
+        public static final ColumnType TYPE_OF_USERNAME = ColumnType.VARCHAR;
+        public static final String COLUMNNAME_OF_USERNAME = "user";
+        public static final int LENGTH_OF_USERNAME = 300;
+        
+        public static final int INDEX_OF_ROLE_ID = 1;
+        public static final ColumnType TYPE_OF_ROLE_ID = ColumnType.INTEGER;
+        public static final int LENGTH_OF_ROLE_ID = 11;
+        public static final String COLUMNNAME_OF_ROLE_ID = "fk_user_role_id";
+        
+        public UserRoleAssignmentTableSchema(DbSchema s){
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+        
+        private void addColumns(){
+            addColumn(COLUMNNAME_OF_USERNAME, ColumnType.VARCHAR, LENGTH_OF_USERNAME);
+            addColumn(COLUMNNAME_OF_ROLE_ID, ColumnType.INTEGER, LENGTH_OF_ROLE_ID);
+        }        
+    }
+    
     public static class UserCommentGroupTableSchema extends TableSchema {
 
         public static final String TABLE_NAME = "user_comment_group";
@@ -881,4 +935,6 @@ public class MedSavantDatabase {
     public static final VariantFileTableSchema VariantFileIBTableSchema = new VariantFileTableSchema(schema, "_ib");
     public static final UserCommentGroupTableSchema UserCommentGroupTableSchema = new UserCommentGroupTableSchema(schema);
     public static final UserCommentTableSchema UserCommentTableSchema = new UserCommentTableSchema(schema);
+    public static final UserRoleTableSchema UserRoleTableSchema = new UserRoleTableSchema(schema);
+    public static final UserRoleAssignmentTableSchema UserRoleAssignmentTableSchema = new UserRoleAssignmentTableSchema(schema);
 }
