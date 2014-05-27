@@ -214,6 +214,15 @@ public class Variant {
 	
 	
 	/**
+	 * Get the zygosity of this variant.
+	 * @return the zygosity String
+	 */
+	public String getZygosity() {
+		return zygosity;
+	}
+	
+	
+	/**
 	 * Get value for a specific column.
 	 * @param columnName the String name of this column (in the header)
 	 * @return the value corresponding to this column
