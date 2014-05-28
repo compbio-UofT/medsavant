@@ -298,11 +298,11 @@ public class IndividualSelector extends JDialog implements BasicPatientColumns {
                         selectedRows.clear();
                         selectedHospitalIDs.clear();
 
-                        selectedRows.add(rows[0]);
-                        int realRow = individualsSTP.getActualRowAt(rows[0]);
+                        int realRow = individualsSTP.getActualRowAt(rows[0]);						
+						selectedRows.add(realRow);
                         Object[] o = individualsRetriever.getIndividuals().get(realRow);
                         selectedHospitalIDs.add(o[INDEX_OF_HOSPITAL_ID].toString());
-
+						
                         instance.setVisible(false);
                         setIndividualsChosen(true);
 
