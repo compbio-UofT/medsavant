@@ -325,7 +325,24 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
              + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Disease-specific comments, diseases are ontology terms.'"
              ;
              */
-            String q = "CREATE TABLE " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "("
+            String q = "CREATE TABLE " + MedSavantDatabase.UserRoleTableSchema.getTableName() + "("
+                    + " user_role_id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                    + " role_name varchar(64) not null, "
+                    + " role_description text "
+                    + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='User role definitions'";
+            LOG.info(q);
+            conn.executeUpdate(q);
+
+            q = "CREATE TABLE " + MedSavantDatabase.UserRoleAssignmentTableSchema.getTableName() + "("
+                    + " user VARCHAR(300) NOT NULL, "
+                    + " fk_user_role_id INTEGER NOT NULL, "
+                    + " PRIMARY KEY(user, fk_user_role_id), "
+                    + " FOREIGN KEY(fk_user_role_id) REFERENCES " + MedSavantDatabase.UserRoleTableSchema.getTableName() + "(" + MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ID + ") ON UPDATE CASCADE ON DELETE CASCADE "
+                    + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin COMMENT='Assignments of users to roles.'";
+            LOG.info(q);
+            conn.executeUpdate(q);
+
+            q = "CREATE TABLE " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "("
                     + " user_comment_group_id	INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "	project_id INTEGER,"
                     + "	reference_id INTEGER,"
@@ -333,8 +350,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "	start_position integer,"
                     + "	end_position integer,"
                     + "	ref varchar(255),"
-                    + "	alt varchar(255),	"                    
-                    + "	UNIQUE(project_id, reference_id, chrom, start_position, end_position, ref, alt),"                    
+                    + "	alt varchar(255),	"
+                    + "	UNIQUE(project_id, reference_id, chrom, start_position, end_position, ref, alt),"
                     + "	FOREIGN KEY(project_id) REFERENCES " + MedSavantDatabase.ProjectTableSchema.getTableName() + "(" + MedSavantDatabase.ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID + ") ON UPDATE CASCADE ON DELETE CASCADE,"
                     + "	FOREIGN KEY(reference_id) REFERENCES " + MedSavantDatabase.ReferenceTableSchema.getTableName() + "(" + MedSavantDatabase.ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT,"
                     + " KEY(chrom) "
@@ -349,7 +366,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + " fk_parent_user_comment_id INTEGER, "
                     + "	user varchar(200),"
                     + " ontology varchar(10), "
-                    + "	ontology_id varchar(30), "                    
+                    + "	ontology_id varchar(30), "
                     + "	is_approved boolean not null default false,"
                     + "	is_included boolean not null default false,"
                     + "	is_pending_review boolean not null default false,"
@@ -359,8 +376,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "	variant_comment text,"
                     + " FOREIGN KEY(ontology) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ONTOLOGY.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
                     + "	FOREIGN KEY(ontology_id) REFERENCES " + MedSavantDatabase.OntologyTableSchema.getTableName() + "(" + MedSavantDatabase.OntologyColumns.ID.getColumnName() + ") ON UPDATE CASCADE ON DELETE RESTRICT," //foreign keys ignored for now.
-                    + "	FOREIGN KEY(fk_user_comment_group_id) REFERENCES " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "("+MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT,"
-                    + "	FOREIGN KEY(fk_parent_user_comment_id) REFERENCES " + MedSavantDatabase.UserCommentTableSchema.getTableName() + "("+MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID+") ON UPDATE RESTRICT ON DELETE RESTRICT"
+                    + "	FOREIGN KEY(fk_user_comment_group_id) REFERENCES " + MedSavantDatabase.UserCommentGroupTableSchema.getTableName() + "(" + MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_USER_COMMENT_GROUP_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT,"
+                    + "	FOREIGN KEY(fk_parent_user_comment_id) REFERENCES " + MedSavantDatabase.UserCommentTableSchema.getTableName() + "(" + MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID + ") ON UPDATE RESTRICT ON DELETE RESTRICT"
                     + ")ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
             LOG.info(q);
             conn.executeUpdate(q);
