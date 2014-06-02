@@ -59,7 +59,7 @@ import org.ut.biolab.medsavant.shared.util.IOUtils;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class VCFUploadApp implements LaunchableApp {
 
@@ -92,6 +92,7 @@ public class VCFUploadApp implements LaunchableApp {
     private CardLayout cardLayout;
     private JCheckBox annovarCheckbox;
     private PlaceHolderTextField emailPlaceholder;
+	private JCheckBox includeReferenceCheckbox;
 
     public VCFUploadApp() {
         filesToImport = new ArrayList<File>();
@@ -133,6 +134,11 @@ public class VCFUploadApp implements LaunchableApp {
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
 
+		includeReferenceCheckbox= new JCheckBox("include all VCF lines, including reference calls (highly recommended for pharmacogenetic testing)");
+		includeReferenceCheckbox.setSelected(true);
+		includeReferenceCheckbox.setFocusable(false);
+		advancedOptionsPanel.add(includeReferenceCheckbox, "wrap");
+		
         advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Notifications"), "wrap");
 
         emailPlaceholder = new PlaceHolderTextField();
@@ -444,7 +450,8 @@ public class VCFUploadApp implements LaunchableApp {
                                                 transferIDs,
                                                 ProjectController.getInstance().getCurrentProjectID(),
                                                 ReferenceController.getInstance().getCurrentReferenceID(),
-                                                new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
+                                                new String[][]{}, includeReferenceCheckbox.isSelected(),
+												emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
                                         succeeded();
                                     } 
                                 } catch (Exception ex) {

@@ -79,6 +79,11 @@
             <artifactId>commons-net</artifactId>
             <version>3.2</version>
         </dependency>
+		<dependency>
+			<groupId>beagle</groupId>
+			<artifactId>beagle</artifactId>
+			<version>4.1274</version>
+		</dependency>
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
