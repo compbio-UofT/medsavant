@@ -19,6 +19,8 @@
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -68,6 +70,14 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         return instance;
     }
 
+    @Override
+    public void removeSetting(String sid, String key) throws SQLException, SessionExpiredException{
+        TableSchema table = MedSavantDatabase.SettingsTableSchema;
+        DeleteQuery query = new DeleteQuery(table.getTable());
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));        
+        ConnectionController.executeUpdate(sid,  query.toString());
+    }
+    
     @Override
     public void addSetting(String sid, String key, String value) throws SQLException, SessionExpiredException {
 

@@ -18,9 +18,11 @@
  */
 package org.ut.biolab.medsavant.shared.format;
 
-public class UserRole {
+import java.io.Serializable;
 
-    private final Integer roleId;
+public class UserRole implements Serializable, Comparable {
+
+    private final int roleId;
     private final String roleName;
     private final String database;
     private final String roleDescription;
@@ -32,8 +34,10 @@ public class UserRole {
         this.roleDescription = roleDescription;
     }
 
-    public UserRole(String roleName, String description) {
-        this(null, roleName, description, null);        
+    @Override
+    public int compareTo(Object o) {
+        UserRole ur = (UserRole) o;
+        return roleName.compareTo(ur.roleName);
     }
 
     public int getRoleId() {
@@ -59,9 +63,9 @@ public class UserRole {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + this.roleId;
-        hash = 53 * hash + (this.database != null ? this.database.hashCode() : 0);
+        int hash = 5;
+        hash = 79 * hash + (this.roleName != null ? this.roleName.hashCode() : 0);
+        hash = 79 * hash + (this.database != null ? this.database.hashCode() : 0);
         return hash;
     }
 
@@ -74,7 +78,7 @@ public class UserRole {
             return false;
         }
         final UserRole other = (UserRole) obj;
-        if (this.roleId != other.roleId) {
+        if ((this.roleName == null) ? (other.roleName != null) : !this.roleName.equals(other.roleName)) {
             return false;
         }
         if ((this.database == null) ? (other.database != null) : !this.database.equals(other.database)) {

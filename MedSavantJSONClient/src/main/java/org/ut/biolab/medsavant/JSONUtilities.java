@@ -72,11 +72,14 @@ public class JSONUtilities implements JSONUtilitiesAdapter {
         //always pre-annotatew ith jannovar
         final boolean preAnnotateWithJannovar = true;
 
+        //never phase.
+        final boolean doPhasing = false;
+        
         //remove existing vcfs.
         variantManager.removeVariants(sessID, projID, refID, files, autoPublish, email);
 
         //import new variants.
-        int updateId = variantManager.uploadTransferredVariants(sessID, fileIDs, projID, refID, variantTags, includeHomoRef, email, autoPublish, preAnnotateWithJannovar);
+        int updateId = variantManager.uploadTransferredVariants(sessID, fileIDs, projID, refID, variantTags, includeHomoRef, email, autoPublish, preAnnotateWithJannovar, doPhasing);
         return updateId;
     }
 

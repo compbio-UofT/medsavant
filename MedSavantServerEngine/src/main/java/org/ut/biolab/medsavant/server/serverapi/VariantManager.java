@@ -259,8 +259,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * include these new variants upon publication, or if autopublish is true.
      */
     @Override
-    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
-        return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
+    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
+        return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
     }
 
     /**
@@ -270,7 +270,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * true.
      */
     @Override
-    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws Exception, LockException {
+    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
@@ -293,7 +293,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 i++;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
+            return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
         } finally {
             LockController.getInstance().releaseLock(database, projID);
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
@@ -307,7 +307,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * publication, or if autopublish is true.
      */
     @Override
-    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
+    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
@@ -338,7 +338,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 //return -1;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar);
+            return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
         } finally {
             LockController.getInstance().releaseLock(database, projID);
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
@@ -377,7 +377,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @param vcfFiles local VCF files on the server's file-system
      * @param sourceNames if non-null, client-side names of uploaded files
      */
-    private int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar) throws Exception, LockException {
+    private int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar, boolean doPhasing) throws Exception, LockException {
 
         LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projectID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
@@ -442,7 +442,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
             int updateID = -1;
             try {
-                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, tags);
+                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, doPhasing, tags);
                 // addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
                 EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
@@ -1807,27 +1807,24 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         updateCommentStatus(sessID,
                 parentCommentId,
                 statusChangeComment.getOriginalComment().isApproved(),
-                statusChangeComment.getOriginalComment().isIncluded(),
-                statusChangeComment.getOriginalComment().isPendingReview(),
+                statusChangeComment.getOriginalComment().isIncluded(),                
                 statusChangeComment.getOriginalComment().isDeleted());
 
         //Associate the original status of the comment with the status change comment.
         updateCommentStatus(sessID,
                 statusChangeCommentId,
                 statusChangeComment.isApproved(),
-                statusChangeComment.isIncluded(),
-                statusChangeComment.isPendingReview(),
+                statusChangeComment.isIncluded(),                
                 statusChangeComment.isDeleted());
 
     }
 
-    private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isPendingReview, boolean isDeleted) throws SQLException, SessionExpiredException {
+    private void updateCommentStatus(String sessID, int commentId, boolean isApproved, boolean isIncluded, boolean isDeleted) throws SQLException, SessionExpiredException {
         TableSchema lcTable = MedSavantDatabase.UserCommentTableSchema;
         UpdateQuery uq = new UpdateQuery(lcTable.getTable());
         uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), commentId));
         uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
-        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
-        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);        
         uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
         ConnectionController.executeUpdate(sessID, uq.toString());
     }
@@ -1844,8 +1841,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //TODO: Insert checks here to make sure user has permissions to change flags.      
         //If they don't, use the flags in 'lastComment' commented out above.       
         Boolean isApproved = userComment.isApproved();
-        Boolean isIncluded = userComment.isIncluded();
-        Boolean isPendingReview = userComment.isPendingReview();
+        Boolean isIncluded = userComment.isIncluded();        
         Boolean isDeleted = userComment.isDeleted();
         String commentText = userComment.getCommentText();
         String ontology = userComment.getOntologyTerm().getOntology().name();
@@ -1857,8 +1853,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY), ontology);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER), username);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), isApproved);
-        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);
-        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), isPendingReview);
+        iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), isIncluded);        
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), isDeleted);
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE), (new FunctionCall(new CustomSql("NOW"))).addCustomParams());
         iq.addColumn(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_COMMENT), commentText);
@@ -1890,8 +1885,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 UpdateQuery uq = new UpdateQuery(lcTable.getTable());
                 uq.addCondition(BinaryCondition.equalTo(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER_COMMENT_ID), userComment.getOriginalComment().getCommentID()));
                 uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED), userComment.getOriginalComment().isApproved());
-                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), userComment.getOriginalComment().isIncluded());
-                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW), userComment.getOriginalComment().isPendingReview());
+                uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE), userComment.getOriginalComment().isIncluded());                
                 uq.addSetClause(MedSavantDatabase.UserCommentTableSchema.getDBColumn(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED), userComment.getOriginalComment().isDeleted());
                 stmt = conn.prepareStatement(uq.toString());
                 stmt.execute();
@@ -1972,8 +1966,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 String ontologyId = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_ONTOLOGY_ID);
                 String user = rs.getString(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_USER);
                 Boolean isApproved = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_APPROVED);
-                Boolean isIncluded = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE);
-                Boolean isPendingReview = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_REVIEW);
+                Boolean isIncluded = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_INCLUDE);                
                 Boolean isDeleted = rs.getBoolean(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_DELETED);
                 Date creationDate = rs.getDate(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_CREATION_DATE);
                 Timestamp ts = rs.getTimestamp(MedSavantDatabase.UserCommentTableSchema.COLUMNNAME_OF_MODIFICATION_DATE);
@@ -1989,7 +1982,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                         throw new SQLException("Invalid comment detected in database with id " + commentId + " (Refers to non-existant comment with id " + parentCommentId + ")");
                     } else {
                         //this is a child comment
-                        UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, parentComment);
+                        UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isDeleted, creationDate, modDate, commentText, ot, parentComment);
                         Set<UserComment> lcSet = childCommentMap.get(parentCommentId);
                         if (lcSet == null) {
                             lcSet = new TreeSet<UserComment>(new Comparator<UserComment>() {
@@ -2005,7 +1998,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     }
                 } else {
                     //this is a parent comment.
-                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isPendingReview, isDeleted, creationDate, modDate, commentText, ot, null);
+                    UserComment lc = new UserComment(commentId, user, isApproved, isIncluded, isDeleted, creationDate, modDate, commentText, ot, null);
                     parentCommentMap.put(commentId, lc);
                 }
             }

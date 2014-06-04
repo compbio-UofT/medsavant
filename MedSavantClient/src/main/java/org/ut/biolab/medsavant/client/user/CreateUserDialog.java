@@ -23,10 +23,13 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
@@ -38,6 +41,7 @@ import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
 import org.ut.biolab.medsavant.component.field.editable.PasswordEditableField;
 import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 import org.ut.biolab.medsavant.component.field.validator.NonEmptyStringValidator;
+import org.ut.biolab.medsavant.shared.format.UserRole;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
@@ -46,7 +50,7 @@ import org.ut.biolab.medsavant.shared.model.UserLevel;
  * @author mfiume
  */
 public class CreateUserDialog extends JDialog {
-
+    private static final Log LOG = LogFactory.getLog(CreateUserDialog.class);
     public CreateUserDialog() {
         super(DialogUtils.getFrontWindow(), "Create User", Dialog.ModalityType.APPLICATION_MODAL);
         setLocationRelativeTo(MedSavantFrame.getInstance());
@@ -70,8 +74,8 @@ public class CreateUserDialog extends JDialog {
 
         final EnumEditableField userlevelField = new EnumEditableField(
                 new UserLevel[]{
-                    UserLevel.GUEST, 
-                    UserLevel.USER, 
+                    UserLevel.GUEST,
+                    UserLevel.USER,
                     UserLevel.ADMIN
                 });
         userlevelField.setValue(UserLevel.USER);
@@ -86,8 +90,19 @@ public class CreateUserDialog extends JDialog {
         userKVP.addKeyWithValue("Password", passwordField);
         userKVP.addKeyWithValue("User Level", userlevelField);
 
+        /*
+        try {
+           Set<UserRole> roleSet = MedSavantClient.UserManager.getAllRoles(LoginController.getSessionID());
+           final EnumEditableField userRoleField = new EnumEditableField(roleSet.toArray());
+           userKVP.addKeyWithValue("User Role", userRoleField);
+        } catch (Exception ex) {
+           DialogUtils.displayError("Error", ex.getMessage());
+           LOG.error(ex);
+           dispose();
+           return;
+        }
         userKVP.setAdditionalColumn("User Level", 0, userLevelButton);
-
+*/
         //this.setPreferredSize(new Dimension(350,200));
         this.setBackground(ViewUtil.getDefaultBackgroundColor());
 
@@ -124,10 +139,10 @@ public class CreateUserDialog extends JDialog {
                         } else {
                             UserController.getInstance().addUser(
                                     usernameField.getValue(),
-                                    passwordField.getValue().toCharArray(), 
+                                    passwordField.getValue().toCharArray(),
                                     (UserLevel) userlevelField.getValue());
-                            
-                            DialogUtils.displayMessage("User Added",String.format("<html>Added user <i>%s</i></html>", usernameField.getValue()));
+
+                            DialogUtils.displayMessage("User Added", String.format("<html>Added user <i>%s</i></html>", usernameField.getValue()));
                             CreateUserDialog.this.dispose();
                         }
                     } catch (SessionExpiredException ex) {

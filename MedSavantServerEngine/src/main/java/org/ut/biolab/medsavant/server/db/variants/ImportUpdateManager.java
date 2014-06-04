@@ -80,7 +80,7 @@ public class ImportUpdateManager {
     /**
      * IMPORT FILES INTO AN EXISTING TABLE
      */
-    public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final String[][] tags) throws IOException, SQLException, Exception {
+    public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final boolean doPhasing, final String[][] tags) throws IOException, SQLException, Exception {
 
         String userId = SessionManager.getInstance().getUserForSession(sessionID);
         final String database = SessionManager.getInstance().getDatabaseForSession(sessionID);
@@ -123,7 +123,7 @@ public class ImportUpdateManager {
                         getJobProgress().setMessage("Preparing VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length + " for further annotations");
                         // prepare for annotation
                         TSVFile[] importedTSVFiles
-                                = doConvertVCFToTSV(sessionID, vcfFiles, preAnnotateWithJannovar, updateID, projectID, referenceID,
+                                = doConvertVCFToTSV(sessionID, vcfFiles, preAnnotateWithJannovar, doPhasing, updateID, projectID, referenceID,
                                         includeHomozygousReferenceCalls, workingDirectory, this);
 
                         getJobProgress().setMessage("Annotating VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length);
@@ -372,16 +372,21 @@ public class ImportUpdateManager {
     /**
      * PARSING
      */
-    public static TSVFile[] doConvertVCFToTSV(String sessID, File[] vcfFiles, boolean preAnnotateWithJannovar, int updateID, int projectID, int referenceID, boolean includeHomozygousReferenceCalls, File workingDirectory, MedSavantServerJob parentJob) throws Exception {
+    public static TSVFile[] doConvertVCFToTSV(String sessID, File[] vcfFiles, boolean preAnnotateWithJannovar, boolean doPhasing, int updateID, int projectID, int referenceID, boolean includeHomozygousReferenceCalls, File workingDirectory, MedSavantServerJob parentJob) throws Exception {
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         File outDir = createSubdir(workingDirectory, "converted");
         LOG.info("Converting VCF files to TSV, working directory is " + outDir.getAbsolutePath());
 
         File[] processedVCFs = vcfFiles;
         parentJob.getJobProgress().setMessage("Performing functional annotations for VCFs.");
-        if (preAnnotateWithJannovar) {
+        //In order to do phasing, we MUST preannotate with Jannovar, as Jannovar also does some preprocessing that Beagle requires.
+        if (doPhasing || preAnnotateWithJannovar) {
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
             processedVCFs = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDirectory);
+        }
+        
+        if(doPhasing){
+            //Insert phasing code here.
         }
 
         parentJob.getJobProgress().setMessage("Parsing VCFs.");

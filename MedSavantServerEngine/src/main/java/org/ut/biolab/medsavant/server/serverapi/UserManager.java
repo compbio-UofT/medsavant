@@ -21,6 +21,7 @@ package org.ut.biolab.medsavant.server.serverapi;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import org.ut.biolab.medsavant.shared.format.UserRole;
@@ -34,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,8 +70,25 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     private UserManager() throws RemoteException, SessionExpiredException {
     }
+
+    private boolean checkAdmin(String sessID) throws SecurityException, RemoteException, SessionExpiredException, SQLException {
+        String thisUser = SessionManager.getInstance().getUserForSession(sessID);
+        String thisDatabase = SessionManager.getInstance().getDatabaseForSession(sessID);
+        if (!isAdmin(sessID)) {
+            String err = "Cannot add role to user.  This requires " + thisUser + " to have administrative privileges";
+            LOG.error(err);
+            throw new SecurityException(err);
+        }
+
+        if (!isUserOfThisDatabase(sessID)) {
+            String err = "Cannot add role to user.  The current user " + thisUser + " is not a user of " + thisDatabase;
+            LOG.error(err);
+            throw new SecurityException(err);
+        }
+        return true;
+    }
     
-    private Set<UserRole> getRolesForUser(String sessID, String user) throws RemoteException, SQLException, SessionExpiredException{
+    private Set<UserRole> getRolesForUser(String sessID, String user) throws RemoteException, SQLException, SessionExpiredException {
         String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         TableSchema roleTable = MedSavantDatabase.UserRoleTableSchema;
         TableSchema roleATable = MedSavantDatabase.UserRoleAssignmentTableSchema;
@@ -86,16 +105,16 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
         ResultSet rs = null;
         try {
-            rs = ConnectionController.executeQuery(sessID, sq.toString());            
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
             Set<UserRole> roleSet = new HashSet<UserRole>();
-            while(rs.next()){
+            while (rs.next()) {
                 int roleId = rs.getInt(1);
-                String roleName = rs.getString(2);                               
+                String roleName = rs.getString(2);
                 String roleDescription = rs.getString(3);
                 roleSet.add(new UserRole(roleId, roleName, roleDescription, database));
             }
-            return roleSet;            
-        } finally{
+            return roleSet;
+        } finally {
             if (rs != null) {
                 rs.close();
             }
@@ -119,7 +138,6 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         return !assignedRoles.isEmpty() && assignedRoles.containsAll(roles);
     }
 
-    
     public boolean checkAnyRole(String sessID, Set<UserRole> roles) throws RemoteException, SQLException, SessionExpiredException {
         if (roles.isEmpty()) {
             throw new IllegalArgumentException("Can't check empty role");
@@ -136,88 +154,151 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         }
         return false;
     }
-       
+
     @Override
-    public int addRole(String sessID, UserRole role) throws RemoteException, SessionExpiredException, SQLException, SecurityException{
-        String thisUser = SessionManager.getInstance().getUserForSession(sessID);
+    public Set<UserRole> getAllRoles(String sessID) throws RemoteException, SQLException, SecurityException, SessionExpiredException {
         String thisDatabase = SessionManager.getInstance().getDatabaseForSession(sessID);
-        if (!isAdmin(sessID)) {
-            String err = "Cannot add role "+role+". This requires " + thisUser + " to have administrative privileges";
-            LOG.error(err);
-            throw new SecurityException(err);
+        TableSchema roleTable = MedSavantDatabase.UserRoleTableSchema;
+        SelectQuery sq = new SelectQuery();
+        sq.addFromTable(roleTable.getTable());
+        sq.addColumns(
+                roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ID),
+                roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLENAME),
+                roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLE_DESCRIPTION)
+        );
+        sq.setIsDistinct(true);
+        ResultSet rs = null;
+        try {
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
+            Set<UserRole> roleSet = new TreeSet<UserRole>();
+            while (rs.next()) {
+                int roleId = rs.getInt(1);
+                String roleName = rs.getString(2);
+                String roleDescription = rs.getString(3);
+                roleSet.add(new UserRole(roleId, roleName, roleDescription, thisDatabase));
+            }
+            return roleSet;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+    
+    @Override 
+    public UserRole getRoleByName(String sessID, String roleName) throws RemoteException, SessionExpiredException, SQLException{
+        String thisDatabase = SessionManager.getInstance().getDatabaseForSession(sessID);
+        TableSchema roleTable = MedSavantDatabase.UserRoleTableSchema;
+        SelectQuery sq = new SelectQuery();
+        sq.addFromTable(roleTable.getTable());
+        sq.addAllColumns();
+        sq.addCondition(BinaryCondition.equalTo(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLENAME), roleName));
+        ResultSet rs = null;
+        try{
+            rs = ConnectionController.executeQuery(sessID, sq.toString());
+            if(rs.next()){
+                int roleId = rs.getInt(1);
+                String name = rs.getString(2);
+                String roleDescription = rs.getString(3);                
+                return new UserRole(roleId, name, roleDescription, thisDatabase);                
+            }
+            return null;            
+        }finally{
+            if(rs != null){
+                rs.close();
+            }
+        }                
+    }
+
+    @Override
+    public UserRole addRole(String sessID, String roleName, String roleDescription) throws RemoteException, SessionExpiredException, SQLException, SecurityException {        
+        String thisDatabase = SessionManager.getInstance().getDatabaseForSession(sessID);
+        checkAdmin(sessID);
+
+        //Check if role already exists, and if so, return it.
+        Set<UserRole> roles = getAllRoles(sessID);
+        for (UserRole r : roles) {
+            if (r.getDatabase().equals(thisDatabase) && r.getRoleName().equals(roleName)) {
+                return r;
+            }
         }
 
-        if (!isUserOfThisDatabase(sessID)) {
-            String err = "Cannot add role "+role+". The current user " + thisUser + " is not a user of " + thisDatabase;
-            LOG.error(err);
-            throw new SecurityException(err);
-        }       
-        
         TableSchema roleTable = MedSavantDatabase.UserRoleTableSchema;
-        InsertQuery iq = new InsertQuery(roleTable);        
-        iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLENAME), role.getRoleName());
-        iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLE_DESCRIPTION), role.getRoleDescription());
-        
-        
+        InsertQuery iq = new InsertQuery(roleTable.getTableName());
+        iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLENAME), roleName);
+        iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLE_DESCRIPTION), roleDescription);
+
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = null;
         ResultSet res = null;
         int roleId = -1;
-        try{
+        try {
             stmt = conn.prepareStatement(iq.toString(), Statement.RETURN_GENERATED_KEYS);
             stmt.execute();
             res = stmt.getGeneratedKeys();
             res.next();
             roleId = res.getInt(1);
-            return roleId;
-        }finally{
-            if(stmt != null){
+
+            return new UserRole(roleId, roleName, roleDescription, thisDatabase);
+        } finally {
+            if (stmt != null) {
                 stmt.close();
             }
-            if(res != null){
+            if (res != null) {
                 res.close();
             }
-            if(conn != null){
+            if (conn != null) {
                 conn.close();
             }
         }
     }
+
     
+
     @Override
-    public void registerRoleForUser(String sessID, String user, Set<UserRole> roles) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
-        String thisUser = SessionManager.getInstance().getUserForSession(sessID);
-        String thisDatabase = SessionManager.getInstance().getDatabaseForSession(sessID);
-        if (!isAdmin(sessID)) {
-            String err = "Cannot add role to user " + user + ".  This requires " + thisUser + " to have administrative privileges";
-            LOG.error(err);
-            throw new SecurityException(err);
+    public void dropRolesForUser(String sessID, String user, Set<UserRole> roles) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        checkAdmin(sessID);
+          //Check if any of the roles given are already assigned, and if so remove them from the
+        //roles to register.
+        Set<UserRole> assignedRoles = getRolesForUser(sessID, user);
+        if (assignedRoles.containsAll(roles)) {
+            return;
+        } else if (assignedRoles.size() > 0) {
+            roles.removeAll(assignedRoles);
         }
 
-        if (!isUserOfThisDatabase(sessID)) {
-            String err = "Cannot add role to user " + user + ".  The current user " + thisUser + " is not a user of " + thisDatabase;
-            LOG.error(err);
-            throw new SecurityException(err);
+        //register the remaining roles.        
+        TableSchema raTable = MedSavantDatabase.UserRoleAssignmentTableSchema;
+        for (UserRole role : roles) {
+            DeleteQuery dq = new DeleteQuery(raTable.getTableName());          
+            dq.addCondition(BinaryCondition.equalTo(raTable.getDBColumn(MedSavantDatabase.UserRoleAssignmentTableSchema.COLUMNNAME_OF_USERNAME), user));            
+            dq.addCondition(BinaryCondition.equalTo(raTable.getDBColumn(MedSavantDatabase.UserRoleAssignmentTableSchema.COLUMNNAME_OF_ROLE_ID), role.getRoleId()));            
+            ConnectionController.executeUpdate(sessID, dq.toString());          
+        }
+    }
 
-        }       
-        
+    @Override
+    public void registerRoleForUser(String sessID, String user, Set<UserRole> roles) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+        checkAdmin(sessID);
+
         //Check if any of the roles given are already assigned, and if so remove them from the
         //roles to register.
         Set<UserRole> assignedRoles = getRolesForUser(sessID, user);
-        if(assignedRoles.containsAll(roles)){            
+        if (assignedRoles.containsAll(roles)) {
             return;
-        }else if(assignedRoles.size() > 0){        
+        } else if (assignedRoles.size() > 0) {
             roles.removeAll(assignedRoles);
         }
-        
+
         //register the remaining roles.        
-        TableSchema raTable = MedSavantDatabase.UserRoleAssignmentTableSchema;        
-        for(UserRole role : roles){
-            InsertQuery iq = new InsertQuery(raTable);                    
+        TableSchema raTable = MedSavantDatabase.UserRoleAssignmentTableSchema;
+        for (UserRole role : roles) {
+            InsertQuery iq = new InsertQuery(raTable.getTableName());
             iq.addColumn(raTable.getDBColumn(MedSavantDatabase.UserRoleAssignmentTableSchema.COLUMNNAME_OF_ROLE_ID), role.getRoleId());
             iq.addColumn(raTable.getDBColumn(MedSavantDatabase.UserRoleAssignmentTableSchema.COLUMNNAME_OF_USERNAME), user);
             ConnectionController.executeUpdate(sessID, iq.toString());
         }
-        
+
     }
 
     @Override
@@ -243,7 +324,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public Set<UserRole> getRoles(String sessID) throws SQLException, SessionExpiredException, RemoteException {
+    public Set<UserRole> getRolesForUser(String sessID) throws SQLException, SessionExpiredException, RemoteException {
         return getRolesForUser(sessID, SessionManager.getInstance().getUserForSession(sessID));
     }
 
@@ -261,6 +342,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     @Override
     public String[] getUserNames(String sessID) throws SQLException, SessionExpiredException {
+        
         Map<String, String> validUsers = null;
         try {
             validUsers = SettingsManager.getInstance().getSettingsForKeyPrefix(sessID, DATABASE_USER_KEY_PREFIX);
@@ -454,11 +536,12 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     }
 
     @Override
-    public void removeUser(String sid, String name) throws SQLException, SessionExpiredException {
+    public void removeUser(String sid, String name) throws SQLException, SessionExpiredException, RemoteException {
         PooledConnection conn = ConnectionController.connectPooled(sid);
         conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
-
         conn.executeQuery("FLUSH PRIVILEGES");
+        SettingsManager.getInstance().removeSetting(sid, DATABASE_USER_KEY_PREFIX + name);
+        
     }
 
     /**

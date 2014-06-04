@@ -19,18 +19,33 @@
  */
 package org.ut.biolab.medsavant.client.user;
 
+import org.ut.biolab.medsavant.shared.model.UserLevel;
+
 /**
  *
  * @author tarkvara
  */
 public class UserEvent {
     public enum Type { ADDED, REMOVED };
-
     private final Type type;
     private final String name;
-
-    public UserEvent(Type t, String n) {
+    private final UserLevel userLevel;
+    public UserEvent(Type t, String n, UserLevel userLevel) {
         type = t;
         name = n;
+        this.userLevel = userLevel;
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public UserLevel getUserLevel() {
+        return userLevel;
+    }
+    
 }

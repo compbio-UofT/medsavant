@@ -1,20 +1,18 @@
 /**
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.
- * 
+ *
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+ * any later version. SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE
+ * SOFTWARE BE LIABLE This software is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+ * General Public License for more details. You should have received a copy of
+ * the GNU Lesser General Public License along with this software; if not, write
+ * to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+ * MA 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.db;
 
@@ -593,69 +591,71 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
         }
     }
-    
+
     public static class UserRoleTableSchema extends TableSchema {
-        public static final String TABLE_NAME="user_role";
-        
+
+        public static final String TABLE_NAME = "user_role";
+
         public static final int INDEX_OF_ID = 0;
         public static final ColumnType TYPE_OF_ID = ColumnType.INTEGER;
         public static final int LENGTH_OF_ID = 11;
         public static final String COLUMNNAME_OF_ID = "user_role_id";
-        
+
         public static final int INDEX_OF_ROLENAME = 1;
         public static final ColumnType TYPE_OF_ROLENAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_ROLENAME = 64;                
+        public static final int LENGTH_OF_ROLENAME = 64;
         public static final String COLUMNNAME_OF_ROLENAME = "role_name";
-        
+
         public static final int INDEX_OF_ROLE_DESCRIPTION = 2;
-        public static final ColumnType TYPE_OF_ROLE_DESCRIPTION= ColumnType.TEXT;        
+        public static final ColumnType TYPE_OF_ROLE_DESCRIPTION = ColumnType.TEXT;
         public static final String COLUMNNAME_OF_ROLE_DESCRIPTION = "role_description";
         public static final int LENGTH_OF_ROLE_DESCRIPTION = 0;
-        
-        public UserRoleTableSchema(DbSchema s){
+
+        public UserRoleTableSchema(DbSchema s) {
             super(s.addTable(TABLE_NAME));
             addColumns();
         }
-        
-        private void addColumns(){
+
+        private void addColumns() {
             addColumn(COLUMNNAME_OF_ID, ColumnType.INTEGER, LENGTH_OF_ID);
             addColumn(COLUMNNAME_OF_ROLENAME, ColumnType.VARCHAR, LENGTH_OF_ROLENAME);
             addColumn(COLUMNNAME_OF_ROLE_DESCRIPTION, ColumnType.TEXT, LENGTH_OF_ROLE_DESCRIPTION);
         }
-        
+
     }
 
-    public static class UserRoleAssignmentTableSchema extends TableSchema{
+    public static class UserRoleAssignmentTableSchema extends TableSchema {
+
         public static final String TABLE_NAME = "user_role_assignment";
-        
+
         public static final int INDEX_OF_USERNAME = 0;
         public static final ColumnType TYPE_OF_USERNAME = ColumnType.VARCHAR;
         public static final String COLUMNNAME_OF_USERNAME = "user";
         public static final int LENGTH_OF_USERNAME = 300;
-        
+
         public static final int INDEX_OF_ROLE_ID = 1;
         public static final ColumnType TYPE_OF_ROLE_ID = ColumnType.INTEGER;
         public static final int LENGTH_OF_ROLE_ID = 11;
         public static final String COLUMNNAME_OF_ROLE_ID = "fk_user_role_id";
-        
-        public UserRoleAssignmentTableSchema(DbSchema s){
+
+        public UserRoleAssignmentTableSchema(DbSchema s) {
             super(s.addTable(TABLE_NAME));
             addColumns();
         }
-        
-        private void addColumns(){
+
+        private void addColumns() {
             addColumn(COLUMNNAME_OF_USERNAME, ColumnType.VARCHAR, LENGTH_OF_USERNAME);
             addColumn(COLUMNNAME_OF_ROLE_ID, ColumnType.INTEGER, LENGTH_OF_ROLE_ID);
-        }        
+        }
     }
-    
+
     public static class UserCommentGroupTableSchema extends TableSchema {
 
         public static final String TABLE_NAME = "user_comment_group";
 
         public static final int INDEX_OF_USER_COMMENT_GROUP_ID = 0;
         public static final ColumnType TYPE_OF_USER_COMMENT_GROUP_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_USER_COMMENT_GROUP_ID = 11;        
+        public static final int LENGTH_OF_USER_COMMENT_GROUP_ID = 11;
         public static final String COLUMNNAME_OF_USER_COMMENT_GROUP_ID = "user_comment_group_id";
 
         public static final int INDEX_OF_PROJECT_ID = 1;
@@ -727,8 +727,8 @@ public class MedSavantDatabase {
         public static final int INDEX_OF_PARENT_USER_COMMENT_ID = 2;
         public static final ColumnType TYPE_OF_PARENT_USER_COMMENT_ID = ColumnType.INTEGER;
         public static final int LENGTH_OF_PARENT_USER_COMMENT_ID = 11;
-        public static final String COLUMNNAME_OF_PARENT_USER_COMMENT_ID = "fk_parent_user_comment_id";        
-        
+        public static final String COLUMNNAME_OF_PARENT_USER_COMMENT_ID = "fk_parent_user_comment_id";
+
         public static final int INDEX_OF_USER = 3;
         public static final ColumnType TYPE_OF_USER = ColumnType.VARCHAR;
         public static final int LENGTH_OF_USER = 200;
@@ -754,27 +754,22 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_INCLUDE = "is_included";
         public static final int LENGTH_OF_INCLUDE = 1;
 
-        public static final int INDEX_OF_REVIEW = 8;
-        public static final ColumnType TYPE_OF_REVIEW = ColumnType.BOOLEAN;
-        public static final String COLUMNNAME_OF_REVIEW = "is_pending_review";
-        public static final int LENGTH_OF_REVIEW = 1;
-
-        public static final int INDEX_OF_DELETED = 9;
+        public static final int INDEX_OF_DELETED = 8;
         public static final ColumnType TYPE_OF_DELETED = ColumnType.BOOLEAN;
         public static final String COLUMNNAME_OF_DELETED = "is_deleted";
         public static final int LENGTH_OF_DELETED = 1;
 
-        public static final int INDEX_OF_CREATION_DATE = 10;
+        public static final int INDEX_OF_CREATION_DATE = 9;
         public static final ColumnType TYPE_OF_CREATION_DATE = ColumnType.DATETIME;
         public static final String COLUMNNAME_OF_CREATION_DATE = "creation_date";
         public static final int LENGTH_OF_CREATION_DATE = 0;
 
-        public static final int INDEX_OF_MODIFICATION_DATE = 11;
+        public static final int INDEX_OF_MODIFICATION_DATE = 10;
         public static final ColumnType TYPE_OF_MODIFICATION_DATE = ColumnType.TIMESTAMP;
         public static final String COLUMNNAME_OF_MODIFICATION_DATE = "last_modified";
         public static final int LENGTH_OF_MODIFICATION_DATE = 0;
 
-        public static final int INDEX_OF_COMMENT = 12;
+        public static final int INDEX_OF_COMMENT = 11;
         public static final ColumnType TYPE_OF_COMMENT = ColumnType.TEXT;
         public static final String COLUMNNAME_OF_COMMENT = "variant_comment";
         public static final int LENGTH_OF_COMMENT = 0;
@@ -793,7 +788,6 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_ONTOLOGY_ID, TYPE_OF_ONTOLOGY_ID, LENGTH_OF_ONTOLOGY_ID);
             addColumn(COLUMNNAME_OF_APPROVED, TYPE_OF_APPROVED, LENGTH_OF_APPROVED);
             addColumn(COLUMNNAME_OF_INCLUDE, TYPE_OF_INCLUDE, LENGTH_OF_INCLUDE);
-            addColumn(COLUMNNAME_OF_REVIEW, TYPE_OF_REVIEW, LENGTH_OF_REVIEW);
             addColumn(COLUMNNAME_OF_DELETED, TYPE_OF_DELETED, LENGTH_OF_DELETED);
             addColumn(COLUMNNAME_OF_CREATION_DATE, TYPE_OF_CREATION_DATE, LENGTH_OF_CREATION_DATE);
             addColumn(COLUMNNAME_OF_MODIFICATION_DATE, TYPE_OF_MODIFICATION_DATE, LENGTH_OF_MODIFICATION_DATE);

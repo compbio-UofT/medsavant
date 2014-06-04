@@ -28,16 +28,15 @@ import java.util.Date;
 public class UserComment implements Serializable {
 
     public static final OntologyType ONTOLOGY_TYPE = OntologyType.HPO;
+    
     private static final boolean DEFAULT_APPROVED_STATUS = false;
-    private static final boolean DEFAULT_INCLUDED_STATUS = false;
-    private static final boolean DEFAULT_PENDING_REVIEW_STATUS = false;
+    private static final boolean DEFAULT_INCLUDED_STATUS = false;    
     private static final boolean DEFAULT_DELETED_STATUS = false;
 
     protected final Integer commentId;
     private final String user; //Ignored by server
     private final boolean isApproved; //Only used by server if user has permission
-    private final boolean isIncluded;//Only used by server if user has permission
-    private final boolean isPendingReview;//Only used by server if user has permission
+    private final boolean isIncluded;//Only used by server if user has permission    
     private final boolean isDeleted;//Only used by server if user has permission, or if user owns comment
     private final Date creationDate;//ignored by server
     private final Date modificationDate; //ignored by server.
@@ -66,7 +65,7 @@ public class UserComment implements Serializable {
 
         return (user.equals(uc.getUser()))
                 && commentText.equals(uc.commentText)
-                && ontologyTerm.equals(uc.ontologyTerm);              
+                && ontologyTerm.equals(uc.ontologyTerm);
 
     }
 
@@ -82,39 +81,36 @@ public class UserComment implements Serializable {
         return hash;
     }
 
-    
-    public UserComment(UserComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentPending, Boolean markParentDeleted, String comment) {
+    public UserComment(UserComment parentComment, Boolean approveParent, Boolean includeParent, Boolean markParentDeleted, String comment) {
         //Parent comment contains the new status.
         //Status change comment tracks the original status of the parent comment.  
         this(parentComment.isApproved(),
                 parentComment.isIncluded(),
-                parentComment.isPendingReview(),
                 parentComment.isDeleted(),
                 comment,
                 parentComment.getOntologyTerm(),
-                new UserComment(approveParent, includeParent, markParentPending, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm()));
-        this.parentComment = new UserComment(parentComment.getCommentID(), null, approveParent, includeParent, markParentPending, markParentDeleted, null, null, parentComment.getCommentText(), parentComment.getOntologyTerm(), null);
+                new UserComment(approveParent, includeParent, markParentDeleted, parentComment.getCommentText(), parentComment.getOntologyTerm()));
+        this.parentComment = new UserComment(parentComment.getCommentID(), null, approveParent, includeParent, markParentDeleted, null, null, parentComment.getCommentText(), parentComment.getOntologyTerm(), null);
 
     }
 
     public UserComment(String comment, OntologyTerm ontologyTerm) {
-        this(DEFAULT_APPROVED_STATUS, DEFAULT_INCLUDED_STATUS, DEFAULT_PENDING_REVIEW_STATUS, DEFAULT_DELETED_STATUS, comment, ontologyTerm);
-    }
-   
-    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
-        this(null, null, isApproved, isIncluded, isPendingReview, isDeleted, null, null, comment, ontologyTerm, null);
+        this(DEFAULT_APPROVED_STATUS, DEFAULT_INCLUDED_STATUS, DEFAULT_DELETED_STATUS, comment, ontologyTerm);
     }
 
-    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, String comment, OntologyTerm ontologyTerm, UserComment parentComment) {
-        this(null, null, isApproved, isIncluded, isPendingReview, isDeleted, null, null, comment, ontologyTerm, parentComment);
+    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isDeleted, String comment, OntologyTerm ontologyTerm) {
+        this(null, null, isApproved, isIncluded, isDeleted, null, null, comment, ontologyTerm, null);
     }
 
-    public UserComment(Integer commentId, String user, Boolean isApproved, Boolean isIncluded, Boolean isPendingReview, Boolean isDeleted, Date creationDate, Date modificationDate, String commentText, OntologyTerm ontologyTerm, UserComment parentComment) {
+    public UserComment(Boolean isApproved, Boolean isIncluded, Boolean isDeleted, String comment, OntologyTerm ontologyTerm, UserComment parentComment) {
+        this(null, null, isApproved, isIncluded, isDeleted, null, null, comment, ontologyTerm, parentComment);
+    }
+
+    public UserComment(Integer commentId, String user, Boolean isApproved, Boolean isIncluded, Boolean isDeleted, Date creationDate, Date modificationDate, String commentText, OntologyTerm ontologyTerm, UserComment parentComment) {
         this.commentId = commentId;
         this.user = user;
         this.isApproved = isApproved;
         this.isIncluded = isIncluded;
-        this.isPendingReview = isPendingReview;
         this.isDeleted = isDeleted;
         this.creationDate = creationDate;
         this.modificationDate = modificationDate;
@@ -143,10 +139,6 @@ public class UserComment implements Serializable {
         return isIncluded;
     }
 
-    public boolean isPendingReview() {
-        return isPendingReview;
-    }
-
     public boolean isDeleted() {
         return isDeleted;
     }
@@ -163,8 +155,7 @@ public class UserComment implements Serializable {
         return parentComment != null
                 && !(parentComment.isApproved() == isApproved()
                 && parentComment.isDeleted() == isDeleted()
-                && parentComment.isIncluded() == isIncluded()
-                && parentComment.isPendingReview() == isPendingReview());
+                && parentComment.isIncluded() == isIncluded());
     }
 
     public UserComment getOriginalComment() {

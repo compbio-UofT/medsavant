@@ -54,7 +54,7 @@ public class UserController extends Controller<UserEvent> {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
         }
-        fireEvent(new UserEvent(UserEvent.Type.ADDED, name));
+        fireEvent(new UserEvent(UserEvent.Type.ADDED, name, level));
     }
 
     public void removeUser(String name) throws SQLException, RemoteException {
@@ -64,7 +64,7 @@ public class UserController extends Controller<UserEvent> {
             MedSavantExceptionHandler.handleSessionExpiredException(ex);
             return;
         }
-        fireEvent(new UserEvent(UserEvent.Type.REMOVED, name));
+        fireEvent(new UserEvent(UserEvent.Type.REMOVED, name, UserLevel.NONE));
     }
 
     public String[] getUserNames() throws SQLException, RemoteException {

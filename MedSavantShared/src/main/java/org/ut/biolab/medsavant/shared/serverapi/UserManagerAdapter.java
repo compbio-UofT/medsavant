@@ -49,12 +49,18 @@ public interface UserManagerAdapter extends Remote {
     public void removeUser(String sessID, String name) throws SQLException, RemoteException, SessionExpiredException;
 
     public void changePassword(String sessID, String userName, char[] oldPass, char[] newPass) throws SQLException, RemoteException, SessionExpiredException;
+    
+    public UserRole getRoleByName(String sessID, String roleName) throws RemoteException, SessionExpiredException, SQLException;
+    
+    public UserRole addRole(String sessID, String roleName, String roleDescription) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
 
-    public int addRole(String sessID, UserRole role) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
+    public void dropRolesForUser(String sessID, String user, Set<UserRole> roles) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
 
     public void registerRoleForUser(String sessID, String user, Set<UserRole> roles) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
 
     public Set<UserRole> getUserRoles(String sessID, String user) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
 
-    public Set<UserRole> getRoles(String sessID) throws SQLException, SessionExpiredException, RemoteException;
+    public Set<UserRole> getRolesForUser(String sessID) throws SQLException, SessionExpiredException, RemoteException;
+
+    public Set<UserRole> getAllRoles(String sessID) throws RemoteException, SQLException, SecurityException, SessionExpiredException;
 }

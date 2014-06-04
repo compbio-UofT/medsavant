@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -35,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.shared.format.UserRole;
 import org.ut.biolab.medsavant.shared.model.UserComment;
 import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -54,8 +56,7 @@ public class SetCommentStatusDialog extends JDialog {
     private static final int ICON_HEIGHT = 64;
     private static final int ICON_WIDTH = 64;
     private final int mainPanelWidth;
-    private final int mainPanelHeight;
-
+    private final int mainPanelHeight;    
     public SetCommentStatusDialog(JFrame parentFrame, UserCommentGroup lcg, UserComment parentComment) {
         super(parentFrame);
         System.out.println("Constructing setcomment status dialog with parentComment id=" + parentComment.getCommentID());
@@ -127,7 +128,7 @@ public class SetCommentStatusDialog extends JDialog {
         statusIconPanel = new StatusIconPanel(ICON_WIDTH,
                 ICON_HEIGHT,
                 true,
-                parentComment.isApproved(), parentComment.isIncluded(), parentComment.isPendingReview(), parentComment.isDeleted());
+                parentComment.isApproved(), parentComment.isIncluded(), parentComment.isDeleted());
         p.add(statusIconPanel);
         p.add(Box.createHorizontalGlue());
         return p;
@@ -137,8 +138,7 @@ public class SetCommentStatusDialog extends JDialog {
         String sessID = LoginController.getSessionID();
         UserComment lc = new UserComment(parentComment,
                 statusIconPanel.getApprovedIcon().getState(),
-                statusIconPanel.getIncludedIcon().getState(),
-                statusIconPanel.getPendingReviewIcon().getState(),
+                statusIconPanel.getIncludedIcon().getState(),                
                 statusIconPanel.getDeletedIcon().getState(),
                 comment.getText());
                                         

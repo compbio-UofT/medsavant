@@ -91,6 +91,7 @@ public class VCFUploadApp implements LaunchableApp {
     private JXCollapsiblePane dragDropContainer;
     private CardLayout cardLayout;
     private JCheckBox annovarCheckbox;
+    private JCheckBox phasingCheckbox;
     private PlaceHolderTextField emailPlaceholder;
 	private JCheckBox includeReferenceCheckbox;
 
@@ -131,8 +132,11 @@ public class VCFUploadApp implements LaunchableApp {
 
         advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Annotation"), "wrap");
         advancedOptionsPanel.add(annovarCheckbox = new JCheckBox("perform gene-based variant annotation"), "wrap");
+        advancedOptionsPanel.add(phasingCheckbox = new JCheckBox("perform phasing"), "wrap");
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
+        phasingCheckbox.setSelected(true);
+        phasingCheckbox.setFocusable(false);
 
 		includeReferenceCheckbox= new JCheckBox("include all VCF lines, including reference calls (highly recommended for pharmacogenetic testing)");
 		includeReferenceCheckbox.setSelected(true);
@@ -425,6 +429,7 @@ public class VCFUploadApp implements LaunchableApp {
                         this.addLog("Queuing background import job...");
 
                         this.addLog("Annotating with Jannovar: " + annovarCheckbox.isSelected());
+                        this.addLog("Phasing: " + phasingCheckbox.isSelected());
                         this.addLog("Emailing notifications to: " + emailPlaceholder.getText());
 
                         Thread t = new Thread(new Runnable() {
@@ -450,7 +455,7 @@ public class VCFUploadApp implements LaunchableApp {
                                                 transferIDs,
                                                 ProjectController.getInstance().getCurrentProjectID(),
                                                 ReferenceController.getInstance().getCurrentReferenceID(),
-                                                new String[][]{}, includeReferenceCheckbox.isSelected(),
+                                                new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected(), phasingCheckbox.isSelected());
 												emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
                                         succeeded();
                                     } 

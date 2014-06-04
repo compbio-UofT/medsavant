@@ -20,6 +20,5 @@ package org.ut.biolab.medsavant.shared.appapi;
  * @author tarkvara
  */
 public abstract class MedSavantApp {
-
     public abstract String getTitle();
 }
