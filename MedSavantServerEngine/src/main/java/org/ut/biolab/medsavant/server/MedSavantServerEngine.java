@@ -65,6 +65,7 @@ import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.mail.Mail;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
+import org.ut.biolab.medsavant.server.phasing.BEAGLEWrapper;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
 import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_LONGJOB;
 import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_SHORTJOB;
@@ -102,21 +103,21 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     private static ExecutorService longThreadPool;
     private static ExecutorService shortThreadPool;
 
-    private static void initThreadPools(){
+    private static void initThreadPools() {
         longThreadPool = Executors.newFixedThreadPool(maxThreads);
         ((ThreadPoolExecutor) longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);
         shortThreadPool = Executors.newCachedThreadPool();
     }
-    
-    public static int getMaxThreads(){
+
+    public static int getMaxThreads() {
         return maxThreads;
     }
 
-    public static Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception{
+    public static Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception {
         msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
         return msj.call();
     }
-            
+
     /**
      * Submits and runs the current job using the short job executor service,
      * and immediately returns. An unlimited number of short jobs can be
@@ -132,7 +133,6 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         return shortThreadPool.submit(r);
     }
 
-    
     public static Future submitShortJob(MedSavantServerJob msj) {
         msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
         return shortThreadPool.submit(msj);
@@ -173,25 +173,28 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
     }
 
     /**
-     * Submits long jobs and blocks waiting for completion.  Make sure to only call this from another short or long job!
-     * This function does not perform error checking: if you want to know if a job at index i was successful, invoke
-     * returnVal.get(i).get(); and catch the ExecutionException
+     * Submits long jobs and blocks waiting for completion. Make sure to only
+     * call this from another short or long job! This function does not perform
+     * error checking: if you want to know if a job at index i was successful,
+     * invoke returnVal.get(i).get(); and catch the ExecutionException
+     *
      * @param msjs
-     * @return 
-     * @throws InterruptedException 
+     * @return
+     * @throws InterruptedException
      * @see ExecutionException
      */
-    public static List<Future<Void>> submitLongJobsAndWait(List<MedSavantServerJob> msjs) throws InterruptedException{
-        List<Future<Void>> jobs = submitLongJobs(msjs);        
-        for(Future<Void> job : jobs){
-            try{
-                job.get();               
-            }catch(ExecutionException ex){
-                
+    public static List<Future<Void>> submitLongJobsAndWait(List<MedSavantServerJob> msjs) throws InterruptedException {
+        List<Future<Void>> jobs = submitLongJobs(msjs);
+        for (Future<Void> job : jobs) {
+            try {
+                job.get();
+            } catch (ExecutionException ex) {
+
             }
         }
         return jobs;
     }
+
     /**
      * @return The executor service used for short jobs. An unlimited number of
      * short jobs can run simultaneously.
@@ -240,13 +243,11 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         return pass;
     }
 
-    private static  String host;
-    private static  int port;
-    private static  String rootName;
-    private static  String pass;
-    
-    
-    
+    private static String host;
+    private static int port;
+    private static String rootName;
+    private static String pass;
+
     public MedSavantServerEngine(String databaseHost, int databasePort, String rootUserName, String password) throws RemoteException, SQLException, SessionExpiredException {
         host = databaseHost;
         port = databasePort;
@@ -258,7 +259,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
-        
+
         listenOnPort = MedSavantServerUnicastRemoteObject.getListenPort();
 
         if (!performPreemptiveSystemCheck()) {
@@ -378,7 +379,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                             if (prop.containsKey("db-password")) {
                                 password = prop.getProperty("db-password");
                             }
-                            if(prop.containsKey("max-threads")){
+                            if (prop.containsKey("max-threads")) {
                                 maxThreads = Integer.parseInt(prop.getProperty("max-threads"));
                             }
                             if (prop.containsKey("db-host")) {
@@ -549,6 +550,12 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             passed = false;
         }
 
+        try {
+            BEAGLEWrapper.install(medsavantDir);
+        } catch (IOException iex) {
+            LOG.error(iex);
+            passed = false;
+        }
         return passed;
     }
 

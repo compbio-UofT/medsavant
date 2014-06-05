@@ -456,7 +456,7 @@ public class VCFUploadApp implements LaunchableApp {
                                                 ProjectController.getInstance().getCurrentProjectID(),
                                                 ReferenceController.getInstance().getCurrentReferenceID(),
                                                 new String[][]{}, false, emailPlaceholder.getText(), true, annovarCheckbox.isSelected(), phasingCheckbox.isSelected());
-												emailPlaceholder.getText(), true, annovarCheckbox.isSelected());
+												
                                         succeeded();
                                     } 
                                 } catch (Exception ex) {

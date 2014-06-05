@@ -1709,14 +1709,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return dnaIDMap;
     }
 
-    private boolean isAuthorizedForUserComments(String sessID) throws SecurityException, SessionExpiredException, SQLException, RemoteException {
+    private boolean isAuthorizedForUserComments(String sessID) throws SecurityException, SessionExpiredException, SQLException, RemoteException {        
+        return true;
         //Temporary authorization: require admin access.        
+        /*
         UserLevel ul = UserManager.getInstance().getSessionUsersLevel(sessID);
         if (ul.ADMIN != ul || UserManager.getInstance().isUserOfThisDatabase(sessID)) {
             return false;
 
         }
-        return true;
+        return true;*/
+        
     }
 
     public void deleteComment(String sessID, int userCommentId) throws SessionExpiredException, SQLException, RemoteException, SecurityException {

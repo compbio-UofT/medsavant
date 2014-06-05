@@ -822,7 +822,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             while (rs.next()) {
                 String tn = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME);
                 String sn = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME);
-                System.out.println("Checking if tablename " + tn + " matches new tablename " + variantTableName);
+                //System.out.println("Checking if tablename " + tn + " matches new tablename " + variantTableName);
                 if (!tn.equals(variantTableName)) {
                     tablesToDrop.add(tn);
                 }

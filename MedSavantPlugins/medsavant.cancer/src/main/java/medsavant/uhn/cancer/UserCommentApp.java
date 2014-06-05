@@ -92,45 +92,44 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
     public static final String GENETIC_COUNSELLOR_ROLENAME = "Genetic Counsellor";
     private static final String GENETIC_COUNSELLOR_DESCRIPTION = "Genetic Counsellor";
     private static final Set<UserLevel> GENETIC_COUNSELLOR_USERLEVELS = EnumSet.of(UserLevel.ADMIN);
-    
+
     public static final String TECHNICIAN_ROLENAME = "Technician";
     private static final String TECHNICIAN_DESCRIPTION = "Technician";
     private static final Set<UserLevel> TECHNICIAN_USERLEVELS = EnumSet.allOf(UserLevel.class);
-    
+
     public static final String RESIDENT_ROLENAME = "Resident";
     private static final String RESIDENT_DESCRIPTION = "Resident";
     private static final Set<UserLevel> RESIDENT_USERLEVELS = EnumSet.of(UserLevel.ADMIN, UserLevel.USER);
-   
-    private static AppRoleManager roleManager;
-    
 
-    static AppRoleManager getRoleManager(){
+    private static AppRoleManager roleManager;
+
+    static AppRoleManager getRoleManager() {
         return roleManager;
     }
-    
-    public UserCommentApp() throws AppNotInitializedException{
+
+    public UserCommentApp() throws AppNotInitializedException {
         System.out.println("User Comment App initialized.");
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         JPanel innerPanel = new WaitPanel("Loading...");
         panel.add(innerPanel, BorderLayout.CENTER);
-        try{
-            if(roleManager == null){
+        try {
+            if (roleManager == null) {
                 AppRoleManagerBuilder armBuilder = new AppRoleManagerBuilder();
                 roleManager = armBuilder
                         .addRole(GENETIC_COUNSELLOR_ROLENAME, GENETIC_COUNSELLOR_DESCRIPTION, GENETIC_COUNSELLOR_USERLEVELS)
                         .addRole(RESIDENT_ROLENAME, RESIDENT_DESCRIPTION, RESIDENT_USERLEVELS)
                         .addDefaultRole(TECHNICIAN_ROLENAME, TECHNICIAN_DESCRIPTION, TECHNICIAN_USERLEVELS)
                         .autoAssignRolesToExistingUsers(true)
-                        .build();                                           
+                        .build();
             }
-        }catch(AppNotInitializedException anie){
+        } catch (AppNotInitializedException anie) {
             LOG.error(anie);
-            DialogUtils.displayError("The app '"+getTitle()+"' requires initialization by the project administrator.  Some features will be disabled.");            
-        }catch(Exception ex){
+            DialogUtils.displayError("The app '" + getTitle() + "' requires initialization by the project administrator.  Some features will be disabled.");
+        } catch (Exception ex) {
             ex.printStackTrace();
             LOG.error("Couldn't fetch this user's roles from database");
-            DialogUtils.displayError("Error setting up user roles for the App " + getTitle());            
+            DialogUtils.displayError("Error setting up user roles for the App " + getTitle());
         }
     }
 
@@ -210,7 +209,7 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
         sip.add(Box.createHorizontalGlue());
 
         //technicains and admins can change status, but technicians can't.
-        if (roleManager.checkRole(GENETIC_COUNSELLOR_ROLENAME) || roleManager.checkRole(RESIDENT_ROLENAME)){
+        if (roleManager.checkRole(GENETIC_COUNSELLOR_ROLENAME) || roleManager.checkRole(RESIDENT_ROLENAME)) {
             JButton statusEditButton
                     = new JButton(new ImageIcon(EDIT_STATUS_BUTTON_ICON.getImage().getScaledInstance(
                                             ICON_WIDTH, ICON_HEIGHT, java.awt.Image.SCALE_SMOOTH
@@ -401,7 +400,9 @@ public class UserCommentApp extends MedSavantVariantInspectorApp {
             JPanel cp = new JPanel();
             cp.setLayout(new BoxLayout(cp, BoxLayout.X_AXIS));
             cp.add(Box.createHorizontalGlue());
-            cp.add(newCommentButton);
+            if (roleManager.checkRole(GENETIC_COUNSELLOR_ROLENAME) || roleManager.checkRole(RESIDENT_ROLENAME)) {
+                cp.add(newCommentButton);
+            }
             cp.add(Box.createHorizontalGlue());
             innerPanel.add(cp);
             final JScrollPane jsp = new JScrollPane(innerPanel);
