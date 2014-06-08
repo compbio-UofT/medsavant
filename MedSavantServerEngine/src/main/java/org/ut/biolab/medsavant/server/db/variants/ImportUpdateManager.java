@@ -64,6 +64,7 @@ import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
@@ -398,15 +399,21 @@ public class ImportUpdateManager {
                 MedSavantServerJob msj = new MedSavantServerJob(username, "Phasing", parentJob) {
                     @Override
                     public boolean run() throws Exception {
-                        final File phasingWorkDir = new File(workingDirectory, "phasing_" + fileIndex);
-                        if (!phasingWorkDir.exists()) {
-                            if (!phasingWorkDir.mkdirs()) {
-                                throw new IOException("Couldn't create working phasing directory " + phasingWorkDir.getAbsolutePath());
-                            }
-                        }
+                        LOG.info("\tPhasing " + vcfFile.getAbsolutePath());
+                        File phasingWorkDir = null;
                         try {
+                            phasingWorkDir = new File(workingDirectory, "phasing_" + fileIndex);
+                            if (!phasingWorkDir.exists()) {
+                                if (!phasingWorkDir.mkdirs()) {
+                                    throw new IOException("Could not create working phasing directory " + phasingWorkDir.getAbsolutePath());
+                                }
+                            }
+
+                            LOG.info("\tInitiating phasing on " + vcfFile.getAbsolutePath());
                             BEAGLEWrapper bw = new BEAGLEWrapper(phasingWorkDir, vcfFile, 1);
+                            LOG.info("\tCalling bw.run");
                             File f = bw.run();
+                            LOG.info("\tRun returned with " + ((f != null) ? f.getAbsolutePath() : "NULL"));
                             File dst = new File(workingDirectory, f.getName());
                             if (!IOUtils.moveFile(f, dst)) {
                                 throw new IOException("Couldn't move phased file " + f.getCanonicalPath());
@@ -415,24 +422,37 @@ public class ImportUpdateManager {
                         } catch (IllegalArgumentException iae) {
                             if (iae.getMessage().contains("invalid allele")) {
                                 LOG.error("Skipping phasing for " + vcfFile.getCanonicalPath() + ", possibly because it contains structural variants.  exception: " + iae.getMessage());
-                                phasedFiles[fileIndex] = vcfFile;
                             }
                         } catch (Exception ex) {
                             LOG.error("Skipping phasing for " + vcfFile.getCanonicalPath() + " due to unexpected exception", ex);
-                            phasedFiles[fileIndex] = vcfFile;
                         } finally {
                             if (phasingWorkDir.exists()) {
+                                LOG.info("\tDelete phasing directory " + phasingWorkDir.getAbsolutePath());
                                 IOUtils.deleteDirectory(phasingWorkDir);
                             }
+                            if (phasedFiles[fileIndex] == null) {
+                                LOG.info("Phasing for file " + vcfFile.getAbsolutePath() + " was skipped.");
+                                phasedFiles[fileIndex] = vcfFile;
+                            }
                         }
+                        LOG.info("\tPhasing " + vcfFile.getAbsolutePath() + " complete.");
                         return true;
                     }
                 };
-                threads.add(msj);
+
+                //Disable multi-threading for now, as Beagle's main method is being invoked directly, 
+                //and may not be thread-safe.                
+                //threads.add(msj);
+                MedSavantServerEngine.submitLongJob(msj).get(); //invoke and wait.                
             }
-            MedSavantServerEngine.submitLongJobs(threads);
+            //See above -- multi-threading is disabled.
+            //MedSavantServerEngine.submitLongJobs(threads);
             processedVCFs = phasedFiles;
             LOG.info("Phasing complete.");
+        }//end if
+
+        for (File f : processedVCFs) {
+            LOG.info("Got processed VCF " + f.getAbsolutePath() + " and exists=" + f.exists());
         }
 
         parentJob.getJobProgress().setMessage("Parsing VCFs.");
@@ -452,7 +472,6 @@ public class ImportUpdateManager {
             fileID++;
             LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
         }
-        //MedSavantServerEngine.getLongExecutorService().invokeAll(threads);
         MedSavantServerEngine.submitLongJobs(threads);
 
         //VariantManagerUtils.processThreadsWithLimit(threads);

@@ -146,7 +146,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
             } else if (getScheduleStatus() == SCHEDULED_AS_SHORTJOB) {
                 setScheduleStatus(ScheduleStatus.RUNNING_AS_SHORTJOB);
             } else {
-                throw new IllegalArgumentException("MedSavantJob can't run in this state: " + getScheduleStatus());
+                throw new IllegalArgumentException("MedSavantJob cannot run in this state: " + getScheduleStatus());
             }
             if (run()) { //note run should BLOCK.
                 setScheduleStatus(ScheduleStatus.FINISHED);
