@@ -135,7 +135,7 @@ public class VCFUploadApp implements LaunchableApp {
         advancedOptionsPanel.add(phasingCheckbox = new JCheckBox("perform phasing"), "wrap");
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
-        phasingCheckbox.setSelected(true);
+        phasingCheckbox.setSelected(false);
         phasingCheckbox.setFocusable(false);
 
 		includeReferenceCheckbox= new JCheckBox("include all VCF lines, including reference calls (highly recommended for pharmacogenetic testing)");

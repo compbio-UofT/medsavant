@@ -245,8 +245,8 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
         }
 
          /* Add VCF annotation support via Jannovar. */
-        final JCheckBox PhasingBox = new JCheckBox("Perform gene-variant annotation");
-        PhasingBox.setSelected(true);
+        final JCheckBox PhasingBox = new JCheckBox("Perform phasing");
+        PhasingBox.setSelected(false);
         PhasingBox.setOpaque(false);
         PhasingBox.addActionListener(
                 new ActionListener() {
