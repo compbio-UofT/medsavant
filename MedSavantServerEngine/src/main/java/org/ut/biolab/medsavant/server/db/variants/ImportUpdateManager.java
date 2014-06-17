@@ -383,7 +383,7 @@ public class ImportUpdateManager {
         parentJob.getJobProgress().setMessage("Performing functional annotations for VCFs.");
         //In order to do phasing, we MUST preannotate with Jannovar, as Jannovar also does some preprocessing that Beagle requires.
         if (doPhasing || preAnnotateWithJannovar) {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
+            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");            
             processedVCFs = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDirectory);
         }
 
