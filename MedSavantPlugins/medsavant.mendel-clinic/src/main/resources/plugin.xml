@@ -3,7 +3,7 @@
 <plugin class="org.ut.biolab.medsavant.app.mendelclinic.MendelClinicApp">
     <properties>
         <property name="version" value="1.1.0"/>
-        <property name="sdk-version" value="1.2-SNAPSHOT"/>
+        <property name="sdk-version" value="1.2.2"/>
         <property name="name" value="Mendel" />
         <property name="category" value="VISUALIZATION" />
         <property name="author" value="University of Toronto" />

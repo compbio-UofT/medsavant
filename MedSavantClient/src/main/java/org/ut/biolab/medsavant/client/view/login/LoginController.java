@@ -184,9 +184,9 @@ public class LoginController extends Controller<LoginEvent> {
 
     public void cancelCurrentLoginAttempt() { //idempotent
         if (currentLoginThread != null) {
-            LOG.info("Cancelling sign in");
             currentLoginThread.cancel(true);
             fireEvent(new LoginEvent(LoginEvent.Type.LOGIN_CANCELLED));
+            currentLoginThread = null;
         }
     }
 

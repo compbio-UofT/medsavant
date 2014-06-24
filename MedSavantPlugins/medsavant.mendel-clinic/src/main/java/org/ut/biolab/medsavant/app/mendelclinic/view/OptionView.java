@@ -925,11 +925,11 @@ public class OptionView {
         JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
-
-            Notification notification = new Notification();
-
+            
             @Override
             public void actionPerformed(ActionEvent ae) {
+                
+                final Notification notification = new Notification();
 
                 new BackgroundTaskWorker<Boolean>("Mendel") {
 
@@ -1173,7 +1173,7 @@ public class OptionView {
                         filtersChangedSinceLastDump = false;
 
                         // line in format: "8243_0000","chr17","6115", "6115", "G","C","SNP","Hetero"
-                        int[] columnsToKeep = new int[]{3, 4, 5, 6, 8, 9, 12, 13};
+                        int[] columnsToKeep = new int[]{3, 4, 5, 6, 8, 9, 13, 14};
                         n.setDescription("Stripping file");
                         m.addLog("Stripping file");
 

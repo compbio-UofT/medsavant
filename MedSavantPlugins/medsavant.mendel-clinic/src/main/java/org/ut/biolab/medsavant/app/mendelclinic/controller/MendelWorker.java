@@ -1226,10 +1226,11 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
             Zygosity zygosity;
             // sometimes Zygosity is blank
             try {
-                zygosity = Zygosity.valueOf(line[6]);
+                zygosity = Zygosity.valueOf(line[7]);
             } catch(Exception e) {
                 zygosity = Zygosity.Missing;
             }
+            
 
             SimplePatient pg = new SimplePatient(sample, zygosity);
 
