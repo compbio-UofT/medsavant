@@ -174,9 +174,15 @@ public class AccountManagerApp implements LaunchableApp {
                 int returnVal = fc.showDialog(null, "Choose..");
                 File file = null;
                 
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    file = fc.getSelectedFile();
+                switch (returnVal) {
+                    case JFileChooser.APPROVE_OPTION:
+                        file = fc.getSelectedFile();
+                        break;
+                    case JFileChooser.CANCEL_OPTION:
+                    default:
+                        return;
                 }
+
                 Image image = null;
                 
                 try {
