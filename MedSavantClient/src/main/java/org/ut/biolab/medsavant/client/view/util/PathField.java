@@ -78,6 +78,8 @@ public class PathField extends JPanel {
                 }
             }
         });
+        
+        this.setOpaque(false);
     }
 
     public File getFile() {

@@ -42,7 +42,7 @@ public class FontFactory {
 
     private static final Map<TextAttribute, Object> fontAttributeMap = new Hashtable<TextAttribute, Object>();
 
-    private static final Font serifFontPrimary = loadFont("/font/medio.otf").deriveFont(13f);
+    private static final Font serifFontPrimary = loadFont("/font/Oswald-Light.otf").deriveFont(13f);
     private static final Font serifFont = (serifFontPrimary != null) ? serifFontPrimary : initFont(new String[]{"Times New Roman"}, 13f);
 
     static{

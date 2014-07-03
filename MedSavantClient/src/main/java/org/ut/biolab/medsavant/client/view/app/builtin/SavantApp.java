@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
  * Unauthorized use of this file is strictly prohibited.
- * 
- * All rights reserved. No warranty, explicit or implicit, provided.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *
+ * All rights reserved. No warranty, explicit or implicit, provided. THE
+ * SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR
+ * ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
@@ -24,8 +24,11 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,6 +88,8 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
 
     private String pageName = "Savant";
     private boolean initialized;
+    private final Queue<DataSourceAdapter> queue = new LinkedList<DataSourceAdapter>();
+    private boolean sequenceLoaded = false;
 
     private void initView() {
         if (!initialized) {
@@ -127,19 +132,16 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
                                 try {
                                     LOG.debug("Loading MedSavant variant track");
                                     msds = new MedSavantDataSource();
-                                    LOG.debug("Subscribing selection change listener");
-                                    //gsc.addListener(msds);
-                                    Track t = TrackFactory.createTrack(msds);
-                                    FrameController c = FrameController.getInstance();
-                                    c.createFrame(new Track[]{t});
+                                    addTrackFromDataSource(msds);
                                     variantTrackLoaded = true;
-
-                                } catch (SavantTrackCreationCancelledException ex) {
-                                    LOG.error("Error loading MedSavant variant track", ex);
                                 } catch (Exception ex) {
                                     LOG.error("Misc. error loading MedSavant variant track", ex);
                                 }
                             }
+                            
+                            LOG.info("GENOME CHANGED TO " + event.getNewGenome().getName());
+                            sequenceLoaded = true;
+                            processTrackBacklog();
                         }
                     });
         }
@@ -175,7 +177,7 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
     private boolean variantTrackLoaded = false;
     private static SavantApp instance;
     private MedSavantDataSource msds;
-    private final Semaphore trackAdditionLock = new Semaphore(1, true);
+    //private final Semaphore trackAdditionLock = new Semaphore(1, true);
 
     // Do not use unless you're sure BrowserPage has been initialized
     public static SavantApp getInstance() {
@@ -278,7 +280,7 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
     public JPanel getView() {
         try {
             if (view == null) {
-                trackAdditionLock.acquire();
+                //trackAdditionLock.acquire();
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
                 view.add(new WaitPanel("Starting Genome Browser"));
@@ -345,7 +347,7 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
                                 @Override
                                 public void run() {
                                     addTrackFromURLString(urlOfTrack, DataFormat.SEQUENCE, false);
-                                    trackAdditionLock.release();
+                                    //trackAdditionLock.release();
                                 }
                             });
                             t.start();
@@ -373,12 +375,26 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
         addTrackFromURLString(urlString, format, true);
     }
 
+    private void processTrackBacklog() {
+        while (!queue.isEmpty()) {
+            addTrackFromDataSource(queue.poll());
+        }
+    }
+    
     public void addTrackFromDataSource(DataSourceAdapter dsa) {
         try {
+            if (!sequenceLoaded) {
+                queue.add(dsa);
+                return;
+            }
+            //trackAdditionLock.acquire();
+            
+            LOG.info("ADDING TRACK " + dsa.getName());
             Track t = TrackFactory.createTrack(dsa);
             FrameController c = FrameController.getInstance();
             c.createFrame(new Track[]{t});
-        } catch (SavantTrackCreationCancelledException ex) {
+            //trackAdditionLock.release();
+        } catch (Exception ex) {
             LOG.error(ex);
         }
     }
@@ -413,25 +429,24 @@ public class SavantApp implements LaunchableApp, AppCommHandler<BAMFileComm> {
             if (!TrackController.getInstance().containsTrack(urlString)) {
                 if (view == null) {
                     getView();
-                    Thread t = new Thread(new Runnable() {
-                        public void run() {
-                            try {
-                                trackAdditionLock.acquire();
-                                FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
-                                trackAdditionLock.release();
-                                n.setIsIndeterminateProgress(false);
-                                n.setProgress(1.0);
-                            } catch (Exception ex) {
-                                LOG.error(ex);
-                            }
-                        }
-                    });
-                    t.start();
-                } else {
-                    FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
-                    n.setIsIndeterminateProgress(false);
-                    n.setProgress(1.0);
                 }
+                Thread t = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            LOG.info("ACQUIRING URL LOCK");
+                            //trackAdditionLock.acquire();
+                            FrameController.getInstance().addTrackFromURI(url.toURI(), format, null);
+                            //trackAdditionLock.release();
+                            LOG.info("RELEASING URL LOCK");
+                            n.setIsIndeterminateProgress(false);
+                            n.setProgress(1.0);
+                        } catch (Exception ex) {
+                            
+                            LOG.error(ex);
+                        }
+                    }
+                });
+                t.start();
             }
         } catch (Exception ex) {
             LOG.error(ex);
