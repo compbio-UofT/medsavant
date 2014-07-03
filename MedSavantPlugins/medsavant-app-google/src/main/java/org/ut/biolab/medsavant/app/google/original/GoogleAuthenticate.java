@@ -40,6 +40,8 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.ut.biolab.medsavant.app.google.SettingsView;
+import org.ut.biolab.medsavant.client.controller.SettingsController;
 
 /**
  *
@@ -47,7 +49,7 @@ import javax.annotation.Nullable;
  */
 public class GoogleAuthenticate {
 
-    public static String clientSecretsFilename = "/Users/mfiume/Desktop/client_secrets.json";
+    //public static String clientSecretsFilename = "/Users/mfiume/Desktop/client_secrets.json";
     private static final String APPLICATION_NAME = "Google-GenomicsSample/1.0";
     private static final String TOKEN_PROPERTIES_FILENAME = "genomics.token.properties";
 
@@ -84,13 +86,15 @@ public class GoogleAuthenticate {
 
     private static Credential authenticate() throws IOException, GeneralSecurityException {
         // Attempt to load client secrets
+        String clientSecretsFilename = SettingsController.getInstance().getValue(SettingsView.KEY_CLIENT_SECRETS);
+        
         clientSecrets = loadClientSecrets(clientSecretsFilename);
         if (clientSecrets == null) {
-            System.exit(1);
+            throw new IOException("Error loading client_sercrets.json");
         }
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         if (httpTransport == null) {
-            System.exit(1);
+            throw new IOException("Error creating trusted transport");
         }
 
         // Attempt to Load existing Refresh Token

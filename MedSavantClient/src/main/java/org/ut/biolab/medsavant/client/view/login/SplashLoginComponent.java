@@ -20,10 +20,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -105,7 +109,8 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
                         frame2.setVisible(false);
                         break;
                     case LOGIN_FAILED:
-
+                        LOG.info("Login failed");
+                        
                         Exception e = event == null ? null : event.getException();
                         String msg = (event == null || event.getException() == null) ? "" : event.getException().getLocalizedMessage();
 
@@ -179,7 +184,7 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
                     }
                 }
             }
-        }
+        } 
 
         isFirstTime = false;
 
@@ -231,12 +236,13 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                
+                LOG.info("Cancelling login");
+                
                 isLoggingIn = false;
                 loginThread.cancel(true);
 
                 LoginController.getInstance().cancelCurrentLoginAttempt();
-
-                LOG.info("After clicking cancel login thread cancelled? " + loginThread.isCancelled() + " " + loginThread.toString());
 
                 setPageAppropriately();
             }
@@ -263,6 +269,23 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
                 loggingInPanel.setVisible(true);
                 noServerAtAllPanel.setVisible(false);
                 break;
+        }
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            this.updateUI();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        SplashLoginComponent.this.updateUI();
+                    }
+                    
+                });
+            } catch (Exception ex) {
+                LOG.error(ex);
+            }
         }
     }
 
@@ -371,9 +394,7 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
         signInButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 doSignIntoServer(server);
-
             }
 
         });
@@ -404,7 +425,6 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
     private void loginUsingEnteredUsernameAndPassword(final MedSavantServerInfo server) {
 
         if (isLoggingIn) {
-            LOG.info("Already logging in");
             return;
         }
 
@@ -426,7 +446,6 @@ public class SplashLoginComponent extends JPanel implements Listener<ServerContr
             }
         };
 
-        LOG.info("Executing login thread");
         loginThread.execute();
     }
 

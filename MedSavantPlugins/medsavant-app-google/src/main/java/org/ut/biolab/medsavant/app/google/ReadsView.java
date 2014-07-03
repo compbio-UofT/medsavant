@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
  * Unauthorized use of this file is strictly prohibited.
- * 
- * All rights reserved. No warranty, explicit or implicit, provided.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *
+ * All rights reserved. No warranty, explicit or implicit, provided. THE
+ * SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR
+ * ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
@@ -36,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
@@ -65,6 +66,72 @@ class ReadsView extends JPanel {
     private GoogleDataset dataset = null;
     private Thread fetcher;
 
+    void updateGenomicsService() {
+        this.removeAll();
+        this.initUI();
+        this.updateUI();
+    }
+
+    private void initUI() {
+        this.setLayout(new BorderLayout());
+        StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Reads", false);
+
+        boolean successfullyAuthenticated = false;
+        try {
+            genomics = GoogleAuthenticate.buildService();
+            successfullyAuthenticated = true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        JPanel datasetChooserBlock = p.addBlock("Dataset");
+
+        if (successfullyAuthenticated) {
+
+            datasetChooserBlock.setLayout(new MigLayout("insets 0, fillx, filly, wrap"));
+
+            GoogleDataset defaultDataset = new GoogleDataset("461916304629", "Simons Foundation");
+
+            final JComboBox datasetChooser = new JComboBox();
+            datasetChooser.addItem(defaultDataset);
+            datasetChooser.addItem(new GoogleDataset("383928317087", "PGP"));
+            datasetChooser.addItem(new GoogleDataset("376902546192", "1000 Genomes"));
+
+            datasetChooser.setSelectedItem(defaultDataset);
+
+            datasetChooser.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    dataset = (GoogleDataset) datasetChooser.getSelectedItem();
+                    try {
+                        refreshReadsets();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+            });
+
+            datasetChooserBlock.add(datasetChooser);
+
+            datasetBlock = ViewUtil.getClearPanel();
+            datasetBlock.setLayout(new MigLayout("insets 0, fillx, filly"));
+            datasetChooserBlock.add(datasetBlock, "growx 1.0, width 100%");
+
+            try {
+                dataset = defaultDataset;
+                refreshReadsets();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            datasetChooserBlock.add(new JLabel("Could not authenticate. Configure in the Settings pane."));
+        }
+
+        this.add(p, BorderLayout.CENTER);
+    }
+
     private class GoogleDataset {
 
         private final String id;
@@ -90,56 +157,7 @@ class ReadsView extends JPanel {
     }
 
     public ReadsView() {
-        this.setLayout(new BorderLayout());
-        StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Reads", false);
-
-        JPanel datasetChooserBlock = p.addBlock("Dataset");
-        datasetChooserBlock.setLayout(new MigLayout("insets 0, fillx, filly, wrap"));
-
-        GoogleDataset defaultDataset = new GoogleDataset("376902546192", "1000 Genomes");
-
-        final JComboBox datasetChooser = new JComboBox();
-        datasetChooser.addItem(defaultDataset);
-        datasetChooser.addItem(new GoogleDataset("383928317087", "PGP"));
-        datasetChooser.addItem(new GoogleDataset("461916304629", "Simons Foundation"));
-        //datasetChooser.addItem(new GoogleDataset("SRP034507", "SRP034507"));
-        //datasetChooser.addItem(new GoogleDataset("SRP029392", "SRP029392"));
-        datasetChooser.setSelectedItem(defaultDataset);
-
-        datasetChooser.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dataset = (GoogleDataset) datasetChooser.getSelectedItem();
-                try {
-                    refreshReadsets();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-        });
-
-        datasetChooserBlock.add(datasetChooser);
-
-        datasetBlock = ViewUtil.getClearPanel();
-        datasetBlock.setLayout(new MigLayout("insets 0, fillx, filly"));
-        datasetChooserBlock.add(datasetBlock,"growx 1.0, width 100%");
-        
-        try {
-            genomics = GoogleAuthenticate.buildService();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        this.add(p, BorderLayout.CENTER);
-
-        try {
-            dataset = defaultDataset;
-            refreshReadsets();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        this.updateGenomicsService();
     }
 
     private void refreshReadsets() throws IOException {
@@ -230,12 +248,20 @@ class ReadsView extends JPanel {
                                 java.util.List<NiceListItem> selected = niceList.getSelectedItems();
 
                                 if (selected != null && selected.size() > 0) {
+
                                     String readSetName = niceList.getSelectedItems().get(0).toString();
                                     String readsetID = niceList.getSelectedItems().get(0).getItem().toString();
-                                    SavantApp app = AppDirectory.getGenomeBrowser();
-                                    GoogleBAMDataSource ds = new GoogleBAMDataSource(readSetName, readsetID);
-                                    app.addTrackFromDataSource(ds);
-                                    MedSavantFrame.getInstance().getDashboard().launchApp(app);
+                                    try {
+                                        final SavantApp app = AppDirectory.getGenomeBrowser();
+                                        final GoogleBAMDataSource ds = new GoogleBAMDataSource(readSetName, readsetID);
+
+                                        MedSavantFrame.getInstance().getDashboard().launchApp(app);
+                                        app.addTrackFromDataSource(ds);
+
+                                    } catch (Exception ex) {
+                                        DialogUtils.displayException("Problem Loading Track", "There was a problem loading track for readset " + readSetName, ex);
+                                    }
+
                                 } else {
                                     DialogUtils.displayMessage("Choose a readset to load");
                                 }

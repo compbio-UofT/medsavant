@@ -86,7 +86,7 @@ public class Jannovar {
     /**
      * Initialize Jannovar
      */
-    private boolean initialize() throws IOException {
+    private boolean initialize() throws IOException, JannovarException {
 
         // download the serizalized files, if needed
         if (!hasSerializedFile()) {

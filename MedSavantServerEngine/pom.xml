@@ -35,6 +35,11 @@
             <artifactId>medsavant-shared</artifactId>
             <version>${project.version}</version>
         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>medsavant-jannovar</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
