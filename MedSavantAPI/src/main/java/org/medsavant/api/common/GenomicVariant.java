@@ -1,43 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.medsavant.api.common;
 
-import org.medsavant.api.common.impl.GenomicVariantImpl2;
 import java.io.Serializable;
-import java.util.Set;
+import org.medsavant.api.annotation.MedSavantField;
 
 /**
- *
- * @author jim
+ * A genomic variant storing the variant and associated custom info.  Instances of this interface
+ * are what annotators operate on, and form a core part of the GenomicVariantRecord used to communicate
+ * variant information to the storage engine.
+ * 
+ * @see org.medsavant.api.annotation.VariantAnnotator
+ * @see org.medsavant.api.variantstorage.GenomicVariantRecord
+ * @see org.medsavant.api.variantstorage.VariantStorageEngine
  */
-public interface GenomicVariant extends Serializable {
-    //Set<String> getDNAIds();
-   // void addDNAId(String s);
-    
-    int compareTo(GenomicVariantImpl2 other);
+public interface GenomicVariant extends Serializable {     
+    int compareTo(GenomicVariant other);
     int compareTo(String chrom, int startpos, int endpos);
-
-    /*
-    public GenomicVariant create(
-            String chrom,
-            int start_position,
-            int end_position,
-            String dbSNPID,
-            String ref,
-            String alt,
-            int altNumber,
-            float qual,
-            String filter,
-            String customInfo);
-
-    public GenomicVariant createFrom(GenomicVariant r);
-*/
+    
     /*
      * CUSTOM INFO
      */
+    <T> T get(MedSavantField field);
+    
     Integer getAlleleCount();
     Float getAlleleFrequency();
     String getAlt();

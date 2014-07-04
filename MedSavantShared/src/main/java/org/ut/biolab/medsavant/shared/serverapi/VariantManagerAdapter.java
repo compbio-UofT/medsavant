@@ -30,6 +30,7 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import org.medsavant.api.common.GenomicVariant;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -45,7 +46,6 @@ import org.ut.biolab.medsavant.shared.util.Modifier;
 import static org.ut.biolab.medsavant.shared.util.ModificationType.*;
 import org.ut.biolab.medsavant.shared.model.UserComment;
 import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
-import org.medsavant.api.common.impl.GenomicVariantImpl2;
 
 
 /**
@@ -121,8 +121,8 @@ public interface VariantManagerAdapter extends Remote {
     @Modifier(type = LOCUS_COMMENT)
     public int replyToUserCommentGroup(String sessID, int locusCommentGroupId, UserComment locusComment) throws SessionExpiredException, SQLException, RemoteException, SecurityException;
     public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SessionExpiredException, SQLException, SecurityException;    
-    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, GenomicVariantImpl2 vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, GenomicVariant vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException;
     public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, String chrom, long start_position, long end_position, String ref, String alt) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
-    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, GenomicVariantImpl2 vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, GenomicVariant vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException;
 }
 

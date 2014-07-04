@@ -19,15 +19,13 @@ import org.medsavant.api.annotation.VariantDispatcher;
 import org.medsavant.api.common.JobProgressMonitor;
 import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.impl.MedSavantServerJob;
 import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.variantstorage.VariantStorageEngine;
-import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
-import org.medsavant.api.vcfstorage.VCFFileOld;
+import org.medsavant.api.variantstorage.impl.GenomicVariantRecordImpl;
 
-/**
- *
- * @author jim
- */
+
+
 public class AnnotationPipelineImpl implements AnnotationPipeline {
     private final Log LOG = LogFactory.getLog(AnnotationPipelineImpl.class);
     private static final String JOB_NAME = "Annotation Pipeline";
@@ -35,32 +33,18 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
     private final List<VCFPreProcessor> vpps = new ArrayList<VCFPreProcessor>();
     private final List<VariantAnnotator> vanns = new ArrayList<VariantAnnotator>();
     
-    private MedSavantServerContext serverContext;
-    private MedSavantFileDirectory dir; 
-    private VariantStorageEngine variantStorageEngine;        
-    
-    
-    
-    private MedSavantFileDirectory getMedSavantFileDirectory(){
-        throw new UnsupportedOperationException("TODO: AnnotationPipelineImpl.getMedSavantFileDirectory");
-    }
+    private MedSavantServerContext serverContext;    
+    private VariantStorageEngine variantStorageEngine;            
+            
     
     private VariantStorageEngine getVariantStorageEngine(){
-        throw new UnsupportedOperationException("TODO: AnnotationPipelineImpl.getVariantStorageEngine");
+        return variantStorageEngine;
     }
-    
-    public void addVCFPreProcessor(VCFPreProcessor vpp) throws InvalidAnnotationPipelineException {
-        vpps.add(vpp);
-    }
-
-    public void addVariantAnnotator(VariantAnnotator ann) throws InvalidAnnotationPipelineException {
-        vanns.add(ann);
-    }
-            
-    void add(VCFPreProcessor vpp) throws InvalidAnnotationPipelineException {
-        //Note that we only check that pre-requisites have been applied.
-        //The ORDER of pre-requisites is not enforced.
-        List<String> prereq = vpp.getPrerequisiteVCFPreProcessors();
+        
+    private void checkVCFPreProcessorReqs(String cname, List<String> prereq) throws InvalidAnnotationPipelineException{
+        if(prereq == null){ 
+            return;
+        }
         for (String required : prereq) {
             boolean found = false;
             for (VCFPreProcessor p : vpps) {
@@ -70,15 +54,27 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
                 }
             }
             if (!found) {
-                throw new InvalidAnnotationPipelineException("The VCFPreProcessor " + vpp.getComponentName() + " requires the VCFPreProcessor " + required + " to be applied first.");
+                throw new InvalidAnnotationPipelineException("The VCFPreProcessor " + cname + " requires the VCFPreProcessor " + required + " to be applied first.");
             }
-        }
-        vpps.add(vpp);
+        }        
     }
-
-    private void add(VariantAnnotator ann) {
+    
+    @Override
+    public void addVariantAnnotator(VariantAnnotator ann) throws InvalidAnnotationPipelineException {
+        List<String> prereq = ann.getPrerequisiteVCFPreProcessors();
+        checkVCFPreProcessorReqs(ann.getComponentName(), prereq);
         vanns.add(ann);
     }
+         
+    @Override
+    public void addVCFPreProcessor(VCFPreProcessor vpp) throws InvalidAnnotationPipelineException {
+        //Note that we only check that pre-requisites have been applied.
+        //The ORDER of pre-requisites is not enforced.
+        List<String> prereq = vpp.getPrerequisiteVCFPreProcessors();
+        checkVCFPreProcessorReqs(vpp.getComponentName(), prereq);
+        vpps.add(vpp);
+    }
+    
 
     //runs the preprocessors, parallelized across files.  In a preprocessing pipline with N steps and M files,
     //there will be M threads created, each running through the full N-stage pipeline.
@@ -93,7 +89,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
             if (jpm != null && (jpm instanceof MedSavantServerJobProgressMonitor)) {
                 m = (MedSavantServerJobProgressMonitor) jpm;
             }*/
-            MedSavantServerJob msj = new MedSavantServerJob(session.getUsernameOfOwner(), jobName, m) {
+            MedSavantServerJob msj = new MedSavantServerJob(session.getUsernameOfOwner(), jobName, jpm) {
                 @Override
                 public boolean run() throws Exception {
                     MedSavantFile last = file;
@@ -110,7 +106,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
         }
         //submit preannotation jobs and block.
         try {
-            MedSavantServerEngine.getInstance().submitLongJobs(jobs);
+            serverContext.getExecutionService().submitLongJobs(jobs);            
         } catch (InterruptedException ie) {
             LOG.error("Job interrupted!");
         }
@@ -130,10 +126,11 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
         List<MedSavantServerJob> threads = new ArrayList<MedSavantServerJob>(newFiles.size());
         String stamp = System.nanoTime() + "";
         for (int i = 0; i < newFiles.size(); ++i) {
-            VCFFileOld vcfFile = newFiles.get(i);
+            MedSavantFile vcfFile = newFiles.get(i);
             // VCFFileOld originalFile = originalFiles.get(i);
             //File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
-            threads.add(new VariantDispatcherOld(session, vanns, parentJob, vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
+            
+            threads.add(new VariantDispatcherImpl(session, vanns, parentJob, vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
             //thread   s[fileID] = t;
             //fileID++;
             //LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
@@ -156,24 +153,14 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
         }
         return tsvFiles;
     }
-
-    /*
-    @Override
-    public void annotate(final MedSavantSession session, final JobProgressMonitor jpm, List<VCFFileOld> files) {
-    //Preprocess the VCFs as necessary.
-    List<VCFFileOld> results = preprocess(session.getUsernameOfOwner(), jpm, files);
-    dispatchResults(session, jpm, files, results);
-    //where to put this step??? //fileId is needed because this gets inserted into the infobright table!
-    //int fileID = VariantManager.addEntryToFileTable(session, originalFile, updateID, projectID);//, referenceID, originalVCF);
-    }
-     */
+  
     @Override
     public void annotate(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files) {
         //Preprocess the VCFs as necessary.
         List<MedSavantFile> results = preprocess(session, jpm, files);
-        dispatchResults(session, jpm, files, results);
-        //where to put this step??? //fileId is needed because this gets inserted into the infobright table!
-        //int fileID = VariantManager.addEntryToFileTable(session, originalFile, updateID, projectID);//, referenceID, originalVCF);
+        
+        //Dispatch the reuslts to the various annotators, via the VariantDispatcher.
+        dispatchResults(session, jpm, files, results);        
     }
 
     @Override

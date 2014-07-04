@@ -16,7 +16,7 @@ import org.medsavant.api.common.MedSavantServerComponent;
  */
 public interface VariantAnnotator extends MedSavantServerComponent {       
     
-    public List<VCFPreProcessor> getPrerequisiteVCFPreProcessors();
+    public List<String> getPrerequisiteVCFPreProcessors();
     public List<VariantAnnotator> getPrerequisiteVariantAnnotators();    
     public MedSavantAnnotation getAnnotation();
     /**

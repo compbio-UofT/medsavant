@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.medsavant.api.common.impl;
 
 import java.io.Serializable;
@@ -13,6 +8,7 @@ import org.medsavant.api.common.VariantUtils;
 import org.medsavant.api.common.Zygosity;
 
 /**
+ * Creates genomic variant objects.
  *
  * @author jim
  */
@@ -54,7 +50,7 @@ public class GenomicVariantFactory {
     }
 
     public static GenomicVariant createFromTabString(String[] t) {
-        GenomicVariantImpl instance = new GenomicVariantImpl();
+        
         String chrom = GenomicVariantImpl.getString(t[0]);
         int start_position = Integer.parseInt(t[1]);
         int end_position = Integer.parseInt(t[2]);
@@ -63,10 +59,13 @@ public class GenomicVariantFactory {
         String alt = t[5];
         int altNumber = Integer.parseInt(t[6]);
         float qual = Float.parseFloat(t[7]);
+        String filter = t[8];
+        //what about, type, zygosity, genotype?
+        String customInfo = t[12];
+        
+        return create(chrom, start_position, end_position, dbSNPId, ref, alt, altNumber, qual, filter, customInfo);
 
-        return create(chrom, start_position, end_position, end_position, dbSNPId, ref, alt, altNumber, qual, filter, customInfo);
-
-                 //int, float, string, string
+        //int, float, string, string
                  /*
          instance.start_position = instance.getString(t[1]);
                  
@@ -80,11 +79,11 @@ public class GenomicVariantFactory {
          + "\"" + getString(this.alt) + "\"" + delim
          + "\"" + getString(this.altNumber) + "\"" + delim
          + "\"" + getString(this.qual) + "\"" + delim
-         + "\"" + getString(this.filter) + "\"" + delim
-         + "\"" + getString(this.type) + "\"" + delim
-         + "\"" + getString(this.zygosity) + "\"" + delim
-         + "\"" + getString(this.genotype) + "\"" + delim
-         + "\"" + getString(this.customInfo) + "\"";// + delim;   */
+         + "\"" + getString(this.filter) + "\"" + delim //8
+         + "\"" + getString(this.type) + "\"" + delim //9
+         + "\"" + getString(this.zygosity) + "\"" + delim //10
+         + "\"" + getString(this.genotype) + "\"" + delim//11
+         + "\"" + getString(this.customInfo) + "\"";// + delim;   *///12
     }
 
     public static GenomicVariant createFrom(GenomicVariant r) {
@@ -109,6 +108,7 @@ public class GenomicVariantFactory {
     }
 
     public static class GenomicVariantImpl implements GenomicVariant, Serializable {
+        private static final String NULL_STRING = ".";
 
         private String dnaID;
         private String chrom;
@@ -203,7 +203,7 @@ public class GenomicVariantFactory {
 
          extractInfo(customInfo);
          }
-         */       
+         */
 
         @Override
         public void setAltNumber(int a) {
@@ -215,54 +215,51 @@ public class GenomicVariantFactory {
             return this.altNumber;
         }
 
-        /*
-        
-         private static Object parse(Class c, String value) {
+        private Object parse(Class c, String value) {
 
-         if (c == String.class) {
-         if (value.equals(nullString)) {
-         return "";
-         }
-         return value;
-         }
+            if (c == String.class) {
+                if (value.equals(NULL_STRING)) {
+                    return "";
+                }
+                return value;
+            }
 
-         if (value.equals(nullString)) {
-         return null;
-         }
+            if (value.equals(NULL_STRING)) {
+                return null;
+            }
 
-         if (c == Long.class) {
-         try {
-         return NumberUtils.isDigits(value) ? Long.parseLong(value) : null;
-         } catch (Exception e) {
-         return null;
-         }
-         }
+            if (c == Long.class) {
+                try {
+                    return NumberUtils.isDigits(value) ? Long.parseLong(value) : null;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
 
-         if (c == Float.class) {
-         try {
-         return NumberUtils.isNumber(value) ? Float.parseFloat(value) : null;
-         } catch (Exception e) {
-         return null;
-         }
-         }
+            if (c == Float.class) {
+                try {
+                    return NumberUtils.isNumber(value) ? Float.parseFloat(value) : null;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
 
-         //if flag exists, set to true
-         if (c == Boolean.class) {
-         return true;
-         }
+            //if flag exists, set to true
+            if (c == Boolean.class) {
+                return true;
+            }
 
-         if (c == Integer.class) {
-         try {
-         return NumberUtils.isDigits(value) ? Integer.parseInt(value) : null;
-         } catch (Exception e) {
-         return null;
-         }
-         }
+            if (c == Integer.class) {
+                try {
+                    return NumberUtils.isDigits(value) ? Integer.parseInt(value) : null;
+                } catch (Exception e) {
+                    return null;
+                }
+            }
 
-         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
-         }
-        
-         */
+            throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
+        }
+
         private VariantType variantTypeHelper(VariantType currentType, VariantType newType) {
             if (currentType == null || currentType == newType) {
                 return newType;
@@ -271,7 +268,7 @@ public class GenomicVariantFactory {
             }
         }
 
-        public static Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses) {
+        public Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses) {
             Object[] values = new Object[infoKeys.length];
 
             infoString = infoString.trim();
@@ -477,7 +474,7 @@ public class GenomicVariantFactory {
          }
          */
         @Override
-        public int compareTo(GenomicVariantImpl other) {
+        public int compareTo(GenomicVariant other) {
             return compareTo(other.getChrom(), other.getStartPosition(), other.getEndPosition());
         }
 
@@ -610,7 +607,7 @@ public class GenomicVariantFactory {
 
         private Float extractFloatFromInfo(String key, String customInfo) {
             String val = extractValueFromInfo(key, customInfo);
-            return (Float) GenomicVariantImpl.parse(Float.class, val);
+            return (Float) parse(Float.class, val);
         }
 
         private String extractStringFromInfo(String key, String customInfo) {
@@ -620,7 +617,7 @@ public class GenomicVariantFactory {
 
         private Integer extractIntegerFromInfo(String key, String customInfo) {
             String val = extractValueFromInfo(key, customInfo);
-            return (Integer) GenomicVariantImpl.parse(Integer.class, val);
+            return (Integer) parse(Integer.class, val);
         }
 
         private Boolean extractBooleanFromInfo(String key, String customInfo) {

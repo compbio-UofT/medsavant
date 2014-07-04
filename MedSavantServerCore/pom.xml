@@ -105,11 +105,7 @@
             <artifactId>mail</artifactId>
             <version>1.4.4</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.externalsortinginjava</groupId>
-            <artifactId>externalsortinginjava</artifactId>
-            <version>0.1.9</version>
-        </dependency>
+        
     </dependencies>
 
     <build>

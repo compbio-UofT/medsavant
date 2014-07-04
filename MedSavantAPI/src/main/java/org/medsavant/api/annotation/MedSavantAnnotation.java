@@ -14,7 +14,7 @@ public interface MedSavantAnnotation {
     public String getProgram();
     public String getVersion();    
     public String getReferenceName();    
-    public MedSavantAnnotationField[] getFields();
+    public MedSavantField[] getFields();
     @Override
     public int hashCode();
     @Override

@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
-import org.medsavant.api.annotation.MedSavantAnnotationField;
+import org.medsavant.api.annotation.MedSavantField;
 
 import org.ut.biolab.medsavant.shared.db.ColumnDefImpl;
 import org.medsavant.api.common.storage.ColumnType;
@@ -32,7 +32,7 @@ import org.medsavant.api.common.storage.ColumnType;
  *
  * @author Andrew
  */
-public class CustomField extends ColumnDefImpl implements Serializable, MedSavantAnnotationField {
+public class CustomField extends ColumnDefImpl implements Serializable, MedSavantField {
 
     public static final String ALLELE_FREQUENCY_TAG = "Allele Frequency";
     public static final String TAG_DELIMITER = ",";

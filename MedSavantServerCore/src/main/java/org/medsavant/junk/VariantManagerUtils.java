@@ -49,7 +49,6 @@ import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
-import org.medsavant.api.common.impl.GenomicVariantImpl2;
 import org.ut.biolab.medsavant.server.db.variants.TSVFile;
 
 /**
@@ -684,6 +683,8 @@ public class VariantManagerUtils {
      * @return
      * @throws Exception
      */
+    @Deprecated
+    /*
     public static TSVFile[] annotateTSVFiles(String sessID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, MedSavantServerJob parentJob) throws Exception {
         LOG.info("Annotating " + tsvFiles.length + " TSV files");
 
@@ -728,7 +729,7 @@ public class VariantManagerUtils {
         }
 
         return annotatedTsvFiles;
-    }
+    }*/
 
     static File[] splitTSVFileByFileAndDNAID(File basedir, File tsvFile) throws FileNotFoundException, IOException {
         File splitDir = new File(basedir, "split-by-id");

@@ -14,7 +14,8 @@
 package org.ut.biolab.medsavant.shared.appapi;
 
 import javax.swing.JPanel;
-import org.medsavant.api.common.impl.GenomicVariantImpl2;
+import org.medsavant.api.common.GenomicVariant;
+
 
 
 /**
@@ -24,7 +25,7 @@ import org.medsavant.api.common.impl.GenomicVariantImpl2;
  * @author mfiume
  */
 public abstract class MedSavantVariantInspectorApp extends MedSavantApp {
-    public abstract void setVariantRecord(GenomicVariantImpl2 r);    
+    public abstract void setVariantRecord(GenomicVariant r);    
     public abstract String getName();
     public abstract JPanel getInfoPanel();
 }

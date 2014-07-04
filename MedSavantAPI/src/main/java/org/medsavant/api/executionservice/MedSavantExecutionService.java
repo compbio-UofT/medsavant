@@ -31,4 +31,5 @@ public interface MedSavantExecutionService extends MedSavantServerComponent{
 
     List<Future<Void>> submitShortJobs(List<MedSavantServerJob> msjs) throws InterruptedException;
     
+    public void shutdown() throws InterruptedException;
 }

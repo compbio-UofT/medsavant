@@ -19,10 +19,10 @@
 package org.medsavant.api.annotation;
 
 /**
- *
+ * A single field (e.g. description of a column in a database or tabix file).
  * @author jim
  */
-public interface MedSavantAnnotationField {
+public interface MedSavantField {
 
     String generateSchema();
 

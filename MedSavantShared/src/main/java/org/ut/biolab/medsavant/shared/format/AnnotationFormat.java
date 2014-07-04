@@ -28,7 +28,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.medsavant.api.annotation.TabixAnnotation;
 import org.medsavant.api.common.storage.MedSavantFile;
-import org.medsavant.api.annotation.MedSavantAnnotationField;
+import org.medsavant.api.annotation.MedSavantField;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -50,7 +50,7 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
     //private final String path;
     private final boolean hasRef;
     private final boolean hasAlt;
-    private final MedSavantAnnotationField[] fields;
+    private final MedSavantField[] fields;
     private final CustomField[] customFields; //for legacy compatibility.  A copy of the above 'fields' variable.
     private final AnnotationType type;
     private final boolean isEndInclusive;
@@ -91,7 +91,7 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
         this.fields = fields;
         /*
         if (fields != null) {
-            this.fields = new MedSavantAnnotationField[fields.length];
+            this.fields = new MedSavantField[fields.length];
             for (int i = 0; i < fields.length; ++i) {
                 this.fields[i] = fields[i];
             }
@@ -133,7 +133,7 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
             boolean hasAlt,
             AnnotationType type,
             boolean isEndInclusive,
-            MedSavantAnnotationField[] fields,
+            MedSavantField[] fields,
             MedSavantFile tabixFile,
             MedSavantFile tabixIndex) {
         this.fields = fields;
@@ -281,7 +281,7 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
     }
 
     @Override
-    public MedSavantAnnotationField[] getFields() {
+    public MedSavantField[] getFields() {
         return fields;
     }
 
