@@ -190,6 +190,7 @@ public class GoogleBAMDataSource implements DataSourceAdapter<BAMIntervalRecord>
     private SAMRecord readToSAM(Read r) {
         SAMRecord sam = new SAMRecord(getHeader());
 
+        sam.setReadName(r.getName());
         sam.setFlags(r.getFlags());
         sam.setReferenceName(r.getReferenceSequenceName());
         sam.setAlignmentStart(r.getPosition()); // ?
