@@ -49,7 +49,7 @@ import javax.swing.JDialog;
 import org.ut.biolab.medsavant.client.util.FormController;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.util.FixedLengthTextFilter;
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.client.view.util.SpringUtilities;
 
 /**

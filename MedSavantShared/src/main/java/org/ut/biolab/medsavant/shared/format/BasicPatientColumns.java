@@ -19,7 +19,7 @@
  */
 package org.ut.biolab.medsavant.shared.format;
 
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 
 
 /**

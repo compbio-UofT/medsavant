@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.shared.appapi.MedSavantApp;
 import org.ut.biolab.medsavant.client.plugin.AppController;
 import org.ut.biolab.medsavant.client.project.ProjectController;
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.OntologyType;

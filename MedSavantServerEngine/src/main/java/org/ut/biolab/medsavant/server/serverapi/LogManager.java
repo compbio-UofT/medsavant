@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgressMonitor;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 
@@ -160,7 +160,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
     }
 
     @Override
-    public List<MedSavantServerJobProgress> getJobProgressForUserWithSessionID(String sid) throws SQLException, RemoteException, SessionExpiredException {
+    public List<MedSavantServerJobProgressMonitor> getJobProgressForUserWithSessionID(String sid) throws SQLException, RemoteException, SessionExpiredException {
         String userId = SessionManager.getInstance().getUserForSession(sid);
         return MedSavantServerJob.getJobProgressesForUser(userId);
     }

@@ -82,7 +82,7 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
                     participantVariant[i] = VariantType.NONE;
                 } else {
                     participantAlt[i] = altAlleles.indexOf(alts[x - 1]) + 1;
-                    participantVariant[i] = convertVariantType(org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType.valueOf((String) arr[BasicVariantColumns.INDEX_OF_VARIANT_TYPE]), alts[x - 1]);
+                    participantVariant[i] = convertVariantType(org.medsavant.api.common.VariantRecord.VariantType.valueOf((String) arr[BasicVariantColumns.INDEX_OF_VARIANT_TYPE]), alts[x - 1]);
                     defaultVariantType = participantVariant[i];
                     foundNonZero = true;
                 }
@@ -181,7 +181,7 @@ public class MergedMedSavantVariantRecord implements VariantRecord {
         return ((Integer) start_position).compareTo(other.getPosition());
     }
 
-    public static VariantType convertVariantType(org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType type, String alt) {
+    public static VariantType convertVariantType(org.medsavant.api.common.VariantRecord.VariantType type, String alt) {
         switch (type) {
             case Insertion:
                 return VariantType.INSERTION;

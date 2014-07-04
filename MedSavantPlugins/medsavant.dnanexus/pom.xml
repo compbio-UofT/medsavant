@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- (C)2014 DNA STACK.  Do not distribute -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>edu.toronto.cs.medsavant</groupId>
+        <artifactId>medsavant-parent</artifactId>        
+        <version>1.3-SNAPSHOT</version>
+    </parent>
+    <artifactId>medsavant-app-dnanexus</artifactId> 
+    <name>MedSavant-App - DNA Nexus Integration</name>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>medsavant-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>medsavant-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>medsavant-app-comm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.apache.oltu</groupId>
+            <artifactId>org.apache.oltu.parent</artifactId>
+            <version>2</version>
+        </dependency>
+            -->        
+        <dependency>
+            <groupId>dnanexus</groupId>
+            <artifactId>dx-toolkit</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        
+        <!-- for dna nexus -->
+    <dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpclient</artifactId>
+  <version>4.2.1</version>
+</dependency>
+
+      
+
+          <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.4</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    <!--
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>  
+-->
+    <build>
+        <plugins>                                      
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathLayoutType>custom</classpathLayoutType>
+                            <customClasspathLayout>lib/$${artifact.artifactId}-$${artifact.version}$${artifact.dashClassifier?}.$${artifact.extension}</customClasspathLayout>   
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+            <!-- Shades external jars to avoid conflicts. If you listed any dependencies in addition to the defaults, you will
+            need to shade them here (see below comments)-->
+            
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <includes>
+                                   <include>dnanexus:dx-toolkit</include>
+                                   <include>org.apache.httpcomponents:httpclient</include>
+                                </includes>
+                            </artifactSet>
+                            <!--
+                            <relocations>                               
+                                  <relocation>
+                                    <pattern>org.apache.http.*</pattern>
+                                    <shadedPattern>shaded.dnanexus.org.apache.http.*</shadedPattern>              
+                                  </relocation>                               
+                            </relocations>                                   
+                            -->
+                        </configuration>
+                    </execution>
+                </executions>                
+            </plugin>           
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

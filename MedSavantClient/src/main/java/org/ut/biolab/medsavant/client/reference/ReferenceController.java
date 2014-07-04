@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.filter.FilterController;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
-import org.ut.biolab.medsavant.shared.model.Reference;
+import org.medsavant.api.common.Reference;
 import org.ut.biolab.medsavant.shared.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.client.util.Controller;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.server.MedSavantIOController;
 import org.ut.biolab.medsavant.server.db.variants.VariantManagerUtils;
 import static org.ut.biolab.medsavant.server.db.variants.annotation.AnnotationCursor.MAX_BASEPAIR_DISTANCE_IN_WINDOW;
 import org.ut.biolab.medsavant.shared.model.Annotation;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgressMonitor;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -67,7 +67,7 @@ public class BatchVariantAnnotator {
     // the total number of warnings raised while annotating
     private int totalNumWarnings;
     
-    private MedSavantServerJobProgress jobProgress;
+    private MedSavantServerJobProgressMonitor jobProgress;
 
     public int getTotalVariantsWritten(){
         return totalNumVariantsWritten;
@@ -86,7 +86,7 @@ public class BatchVariantAnnotator {
      * @param annotIds The annotations to apply
      * @param sid The session ID that requested the annotation
      */
-    public BatchVariantAnnotator(MedSavantServerJobProgress jobProgress, File inputFile, File outputFile, Annotation[] annotations, String sid) throws RemoteException, SQLException {
+    public BatchVariantAnnotator(MedSavantServerJobProgressMonitor jobProgress, File inputFile, File outputFile, Annotation[] annotations, String sid) throws RemoteException, SQLException {
         this.inputTDFFile = inputFile;
         this.outputTDFFile = outputFile;
         this.sid = sid;

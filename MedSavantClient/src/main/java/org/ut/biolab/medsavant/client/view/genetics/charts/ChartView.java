@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;

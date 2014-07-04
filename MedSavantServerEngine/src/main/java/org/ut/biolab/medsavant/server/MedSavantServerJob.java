@@ -26,16 +26,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus;
-import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_LONGJOB;
-import static org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress.ScheduleStatus.SCHEDULED_AS_SHORTJOB;
-
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgressMonitor;
 public abstract class MedSavantServerJob implements Callable<Void> {
 
-    private static Map<String, List<MedSavantServerJobProgress>> rootJobs;
+    private static Map<String, List<MedSavantServerJobProgressMonitor>> rootJobs;
     private static final Object rootJobLock = new Object();
-    private final MedSavantServerJobProgress jobProgress;
+    private final MedSavantServerJobProgressMonitor jobProgress;
     private long expiryTime = 0;
 
     private MedSavantServerJob parentJob;
@@ -48,7 +44,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
         jobProgress.setStatus(status);
     }
 
-    public static List<MedSavantServerJobProgress> getJobProgressesForUser(String userId) {
+    public static List<MedSavantServerJobProgressMonitor> getJobProgressesForUser(String userId) {
         if (rootJobs == null) {
             return null;
         }
@@ -60,18 +56,18 @@ public abstract class MedSavantServerJob implements Callable<Void> {
     }
     
     public MedSavantServerJob(String userId, String jobName, MedSavantServerJob parentJob) {
-        jobProgress = new MedSavantServerJobProgress(userId, jobName);
+        jobProgress = new MedSavantServerJobProgressMonitor(userId, jobName);
         this.parentJob = parentJob;
         if (parentJob != null) {
             parentJob.jobProgress.addChildJobProgress(jobProgress);
         } else {
             if (rootJobs == null) {
-                rootJobs = new HashMap<String, List<MedSavantServerJobProgress>>();
+                rootJobs = new HashMap<String, List<MedSavantServerJobProgressMonitor>>();
             }
             synchronized (rootJobLock) {
-                List<MedSavantServerJobProgress> myRootJobs = rootJobs.get(userId);
+                List<MedSavantServerJobProgressMonitor> myRootJobs = rootJobs.get(userId);
                 if (myRootJobs == null) {
-                    myRootJobs = new LinkedList<MedSavantServerJobProgress>();
+                    myRootJobs = new LinkedList<MedSavantServerJobProgressMonitor>();
                 }
                 myRootJobs.add(jobProgress);
                 rootJobs.put(userId, myRootJobs);
@@ -79,7 +75,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
         }
     }
 
-    public MedSavantServerJobProgress getJobProgress() {
+    public MedSavantServerJobProgressMonitor getJobProgress() {
         return jobProgress;
     }
 
@@ -118,7 +114,7 @@ public abstract class MedSavantServerJob implements Callable<Void> {
             parentJob.jobProgress.childJobProgresses.remove(jobProgress);
         } else {
             synchronized (rootJobLock) {
-                List<MedSavantServerJobProgress> myJobs = rootJobs.get(jobProgress.getUserId());
+                List<MedSavantServerJobProgressMonitor> myJobs = rootJobs.get(jobProgress.getUserName());
                 if (myJobs != null && !myJobs.isEmpty()) {
                     int i = myJobs.indexOf(jobProgress);
                     if (i >= 0) {

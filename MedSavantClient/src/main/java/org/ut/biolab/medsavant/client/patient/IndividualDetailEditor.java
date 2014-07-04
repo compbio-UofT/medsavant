@@ -35,7 +35,7 @@ import java.util.List;
 import org.broad.igv.tdf.TDFDataset.DataType;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;

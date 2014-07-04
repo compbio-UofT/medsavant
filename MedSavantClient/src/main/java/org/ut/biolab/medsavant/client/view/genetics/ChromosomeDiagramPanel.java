@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import org.ut.biolab.medsavant.shared.model.Range;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticVariantInspector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 

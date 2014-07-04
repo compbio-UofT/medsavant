@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.client.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.ThreadController;
 import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.ComprehensiveInspector;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.stat.StaticInspectorPanel;
 import org.ut.biolab.medsavant.client.view.app.MultiSectionApp;

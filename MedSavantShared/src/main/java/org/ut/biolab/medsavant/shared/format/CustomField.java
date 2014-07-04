@@ -23,15 +23,16 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
+import org.medsavant.api.annotation.MedSavantAnnotationField;
 
-import org.ut.biolab.medsavant.shared.db.ColumnDef;
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.ut.biolab.medsavant.shared.db.ColumnDefImpl;
+import org.medsavant.api.common.storage.ColumnType;
 
 /**
  *
  * @author Andrew
  */
-public class CustomField extends ColumnDef implements Serializable {
+public class CustomField extends ColumnDefImpl implements Serializable, MedSavantAnnotationField {
 
     public static final String ALLELE_FREQUENCY_TAG = "Allele Frequency";
     public static final String TAG_DELIMITER = ",";
@@ -42,7 +43,7 @@ public class CustomField extends ColumnDef implements Serializable {
 
     /**
      * Construct a new custom field definition. Extends the basic
-     * <code>ColumnDef</code> class by adding a couple of human-friendly
+     * <code>ColumnDefImpl</code> class by adding a couple of human-friendly
      * presentation fields.
      *
      * @param name column name
@@ -112,18 +113,22 @@ public class CustomField extends ColumnDef implements Serializable {
         return new int[]{0, 0};
     }
 
+    @Override
     public String getAlias() {
         return alias;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public boolean isFilterable() {
         return filterable;
     }
 
+    @Override
     public Class getColumnClass() {
         switch (type) {
             case BOOLEAN:
@@ -142,10 +147,12 @@ public class CustomField extends ColumnDef implements Serializable {
         }
     }
 
+    @Override
     public String generateSchema() {
         return generateSchema(false);
     }
 
+    @Override
     public String generateSchema(boolean forceLowerCase) {
         return "`" + (forceLowerCase ? name.toLowerCase() : name) + "` " + getTypeString() + " DEFAULT NULL,";
     }
@@ -173,6 +180,7 @@ public class CustomField extends ColumnDef implements Serializable {
         return type.toString();
     }
 
+    @Override
     public boolean isNumeric() {
         return type.isNumeric();
     }

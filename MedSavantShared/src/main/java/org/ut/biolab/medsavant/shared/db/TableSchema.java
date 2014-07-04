@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.shared.db;
 
+import org.medsavant.api.common.storage.ColumnType;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -69,8 +70,8 @@ public class TableSchema implements Serializable {
         for (Field f: fields) {
             try {
                 Object fieldValue = f.get(null);
-                if (fieldValue instanceof ColumnDef) {
-                    addColumn((ColumnDef)fieldValue);
+                if (fieldValue instanceof ColumnDefImpl) {
+                    addColumn((ColumnDefImpl)fieldValue);
                 }
             } catch (Exception ex) {
                 LOG.error("Unable to get column definition for " + f, ex);
@@ -84,10 +85,10 @@ public class TableSchema implements Serializable {
      * @param name name for the new table
      * @param cols a list of column-defs.
      */
-    public TableSchema(DbSchema s, String name, ColumnDef[] cols) {
+    public TableSchema(DbSchema s, String name, ColumnDefImpl[] cols) {
         this(s.addTable(name));
         autoIncrements = new ArrayList<DbColumn>();
-        for (ColumnDef c: cols) {
+        for (ColumnDefImpl c: cols) {
             addColumn(c);
         }
     }
@@ -103,7 +104,7 @@ public class TableSchema implements Serializable {
         return c;
     }
 
-    public final DbColumn addColumn(ColumnDef col) {
+    public final DbColumn addColumn(ColumnDefImpl col) {
         DbColumn dbc = addColumn(col.name, col.type, col.length, col.scale);
         if (col.defaultValue != null) {
             dbc.setDefaultValue(col.defaultValue);
@@ -128,7 +129,7 @@ public class TableSchema implements Serializable {
         return nameToColumn.get(name);
     }
 
-    public DbColumn getDBColumn(ColumnDef def) {
+    public DbColumn getDBColumn(ColumnDefImpl def) {
         return getDBColumn(def.name);
     }
 
@@ -165,8 +166,8 @@ public class TableSchema implements Serializable {
             selectQuery.addFromTable(table);
         }
         for (Object o: cols) {
-            if (o instanceof ColumnDef) {
-                selectQuery.addColumns(table.findColumn(((ColumnDef)o).name));
+            if (o instanceof ColumnDefImpl) {
+                selectQuery.addColumns(table.findColumn(((ColumnDefImpl)o).name));
             } else {
                 selectQuery.addCustomColumns(new CustomSql(o));
             }
@@ -188,7 +189,7 @@ public class TableSchema implements Serializable {
             selectQuery.addFromTable(table);
         }
         for (int i = 0; i < wheres.length; i += 2) {
-            selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
+            selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDefImpl)wheres[i]).name), wheres[i + 1]));
         }
         return this;
     }
@@ -205,7 +206,7 @@ public class TableSchema implements Serializable {
             selectQuery.addFromTable(table);
         }
         for (int i = 0; i < wheres.length; i++) {
-            selectQuery.addCondition(com.healthmarketscience.sqlbuilder.UnaryCondition.isNotNull(table.findColumn(((ColumnDef)wheres[i]).name)));                
+            selectQuery.addCondition(com.healthmarketscience.sqlbuilder.UnaryCondition.isNotNull(table.findColumn(((ColumnDefImpl)wheres[i]).name)));                
         }
         return this;
     }
@@ -216,7 +217,7 @@ public class TableSchema implements Serializable {
      * @param ins collection of values for the <code>IN</code> clause
      * @return <code>this</code>
      */
-    public synchronized TableSchema whereIn(ColumnDef col, Collection ins) {
+    public synchronized TableSchema whereIn(ColumnDefImpl col, Collection ins) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
             selectQuery.addFromTable(table);
@@ -241,12 +242,12 @@ public class TableSchema implements Serializable {
     /**
      * Add an ORDER BY clause to the query.
      */
-    public synchronized TableSchema orderBy(ColumnDef... groupCols) {
+    public synchronized TableSchema orderBy(ColumnDefImpl... groupCols) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
             selectQuery.addFromTable(table);
         }
-        for (ColumnDef col: groupCols) {
+        for (ColumnDefImpl col: groupCols) {
             selectQuery.addOrdering(table.findColumn(col.name), Dir.ASCENDING);
         }
         return this;
@@ -255,12 +256,12 @@ public class TableSchema implements Serializable {
     /**
      * Add a GROUP BY clause to the query
      */
-    public synchronized TableSchema groupBy(ColumnDef... groupCols) {
+    public synchronized TableSchema groupBy(ColumnDefImpl... groupCols) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
             selectQuery.addFromTable(table);
         }
-        for (ColumnDef col: groupCols) {
+        for (ColumnDefImpl col: groupCols) {
             selectQuery.addGroupings(table.findColumn(col.name));
         }
         return this;
@@ -289,7 +290,7 @@ public class TableSchema implements Serializable {
     public synchronized InsertQuery insert(Object... insertions) {
         InsertQuery query = new InsertQuery(table);
         for (int i = 0; i < insertions.length; i += 2) {
-            query.addColumn(table.findColumn(((ColumnDef)insertions[i]).name), insertions[i + 1]);
+            query.addColumn(table.findColumn(((ColumnDefImpl)insertions[i]).name), insertions[i + 1]);
         }
         return query;
     }
@@ -300,7 +301,7 @@ public class TableSchema implements Serializable {
      * @param insertions pairs consisting of column def followed by value
      * @return an insert query
      */
-    public synchronized InsertQuery preparedInsert(ColumnDef... cols) {
+    public synchronized InsertQuery preparedInsert(ColumnDefImpl... cols) {
         InsertQuery query = new InsertQuery(table);
         for (int i = 0; i < cols.length; i++) {
             query.addPreparedColumns(table.findColumn(cols[i].name));
@@ -311,7 +312,7 @@ public class TableSchema implements Serializable {
     public synchronized DeleteQuery delete(Object... wheres) {
         DeleteQuery query = new DeleteQuery(table);
         for (int i = 0; i < wheres.length; i += 2) {
-            query.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
+            query.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDefImpl)wheres[i]).name), wheres[i + 1]));
         }
         return query;
     }

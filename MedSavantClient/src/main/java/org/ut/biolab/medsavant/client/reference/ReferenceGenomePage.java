@@ -24,7 +24,7 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
-import org.ut.biolab.medsavant.shared.model.Reference;
+import org.medsavant.api.common.Reference;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.client.view.list.DetailedTableView;

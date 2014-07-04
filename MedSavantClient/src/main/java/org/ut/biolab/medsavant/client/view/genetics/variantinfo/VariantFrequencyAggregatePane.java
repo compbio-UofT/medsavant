@@ -75,7 +75,7 @@ import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -219,7 +219,7 @@ public abstract class VariantFrequencyAggregatePane extends JPanel {
     /**
      * Adds a listener for whenever a different variant is selected via this
      * SubInspector. The listener's handleEvent method will be invoked with the
-     * VariantRecord corresponding to the selection.
+ GenomicVariantImpl corresponding to the selection.
      *
      * @see VariantRecord
      */

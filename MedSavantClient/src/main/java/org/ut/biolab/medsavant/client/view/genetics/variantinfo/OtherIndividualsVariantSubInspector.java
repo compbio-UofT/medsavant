@@ -37,7 +37,7 @@ import static org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndi
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.Cohort;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import org.ut.biolab.medsavant.client.query.QueryViewController;
 
 /**
@@ -122,9 +122,9 @@ public class OtherIndividualsVariantSubInspector extends OtherIndividualsSubInsp
         public VariantSummaryPanel(String dnaID) {
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-            //Map<String, Map<String, VariantRecord>> dnaIDVariantMap
+            //Map<String, Map<String, GenomicVariantImpl>> dnaIDVariantMap
 
-            //Map<String, VariantRecord> typeVariantMap = dnaIDVariantMap.get(dnaID);
+            //Map<String, GenomicVariantImpl> typeVariantMap = dnaIDVariantMap.get(dnaID);
             Set<VariantRecord> variantRecords = dnaIDVariantMap.get(dnaID);
 
             for (final VariantRecord variantRecord : variantRecords) {

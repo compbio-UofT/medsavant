@@ -35,6 +35,7 @@ import net.sf.samtools.util.SeekableStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
+import org.medsavant.api.common.storage.MedSavantFile;
 
 
 /**
@@ -79,6 +80,7 @@ public class NetworkUtils {
         }
     }
 
+   
     /**
      * Open a stream for the given URL with the CONNECT_TIMEOUT and READ_TIMEOUT.
      * @throws IOException

@@ -66,7 +66,7 @@ import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_ID;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_VARIANT_TYPE;
 import static org.ut.biolab.medsavant.shared.format.BasicVariantColumns.INDEX_OF_ZYGOSITY;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 
 
 /**
@@ -226,7 +226,7 @@ public abstract class OtherIndividualsSubInspector extends SubInspector {
     }
 
     private synchronized void buildDnaIDVariantMap(List<Object[]> values) {
-        //dnaIDVariantMap = new HashMap<String, Map<String, VariantRecord>>();
+        //dnaIDVariantMap = new HashMap<String, Map<String, GenomicVariantImpl>>();
         dnaIDVariantMap = new HashMap<String, Set<VariantRecord>>();
         variantRecords = new HashSet<VariantRecord>();
         for (final Object[] row : values) {

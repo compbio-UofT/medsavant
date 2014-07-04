@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.shared.model.Gene;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.client.view.component.SplitScreenPanel;
 import org.ut.biolab.medsavant.client.view.component.MSTabbedPaneUI;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.DetailedVariantSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneManiaSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.GeneSubInspector;

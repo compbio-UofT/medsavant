@@ -28,7 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.client.api.Listener;
 
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import org.ut.biolab.medsavant.client.view.genetics.TablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.CollapsibleInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSubInspector;

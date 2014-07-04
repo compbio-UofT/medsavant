@@ -41,8 +41,8 @@ import org.ut.biolab.medsavant.client.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.util.MedSavantWorker;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord.VariantType;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
+import org.medsavant.api.common.VariantRecord.VariantType;
+import org.medsavant.api.common.VariantRecord.Zygosity;
 
 /**
  *

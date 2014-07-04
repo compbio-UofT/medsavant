@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
+import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgressMonitor;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -87,9 +87,9 @@ public class VCFParser {
     private String sessID;
     private File vcfFile;
 
-    private MedSavantServerJobProgress jobProgress;
+    private MedSavantServerJobProgressMonitor jobProgress;
 
-    public VCFParser(String sessID, File vcfFile, MedSavantServerJobProgress jobProgress) {
+    public VCFParser(String sessID, File vcfFile, MedSavantServerJobProgressMonitor jobProgress) {
         this.sessID = sessID;
         this.vcfFile = vcfFile;
         this.jobProgress = jobProgress;

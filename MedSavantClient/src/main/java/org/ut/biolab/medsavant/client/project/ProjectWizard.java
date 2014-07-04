@@ -54,7 +54,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
-import org.ut.biolab.medsavant.shared.model.Reference;
+import org.medsavant.api.common.Reference;
 import org.ut.biolab.medsavant.client.reference.NewReferenceDialog;
 import org.ut.biolab.medsavant.shared.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.client.util.ClientMiscUtils;

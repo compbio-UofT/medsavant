@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.shared.model.UserComment;
 import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.vcf.VariantRecord;
+import org.medsavant.api.common.VariantRecord;
 import savant.api.util.DialogUtils;
 
 public class AddNewCommentDialog extends JDialog {

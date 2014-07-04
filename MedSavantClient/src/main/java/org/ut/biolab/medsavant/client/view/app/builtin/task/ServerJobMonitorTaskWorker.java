@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.shared.model.GeneralLog;
-import org.ut.biolab.medsavant.shared.model.MedSavantServerJobProgress;
+import org.medsavant.api.common.impl.MedSavantServerJobProgressMonitor;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 /**
@@ -67,7 +67,7 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
      level = 16;
      }
      int jid = 0;
-     for (MedSavantServerJobProgress mjp : mjps) {
+     for (MedSavantServerJobProgressMonitor mjp : mjps) {
      ScheduleStatus status = mjp.getStatus();
      rank += status.ordinal()+1<<(16-level);
             
@@ -87,21 +87,21 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
      jid++;
      }
      }*/
-    private List<GeneralLog> getSortedChildren(List<MedSavantServerJobProgress> mjps, int level) {
+    private List<GeneralLog> getSortedChildren(List<MedSavantServerJobProgressMonitor> mjps, int level) {
         List<GeneralLog> output = new LinkedList<GeneralLog>();
-        Map<Integer, List<MedSavantServerJobProgress>> m = new TreeMap<Integer, List<MedSavantServerJobProgress>>();
-        for (MedSavantServerJobProgress p : mjps) {
-            List<MedSavantServerJobProgress> l = m.get(p.getStatus().ordinal());
+        Map<Integer, List<MedSavantServerJobProgressMonitor>> m = new TreeMap<Integer, List<MedSavantServerJobProgressMonitor>>();
+        for (MedSavantServerJobProgressMonitor p : mjps) {
+            List<MedSavantServerJobProgressMonitor> l = m.get(p.getStatus().ordinal());
             if (l == null) {
-                l = new LinkedList<MedSavantServerJobProgress>();
+                l = new LinkedList<MedSavantServerJobProgressMonitor>();
             }
             l.add(p);
             m.put(p.getStatus().ordinal(), l);
         }
         final String tabStr = StringUtils.repeat("     ", level);
         int jid = 0;
-        for (List<MedSavantServerJobProgress> mjpList : m.values()) {
-            for (MedSavantServerJobProgress mjp : mjpList) {
+        for (List<MedSavantServerJobProgressMonitor> mjpList : m.values()) {
+            for (MedSavantServerJobProgressMonitor mjp : mjpList) {
                 String msg = mjp.getMessage();
                 if (msg == null) {
                     msg = "";
@@ -133,7 +133,7 @@ public class ServerJobMonitorTaskWorker implements TaskWorker {
         
         String sessionId = LoginController.getSessionID();
         try {
-            List<MedSavantServerJobProgress> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(sessionId);
+            List<MedSavantServerJobProgressMonitor> mjps = MedSavantClient.LogManager.getJobProgressForUserWithSessionID(sessionId);
             if (mjps == null) {
                 return new ArrayList<GeneralLog>(1);
             } else {

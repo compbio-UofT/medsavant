@@ -47,7 +47,7 @@ import net.sf.samtools.SAMRecord;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.shared.db.ColumnType;
+import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Range;
 
@@ -283,8 +283,10 @@ public class MiscUtils {
 
     /*
      * Return string without sequence title (chr, contig)
+     *
+     * moved to private static member in GenomicVariantFactory
      */
-    public static String homogenizeSequence(String s) {
+   /* public static String homogenizeSequence(String s) {
         String result = s;
         if (result.contains("chr")) {
             result = result.replaceAll("chr", "");
@@ -299,7 +301,7 @@ public class MiscUtils {
             result = result.replaceAll("Contig", "");
         }
         return result;
-    }
+    }*/
 
     public static double roundToSignificantDigits(double num, int n) {
         if (num == 0) {

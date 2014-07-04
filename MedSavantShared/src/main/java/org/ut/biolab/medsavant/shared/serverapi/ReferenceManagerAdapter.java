@@ -23,7 +23,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
-import org.ut.biolab.medsavant.shared.model.Reference;
+import org.medsavant.api.common.Reference;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 
 
