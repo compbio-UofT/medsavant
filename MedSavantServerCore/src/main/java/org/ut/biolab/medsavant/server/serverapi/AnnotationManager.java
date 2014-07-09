@@ -31,12 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -48,13 +43,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
 import org.medsavant.api.vcfstorage.MedSavantFileDirectoryException;
 import org.medsavant.api.vcfstorage.MedSavantFileSubDirectory;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
@@ -472,8 +466,9 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
          */
         try {
             MedSavantSession session = MedSavantLegacyUtils.getMedSavantSession(sessID);
-            MedSavantFile tabixFile = MedSavantServerEngine.getInstance().getMedSavantFileDirectory().getAnnotationDirectory(session).getMedSavantFile(session, path);
-            MedSavantFile indexFile = MedSavantServerEngine.getInstance().getMedSavantFileDirectory().getAnnotationDirectory(session).getMedSavantFile(session, indexPath);
+            MedSavantFileSubDirectory dir =  MedSavantServerEngine.getInstance().getServerContext().getMedSavantFileDirectory().getAnnotationDirectory(session);
+            MedSavantFile tabixFile = dir.getMedSavantFile(session, path);
+            MedSavantFile indexFile = dir.getMedSavantFile(session, indexPath);
             AnnotationFormat af = new AnnotationFormat(program, version, referenceName, hasRef, hasAlt, type, isEndInclusive, fields.toArray(new CustomField[0]), tabixFile, indexFile);
             return af;
         } catch (FileNotFoundException fnfe) {
@@ -687,7 +682,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         File indexFile = getTabixIndexFile(dir);
         File xmlFile = getFormatFile(dir);
 
-        MedSavantFileSubDirectory annotationDirectory = MedSavantServerEngine.getInstance().getMedSavantFileDirectory().getAnnotationDirectory(session);
+        MedSavantFileSubDirectory annotationDirectory = MedSavantServerEngine.getInstance().getServerContext().getMedSavantFileDirectory().getAnnotationDirectory(session);
         MedSavantFile msTabixFile = null;
         MedSavantFile msIndexFile = null;
         MedSavantFile msXMLFile = null;

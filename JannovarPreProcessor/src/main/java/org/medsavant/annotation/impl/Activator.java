@@ -1,6 +1,7 @@
 package org.medsavant.annotation.impl;
 
 import org.medsavant.api.annotation.VCFPreProcessor;
+import org.medsavant.api.common.GlobalWrapper;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -11,9 +12,7 @@ public class Activator implements BundleActivator {
     private ServiceRegistration vcfPreProcessorServiceRegistration;
     public void start(BundleContext context) throws Exception {
         this.bundleContext = context;
-        VCFPreProcessor vpp = new JannovarVCFPreProcessor();
-        ((JannovarVCFPreProcessor)vpp).setFileUtils(fileUtils);
-        ((JannovarVCFPreProcessor)vpp).setVCFDirectory(vcfDirectory);
+        VCFPreProcessor vpp = new JannovarVCFPreProcessor(GlobalWrapper.getServerContext());        
         vcfPreProcessorServiceRegistration = context.registerService(VCFPreProcessor.class.getName(), vpp, null);    
         
         /**

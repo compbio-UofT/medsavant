@@ -32,7 +32,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.common.JobProgressMonitor;
-import org.medsavant.server.Medapi.commonServerJob;
+import org.medsavant.api.common.impl.MedSavantServerJob;
 
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ServerLogTableSchema;

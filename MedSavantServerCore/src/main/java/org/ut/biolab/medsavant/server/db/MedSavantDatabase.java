@@ -24,6 +24,10 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 
 public class MedSavantDatabase {
 
+    public static final String FIELD_DELIMITER = "\t";        
+    public static final String ENCLOSED_BY = "\"";
+    public static final String ESCAPE_CHAR = "\\";
+    
     public interface AnnotationColumns {
 
         static final ColumnDefImpl ANNOTATION_ID = new ColumnDefImpl("annotation_id", ColumnType.INTEGER, 11, true, true, true, null);

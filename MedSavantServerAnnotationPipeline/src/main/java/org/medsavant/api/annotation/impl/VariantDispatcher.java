@@ -1,16 +1,3 @@
-/**
- * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
- * Unauthorized use of this file is strictly prohibited.
- *
- * All rights reserved. No warranty, explicit or implicit, provided. THE
- * SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR
- * ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
 package org.medsavant.api.annotation.impl;
 
 import com.google.code.externalsorting.ExternalSort;
@@ -29,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.annotation.VariantAnnotator;
-import org.medsavant.api.annotation.VariantDispatcher;
 import org.medsavant.api.annotation.VariantWindow;
 import org.medsavant.api.annotation.VariantWindowException;
 import org.medsavant.api.common.GenomicVariant;
@@ -40,8 +26,9 @@ import org.medsavant.api.common.VariantType;
 import org.medsavant.api.common.Zygosity;
 import org.medsavant.api.common.impl.GenomicVariantFactory;
 import org.medsavant.api.common.impl.MedSavantServerJob;
+import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.variantstorage.GenomicVariantRecord;
-import org.medsavant.api.variantstorage.VariantStorageEngine;
+import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
 import org.medsavant.api.variantstorage.impl.GenomicVariantRecordImpl;
 
 import org.medsavant.api.vcfstorage.VCFFileOld;
@@ -53,11 +40,7 @@ import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
-/**
- *
- * @author mfiume
- */
-public class VariantDispatcherImpl implements VariantDispatcher {
+public class VariantDispatcher {
 
     private static final int FILE_INDEX_OF_CHROM = 0;
     private static final int FILE_INDEX_OF_POS = FILE_INDEX_OF_CHROM + 1;
@@ -68,7 +51,7 @@ public class VariantDispatcherImpl implements VariantDispatcher {
     private static final int FILE_INDEX_OF_FILTER = FILE_INDEX_OF_QUAL + 1;
     private static final int FILE_INDEX_OF_INFO = FILE_INDEX_OF_FILTER + 1;
 
-    private static final Log LOG = LogFactory.getLog(VariantDispatcherImpl.class);
+    private static final Log LOG = LogFactory.getLog(VariantDispatcher.class);
     private static final String HEADER_CHARS = "#";
     private static final String COMMENT_CHARS = "##";
     private static final Pattern VCF_FORMAT_REGEX = Pattern.compile("^##fileformat=VCFv([\\d+.]+)");
@@ -118,7 +101,7 @@ public class VariantDispatcherImpl implements VariantDispatcher {
 
     private int numVariants = 0;
     private String sessID;
-    private VCFFileOld vcfFile;
+    private MedSavantFile vcfFile;
 
     private JobProgressMonitor jobProgressMonitor;
     private MedSavantServerContext serverContext;
@@ -127,7 +110,7 @@ public class VariantDispatcherImpl implements VariantDispatcher {
 
     private int blockSize = 10000; //can be overridden with configuration
 
-    private VariantStorageEngine storageEngine;
+    private MedSavantVariantStorageEngine storageEngine;
 
     //These variables control how bad refs are reported or handled.
     private static final boolean TOOLONG_REFS_GIVE_WARNING = true;
@@ -188,8 +171,7 @@ public class VariantDispatcherImpl implements VariantDispatcher {
 
     private void dispatchBlockToAnnotators(final MedSavantSession session,
             int updId,
-            VCFFileOld originalFile,
-            int projectId,
+            MedSavantFile originalFile,            
             List<String> dnaIds,
             final VariantWindow variantWindow,
             List<VariantAnnotator> stageOneAnnotators) throws VariantWindowException {
@@ -201,11 +183,11 @@ public class VariantDispatcherImpl implements VariantDispatcher {
         int i = 0;
         for (final VariantAnnotator ann : stageOneAnnotators) {
             final int index = i;
-            MedSavantServerJob msj = new MedSavantServerJob(session.getUsernameOfOwner(), "foo", jobProgressMonitor) {
+            MedSavantServerJob msj = new MedSavantServerJob(session.getUser().getUsername(), "foo", jobProgressMonitor) {
                 @Override
                 public boolean run() throws Exception {
                     getJobProgressMonitor().setMessage("Annotating block with " + ann.getComponentName());
-                    List<String[]> annotations = ann.annotate(session.getUsernameOfOwner(), jobProgressMonitor, variantWindow);
+                    List<String[]> annotations = ann.annotate(session.getUser().getUsername(), jobProgressMonitor, variantWindow);
                     results.add(index, annotations);
                     getJobProgressMonitor().setMessage("Done");
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -249,11 +231,11 @@ public class VariantDispatcherImpl implements VariantDispatcher {
             ++j;
         }
 
-        storageEngine.addVariants(genomicVariantRecords, projectId, updId);
+        storageEngine.addVariants(genomicVariantRecords, updId);
 
     }
 
-    private void dispatchToAnnotators(MedSavantSession session, int updId, VCFFileOld originalFile, int projectId, File inputFile, List<VariantAnnotator> stageOneAnnotators) throws IOException {
+    private void dispatchToAnnotators(MedSavantSession session, int updId, MedSavantFile originalFile,  File inputFile, List<VariantAnnotator> stageOneAnnotators) throws IOException {
         BufferedReader in = null;
         try {
             in = new BufferedReader(new FileReader(inputFile));
@@ -272,14 +254,14 @@ public class VariantDispatcherImpl implements VariantDispatcher {
                 dnaIds.add(dnaId);
 
                 if (variantWindow.getNumVariants() == blockSize) {
-                    dispatchBlockToAnnotators(session, updId, originalFile, projectId, dnaIds, variantWindow, stageOneAnnotators);
+                    dispatchBlockToAnnotators(session, updId, originalFile, dnaIds, variantWindow, stageOneAnnotators);
                     variantWindow.clear();
                     dnaIds.clear();
                 }
             }
             in.close();
             if (variantWindow.getNumVariants() > 0) {
-                dispatchBlockToAnnotators(session, updId, originalFile, projectId, dnaIds, variantWindow, stageOneAnnotators);
+                dispatchBlockToAnnotators(session, updId, originalFile, dnaIds, variantWindow, stageOneAnnotators);
             }
             /*
              //all work dispatched to annotators for this file.  
@@ -379,11 +361,11 @@ public static void addCustomVCFFields(String infile, String outfile, CustomField
 
         */
         
-        CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
+      //CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));  
 
     }
 
-    public VariantDispatcherImpl(MedSavantServerContext serverContext, VariantStorageEngine storageEngine) {
+    public VariantDispatcher(MedSavantServerContext serverContext, MedSavantVariantStorageEngine storageEngine) {
         this.serverContext = serverContext;
         this.storageEngine = storageEngine;
     }
@@ -401,7 +383,7 @@ public static void addCustomVCFFields(String infile, String outfile, CustomField
      * @param annotators
      * @throws IOException
      */
-    public void dispatch(MedSavantSession session, int updId, int projectId, VCFFileOld vcfFile, JobProgressMonitor jpm, List<VariantAnnotator> annotators) throws IOException, VariantWindowException {
+    public void dispatch(MedSavantSession session, int updId, MedSavantFile vcfFile, JobProgressMonitor jpm, List<VariantAnnotator> annotators) throws IOException, VariantWindowException {
         this.vcfFile = vcfFile;
         this.jobProgressMonitor = jpm;
         InputStream is = null;
@@ -411,7 +393,7 @@ public static void addCustomVCFFields(String infile, String outfile, CustomField
             is = vcfFile.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             parseVariantsFromReader(br, outputFile, includeHomozygousRefs);
-            dispatchToAnnotators(session, updId, vcfFile, projectId, outputFile, annotators);
+            dispatchToAnnotators(session, updId, vcfFile, outputFile, annotators);
         } finally {
             if (is != null) {
                 try {

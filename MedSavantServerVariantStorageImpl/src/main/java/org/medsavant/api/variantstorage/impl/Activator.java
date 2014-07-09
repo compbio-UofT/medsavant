@@ -1,7 +1,7 @@
 package org.medsavant.api.variantstorage.impl;
 
 import org.medsavant.api.variantstorage.VariantFilterBuilder;
-import org.medsavant.api.variantstorage.VariantStorageEngine;
+import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -11,10 +11,10 @@ public class Activator implements BundleActivator {
         this.bundleContext = context;
         
         //create instances.
-        VariantStorageEngine vseInstance = new InfobrightVariantStorageEngine();
+        MedSavantVariantStorageEngine vseInstance = new InfobrightVariantStorageEngine();
         //VariantFilterBuilder vfbInstance = new InfobrightVariantFilterBuilder();
         
-        bundleContext.registerService(VariantStorageEngine.class.getName(), vseInstance, null);
+        bundleContext.registerService(MedSavantVariantStorageEngine.class.getName(), vseInstance, null);
         //bundleContext.registerService(VariantFilterBuilder.class.getName(),vfbInstance, null);
         //context.registerService(VariantField.class.getName(), variantFieldInstance, null);
         

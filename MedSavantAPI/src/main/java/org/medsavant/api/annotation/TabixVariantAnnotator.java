@@ -34,10 +34,9 @@ public class TabixVariantAnnotator implements VariantAnnotator {
     public TabixVariantAnnotator(TabixAnnotator ta, TabixAnnotation tan) {
         this.ta = ta;
         this.tan = tan;
-    }
+    }  
 
-    @Override
-    public List<VCFPreProcessor> getPrerequisiteVCFPreProcessors() {
+    public List<String> getPrerequisiteVCFPreProcessors() {
         return null;
     }
 

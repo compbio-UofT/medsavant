@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.medsavant.api.common.GenomicVariant;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 
@@ -64,7 +65,6 @@ import org.ut.biolab.medsavant.server.db.LockController;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileIBTableSchema;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
-import org.medsavant.junk.VariantManagerUtils;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
 import org.ut.biolab.medsavant.shared.model.UserCommentGroup;
@@ -78,9 +78,7 @@ import org.ut.biolab.medsavant.shared.util.DirectorySettings;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MiscUtils;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
-import org.medsavant.shared.vcfapintRecommond;
 
 /**
  *
@@ -259,8 +257,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * include these new variants upon publication, or if autopublish is true.
      */
     @Override
-    public int uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
-        return uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
+    public void uploadTransferredVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
+        uploadVariants(userSessionID, transferIDs, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
     }
 
     /**
@@ -270,7 +268,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * true.
      */
     @Override
-    public int uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
+    public void uploadVariants(String userSessionID, int[] transferIDs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws Exception, LockException {
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
@@ -293,7 +291,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 i++;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
+            uploadVariants(backgroundSessionID, vcfFiles, sourceNames, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
         } finally {
             LockController.getInstance().releaseLock(database, projID);
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
@@ -307,7 +305,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * publication, or if autopublish is true.
      */
     @Override
-    public int uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
+    public void uploadVariants(String userSessionID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithAnnovar, boolean doPhasing) throws RemoteException, SessionExpiredException, IOException, Exception, LockException {
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
@@ -320,8 +318,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Started upload of variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projID));
 
             if (!dirContainingVCFs.exists()) {
-                LOG.info("Directory from which to load variants does not exist, bailing out.");
-                return -1;
+                String msg = "Directory from which to load variants does not exist, bailing out."; 
+                LOG.info(msg);     
+                throw new IOException(msg);                
             }
 
             File[] vcfFiles = dirContainingVCFs.listFiles(new FileFilter() {
@@ -338,7 +337,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 //return -1;
             }
 
-            return uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
+            uploadVariants(backgroundSessionID, vcfFiles, null, projID, refID, tags, includeHomoRef, email, autoPublish, preAnnotateWithAnnovar, doPhasing);
         } finally {
             LockController.getInstance().releaseLock(database, projID);
             SessionManager.getInstance().unregisterSession(backgroundSessionID);
@@ -442,7 +441,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Upload started. " + vcfFiles.length + " file(s) will be imported. You will be notified again upon completion.");
             int updateID = -1;
             try {
-                updateID = ImportUpdateManager.doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, doPhasing, tags);
+                ImportUpdateManager.osgi_doImport(backgroundSessionID, projectID, referenceID, vcfFiles, includeHomoRef, preAnnotateWithJannovar, doPhasing, tags);
                 // addVariantFilesToDatabase(userSessionID, updateID, projectID, referenceID, vcfFiles);
                 EmailLogger.logByEmail("Upload finished", "Upload completed. " + vcfFiles.length + " file(s) were imported.", email);
                 org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(backgroundSessionID, LogManagerAdapter.LogType.INFO, "Done uploading variants for " + ProjectManager.getInstance().getProjectName(backgroundSessionID, projectID));
@@ -642,7 +641,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     }//end run
                 };//end MedSavantServerJob
 
-        MedSavantServerEngine.getInstance().runJobInCurrentThread(msj);
+        MedSavantServerEngine.getInstance().getServerContext().getExecutionService().runJobInCurrentThread(msj);
         return returnVal[0]; //delete me
     }
 
@@ -696,9 +695,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             }
             String intoString
                     = "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                    + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' " //+ " LINES TERMINATED BY '\\r\\n' ";
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.FIELD_DELIMITER) + "' "
+                    + "ENCLOSED BY '" + MedSavantDatabase.ENCLOSED_BY + "' "
+                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.ESCAPE_CHAR) + "' " //+ " LINES TERMINATED BY '\\r\\n' ";
                     ;
             String queryString = query.toString().replace("FROM", intoString + "FROM");
 
@@ -1735,7 +1734,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
+    public UserCommentGroup createUserCommentGroup(String sessID, int projectId, int refId, GenomicVariant vr) throws RemoteException, SQLException, SessionExpiredException, IllegalArgumentException {
         return createUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
     }
 
@@ -1911,7 +1910,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, VariantRecord vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
+    public UserCommentGroup getUserCommentGroup(String sessID, int projectId, int refId, GenomicVariant vr) throws RemoteException, SessionExpiredException, SQLException, SecurityException {
         return getUserCommentGroup(sessID, projectId, refId, vr.getChrom(), vr.getStartPosition(), vr.getEndPosition(), vr.getRef(), vr.getAlt());
     }
 

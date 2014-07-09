@@ -12,22 +12,22 @@ import java.util.Map;
 import java.util.Set;
 import org.medsavant.api.annotation.MedSavantAnnotation;
 import org.medsavant.api.common.GenomicVariant;
+import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.variantstorage.GenomicVariantRecord;
-import org.medsavant.api.vcfstorage.VCFFileOld;
 
 public class GenomicVariantRecordImpl implements GenomicVariantRecord{
     private final GenomicVariant genomicVariant;    
     private Map<MedSavantAnnotation, List<String[]>> valueMap;        
     private final int uploadId;
-    private final VCFFileOld vcfFile;
+    private final MedSavantFile vcfFile;
     private final String dnaId;
     private final int variantId;    
     
-    public GenomicVariantRecordImpl(GenomicVariant genomicVariant, int uploadId, VCFFileOld file, String dnaId){
+    public GenomicVariantRecordImpl(GenomicVariant genomicVariant, int uploadId, MedSavantFile file, String dnaId){
         this(genomicVariant, uploadId, file, dnaId, -1);
     }
     
-    public GenomicVariantRecordImpl(GenomicVariant genomicVariant, int uploadId, VCFFileOld file, String dnaId, int variantId){
+    public GenomicVariantRecordImpl(GenomicVariant genomicVariant, int uploadId, MedSavantFile file, String dnaId, int variantId){
         this.genomicVariant = genomicVariant;
         this.uploadId = uploadId;
         this.vcfFile = file;
@@ -52,7 +52,7 @@ public class GenomicVariantRecordImpl implements GenomicVariantRecord{
     }
 
     @Override
-    public VCFFileOld getVCFFile() {
+    public MedSavantFile getVCFFile() {
         return vcfFile;
     }
 

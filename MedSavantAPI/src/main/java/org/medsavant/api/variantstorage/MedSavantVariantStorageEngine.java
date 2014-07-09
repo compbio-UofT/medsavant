@@ -10,8 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.medsavant.api.annotation.TabixAnnotation;
-import org.medsavant.api.common.GenomicVariant;
-import org.medsavant.api.vcfstorage.VCFFileOld;
+import org.medsavant.api.common.MedSavantSecurityException;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.variantstorage.VariantFilterBuilder.VariantFilter;
 
 
@@ -19,7 +20,7 @@ import org.medsavant.api.variantstorage.VariantFilterBuilder.VariantFilter;
  *
  * @author jim
  */
-public interface VariantStorageEngine {           
+public interface MedSavantVariantStorageEngine {           
     /**
      * Counts all variants that satisfy the given condition, and that possess the given status.
      * 
@@ -31,7 +32,7 @@ public interface VariantStorageEngine {
      * Counts all variants that satisfy the given condition, AND that originated from one 
      * of the given files.
      */
-    public int countVariantsInFile(VariantFilter filter, Collection<VCFFileOld> files);
+    public int countVariantsInFile(VariantFilter filter, Collection<MedSavantFile> files);
 				    
     /**
      * Exports variants to a file.
@@ -41,7 +42,7 @@ public interface VariantStorageEngine {
      *
      * @return The VCF file containing the exported variants.
      */
-    public VCFFileOld exportVariants(VariantFilter filter, boolean orderedByPosition, boolean compressOutput);
+    public MedSavantFile exportVariants(VariantFilter filter, boolean orderedByPosition, boolean compressOutput);
 
     /**
      * Returns a list of variants that satisfy the filtering criteria.  'offset' and 'limit'
@@ -83,10 +84,10 @@ public interface VariantStorageEngine {
     /**
      * Sets the status of the variant batch with the given updateID, for the project and reference given.
      */
-    public void setVariantStatus(int projectId, int referenceId, int updateID, PublicationStatus status);
+    public void setVariantStatus(MedSavantSession session, int referenceId, int updateID, PublicationStatus status);
 
     
-    public void addVariants(Collection<GenomicVariantRecord> variantRecords, int projectId, int updateId);
+    public void addVariants(Collection<GenomicVariantRecord> variantRecords,int updateId);
     
     /**
      * Uploads a batch of variants.  This method might be called multiple times with the same variantFile, each time with a new
@@ -97,7 +98,7 @@ public interface VariantStorageEngine {
      * 
      * deprecated
      */
-    public int addVariants(int projectId, int referenceId, Collection<GenomicVariantRecord> variantRecords, VCFFileOld variantFile);    
+    public int addVariants(MedSavantSession session, int referenceId, Collection<GenomicVariantRecord> variantRecords, MedSavantFile variantFile);    
 
     /**
      * Adds the given annotation.  If there are existing variants, they should be annotated with these annotations.
@@ -106,9 +107,28 @@ public interface VariantStorageEngine {
     public void addAnnotations(Collection<TabixAnnotation> annotations) throws UnsupportedOperationException;
     
     public void removeAnnotation(Collection<TabixAnnotation> annotations) throws UnsupportedOperationException;
-    
-    public boolean isAddingAnnotationSupported();
         
+        
+    
+    /**
+     * Starts a new update.  
+     * 
+     * @param session The user's session.
+     * @param projectId The identity of the project for which the update will be applied.
+     * @return A new update identifier used to identify this update.
+     * @throws MedSavantSecurityException If the user doesn't have permission to update.     
+     */
+    public int startUpdate(MedSavantSession session) throws MedSavantSecurityException, IllegalArgumentException;
+    
+    
+    /**
+     * Undoes/cancels an update.
+     * @param session
+     * @param projectId
+     * @param updateId 
+     */
+    //alias: cancelPublish
+    public void cancelUpdate(MedSavantSession session, int updateId);
     
     /////////////////
     //UNCERTAIN PARTS

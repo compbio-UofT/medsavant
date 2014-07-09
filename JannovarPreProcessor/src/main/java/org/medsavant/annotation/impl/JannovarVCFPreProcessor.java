@@ -7,14 +7,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.annotation.VCFPreProcessor;
 import org.medsavant.api.annotation.VCFPreProcessorException;
-import org.medsavant.api.vcfstorage.VCFFileOld;
+import org.medsavant.api.common.InvalidConfigurationException;
 import org.medsavant.api.common.JobProgressMonitor;
-import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
+import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.common.storage.MedSavantFile;
 
 
 /*
@@ -28,12 +30,8 @@ import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
  */
 //Used to be called 'Jannovar'. 
 public class JannovarVCFPreProcessor implements VCFPreProcessor {        
-    //@Inject
-  MedSavantFileDirectoryFDirectory vcfDirectory;
-            
-    vMedSavantFileDirectoryrectory(VCFDirectory vcfDirectory){
-        this.vcfDirectory = vcfDirectory;
-    }
+    
+    private MedSavantServerContext serverContext;                    
     
     //private String reference;
     // use the reference to url map when Jannovar links break
@@ -205,6 +203,25 @@ public class JannovarVCFPreProcessor implements VCFPreProcessor {
         return "Jannovar functional annotator";
     }    
     
+    public JannovarVCFPreProcessor(MedSavantServerContext serverContext){
+        this.serverContext = serverContext;
+    }
+
+    public MedSavantFile preprocess(String username, JobProgressMonitor jpm, MedSavantFile toAnnotate) throws IOException, VCFPreProcessorException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void configure(Dictionary dict) throws InvalidConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void configure(String key, Object val) throws InvalidConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setServerContext(MedSavantServerContext context) throws InvalidConfigurationException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
    
     @Override

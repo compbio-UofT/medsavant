@@ -1,7 +1,9 @@
 package org.medsavant.api.common.impl;
 
 import java.io.Serializable;
+import java.util.List;
 import org.apache.commons.lang.NumberUtils;
+import org.medsavant.api.annotation.MedSavantField;
 import org.medsavant.api.common.GenomicVariant;
 import org.medsavant.api.common.VariantType;
 import org.medsavant.api.common.VariantUtils;
@@ -146,8 +148,8 @@ public class GenomicVariantFactory {
         private Float strandBias;
         private Boolean isSomatic;
         private Boolean isValidated;
-        private Boolean isInThousandGenomes;
-
+        private Boolean isInThousandGenomes;                      
+        
         private GenomicVariantImpl() {
 
         }
@@ -267,11 +269,23 @@ public class GenomicVariantFactory {
                 return VariantType.Various;
             }
         }
-
-        public Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses) {
+                
+        
+        /*
+        public String[] getCustomInfoFieldValues(List<MedSavantField> fields){
+            
+            String[] infoKeys = new String[fields.size()];
+            Class[] infoClasses =  new Class[fields.size()];
+            
+            int j = 0;
+            for(MedSavantField field : fields){
+                infoKeys[j] = field.getAlias();
+                infoClasses[j] = field.getClass();
+                
+            }
             Object[] values = new Object[infoKeys.length];
 
-            infoString = infoString.trim();
+            String infoString = customInfo.trim();
             String[] list = infoString.split(";");
 
             for (String element : list) {
@@ -290,7 +304,32 @@ public class GenomicVariantFactory {
             }
 
             return values;
-        }
+        }*/
+         /*       
+        private Object[] parseInfo(String[] infoKeys, Class[] infoClasses) {
+            
+            Object[] values = new Object[infoKeys.length];
+
+            String infoString = customInfo.trim();
+            String[] list = infoString.split(";");
+
+            for (String element : list) {
+                String name = element;
+                String value = "";
+                int equals = element.indexOf("=");
+                if (equals != -1) {
+                    name = element.substring(0, equals);
+                    value = element.substring(equals + 1);
+                }
+                for (int i = 0; i < infoKeys.length; i++) {
+                    if (name.toLowerCase().equals(infoKeys[i].toLowerCase())) {
+                        values[i] = parse(infoClasses[i], value);
+                    }
+                }
+            }
+
+            return values;
+        }*/
 
         /*
          public int getUploadID() {

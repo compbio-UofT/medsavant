@@ -19,7 +19,6 @@
  */
 package org.ut.biolab.medsavant.server;
 
-import org.medsavant.api.common.impl.MedSavantServerJob;
 import gnu.getopt.Getopt;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
@@ -49,25 +48,13 @@ import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Dictionary;
-import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.medsavant.api.common.GlobalWrapper;
 import org.medsavant.api.common.MedSavantServerContext;
-import static org.medsavant.api.common.ScheduleStatus.SCHEDULED_AS_LONGJOB;
-import static org.medsavant.api.common.ScheduleStatus.SCHEDULED_AS_SHORTJOB;
-import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
@@ -94,18 +81,17 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
     //ssl/tls off by default.
     private boolean require_ssltls = false;
     private boolean require_client_auth = false;
-    
-    
+
     //Maximum number of IO-heavy jobs that can be run simultaneously.
     //(see MedSavantIOScheduler)  If > MAX_THREADS, this has no effect.
     private final int MAX_IO_JOBS = Integer.MAX_VALUE;
-    
+
     private final boolean USE_INFINIDB_ENGINE = false;
 
     int listenOnPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
-    
+
     private String host;
     private int port;
     private String rootName;
@@ -114,18 +100,11 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
     private static final int SLEEP_DELAY_BETWEEN_UNEXPORT_REQUESTS = 60000;
 
     private int connectPort = 36800;
-    private int exportPort = 36801;
-        
+    private int exportPort = 36801;   
     
-    public MedSavantFileDirectory getMedSavantFileDirectory(){
-        return medSavantFileDirectory;
+    public MedSavantServerContext getServerContext(){        
+        return GlobalWrapper.getServerContext();
     }
-    
-   
-    private void initFileDirectory(){
-        throw new UnsupportedOperationException("TODO: Initialize file directory in MedsavantServerEngine");
-    }
-    
     public boolean useInfiniDB() {
         return USE_INFINIDB_ENGINE;
     }
@@ -159,9 +138,9 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
             return;
         }
 
-        instance.longThreadPool.shutdown();
-        instance.shortThreadPool.shutdown();
         try {
+            GlobalWrapper.getServerContext().getExecutionService().shutdown();
+
             String[] names = instance.registry.list();
             String errname = null;
             try {
@@ -188,6 +167,8 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
             }
         } catch (RemoteException rex) {
             LOG.error("Couldn't get registry names during shutdown", rex);
+        } catch (InterruptedException ex) {
+            LOG.error("Interruped while waiting for execution service to shutdown");
         }
         ConnectionController.reapAll();
         instance = null;
@@ -195,126 +176,12 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
         System.gc();
     }
 
-    private void initThreadPools() {
-        //longThreadPool = Executors.newFixedThreadPool(maxThreads);
-        
-        //Long thread pool runs a maximum of maxThreads simultaneous threads, and queues a maximum of 
-        //blockQueueSize threads before blocking.        
-        BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<Runnable>(blockingQueueSize);
-        RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-        longThreadPool = new ThreadPoolExecutor(maxThreads, maxThreads, MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES, blockingQueue, rejectedExecutionHandler);       
-//        ((ThreadPoolExecutor) longThreadPool).setKeepAliveTime(MAX_THREAD_KEEPALIVE_TIME, TimeUnit.MINUTES);      
-        
-        
-        shortThreadPool = Executors.newCachedThreadPool();
-    }
-
-    public int getBlockingQueueSize(){
-        return blockingQueueSize;
-    }
-    
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
-    public Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception {
-        msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
-        return msj.call();
-    }
-
-    /**
-     * Submits and runs the current job using the short job executor service,
-     * and immediately returns. An unlimited number of short jobs can be
-     * executing simultaneously.
-     *
-     * NON_BLOCKING.
-     *
-     * @return The pending result of the job. Trying to fetch the result with
-     * the 'get' method of Future will BLOCK. get() will return null upon
-     * successful completion.
+    /*
+     public Void runJobInCurrentThread(MedSavantServerJob msj) throws Exception {
+     msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
+     return msj.call();
+     }
      */
-    public Future submitShortJob(Runnable r) {
-        return shortThreadPool.submit(r);
-    }
-
-    public Future submitShortJob(MedSavantServerJob msj) {
-        msj.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
-        return shortThreadPool.submit(msj);
-    }
-
-    /**
-     * Submits and runs the current job using the long job executor service, and
-     * immediately returns. Only MAX_THREADS of long jobs can be executing
-     * simultaneously -- the rest are queued.
-     *
-     * NON_BLOCKING.
-     *
-     * @return The pending result of the job. Trying to fetch the result with
-     * the 'get' method of Future will BLOCK. get() will return null upon
-     * successful completion.
-     */
-    public Future submitLongJobOld(Runnable r) {
-        return longThreadPool.submit(r);
-    }
-
-    public Future submitLongJob(MedSavantServerJob msj) {
-        msj.setScheduleStatus(SCHEDULED_AS_LONGJOB);        
-        return longThreadPool.submit(msj);
-    }
-
-    public List<Future<Void>> submitShortJobs(List<MedSavantServerJob> msjs) throws InterruptedException {
-        for (MedSavantServerJob j : msjs) {
-            j.setScheduleStatus(SCHEDULED_AS_SHORTJOB);
-        }
-        return shortThreadPool.invokeAll(msjs);
-    }
-
-    public List<Future<Void>> submitLongJobs(List<MedSavantServerJob> msjs) throws InterruptedException {
-        for (MedSavantServerJob j : msjs) {
-            j.setScheduleStatus(SCHEDULED_AS_LONGJOB);
-        }
-        return longThreadPool.invokeAll(msjs);
-    }
-
-    /**
-     * Submits long jobs and blocks waiting for completion. Make sure to only
-     * call this from another short or long job! This function does not perform
-     * error checking: if you want to know if a job at index i was successful,
-     * invoke returnVal.get(i).get(); and catch the ExecutionException
-     *
-     * @param msjs
-     * @return
-     * @throws InterruptedException
-     * @see ExecutionException
-     */
-    public List<Future<Void>> submitLongJobsAndWait(List<MedSavantServerJob> msjs) throws InterruptedException {
-        List<Future<Void>> jobs = submitLongJobs(msjs);
-        for (Future<Void> job : jobs) {
-            try {
-                job.get();
-            } catch (ExecutionException ex) {
-
-            }
-        }
-        return jobs;
-    }
-
-    /**
-     * @return The executor service used for short jobs. An unlimited number of
-     * short jobs can run simultaneously.
-     */
-    public ExecutorService getShortExecutorServiceOld() {
-        return shortThreadPool;
-    }
-
-    /**
-     * @return The executor service used for long jobs. Only MAX_THREADS long
-     * jobs can run simultaneously.
-     */
-    public ExecutorService getLongExecutorServiceOld() {
-        return longThreadPool;
-    }
-
     public boolean isClientAuthRequired() {
         return require_client_auth;
     }
@@ -372,8 +239,8 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
                 + "  SERVER ADDRESS: " + thisAddress + "\n"
                 + "  LISTENING ON PORT: " + listenOnPort + "\n"
                 + "  EXPORT PORT: " + getExportPort() + "\n"
-                + "  MAX THREADS: " + maxThreads + "\n"
-                + " MAX IO THREADS: " + MAX_IO_JOBS + "\n");
+                + "  MAX JOBS: " + GlobalWrapper.getServerContext().getExecutionService().getMaxRunningLongJobs() + "\n");
+        //+ " MAX IO THREADS: " + MAX_IO_JOBS + "\n");
 
         MedSavantIOController.setMaxIOJobs(MAX_IO_JOBS);
         //+ "  EXPORTING ON PORT: " + MedSavantServerUnicastRemoteObject.getExportPort());
@@ -405,8 +272,6 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
                 char[] pass = System.console().readPassword();
                 password = new String(pass);
             }
-            System.out.println("Locating file directory");
-            initFileDirectory();
             System.out.print("Connecting to database ... ");
             try {
                 ConnectionController.connectOnce(databaseHost, databasePort, "", rootUserName, password);
@@ -440,7 +305,7 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
         System.out.println("== MedSavant Server Engine ==\n");
     }
 
-   static public void main(String args[]) {       
+    static public void main(String args[]) {
         try {
             /**
              * Override with commands from the command line
@@ -491,14 +356,14 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
                         System.err.println("Unrecognized argument!");
                         System.exit(1);
                 }
-            }            
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("Exiting with exception", e);
             System.exit(1);
         }
     }
-   
+
     public static void restart(Properties prop) throws RemoteException {
         instance = new MedSavantServerEngine();
         String user = "root";
@@ -512,13 +377,14 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
         if (prop.containsKey("db-password")) {
             password = prop.getProperty("db-password");
         }
+        /* max-threads and blocking-queue size are separately configured as part of the executor service component.
         if (prop.containsKey("max-threads")) {
             instance.maxThreads = Integer.parseInt(prop.getProperty("max-threads"));
         }
-        if(prop.containsKey("blocking-queue-size")){
+        if (prop.containsKey("blocking-queue-size")) {
             instance.blockingQueueSize = Integer.parseInt(prop.getProperty("blocking-queue-size"));
         }
-        
+        */
         if (prop.containsKey("db-host")) {
             host = prop.getProperty("db-host");
         }
@@ -574,7 +440,7 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
                 }
             }
         }
-        instance.initThreadPools();
+        //instance.initThreadPools();
         try {
             instance.initialize(host, port, user, password);
         } catch (Exception e) {

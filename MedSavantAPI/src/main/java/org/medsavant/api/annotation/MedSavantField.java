@@ -22,7 +22,7 @@ package org.medsavant.api.annotation;
  * A single field (e.g. description of a column in a database or tabix file).
  * @author jim
  */
-public interface MedSavantField {
+public interface MedSavantField{
 
     String generateSchema();
 
@@ -39,6 +39,5 @@ public interface MedSavantField {
     boolean isNumeric();
 
     @Override
-    String toString();
-
+    String toString();        
 }

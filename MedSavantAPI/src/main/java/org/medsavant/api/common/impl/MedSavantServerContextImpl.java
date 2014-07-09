@@ -43,7 +43,7 @@ import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
     @Override
     public File getTemporaryFile(MedSavantSession session) throws IOException {
         if (session != null) {
-            String prefix = session.getUsernameOfOwner() + "_" + session.getDatabaseName() + "_" + session.getProjectId();
+            String prefix = session.getUser().getUsername() + "_" + session.getProject().getDatabaseName() + "_" + session.getProject().getProjectId();
             return File.createTempFile(prefix, null, tmpDir);
         } else {
             return File.createTempFile("tmp", null, tmpDir);

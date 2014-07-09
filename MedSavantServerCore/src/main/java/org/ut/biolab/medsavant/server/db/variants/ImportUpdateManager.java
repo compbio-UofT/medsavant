@@ -19,18 +19,10 @@
  */
 package org.ut.biolab.medsavant.server.db.variants;
 
-import org.medsavant.junk.VariantManagerUtils;
-import org.medsavant.api.annotation.impl.VariantDispatcherOld;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.FunctionCall;
 import org.ut.biolab.medsavant.server.serverapi.VariantManager;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.SelectQuery.JoinType;
-import com.healthmarketscience.sqlbuilder.dbspec.Function;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
@@ -46,34 +38,27 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.annotation.impl.JannovarVCFPreProcessor;
 import org.medsavant.api.annotation.AnnotationPipeline;
-import org.medsavant.api.annotation.AnnotationPipelineBuilder;
 import org.medsavant.api.annotation.TabixAnnotation;
 import org.medsavant.api.annotation.TabixAnnotator;
 import org.medsavant.api.annotation.TabixVariantAnnotator;
-import org.medsavant.api.annotation.impl.AnnotationPipelineBuilderImpl;
+import org.medsavant.api.annotation.impl.AnnotationPipelineImpl;
 import org.medsavant.api.annotation.impl.TabixAnnotatorImpl;
+import org.medsavant.api.common.GlobalWrapper;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.vcfstorage.MedSavantFileDirectoryException;
 import org.medsavant.api.vcfstorage.MedSavantFileSubDirectory;
-import org.medsavant.api.vcfstorage.VCFFileOld;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
-import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
-import org.ut.biolab.medsavant.server.db.util.DBSettings;
-import org.ut.biolab.medsavant.server.db.util.DBUtils;
-import org.ut.biolab.medsavant.server.phasing.BEAGLEWrapper;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
-import org.ut.biolab.medsavant.server.serverapi.ReferenceManager;
-import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
@@ -81,13 +66,9 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.shared.util.DirectorySettings;
-import org.ut.biolab.medsavant.shared.util.IOUtils;
 import org.ut.biolab.medsavant.shared.util.MedSavantFileUtils;
 import org.ut.biolab.medsavant.shared.util.MedSavantLegacyUtils;
-import org.ut.biolab.medsavant.shared.util.MiscUtils;
 
 /**
  *
@@ -100,7 +81,7 @@ public class ImportUpdateManager {
     private static List<MedSavantFile> registerNewVCFs(MedSavantSession session, File[] allVCFFiles) throws IOException, MedSavantSecurityException, MedSavantFileDirectoryException {
         MedSavantFileSubDirectory dir = null;
         try {
-            dir = MedSavantServerEngine.getInstance().getMedSavantFileDirectory().getVCFDirectory(session);
+            dir = MedSavantServerEngine.getInstance().getServerContext().getMedSavantFileDirectory().getVCFDirectory(session);
         } catch (MedSavantSecurityException mse) {
             throw mse;
         } catch (MedSavantFileDirectoryException msfde) {
@@ -134,17 +115,18 @@ public class ImportUpdateManager {
         }
     }
 
-    public static int osgi_doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final boolean doPhasing, final String[][] tags) throws IOException, SQLException, Exception {
+    public static void osgi_doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final boolean doPhasing, final String[][] tags) throws IOException, SQLException, Exception {
         final MedSavantSession session = MedSavantLegacyUtils.getMedSavantSession(sessionID);
         DateFormat dateFormat = new SimpleDateFormat("MMM dd - HH:mm:ss");
 
-        MedSavantServerJob importJob = new MedSavantServerJob(session.getUsernameOfOwner(), session.getDatabaseName() + ": VCF Import, " + dateFormat.format(new Date()), null) {
+        MedSavantServerJob importJob = new MedSavantServerJob(session.getUser().getUsername(), session.getProject().getDatabaseName() + ": VCF Import, " + dateFormat.format(new Date()), null) {
             @Override
             public boolean run() throws Exception {
-
-                AnnotationPipelineBuilder apb = new AnnotationPipelineBuilderImpl();
+                
+                AnnotationPipeline apl = new AnnotationPipelineImpl(); //this constructor is temporary.
+                
                 if (doPhasing || preAnnotateWithJannovar) {
-                    apb.addVCFPreProcessor(new JannovarVCFPreProcessor());
+                    apl.addVCFPreProcessor(new JannovarVCFPreProcessor(GlobalWrapper.getServerContext()));
                 }
                 if (doPhasing) {
                     // Put phasing code here.
@@ -161,28 +143,26 @@ public class ImportUpdateManager {
                     TabixVariantAnnotator tva = new TabixVariantAnnotator(ta, tan); //this is the local wrapper
 
                     //Add it to our annotation pipeline.
-                    apb.addVariantAnnotator(tva);
+                    apl.addVariantAnnotator(tva);
                 }
-
-                AnnotationPipeline pl = apb.build();
-
+                
                 //Register VCF files with directory registry.
                 List<MedSavantFile> registeredFiles = registerNewVCFs(session, allVCFFiles);
                 
                 
-                pl.annotate(session, this.getJobProgressMonitor(), registeredFiles);
+                apl.annotate(session, this.getJobProgressMonitor(), registeredFiles);
                 return true;
             }
         };
-        MedSavantServerEngine.getInstance().runJobInCurrentThread(importJob);
-        
-        
-        return updateId;
+        MedSavantServerEngine.getInstance().getServerContext().getExecutionService().runJobInCurrentThread(importJob);
+                   
+        //NOTE: It shouldn't be necessary to return an update ID on import.
     }
 
     /**
      * IMPORT FILES INTO AN EXISTING TABLE
      */
+    /*
     public static int doImport(final String sessionID, final int projectID, final int referenceID, final File[] allVCFFiles, final boolean includeHomozygousReferenceCalls, final boolean preAnnotateWithJannovar, final boolean doPhasing, final String[][] tags) throws IOException, SQLException, Exception {
 
         String userId = SessionManager.getInstance().getUserForSession(sessionID);
@@ -226,8 +206,7 @@ public class ImportUpdateManager {
                         getJobProgressMonitor().setMessage("Preparing VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length + " for further annotations");
                         // prepare for annotation
                         TSVFile[] importedTSVFiles
-                                = doConvertVCFToTSV(sessionID, vcfFiles, preAnnotateWithJannovar, doPhasing, updateID, projectID, referenceID,
-                                        includeHomozygousReferenceCalls, workingDirectory, this);
+                                = null;
 
                         getJobProgressMonitor().setMessage("Annotating VCFs " + startFile + " - " + endFile + " of " + allVCFFiles.length);
 
@@ -235,18 +214,18 @@ public class ImportUpdateManager {
                             numVariantsImported += file.getNumLines();
                         }
 
-                        TSVFile[] annotatedFiles = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, importedTSVFiles, workingDir, this);
+                        TSVFile[] annotatedFiles = null;
 
                         //Save the annotated Files, delete everything else.  These can be reused if annotations are later changed.
                         for (TSVFile annotatedFile : annotatedFiles) {
-                            /*
-                             File f = annotatedFile.getFile();
-                             File dst = new File(finalAnnotationDestDir, f.getName());
-                             LOG.info("Renaming " + annotatedFile.getFile().getAbsolutePath() + " to " + dst.getAbsolutePath());
-                             if (!annotatedFile.getFile().renameTo(dst)) {
-                             LOG.error("Couldn't rename " + annotatedFile.getFile().getAbsolutePath() + " to " + dst.getAbsolutePath());
-                             }
-                             */
+                            
+                          //   File f = annotatedFile.getFile();
+                          //   File dst = new File(finalAnnotationDestDir, f.getName());
+                          //   LOG.info("Renaming " + annotatedFile.getFile().getAbsolutePath() + " to " + dst.getAbsolutePath());
+                          //   if (!annotatedFile.getFile().renameTo(dst)) {
+                          //   LOG.error("Couldn't rename " + annotatedFile.getFile().getAbsolutePath() + " to " + dst.getAbsolutePath());
+                          //   }
+                             
                             File dst = new File(finalAnnotationDestDir, annotatedFile.getFile().getName());
                             annotatedFile.moveTo(dst);
                             allAnnotatedFiles.add(annotatedFile);
@@ -356,7 +335,7 @@ public class ImportUpdateManager {
         MedSavantServerEngine.getInstance().runJobInCurrentThread(importJob);
 
         return updateID;
-    }
+    }*/
 
     //Returns a list of all file ids, regardless of whether or not they've been published.
     private static int[] getFileIds(String sessionId, int projectID, int referenceID, int updateID) throws SQLException, SessionExpiredException {
@@ -378,9 +357,13 @@ public class ImportUpdateManager {
     }
 
     /**
-     * UPDATE AN EXISTING TABLE
+     * UPDATE AN EXISTING TABLE -- needs updating!
      */
+    @Deprecated
     public static int doUpdate(final String sessionID, final int projectID, final int referenceID, final int[] annotationIDs, final CustomField[] customFields, final boolean publishUponCompletion) throws Exception {
+        throw new UnsupportedOperationException("doUpdate not done yet");
+       //return 0;
+       /*
         String userId = SessionManager.getInstance().getUserForSession(sessionID);
         DateFormat dateFormat = new SimpleDateFormat("MMM dd - HH:mm:ss");
         final String existingVariantTableName = ProjectManager.getInstance().getNameOfVariantTable(sessionID, projectID, referenceID, true, false);
@@ -421,10 +404,11 @@ public class ImportUpdateManager {
                     File workingDir = createSubdir(workingDirectory, "annotate_upload");
                     ProjectManager.getInstance().setCustomVariantFields(sessionID, projectID, referenceID, updateID, customFields);
 
-                    TSVFile[] annotatedFiles
-                            = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, new TSVFile[]{existingViewAsTSV}, workingDir, this);
+                    //TSVFile[] annotatedFiles
+//                            = annotateTSVFiles(sessionID, updateID, projectID, referenceID, annotationIDs, customFields, new TSVFile[]{existingViewAsTSV}, workingDir, this);
 
-                    appendTSVFilesToVariantTable(sessionID, projectID, referenceID, updateID, annotatedFiles, tableName);
+                    TSVFile[] annotatedFiles = null;
+   //                 appendTSVFilesToVariantTable(sessionID, projectID, referenceID, updateID, annotatedFiles, tableName);
 
                     //recreate subset table                                        
                     SelectQuery sq = new SelectQuery();
@@ -449,6 +433,7 @@ public class ImportUpdateManager {
         };
         MedSavantServerEngine.getInstance().runJobInCurrentThread(updateJob);
         return updateID;
+        */
     }
 
     /**
@@ -470,141 +455,16 @@ public class ImportUpdateManager {
         ProjectManager.getInstance().addTableToMap(sessionID, projectID, referenceID, updateID, false, tableName, annotationIDs, tableNameSub);
 
     }
+   
 
-    /**
-     * PARSING
-     */
-    @Deprecated
-    public static TSVFile[] doConvertVCFToTSV(String sessID, File[] vcfFiles, boolean preAnnotateWithJannovar, boolean doPhasing, int updateID, int projectID, int referenceID, boolean includeHomozygousReferenceCalls, final File workingDirectory, MedSavantServerJob parentJob) throws Exception {
-        final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
-        File outDir = createSubdir(workingDirectory, "converted");
-        LOG.info("Converting VCF files to TSV, working directory is " + outDir.getAbsolutePath());
-
-        File[] processedVCFs = vcfFiles;
-        parentJob.getJobProgressMonitor().setMessage("Performing functional annotations for VCFs.");
-        //In order to do phasing, we MUST preannotate with Jannovar, as Jannovar also does some preprocessing that Beagle requires.
-        if (doPhasing || preAnnotateWithJannovar) {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(sessID, LogManagerAdapter.LogType.INFO, "Annotating VCF files with Jannovar");
-            processedVCFs = new Jannovar(ReferenceManager.getInstance().getReferenceName(sessID, referenceID)).annotateVCFFiles(vcfFiles, database, projectID, workingDirectory);
-        }
-
-        if (doPhasing) {
-            final File[] phasedFiles = new File[processedVCFs.length];
-            parentJob.getJobProgressMonitor().setMessage("Phasing...");
-            LOG.info("Beginning phasing.");
-            List<MedSavantServerJob> threads = new ArrayList<MedSavantServerJob>(processedVCFs.length);
-            String username = SessionManager.getInstance().getUserForSession(sessID);
-            for (int i = 0; i < processedVCFs.length; ++i) {
-                final File vcfFile = processedVCFs[i];
-                final int fileIndex = i;
-                MedSavantServerJob msj = new MedSavantServerJob(username, "Phasing", parentJob.getJobProgressMonitor()) {
-                    @Override
-                    public boolean run() throws Exception {
-                        LOG.info("\tPhasing " + vcfFile.getAbsolutePath());
-                        File phasingWorkDir = null;
-                        try {
-                            phasingWorkDir = new File(workingDirectory, "phasing_" + fileIndex);
-                            if (!phasingWorkDir.exists()) {
-                                if (!phasingWorkDir.mkdirs()) {
-                                    throw new IOException("Could not create working phasing directory " + phasingWorkDir.getAbsolutePath());
-                                }
-                            }
-
-                            LOG.info("\tInitiating phasing on " + vcfFile.getAbsolutePath());
-                            BEAGLEWrapper bw = new BEAGLEWrapper(phasingWorkDir, vcfFile, 1);
-                            LOG.info("\tCalling bw.run");
-                            File f = bw.run();
-                            LOG.info("\tRun returned with " + ((f != null) ? f.getAbsolutePath() : "NULL"));
-                            File dst = new File(workingDirectory, f.getName());
-                            if (!IOUtils.moveFile(f, dst)) {
-                                throw new IOException("Couldn't move phased file " + f.getCanonicalPath());
-                            }
-                            phasedFiles[fileIndex] = dst;
-                        } catch (IllegalArgumentException iae) {
-                            if (iae.getMessage().contains("invalid allele")) {
-                                LOG.error("Skipping phasing for " + vcfFile.getCanonicalPath() + ", possibly because it contains structural variants.  exception: " + iae.getMessage());
-                            }
-                        } catch (Exception ex) {
-                            LOG.error("Skipping phasing for " + vcfFile.getCanonicalPath() + " due to unexpected exception", ex);
-                        } finally {
-                            if (phasingWorkDir.exists()) {
-                                LOG.info("\tDelete phasing directory " + phasingWorkDir.getAbsolutePath());
-                                IOUtils.deleteDirectory(phasingWorkDir);
-                            }
-                            if (phasedFiles[fileIndex] == null) {
-                                LOG.info("Phasing for file " + vcfFile.getAbsolutePath() + " was skipped.");
-                                phasedFiles[fileIndex] = vcfFile;
-                            }
-                        }
-                        LOG.info("\tPhasing " + vcfFile.getAbsolutePath() + " complete.");
-                        return true;
-                    }
-                };
-
-                //Disable multi-threading for now, as Beagle's main method is being invoked directly, 
-                //and may not be thread-safe.                
-                //threads.add(msj);
-                MedSavantServerEngine.getInstance().submitLongJob(msj).get(); //invoke and wait.                
-            }
-            //See above -- multi-threading is disabled.
-            //MedSavantServerEngine.submitLongJobs(threads);
-            processedVCFs = phasedFiles;
-            LOG.info("Phasing complete.");
-        }//end if
-
-        for (File f : processedVCFs) {
-            LOG.info("Got processed VCF " + f.getAbsolutePath() + " and exists=" + f.exists());
-        }
-
-        parentJob.getJobProgressMonitor().setMessage("Parsing VCFs.");
-        // parse each vcf file in a separate thread with a separate file ID
-        List<MedSavantServerJob> threads = new ArrayList<MedSavantServerJob>(vcfFiles.length);
-        String stamp = System.nanoTime() + "";
-        //int fileID = 0;
-        //for (File vcfFile : vcfFiles) {
-        for (int i = 0; i < processedVCFs.length; ++i) {
-            File vcfFile = processedVCFs[i];
-            File originalVCF = vcfFiles[i];
-            int fileID = VariantManager.addEntryToFileTable(sessID, updateID, projectID, referenceID, originalVCF);
-            File outFile = new File(outDir, "tmp_" + stamp + "_" + fileID + ".tdf");
-            threads.add(new VariantDispatcherOld(sessID, parentJob, vcfFile, outFile, updateID, fileID, includeHomozygousReferenceCalls));
-
-            //threads[fileID] = t;
-            fileID++;
-            LOG.info("Queueing thread to parse " + vcfFile.getAbsolutePath());
-        }
-        MedSavantServerEngine.getInstance().submitLongJobs(threads);
-
-        //VariantManagerUtils.processThreadsWithLimit(threads);
-        // tab separated files
-        TSVFile[] tsvFiles = new TSVFile[threads.size()];
-
-        LOG.info("All parsing annotation threads done");
-
-        int i = 0;
-        for (MedSavantServerJob msg : threads) {
-            VariantDispatcherOld t = (VariantDispatcherOld) msg;
-            tsvFiles[i++] = new TSVFile(new File(t.getOutputFilePath()), t.getNumVariants());
-            if (!t.didSucceed()) {
-
-                LOG.info("At least one parser thread errored out");
-                LOG.error("At least one parser thread (" + t.getVCF().getAbsolutePath() + ") errored out", t.getException());
-                t.getException().printStackTrace(); //TEMPORARY
-                throw t.getException();
-            }
-        }
-
-        return tsvFiles;
-    }
-
-    private static TSVFile doDumpTableAsTSV(String sessionID, String tableName, File workingDir) throws SQLException, IOException, InterruptedException, SessionExpiredException {
+ /*   private static TSVFile doDumpTableAsTSV(String sessionID, String tableName, File workingDir) throws SQLException, IOException, InterruptedException, SessionExpiredException {
         LOG.info("Dumping existing table to file, working directory is " + workingDir.getAbsolutePath());
         //note tableName could also be a view name.
         File outfile = new File(workingDir, tableName + ".dump");
         VariantManagerUtils.variantTableToTSVFile(sessionID, tableName, outfile);
         int nv = VariantManager.getInstance().getNumFilteredVariantsHelper(sessionID, tableName, new Condition[][]{{Condition.EMPTY}});
         return new TSVFile(outfile, nv);
-    }
+    }*/
 
     private static File createSubdir(File parent, String child) throws IOException, InterruptedException {
 
@@ -617,21 +477,7 @@ public class ImportUpdateManager {
 
         return dir;
     }
-
-    private static File[] splitFilesByDNAAndFileID(TSVFile[] tsvFiles, File workingDir) throws FileNotFoundException, IOException {
-
-        LOG.info("Splitting " + tsvFiles.length + " files by DNA and FileID, working directory is " + workingDir.getAbsolutePath());
-
-        File[] splitTSVFiles = new File[0];
-        //TODO: thread each of these
-        for (TSVFile file : tsvFiles) {
-            File[] someSplitFiles = VariantManagerUtils.splitTSVFileByFileAndDNAID(workingDir, file.getFile());
-            splitTSVFiles = ArrayUtils.addAll(splitTSVFiles, someSplitFiles);
-        }
-
-        return splitTSVFiles;
-    }
-
+   
     private static Annotation[] getAnnotationsFromIDs(int[] annotIDs, String sessID) throws RemoteException, SQLException, SessionExpiredException {
         int numAnnotations = annotIDs.length;
         Annotation[] annotations = new Annotation[numAnnotations];
@@ -690,47 +536,9 @@ public class ImportUpdateManager {
                 PatientManager.getInstance().addPatient(sessionID, projectID, patientFields, fieldValues);
             }
         }
-    }
+    }   
 
-    private static TSVFile[] annotateTSVFiles(String sessionID, File[] tsvFiles, Annotation[] annotations, CustomField[] customFields, File createSubdir, MedSavantServerJob parentJob) throws Exception {
-        return VariantManagerUtils.annotateTSVFiles(sessionID, tsvFiles, annotations, customFields, parentJob);
-    }
-
-    private static TSVFile[] annotateTSVFiles(String sessionID, int updateID, int projectID, int referenceID, int[] annotationIDs, CustomField[] customFields, TSVFile[] tsvFiles, File workingDir, MedSavantServerJob parentJob) throws Exception {
-        try {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
-                    sessionID,
-                    LogManagerAdapter.LogType.INFO,
-                    "Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
-        } catch (RemoteException ex) {
-        } catch (SessionExpiredException ex) {
-        }
-
-        LOG.info("Annotating TSV files, working directory is " + workingDir.getAbsolutePath());
-
-        File[] splitTSVFiles = null;
-        try {
-            //get annotation information
-            Annotation[] annotations = getAnnotationsFromIDs(annotationIDs, sessionID);
-            parentJob.getJobProgressMonitor().setMessage("Preparing variants for annotation");
-            splitTSVFiles = splitFilesByDNAAndFileID(tsvFiles, createSubdir(workingDir, "split"));
-            TSVFile[] annotatedTSVFiles = annotateTSVFiles(sessionID, splitTSVFiles, annotations, customFields, createSubdir(workingDir, "annotate"), parentJob);
-            return annotatedTSVFiles;
-        } catch (Exception e) {
-            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessionID, updateID, AnnotationLog.Status.ERROR);
-            throw e;
-        } finally {
-            //assert splitTSVFiles are deleted.
-            if (splitTSVFiles == null) {
-                for (File splitTSVFile : splitTSVFiles) {
-                    if (splitTSVFile.exists()) {
-                        splitTSVFile.delete();
-                    }
-                }
-            }
-        }
-    }
-
+    /*
     private static void appendTSVFilesToVariantTable(String sessionID, int projectID, int referenceID, int updateID,
             TSVFile[] annotatedTSVFiles, String tableName)
             throws RemoteException, SessionExpiredException, SQLException, IOException, InterruptedException {
@@ -755,5 +563,5 @@ public class ImportUpdateManager {
         //No new tables should have been created, so it's not necessary to drop any existing tables.
         //dropTablesPriorToUpdateID(sessionID, projectID, referenceID, updateID);
         setAnnotationStatus(sessionID, updateID, AnnotationLog.Status.PENDING);
-    }
+    }*/
 }

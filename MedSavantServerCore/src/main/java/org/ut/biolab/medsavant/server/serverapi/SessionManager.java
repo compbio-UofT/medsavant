@@ -23,14 +23,12 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.medsavant.api.common.impl.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
-import org.ut.biolab.medsavant.server.MedSavantServerEngine;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
@@ -126,15 +124,17 @@ public class SessionManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         for (final String sid : sessionIDsToTerminate) {
-            MedSavantServerEngine.getInstance().submitShortJob(new Runnable() {
+            MedSavantServerEngine.getInstance().getServerContext().getExecutionService().submitShortJob(new MedSavantServerJob(null, null, null) {
                 @Override
-                public void run() {
+                public boolean run() throws Exception {
                     try {
                         LOG.info("Terminating session " + sid + "...");
                         SessionManager.getInstance().unregisterSession(sid);
+                        return true;
                     } catch (Exception ex) {
                         LOG.error("Unable to terminate session for " + sid + ".", ex);
-                    }
+                        return false;
+                    }                    
                 }
             });
         }

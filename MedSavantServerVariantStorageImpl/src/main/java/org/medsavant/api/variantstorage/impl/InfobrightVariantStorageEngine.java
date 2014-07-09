@@ -14,14 +14,14 @@ import org.medsavant.api.variantstorage.GenomicVariantRecord;
 import org.medsavant.api.variantstorage.PublicationStatus;
 import org.medsavant.api.variantstorage.VariantField;
 import org.medsavant.api.variantstorage.VariantFilterBuilder.VariantFilter;
-import org.medsavant.api.variantstorage.VariantStorageEngine;
+import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
 import org.medsavant.api.vcfstorage.VCFFileOld;
 
 /**
  *
  * @author jim
  */
-public class InfobrightVariantStorageEngine implements VariantStorageEngine {
+public class InfobrightVariantStorageEngine implements MedSavantVariantStorageEngine {
 
     public int countVariants(VariantFilter filter) {        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -59,6 +59,8 @@ public class InfobrightVariantStorageEngine implements VariantStorageEngine {
     }
 
     public void addAnnotations(Collection<TabixAnnotation> annotations) throws UnsupportedOperationException {
+        //Need to add custom fields??
+        CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

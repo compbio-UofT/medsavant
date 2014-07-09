@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import org.medsavant.api.annotation.MedSavantAnnotation;
 import org.medsavant.api.common.GenomicVariant;
-import org.medsavant.api.vcfstorage.VCFFileOld;
+import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
  * A genomic variant record parsed from a VCF file.  This is a genomic variant
@@ -34,7 +34,7 @@ public interface GenomicVariantRecord {
     
     public GenomicVariant getGenomicVariant();
     public int getUploadId(); //job id
-    public VCFFileOld getVCFFile();
+    public MedSavantFile getVCFFile();
     public String getDNAId();   
     public int getVariantId();    
     public void addAnnotationValues(MedSavantAnnotation annotation, List<String[]> annotationValues);

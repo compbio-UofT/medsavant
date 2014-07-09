@@ -8,6 +8,7 @@ package org.medsavant.api.annotation;
 
 import java.util.List;
 import org.medsavant.api.common.JobProgressMonitor;
+import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.storage.MedSavantFile;
 
@@ -26,10 +27,7 @@ public interface AnnotationPipeline {
      * @throws InvalidAnnotationPipelineException if adding this preprocessor would result in an invalid pipeline.
      */
     public void addVCFPreProcessor(VCFPreProcessor vpp) throws InvalidAnnotationPipelineException;    
-    public void addVariantAnnotator(VariantAnnotator ann) throws InvalidAnnotationPipelineException;    
+    public void addVariantAnnotator(VariantAnnotator ann) throws InvalidAnnotationPipelineException;        
+    public void annotate(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files) throws MedSavantSecurityException;
     
-    public void annotate(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files);
-    public int getJobId();
-    public int getUpdateId(); //alias for getJobId();
-    public int getUploadId(); //another alias for getJobId();
 }

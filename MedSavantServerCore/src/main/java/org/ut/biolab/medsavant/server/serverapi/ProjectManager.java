@@ -57,7 +57,6 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.server.db.util.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
-import org.medsavant.junk.VariantManagerUtils;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.ProjectDetails;
@@ -1005,9 +1004,9 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         List<Integer> droppedUpdateIDs = new ArrayList<Integer>();
         while (rs.next()) {
             String tableToDrop = rs.getString(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME);
-            VariantManagerUtils.dropTableIfExists(sessID, tableToDrop);
+            DBUtils.dropTableIfExists(sessID, tableToDrop);
             tableToDrop = rs.getString(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME);
-            VariantManagerUtils.dropTableIfExists(sessID, tableToDrop);
+            DBUtils.dropTableIfExists(sessID, tableToDrop);
             droppedUpdateIDs.add(rs.getInt(MedSavantDatabase.VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID));
         }
 
@@ -1042,7 +1041,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     public void restorePublishedFileTable(String sessID) throws SQLException, SessionExpiredException, IOException {
         TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
         //Drop the main file table, and restore the "backup" copy from the Infobright table.
-        VariantManagerUtils.dropTableIfExists(sessID, fileTable.getTableName());
+        DBUtils.dropTableIfExists(sessID, fileTable.getTableName());
         SetupMedSavantDatabase.makeVariantFileTable(sessID, false);
         String query = "INSERT INTO " + fileTable.getTableName() + " SELECT * FROM " + SetupMedSavantDatabase.getVariantFileIBTableName();
         ConnectionController.executeUpdate(sessID, query);
@@ -1098,7 +1097,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 String tableName = rs.getString(2);
 
                 //remove variant table
-                VariantManagerUtils.dropTableIfExists(sessID, tableName);
+                DBUtils.dropTableIfExists(sessID, tableName);
 
                 //remove from variant tablemap
                 DeleteQuery dq1 = new DeleteQuery(mapTable.getTable());

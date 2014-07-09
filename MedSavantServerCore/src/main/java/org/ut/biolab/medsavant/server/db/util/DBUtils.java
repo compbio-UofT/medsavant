@@ -33,11 +33,9 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Semaphore;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 
 import org.medsavant.api.common.storage.ColumnType;
@@ -47,7 +45,8 @@ import org.ut.biolab.medsavant.server.db.PooledConnection;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.medsavant.junk.VariantManagerUtils;
+import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
+
 import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
@@ -103,9 +102,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         try {
             String intoString
                     = "INTO OUTFILE \"" + f.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                    + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.FIELD_DELIMITER) + "' "
+                    + "ENCLOSED BY '" + MedSavantDatabase.ENCLOSED_BY + "' "
+                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.ESCAPE_CHAR) + "' "
                     + " LINES TERMINATED BY '\\r\\n' ";
             String queryString;
             if (sq instanceof UnionQuery) {
@@ -132,9 +131,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         try {
             String intoString
                     = "INTO OUTFILE \"" + f.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                    + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                    + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.FIELD_DELIMITER) + "' "
+                    + "ENCLOSED BY '" + MedSavantDatabase.ENCLOSED_BY + "' "
+                    + "ESCAPED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.ESCAPE_CHAR) + "' "
                     + " LINES TERMINATED BY '\\r\\n' ";
             String queryString = query + " " + intoString;
             LOG.info(queryString);
@@ -293,9 +292,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     public static void dumpTable(String sessID, String tableName, File dst) throws SQLException, SessionExpiredException {
         String intoString
                 = "INTO OUTFILE \"" + dst.getAbsolutePath().replaceAll("\\\\", "/") + "\" "
-                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.FIELD_DELIMITER) + "' "
-                + "ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                + "FIELDS TERMINATED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.FIELD_DELIMITER) + "' "
+                + "ENCLOSED BY '" + MedSavantDatabase.ENCLOSED_BY + "' "
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.ESCAPE_CHAR) + "' "
                 + " LINES TERMINATED BY '\\r\\n' ";
 
         String query = "SELECT * FROM " + tableName + " " + intoString;
@@ -306,8 +305,8 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     public static void loadTable(String sessID, File src, String dst) throws SQLException, SessionExpiredException {
         String query = "LOAD DATA LOCAL INFILE '" + src.getAbsolutePath().replaceAll("\\\\", "/") + "' "
                 + "INTO TABLE " + dst + " "
-                + "FIELDS TERMINATED BY '" + VariantManagerUtils.FIELD_DELIMITER + "' ENCLOSED BY '" + VariantManagerUtils.ENCLOSED_BY + "' "
-                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(VariantManagerUtils.ESCAPE_CHAR) + "' "
+                + "FIELDS TERMINATED BY '" + MedSavantDatabase.FIELD_DELIMITER + "' ENCLOSED BY '" + MedSavantDatabase.ENCLOSED_BY + "' "
+                + "ESCAPED BY '" + StringEscapeUtils.escapeJava(MedSavantDatabase.ESCAPE_CHAR) + "' "
                 + " LINES TERMINATED BY '\\r\\n'"
                 + ";";
         LOG.info(query);
@@ -510,5 +509,13 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         results[1] = BinaryCondition.lessThan(col, r.getMax(), false);
 
         return ComboCondition.and(results);
+    }
+    
+    public static void dropViewIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
+        ConnectionController.executeUpdate(sessID, "DROP VIEW IF EXISTS " + tableName);
+    }
+
+    public static void dropTableIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
+        ConnectionController.executeUpdate(sessID, "DROP TABLE IF EXISTS " + tableName);
     }
 }

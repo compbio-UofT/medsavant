@@ -18,9 +18,7 @@ public interface GenomicVariant extends Serializable {
     
     /*
      * CUSTOM INFO
-     */
-    <T> T get(MedSavantField field);
-    
+     */       
     Integer getAlleleCount();
     Float getAlleleFrequency();
     String getAlt();

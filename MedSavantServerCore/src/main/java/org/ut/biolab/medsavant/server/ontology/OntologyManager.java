@@ -503,7 +503,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      */
     public void populate(final String sessID) {
         try {
-            MedSavantServerEngine.getInstance().submitShortJob(new MedSavantServerJob(SessionManager.getInstance().getUserForSession(sessID), "Ontology Populator", null) {
+            MedSavantServerEngine.getInstance().getServerContext().getExecutionService().submitShortJob(new MedSavantServerJob(SessionManager.getInstance().getUserForSession(sessID), "Ontology Populator", null) {
                 @Override
                 public boolean run() {
                     try {

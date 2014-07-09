@@ -67,7 +67,7 @@ public class MedSavantIOController {
                         return true;
                     }
                 };
-        MedSavantServerEngine.getInstance().submitShortJob(msj);
+        MedSavantServerEngine.getInstance().getServerContext().getExecutionService().submitShortJob(msj);
     }
 
     // INNER CLASSES

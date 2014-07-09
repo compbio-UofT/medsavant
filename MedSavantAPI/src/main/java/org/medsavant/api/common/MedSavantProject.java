@@ -6,16 +6,14 @@
 package org.medsavant.api.common;
 
 /**
- * An interface for sessions.
  *
  * @author jim
  */
-public interface MedSavantSession {
+public interface MedSavantProject {
 
-    public String getSessionId();
+    public String getProjectName();
 
-    public MedSavantUser getUser();
+    public String getDatabaseName();
 
-    public MedSavantProject getProject();
-
+    public int getProjectId();
 }
