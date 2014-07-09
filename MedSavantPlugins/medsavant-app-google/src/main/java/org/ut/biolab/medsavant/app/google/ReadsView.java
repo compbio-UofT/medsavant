@@ -230,7 +230,7 @@ class ReadsView extends JPanel {
                 ex.printStackTrace();
             }
         } else {
-            datasetChooserBlock.add(new JLabel("Could not authenticate. Configure in the Settings pane."));
+            datasetChooserBlock.add(new JLabel("Uh oh. Could not authenticate."));
         }
 
         this.add(p, BorderLayout.CENTER);

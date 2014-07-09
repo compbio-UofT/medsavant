@@ -71,22 +71,19 @@ public class GenomicsSample {
     private static final String TOKEN_PROPERTIES_FILENAME = "genomics.token.properties";
     private static GoogleAuthorizationCodeFlow flow = null;
 
-    private static GoogleClientSecrets loadClientSecrets(String clientSecretsFilename) {
-        File f = new File(clientSecretsFilename);
-        if (f.exists()) {
-            try {
-                InputStream inputStream = new FileInputStream(new File(clientSecretsFilename));
-                return GoogleClientSecrets.load(JSON_FACTORY,
-                        new InputStreamReader(inputStream));
-            } catch (Exception e) {
-                System.err.println("Could not load client_secrets.json");
-            }
-        } else {
-            System.err.println("Client secrets file " + clientSecretsFilename + " does not exist."
-                    + "  Visit https://developers.google.com/genomics to learn how"
-                    + " to install a client_secrets.json file.  If you have installed a client_secrets.json"
-                    + " in a specific location, use --client_secrets_filename <path>/client_secrets.json.");
+    private static InputStream getClientSecrets() {
+        return ClassLoader.class.getResourceAsStream("/client_secrets.json");
+    }
+
+    private static GoogleClientSecrets loadClientSecrets() {
+        try {
+            InputStream inputStream = getClientSecrets();
+            return GoogleClientSecrets.load(JSON_FACTORY,
+                    new InputStreamReader(inputStream));
+        } catch (Exception e) {
+            System.err.println("Could not load client_secrets.json");
         }
+
         return null;
     }
 
@@ -192,7 +189,7 @@ public class GenomicsSample {
 
     private static Credential authenticate() throws IOException {
         // Attempt to load client secrets
-        clientSecrets = loadClientSecrets(cmdLine.clientSecretsFilename);
+        clientSecrets = loadClientSecrets();
         if (clientSecrets == null) {
             System.exit(1);
         }

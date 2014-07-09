@@ -81,3 +81,5 @@ MedSavantPlugins/medsavant.mendel-clinic/nbproject/project.properties
 MedSavantPlugins/medsavant.mendel-clinic/nbproject/private/private.xml
 
 MedSavantJSONClient/src/main/resources/config.properties
+
+MedSavantPlugins/medsavant-app-google/src/main/resources/oauth/client_secrets.json

@@ -82,7 +82,6 @@ public class GoogleGenomicsApp extends MedSavantDashboardApp {
             ReadsView rv = new ReadsView();
             
             tabs.add("Reads", rv);
-            tabs.add("Settings", new SettingsView(rv));
             
             content.add(tabs,BorderLayout.CENTER);
         }

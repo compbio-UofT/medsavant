@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
  * Unauthorized use of this file is strictly prohibited.
- * 
- * All rights reserved. No warranty, explicit or implicit, provided.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *
+ * All rights reserved. No warranty, explicit or implicit, provided. THE
+ * SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR
+ * ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
@@ -27,6 +27,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.genomics.Genomics;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,10 +39,7 @@ import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.Set;
 import javax.annotation.Nullable;
-import org.ut.biolab.medsavant.app.google.SettingsView;
-import org.ut.biolab.medsavant.client.controller.SettingsController;
 
 /**
  *
@@ -65,30 +63,27 @@ public class GoogleAuthenticate {
     private static final String EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
     private static GoogleAuthorizationCodeFlow flow = null;
 
-    private static GoogleClientSecrets loadClientSecrets(String clientSecretsFilename) {
-        File f = new File(clientSecretsFilename);
-        if (f.exists()) {
-            try {
-                InputStream inputStream = new FileInputStream(new File(clientSecretsFilename));
-                return GoogleClientSecrets.load(JSON_FACTORY,
-                        new InputStreamReader(inputStream));
-            } catch (Exception e) {
-                System.err.println("Could not load client_secrets.json");
-            }
-        } else {
-            System.err.println("Client secrets file " + clientSecretsFilename + " does not exist."
-                    + "  Visit https://developers.google.com/genomics to learn how"
-                    + " to install a client_secrets.json file.  If you have installed a client_secrets.json"
-                    + " in a specific location, use --client_secrets_filename <path>/client_secrets.json.");
+    private static InputStream getClientSecrets() {
+        return GoogleAuthenticate.class.getResourceAsStream("/oauth/client_secrets.json");
+    }
+    
+    private static GoogleClientSecrets loadClientSecrets() {
+        try {
+
+            InputStream inputStream = getClientSecrets();
+            return GoogleClientSecrets.load(JSON_FACTORY,
+                    new InputStreamReader(inputStream));
+        } catch (Exception e) {
+            System.err.println("Could not load client_secrets.json");
         }
+
         return null;
     }
 
     private static Credential authenticate() throws IOException, GeneralSecurityException {
         // Attempt to load client secrets
-        String clientSecretsFilename = SettingsController.getInstance().getValue(SettingsView.KEY_CLIENT_SECRETS);
-        
-        clientSecrets = loadClientSecrets(clientSecretsFilename);
+
+        clientSecrets = loadClientSecrets();
         if (clientSecrets == null) {
             throw new IOException("Error loading client_sercrets.json");
         }
