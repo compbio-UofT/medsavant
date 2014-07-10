@@ -25,7 +25,7 @@
     <parent>
         <groupId>edu.toronto.cs.medsavant</groupId>
         <artifactId>medsavant-parent</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.3-SNAPSHOT</version>
     </parent>
     <artifactId>medsavant-app-google-genomics</artifactId>
     <name>MedSavant-App - Google</name>
@@ -69,37 +69,7 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathLayoutType>custom</classpathLayoutType>
-                            <customClasspathLayout>lib/$${artifact.artifactId}-$${artifact.version}$${artifact.dashClassifier?}.$${artifact.extension}</customClasspathLayout>
-                            <!--<mainClass>org.ut.biolab.medsavant.MedSavantClient</mainClass>-->
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+      <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -113,13 +83,14 @@
                         <configuration>
                             <minimizeJar>true</minimizeJar>
                             <artifactSet>
-                                <includes>
-                                    <!-- Put libraries to shade here. Format is groupId:artifactId -->
+                              <includes>
                                     <include>com.google.api-client:google-api-client</include>
-                                    <include>com.google.api-client:google-api-client-java6</include>
-                                    <include>com.google.oauth-client:google-oauth-client-java6</include>
-                                    <include>com.google.http-client:google-http-client-jackson2</include>
-                                </includes>
+                                    <include>com.google.oauth-client:google-oauth-client-java6</include> 
+				    <include>com.google.oauth-client:google-oauth-client</include>
+				    <include>com.google.http-client:google-http-client-jackson2</include> 
+				    <include>com.google.http-client:google-http-client</include>
+				    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                </includes> 
                             </artifactSet>  
                             <relocations>
                                 <!-- Rename packages here.  New package convention is shaded.<AppName>.old.package.name -->
