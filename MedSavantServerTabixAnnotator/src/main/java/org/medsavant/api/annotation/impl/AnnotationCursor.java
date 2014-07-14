@@ -29,7 +29,11 @@ import org.medsavant.api.annotation.TabixAnnotation;
 import java.io.File;
 import org.medsavant.api.annotation.VariantWindow;
 import org.medsavant.api.common.GenomicVariant;
+import org.medsavant.api.common.MedSavantSecurityException;
+import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.VariantUtils;
+import org.medsavant.api.filestorage.MedSavantFileDirectory;
+import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 
 /**
  *
@@ -73,14 +77,15 @@ public class AnnotationCursor {
     /**
      * A file reader and cursor to be used to help in the annotation process
      *
-     * @param sid The Session ID that requested the annotation
+     * @param session A valid MedSavant session, used to request the tabix annotation from the file directory.  
      * @param annotation The annotation that this instance refers to
      * @throws IOException
      * @throws SQLException
      */
-    public AnnotationCursor(TabixAnnotation annotation) throws IOException {
-        File tabixFile = annotation.getTabixFile().getLocalFile();
-        File indexFile = annotation.getTabixFileIndex().getLocalFile();
+    public AnnotationCursor(MedSavantSession session, TabixAnnotation annotation, MedSavantFileDirectory directory, File annotationCacheDir) throws IOException, MedSavantSecurityException, MedSavantFileDirectoryException {
+        
+        File tabixFile = annotation.getTabixFile().moveToTmpFile(session, directory, new File(annotationCacheDir, annotation.getProgram()));
+        File indexFile = annotation.getTabixFileIndex().moveToTmpFile(session, directory, new File(annotationCacheDir, annotation.getProgram()));
 
         TabixReader headerReader = new TabixReader(tabixFile, indexFile);
         String header = headerReader.readLine().trim();

@@ -4,14 +4,12 @@
  * and open the template in the editor.
  */
 
-package org.medsavant.api.common;
-
-import java.io.File;
+package org.medsavant.api.filestorage;
 
 /**
  *
  * @author jim
  */
-public interface FileUtils {
-    public File getTemporaryDirectory();   
+public enum MedSavantFileType {
+    VCF, ANNOTATION, TEMPORARY, OTHER;
 }

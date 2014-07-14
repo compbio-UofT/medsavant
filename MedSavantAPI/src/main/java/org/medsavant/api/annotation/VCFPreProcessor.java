@@ -9,7 +9,10 @@ package org.medsavant.api.annotation;
 import java.io.IOException;
 import java.util.List;
 import org.medsavant.api.common.JobProgressMonitor;
+import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerComponent;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
 import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
@@ -25,6 +28,6 @@ import org.medsavant.api.common.storage.MedSavantFile;
  */
 public interface VCFPreProcessor extends MedSavantServerComponent{        
     public List<String> getPrerequisiteVCFPreProcessors();    
-    public MedSavantFile preprocess(String username, JobProgressMonitor jpm, MedSavantFile toAnnotate) throws IOException, VCFPreProcessorException;                
+    public MedSavantFile preprocess(MedSavantSession session, JobProgressMonitor jpm, MedSavantFile toAnnotate, Reference reference) throws IOException, VCFPreProcessorException, MedSavantSecurityException;                
     //public File preprocess(File toAnnotate, File tmpDir) throws IOException, VCFPreProcessorException;
 }

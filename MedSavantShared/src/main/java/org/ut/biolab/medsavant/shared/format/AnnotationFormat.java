@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.medsavant.api.annotation.TabixAnnotation;
 import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.annotation.MedSavantField;
+import org.medsavant.api.common.MedSavantServerContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -150,12 +151,12 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
         this.tabixIndex = null;
     }
 
-    public AnnotationFormat(MedSavantFile tabixFile, MedSavantFile tabixIndex, MedSavantFile xmlFile) throws IOException {
+    public AnnotationFormat(MedSavantServerContext context, MedSavantFile tabixFile, MedSavantFile tabixIndex, MedSavantFile xmlFile) throws IOException {
         this.tabixFile = tabixFile;
         this.tabixIndex = tabixIndex;
         try {
             BufferedReader in;
-            InputStream is = xmlFile.getInputStream();
+            context.getMedSavantFileDirectory().getInputStream(null, xmlFile);           
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(is);

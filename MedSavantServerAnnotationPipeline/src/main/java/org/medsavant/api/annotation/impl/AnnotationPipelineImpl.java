@@ -23,10 +23,10 @@ import org.medsavant.api.common.JobProgressMonitor;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 import org.medsavant.api.common.storage.MedSavantFile;
 import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
-import org.ut.biolab.medsavant.server.MedSavantServerEngine;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
@@ -93,7 +93,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
 
     //runs the preprocessors, parallelized across files.  In a preprocessing pipline with N steps and M files,
     //there will be M threads created, each running through the full N-stage pipeline.
-    private List<MedSavantFile> preprocess(final MedSavantSession session, final JobProgressMonitor jpm, List<MedSavantFile> files) {
+    private List<MedSavantFile> preprocess(final MedSavantSession session, final JobProgressMonitor jpm, List<MedSavantFile> files, final Reference reference) {
         List<MedSavantServerJob> jobs = new ArrayList<MedSavantServerJob>(files.size());
         final List<MedSavantFile> results = new ArrayList<MedSavantFile>(files.size());
         for (int i = 0; i < files.size(); ++i) {
@@ -111,7 +111,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
                     try {
                         for (int j = 0; j < vpps.size(); ++j) {
                             //apply preprocessors serially.
-                            last = vpps.get(j).preprocess(session.getUser().getUsername(), jpm, last);
+                            last = vpps.get(j).preprocess(session, jpm, last, reference);
                         }                        
                         results.add(fileIndex, last);
                     } catch (VCFPreProcessorException vppe) {
@@ -144,7 +144,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
         //numVariants = vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
     }
 */
-    private void dispatchResults(final MedSavantSession session, final int updId, final JobProgressMonitor jpm, List<MedSavantFile> originalFiles, List<MedSavantFile> newFiles) {
+    private void dispatchResults(final MedSavantSession session, final int updId, final JobProgressMonitor jpm, List<MedSavantFile> originalFiles, List<MedSavantFile> newFiles, final Reference reference) {
         jpm.setMessage("Parsing pre-processed VCFs.");
 
         final List<String> errors = new ArrayList<String>();
@@ -160,7 +160,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
                     public boolean run() throws Exception {
                         try {
                             VariantDispatcher vd = new VariantDispatcher(serverContext, getVariantStorageEngine());                                                        
-                            vd.dispatch(session, updId, vcfFile, jpm, vanns);                            
+                            vd.dispatch(session, updId, vcfFile, jpm, vanns, reference);                            
                         } catch (IOException ie) {
                             String msg = "ERROR: Couldn't annotate " + vcfFile.getName() + " -- this file was NOT imported.";
                             LOG.error(msg, ie);
@@ -182,7 +182,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
 
         //submit one thread per file and block until annotation is complete.
         try {
-            MedSavantServerEngine.getInstance().submitLongJobs(threads);
+            serverContext.getExecutionService().submitLongJobs(threads);            
         } catch (InterruptedException ie) {
             LOG.error("ERROR: Interrupted while waiting for annotation threads to complete, aborting update.", ie);
             getVariantStorageEngine().cancelUpdate(session, updId);
@@ -205,14 +205,14 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
     }
 
     @Override
-    public void annotate(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files) throws MedSavantSecurityException {
+    public void start(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files, Reference reference) throws MedSavantSecurityException {
         int updId = getVariantStorageEngine().startUpdate(session);
 
         //Preprocess the VCFs as necessary.
-        List<MedSavantFile> results = preprocess(session, jpm, files);
+        List<MedSavantFile> results = preprocess(session, jpm, files, reference);
 
         //Dispatch the results to the various annotators, via the VariantDispatcher.
-        dispatchResults(session, updId, jpm, files, results);        
+        dispatchResults(session, updId, jpm, files, results, reference);        
 
     }
 

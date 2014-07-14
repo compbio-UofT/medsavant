@@ -15,8 +15,14 @@ import org.medsavant.api.annotation.VCFPreProcessor;
 import org.medsavant.api.annotation.VCFPreProcessorException;
 import org.medsavant.api.common.InvalidConfigurationException;
 import org.medsavant.api.common.JobProgressMonitor;
+import org.medsavant.api.common.MedSavantFileUtils;
+import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
 import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
+import org.medsavant.api.filestorage.MedSavantFileType;
 
 
 /*
@@ -29,10 +35,10 @@ import org.medsavant.api.common.storage.MedSavantFile;
  * @author jim
  */
 //Used to be called 'Jannovar'. 
-public class JannovarVCFPreProcessor implements VCFPreProcessor {        
-    
-    private MedSavantServerContext serverContext;                    
-    
+public class JannovarVCFPreProcessor implements VCFPreProcessor {
+
+    private MedSavantServerContext serverContext;
+
     //private String reference;
     // use the reference to url map when Jannovar links break
     // TODO: have the map be compiled from an xml file hosted online, to support changes after deployment
@@ -163,37 +169,35 @@ public class JannovarVCFPreProcessor implements VCFPreProcessor {
 
         return outFile;
     }
-    
+
     /*
-    private File dumpVariantsToTempFiVCFFileOldile variantFile) {
-    File tmpFile = getTemporaryFile();
-    BufferedWriter out = null;
-    try {
-    out = new BufferedWriter(new FileWriter(tmpFile));
-    out.write(variantFile.getRawHeader() + "\n");
-    for (Variant[] block : variantFile) {
-    for (Variant v : block) {
-    out.write(v.toString());
-    out.write("\n");
+     private File dumpVariantsToTempFiVCFFileOldile variantFile) {
+     File tmpFile = getTemporaryFile();
+     BufferedWriter out = null;
+     try {
+     out = new BufferedWriter(new FileWriter(tmpFile));
+     out.write(variantFile.getRawHeader() + "\n");
+     for (Variant[] block : variantFile) {
+     for (Variant v : block) {
+     out.write(v.toString());
+     out.write("\n");
+     }
+     }
+     } catch (IOException ex) {
+     } finally {
+     if (out != null) {
+     try {
+     out.close();
+     } catch (IOException ex) {
+     }
+     }
+     }
+     return tmpFile;
+     }
+     */
+    public List<String> getPrerequisiteVCFPreProcessors() {
+        return new ArrayList<String>();
     }
-    }
-    } catch (IOException ex) {
-    } finally {
-    if (out != null) {
-    try {
-    out.close();
-    } catch (IOException ex) {
-    }
-    }
-    }
-    return tmpFile;
-    }
-     */            
-    
-    public List<String> getPrerequisiteVCFPreProcessors() {        
-       return new ArrayList<String>();
-    }
-       
 
     public String getComponentID() {
         return JannovarVCFPreProcessor.class.getCanonicalName();
@@ -201,39 +205,47 @@ public class JannovarVCFPreProcessor implements VCFPreProcessor {
 
     public String getComponentName() {
         return "Jannovar functional annotator";
-    }    
-    
-    public JannovarVCFPreProcessor(MedSavantServerContext serverContext){
+    }
+
+    public JannovarVCFPreProcessor(MedSavantServerContext serverContext) {
         this.serverContext = serverContext;
     }
 
-    public MedSavantFile preprocess(String username, JobProgressMonitor jpm, MedSavantFile toAnnotate) throws IOException, VCFPreProcessorException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  
+    @Override
+    public MedSavantFile preprocess(MedSavantSession session, JobProgressMonitor jpm, MedSavantFile toAnnotate, Reference reference) throws IOException, VCFPreProcessorException, MedSavantSecurityException {
+        try {
+            jpm.setMessage("Annotation variants with Jannovar...");
+            
+            File localFile = toAnnotate.moveToTmpFile(session, serverContext.getMedSavantFileDirectory(), serverContext.getTemporaryDirectory());
+            
+            File f = annotateVCFWithJannovar(localFile, serverContext.getTemporaryDirectory(), reference.getName());
+            jpm.setMessage("Complete");            
+            
+            //This file copy is wasteful on non-distributed configurations.  
+            MedSavantFile dstFile = serverContext.getMedSavantFileDirectory().createFile(session, MedSavantFileType.TEMPORARY);
+            dstFile.replaceWithFile(session, serverContext.getMedSavantFileDirectory(), f);            
+            return dstFile;                        
+        } catch (JannovarException je) {
+            throw new VCFPreProcessorException("Preprocessing error: " + je.getMessage());
+        } catch(MedSavantFileDirectoryException mfde){
+            throw new VCFPreProcessorException("Error registering temporary file, can't execute preprocessor "+getComponentName(), mfde);
+        }
     }
 
+    @Override
     public void configure(Dictionary dict) throws InvalidConfigurationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public void configure(String key, Object val) throws InvalidConfigurationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public void setServerContext(MedSavantServerContext context) throws InvalidConfigurationException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-   
-    @Override
-    pVCFFileOldCFFile preprocess(String username, JobProgressMoniVCFFileOld, VCFFile toAnnotate) throws IOException, VCFPreProcessorException {
-        try {            
-            jpm.setMessage("Annotation variants with Jannovar...");            
-            File f = annotateVCFWithJannovar(toAnnotate.getLocalFile(), fileUtils.getTemporaryDirectory(), toAnnotate.getReference());
-            jpm.setMessage("Complete");
-            return vcfDirectory.getVCFFile(f);            
-        } catch (JannovarException je) {
-            throw new VCFPreProcessorException("Preprocessing error: " + je.getMessage());
-        }      
-    }
+    }   
 
 }

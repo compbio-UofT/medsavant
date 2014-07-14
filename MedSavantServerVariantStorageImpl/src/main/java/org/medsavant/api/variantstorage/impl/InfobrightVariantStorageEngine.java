@@ -15,7 +15,7 @@ import org.medsavant.api.variantstorage.PublicationStatus;
 import org.medsavant.api.variantstorage.VariantField;
 import org.medsavant.api.variantstorage.VariantFilterBuilder.VariantFilter;
 import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
-import org.medsavant.api.vcfstorage.VCFFileOld;
+import org.medsavant.api.filestorage.VCFFileOld;
 
 /**
  *

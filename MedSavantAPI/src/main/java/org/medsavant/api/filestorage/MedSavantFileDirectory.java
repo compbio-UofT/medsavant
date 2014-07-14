@@ -3,11 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.medsavant.api.vcfstorage;
+package org.medsavant.api.filestorage;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerComponent;
 import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
  * A directory for the storage and retrieval of files. This file directory may
@@ -19,6 +22,20 @@ import org.medsavant.api.common.MedSavantSession;
  * @see MedSavantFileSubDirectory
  */
 public interface MedSavantFileDirectory extends MedSavantServerComponent {
+
+    public MedSavantFile createFile(MedSavantSession session, MedSavantFileType fileType) throws MedSavantFileDirectoryException, MedSavantSecurityException;
+
+    public MedSavantFile createFile(MedSavantSession session, MedSavantFileType fileType, String name) throws MedSavantFileDirectoryException, MedSavantSecurityException;
+
+    public void deleteMedSavantFile(MedSavantSession session, MedSavantFile msf) throws MedSavantSecurityException, MedSavantFileDirectoryException;
+
+    public InputStream getInputStream(MedSavantSession session, MedSavantFile file) throws MedSavantFileDirectoryException, MedSavantSecurityException;
+
+    public OutputStream getOutputStream(MedSavantSession session, MedSavantFile file) throws MedSavantFileDirectoryException, MedSavantSecurityException;
+    
+    public boolean fileExists(MedSavantSession session, MedSavantFile file) throws MedSavantSecurityException;
+    
+    public MedSavantFile getMedSavantFile(MedSavantSession session, MedSavantFileType fileType, String name) throws MedSavantFileDirectoryException, MedSavantSecurityException;
 
     /**
      * Returns a directory instance that is located at the given path. It is not
@@ -33,7 +50,7 @@ public interface MedSavantFileDirectory extends MedSavantServerComponent {
      * @see MedSavantFileSubDirectory
      *
      */
-    public MedSavantFileSubDirectory getDirectoryAt(MedSavantSession session, String path) throws MedSavantSecurityException, MedSavantFileDirectoryException;
+    //public MedSavantFileSubDirectory getDirectoryAt(MedSavantSession session, String path) throws MedSavantSecurityException, MedSavantFileDirectoryException;
 
     /**
      * @param session The session of the user requesting the directory
@@ -43,7 +60,7 @@ public interface MedSavantFileDirectory extends MedSavantServerComponent {
      * @see getDirectoryAt
      * @see MedSavantFileSubDirectory
      */
-    public MedSavantFileSubDirectory getAnnotationDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
+    //public MedSavantFileSubDirectory getAnnotationDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
 
     /**
      * @param session The session of the user requesting the directory
@@ -53,7 +70,7 @@ public interface MedSavantFileDirectory extends MedSavantServerComponent {
      * @see getDirectoryAt
      * @see MedSavantFileSubDirectory
      */
-    public MedSavantFileSubDirectory getVCFDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
+    //public MedSavantFileSubDirectory getVCFDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
 
     /**
      * @param session The session of the user requesting the directory
@@ -64,5 +81,5 @@ public interface MedSavantFileDirectory extends MedSavantServerComponent {
      * @see getDirectoryAt
      * @see MedSavantFileSubDirectory
      */
-    public MedSavantFileSubDirectory getTemporaryDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
+    //public MedSavantFileSubDirectory getTemporaryDirectory(MedSavantSession session) throws MedSavantSecurityException, MedSavantFileDirectoryException;
 }

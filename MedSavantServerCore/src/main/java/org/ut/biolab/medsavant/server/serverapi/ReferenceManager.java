@@ -1,24 +1,25 @@
 /**
- * See the NOTICE file distributed with this work for additional
- * information regarding copyright ownership.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * This is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import org.medsavant.api.common.Reference;
 import org.ut.biolab.medsavant.shared.model.Chromosome;
 import java.rmi.RemoteException;
@@ -64,7 +65,39 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         return instance;
     }
 
-    public ReferenceManager() throws RemoteException, SessionExpiredException {super();}
+    public ReferenceManager() throws RemoteException, SessionExpiredException {
+        super();
+    }
+
+    @Override
+    public Reference getReference(String sessID, int referenceID) throws SQLException, SessionExpiredException {
+        TableSchema table = MedSavantDatabase.ReferenceTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(
+                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceID));
+
+        ResultSet rs = null;
+        try {
+            rs = ConnectionController.executeQuery(sessID, query.toString());
+
+            List<Reference> results = new ArrayList<Reference>();
+
+            if (rs.next()) {
+                return new Reference(
+                        rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                        rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME));
+            }else{
+                return null;
+            }
+        }finally{
+            if(rs != null){
+                rs.close();
+            }
+        }         
+    }
 
     @Override
     public Reference[] getReferences(String sessID) throws SQLException, SessionExpiredException {
@@ -180,13 +213,13 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public boolean removeReference(String sessID, int refID) throws SQLException, SessionExpiredException {
 
-         TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
-         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
-         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
+        TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
+        TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
 
-         PooledConnection conn = ConnectionController.connectPooled(sessID);
-         try {
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        try {
             SelectQuery q1 = new SelectQuery();
             q1.addFromTable(annotationTable.getTable());
             q1.addAllColumns();
@@ -212,34 +245,33 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
             DeleteQuery q4 = new DeleteQuery(chromTable.getTable());
             q4.addCondition(BinaryConditionMS.equalTo(chromTable.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
             conn.executeUpdate(q4.toString());
-         } finally {
-             conn.close();
-         }
-
-         return true;
-    }
-
-/*    @Override
-    public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException, SessionExpiredException {
-
-        ResultSet rs = ConnectionController.executeQuery(sid,
-                "SELECT *"
-                + " FROM " + ReferenceTableSchema.TABLE_NAME
-                + " WHERE " + ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN"
-                + " (SELECT " + VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID + " FROM " + VariantTablemapTableSchema.TABLE_NAME
-                + " WHERE " + VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID + "=" + projectid + ")");
-
-        HashMap<Integer,String> result = new HashMap<Integer,String>();
-
-        while (rs.next()) {
-            result.put(rs.getInt(1), rs.getString(2));
+        } finally {
+            conn.close();
         }
 
-        return result;
-    }*/
+        return true;
+    }
 
+    /*    @Override
+     public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException, SessionExpiredException {
+
+     ResultSet rs = ConnectionController.executeQuery(sid,
+     "SELECT *"
+     + " FROM " + ReferenceTableSchema.TABLE_NAME
+     + " WHERE " + ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN"
+     + " (SELECT " + VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID + " FROM " + VariantTablemapTableSchema.TABLE_NAME
+     + " WHERE " + VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID + "=" + projectid + ")");
+
+     HashMap<Integer,String> result = new HashMap<Integer,String>();
+
+     while (rs.next()) {
+     result.put(rs.getInt(1), rs.getString(2));
+     }
+
+     return result;
+     }*/
     @Override
-    public String getReferenceUrl(String sid,int referenceid) throws SQLException, SessionExpiredException {
+    public String getReferenceUrl(String sid, int referenceid) throws SQLException, SessionExpiredException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -265,7 +297,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Chromosome> result = new ArrayList<Chromosome>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new Chromosome(
                     rs.getString(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_NAME),
                     rs.getInt(ChromosomeTableSchema.COLUMNNAME_OF_CENTROMERE_POS),

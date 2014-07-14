@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package org.ut.biolab.medsavant.shared.util;
+package org.medsavant.api.common;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,8 +47,11 @@ public class MedSavantFileUtils {
             out.close();
         }
     }
-
-    public static void copy(File src, MedSavantFile dst) throws IOException{
+    
+      
+    
+    /*
+    public static void copy2(File src, MedSavantFile dst) throws IOException{
         try {
             OutputStream os = dst.getOutputStreamForAppend();
             InputStream is = new FileInputStream(src); //throws fnfe
@@ -57,5 +60,6 @@ public class MedSavantFileUtils {
             throw new IOException("Error opening file ", fnfe);
         }
     }
+    */
 
 }

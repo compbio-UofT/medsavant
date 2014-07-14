@@ -17,7 +17,11 @@ import org.medsavant.api.annotation.TabixAnnotator;
 import org.medsavant.api.annotation.VariantWindow;
 import org.medsavant.api.common.InvalidConfigurationException;
 import org.medsavant.api.common.JobProgressMonitor;
+import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
+import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 
 /**
  *
@@ -28,12 +32,13 @@ public class TabixAnnotatorImpl implements TabixAnnotator{
     private MedSavantServerContext context;
     private static final Map<TabixAnnotation, AnnotationCursor> cursorCache = new HashMap<TabixAnnotation, AnnotationCursor>();
     
-    private synchronized AnnotationCursor getAnnotationCursor(TabixAnnotation ta) throws IOException{
+    private synchronized AnnotationCursor getAnnotationCursor(MedSavantSession session, TabixAnnotation ta) throws IOException,  MedSavantSecurityException, MedSavantFileDirectoryException{
         AnnotationCursor ac = cursorCache.get(ta);
         if(ac != null){
             return ac;
         }        
-        ac = new AnnotationCursor(ta);
+        
+        ac = new AnnotationCursor(session, ta, context.getMedSavantFileDirectory(), context.getPersistentCacheDirectory());
         cursorCache.put(ta, ac);
         return ac;        
     }
@@ -64,13 +69,20 @@ public class TabixAnnotatorImpl implements TabixAnnotator{
     }
 
     @Override
-    public List<String[]> annotate(String username, JobProgressMonitor jpm, VariantWindow toAnnotate, TabixAnnotation ta) throws AnnotationException{
+    public List<String[]> annotate(MedSavantSession session, JobProgressMonitor jpm, VariantWindow toAnnotate, TabixAnnotation ta, Reference reference) throws AnnotationException{
         try {            
-            AnnotationCursor ac = getAnnotationCursor(ta);            
-            return Arrays.asList(ac.annotateVariants(toAnnotate));            
+            jpm.setMessage("Annotating "+toAnnotate.getNumVariants()+" variants from "+session.getUser()+" in project "+session.getProject().getProjectName());
+            AnnotationCursor ac = getAnnotationCursor(session, ta);                        
+            List<String[]> result =  Arrays.asList(ac.annotateVariants(toAnnotate));            
+            jpm.setMessage("Completed annotation of "+toAnnotate.getNumVariants()+" variants from "+session.getUser()+" in project "+session.getProject().getProjectName());
+            return result;
         } catch (IOException ie) {
             throw new AnnotationException("Unable to annotate variants with "+ta.getProgram(), ie);
-        }        
+        } catch(MedSavantSecurityException mse){
+            throw new AnnotationException("Unable to annotate variants with "+ta.getProgram()+" -- this user does not have access to this annotation", mse);
+        } catch(MedSavantFileDirectoryException mfde){
+            throw new AnnotationException("Unablet o annotate variants with "+ta.getProgram()+" -- problem loading annotation", mfde);
+        }
     }
 
 }

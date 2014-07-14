@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.medsavant.api.vcfstorage;
+package org.medsavant.api.filestorage;
 
 import java.io.FileNotFoundException;
 import org.medsavant.api.common.MedSavantSecurityException;
@@ -28,7 +28,7 @@ public interface MedSavantFileSubDirectory {
     
     
     /**
-     * Registers the given file under the identity 'path'.  Both the path and the file
+     * Registers a new file under the identity 'path'.  Both the path and the file
      * will be converted to lower case first.  The file is initially empty, but can be written
      * to via the outputstream provided by MedSavantFile.getOutputStreamForAppend
      * 
@@ -41,6 +41,14 @@ public interface MedSavantFileSubDirectory {
     */
     public MedSavantFile registerMedSavantFile(MedSavantSession session, String path) throws MedSavantSecurityException, MedSavantFileDirectoryException;
     
+    /**
+     * Registers a new file with a unique identifier.  
+     * 
+     * @param session
+     * @return
+     * @throws MedSavantSecurityException 
+     */
+    public MedSavantFile registerMedSavantFile(MedSavantSession session) throws MedSavantSecurityException;
     
     /**
      * Deletes the file corresponding to the path.

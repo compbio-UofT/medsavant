@@ -10,6 +10,8 @@ import java.util.List;
 import org.medsavant.api.common.InvalidConfigurationException;
 import org.medsavant.api.common.JobProgressMonitor;
 import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
 
 /**
  *
@@ -76,9 +78,9 @@ public class TabixVariantAnnotator implements VariantAnnotator {
     }
 
     @Override
-    public List<String[]> annotate(String username, JobProgressMonitor jpm, VariantWindow toAnnotate) throws AnnotationException {
+    public List<String[]> annotate(MedSavantSession session, JobProgressMonitor jpm, VariantWindow toAnnotate, Reference reference) throws AnnotationException {
         //pass through to the tabix annotator.
-        return ta.annotate(username, jpm, toAnnotate, tan);
+        return ta.annotate(session, jpm, toAnnotate, tan, reference);
     }   
 
 }

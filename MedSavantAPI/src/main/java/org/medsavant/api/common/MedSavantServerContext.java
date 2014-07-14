@@ -9,7 +9,7 @@ package org.medsavant.api.common;
 import java.io.File;
 import java.io.IOException;
 import org.medsavant.api.executionservice.MedSavantExecutionService;
-import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
+import org.medsavant.api.filestorage.MedSavantFileDirectory;
 
 /**
  * A context for a medsavant server. 

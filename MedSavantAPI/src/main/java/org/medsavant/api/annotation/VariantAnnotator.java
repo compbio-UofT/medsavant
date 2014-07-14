@@ -9,6 +9,8 @@ package org.medsavant.api.annotation;
 import java.util.List;
 import org.medsavant.api.common.JobProgressMonitor;
 import org.medsavant.api.common.MedSavantServerComponent;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.common.Reference;
 
 /**
  *
@@ -29,5 +31,5 @@ public interface VariantAnnotator extends MedSavantServerComponent {
      * @return a list of annotations, in the same order as passed in the variant window.  A null entry indicates 'missing'.  a null return value indicates
      * all values are 'missing'.
      */
-    public List<String[]> annotate(String username, JobProgressMonitor jpm, VariantWindow toAnnotate) throws AnnotationException;
+    public List<String[]> annotate(MedSavantSession session, JobProgressMonitor jpm, VariantWindow toAnnotate, Reference reference) throws AnnotationException;
 }

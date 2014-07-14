@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.medsavant.api.vcfstorage;
+package org.medsavant.api.filestorage;
 
 /**
  *

@@ -11,7 +11,7 @@ import java.io.IOException;
 import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.executionservice.MedSavantExecutionService;
-import org.medsavant.api.vcfstorage.MedSavantFileDirectory;
+import org.medsavant.api.filestorage.MedSavantFileDirectory;
 
 //MedSavantServerContextImpl is a singleton (per JVM).  
  public enum MedSavantServerContextImpl implements MedSavantServerContext {

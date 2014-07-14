@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.medsavant.api.vcfstorage;
+package org.medsavant.api.filestorage;
 
 import org.medsavant.api.common.Reference;
 import org.medsavant.api.common.storage.MedSavantFile;
