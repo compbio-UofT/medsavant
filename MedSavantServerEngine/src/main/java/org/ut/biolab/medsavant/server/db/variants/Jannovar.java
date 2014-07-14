@@ -101,7 +101,11 @@ public class Jannovar {
              } else {
              */
             LOG.info("Compiling serialized file with Jannovar");
-            jannovar.Jannovar.main(new String[]{"--create-refseq", "-d", getJannovarDataDirectory().getAbsolutePath()});
+            jannovar.Jannovar.main(new String[]{
+                    "--create-refseq",
+                    "-d", getJannovarDataDirectory().getAbsolutePath(),
+                    "-g", this.reference
+            });
             /*
              }
              */
