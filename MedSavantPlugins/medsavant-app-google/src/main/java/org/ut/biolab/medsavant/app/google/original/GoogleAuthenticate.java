@@ -149,14 +149,20 @@ public class GoogleAuthenticate {
         Properties properties = new Properties();
         properties.setProperty("refreshtoken", refreshToken);
 
-        String path = getGoogleCloudDotDirectory().getPath() + "/" + TOKEN_PROPERTIES_FILENAME;
-
+        
+        File gp = new File(getGoogleCloudDotDirectory().getPath());
+        if(!gp.exists()){
+            if(!gp.mkdirs()){
+                System.err.println("Couldn't create directory "+gp.getPath());
+            }
+        }
+        
+        File tokenPropPath = new File(getGoogleCloudDotDirectory().getPath(), TOKEN_PROPERTIES_FILENAME);
+        
         OutputStream output = null;
 
         try {
-
-            output = new FileOutputStream(new File(getGoogleCloudDotDirectory().getPath(), "/" + TOKEN_PROPERTIES_FILENAME));
-
+            output = new FileOutputStream(tokenPropPath);
             // save properties to project root folder
             properties.store(output, null);
 
@@ -167,7 +173,7 @@ public class GoogleAuthenticate {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    System.err.println("Failed storing token properties to file " + path);
+                    System.err.println("Failed storing token properties to file " + tokenPropPath.getAbsolutePath());
                     e.printStackTrace();
                 }
             }
@@ -178,8 +184,8 @@ public class GoogleAuthenticate {
     private static String loadRefreshToken() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(getGoogleCloudDotDirectory().getPath()
-                    + "/" + TOKEN_PROPERTIES_FILENAME));
+            File inputFile = new File(getGoogleCloudDotDirectory(), TOKEN_PROPERTIES_FILENAME);
+            properties.load(new FileInputStream(inputFile));
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
         }
