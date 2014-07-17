@@ -27,7 +27,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.genomics.Genomics;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -66,7 +65,7 @@ public class GoogleAuthenticate {
     private static InputStream getClientSecrets() {
         return GoogleAuthenticate.class.getResourceAsStream("/oauth/client_secrets.json");
     }
-    
+
     private static GoogleClientSecrets loadClientSecrets() {
         try {
 

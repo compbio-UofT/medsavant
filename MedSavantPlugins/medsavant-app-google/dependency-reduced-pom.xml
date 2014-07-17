@@ -25,6 +25,7 @@
               <artifactSet>
                 <includes>
                   <include>com.google.api-client:google-api-client</include>
+                  <include>com.google.api-client:google-api-client-java6</include>
                   <include>com.google.oauth-client:google-oauth-client-java6</include>
                   <include>com.google.oauth-client:google-oauth-client</include>
                   <include>com.google.http-client:google-http-client-jackson2</include>
@@ -69,12 +70,6 @@
       <groupId>edu.toronto.cs.medsavant</groupId>
       <artifactId>medsavant-app-comm</artifactId>
       <version>1.3-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api-client</groupId>
-      <artifactId>google-api-client-java6</artifactId>
-      <version>1.17.0-rc</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
