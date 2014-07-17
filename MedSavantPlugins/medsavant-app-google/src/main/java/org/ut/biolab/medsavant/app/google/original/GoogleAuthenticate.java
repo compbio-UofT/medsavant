@@ -19,7 +19,6 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.extensions.java6.auth.oauth2.GooglePromptReceiver;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -39,6 +38,7 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Properties;
 import javax.annotation.Nullable;
+import org.ut.biolab.medsavant.app.google.MedSavantPromptReceiver;
 
 /**
  *
@@ -84,7 +84,7 @@ public class GoogleAuthenticate {
 
         clientSecrets = loadClientSecrets();
         if (clientSecrets == null) {
-            throw new IOException("Error loading client_sercrets.json");
+            throw new IOException("Error loading client_secrets.json");
         }
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         if (httpTransport == null) {
@@ -127,7 +127,7 @@ public class GoogleAuthenticate {
 
     private static Credential exchangeCode() throws IOException {
         GoogleAuthorizationCodeFlow flow = getFlow();
-        return new AuthorizationCodeInstalledApp(flow, new GooglePromptReceiver())
+        return new AuthorizationCodeInstalledApp(flow, new MedSavantPromptReceiver())
                 .authorize(System.getProperty("user.name"));
     }
 
