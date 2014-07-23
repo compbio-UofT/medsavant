@@ -345,7 +345,7 @@ public class Variant {
 			int totalCount= Integer.parseInt(dpText);
 			String[] aoCoverageDelimited= aoText.split(",");
 			
-			////////////// FIX WHEN DB IS UPDATED TO NEW FORMAT - deals with multiple alleles/vcf line
+			// UPDATE WHEN DB IS UPDATED TO NEW FORMAT - deals with multiple alleles/vcf line
 			System.err.println("Fix covereage BUG here: " + this.getClass().getSimpleName());
 			/* Sometimes the AO count can be comma separated for multiple alternate
 			 * alleles. In this case, due to the way we import these in MedSavant,

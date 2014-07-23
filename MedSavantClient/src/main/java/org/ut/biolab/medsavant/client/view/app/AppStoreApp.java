@@ -83,7 +83,7 @@ public class AppStoreApp implements LaunchableApp {
 
     @Override
     public String getName() {
-        return "App Store";
+        return "App Library";
     }
 
     @Override

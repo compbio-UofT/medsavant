@@ -171,47 +171,4 @@ public class PathwaysPanel {
 		log.error("[" + this.getClass().getSimpleName() + "]: " + errorMessage);
 	}
 	
-	
-	// NOTES FOR RUTH
-	
-	////////////////////////////////// Starting a new thread
-		/* Background task. */
-		pgxAnalysisThread= new MedSavantWorker<Object>(PGXPanel.class.getCanonicalName()) {			
-			@Override
-			protected Object doInBackground() throws SQLException, RemoteException,
-				SessionExpiredException, PGXException {
-				
-				/* Create and perform a new analysis. Uses a CountDownLatch to 
-				 * ensure that currentPGXAnalysis is initilized before I can
-				 * do anything with it (for example, cancel it). */
-				try {
-					currentPGXAnalysis= new PGXAnalysis(currentDNAID, assumeRefCheckBox.isSelected());
-					cancelLatch.countDown();
-				} catch (Exception e) {
-					errorDialog(e.getMessage());
-					e.printStackTrace();
-				}
-
-				return null;
-			}
-
-			@Override
-			protected void showSuccess(Object t) {
-				status.setText("Analysis complete.");
-				statusWheel.setVisible(false);
-				choosePatientButton.setEnabled(true);
-				cancelOrRefresh.setText(REFRESH_TEXT);
-				exportToPDFButton.setVisible(true);
-				
-				/* Update the report pane. */
-				updateReportPane();
-			}
-		};
-		
-		// Execute thread
-		pgxAnalysisThread.execute();
-		
-		
-	//////////////////////////////////////////////////
-	
 }
