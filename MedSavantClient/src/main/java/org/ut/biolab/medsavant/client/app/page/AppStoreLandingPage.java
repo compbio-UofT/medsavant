@@ -14,16 +14,23 @@
 package org.ut.biolab.medsavant.client.app.page;
 
 import java.awt.BorderLayout;
-import java.net.SocketTimeoutException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.io.FileUtils;
 import org.ut.biolab.medsavant.client.plugin.AppDescriptor;
 import org.ut.biolab.medsavant.client.app.api.AppInfoFetcher;
 import org.ut.biolab.medsavant.client.app.AppInfo;
@@ -33,11 +40,16 @@ import org.ut.biolab.medsavant.client.view.component.LazyPanel;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.app.api.AppInstaller;
-import org.ut.biolab.medsavant.client.view.util.DialogUtils;
+import org.ut.biolab.medsavant.client.settings.DirectorySettings;
+import org.ut.biolab.medsavant.client.view.MedSavantFrame;
+import org.ut.biolab.medsavant.client.view.app.AppDirectory;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
+
 
 /**
- *
- * @author mfiume
+ * Landing page for the App Store.
+ * 
+ * @author mfiume, rammar
  */
 public class AppStoreLandingPage implements AppStorePage {
 
@@ -101,7 +113,11 @@ public class AppStoreLandingPage implements AppStorePage {
         
         JLabel titleLabel = ViewUtil.getLargeSerifLabel("Available Apps");
         
+		JButton appFromFile= new JButton("Install app from file...");
+		appFromFile.addActionListener(getAppFromFileAL());
+				
         container.add(titleLabel,"wrap");
+		container.add(appFromFile, "wrap");
         container.add(appListView,"growx 1.0");
         
         JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
@@ -133,4 +149,49 @@ public class AppStoreLandingPage implements AppStorePage {
 
         appListView.updateUI();
     }
+	
+	
+	/**
+	 * Action when the app from file button is selected.
+	 * @return The ActionListener
+	 */
+	private ActionListener getAppFromFileAL() {
+		ActionListener outputAL= new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {				
+				// Get the user's jar file
+				final JFileChooser chooser = new JFileChooser();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("JAR file", "jar");
+				chooser.setFileFilter(filter);
+				int chooserValue= chooser.showOpenDialog(MedSavantFrame.getInstance());
+				
+				// only copy the file if the approve button ("ok" rather than "cancel") has been clicked
+				if(chooserValue == JFileChooser.APPROVE_OPTION) {
+					File chooserFile= new File(chooser.getSelectedFile().getPath());
+					try {
+						FileUtils.copyFileToDirectory(chooserFile, new File(
+							DirectorySettings.getPluginsDirectory().getAbsolutePath()));
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
+				}
+				
+				// Restart MedSavant
+				Notification n = new Notification();
+				n.setIcon(AppDirectory.getAppStore().getIcon());
+				n.setName("App installed");
+				n.setDescription("Restart to complete installation");
+				MedSavantFrame.getInstance().showNotification(n);
+				n.setAction("Restart", new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						MedSavantFrame.getInstance().requestLogoutAndRestart();
+					}
+				});
+			}
+		};
+		
+		return outputAL;
+	}
+	
 }
