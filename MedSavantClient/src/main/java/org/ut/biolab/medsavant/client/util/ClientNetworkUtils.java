@@ -27,7 +27,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
@@ -38,6 +42,8 @@ import org.ut.biolab.medsavant.shared.util.NetworkUtils;
  * @author Andrew
  */
 public class ClientNetworkUtils extends NetworkUtils {
+    private static ExecutorService executor = Executors.newCachedThreadPool();
+
     /**
      * Download a file in the background. Notification events will be sent to the supplied listener.
      * 
@@ -91,36 +97,68 @@ public class ClientNetworkUtils extends NetworkUtils {
         });
     }
 
-    public static int copyFileToServer(File file) throws IOException, InterruptedException {
-        NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
-        int streamID = -1;
-        InputStream stream = null;
-
-        try {
-            streamID =
-                netMgr.openWriterOnServer(LoginController.getSessionID(), file.getName(), file.length());
-            stream = new FileInputStream(file);
-
-            int numBytes;
-            byte[] buf = null;
-            while ((numBytes = Math.min(stream.available(), NetworkManagerAdapter.BLOCK_SIZE)) > 0) {
-                if (buf == null || numBytes != buf.length) {
-                    buf = new byte[numBytes];
-                }
-                stream.read(buf);
-                netMgr.writeToServer(LoginController.getSessionID(), streamID, buf);
-            }
-        } finally {
-            if (streamID >= 0) {
-                netMgr.closeWriterOnServer(LoginController.getSessionID(), streamID);
-            }
-            if (stream != null) {
-                stream.close();
-            }
-        }
-
-        return streamID;
+    /**
+     * Copy the file to the server.
+     * @param file
+     * @return the transfer ID
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public static int copyFileToServer(File file) throws ExecutionException, InterruptedException {
+        return copyFileToServer(file, null).get();
     }
+
+
+    /**
+     * Copy a file to the server. The provided <code>listener</code> will
+     * be updated with the percentage progress of the transfer. This method is
+     * asynchronous.
+     * @param file the file to copy
+     * @param listener a listener that will be notified of upload progress
+     * @return A <code>Future</code> that will return the transfer ID upon
+     * completion of the transfer
+     */
+    public static Future<Integer> copyFileToServer(final File file, final Listener<DownloadEvent> listener) {
+        return executor.submit(new Callable<Integer>() {
+
+            @Override
+            public Integer call() throws Exception {
+                NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
+                int streamID = -1;
+                InputStream stream = null;
+
+                try {
+                    stream = new FileInputStream(file);
+                    streamID = netMgr.openWriterOnServer(LoginController.getSessionID(), file.getName(), stream.available());
+
+                    int numBytes;
+                    long totalBytes = stream.available();
+                    int bytesRead = 0;
+                    byte[] buf = null;
+                    while ((numBytes = Math.min(stream.available(), NetworkManagerAdapter.BLOCK_SIZE)) > 0) {
+                        if (buf == null || numBytes != buf.length) {
+                            buf = new byte[numBytes];
+                        }
+                        bytesRead += stream.read(buf);
+                        netMgr.writeToServer(LoginController.getSessionID(), streamID, buf);
+                        if (listener != null) {
+                            listener.handleEvent(new DownloadEvent((double) bytesRead / (double) totalBytes));
+                        }
+                    }
+                } finally {
+                    if (streamID >= 0) {
+                        netMgr.closeWriterOnServer(LoginController.getSessionID(), streamID);
+                    }
+                    if (stream != null) {
+                        stream.close();
+                    }
+                }
+
+                return streamID;
+            }
+        });
+    }
+
 
     /**
      * Copy a file from the server, and then delete it from the server. The provided <code>streamID</code> will have been assigned during an earlier server

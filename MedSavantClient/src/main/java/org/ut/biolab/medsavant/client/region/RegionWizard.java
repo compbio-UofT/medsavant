@@ -41,6 +41,7 @@ import com.jidesoft.wizard.WizardStyle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -680,7 +681,7 @@ public class RegionWizard extends WizardDialog {
         }
     }
 
-    private void createList() throws SQLException, IOException, InterruptedException {
+    private void createList() throws SQLException, IOException, InterruptedException, ExecutionException {
         if (!importing) {
             File tempFile = File.createTempFile("genes", ".bed");
             FileWriter output = new FileWriter(tempFile);

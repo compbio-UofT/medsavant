@@ -38,18 +38,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXCollapsiblePane;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.client.api.Listener;
 import org.ut.biolab.medsavant.client.project.ProjectController;
 import org.ut.biolab.medsavant.client.reference.ReferenceController;
 import org.ut.biolab.medsavant.client.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.client.util.DownloadEvent;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
-import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
+import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
@@ -419,9 +421,17 @@ public class VCFUploadApp implements LaunchableApp {
 
                         for (File file : copyOfFilesToImport) {
                             LOG.info("Created input stream for file");
-                            this.addLog("Uploading " + file.getName() + "...");
-                            transferIDs[fileIndex++] = ClientNetworkUtils.copyFileToServer(file);
-                            this.setTaskProgress(((double) fileIndex) / numFiles);
+                            this.addLog(String.format("Uploading (%d/%d) %s...", fileIndex + 1, numFiles, file.getName()));
+                            transferIDs[fileIndex++] = ClientNetworkUtils.copyFileToServer(file, new Listener<DownloadEvent>() {
+
+                                @Override
+                                public void handleEvent(DownloadEvent event) {
+                                    switch (event.getType()) {
+                                        case PROGRESS:
+                                            instance.setTaskProgress(event.getProgress());
+                                    }
+                                }
+                            }).get();
 
                         }
                         this.addLog("Done uploading variants");

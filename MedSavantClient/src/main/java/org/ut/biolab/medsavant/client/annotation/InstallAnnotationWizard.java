@@ -39,6 +39,7 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -413,7 +414,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         };
     }
 
-    private boolean create() throws SQLException, IOException, InterruptedException {
+    private boolean create() throws SQLException, IOException, InterruptedException, ExecutionException {
         try {
             if (fromRepository) {
                 progressLabel.setText("Installing annotation...");
