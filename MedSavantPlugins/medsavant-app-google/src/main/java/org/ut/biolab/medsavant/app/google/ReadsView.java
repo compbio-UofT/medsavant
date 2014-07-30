@@ -92,7 +92,7 @@ class ReadsView extends JPanel {
 
     private void initUI() {
         this.setLayout(new BorderLayout());
-        StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Reads", false);
+        StandardFixableWidthAppPanel p = new StandardFixableWidthAppPanel("Google Genomics", false);
 
         boolean successfullyAuthenticated = false;
         try {
@@ -148,12 +148,12 @@ class ReadsView extends JPanel {
                     nameField.setName("Name");
                     nameField.setAutonomousEditingEnabled(false);
                     nameField.setEditing(true);
-                    
+
                     final StringEditableField idField = new StringEditableField();
                     idField.setName("ID");
                     idField.setAutonomousEditingEnabled(false);
                     idField.setEditing(true);
-                    
+
                     form.add(new JLabel("Name:"));
                     form.add(nameField);
                     form.add(new JLabel("ID:"));
@@ -164,22 +164,22 @@ class ReadsView extends JPanel {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            
+
                             String name = nameField.getValue();
                             String id = idField.getValue();
-                            
+
                             if (name.isEmpty() || id.isEmpty()) {
                                 DialogUtils.displayError("Name and ID must not be empty");
                                 return;
                             }
-                            
-                            GoogleDataset ds = new GoogleDataset(id,name);
+
+                            GoogleDataset ds = new GoogleDataset(id, name);
                             datasets.add(ds);
                             saveDatasets();
                             dataset = ds;
                             updateChooser();
                             refreshReadsets();
-                            
+
                             dialog.dispose();
                         }
 
@@ -214,7 +214,7 @@ class ReadsView extends JPanel {
 
             });
 
-            datasetChooserBlock.add(new JLabel("<html><b>Dataset:</b></html>"), "split");
+            datasetChooserBlock.add(new JLabel("<html><b>Read Dataset:</b></html>"), "split");
             datasetChooserBlock.add(datasetChooser);
             datasetChooserBlock.add(addButton, "gapx 0");
             datasetChooserBlock.add(removeButton, "wrap, gapx 0");
@@ -230,7 +230,17 @@ class ReadsView extends JPanel {
                 ex.printStackTrace();
             }
         } else {
-            datasetChooserBlock.add(new JLabel("Uh oh. Could not authenticate."));
+            datasetChooserBlock.add(new JLabel("<html>In order to use this app, you need to grant access using your Google account.</html>"), "wrap");
+            JButton b = new JButton("Authenticate");
+            b.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    updateGenomicsService();
+                }
+
+            });
+            datasetChooserBlock.add(b);
         }
 
         this.add(p, BorderLayout.CENTER);
@@ -336,8 +346,11 @@ class ReadsView extends JPanel {
         }
 
         final WaitPanel p = new WaitPanel("Retrieving readsets");
+
         datasetBlock.add(p, "growx 1.0, width 100%");
         datasetBlock.invalidate();
+
+        datasetBlock.updateUI();
 
         if (fetcher != null) {
             fetcher.interrupt();

@@ -77,13 +77,15 @@ public class GoogleGenomicsApp extends MedSavantDashboardApp {
         if (!initialized) {
             content.setLayout(new BorderLayout());
             
-            JTabbedPane tabs = ViewUtil.getMSTabedPane();
-            
             ReadsView rv = new ReadsView();
             
-            tabs.add("Reads", rv);
+            /*JTabbedPane tabs = ViewUtil.getMSTabedPane();
             
-            content.add(tabs,BorderLayout.CENTER);
+            
+            
+            tabs.add("Reads", rv);*/
+            
+            content.add(rv,BorderLayout.CENTER);
         }
         initialized = true;
     }

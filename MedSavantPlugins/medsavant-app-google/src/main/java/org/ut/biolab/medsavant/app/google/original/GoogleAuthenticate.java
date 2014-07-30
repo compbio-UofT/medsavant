@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import javax.annotation.Nullable;
 import org.ut.biolab.medsavant.app.google.MedSavantPromptReceiver;
+import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 
 /**
  *
@@ -108,6 +109,7 @@ public class GoogleAuthenticate {
             // If there is no refresh token (or token.properties file), start the OAuth
             // authorization flow.
             // Exchange the auth code for an access token and refesh token
+            
             credential = exchangeCode();
 
             // Store the refresh token for future use.
@@ -126,6 +128,9 @@ public class GoogleAuthenticate {
     }
 
     private static Credential exchangeCode() throws IOException {
+        DialogUtils.displayMessage("<html>In order to use this app, you need"
+                    + "to grant<br/>access using your Google account.<br/><br/>"
+                    + "You'll now be directed to Google to do so.</html>");
         GoogleAuthorizationCodeFlow flow = getFlow();
         return new AuthorizationCodeInstalledApp(flow, new MedSavantPromptReceiver())
                 .authorize(System.getProperty("user.name"));
