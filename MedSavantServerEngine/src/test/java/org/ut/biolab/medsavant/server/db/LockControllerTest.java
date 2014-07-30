@@ -19,8 +19,7 @@
 
 package org.ut.biolab.medsavant.server.db;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import java.util.Random;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -29,17 +28,25 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.ut.biolab.medsavant.shared.model.exception.LockException;
 
+import java.util.Random;
+
 /**
  *
  * @author mfiume
  */
 public class LockControllerTest {
-    
+    private Random random;
+
+    static private LockController lockController;
+    final private String db = "dummyDB";
+    private int project;
+
     public LockControllerTest() {
     }
     
     @BeforeClass
     public static void setUpClass() {
+        lockController = LockController.getInstance();
     }
     
     @AfterClass
@@ -48,78 +55,72 @@ public class LockControllerTest {
     
     @Before
     public void setUp() {
+        random = new Random();
+        project = random.nextInt();
     }
     
     @After
     public void tearDown() {
     }
-    
+
     @Test
-    public void testLock() {
+    public void releaseLock() throws LockException {
+        lockController.requestLock(db, project);
+        assertTrue(lockController.isLocked(db, project));
 
-        final String dummyDB = "dummyDB";
-        // initially unlocked
-        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
-        
-        boolean didFail = false;
-        
-        // request lock
-        try {
-            LockController.getInstance().requestLock(dummyDB, 0);
-        } catch (LockException e) {
-            didFail = true;
-        }
-        assertFalse(didFail);
-        
-        // now locked
-        assertTrue(LockController.getInstance().isLocked(dummyDB, 0));
-
-        // unlock
-        didFail = false;
-        try {
-            LockController.getInstance().releaseLock(dummyDB, 0);
-        } catch (LockException e) {
-            didFail = true;
-        }
-        assertFalse(didFail);
-        
-        // now unlocked
-        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
-        
-        // request 2 locks
-        try {
-            LockController.getInstance().requestLock(dummyDB, 0);
-            LockController.getInstance().requestLock(dummyDB, 0);
-        } catch (LockException e) {
-            didFail = true;
-        }
-        assertFalse(didFail);
-    
-        // unlock once
-        didFail = false;
-        try {
-            LockController.getInstance().releaseLock(dummyDB, 0);
-        } catch (LockException e) {
-            didFail = true;
-        }
-        assertFalse(didFail);
-        
-        // still locked
-        assertTrue(LockController.getInstance().isLocked(dummyDB, 0));
-        
-        // unlock once more
-        didFail = false;
-        try {
-            LockController.getInstance().releaseLock(dummyDB, 0);
-        } catch (LockException e) {
-            didFail = true;
-        }
-        assertFalse(didFail);
-        
-        // now unlocked
-        assertFalse(LockController.getInstance().isLocked(dummyDB, 0));
-        
+        lockController.releaseLock(db, project);
+        assertFalse(lockController.isLocked(db, project));
     }
-    
-    
+
+    @Test
+    public void testRequestLock() throws LockException {
+        assertFalse(lockController.isLocked(db, project));
+
+        lockController.requestLock(db, project);
+
+        // now locked
+        assertTrue(lockController.isLocked(db, project));
+    }
+
+    /**
+     * Test locking multiple times on the same thread.
+     */
+    @Test
+    public void testLockSameThreadMultipleTimes() throws LockException {
+        lockController.requestLock(db, project);
+        lockController.requestLock(db, project);
+
+        lockController.releaseLock(db, project);
+
+        // still locked
+        assertTrue(lockController.isLocked(db, project));
+
+        lockController.releaseLock(db, project);
+
+        // now unlocked
+        assertFalse(lockController.isLocked(db, project));
+    }
+
+    /**
+     * Test locking multiple times on different threads
+     */
+    @Test(expected = LockException.class)
+    public void testLockDiffThreads() throws LockException, InterruptedException {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    lockController.requestLock(db, project);
+                } catch (LockException e) {
+                    fail();
+                }
+            }
+        };
+        thread.start();
+        thread.join();
+        lockController.requestLock(db, project); // Should throw LockException
+
+    }
+
+
 }

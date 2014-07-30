@@ -86,15 +86,13 @@ public class LockController {
     }
 
     /**
-     * Obtain a lock. If another thread already owns the lock, an exception will
-     * be thrown.
+     * Fetch the lock associated with the database and project. If no lock exists, create it.
      *
      * @param database The database with the project to be unlocked.
      * @param projectID The project ID to lock
-     * @throws LockException
+     * @return the lock
      */
-    public synchronized void requestLock(String database, int projectID) throws LockException {
-        LOG.info("Server lock requested");
+    private synchronized ReentrantLock getLock(String database, int projectID) {
         Key key = new Key(database, projectID);
         ReentrantLock lock = locks.get(key);
 
@@ -103,6 +101,21 @@ public class LockController {
             lock = new ReentrantLock();
             locks.put(key, lock);
         }
+        return lock;
+    }
+
+    /**
+     * Obtain a lock. If another thread already owns the lock, an exception will
+     * be thrown.
+     *
+     * @param database The database with the project to be unlocked.
+     * @param projectID The project ID to lock
+     * @throws org.ut.biolab.medsavant.shared.model.exception.LockException
+     */
+    public synchronized void requestLock(String database, int projectID) throws LockException {
+        LOG.info("Server lock requested");
+
+        ReentrantLock lock = this.getLock(database, projectID);
 
         // lock it down 
         // (if this thread owns the lock, call lock again which will increase the hold count)
@@ -115,11 +128,22 @@ public class LockController {
     }
 
     /**
+     * Obtain a lock, or wait (block) for it to become available. Returns when the lock is available.
+     *
+     * @param database The database with the project to be unlocked.
+     * @param projectID The project ID to lock
+     */
+    public void waitForLock(String database, int projectID) {
+        ReentrantLock lock = this.getLock(database, projectID);
+        lock.lock();
+    }
+
+    /**
      * Release the lock unforcibly.
      *
      * @param database The database with the project to be unlocked.
      * @param projectID The project ID to lock
-     * @throws org.ut.biolab.medsavant.shared.model.LockException
+     * @throws org.ut.biolab.medsavant.shared.model.exception.LockException
      */
     public synchronized void releaseLock(String database, int projectID) throws LockException {
         releaseLock(database, projectID, false);
@@ -133,7 +157,7 @@ public class LockController {
      * @param database The database containing the project to unlock.
      * @param projectID The project ID to unlock.
      * @param force Whether to force the unlock.
-     * @throws org.ut.biolab.medsavant.shared.model.LockException
+     * @throws org.ut.biolab.medsavant.shared.model.exception.LockException
      */
     public synchronized void releaseLock(String database, int projectID, boolean force) throws LockException {
 
@@ -171,12 +195,7 @@ public class LockController {
      * @return Whether the project is locked.
      */
     public boolean isLocked(String database, int projectID) {
-        ReentrantLock l = locks.get(new Key(database, projectID));
-
-        // l will be null if no one has requested a lock for the project before
-        if (l == null) {
-            return false;
-        }
+        ReentrantLock l = this.getLock(database, projectID);
 
         return l.isLocked();
     }

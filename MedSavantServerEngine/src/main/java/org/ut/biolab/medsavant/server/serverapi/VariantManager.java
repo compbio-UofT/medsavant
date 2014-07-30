@@ -115,7 +115,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void publishVariants(String sessID, int projectID) throws Exception, LockException {
 
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(sessID), projectID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(sessID), projectID);
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         LOG.info("Beginning publish of all tables for project " + projectID);
 
@@ -158,7 +158,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     public void publishVariants(String sessID, int projID, int refID) throws Exception, LockException {
 
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(sessID), projID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(sessID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         //LOG.info("Publishing table. pid:" + projID + " refid:" + refID + " upid:" + updID);
         LOG.info("Publishing table. pid:" + projID + " refid:" + refID);
@@ -203,7 +203,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Deprecated
     public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception, LockException {
         final String database = SessionManager.getInstance().getDatabaseForSession(sid);
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(sid), projectID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(sid), projectID);
 
         LOG.info("Cancelling publish. pid:" + projectID + " refid:" + referenceID);
 
@@ -225,7 +225,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public int updateTable(String userSessionID, int projID, int refID, int[] annotIDs, CustomField[] customFields, boolean autoPublish, String email) throws Exception, LockException {
 
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -274,7 +274,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -311,7 +311,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         if (ProjectManager.getInstance().hasUnpublishedChanges(userSessionID, projID, refID)) {
             throw new IllegalArgumentException("Can't import variants for this project and reference until unpublished changes are published.");
         }
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -379,7 +379,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      */
     private int uploadVariants(String userSessionID, File[] inputFiles, String[] sourceNames, int projectID, int referenceID, String[][] tags, boolean includeHomoRef, String email, boolean autoPublish, boolean preAnnotateWithJannovar, boolean doPhasing) throws Exception, LockException {
 
-        LockController.getInstance().requestLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projectID);
+        LockController.getInstance().waitForLock(SessionManager.getInstance().getDatabaseForSession(userSessionID), projectID);
         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
         String backgroundSessionID = SessionManager.getInstance().createBackgroundSessionFromSession(userSessionID);
 
@@ -541,7 +541,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     @Override
                     public boolean run() throws Exception {
                         final String database = SessionManager.getInstance().getDatabaseForSession(userSessionID);
-                        LockController.getInstance().requestLock(database, projID);
+                        LockController.getInstance().waitForLock(database, projID);
 
                         org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(userSessionID, LogManagerAdapter.LogType.INFO, "Removing " + files.size() + " files");
 
