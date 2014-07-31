@@ -407,7 +407,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             // TODO: Transactions aren't supported for MyISAM, so this has no effect.
             conn.setAutoCommit(false);
 
-            conn.executePreparedUpdate("CREATE USER ?@'localhost' IDENTIFIED BY ?", user, new String(pass));
+            conn.executePreparedUpdate("CREATE USER ?@'%' IDENTIFIED BY ?", user, new String(pass));
             grantPrivileges(sessID, user, level);
             conn.commit();
         } catch (SQLException sqlx) {
@@ -433,7 +433,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
             //TODO: Check the new password against the current mysql password policy.                                                
             //Change the password
-            conn.executePreparedUpdate("SET PASSWORD FOR ?@'localhost' = PASSWORD(?)", userName, new String(newPass));
+            conn.executePreparedUpdate("SET PASSWORD FOR ? = PASSWORD(?)", userName, new String(newPass));
         } finally {
             for (int i = 0; i < oldPass.length; ++i) {
                 oldPass[i] = 0;
@@ -460,31 +460,31 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
             LOG.info("Granting " + level + " privileges to " + name + " on " + dbName + "...");
             switch (level) {
                 case ADMIN:
-                    conn.executePreparedUpdate("GRANT ALTER, RELOAD, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
-                    conn.executePreparedUpdate(String.format("GRANT GRANT OPTION ON %s.* TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT ALTER, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, DELETE, DROP, INSERT, SELECT, UPDATE ON %s.* TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate("GRANT SELECT ON mysql.user TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT SELECT ON mysql.db TO ?@'localhost'", name);
+                    conn.executePreparedUpdate("GRANT ALTER, RELOAD, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?", name);
+                    conn.executePreparedUpdate(String.format("GRANT GRANT OPTION ON %s.* TO ?", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT ALTER, CREATE, CREATE VIEW, CREATE TEMPORARY TABLES, DELETE, DROP, INSERT, SELECT, UPDATE ON %s.* TO ?", dbName), name);
+                    conn.executePreparedUpdate("GRANT SELECT ON mysql.user TO ?", name);
+                    conn.executePreparedUpdate("GRANT SELECT ON mysql.db TO ?", name);
                     break;
                 case USER:
-                    conn.executePreparedUpdate(String.format("GRANT CREATE TEMPORARY TABLES, SELECT ON %s.* TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT CREATE TEMPORARY TABLES, SELECT ON %s.* TO ?", dbName), name);
 
                     //grant read/write/delete on region sets.
-                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set_membership TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set TO ?", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT SELECT,INSERT,UPDATE,DELETE ON %s.region_set_membership TO ?", dbName), name);
 
                     //Grant read/write/delete on cohorts.
-                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort_membership TO ?@'localhost'", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort TO ?", dbName), name);
+                    conn.executePreparedUpdate(String.format("GRANT INSERT,SELECT,UPDATE,DELETE ON %s.cohort_membership TO ?", dbName), name);
 
-                    conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);
+                    conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?", name);
+                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?", name);
+                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?", name);
                     break;
                 case GUEST:
-                    conn.executePreparedUpdate(String.format("GRANT SELECT ON %s.* TO ?@'localhost'", dbName), name);
-                    conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
+                    conn.executePreparedUpdate(String.format("GRANT SELECT ON %s.* TO ?", dbName), name);
+                    conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?", name);
+                    conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?", name);
 
                     conn.executePreparedUpdate(String.format("GRANT INSERT ON %s.server_log TO ?", dbName), name);
                     // Grant permissions to write comments
@@ -543,7 +543,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
     @Override
     public void removeUser(String sid, String name) throws SQLException, SessionExpiredException, RemoteException {
         PooledConnection conn = ConnectionController.connectPooled(sid);
-        conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
+        conn.executePreparedUpdate("DROP USER ?", name);
         conn.executeQuery("FLUSH PRIVILEGES");
         SettingsManager.getInstance().removeSetting(sid, DATABASE_USER_KEY_PREFIX + name);
         
