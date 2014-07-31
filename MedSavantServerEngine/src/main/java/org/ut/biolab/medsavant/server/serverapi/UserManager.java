@@ -485,7 +485,12 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
                     conn.executePreparedUpdate(String.format("GRANT SELECT ON %s.* TO ?@'localhost'", dbName), name);
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_user_priv) ON mysql.user TO ?@'localhost'", name);
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
-                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?@'localhost'", name);
+
+                    conn.executePreparedUpdate(String.format("GRANT INSERT ON %s.server_log TO ?", dbName), name);
+                    // Grant permissions to write comments
+                    conn.executePreparedUpdate(String.format("GRANT INSERT ON %s.variant_starred TO ?", dbName), name);
+
+                    conn.executePreparedUpdate("GRANT FILE ON *.* TO ?", name);
 
                     break;
             }
@@ -563,7 +568,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
      * Check whether the user associated with the session is an administrator.
      *
      * @param sessionID The session to check.
-     * @param throwAccessDeniedIfNot Whether or not to throw an exception if the
+     * @param throwUnauthorizedExceptionIfNot Whether or not to throw an exception if the
      * user is not an admin.
      * @return Whether the user associated with the session is an administrator.
      */
