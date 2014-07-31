@@ -177,7 +177,7 @@ public class MendelWorker extends MedSavantWorker<TreeMap<MendelVariant, SimpleP
                         retriever);
 
         final SplitScreenPanel ssp = new SplitScreenPanel(stp);
-        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, false, true, true, true, true, true, true, ssp);
+        final ComprehensiveInspector vip = new ComprehensiveInspector(true, false, true, false, true, true, true, true, true, true, ssp);
 
         vip.addSelectionListener(new Listener<Object>() {
             @Override

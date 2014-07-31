@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.client.view.genetics.TablePanel;
 import org.ut.biolab.medsavant.client.view.genetics.inspector.CollapsibleInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.BasicVariantSubInspector;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.BeaconSubInspector;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 
 /**

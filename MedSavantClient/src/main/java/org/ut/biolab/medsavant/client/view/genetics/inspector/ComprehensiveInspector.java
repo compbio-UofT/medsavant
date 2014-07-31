@@ -1,21 +1,15 @@
 /**
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership.
- *
- * This is free software; you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- *
- * This software is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
- * site: http://www.fsf.org.
+ * Copyright (c) 2014 Marc Fiume <mfiume@cs.toronto.edu>
+ * Unauthorized use of this file is strictly prohibited.
+ * 
+ * All rights reserved. No warranty, explicit or implicit, provided.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 package org.ut.biolab.medsavant.client.view.genetics.inspector;
 
@@ -47,6 +41,7 @@ import org.ut.biolab.medsavant.client.view.genetics.variantinfo.SocialVariantSub
 
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
 import org.ut.biolab.medsavant.client.view.component.WaitPanel;
+import org.ut.biolab.medsavant.client.view.genetics.variantinfo.BeaconSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.ClinvarSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.HGMDSubInspector;
 import org.ut.biolab.medsavant.client.view.genetics.variantinfo.OtherIndividualsGeneSubInspector;
@@ -69,6 +64,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public static final int INSPECTOR_INNER_WIDTH = INSPECTOR_WIDTH - 80;
     private GeneSubInspector geneSubInspector;
     private DetailedVariantSubInspector detailedVariantSubInspector;
+    private BeaconSubInspector beaconVariantInspector;
     private SimpleVariantSubInspector simpleVariantInspector;
     private CollapsibleInspector variantCollapsibleInspector;
     private CollapsibleInspector geneCollapsibleInspector;
@@ -124,6 +120,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     private void createSubInspectors(
             boolean createSimpleVariantInspector,
             boolean createDetailedVariantInspector,
+            boolean createBeaconVariantInspector,
             boolean createSocialVariantInspector,
             boolean createGeneSubInspector,
             boolean createOntologySubInspector,
@@ -165,6 +162,11 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         if (createDetailedVariantInspector) {
             detailedVariantSubInspector = new DetailedVariantSubInspector();
             variantCollapsibleInspector.addSubInspector(detailedVariantSubInspector);
+        }
+        
+        if (createBeaconVariantInspector) {
+            beaconVariantInspector = new BeaconSubInspector();
+            variantCollapsibleInspector.addSubInspector(beaconVariantInspector);
         }
 
         if (createSocialVariantInspector) {
@@ -318,6 +320,10 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
                         if (detailedVariantSubInspector != null) {
                             instance.detailedVariantSubInspector.setVariantRecord(r);
                         }
+                        if (beaconVariantInspector != null) {
+                            instance.beaconVariantInspector.setVariantRecord(r);
+                        }
+                        
                         if (instance.otherIndividualsVariantSubInspector != null) {
                             instance.otherIndividualsVariantSubInspector.handleEvent(sv);
                         }
@@ -482,6 +488,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
     public ComprehensiveInspector(
             boolean createSimpleVariantInspector,
             boolean createDetailedVariantInspector,
+            boolean createBeaconVariantInspector,
             boolean createSocialVariantInspector,
             boolean createGeneSubInspector,
             boolean createOntologySubInspector,
@@ -497,6 +504,7 @@ public class ComprehensiveInspector extends JTabbedPane implements Listener<Obje
         createSubInspectors(
                 createSimpleVariantInspector,
                 createDetailedVariantInspector,
+                createBeaconVariantInspector,
                 createSocialVariantInspector,
                 createGeneSubInspector,
                 createOntologySubInspector,

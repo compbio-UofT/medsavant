@@ -59,7 +59,7 @@
             <groupId>edu.toronto.cs.medsavant</groupId>
             <artifactId>jannovar-medsavant-modified</artifactId>
             <version>0.6-beta-3-modified-3</version>
-		</dependency>
+        </dependency>
         <!--
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -245,6 +245,11 @@
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.dnastack</groupId>
+            <artifactId>dnastack-beacon</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
