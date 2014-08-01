@@ -30,6 +30,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -41,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import net.miginfocom.swing.MigLayout;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.client.user.UserController;
 import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.patient.pedigree.PedigreeCanvas;
 import org.ut.biolab.medsavant.client.project.ProjectController;
@@ -58,6 +62,7 @@ import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
 import org.ut.biolab.medsavant.component.field.validator.URLValidator;
 import org.ut.biolab.medsavant.shared.model.Cohort;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
+import org.ut.biolab.medsavant.shared.model.UserLevel;
 
 /**
  *
@@ -67,6 +72,8 @@ public class PatientView extends JPanel implements FieldCommittedListener {
 
     private Patient patient;
     private KeyValuePairPanel profileKVP;
+
+    private boolean isCurrentUserAdmin = false;
 
     // profile keys
     public static final String FATHER_ID = "Father ID";
@@ -97,6 +104,12 @@ public class PatientView extends JPanel implements FieldCommittedListener {
     }
 
     private void initView() {
+        try {
+            isCurrentUserAdmin = MedSavantClient.UserManager.getSessionUsersLevel(LoginController.getSessionID()) == UserLevel.ADMIN;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.setLayout(new BorderLayout());
         content = new StandardFixableWidthAppPanel();
         this.add(content, BorderLayout.CENTER);
@@ -109,7 +122,6 @@ public class PatientView extends JPanel implements FieldCommittedListener {
     }
 
     private void initBlocks() {
-
         JPanel subsectionBasicInfo = content.addBlock("Basic Information");
         JPanel subsectionCohort = content.addBlock("Cohort(s)");
         JPanel subsectionGenetics = content.addBlock("Genetics");
@@ -139,7 +151,9 @@ public class PatientView extends JPanel implements FieldCommittedListener {
 
         subsectionCohort.setLayout(new MigLayout("insets 0"));
         subsectionCohort.add(cohortListPanel, "wrap");
-        subsectionCohort.add(addToCohortButton);
+        if (isCurrentUserAdmin) {
+            subsectionCohort.add(addToCohortButton);
+        }
 
         profileKVP = getKVP();
 
@@ -368,6 +382,19 @@ public class PatientView extends JPanel implements FieldCommittedListener {
         phenotypeField.setTag(PHENOTYPE);
         phenotypeField.setValue(patient.getPhenotypes());
         phenotypeField.addFieldComittedListener(this);
+
+        if (!isCurrentUserAdmin) {
+            individualIDField.setAutonomousEditingEnabled(false);
+            sexField.setAutonomousEditingEnabled(false);
+            affectedField.setAutonomousEditingEnabled(false);
+            motherField.setAutonomousEditingEnabled(false);
+            fatherField.setAutonomousEditingEnabled(false);
+            individualIDField.setAutonomousEditingEnabled(false);
+            familyIDField.setAutonomousEditingEnabled(false);
+            bamURLField.setAutonomousEditingEnabled(false);
+            dnaIDField.setAutonomousEditingEnabled(false);
+            phenotypeField.setAutonomousEditingEnabled(false);
+        }
 
         phenotypeKVP.setValue(PatientView.PHENOTYPE, phenotypeField);
 
