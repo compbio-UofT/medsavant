@@ -54,12 +54,6 @@
             <artifactId>java-getopt</artifactId>
             <version>1.0.13</version>
         </dependency>
-        <dependency>
-            <!-- This version of Jannovar has been modified to only accumulate a max of 1000 warning messages in memory -->
-            <groupId>edu.toronto.cs.medsavant</groupId>
-            <artifactId>jannovar-medsavant-modified</artifactId>
-            <version>0.6-beta-3-modified-3</version>
-		</dependency>
         <!--
         <dependency>
             <groupId>org.apache.commons</groupId>
