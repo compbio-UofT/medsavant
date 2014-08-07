@@ -4,10 +4,11 @@
      "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
 
 <web-app>
-    <!-- Path to config.properties file, within the servlet context -->
+
+      <!-- : separates paths to config.properties file, listed in order of precedence.  Relative paths are assumed to be relative to the application root -->
     <context-param>
         <param-name>MedSavantConfigFile</param-name>
-        <param-value>/config.properties</param-value>
+        <param-value>config.properties:/etc/medsavantjson/config.properties</param-value>
     </context-param>
 
     <servlet>
