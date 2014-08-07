@@ -5,7 +5,7 @@ MedSavant JSON Client
 
 1. In this directory, run `mvn install`
 2. Run MedSavant Server
-3. Edit `./src/main/resources/config.properties` and enter the server's details
+3. Edit `./target/classes/config.properties` and enter the server's details
 4. In this directory, run `mvn jetty:run`
 5. Open the web browser to [http://localhost:8090/medsavant-json-client/testing](http://localhost:8090/medsavant-json-client/testing)
 
