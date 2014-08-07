@@ -335,7 +335,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
 
         Registry registry;
 
-        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
+        LOG.info("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
 
         try {
             registry = LocateRegistry.getRegistry(serverAddress, port, new SslRMIClientSocketFactory());
@@ -347,12 +347,12 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         } catch (ConnectIOException ex) {
             if (ex.getCause() instanceof SSLHandshakeException) {
                 registry = LocateRegistry.getRegistry(serverAddress, port);
-                LOG.debug("Retrieving adapters...");
+                LOG.info("Retrieving adapters...");
                 setAdaptersFromRegistry(registry);
                 LOG.info("Connected without SSL/TLS encryption");
             }
         }
-        LOG.debug("Done");
+        LOG.info("Done");
 
     }
 
