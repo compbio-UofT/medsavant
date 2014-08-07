@@ -10,11 +10,14 @@ package org.medsavant.api.variantstorage;
  *
  * @author jim
  */
-public interface PublicationStatus {
+public enum PublicationStatus {
+    PENDING, PUBLISHED, NOT_DELETED, DELETED;
+    /*
     public void setPending();
     public void setPublished();
     public void setDeleted();
     public boolean isPending();
     public boolean isPublished();
     public boolean isDeleted();
+    */
 }

@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.schema;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -137,7 +137,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
     private void createTables(String sessID) throws IOException, SQLException, RemoteException, SessionExpiredException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             conn.executeUpdate(
@@ -464,69 +464,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
     }
 
-    public static String getVariantFileIBTableName() {
-        TableSchema table = MedSavantDatabase.VariantFileIBTableSchema;
-        return table.getTableName();
-    }
-
-    public static synchronized TableSchema makeTemporaryVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
-        int i = 0;
-        String tableName;
-        final String suffixPrefix = "_ib_tmp";
-        String suffix;
-        do {
-            suffix = suffixPrefix + i;
-            tableName = VariantFileTableSchema.TABLE_NAME_PREFIX + suffix;
-            i++;
-        } while (DBUtils.tableExists(sid, tableName));
-
-        makeVariantFileTable(sid, true, tableName, BRIGHTHOUSE_ENGINE);
-        return new MedSavantDatabase.VariantFileTableSchema(schema, suffix);
-
-    }
-
-    public static void makeVariantFileIBTable(String sid) throws IOException, SQLException, SessionExpiredException {
-        makeVariantFileTable(sid, true);
-    }
-
-    public static void makeVariantFileTable(String sid, boolean brighthouse) throws IOException, SQLException, SessionExpiredException {
-        String tableName;
-        String engine;
-
-        if (brighthouse) {
-            tableName = getVariantFileIBTableName();
-            engine = BRIGHTHOUSE_ENGINE;
-        } else {
-            tableName = MedSavantDatabase.VariantFileTableSchema.getTableName();
-            engine = MYISAM_ENGINE;
-        }
-        makeVariantFileTable(sid, brighthouse, tableName, engine);
-    }
-
-    private static void makeVariantFileTable(String sid, boolean brighthouse, String tableName, String engine) throws IOException, SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.VariantFileTableSchema;
-
-        String extras = "";
-        if (!brighthouse) {
-            extras = ",UNIQUE(upload_id, file_id), UNIQUE(file_id)";
-        }
-        ConnectionController.executeUpdate(sid, "DROP TABLE IF EXISTS " + tableName);
-        String query = "CREATE TABLE  `" + tableName + "` ("
-                + "`upload_id` int(11) NOT NULL,"
-                + "`file_id` int(11) NOT NULL " + (brighthouse ? "" : "AUTO_INCREMENT") + ","
-                + "`project_id` int(11) NOT NULL,"
-                + "`reference_id` int(11) NOT NULL,"
-                + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL"
-                + extras
-                + ") ENGINE=" + engine + " DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
-
-        LOG.info(query);
-        ConnectionController.executeUpdate(sid, query);
-
-        if (brighthouse) {
-            DBUtils.copyTable(sid, MedSavantDatabase.VariantFileTableSchema.getTableName(), getVariantFileIBTableName());
-        }
-    }
+  
 
     /**
      * Create a <i>root</i> user if MySQL does not already have one.

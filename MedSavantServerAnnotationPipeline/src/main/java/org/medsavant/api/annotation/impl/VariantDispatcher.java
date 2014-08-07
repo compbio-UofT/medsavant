@@ -20,19 +20,21 @@ import org.medsavant.api.annotation.VariantWindow;
 import org.medsavant.api.annotation.VariantWindowException;
 import org.medsavant.api.common.GenomicVariant;
 import org.medsavant.api.common.JobProgressMonitor;
+import org.medsavant.api.common.MedSavantDatabaseException;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.Reference;
+import org.medsavant.api.common.MedSavantUpdate;
 import org.medsavant.api.common.VariantType;
 import org.medsavant.api.common.Zygosity;
 import org.medsavant.api.common.impl.GenomicVariantFactory;
 import org.medsavant.api.common.impl.MedSavantServerJob;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 import org.medsavant.api.variantstorage.GenomicVariantRecord;
 import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
-import org.medsavant.api.variantstorage.impl.GenomicVariantRecordImpl;
+import org.ut.biolab.medsavant.server.serverapi.LogManager;
+
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -88,7 +90,8 @@ public class VariantDispatcher {
     private int numInvalidGT = 0;
     private int numHom = 0;
     private int numHet = 0;
-
+    private int numVariants = 0;
+    
     private static final long MAX_WARNINGS = 1000;
     private long warningsEmitted = 0;
 
@@ -98,9 +101,8 @@ public class VariantDispatcher {
     private final static int TDF_INDEX_OF_CHROM = 4;
     private final static int TDF_INDEX_OF_STARTPOS = 5;
 
-    private int numVariants = 0;
-    private String sessID;
-    private MedSavantFile vcfFile;
+       
+    private MedSavantFile processedVCFFile;
 
     private JobProgressMonitor jobProgressMonitor;
     private MedSavantServerContext serverContext;
@@ -109,7 +111,8 @@ public class VariantDispatcher {
 
     private int blockSize = 10000; //can be overridden with configuration
 
-    private MedSavantVariantStorageEngine storageEngine;
+    private final MedSavantVariantStorageEngine storageEngine;
+    private final MedSavantUpdate medSavantUpdate;
 
     //These variables control how bad refs are reported or handled.
     private static final boolean TOOLONG_REFS_GIVE_WARNING = true;
@@ -166,15 +169,12 @@ public class VariantDispatcher {
         public boolean containsGenotypeInformation() {
             return !this.genotypeLabels.isEmpty();
         }
-    }
+    }                    
 
-    private void dispatchBlockToAnnotators(final MedSavantSession session,
-            int updId,
-            MedSavantFile originalFile,
+    private void dispatchBlockToAnnotators(final MedSavantSession session,           
             List<String> dnaIds,
-            final VariantWindow variantWindow,
-            final Reference reference,
-            List<VariantAnnotator> stageOneAnnotators) throws VariantWindowException {
+            final VariantWindow variantWindow,            
+            List<VariantAnnotator> stageOneAnnotators, int fileId) throws VariantWindowException, MedSavantDatabaseException {
 
         List<MedSavantServerJob> jobs = new ArrayList<MedSavantServerJob>(stageOneAnnotators.size());
         final List<List<String[]>> results
@@ -187,7 +187,7 @@ public class VariantDispatcher {
                 @Override
                 public boolean run() throws Exception {
                     getJobProgressMonitor().setMessage("Annotating block with " + ann.getComponentName());
-                    List<String[]> annotations = ann.annotate(session, jobProgressMonitor, variantWindow, reference);
+                    List<String[]> annotations = ann.annotate(session, jobProgressMonitor, variantWindow, medSavantUpdate.getReference());
                     results.add(index, annotations);
                     getJobProgressMonitor().setMessage("Done");
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -219,8 +219,8 @@ public class VariantDispatcher {
         List<GenomicVariantRecord> genomicVariantRecords = new ArrayList<GenomicVariantRecord>(variantWindow.getNumVariants());
         //create the genomicvariantRecords.
         for (GenomicVariant gv : variantWindow) {
-            String dnaId = dnaIds.get(j);
-            GenomicVariantRecord gvr = new GenomicVariantRecordImpl(gv, updId, originalFile, dnaId);
+            String dnaId = dnaIds.get(j);            
+            GenomicVariantRecord gvr = new GenomicVariantRecord(gv, fileId, dnaId);
 
             int k = 0;
             for (VariantAnnotator va : stageOneAnnotators) {
@@ -231,14 +231,15 @@ public class VariantDispatcher {
             ++j;
         }
 
-        storageEngine.addVariants(genomicVariantRecords, updId);
+        storageEngine.addVariants(genomicVariantRecords, medSavantUpdate);
 
     }
 
-    private void dispatchToAnnotators(MedSavantSession session, int updId, MedSavantFile originalFile, File inputFile, List<VariantAnnotator> stageOneAnnotators, Reference reference) throws IOException {
+    // dispatchToAnnotators(session, MedSavantFileVCFFile )
+    private void dispatchToAnnotators(MedSavantSession session, File sortedFile,  List<VariantAnnotator> stageOneAnnotators, int fileId) throws IOException, MedSavantDatabaseException {
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new FileReader(inputFile));
+            in = new BufferedReader(new FileReader(sortedFile));
 
             String line;
             int bs = 0;
@@ -254,14 +255,14 @@ public class VariantDispatcher {
                 dnaIds.add(dnaId);
 
                 if (variantWindow.getNumVariants() == blockSize) {
-                    dispatchBlockToAnnotators(session, updId, originalFile, dnaIds, variantWindow, reference, stageOneAnnotators);
+                    dispatchBlockToAnnotators(session, dnaIds, variantWindow, stageOneAnnotators, fileId);
                     variantWindow.clear();
                     dnaIds.clear();
                 }
             }
             in.close();
             if (variantWindow.getNumVariants() > 0) {
-                dispatchBlockToAnnotators(session, updId, originalFile, dnaIds, variantWindow, reference, stageOneAnnotators);
+                dispatchBlockToAnnotators(session, dnaIds, variantWindow, stageOneAnnotators, fileId);
             }
             /*
              //all work dispatched to annotators for this file.  
@@ -272,16 +273,16 @@ public class VariantDispatcher {
              ann.annotate(username, jobProgressMonitor, annotationBlock, null);
              }*/
         } catch (FileNotFoundException fnfe) {
-            LOG.error("File " + inputFile + " was not found.", fnfe);
-            throw new IOException("File " + inputFile + " was not found.", fnfe);
+            LOG.error("File " + sortedFile + " was not found.", fnfe);
+            throw new IOException("File " + sortedFile + " was not found.", fnfe);
         } catch (VariantWindowException vwe) {
-            throw new IOException("File " + inputFile + " resulted in errors.  Aborting file import", vwe);
+            throw new IOException("File " + sortedFile + " resulted in errors.  Aborting file import", vwe);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException ie) {
-                    LOG.error("IO error while closing file " + inputFile, ie);
+                    LOG.error("IO error while closing file " + sortedFile, ie);
                 }
             }
         }
@@ -361,9 +362,10 @@ public class VariantDispatcher {
       //CustomField[] customFields = ProjectManager.getInstance().getCustomVariantFields(sessionID, projectID, referenceID, ProjectManager.getInstance().getNewestUpdateID(sessionID, projectID, referenceID, false));  
     }
 
-    public VariantDispatcher(MedSavantServerContext serverContext, MedSavantVariantStorageEngine storageEngine) {
+    public VariantDispatcher(MedSavantServerContext serverContext, MedSavantVariantStorageEngine storageEngine, MedSavantUpdate medsavantUpdate) {                
         this.serverContext = serverContext;
         this.storageEngine = storageEngine;
+        this.medSavantUpdate = medsavantUpdate; 
     }
 
     /**
@@ -378,30 +380,33 @@ public class VariantDispatcher {
      * @param jpm
      * @param annotators
      * @throws IOException
-     */
-    public void dispatch(MedSavantSession session, int updId, MedSavantFile vcfFile, JobProgressMonitor jpm, List<VariantAnnotator> annotators, Reference reference) throws IOException, VariantWindowException, MedSavantSecurityException {
-        this.vcfFile = vcfFile;
+     */    
+    public void dispatch(MedSavantSession session, MedSavantFile processedVCFFile, JobProgressMonitor jpm, List<VariantAnnotator> annotators, int fileId) throws IOException, VariantWindowException, MedSavantSecurityException {
+        this.processedVCFFile = processedVCFFile;
         this.jobProgressMonitor = jpm;
         InputStream is = null;
+       
         //create the outputFile.
         try {
             File outputFile = serverContext.getTemporaryFile(session);
             try {
-                is = serverContext.getMedSavantFileDirectory().getInputStream(session, vcfFile);
+                is = serverContext.getMedSavantFileDirectory().getInputStream(session, processedVCFFile);
             } catch (MedSavantFileDirectoryException mfde) {
-                String str = "Couldn't locate VCF file "+vcfFile.getName()+" in VCF file directory.";
+                String str = "Couldn't locate VCF file "+processedVCFFile.getName()+" in VCF file directory.";
                 LOG.error(str);
                 throw new IOException(mfde);
             } 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             parseVariantsFromReader(br, outputFile, includeHomozygousRefs);
-            dispatchToAnnotators(session, updId, vcfFile, outputFile, annotators, reference);
+            dispatchToAnnotators(session, outputFile, annotators, fileId); 
+        } catch(MedSavantDatabaseException mde){
+            throw new VariantWindowException("ERROR: Couldn't store variant window", mde);
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException ioe) {
-                    LOG.error("WARNING: Couldn't close input stream from file " + vcfFile.getName(), ioe);
+                    LOG.error("WARNING: Couldn't close input stream from file " + processedVCFFile.getName(), ioe);
                 }
             }
         }
@@ -469,7 +474,7 @@ public class VariantDispatcher {
             }
 
             String s = "Processed " + numRecords + " lines (" + numLinesWritten + " variants) so far...";
-            jobProgressMonitor.setMessage(vcfFile.getName() + " - " + s);
+            jobProgressMonitor.setMessage(processedVCFFile.getName() + " - " + s);
             if (numRecords % 100000 == 0 && numRecords != 0) {
                 LOG.info(s);
             }
@@ -647,8 +652,8 @@ public class VariantDispatcher {
     }
 
     private void messageToUser(LogManagerAdapter.LogType logtype, String msg) {
-        try {
-            org.ut.biolab.medsavant.server.serverapi.LogManager.getInstance().addServerLog(
+        try {            
+            LogManager.getInstance().addServerLog(
                     sessID,
                     logtype,
                     msg);
@@ -664,10 +669,10 @@ public class VariantDispatcher {
 
     private void vcf_warning(String msg) {
         if (warningsEmitted < MAX_WARNINGS) {
-            String warning = vcfFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
+            String warning = processedVCFFile.getName() + ": WARNING (line " + lineNumber + "): " + msg;
             messageToUser(LogManagerAdapter.LogType.WARNING, warning);
         } else if (warningsEmitted == MAX_WARNINGS) {
-            String warning = vcfFile.getName() + ": Further warnings have been truncated.";
+            String warning = processedVCFFile.getName() + ": Further warnings have been truncated.";
             messageToUser(LogManagerAdapter.LogType.WARNING, warning);
         }
         warningsEmitted++;
@@ -993,7 +998,7 @@ public class VariantDispatcher {
         }
 
         if ((lineNumber % LINES_PER_PROGRESSREPORT) == 0) {
-            messageToUser(LogManagerAdapter.LogType.INFO, vcfFile.getName() + ": Loaded " + lineNumber + " variants...");
+            messageToUser(LogManagerAdapter.LogType.INFO, processedVCFFile.getName() + ": Loaded " + lineNumber + " variants...");
         }
         return records;
     }

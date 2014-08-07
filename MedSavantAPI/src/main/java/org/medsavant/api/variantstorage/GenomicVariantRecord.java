@@ -6,38 +6,73 @@
 
 package org.medsavant.api.variantstorage;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
 import org.medsavant.api.annotation.MedSavantAnnotation;
 import org.medsavant.api.common.GenomicVariant;
-import org.medsavant.api.common.storage.MedSavantFile;
 
-/**
- * A genomic variant record parsed from a VCF file.  This is a genomic variant
- * with additional fields storing which patients had this variant, and the source 
- * file from which this variant is parsed.
- * @author jim
- */
-public interface GenomicVariantRecord {
-    /**
-     * 
-     * @return The DNA Identifiers that have this variant.
-     */
-    /*
-    public Collection<String> getDNAIds();
-    public Collection<VCFFile> getSourceFiles();
-    public GenomicVariant getGenomicVariant();    
-    public GenomicVariantRecord create(GenomicVariant v, Collection<VCFFile> sourceFiles, Collection<String> dnaIds);
-    public void addAnnotation(VaTabixAnnotation, String val);    
-    public Map<Annotation, String> getAnnotations();
-    */
+public class GenomicVariantRecord {
+    private final GenomicVariant genomicVariant;    
+    private Map<MedSavantAnnotation, List<String[]>> valueMap;                
+    private final String dnaId;
+    private final int fileId;
+    private final int variantId;    
     
-    public GenomicVariant getGenomicVariant();
-    public int getUploadId(); //job id
-    public MedSavantFile getVCFFile();
-    public String getDNAId();   
-    public int getVariantId();    
-    public void addAnnotationValues(MedSavantAnnotation annotation, List<String[]> annotationValues);
-    public Set<MedSavantAnnotation> getAppliedAnnotations();
-    public List<String[]> getAnnotationValues(MedSavantAnnotation a);        
+    public GenomicVariantRecord(GenomicVariant genomicVariant, int fileId, String dnaId){
+        this(genomicVariant, dnaId, fileId, -1);
+    }
+    
+    public GenomicVariantRecord(GenomicVariant genomicVariant, String dnaId, int fileId, int variantId){
+        this.genomicVariant = genomicVariant;
+        this.dnaId = dnaId;  
+        this.variantId = variantId;    
+        this.fileId = fileId;
+        valueMap = new HashMap<MedSavantAnnotation, List<String[]>>();
+    }
+
+    public void addAnnotationValues(MedSavantAnnotation annotation, List<String[]> annotationValues) {        
+        valueMap.put(annotation, annotationValues);
+    }
+    
+    public GenomicVariant getGenomicVariant() {
+        return genomicVariant;        
+    }
+    
+    public int getFileID() {
+        return fileId;
+    }
+   
+    public String getDNAId() {
+        return dnaId;
+    }
+   
+    public int getVariantId() {
+        return variantId;
+    }
+   
+    public Set<MedSavantAnnotation> getAppliedAnnotations() {
+        return valueMap.keySet();
+    }
+
+    public List<String[]> getAnnotationValues(MedSavantAnnotation a) {
+        return valueMap.get(a);        
+    }
+    
+   /*
+    public String toTabString(List<MedSavantAnnotation> annotations){    
+        String s = fileId
+        +"\t"+variantId        
+        +"\t"+dnaId
+        +"\t"+genomicVariant.toTabString();
+        
+        if(annotations != null && annotations.size() > 0){
+            for(MedSavantAnnotation msa : annotations){
+                List<String[]> annotationVal = getAnnotationValues(msa);
+            }
+        }
+    }*/
+ 
 }

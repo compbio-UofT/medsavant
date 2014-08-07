@@ -6,7 +6,6 @@
 package org.medsavant.api.filestorage;
 
 import org.medsavant.api.common.Reference;
-import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
  * A VCF file.

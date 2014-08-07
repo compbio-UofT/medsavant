@@ -41,10 +41,10 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ChromosomeTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.GeneSetColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
+import org.medsavant.api.variantstorage.impl.schemas.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -218,7 +218,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             SelectQuery q1 = new SelectQuery();
             q1.addFromTable(annotationTable.getTable());

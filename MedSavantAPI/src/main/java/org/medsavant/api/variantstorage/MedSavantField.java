@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package org.medsavant.api.annotation;
+package org.medsavant.api.variantstorage;
 
 /**
  * A single field (e.g. description of a column in a database or tabix file).
@@ -27,7 +27,7 @@ public interface MedSavantField{
     String generateSchema();
 
     String generateSchema(boolean forceLowerCase);
-
+  
     String getAlias();
 
     Class getColumnClass();

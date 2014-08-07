@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.OntologyInfoColumns;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.model.Ontology;
 import org.ut.biolab.medsavant.shared.model.OntologyTerm;
 import org.ut.biolab.medsavant.shared.model.OntologyType;
@@ -69,7 +69,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     private static OntologyManager instance;
 
-    private PooledConnection connection;
+    private MedSavantJDBCPooledConnection connection;
     private final TableSchema ontologySchema;
     private final TableSchema ontologyInfoSchema;
 
@@ -103,7 +103,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 break;
         }
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.executePreparedUpdate(ontologyInfoSchema.delete(ONTOLOGY_NAME, name).toString());
             conn.executePreparedUpdate(ontologyInfoSchema.preparedInsert(TYPE, ONTOLOGY_NAME, OBO_URL, MAPPING_URL).toString(), type.toString(), name, oboData.toString(), mappingData.toString());
@@ -114,13 +114,13 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     @Override
     public void removeOntology(String sessID, String ontName) throws IOException, SQLException, RemoteException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Ontology[] getOntologies(String sessID) throws SQLException, RemoteException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             List<Ontology> results = new ArrayList<Ontology>();
             ResultSet rs = conn.executePreparedQuery(ontologyInfoSchema.distinct().select(TYPE, ONTOLOGY_NAME, OBO_URL, MAPPING_URL).toString());
@@ -142,7 +142,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     public OntologyTerm[] getAllTerms(String sessID, OntologyType ont) throws InterruptedException, SQLException, SessionExpiredException {
         makeProgress(sessID, "Connecting...", 0.0);
         List<OntologyTerm> result = new ArrayList<OntologyTerm>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             double prog = 0.2;
             makeProgress(sessID, "Executing query...", prog);
@@ -163,7 +163,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public String[] getGenesForTerm(String sessID, OntologyTerm term, String refID) throws SQLException, SessionExpiredException {
         List<String> result = new ArrayList<String>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             ResultSet rs = conn.executePreparedQuery(ontologySchema.where(ID, term.getID(), ONTOLOGY, term.getOntology().toString()).select(GENES));
 
@@ -192,7 +192,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public Map<OntologyTerm, String[]> getGenesForTerms(String sessID, OntologyTerm[] terms, String refID) throws SQLException, SessionExpiredException {
         Map<OntologyTerm, String[]> result = new HashMap<OntologyTerm, String[]>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             StringBuilder termsString = new StringBuilder("\'");
             if (terms.length > 0) {
@@ -231,7 +231,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws SQLException, SessionExpiredException {
         List<OntologyTerm> result = new ArrayList<OntologyTerm>();
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             if (ont != null) {
                 ResultSet rs = conn.executePreparedQuery("SELECT id,name,def,alt_ids,parents FROM ontology WHERE ontology=? AND INSTR(genes, ?)", ont.toString(), "|" + geneName + "|");
@@ -251,7 +251,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     public OntologyTerm getOntologyTerm(String sessID, OntologyType ont, String ontologyId) throws SQLException, SessionExpiredException{
-        PooledConnection conn = null;
+        MedSavantJDBCPooledConnection conn = null;
         ResultSet rs = null;
         try {
             conn = ConnectionController.connectPooled(sessID);

@@ -5,15 +5,18 @@
  */
 package org.medsavant.api.common;
 
+import java.util.List;
+import org.medsavant.api.annotation.MedSavantAnnotation;
+import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
+
 /**
  *
  * @author jim
  */
 public interface MedSavantProject {
-
+    public int getProjectId();
     public String getProjectName();
-
+    public List<MedSavantAnnotation> getInstalledAnnotations(MedSavantVariantStorageEngine mvse);
     public String getDatabaseName();
 
-    public int getProjectId();
 }

@@ -26,6 +26,7 @@ import org.medsavant.api.common.storage.ColumnType;
  * Class which defines the basic columns which are always required for patient tables.
  * Used by both client and server.
  */
+@Deprecated
 public interface BasicPatientColumns {
 
     public static int INDEX_OF_PATIENT_ID = 0;

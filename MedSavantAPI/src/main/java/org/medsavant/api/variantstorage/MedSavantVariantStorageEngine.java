@@ -6,34 +6,53 @@
 
 package org.medsavant.api.variantstorage;
 
+
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.medsavant.api.annotation.TabixAnnotation;
+import org.medsavant.api.common.MedSavantDatabaseException;
+import org.medsavant.api.common.MedSavantProject;
 import org.medsavant.api.common.MedSavantSecurityException;
+import org.medsavant.api.common.MedSavantServerComponent;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.storage.MedSavantFile;
-import org.medsavant.api.variantstorage.VariantFilterBuilder.VariantFilter;
+import org.medsavant.api.common.MedSavantUpdate;
+import org.medsavant.api.common.Reference;
+import org.medsavant.api.filestorage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
+
 
 
 /**
  *
  * @author jim
  */
-public interface MedSavantVariantStorageEngine {           
+public interface MedSavantVariantStorageEngine extends MedSavantServerComponent{      
+        
+    public MedSavantUpdate registerUpdate(MedSavantSession session, List<MedSavantFile> files, MedSavantProject project, Reference reference) throws MedSavantDatabaseException;
+    
+    /**
+     * 
+     * @return The version of this database.
+     */
+    public String getVersion() throws MedSavantDatabaseException;
+    
     /**
      * Counts all variants that satisfy the given condition, and that possess the given status.
      * 
      * @param filter - Conditions on which to restrict the search
+     * @param estimateAllowed - If true, then an estimate of the true count is sufficient.
      */ 
-    public int countVariants(VariantFilter filter);
+    public int countVariants(VariantFilter filter, boolean estimateAllowed) throws MedSavantDatabaseException;
 
     /**
      * Counts all variants that satisfy the given condition, AND that originated from one 
      * of the given files.
+     * @param estimateAllowed - If true, then an estimate of the true count is sufficient.
      */
-    public int countVariantsInFile(VariantFilter filter, Collection<MedSavantFile> files);
-				    
+    public int countVariantsInFile(VariantFilter filter, Collection<MedSavantFile> files, boolean estimateAllowed) throws MedSavantDatabaseException;
+			    
     /**
      * Exports variants to a file.
      * 
@@ -42,8 +61,9 @@ public interface MedSavantVariantStorageEngine {
      *
      * @return The VCF file containing the exported variants.
      */
-    public MedSavantFile exportVariants(VariantFilter filter, boolean orderedByPosition, boolean compressOutput);
+    public MedSavantFile exportVariants(MedSavantSession session, VariantFilter filter, boolean orderedByPosition, boolean compressOutput) throws MedSavantDatabaseException, MedSavantSecurityException, MedSavantFileDirectoryException;
 
+    
     /**
      * Returns a list of variants that satisfy the filtering criteria.  'offset' and 'limit'
      * control pagination.  orderBy may be null if no particular ordering is desired.
@@ -65,7 +85,7 @@ public interface MedSavantVariantStorageEngine {
      * @param limit - Number of variants to return.
      * @param orderBy - Orders the results by the given fields.
      */
-    public List<GenomicVariantRecord> getVariantRecords(VariantFilter filter, long offset, int limit, VariantField[] orderBy);
+    public List<GenomicVariantRecord> getVariantRecords(VariantFilter filter, long offset, int limit, VariantField[] orderBy) throws MedSavantDatabaseException;
   
     
     /**
@@ -74,20 +94,22 @@ public interface MedSavantVariantStorageEngine {
      * field will be equal to the number of distinct values for the field.  If field[i] is numeric and
      * numBins[i] > 0, then field[i] will be binned into numBins[i] ranges.  
      **/
-    public Map<String[], Integer> getHistogram(VariantFilter filter, VariantField[] field, int[] numBins);
+    public Map<String[], Integer> getHistogram(VariantFilter filter, VariantField[] field, int[] numBins) throws MedSavantDatabaseException;
   
+    
     /**
      * Counts all patients that have variants satisfying the given filter
      */
-    public int countPatientsWithVariants(VariantFilter filter);
+    public int countPatientsWithVariants(VariantFilter filter) throws MedSavantDatabaseException;
 
+    
     /**
      * Sets the status of the variant batch with the given updateID, for the project and reference given.
      */
-    public void setVariantStatus(MedSavantSession session, int referenceId, int updateID, PublicationStatus status);
+    public void setVariantStatus(MedSavantSession session, int referenceId, int updateID, PublicationStatus status) throws MedSavantDatabaseException;
 
     
-    public void addVariants(Collection<GenomicVariantRecord> variantRecords,int updateId);
+    public void addVariants(Collection<GenomicVariantRecord> variantRecords, MedSavantUpdate update) throws MedSavantDatabaseException;
     
     /**
      * Uploads a batch of variants.  This method might be called multiple times with the same variantFile, each time with a new
@@ -98,15 +120,15 @@ public interface MedSavantVariantStorageEngine {
      * 
      * deprecated
      */
-    public int addVariants(MedSavantSession session, int referenceId, Collection<GenomicVariantRecord> variantRecords, MedSavantFile variantFile);    
+    public int addVariants(MedSavantSession session, int referenceId, Collection<GenomicVariantRecord> variantRecords, MedSavantFile variantFile) throws MedSavantDatabaseException;    
 
     /**
      * Adds the given annotation.  If there are existing variants, they should be annotated with these annotations.
      * @param ann 
      */
-    public void addAnnotations(Collection<TabixAnnotation> annotations) throws UnsupportedOperationException;
+    public void addAnnotations(Collection<TabixAnnotation> annotations) throws MedSavantDatabaseException;;
     
-    public void removeAnnotation(Collection<TabixAnnotation> annotations) throws UnsupportedOperationException;
+    public void removeAnnotation(Collection<TabixAnnotation> annotations) throws MedSavantDatabaseException;
         
         
     
@@ -118,7 +140,7 @@ public interface MedSavantVariantStorageEngine {
      * @return A new update identifier used to identify this update.
      * @throws MedSavantSecurityException If the user doesn't have permission to update.     
      */
-    public int startUpdate(MedSavantSession session) throws MedSavantSecurityException, IllegalArgumentException;
+    //public int startUpdate(MedSavantSession session) throws MedSavantSecurityException, IllegalArgumentException;
     
     
     /**
@@ -130,6 +152,7 @@ public interface MedSavantVariantStorageEngine {
     //alias: cancelPublish
     public void cancelUpdate(MedSavantSession session, int updateId);
     
+    public void endUpdate(MedSavantSession session, MedSavantUpdate update) throws MedSavantDatabaseException;
     /////////////////
     //UNCERTAIN PARTS
     /////////////////    

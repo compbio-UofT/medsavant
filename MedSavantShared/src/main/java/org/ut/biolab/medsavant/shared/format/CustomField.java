@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
-import org.medsavant.api.annotation.MedSavantField;
+import org.medsavant.api.variantstorage.MedSavantField;
 
 import org.ut.biolab.medsavant.shared.db.ColumnDefImpl;
 import org.medsavant.api.common.storage.ColumnType;
@@ -70,6 +70,7 @@ public class CustomField extends ColumnDefImpl implements Serializable, MedSavan
         }
     }
 
+    
     public CustomField(String n, ColumnType t, int l, boolean autoInc, boolean notNull, boolean indexed, String dflt, boolean filterable, String alias, String description) {
         super(n, t, l, 0, autoInc, notNull, indexed, dflt);
         this.filterable = filterable;

@@ -6,7 +6,7 @@
 
 package org.medsavant.api.annotation;
 
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 
 /**
  * Describes a tabix annotation file.  

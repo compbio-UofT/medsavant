@@ -41,7 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
@@ -228,7 +228,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLENAME), roleName);
         iq.addColumn(roleTable.getDBColumn(MedSavantDatabase.UserRoleTableSchema.COLUMNNAME_OF_ROLE_DESCRIPTION), roleDescription);
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = null;
         ResultSet res = null;
         int roleId = -1;
@@ -399,7 +399,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
      */
     @Override
     public synchronized void addUser(String sessID, String user, char[] pass, UserLevel level) throws SQLException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             if (user.startsWith(DATABASE_USER_KEY_PREFIX)) {
                 throw new SQLException("Can't create user " + user + " -- illegal username");
@@ -424,7 +424,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     @Override
     public synchronized void changePassword(String sessID, String userName, char[] oldPass, char[] newPass) throws SQLException, RemoteException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.setAutoCommit(true);
 
@@ -454,7 +454,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
      */
     @Override
     public void grantPrivileges(String sessID, String name, UserLevel level) throws SQLException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             String dbName = ConnectionController.getDBName(sessID);
             LOG.info("Granting " + level + " privileges to " + name + " on " + dbName + "...");
@@ -513,7 +513,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
         if (userExists(sessID, name)) {
             // If the user can create other users, they're assumed to be admin.
-            PooledConnection conn = ConnectionController.connectPooled(sessID);
+            MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
             try {
                 ResultSet rs = conn.executePreparedQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?", name);
                 if (rs.next()) {
@@ -537,7 +537,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
 
     @Override
     public void removeUser(String sid, String name) throws SQLException, SessionExpiredException, RemoteException {
-        PooledConnection conn = ConnectionController.connectPooled(sid);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sid);
         conn.executePreparedUpdate("DROP USER ?@'localhost'", name);
         conn.executeQuery("FLUSH PRIVILEGES");
         SettingsManager.getInstance().removeSetting(sid, DATABASE_USER_KEY_PREFIX + name);

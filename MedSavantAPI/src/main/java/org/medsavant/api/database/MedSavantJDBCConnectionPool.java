@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.server.db;
+package org.medsavant.api.database;
 
 import java.sql.*;
 import java.util.*;
@@ -31,21 +31,23 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Andrew
  */
-public class ConnectionPool {
+public class MedSavantJDBCConnectionPool {
 
-    private static final Log LOG = LogFactory.getLog(ConnectionPool.class);
+    private static final Log LOG = LogFactory.getLog(MedSavantJDBCConnectionPool.class);
     private static final long TIMEOUT = 60000;
 
-    private final List<PooledConnection> connections;
+    private MedSavantJDBCDatabase databaseProvider;
+    private final List<MedSavantJDBCPooledConnection> connections;
     private final String user, password;
     private String dbName;
     private ConnectionReaper reaper;
 
-    public ConnectionPool(String db, String user, String password) {
+    public MedSavantJDBCConnectionPool(MedSavantJDBCDatabase mjd, String db, String user, String password) {
         this.dbName = db;
         this.user = user;
         this.password = password;
-        connections = new ArrayList<PooledConnection>();
+        this.databaseProvider = mjd;
+        connections = new ArrayList<MedSavantJDBCPooledConnection>();
         reaper = new ConnectionReaper();
         reaper.start();
     }
@@ -54,7 +56,7 @@ public class ConnectionPool {
 
         long stale = System.currentTimeMillis() - TIMEOUT;
 
-        for (PooledConnection conn: connections) {
+        for (MedSavantJDBCPooledConnection conn: connections) {
             if (conn.inUse() && stale > conn.getLastUse() && !conn.validate()) {
                 removeConnection(conn);
             }
@@ -71,14 +73,14 @@ public class ConnectionPool {
         reaper = null;
     }
 
-    private synchronized void removeConnection(PooledConnection conn) {
+    private synchronized void removeConnection(MedSavantJDBCPooledConnection conn) {
         connections.remove(conn);
     }
 
 
-    public synchronized PooledConnection getConnection() throws SQLException {
+    public synchronized MedSavantJDBCPooledConnection getConnection() throws SQLException {
 
-        for (PooledConnection conn: connections) {
+        for (MedSavantJDBCPooledConnection conn: connections) {
             if (conn.lease()) {
                 return conn;
             }
@@ -86,14 +88,14 @@ public class ConnectionPool {
 
         // Create a new connection
         LOG.info(connections.size() + " connections opened, all in use. Creating new connection to " + dbName + " for " + user);// + ":" + password);
-        Connection conn = DriverManager.getConnection(ConnectionController.getConnectionString(dbName), user, password);
-        PooledConnection pooledConn = new PooledConnection(conn, this);
+        Connection conn = DriverManager.getConnection(databaseProvider.getConnectionString(dbName), user, password);
+        MedSavantJDBCPooledConnection pooledConn = new MedSavantJDBCPooledConnection(conn, this);
         pooledConn.lease();
         connections.add(pooledConn);
         return pooledConn;
     }
 
-    public synchronized void returnConnection(PooledConnection conn) {
+    public synchronized void returnConnection(MedSavantJDBCPooledConnection conn) {
         conn.expireLease();
     }
 
@@ -107,7 +109,7 @@ public class ConnectionPool {
      */
     public synchronized void setDBName(String db) {
         if (!db.equals(dbName)) {
-            for (PooledConnection c: connections) {
+            for (MedSavantJDBCPooledConnection c: connections) {
                 returnConnection(c);
             }
             LOG.info("Returned connections for " + dbName + ", new database will be " + db);

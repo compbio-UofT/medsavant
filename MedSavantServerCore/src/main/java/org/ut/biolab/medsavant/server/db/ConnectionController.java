@@ -19,7 +19,8 @@
  */
 package org.ut.biolab.medsavant.server.db;
 
-import java.io.IOException;
+import org.medsavant.api.database.MedSavantJDBCConnectionPool;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import java.sql.Connection;
@@ -34,14 +35,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.medsavant.api.database.MedSavantJDBCDatabase;
 import org.ut.biolab.medsavant.server.serverapi.SettingsManager;
 import org.ut.biolab.medsavant.shared.util.VersionSettings;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -52,7 +52,7 @@ public class ConnectionController {
     private static final Log LOG = LogFactory.getLog(ConnectionController.class);
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false&autoReconnect=true";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
-    private static final Map<String, ConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, ConnectionPool>();
+    private static final Map<String, MedSavantJDBCConnectionPool> sessionPoolMap = new ConcurrentHashMap<String, MedSavantJDBCConnectionPool>();
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     private static String dbHost;
@@ -98,14 +98,14 @@ public class ConnectionController {
         return DriverManager.getConnection(getConnectionString(host, port, db), user, pass);
     }
 
-    public static PooledConnection connectPooled(String sessID) throws SQLException, SessionExpiredException {
+    public static MedSavantJDBCPooledConnection connectPooled(String sessID) throws SQLException, SessionExpiredException {
         synchronized (sessionPoolMap) {
 
             if (!sessionPoolMap.containsKey(sessID)) {
                 throw new SessionExpiredException();
             }
 
-            ConnectionPool pool = sessionPoolMap.get(sessID);
+            MedSavantJDBCConnectionPool pool = sessionPoolMap.get(sessID);
             if (pool != null) {
                 return pool.getConnection();
             }
@@ -117,14 +117,14 @@ public class ConnectionController {
     public static void reapAll(){
         synchronized(sessionPoolMap){
             for(String session : sessionPoolMap.keySet()){
-                ConnectionPool pool = sessionPoolMap.get(session);
+                MedSavantJDBCConnectionPool pool = sessionPoolMap.get(session);
                 pool.reapConnections();
             }
         }
     }
     
     public static ResultSet executeQuery(String sessID, String query) throws SQLException, SessionExpiredException {
-        PooledConnection conn = connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = connectPooled(sessID);
         try {
             return conn.executeQuery(query);
         } finally {
@@ -133,7 +133,7 @@ public class ConnectionController {
     }
 
     public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException, SessionExpiredException {
-        PooledConnection conn = connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = connectPooled(sessID);
         try {
             return conn.executePreparedQuery(query, args);
         } finally {
@@ -142,7 +142,7 @@ public class ConnectionController {
     }
 
     public static void executeUpdate(String sessID, String query) throws SQLException, SessionExpiredException {
-        PooledConnection conn = connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = connectPooled(sessID);
         try {
             conn.executeUpdate(query);
         } finally {
@@ -151,7 +151,7 @@ public class ConnectionController {
     }
 
     public static void executePreparedUpdate(String sessID, String query, Object... args) throws SQLException, SessionExpiredException {
-        PooledConnection conn = connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = connectPooled(sessID);
         try {
             conn.executePreparedUpdate(query, args);
         } finally {
@@ -164,7 +164,14 @@ public class ConnectionController {
      */
     public static void registerCredentials(String sessID, String user, String pass, String db) throws SQLException, RemoteException, Exception {
         //LOG.debug(String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
-        ConnectionPool pool = new ConnectionPool(db, user, pass);
+        MedSavantJDBCConnectionPool pool = new MedSavantJDBCConnectionPool(new MedSavantJDBCDatabase(){
+            @Override
+            public String getConnectionString(String dbName) {
+                return ConnectionController.getConnectionString(dbName);
+            }
+            
+        }, db, user, pass);
+                
         LOG.debug(String.format("sc=%s", pool));
         synchronized (sessionPoolMap) {
             sessionPoolMap.put(sessID, pool);
@@ -241,7 +248,7 @@ public class ConnectionController {
 
     public static Collection<String> getDBNames() {
         List<String> result = new ArrayList<String>();
-        for (ConnectionPool pool : sessionPoolMap.values()) {
+        for (MedSavantJDBCConnectionPool pool : sessionPoolMap.values()) {
             if (!result.contains(pool.getDBName())) {
                 result.add(pool.getDBName());
             }
@@ -250,7 +257,7 @@ public class ConnectionController {
     }
 
     public static void registerAdditionalSessionForSession(String fromSessionID, String toSessionID) {
-        ConnectionPool pool = sessionPoolMap.get(fromSessionID);
+        MedSavantJDBCConnectionPool pool = sessionPoolMap.get(fromSessionID);
         sessionPoolMap.put(toSessionID, pool);
     }
 
@@ -281,7 +288,7 @@ public class ConnectionController {
                 if (sessionPoolMap.containsKey(sessionId)) {
 
                     // dissassociate this session with its connection pool
-                    ConnectionPool pool = sessionPoolMap.remove(sessionId);
+                    MedSavantJDBCConnectionPool pool = sessionPoolMap.remove(sessionId);
 
                     LOG.info("Unregistered session " + sessionId);
 

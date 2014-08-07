@@ -5,6 +5,7 @@
  */
 package org.medsavant.api.annotation.impl;
 
+import org.medsavant.api.common.MedSavantUpdate;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.Reference;
 import org.medsavant.api.common.impl.MedSavantServerJob;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -144,23 +145,25 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
         //numVariants = vcfParser.parseVariantsFromReader(reader, outFile, updateID, fileID, includeHomoRef);
     }
 */
-    private void dispatchResults(final MedSavantSession session, final int updId, final JobProgressMonitor jpm, List<MedSavantFile> originalFiles, List<MedSavantFile> newFiles, final Reference reference) {
+    private void dispatchResults(final MedSavantSession session, final JobProgressMonitor jpm, final MedSavantUpdate update, List<MedSavantFile> newFiles) {
         jpm.setMessage("Parsing pre-processed VCFs.");
-
+        final List<Integer> fileIds = update.getFileIDs();
         final List<String> errors = new ArrayList<String>();
         // parse each vcf file in a separate thread with a separate file ID
         List<MedSavantServerJob> threads = new ArrayList<MedSavantServerJob>(newFiles.size());
         for (int i = 0; i < newFiles.size(); ++i) {
             final MedSavantFile vcfFile = newFiles.get(i);
             if (vcfFile != null) {
+                final int fileIdIndex = i;
                 //Parallelize on file level.            
                 MedSavantServerJob msj = new MedSavantServerJob(session.getUser().getUsername(), "Variant Dispatcher", jpm) {
 
                     @Override
                     public boolean run() throws Exception {
-                        try {
-                            VariantDispatcher vd = new VariantDispatcher(serverContext, getVariantStorageEngine());                                                        
-                            vd.dispatch(session, updId, vcfFile, jpm, vanns, reference);                            
+                        try {                            
+                            VariantDispatcher vd = new VariantDispatcher(serverContext, getVariantStorageEngine(), update);   
+                            //dispatch(MedSavantSession session, MedSavantFile processedVCFFile, JobProgressMonitor jpm, List<VariantAnnotator> annotators, int fileId)
+                            vd.dispatch(session, vcfFile, jpm, vanns, fileIds.get(fileIdIndex));
                         } catch (IOException ie) {
                             String msg = "ERROR: Couldn't annotate " + vcfFile.getName() + " -- this file was NOT imported.";
                             LOG.error(msg, ie);
@@ -185,7 +188,7 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
             serverContext.getExecutionService().submitLongJobs(threads);            
         } catch (InterruptedException ie) {
             LOG.error("ERROR: Interrupted while waiting for annotation threads to complete, aborting update.", ie);
-            getVariantStorageEngine().cancelUpdate(session, updId);
+            getVariantStorageEngine().cancelUpdate(session, update.getUpdateID());
         }
 
         int numImported = newFiles.size() - errors.size();
@@ -204,15 +207,18 @@ public class AnnotationPipelineImpl implements AnnotationPipeline {
 
     }
 
+    
     @Override
-    public void start(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files, Reference reference) throws MedSavantSecurityException {
-        int updId = getVariantStorageEngine().startUpdate(session);
+    public void start(MedSavantSession session, JobProgressMonitor jpm, MedSavantUpdate update)/*List<MedSavantFile> files, Reference reference)*/ throws MedSavantSecurityException {
+        //Here HERE HERE.  This method also assigns file Ids, which will need to be communicate back with GenomicVariantRecords.
+        //the return type of this method will probably need to be more complex than an int.
+        //MedSavantUpdate update = getVariantStorageEngine().startUpdate(session, project, reference, files);
 
         //Preprocess the VCFs as necessary.
-        List<MedSavantFile> results = preprocess(session, jpm, files, reference);
+        List<MedSavantFile> results = preprocess(session, jpm, update.getVCFFiles(), update.getReference());
 
         //Dispatch the results to the various annotators, via the VariantDispatcher.
-        dispatchResults(session, updId, jpm, files, results, reference);        
+        dispatchResults(session, jpm, update, results);
 
     }
 

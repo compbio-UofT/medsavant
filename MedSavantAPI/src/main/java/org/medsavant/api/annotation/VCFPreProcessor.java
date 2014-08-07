@@ -13,7 +13,7 @@ import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerComponent;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.Reference;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 
 /**
  * Class for preprocessing of VCF files.  Whenever possible, it is better to 

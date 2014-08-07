@@ -24,7 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 
 /**
  *

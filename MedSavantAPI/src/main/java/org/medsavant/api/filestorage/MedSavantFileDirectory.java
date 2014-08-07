@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerComponent;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
  * A directory for the storage and retrieval of files. This file directory may
@@ -37,6 +36,7 @@ public interface MedSavantFileDirectory extends MedSavantServerComponent {
     
     public MedSavantFile getMedSavantFile(MedSavantSession session, MedSavantFileType fileType, String name) throws MedSavantFileDirectoryException, MedSavantSecurityException;
 
+    
     /**
      * Returns a directory instance that is located at the given path. It is not
      * possible to access or store files at a higher hierarchy level than this

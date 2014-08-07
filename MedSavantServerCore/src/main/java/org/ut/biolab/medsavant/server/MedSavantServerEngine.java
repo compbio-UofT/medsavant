@@ -55,6 +55,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.common.GlobalWrapper;
 import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.variantstorage.MedSavantVariantStorageEngine;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 
 import org.ut.biolab.medsavant.server.db.admin.SetupMedSavantDatabase;
@@ -102,9 +103,14 @@ public class MedSavantServerEngine implements MedSavantServerRegistry {
     private int connectPort = 36800;
     private int exportPort = 36801;   
     
-    public MedSavantServerContext getServerContext(){        
+    public MedSavantServerContext getServerContext(){                
         return GlobalWrapper.getServerContext();
     }
+    
+    public MedSavantVariantStorageEngine getStorageEngine(){
+        return GlobalWrapper.getVariantStorageEngine();
+    }
+   
     public boolean useInfiniDB() {
         return USE_INFINIDB_ENGINE;
     }

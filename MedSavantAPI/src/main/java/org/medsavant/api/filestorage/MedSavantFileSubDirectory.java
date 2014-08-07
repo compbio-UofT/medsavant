@@ -9,7 +9,6 @@ package org.medsavant.api.filestorage;
 import java.io.FileNotFoundException;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.storage.MedSavantFile;
 
 /**
  *

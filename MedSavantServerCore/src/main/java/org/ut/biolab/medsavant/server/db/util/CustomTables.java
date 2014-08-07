@@ -19,14 +19,17 @@
  */
 package org.ut.biolab.medsavant.server.db.util;
 
+import org.medsavant.api.database.CustomTableUtils;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.medsavant.api.variantstorage.MedSavantDBUtils;
 
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 
@@ -36,10 +39,8 @@ import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
  */
 public class CustomTables extends MedSavantServerUnicastRemoteObject implements CustomTablesAdapter {
 
-    private static CustomTables instance;
-    private static final int MAX_TABLES = 30;
-
-    private Map<String, Map<String, TableSchema>> dbnameToTableMap = new HashMap<String, Map<String, TableSchema>>();
+    
+    private static CustomTables instance;        
 
     public static synchronized CustomTables getInstance() throws RemoteException {
         if (instance == null) {
@@ -49,47 +50,18 @@ public class CustomTables extends MedSavantServerUnicastRemoteObject implements 
     }
 
     private CustomTables() throws RemoteException {
-    }
-
+        
+    }     
+    
     @Override
-    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException, SessionExpiredException {
+    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException, SessionExpiredException {                
         return getCustomTableSchema(sid, tablename, false);
     }
 
     @Override
     public synchronized TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException, SessionExpiredException {
-
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sid);
         String dbName = ConnectionController.getDBName(sid);
-        if (!dbnameToTableMap.containsKey(dbName)) {
-            dbnameToTableMap.put(dbName, new HashMap<String, TableSchema>());
-        }
-        if(!dbnameToTableMap.get(dbName).containsKey(tablename) || update) {
-            if(!dbnameToTableMap.get(dbName).containsKey(tablename) && isOverLimit()){
-                clearMap();
-            }
-            dbnameToTableMap.get(dbName).put(tablename, DBUtils.getInstance().importTableSchema(sid, tablename));
-        }
-
-        return dbnameToTableMap.get(dbName).get(tablename);
+        return CustomTableUtils.getInstance().getCustomTableSchema(conn, dbName, tablename, update);        
     }
-
-    private boolean isOverLimit() {
-
-        //number of dbs
-        if(dbnameToTableMap.size() >= MAX_TABLES) return true;
-
-        //number of tables
-        int size = 0;
-        for(String dbName : dbnameToTableMap.keySet()){
-            size += dbnameToTableMap.get(dbName).size();
-        }
-        if(size >= MAX_TABLES) return true;
-
-        return false;
-    }
-
-    private void clearMap() {
-        dbnameToTableMap.clear();
-    }
-
 }

@@ -17,7 +17,7 @@
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
  * site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.server.serverapi;
+package org.medsavant.api.variantstorage.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,17 +29,14 @@ import java.sql.Timestamp;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
-import java.rmi.RemoteException;
+import org.medsavant.api.common.MedSavantSession;
+import org.medsavant.api.variantstorage.impl.schemas.DBSchemas;
+import org.medsavant.api.variantstorage.impl.schemas.VariantPendingUpdateTableSchema;
 
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
-import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.shared.util.SQLUtils;
 
@@ -58,17 +55,17 @@ public class AnnotationLogManager {
         return instance;
     }
 
-    public int addAnnotationLogEntry(String sid, int projectId, int referenceId, Action action) throws SQLException, RemoteException, SessionExpiredException {
-        return addAnnotationLogEntry(sid, projectId, referenceId, action, Status.STARTED);
+    public int addAnnotationLogEntry(MedSavantSession session, int projectId, int referenceId, Action action) throws SQLException{
+        return addAnnotationLogEntry(session, projectId, referenceId, action, Status.STARTED);
     }
 
-    public int addAnnotationLogEntry(String sid, int projectId, int referenceId, Action action, Status status) throws SQLException, RemoteException, SessionExpiredException {
-
-        String user = SessionManager.getInstance().getUserForSession(sid);
+    public int addAnnotationLogEntry(MedSavantSession session, int projectId, int referenceId, Action action, Status status) throws SQLException{
+        
+        String user = session.getUser().getUsername();
 
         Timestamp sqlDate = SQLUtils.getCurrentTimestamp();
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+        TableSchema table = DBSchemas.VariantpendingupdateTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId);
@@ -87,17 +84,17 @@ public class AnnotationLogManager {
         return rs.getInt(1);
     }
 
-    public void removeAnnotationLogEntry(String sid, int updateId) throws SQLException, SessionExpiredException {
+    public void removeAnnotationLogEntry(String sid, int updateId) throws SQLException{
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+        TableSchema table = DBSchemas.VariantpendingupdateTableSchema;
         DeleteQuery query = new DeleteQuery(table.getTable());
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
         ConnectionController.executeUpdate(sid, query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid, int updateId, Status status) throws SQLException, SessionExpiredException {
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+    public void setAnnotationLogStatus(String sid, int updateId, Status status) throws SQLException{
+        TableSchema table = DBSchemas.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
@@ -105,9 +102,9 @@ public class AnnotationLogManager {
         ConnectionController.executeUpdate(sid, query.toString());
     }
 
-    public void setAnnotationLogStatus(String sid, int updateId, Status status, Timestamp sqlDate) throws SQLException, SessionExpiredException {
+    public void setAnnotationLogStatus(String sid, int updateId, Status status, Timestamp sqlDate) throws SQLException {
 
-        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+        TableSchema table = DBSchemas.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);

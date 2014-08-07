@@ -47,7 +47,7 @@ import org.medsavant.api.annotation.impl.TabixAnnotatorImpl;
 import org.medsavant.api.common.GlobalWrapper;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 import org.ut.biolab.medsavant.server.MedSavantServerEngine;
@@ -55,7 +55,7 @@ import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
-import org.ut.biolab.medsavant.server.serverapi.AnnotationLogManager;
+import org.medsavant.api.variantstorage.impl.AnnotationLogManager;
 import org.ut.biolab.medsavant.server.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.serverapi.PatientManager;
 import org.ut.biolab.medsavant.server.serverapi.ProjectManager;
@@ -68,6 +68,8 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
 import org.medsavant.api.common.MedSavantFileUtils;
+import org.medsavant.api.common.MedSavantProject;
+import org.medsavant.api.common.MedSavantUpdate;
 import org.medsavant.api.common.Reference;
 import org.medsavant.api.filestorage.MedSavantFileDirectory;
 import org.medsavant.api.filestorage.MedSavantFileType;
@@ -81,8 +83,9 @@ import org.ut.biolab.medsavant.shared.util.MedSavantLegacyUtils;
 public class ImportUpdateManager {
 
     private static final Log LOG = LogFactory.getLog(ImportUpdateManager.class);
-
-    private static List<MedSavantFile> registerNewVCFs(MedSavantSession session, File[] allVCFFiles) throws IOException, MedSavantSecurityException, MedSavantFileDirectoryException {
+    
+    //registerUpdate(session, allVCFFiles, project, reference);
+    private static MedSavantUpdate registerUpdate(MedSavantSession session, File[] allVCFFiles, MedSavantProject project, Reference reference) throws IOException, MedSavantSecurityException, MedSavantFileDirectoryException {
         MedSavantFileDirectory dir = MedSavantServerEngine.getInstance().getServerContext().getMedSavantFileDirectory();                   
         List<MedSavantFile> vcfList = new ArrayList<MedSavantFile>(allVCFFiles.length);
 
@@ -92,6 +95,8 @@ public class ImportUpdateManager {
                 LOG.info("Copying file " + f.getName() + " to directory");                                
                 MedSavantFileUtils.copy(new FileInputStream(f), dir.getOutputStream(session, registeredFile));
                 vcfList.add(registeredFile);
+                
+                MedSavantServerEngine.getInstance().getStorageEngine().registerVCF(registeredFile, projectID, referenceID);
                 //            int fileID = VariantManager.addEntryToFileTable(sessID, updateID, projectID, referenceID, originalVCF);
                 //register the file.
             }
@@ -114,6 +119,7 @@ public class ImportUpdateManager {
         final MedSavantSession session = MedSavantLegacyUtils.getMedSavantSession(sessionID);
         DateFormat dateFormat = new SimpleDateFormat("MMM dd - HH:mm:ss");
         final Reference reference = ReferenceManager.getInstance().getReference(sessionID, referenceID);
+        ProjectManager.getInstance().getProjectDetails(sessionID, projectID);
         if (reference == null) {
             LOG.error("Invalid reference ID " + referenceID);
             throw new SQLException("Invalid reference ID " + referenceID);
@@ -146,9 +152,9 @@ public class ImportUpdateManager {
                 }
 
                 //Register VCF files with directory registry.
-                List<MedSavantFile> registeredFiles = registerNewVCFs(session, allVCFFiles);
-
-                apl.start(session, this.getJobProgressMonitor(), registeredFiles, reference);
+                MedSavantUpdate update = registerUpdate(session, allVCFFiles, project, reference);
+                                
+                apl.start(session, this.getJobProgressMonitor(), update);
                 return true;
             }
         };

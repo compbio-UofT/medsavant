@@ -21,15 +21,11 @@ package org.ut.biolab.medsavant.server.db.util;
 
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
 import java.io.File;
 import java.io.IOException;
@@ -38,16 +34,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.common.impl.MedSavantServerJob;
 
-import org.medsavant.api.common.storage.ColumnType;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.server.serverapi.SessionManager;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 
-import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.DBUtilsAdapter;
 import org.ut.biolab.medsavant.shared.util.DirectorySettings;
@@ -238,56 +232,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         return false;
     }
 
-    public static String getColumnTypeString(String s) {
-        int pos = s.indexOf("(");
-        if (pos == -1) {
-            return s;
-        } else {
-            return s.substring(0, pos);
-        }
-    }
-
-    public DbTable importTable(String sessionId, String tablename) throws SQLException, SessionExpiredException {
-
-        DbSpec spec = new DbSpec();
-        DbSchema schema = spec.addDefaultSchema();
-
-        DbTable table = schema.addTable(tablename);
-
-        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
-
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        int numberOfColumns = rsMetaData.getColumnCount();
-
-        while (rs.next()) {
-            int[] ls = CustomField.extractColumnLengthAndScale(rs.getString(2));
-            //scale argument should be set to null if it is unspecified (i.e. 0)
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), ls[0], ls[1] > 0 ? ls[1] : null);
-        }
-
-        return table;
-    }
-
-    @Override
-    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, SessionExpiredException {
-
-        DbSpec spec = new DbSpec();
-        DbSchema schema = spec.addDefaultSchema();
-
-        DbTable table = schema.addTable(tablename);
-        TableSchema ts = new TableSchema(table);
-
-        LOG.info(String.format("Executing %s on %s...", "DESCRIBE " + tablename, sessionId));
-        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
-
-        while (rs.next()) {
-            int[] ls = CustomField.extractColumnLengthAndScale(rs.getString(2));
-            table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), ls[0], (ls[1] == 0 ? null : ls[1]));
-            ts.addColumn(rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), ls[0], ls[1]);
-
-        }
-        return ts;
-    }
+   
 
     public static void dumpTable(String sessID, String tableName, File dst) throws SQLException, SessionExpiredException {
         String intoString
@@ -338,7 +283,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     public static boolean tableExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             return conn.tableExists(tableName);
         } finally {
@@ -510,7 +455,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         return ComboCondition.and(results);
     }
-    
+
     public static void dropViewIfExists(String sessID, String tableName) throws SQLException, SessionExpiredException {
         ConnectionController.executeUpdate(sessID, "DROP VIEW IF EXISTS " + tableName);
     }

@@ -27,7 +27,6 @@ import java.util.List;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
-import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.shared.model.ProgressStatus;
 import org.ut.biolab.medsavant.shared.model.Range;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
@@ -42,9 +41,7 @@ public interface DBUtilsAdapter extends Remote {
     /**
      * Check the status of a lengthy process, giving the user the option to cancel.
      */
-    ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException, SessionExpiredException;
-
-    public TableSchema importTableSchema(String sessID, String tableName) throws SQLException, RemoteException, SessionExpiredException;
+    ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException, SessionExpiredException;    
 
     public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;
     public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean explodeCommaSeparated, boolean useCache) throws InterruptedException, SQLException, RemoteException, SessionExpiredException;

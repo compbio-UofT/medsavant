@@ -6,6 +6,8 @@
 
 package org.medsavant.api.annotation;
 
+import org.medsavant.api.variantstorage.MedSavantField;
+
 /**
  *
  * @author jim

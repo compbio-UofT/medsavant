@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.medsavant.api.common.storage;
+package org.medsavant.api.filestorage;
 
 import java.io.File;
 import java.io.IOException;

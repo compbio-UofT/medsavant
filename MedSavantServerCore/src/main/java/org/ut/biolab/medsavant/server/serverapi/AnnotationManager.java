@@ -47,7 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 import org.medsavant.api.filestorage.MedSavantFileDirectory;
 import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 import org.medsavant.api.filestorage.MedSavantFileSubDirectory;
@@ -57,7 +57,7 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.AnnotationFormatColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTablemapTableSchema;
+import org.medsavant.api.variantstorage.impl.schemas.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
 import org.ut.biolab.medsavant.shared.format.AnnotationFormat;
@@ -66,7 +66,7 @@ import org.ut.biolab.medsavant.shared.format.CustomField;
 import org.ut.biolab.medsavant.shared.model.Annotation;
 import org.ut.biolab.medsavant.shared.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.serverapi.AnnotationManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.BinaryConditionMS;
@@ -217,7 +217,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
                 PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type,
                 IS_END_INCLUSIVE, endInclusive);
 
-        PooledConnection c = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection c = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
         stmt.execute();
         ResultSet res = stmt.getGeneratedKeys();

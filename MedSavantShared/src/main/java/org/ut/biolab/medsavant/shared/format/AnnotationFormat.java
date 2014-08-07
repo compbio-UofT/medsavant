@@ -27,9 +27,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.medsavant.api.annotation.TabixAnnotation;
-import org.medsavant.api.common.storage.MedSavantFile;
-import org.medsavant.api.annotation.MedSavantField;
+import org.medsavant.api.filestorage.MedSavantFile;
+import org.medsavant.api.variantstorage.MedSavantField;
+import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
+import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -151,12 +153,12 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
         this.tabixIndex = null;
     }
 
-    public AnnotationFormat(MedSavantServerContext context, MedSavantFile tabixFile, MedSavantFile tabixIndex, MedSavantFile xmlFile) throws IOException {
+    public AnnotationFormat(MedSavantServerContext context, MedSavantFile tabixFile, MedSavantFile tabixIndex, MedSavantFile xmlFile) throws IOException, MedSavantSecurityException {
         this.tabixFile = tabixFile;
         this.tabixIndex = tabixIndex;
         try {
-            BufferedReader in;
-            context.getMedSavantFileDirectory().getInputStream(null, xmlFile);           
+            //BufferedReader in;            
+            InputStream is = context.getMedSavantFileDirectory().getInputStream(null, xmlFile);           
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(is);
@@ -193,6 +195,8 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
             throw new IOException("Error reading xmlFile "+xmlFile.getName(), se);
         } catch (ParserConfigurationException pce) {
             throw new IOException("Error reading xmlFile "+xmlFile.getName(), pce);
+        } catch (MedSavantFileDirectoryException mfde){
+            throw new IOException("Error reading xmlFile "+xmlFile.getName(), mfde);
         }
     }
 
@@ -253,7 +257,7 @@ public class AnnotationFormat implements Serializable, TabixAnnotation {
 
     @Override
     public String toString() {
-        return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName + ", path=" + tabixFile.getPath() + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + ", isEndInclusive=" + isEndInclusive + '}';
+        return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName  + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + ", isEndInclusive=" + isEndInclusive + '}';
     }
 
     @Override

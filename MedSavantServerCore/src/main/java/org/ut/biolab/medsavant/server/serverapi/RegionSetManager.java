@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.RegionSetColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.RegionSetMembershipColumns;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.shared.importing.FileFormat;
 import org.ut.biolab.medsavant.shared.importing.ImportDelimitedFile;
 import org.ut.biolab.medsavant.shared.model.GenomicRegion;
@@ -134,7 +134,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public List<RegionSet> getRegionSets(String sessID) throws SQLException, SessionExpiredException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.groupBy(REGION_SET_ID).leftJoin(MedSavantDatabase.RegionSetTableSchema, "region_set_id").select(REGION_SET_ID, "NAME", "COUNT(*)");
@@ -173,7 +173,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets) throws SQLException, SessionExpiredException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             List<Integer> ids = new ArrayList<Integer>(sets.size());
@@ -197,7 +197,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
 
     @Override
     public void addToRegionSet(String sessID, RegionSet set, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException, SessionExpiredException{
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try{
             InsertQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.insert(GENOME_ID, genomeID, REGION_SET_ID, set.getID(), CHROM, chrom, START, start, END, end, DESCRIPTION, desc);
             conn.executeUpdate(query.toString());

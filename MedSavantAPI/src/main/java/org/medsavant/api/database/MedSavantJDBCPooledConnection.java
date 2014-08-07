@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.ut.biolab.medsavant.server.db;
+package org.medsavant.api.database;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.sql.*;
@@ -33,15 +33,15 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Andrew
  */
-public class PooledConnection implements Connection {
-    private static Log LOG = LogFactory.getLog(PooledConnection.class);
+public class MedSavantJDBCPooledConnection implements Connection {
+    private static Log LOG = LogFactory.getLog(MedSavantJDBCPooledConnection.class);
 
-    private ConnectionPool pool;
+    private MedSavantJDBCConnectionPool pool;
     private Connection conn;
     private boolean inUse;
     private long timestamp;
 
-    public PooledConnection(Connection conn, ConnectionPool pool){
+    public MedSavantJDBCPooledConnection(Connection conn, MedSavantJDBCConnectionPool pool){
         this.conn = conn;
         this.pool = pool;
         this.inUse = false;

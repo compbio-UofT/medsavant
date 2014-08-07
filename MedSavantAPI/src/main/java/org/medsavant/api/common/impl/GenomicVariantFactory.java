@@ -1,9 +1,7 @@
 package org.medsavant.api.common.impl;
 
 import java.io.Serializable;
-import java.util.List;
 import org.apache.commons.lang.NumberUtils;
-import org.medsavant.api.annotation.MedSavantField;
 import org.medsavant.api.common.GenomicVariant;
 import org.medsavant.api.common.VariantType;
 import org.medsavant.api.common.VariantUtils;

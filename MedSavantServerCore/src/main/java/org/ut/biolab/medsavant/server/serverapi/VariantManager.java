@@ -19,6 +19,7 @@
  */
 package org.ut.biolab.medsavant.server.serverapi;
 
+import org.medsavant.api.variantstorage.impl.AnnotationLogManager;
 import org.ut.biolab.medsavant.shared.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.shared.model.SimplePatient;
 import org.ut.biolab.medsavant.shared.model.VariantComment;
@@ -50,12 +51,12 @@ import org.medsavant.api.common.impl.MedSavantServerJob;
 
 import org.ut.biolab.medsavant.shared.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileTableSchema;
+import org.ut.biolab.medsavant.server.db.VariantFileTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantTagColumns;
 import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -63,7 +64,7 @@ import org.ut.biolab.medsavant.shared.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.db.LockController;
 import static org.ut.biolab.medsavant.server.db.MedSavantDatabase.VariantFileIBTableSchema;
-import org.ut.biolab.medsavant.server.db.util.DBSettings;
+import org.medsavant.api.variantstorage.impl.DBSettings;
 import org.ut.biolab.medsavant.server.db.variants.ImportUpdateManager;
 import org.ut.biolab.medsavant.server.log.EmailLogger;
 import org.ut.biolab.medsavant.server.ontology.OntologyManager;
@@ -87,10 +88,8 @@ import org.ut.biolab.medsavant.shared.serverapi.LogManagerAdapter;
 public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter, BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
-    //approximate maximium size of the subset table, in # of variants.    
-    private static final int APPROX_MAX_SUBSET_SIZE = 1000000;
+
     // thresholds for querying and drawing
-    private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 1000000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
@@ -117,7 +116,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         LOG.info("Beginning publish of all tables for project " + projectID);
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             LOG.info("Getting map of update ids");
@@ -160,7 +159,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         final String database = SessionManager.getInstance().getDatabaseForSession(sessID);
         //LOG.info("Publishing table. pid:" + projID + " refid:" + refID + " upid:" + updID);
         LOG.info("Publishing table. pid:" + projID + " refid:" + refID);
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             LOG.info("Setting log status to published");
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, refID, Status.PUBLISHED);
@@ -484,34 +483,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-    /**
-     * Returns the size of the subset table as a fraction of the main variant
-     * view, (@see DBSettings.getVariantViewName), where the maintable contains
-     * 'nv' rows.
-     *
-     * @param nv The number of variants in the main variant view.
-     */
-    public static double getSubsetFraction(int nv) {
-        if (nv > APPROX_MAX_SUBSET_SIZE) {
-            double fractionOfOriginalTable = APPROX_MAX_SUBSET_SIZE / (double) nv;
-            return fractionOfOriginalTable;
-        } else {
-            return 1;
-        }
-    }
-
-    /**
-     *
-     * @param nv The number of variants in the main variant view.
-     * @return a query condition to randomly sample approximately
-     * nv*getSubsetFraction(nv) variants from the main variant view (@see
-     * DBSettings.getVariantViewName).
-     */
-    public static Condition getSubsetRestrictionCondition(int nv) {
-        LOG.info("getting subset restriction condition for " + nv + " variants");
-        return BinaryCondition.lessThan(new FunctionCall(new CustomSql("RAND")), getSubsetFraction(nv), true);
-    }
-
+   
     /**
      * Removes variants associated with the given list of files. These files are
      * deleted from the file (MyISAM) table. Upon publication, this table is
@@ -646,7 +618,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     //Returns the number of variants that were taken from the given list of files AND that were published (i.e. exist in the main variant view)
-    private int countPublishedVariantsInFiles(String sid, int projID, int refID, Collection<SimpleVariantFile> files) throws RemoteException, SQLException, SessionExpiredException {
+    /*private int countPublishedVariantsInFiles(String sid, int projID, int refID, Collection<SimpleVariantFile> files) throws RemoteException, SQLException, SessionExpiredException {
+        
         String viewName = DBSettings.getVariantViewName(projID, refID);
         TableSchema vtable = CustomTables.getInstance().getCustomTableSchema(sid, viewName);
 
@@ -667,7 +640,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.error("Couldn't count published variants, query: " + query.toString());
             throw new SQLException("Couldn't count published variants");
         }
-    }
+    }*/
 
     @Override
     public int exportVariants(String userSessionID, int projID, int refID, Condition[][] conditions, boolean orderedByPosition, boolean zipOutputFile) throws SQLException, RemoteException, SessionExpiredException, IOException, InterruptedException {
@@ -1309,7 +1282,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException, SessionExpiredException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sid);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sid);
         try {
             TableSchema variantTagTable = MedSavantDatabase.VariantTagTableSchema;
 
@@ -1588,7 +1561,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * @throws SQLException
      * @throws SessionExpiredException
      */
-    public static synchronized int addEntryToFileTable(String sid, int uploadId, int projectID, int referenceID, File file) throws SQLException, SessionExpiredException {
+    /*public static synchronized int addEntryToFileTable(String sid, int uploadId, int projectID, int referenceID, File file) throws SQLException, SessionExpiredException {
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
 
         InsertQuery q = new InsertQuery(table.getTable());
@@ -1611,7 +1584,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         return file_id;
-    }
+    }*/
 
     //public void removeEntriesFromFileTable(String sessID, int uploadID, int fileID) throws SQLException, SessionExpiredException {
     private void removeEntriesFromFileTable(String sessID, Collection<SimpleVariantFile> files) throws SQLException, SessionExpiredException {
@@ -1755,7 +1728,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_END_POSITION), end_position);
         iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_REF), ref);
         iq.addColumn(MedSavantDatabase.UserCommentGroupTableSchema.getDBColumn(MedSavantDatabase.UserCommentGroupTableSchema.COLUMNNAME_OF_ALT), alt);
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         PreparedStatement stmt = null;
         ResultSet res = null;
         int groupId = -1;
@@ -1871,7 +1844,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         PreparedStatement stmt = null;
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         ResultSet res = null;
         int commentId = -1; //Not returned for now.
         try {

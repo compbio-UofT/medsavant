@@ -6,12 +6,10 @@
 
 package org.medsavant.api.annotation;
 
-import java.util.List;
 import org.medsavant.api.common.JobProgressMonitor;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantSession;
-import org.medsavant.api.common.Reference;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.common.MedSavantUpdate;
 
 /**
  *
@@ -29,6 +27,6 @@ public interface AnnotationPipeline {
      */
     public void addVCFPreProcessor(VCFPreProcessor vpp) throws InvalidAnnotationPipelineException;    
     public void addVariantAnnotator(VariantAnnotator ann) throws InvalidAnnotationPipelineException;        
-    public void start(MedSavantSession session, JobProgressMonitor jpm, List<MedSavantFile> files, Reference reference) throws MedSavantSecurityException;
+    public void start(MedSavantSession session, JobProgressMonitor jpm, MedSavantUpdate update) throws MedSavantSecurityException;
     
 }

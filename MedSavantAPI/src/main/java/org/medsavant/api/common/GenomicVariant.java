@@ -1,7 +1,7 @@
 package org.medsavant.api.common;
 
 import java.io.Serializable;
-import org.medsavant.api.annotation.MedSavantField;
+import org.medsavant.api.variantstorage.MedSavantField;
 
 /**
  * A genomic variant storing the variant and associated custom info.  Instances of this interface

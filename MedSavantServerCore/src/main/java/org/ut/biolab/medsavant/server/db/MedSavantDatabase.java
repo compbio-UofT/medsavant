@@ -40,18 +40,7 @@ public class MedSavantDatabase {
         static final ColumnDefImpl TYPE = new ColumnDefImpl("type", ColumnType.INTEGER, 11);
         static final ColumnDefImpl IS_END_INCLUSIVE = new ColumnDefImpl("is_end_inclusive", ColumnType.BOOLEAN, 1);
     }
-
-    public interface AnnotationFormatColumns {
-
-        static final ColumnDefImpl ANNOTATION_ID = new ColumnDefImpl("annotation_id", ColumnType.INTEGER, 11, true, true, true, null);
-        static final ColumnDefImpl POSITION = new ColumnDefImpl("position", ColumnType.INTEGER, 11, true, true, true, null);
-        static final ColumnDefImpl COLUMN_NAME = new ColumnDefImpl("column_name", ColumnType.VARCHAR, 200);
-        static final ColumnDefImpl COLUMN_TYPE = new ColumnDefImpl("column_type", ColumnType.VARCHAR, 45);
-        static final ColumnDefImpl FILTERABLE = new ColumnDefImpl("filterable", ColumnType.BOOLEAN, 1);
-        static final ColumnDefImpl ALIAS = new ColumnDefImpl("alias", ColumnType.VARCHAR, 200);
-        static final ColumnDefImpl DESCRIPTION = new ColumnDefImpl("description", ColumnType.VARCHAR, 500);
-        static final ColumnDefImpl TAGS = new ColumnDefImpl("tags", ColumnType.VARCHAR, 500);
-    }
+    
 
     public static class ChromosomeTableSchema extends TableSchema {
 
@@ -381,188 +370,6 @@ public class MedSavantDatabase {
         }
     }
 
-    public static class VariantPendingUpdateTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "variant_pending_update";
-
-        public VariantPendingUpdateTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // variant_pending_update.upload_id
-        public static final int INDEX_OF_UPLOAD_ID = 0;
-        public static final ColumnType TYPE_OF_UPLOAD_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_UPLOAD_ID = 11;
-        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
-        // variant_pending_update.project_id
-        public static final int INDEX_OF_PROJECT_ID = 1;
-        public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_PROJECT_ID = 11;
-        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
-        // variant_pending_update.reference_id
-        public static final int INDEX_OF_REFERENCE_ID = 2;
-        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REFERENCE_ID = 11;
-        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
-        // variant_pending_update.action
-        public static final int INDEX_OF_ACTION = 3;
-        public static final ColumnType TYPE_OF_ACTION = ColumnType.INTEGER;
-        public static final int LENGTH_OF_ACTION = 11;
-        public static final String COLUMNNAME_OF_ACTION = "action";
-        // variant_pending_update.status
-        public static final int INDEX_OF_STATUS = 4;
-        public static final ColumnType TYPE_OF_STATUS = ColumnType.INTEGER;
-        public static final int LENGTH_OF_STATUS = 5;
-        public static final String COLUMNNAME_OF_STATUS = "status";
-        // variant_pending_update.timestamp
-        public static final int INDEX_OF_TIMESTAMP = 5;
-        public static final ColumnType TYPE_OF_TIMESTAMP = ColumnType.DATE;
-        public static final int LENGTH_OF_TIMESTAMP = -1;
-        public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
-        // variant_pending_update.user
-        public static final int INDEX_OF_USER = 6;
-        public static final ColumnType TYPE_OF_USER = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_USER = 200;
-        public static final String COLUMNNAME_OF_USER = "user";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_ACTION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_STATUS, ColumnType.INTEGER, 5);
-            addColumn(COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
-            addColumn(COLUMNNAME_OF_USER, ColumnType.VARCHAR, 200);
-        }
-    }
-
-    public static class VariantTablemapTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "variant_tablemap";
-
-        public VariantTablemapTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // variant_tablemap.project_id
-        public static final int INDEX_OF_PROJECT_ID = 0;
-        public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_PROJECT_ID = 11;
-        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
-        // variant_tablemap.reference_id
-        public static final int INDEX_OF_REFERENCE_ID = 1;
-        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REFERENCE_ID = 11;
-        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
-        // variant_tablemap.update_id
-        public static final int INDEX_OF_UPDATE_ID = 2;
-        public static final ColumnType TYPE_OF_UPDATE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_UPDATE_ID = 11;
-        public static final String COLUMNNAME_OF_UPDATE_ID = "update_id";
-        // variant_tablemap.published
-        public static final int INDEX_OF_PUBLISHED = 3;
-        public static final ColumnType TYPE_OF_PUBLISHED = ColumnType.BOOLEAN;
-        public static final int LENGTH_OF_PUBLISHED = 1;
-        public static final String COLUMNNAME_OF_PUBLISHED = "published";
-        // variant_tablemap.variant_tablename
-        public static final int INDEX_OF_VARIANT_TABLENAME = 4;
-        public static final ColumnType TYPE_OF_VARIANT_TABLENAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_VARIANT_TABLENAME = 100;
-        public static final String COLUMNNAME_OF_VARIANT_TABLENAME = "variant_tablename";
-        // variant_tablemap.annotation_ids
-        public static final int INDEX_OF_ANNOTATION_IDS = 5;
-        public static final ColumnType TYPE_OF_ANNOTATION_IDS = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_ANNOTATION_IDS = 500;
-        public static final String COLUMNNAME_OF_ANNOTATION_IDS = "annotation_ids";
-        // variant_tablemap.variant_subset_tablename
-        public static final int INDEX_OF_VARIANT_SUBSET_TABLENAME = 6;
-        public static final ColumnType TYPE_OF_VARIANT_SUBSET_TABLENAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_VARIANT_SUBSET_TABLENAME = 100;
-        public static final String COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME = "variant_subset_tablename";
-        // variant_tablemap.subset_multiplier
-        public static final int INDEX_OF_SUBSET_MULTIPLIER = 7;
-        public static final ColumnType TYPE_OF_SUBSET_MULTIPLIER = ColumnType.FLOAT;
-        public static final int LENGTH_OF_SUBSET_MULTIPLIER = -1;
-        public static final String COLUMNNAME_OF_SUBSET_MULTIPLIER = "subset_multiplier";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PUBLISHED, ColumnType.BOOLEAN, 1);
-            addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_ANNOTATION_IDS, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_SUBSET_MULTIPLIER, ColumnType.FLOAT, -1);
-        }
-    }
-
-    public static class VariantFormatTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "variant_format";
-
-        public VariantFormatTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // patient_format.project_id
-        public static final int INDEX_OF_PROJECT_ID = 0;
-        public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_PROJECT_ID = 11;
-        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
-        // patient_format.reference_id
-        public static final int INDEX_OF_REFERENCE_ID = 1;
-        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REFERENCE_ID = 11;
-        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
-        // patient_format.update_id
-        public static final int INDEX_OF_UPDATE_ID = 2;
-        public static final ColumnType TYPE_OF_UPDATE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_UPDATE_ID = 11;
-        public static final String COLUMNNAME_OF_UPDATE_ID = "update_id";
-        // patient_format.position
-        public static final int INDEX_OF_POSITION = 3;
-        public static final ColumnType TYPE_OF_POSITION = ColumnType.INTEGER;
-        public static final int LENGTH_OF_POSITION = 11;
-        public static final String COLUMNNAME_OF_POSITION = "position";
-        // patient_format.column_name
-        public static final int INDEX_OF_COLUMN_NAME = 4;
-        public static final ColumnType TYPE_OF_COLUMN_NAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_COLUMN_NAME = 200;
-        public static final String COLUMNNAME_OF_COLUMN_NAME = "column_name";
-        // patient_format.column_type
-        public static final int INDEX_OF_COLUMN_TYPE = 5;
-        public static final ColumnType TYPE_OF_COLUMN_TYPE = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_COLUMN_TYPE = 45;
-        public static final String COLUMNNAME_OF_COLUMN_TYPE = "column_type";
-        // patient_format.filterable
-        public static final int INDEX_OF_FILTERABLE = 6;
-        public static final ColumnType TYPE_OF_FILTERABLE = ColumnType.INTEGER;
-        public static final int LENGTH_OF_FILTERABLE = 1;
-        public static final String COLUMNNAME_OF_FILTERABLE = "filterable";
-        // patient_format.alias
-        public static final int INDEX_OF_ALIAS = 7;
-        public static final ColumnType TYPE_OF_ALIAS = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_ALIAS = 200;
-        public static final String COLUMNNAME_OF_ALIAS = "alias";
-        // patient_format.description
-        public static final int INDEX_OF_DESCRIPTION = 8;
-        public static final ColumnType TYPE_OF_DESCRIPTION = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_DESCRIPTION = 500;
-        public static final String COLUMNNAME_OF_DESCRIPTION = "description";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
-            addColumn(COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
-        }
-    }
 
     public interface VariantTagColumns {
 
@@ -571,30 +378,7 @@ public class MedSavantDatabase {
         static final ColumnDefImpl TAGVALUE = new ColumnDefImpl("tagvalue", ColumnType.VARCHAR, 1000);
     }
 
-    public static class SettingsTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "settings";
-
-        public SettingsTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // settings.key
-        public static final int INDEX_OF_KEY = 0;
-        public static final ColumnType TYPE_OF_KEY = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_KEY = 100;
-        public static final String COLUMNNAME_OF_KEY = "setting_key";
-        // settings.value
-        public static final int INDEX_OF_VALUE = 1;
-        public static final ColumnType TYPE_OF_VALUE = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_VALUE = 300;
-        public static final String COLUMNNAME_OF_VALUE = "setting_value";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_KEY, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
-        }
-    }
+    
 
     public static class UserRoleTableSchema extends TableSchema {
 
@@ -861,55 +645,10 @@ public class MedSavantDatabase {
         }
     }
 
-    public static class VariantFileTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME_PREFIX = "variant_file";
-
-        public VariantFileTableSchema(DbSchema s) {
-            this(s, "");
-        }
-
-        public VariantFileTableSchema(DbSchema s, String suffix) {
-            super(s.addTable(TABLE_NAME_PREFIX + suffix));
-            addColumns();
-        }
-        // variant_file.upload_id
-        public static final int INDEX_OF_UPLOAD_ID = 0;
-        public static final ColumnType TYPE_OF_UPLOAD_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_UPLOAD_ID = 11;
-        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
-        // variant_file.file_id
-        public static final int INDEX_OF_FILE_ID = 1;
-        public static final ColumnType TYPE_OF_FILE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_FILE_ID = 11;
-        public static final String COLUMNNAME_OF_FILE_ID = "file_id";
-        // variant_file.project_id
-        public static final int INDEX_OF_PROJECT_ID = 1;
-        public static final ColumnType TYPE_OF_PROJECT_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_PROJECT_ID = 11;
-        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
-        // variant_file.reference_id
-        public static final int INDEX_OF_REFERENCE_ID = 1;
-        public static final ColumnType TYPE_OF_REFERENCE_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REFERENCE_ID = 11;
-        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
-        // variant_file.file_name
-        public static final int INDEX_OF_FILE_NAME = 2;
-        public static final ColumnType TYPE_OF_FILE_NAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_FILE_NAME = 500;
-        public static final String COLUMNNAME_OF_FILE_NAME = "file_name";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_FILE_NAME, ColumnType.VARCHAR, 500);
-        }
-    }
+   
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
     public static final TableSchema AnnotationTableSchema = new TableSchema(schema, "annotation", AnnotationColumns.class);
-    public static final TableSchema AnnotationFormatTableSchema = new TableSchema(schema, "annotation_format", AnnotationFormatColumns.class);
+    //public static final TableSchema AnnotationFormatTableSchema = new TableSchema(schema, "annotation_format", AnnotationFormatColumns.class);
     public static final ChromosomeTableSchema ChromosomeTableSchema = new ChromosomeTableSchema(schema);
     public static final CohortTableSchema CohortTableSchema = new CohortTableSchema(schema);
     public static final CohortMembershipTableSchema CohortmembershipTableSchema = new CohortMembershipTableSchema(schema);
@@ -923,14 +662,11 @@ public class MedSavantDatabase {
     public static final TableSchema RegionSetTableSchema = new TableSchema(schema, "region_set", RegionSetColumns.class);
     public static final TableSchema RegionSetMembershipTableSchema = new TableSchema(schema, "region_set_membership", RegionSetMembershipColumns.class);
     public static final ServerLogTableSchema ServerlogTableSchema = new ServerLogTableSchema(schema);
-    public static final SettingsTableSchema SettingsTableSchema = new SettingsTableSchema(schema);
-    public static final VariantPendingUpdateTableSchema VariantpendingupdateTableSchema = new VariantPendingUpdateTableSchema(schema);
-    public static final VariantTablemapTableSchema VarianttablemapTableSchema = new VariantTablemapTableSchema(schema);
-    public static final VariantFormatTableSchema VariantformatTableSchema = new VariantFormatTableSchema(schema);
+    //public static final VariantPendingUpdateTableSchema VariantpendingupdateTableSchema = new VariantPendingUpdateTableSchema(schema);
+    //public static final VariantTablemapTableSchema VarianttablemapTableSchema = new VariantTablemapTableSchema(schema);
+
     public static final TableSchema VariantTagTableSchema = new TableSchema(schema, "variant_tag", VariantTagColumns.class);
-    public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
-    public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
-    public static final VariantFileTableSchema VariantFileIBTableSchema = new VariantFileTableSchema(schema, "_ib");
+    public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);    
     public static final UserCommentGroupTableSchema UserCommentGroupTableSchema = new UserCommentGroupTableSchema(schema);
     public static final UserCommentTableSchema UserCommentTableSchema = new UserCommentTableSchema(schema);
     public static final UserRoleTableSchema UserRoleTableSchema = new UserRoleTableSchema(schema);

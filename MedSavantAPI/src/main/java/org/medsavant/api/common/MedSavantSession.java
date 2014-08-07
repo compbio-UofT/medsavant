@@ -17,5 +17,7 @@ public interface MedSavantSession {
     public MedSavantUser getUser();
 
     public MedSavantProject getProject();
+    
+    public String getDatabaseName();
 
 }

@@ -40,9 +40,9 @@ import org.ut.biolab.medsavant.shared.db.TableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.server.db.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.server.db.ConnectionController;
-import org.ut.biolab.medsavant.server.db.PooledConnection;
+import org.medsavant.api.database.MedSavantJDBCPooledConnection;
 import org.ut.biolab.medsavant.server.db.util.CustomTables;
-import org.ut.biolab.medsavant.server.db.util.DBSettings;
+import org.medsavant.api.variantstorage.impl.DBSettings;
 import org.ut.biolab.medsavant.server.db.util.DBUtils;
 import org.ut.biolab.medsavant.shared.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.shared.format.CustomField;
@@ -262,7 +262,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         // make hospital id unique
         patientSchema.getDBColumn(BasicPatientColumns.HOSPITAL_ID).unique();
 
-        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.executeUpdate(patientSchema.getCreateQuery() + " ENGINE=MyISAM;");
 
@@ -301,7 +301,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String tablename = getPatientTableName(sid, projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
-        PooledConnection conn = ConnectionController.connectPooled(sid);
+        MedSavantJDBCPooledConnection conn = ConnectionController.connectPooled(sid);
         try {
             conn.setAutoCommit(false);
             for (int id : patientIds) {

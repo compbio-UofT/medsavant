@@ -1,24 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.medsavant.api.variantstorage;
 
-import org.medsavant.api.common.storage.ColumnDef;
-
 /**
- *
+ * 
  * @author jim
  */
 public interface VariantField {
 
-    public Class getColumnClass();
+    /**
+     * 
+     * @return The class of this column. 
+     */
+    public Class getColumnClass();           
+    
+    /**
+     * @return A human-friendly name for this column.  
+     */
+    public String getName();
 
-    public ColumnDef getColumnDef();
-
-    public String getAlias();
-
+    /**
+     * 
+     * @return a boolean indicating if this column is unique
+     */
     public boolean isUnique();
-
+    
+    @Override
+    public int hashCode();
+    
+    @Override
+    public boolean equals(Object o);
 }

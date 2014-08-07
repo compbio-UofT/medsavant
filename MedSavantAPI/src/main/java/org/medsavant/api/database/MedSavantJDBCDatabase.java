@@ -4,13 +4,12 @@
  * and open the template in the editor.
  */
 
-package org.medsavant.api.annotation;
+package org.medsavant.api.database;
 
 /**
  *
  * @author jim
  */
-public interface MedSavantFieldValue<T> {
-    public MedSavantField getField();
-    public T getValue();
+public interface MedSavantJDBCDatabase {
+    public String getConnectionString(String dbName);
 }

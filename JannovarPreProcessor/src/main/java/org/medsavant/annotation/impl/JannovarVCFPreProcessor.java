@@ -15,12 +15,11 @@ import org.medsavant.api.annotation.VCFPreProcessor;
 import org.medsavant.api.annotation.VCFPreProcessorException;
 import org.medsavant.api.common.InvalidConfigurationException;
 import org.medsavant.api.common.JobProgressMonitor;
-import org.medsavant.api.common.MedSavantFileUtils;
 import org.medsavant.api.common.MedSavantSecurityException;
 import org.medsavant.api.common.MedSavantServerContext;
 import org.medsavant.api.common.MedSavantSession;
 import org.medsavant.api.common.Reference;
-import org.medsavant.api.common.storage.MedSavantFile;
+import org.medsavant.api.filestorage.MedSavantFile;
 import org.medsavant.api.filestorage.MedSavantFileDirectoryException;
 import org.medsavant.api.filestorage.MedSavantFileType;
 
@@ -225,7 +224,8 @@ public class JannovarVCFPreProcessor implements VCFPreProcessor {
             //This file copy is wasteful on non-distributed configurations.  
             MedSavantFile dstFile = serverContext.getMedSavantFileDirectory().createFile(session, MedSavantFileType.TEMPORARY);
             dstFile.replaceWithFile(session, serverContext.getMedSavantFileDirectory(), f);            
-            return dstFile;                        
+            
+            return dstFile;
         } catch (JannovarException je) {
             throw new VCFPreProcessorException("Preprocessing error: " + je.getMessage());
         } catch(MedSavantFileDirectoryException mfde){
