@@ -605,8 +605,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
         String dbase = null;
         String maxSimultaneousUploadsStr = null;
         int p = -1;
-        try {                               
-            //Thread.currentThread().getContextClassLoader().getResourceAsStream(configFileLocation);
+        try {                                          
             Properties props = new Properties();            
             InputStream in = getConfigInputStream();
             props.load(in);
