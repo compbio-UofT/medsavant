@@ -13,7 +13,6 @@
  */
 package org.ut.biolab.medsavant.client.view.app;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,16 +21,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+import java.util.concurrent.*;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
@@ -47,6 +38,7 @@ import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.app.builtin.task.BackgroundTaskWorker;
 import org.ut.biolab.medsavant.client.view.component.PlaceHolderTextField;
 import org.ut.biolab.medsavant.client.view.component.RoundedPanel;
+import org.ut.biolab.medsavant.client.view.component.WaitPanel;
 import org.ut.biolab.medsavant.client.view.dashboard.LaunchableApp;
 import org.ut.biolab.medsavant.client.view.images.IconFactory;
 import org.ut.biolab.medsavant.client.view.images.ImagePanel;
@@ -55,6 +47,7 @@ import org.ut.biolab.medsavant.client.view.notify.Notification;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.StandardAppContainer;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
+import org.ut.biolab.medsavant.shared.serverapi.SettingsManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.shared.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.shared.util.IOUtils;
@@ -67,6 +60,9 @@ public class VCFUploadApp implements LaunchableApp {
 
     private static final Log LOG = LogFactory.getLog(VCFUploadApp.class);
     private static VariantManagerAdapter variantManager = MedSavantClient.VariantManager;
+    private static SettingsManagerAdapter settingsManager = MedSavantClient.SettingsManager;
+
+    private ExecutorService executor;
 
     List<File> filesToImport;
     private JPanel fileListView;
@@ -91,7 +87,7 @@ public class VCFUploadApp implements LaunchableApp {
     private JPanel advancedOptionsPanel;
     private JButton importButton;
     private JXCollapsiblePane dragDropContainer;
-    private CardLayout cardLayout;
+    private CardLayout cardLayout = new CardLayout();
     private JCheckBox annovarCheckbox;
     private JCheckBox phasingCheckbox;
     private PlaceHolderTextField emailPlaceholder;
@@ -102,6 +98,7 @@ public class VCFUploadApp implements LaunchableApp {
     }
 
     private JPanel view;
+    private JPanel innerView = new JPanel(cardLayout);
 
     @Override
     public JPanel getView() {
@@ -109,16 +106,38 @@ public class VCFUploadApp implements LaunchableApp {
     }
 
     private void initView() {
+        // Restart any running threads.
+        if (executor != null) {
+            executor.shutdownNow();
+        }
+        executor = Executors.newCachedThreadPool();
+
         if (view == null) {
-
-            JPanel settingsCard = getSettingsPanel();
-
-            JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(settingsCard);
+            innerView.add(getSettingsPanel(), "upload");
+            innerView.add(getLockedDBNotice(), "lock");
+            JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(innerView);
             view = new StandardAppContainer(fixedWidth, true);
             view.setBackground(ViewUtil.getLightGrayBackgroundColor());
-
-            refreshFileList();
         }
+
+
+        if (getDBLockState()) {
+            cardLayout.show(innerView, "lock");
+            refreshWhenLockIs(false);
+            MedSavantFrame.getInstance().repaint(); // window won't update until resize otherwise
+        } else {
+            cardLayout.show(innerView, "upload");
+            refreshWhenLockIs(true);
+            MedSavantFrame.getInstance().repaint(); // window won't update until resize otherwise
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    refreshFileList();
+                }
+            });
+        }
+
     }
 
     private void initSettingsPanel() {
@@ -178,6 +197,7 @@ public class VCFUploadApp implements LaunchableApp {
 
     @Override
     public void viewWillUnload() {
+        executor.shutdownNow();
     }
 
     @Override
@@ -479,7 +499,7 @@ public class VCFUploadApp implements LaunchableApp {
                             }
 
                             private void succeeded() {
-                                LOG.info("Uplaod succeeded");
+                                LOG.info("Upload succeeded");
 
                                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -521,6 +541,63 @@ public class VCFUploadApp implements LaunchableApp {
         });
 
         return container;
+    }
+
+    /**
+     * Return a panel with a notice about the current DB being locked.
+     * @return a panel with a notice about the current DB being locked.
+     */
+    private JPanel getLockedDBNotice() {
+        JPanel container = new WaitPanel(String.format("An update is currently in progress. "
+                + "Further updates must wait until the current update is complete."));
+
+        container.setBackground(ViewUtil.getLightGrayBackgroundColor());
+
+        return container;
+    }
+
+    /**
+     * Wait for the current DB lock to reach a certain state, then refresh the view.
+     * @param lockState true if the lock is held, false if not.
+     * @return A Future that will complete when the lockState is achieved
+     */
+    private Future refreshWhenLockIs(final boolean lockState) {
+        return executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                boolean lock = !lockState;
+
+                while (lock != lockState) {
+                    lock = getDBLockState();
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+
+                // Refresh View
+                initView();
+            }
+        });
+    }
+
+    /**
+     * Return whether or not the current DB is locked for modifications.
+     * @return The Lock state of the current DB.
+     */
+    private boolean getDBLockState() {
+        boolean dbLocked = true;
+
+        try {
+            String sessionID = LoginController.getSessionID();
+            int projectID = ProjectController.getInstance().getCurrentProjectID();
+            dbLocked = settingsManager.isProjectLockedForChanges(sessionID, projectID);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return dbLocked;
     }
 
     /**
