@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.shared.vcf.VariantRecord.Zygosity;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, rammar
  */
 public class VCFParser {
 
@@ -469,10 +469,6 @@ public class VCFParser {
                 start = Long.parseLong(line[VCF_START_INDEX]);
             } catch (NumberFormatException nex) {
                 vcf_warning("Invalid (non-numeric) start position detected in VCF4 file: " + line[VCF_START_INDEX]);
-                return null;
-            }
-
-            if (altStr.equals(".")) { //no real variant call was made at this position
                 return null;
             }
 
