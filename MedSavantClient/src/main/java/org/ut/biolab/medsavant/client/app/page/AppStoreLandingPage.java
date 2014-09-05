@@ -122,7 +122,7 @@ public class AppStoreLandingPage implements AppStorePage {
         
         JPanel fixedWidth = ViewUtil.getDefaultFixedWidthPanel(container);
         
-        StandardAppContainer sac = new StandardAppContainer(fixedWidth);
+        StandardAppContainer sac = new StandardAppContainer(fixedWidth, true);
         p.add(sac,BorderLayout.CENTER);
         sac.setBackground(ViewUtil.getLightGrayBackgroundColor());
 
