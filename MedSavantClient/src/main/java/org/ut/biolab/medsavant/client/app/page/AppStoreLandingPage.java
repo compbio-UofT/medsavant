@@ -166,16 +166,18 @@ public class AppStoreLandingPage implements AppStorePage {
 				int chooserValue= chooser.showOpenDialog(MedSavantFrame.getInstance());
 				
 				// only copy the file if the approve button ("ok" rather than "cancel") has been clicked
-				if(chooserValue == JFileChooser.APPROVE_OPTION) {
-					File chooserFile= new File(chooser.getSelectedFile().getPath());
-					try {
-						FileUtils.copyFileToDirectory(chooserFile, new File(
-							DirectorySettings.getPluginsDirectory().getAbsolutePath()));
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
-					}
+				if(chooserValue != JFileChooser.APPROVE_OPTION) {
+					return;
 				}
-				
+
+				File chooserFile= new File(chooser.getSelectedFile().getPath());
+				try {
+					FileUtils.copyFileToDirectory(chooserFile, new File(
+						DirectorySettings.getPluginsDirectory().getAbsolutePath()));
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+
 				// Restart MedSavant
 				Notification n = new Notification();
 				n.setIcon(AppDirectory.getAppStore().getIcon());
