@@ -91,7 +91,6 @@ public class VCFUploadApp implements LaunchableApp {
     private JCheckBox annovarCheckbox;
     private JCheckBox phasingCheckbox;
     private PlaceHolderTextField emailPlaceholder;
-	private JCheckBox includeReferenceCheckbox;
 
     public VCFUploadApp() {
         filesToImport = new ArrayList<File>();
@@ -159,11 +158,7 @@ public class VCFUploadApp implements LaunchableApp {
         phasingCheckbox.setSelected(false);
         phasingCheckbox.setFocusable(false);
 
-		includeReferenceCheckbox= new JCheckBox("include all VCF lines, including reference calls (highly recommended for pharmacogenetic testing)");
-		includeReferenceCheckbox.setSelected(true);
-		includeReferenceCheckbox.setFocusable(false);
-		advancedOptionsPanel.add(includeReferenceCheckbox, "wrap");
-		
+
         advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Notifications"), "wrap");
 
         emailPlaceholder = new PlaceHolderTextField();
@@ -486,7 +481,7 @@ public class VCFUploadApp implements LaunchableApp {
                                                 ProjectController.getInstance().getCurrentProjectID(),
                                                 ReferenceController.getInstance().getCurrentReferenceID(),
                                                 new String[][]{},
-                                                includeReferenceCheckbox.isSelected(),
+                                                false,
                                                 emailPlaceholder.getText(),
                                                 true,
                                                 annovarCheckbox.isSelected(),

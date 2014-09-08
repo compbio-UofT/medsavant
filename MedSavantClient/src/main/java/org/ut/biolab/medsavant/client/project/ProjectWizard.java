@@ -76,6 +76,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private static final String PAGENAME_PATIENTS = "Patients";
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
+    private static final String PAGENAME_IMPORT = "VCF Import Settings";
     private static final String PAGENAME_NOTIFICATIONS = "Notifications";
     private static final String PAGENAME_COMPLETE = "Finish";
     private static String PAGENAME_CREATE = "Create";
@@ -94,6 +95,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private final ProjectManagerAdapter manager;
     private JTextField emailField;
     private JCheckBox autoPublish;
+    private JCheckBox includeReferenceCheckbox;
 
     /*
      * modify existing project
@@ -132,6 +134,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         model.append(getPatientFieldsPage());
         model.append(getVCFFieldsPage());
         model.append(getReferencePage());
+        model.append(getVCFImportSettingsPage());
         if (modify) {
             model.append(getNotificationsPage());
             model.append(getCreatePage());
@@ -152,6 +155,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                     } else if (pagename.equals(PAGENAME_VCF) && validateVariantFormatModel()) {
                         setCurrentPage(PAGENAME_REF);
                     } else if (pagename.equals(PAGENAME_REF) && validateReferences()) {
+                        setCurrentPage(PAGENAME_IMPORT);
+                    } else if (pagename.equals(PAGENAME_IMPORT)) {
                         if (modify) {
                             setCurrentPage(PAGENAME_NOTIFICATIONS);
                         } else {
@@ -510,6 +515,27 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         }
     }
 
+    private AbstractWizardPage getVCFImportSettingsPage() throws SQLException, RemoteException {
+        //setup page
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_IMPORT) {
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+
+        // <html> wraps the text around if it doesnt fit.
+        includeReferenceCheckbox = new JCheckBox("<html>Include all VCF lines, including reference calls." +
+                "<br/>Highly recommended for pharmacogenetic testing</html>");
+        includeReferenceCheckbox.setSelected(false);
+        includeReferenceCheckbox.setFocusable(false);
+
+        page.addComponent(includeReferenceCheckbox);
+
+        return page;
+    }
     private AbstractWizardPage getCreatePage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CREATE) {
