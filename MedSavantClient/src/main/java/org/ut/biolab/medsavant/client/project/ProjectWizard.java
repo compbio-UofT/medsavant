@@ -526,9 +526,14 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         };
 
-        // <html> wraps the text around if it doesnt fit.
+
+        if (modify) {
+            page.addComponent(new JLabel("<html><b>Warning: Changes to this setting will only affect new VCF Uploads.</b></html>"));
+        }
+
+        // <html> wraps the text around if it doesn't fit.
         includeReferenceCheckbox = new JCheckBox("<html>Include all VCF lines, including reference calls." +
-                "<br/>Highly recommended for pharmacogenetic testing</html>");
+                "<br/>Highly recommended for pharmacogenetic testing.</html>");
         includeReferenceCheckbox.setSelected(false);
         includeReferenceCheckbox.setFocusable(false);
 
@@ -760,6 +765,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 int[] annIDs = mergeAnnIDsWithDefaults(cli.getAnnotationIDs(), projID, refID);
                 manager.setCustomVariantFields(LoginController.getSessionID(), projID, refID, 0, variantFields);                                
                 manager.createVariantTable(LoginController.getSessionID(), projID, refID, 0, annIDs, false);
+
+                ProjectController.getInstance().setContainsRefCalls(LoginController.getSessionID(), projID, includeReferenceCheckbox.isSelected());
                 
                 //The below has been absorbed into createVariantTable.
                 //manager.addTableToMap(LoginController.getSessionID(), projID, refID, 0, false, tablename, annIDs, null);

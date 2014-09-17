@@ -376,4 +376,71 @@ public class ProjectController extends Controller<ProjectEvent> {
     public void publishVariants(String sessionID, int projectId, String msg){
         publishVariants(sessionID, projectId, -1, -1, msg);
     }
+
+    /**
+     * Set a setting for a project in the database. Key must be unique per project.
+     * @param sessionID
+     * @param projectID
+     * @param key The Setting Name
+     * @param value The Setting Value
+     */
+    private void setProjectSetting(String sessionID, int projectID, String key, String value) throws SQLException, RemoteException {
+        try {
+
+            if (this.getProjectSetting(sessionID, projectID, key) == null) {
+                // key doesnt exist, make it.
+                MedSavantClient.SettingsManager.addSetting(sessionID, String.format("proj_%d_%s", projectID, key), value);
+            } else {
+                MedSavantClient.SettingsManager.updateSetting(sessionID, String.format("proj_%d_%s", projectID, key), value);
+            }
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return;
+        }
+    }
+
+    /**
+     * Set a setting for a project in the database. Key must be unique per project.
+     * @param sessionID
+     * @param projectID
+     * @param key The Setting Name
+     */
+    private String getProjectSetting(String sessionID, int projectID, String key) throws SQLException, RemoteException {
+        try {
+            return MedSavantClient.SettingsManager.getSetting(sessionID, String.format("proj_%d_%s", projectID, key));
+        } catch (SessionExpiredException ex) {
+            MedSavantExceptionHandler.handleSessionExpiredException(ex);
+            return "";
+        }
+    }
+
+    /**
+     * Return whether the given project contains Reference Call variants, or not.
+     * @param sessionID the current session ID
+     * @param projectID the ID of the project
+     * @return whether the given project contains Reference Call variants, or not.
+     * @throws SQLException
+     * @throws RemoteException
+     */
+    public boolean getContainsRefCalls(String sessionID, int projectID) throws SQLException, RemoteException {
+        String ret = this.getProjectSetting(sessionID, projectID, "containsRefCalls");
+        if (ret == null || ret.isEmpty()) {
+            // if null or empty, setting doesn't exist, assume ref calls weren't imported
+            return false;
+        } else {
+            return ret.equals("true");
+        }
+    }
+
+    /**
+     * Set whether the given project contains Reference Call variants, or not.
+     * @param sessionID the current session ID
+     * @param projectID the ID of the project
+     * @param containsRefCalls  whether the given project contains Reference Call variants, or not.
+     * @throws SQLException
+     * @throws RemoteException
+     */
+    public void setContainsRefCalls(String sessionID, int projectID, boolean containsRefCalls) throws SQLException, RemoteException {
+        this.setProjectSetting(sessionID, projectID, "containsRefCalls", String.valueOf(containsRefCalls));
+    }
 }

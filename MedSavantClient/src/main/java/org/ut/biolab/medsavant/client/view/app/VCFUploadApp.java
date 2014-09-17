@@ -463,6 +463,9 @@ public class VCFUploadApp implements LaunchableApp {
                             public void run() {
                                 try {
                                     if (ProjectController.getInstance().promptForUnpublished()) {
+                                        String sessionID = LoginController.getSessionID();
+                                        int projectID = ProjectController.getInstance().getCurrentProjectID();
+
                                         SwingUtilities.invokeLater(new Runnable() {
 
                                             @Override
@@ -476,12 +479,12 @@ public class VCFUploadApp implements LaunchableApp {
 
                                         });
                                         variantManager.uploadVariants(
-                                                LoginController.getSessionID(),
+                                                sessionID,
                                                 transferIDs,
-                                                ProjectController.getInstance().getCurrentProjectID(),
+                                                projectID,
                                                 ReferenceController.getInstance().getCurrentReferenceID(),
                                                 new String[][]{},
-                                                false,
+                                                ProjectController.getInstance().getContainsRefCalls(sessionID, projectID),
                                                 emailPlaceholder.getText(),
                                                 true,
                                                 annovarCheckbox.isSelected(),
