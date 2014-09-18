@@ -161,7 +161,7 @@ public class CreateUserDialog extends JDialog {
         bottom.add(createButton, "right");
         //this.pack();
 
-        this.setSize(new Dimension(360, 200));
+        this.setSize(new Dimension(360, 250));
     }
 
     public static void main(String[] argv) {
