@@ -19,14 +19,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -109,6 +103,21 @@ public class AccountManagerApp implements LaunchableApp {
         accountBlock.removeAll();
         
         accountBlock.setLayout(new MigLayout("insets 0, wrap"));
+        JLabel accountDescription = new JLabel();
+        accountDescription.setBorder(new EmptyBorder(10, 10, 10, 10));
+        accountBlock.add(accountDescription);
+
+        switch (LoginController.getInstance().getUserLevel()) {
+            case ADMIN:
+                accountDescription.setText("<html>You are an <b>Administrator</b>. You may upload variants, edit patients, manage users, and configure projects.</html>");
+                break;
+            case USER:
+                accountDescription.setText("<html>You are a <b>User</b>. You may edit cohorts, region sets, and have read-only access to patients.</html>");
+                break;
+            case GUEST:
+                accountDescription.setText("<html>You are a <b>Guest</b>. You have read-only access.</html>");
+                break;
+        }
         KeyValuePairPanel kvp = new KeyValuePairPanel(1, true);
         
         JButton b = ViewUtil.getSoftButton("Change");

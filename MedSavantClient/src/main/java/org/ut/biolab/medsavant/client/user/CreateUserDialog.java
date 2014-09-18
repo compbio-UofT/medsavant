@@ -18,30 +18,24 @@
  */
 package org.ut.biolab.medsavant.client.user;
 
-import java.awt.BorderLayout;
-import java.awt.Dialog;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.util.MedSavantExceptionHandler;
 import org.ut.biolab.medsavant.client.view.MedSavantFrame;
 import org.ut.biolab.medsavant.client.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.client.view.login.LoginController;
 import org.ut.biolab.medsavant.client.view.util.DialogUtils;
 import org.ut.biolab.medsavant.client.view.util.ViewUtil;
-import org.ut.biolab.medsavant.component.field.editable.EnumEditableField;
-import org.ut.biolab.medsavant.component.field.editable.PasswordEditableField;
-import org.ut.biolab.medsavant.component.field.editable.StringEditableField;
+import org.ut.biolab.medsavant.component.field.editable.*;
 import org.ut.biolab.medsavant.component.field.validator.NonEmptyStringValidator;
-import org.ut.biolab.medsavant.shared.format.UserRole;
 import org.ut.biolab.medsavant.shared.model.SessionExpiredException;
 import org.ut.biolab.medsavant.shared.model.UserLevel;
 
@@ -51,6 +45,8 @@ import org.ut.biolab.medsavant.shared.model.UserLevel;
  */
 public class CreateUserDialog extends JDialog {
     private static final Log LOG = LogFactory.getLog(CreateUserDialog.class);
+    private JLabel helpLabel;
+
     public CreateUserDialog() {
         super(DialogUtils.getFrontWindow(), "Create User", Dialog.ModalityType.APPLICATION_MODAL);
         setLocationRelativeTo(MedSavantFrame.getInstance());
@@ -62,14 +58,9 @@ public class CreateUserDialog extends JDialog {
         KeyValuePairPanel userKVP = new KeyValuePairPanel(1);
 
         final StringEditableField usernameField = new StringEditableField();
-        //usernameField.setAutonomousEditingEnabled(false);
-        //usernameField.setEditing(true);
-        //usernameField.setValidator(new EmailValidator());
         usernameField.setValidator(new NonEmptyStringValidator());
 
         final PasswordEditableField passwordField = new PasswordEditableField();
-        //passwordField.setAutonomousEditingEnabled(false);
-        //passwordField.setEditing(true);
         passwordField.setValidator(new NonEmptyStringValidator("password"));
 
         final EnumEditableField userlevelField = new EnumEditableField(
@@ -79,31 +70,11 @@ public class CreateUserDialog extends JDialog {
                     UserLevel.ADMIN
                 });
         userlevelField.setValue(UserLevel.USER);
-        //userlevelField.setAutonomousEditingEnabled(false);
-        //userlevelField.setEditing(true);
-        JButton userLevelButton = ViewUtil.getHelpButton("User Levels",
-                "<html><b>Guests</b> have read-only access<br/><br/>"
-                + "<b>Users</b> may upload variants and edit patients<br/><br/>"
-                + "<b>Administrators</b> may upload variants, edit patients, manage users, and configure projects</html>", true);
 
         userKVP.addKeyWithValue("Username", usernameField);
         userKVP.addKeyWithValue("Password", passwordField);
         userKVP.addKeyWithValue("User Level", userlevelField);
 
-        /*
-        try {
-           Set<UserRole> roleSet = MedSavantClient.UserManager.getAllRoles(LoginController.getSessionID());
-           final EnumEditableField userRoleField = new EnumEditableField(roleSet.toArray());
-           userKVP.addKeyWithValue("User Role", userRoleField);
-        } catch (Exception ex) {
-           DialogUtils.displayError("Error", ex.getMessage());
-           LOG.error(ex);
-           dispose();
-           return;
-        }
-        userKVP.setAdditionalColumn("User Level", 0, userLevelButton);
-*/
-        //this.setPreferredSize(new Dimension(350,200));
         this.setBackground(ViewUtil.getDefaultBackgroundColor());
 
         JPanel padded = ViewUtil.getClearPanel();
@@ -112,6 +83,33 @@ public class CreateUserDialog extends JDialog {
 
         this.setLayout(new BorderLayout());
         this.add(padded, BorderLayout.NORTH);
+
+        final String userHelp = "<html>Users may edit cohorts, region sets, and have read-only access to patients.</html>";
+        final String adminHelp = "<html>Administrators may upload variants, edit patients, manage users, and configure projects.</html>";
+        final String guestHelp = "<html>Guests have read-only access.</html>";
+
+        helpLabel = new JLabel();
+        helpLabel.setBorder(new EmptyBorder(10,10,10,10));
+        this.add(helpLabel, BorderLayout.CENTER);
+        helpLabel.setText(userHelp);
+        userlevelField.addFieldEditedListener(new FieldEditedListener() {
+            @Override
+            public void handleEditEvent(EditableField f) {
+                switch ((UserLevel) f.getValue()) {
+                    case ADMIN:
+                        helpLabel.setText(adminHelp);
+                        break;
+                    case USER:
+                        helpLabel.setText(userHelp);
+                        break;
+                    case GUEST:
+                        helpLabel.setText(guestHelp);
+                        break;
+                }
+
+            }
+        });
+
 
         JPanel bottom = ViewUtil.getClearPanel();
         bottom.setBorder(ViewUtil.getTopLineBorder());
