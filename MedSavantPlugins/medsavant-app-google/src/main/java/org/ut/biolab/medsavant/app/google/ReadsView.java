@@ -252,7 +252,7 @@ class ReadsView extends JPanel {
             datasets = new ArrayList<GoogleDataset>();
             datasets.add(new GoogleDataset("461916304629", "Simons Foundation"));
             datasets.add(new GoogleDataset("383928317087", "PGP"));
-            datasets.add(new GoogleDataset("376902546192", "1000 Genomes"));
+            datasets.add(new GoogleDataset("10473108253681171589", "1000 Genomes"));
             saveDatasets();
 
         } else {
