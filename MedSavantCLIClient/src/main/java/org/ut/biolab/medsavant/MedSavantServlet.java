@@ -573,8 +573,8 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
             for(String cf : configFileLocations){
                 
                 if(!cf.startsWith("/")){
-                    LOG.info("Looking for configuration from path relative to servlet context "+cf);
-                    InputStream in =  getServletContext().getResourceAsStream("/"+cf);
+                    LOG.info("Looking for configuration from path relative to servlet context "+cf);                    
+                    InputStream in =  getServletContext().getResourceAsStream("/"+cf);                    
                     if(in != null){
                         LOG.info("Reading configuration from /"+cf);
                         return in;
@@ -593,7 +593,7 @@ public class MedSavantServlet extends HttpServlet implements MedSavantServerRegi
                 throw new ServletException("Can't load configuration - no config file found!");
             }
             
-            LOG.info("Reading configuration from "+f.getAbsolutePath());
+            LOG.info("Reading configuration from "+f.getAbsolutePath());                        
                         
             return new FileInputStream(f);                
     }

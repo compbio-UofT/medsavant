@@ -1,0 +1,6 @@
+host=localhost
+port=36800
+db=database
+username=user
+password=pass
+max_simultaneous_uploads=5
