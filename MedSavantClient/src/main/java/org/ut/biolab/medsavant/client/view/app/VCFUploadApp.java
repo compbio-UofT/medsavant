@@ -153,6 +153,20 @@ public class VCFUploadApp implements LaunchableApp {
         advancedOptionsPanel.add(ViewUtil.getSettingsHeaderLabel("Annotation"), "wrap");
         advancedOptionsPanel.add(annovarCheckbox = new JCheckBox("perform gene-based variant annotation"), "wrap");
         advancedOptionsPanel.add(phasingCheckbox = new JCheckBox("perform phasing"), "wrap");
+        
+        phasingCheckbox.addActionListener(
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        boolean doPhasing = phasingCheckbox.isSelected();
+                        if(doPhasing){ //must use Jannovar if phasing.
+                            annovarCheckbox.setSelected(true);
+                        }
+                    }
+                }
+        );
+        
+        
         annovarCheckbox.setSelected(true);
         annovarCheckbox.setFocusable(false);
         phasingCheckbox.setSelected(false);
