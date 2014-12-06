@@ -556,7 +556,6 @@
     <module>MedSavantShared</module>
     <module>jannovar</module>
     <module>MedSavantServerEngine</module>
-    <module>MedSavantCLIClient</module>
     <module>MedSavantClient</module>
     <module>MedSavantJSONClient</module>
     <module>distribution</module>

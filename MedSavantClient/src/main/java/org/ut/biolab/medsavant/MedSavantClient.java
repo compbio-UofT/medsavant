@@ -25,6 +25,8 @@ import com.apple.eawt.Application;
 import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
+import gnu.getopt.LongOpt;
+import org.ut.biolab.medsavant.client.app.Cli;
 import org.ut.biolab.medsavant.shared.serverapi.CustomTablesAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.shared.serverapi.NetworkManagerAdapter;
@@ -197,6 +199,10 @@ public class MedSavantClient implements MedSavantServerRegistry {
         System.exit(1);
     }
 
+    public static String usage() {
+        return "usage: java -jar medsavant-client-*.jar [-h host] [-p port] [-d dbname] [-u user] " + Cli.getUsage();
+    }
+
     static public void main(String args[]) {    
         
         //checkJavaVersion();      
@@ -231,11 +237,17 @@ public class MedSavantClient implements MedSavantServerRegistry {
         // initialize settings
         SettingsController.getInstance();
 
-        Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
+        boolean startGui = true;
+
+        Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:", Cli.getLongOpts());
         int c;
 
         while ((c = g.getopt()) != -1) {
             switch (c) {
+                case 0:
+                    // handling longopts
+                    startGui = false;
+                    break;
                 case 'h':
                     String host = g.getOptarg();
                     SettingsController.getInstance().setServerAddress(host);
@@ -257,6 +269,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
                     SettingsController.getInstance().setPassword(password);
                     break;
                 case '?':
+                    System.err.println(MedSavantClient.usage());
+                    System.exit(1);
                     break; // getopt() already printed an error
                 default:
                     System.out.print("getopt() returned " + c + "\n");
@@ -270,9 +284,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
         LOG.info("MedSavant booted");
         System.out.println("READY.");
-        SplashFrame loginFrame = new SplashFrame();
-        loginFrame.setVisible(true);
 
+        if (startGui) {
+            SplashFrame loginFrame = new SplashFrame();
+            loginFrame.setVisible(true);
+        } else {
+            Cli cli = new Cli(args);
+        }
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException, NoRouteToHostException, ConnectIOException {
