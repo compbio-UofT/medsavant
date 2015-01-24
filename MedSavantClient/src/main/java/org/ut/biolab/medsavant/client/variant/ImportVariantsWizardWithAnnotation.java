@@ -53,7 +53,6 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
     private static VariantManagerAdapter manager = MedSavantClient.VariantManager;
     private List<VariantTag> variantTags;
     private File[] variantFiles;
-    private boolean includeHomoRef = false;
     private JComboBox locationField;
     private boolean uploadRequired;
     private JPanel chooseContainer;
@@ -267,17 +266,6 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
             page.addText("Phasing only available for hg19");
         }
         
-        
-        final JCheckBox homoRefBox = new JCheckBox("Include variants matching the reference (discouraged)");
-        homoRefBox.setOpaque(false);
-        homoRefBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                includeHomoRef = homoRefBox.isSelected();
-            }
-        });
-        page.addComponent(homoRefBox);
-
         setUploadRequired(true);
 
         return page;
@@ -497,6 +485,9 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
                                     email = null;
                                 }
 
+                                String sessionID = LoginController.getSessionID();
+                                int projectID= ProjectController.getInstance().getCurrentProjectID();
+
                                 if (uploadRequired) {
                                     setIndeterminate(false);
                                     inUploading = true;
@@ -510,12 +501,32 @@ public class ImportVariantsWizardWithAnnotation extends WizardDialog {
                                     setStatusMessage("Importing variants");
                                     inUploading = false;
                                     setIndeterminate(true);
-                                    manager.uploadVariants(LoginController.getSessionID(), transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar, doPhasing);
+                                    manager.uploadVariants(
+                                            sessionID,
+                                            transferIDs,
+                                            projectID,
+                                            ReferenceController.getInstance().getCurrentReferenceID(),
+                                            tagsToStringArray(variantTags),
+                                            ProjectController.getInstance().getContainsRefCalls(sessionID, projectID),
+                                            email,
+                                            autoPublish.isSelected(),
+                                            useJannovar,
+                                            doPhasing);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
                                     setStatusMessage("Importing variants");
-                                    manager.uploadVariants(LoginController.getSessionID(), new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef, email, autoPublish.isSelected(), useJannovar, doPhasing);
+                                    manager.uploadVariants(
+                                            sessionID,
+                                            new File(serverPathField.getText()),
+                                            projectID,
+                                            ReferenceController.getInstance().getCurrentReferenceID(),
+                                            tagsToStringArray(variantTags),
+                                            ProjectController.getInstance().getContainsRefCalls(sessionID, projectID),
+                                            email,
+                                            autoPublish.isSelected(),
+                                            useJannovar,
+                                            doPhasing);
                                     LOG.info("Done importing");
                                 }
                                 return null;
