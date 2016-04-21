@@ -47,7 +47,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
-        <version>2.1-alpha-3</version>
+        <version>2.1.5</version>
         <extensions>true</extensions>
         <configuration>
           <name>medsavant-client</name>
@@ -60,15 +60,18 @@
           <prefix>/usr/local</prefix>
           <defaultDirmode>755</defaultDirmode>
           <defaultFilemode>644</defaultFilemode>
+          <defaultUsername>root</defaultUsername>
+          <defaultGroupname>root</defaultGroupname>
           <requires>
             <require>java &gt;= 0:1.6.0</require>
           </requires>
           <mappings>
             <mapping>
-              <directory>/usr/bin/</directory>
+              <directory>/usr/bin</directory>
               <filemode>755</filemode>
               <username>root</username>
               <groupname>root</groupname>
+              <directoryIncluded>false</directoryIncluded>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.sh</location>
@@ -78,33 +81,16 @@
               </sources>
             </mapping>
             <mapping>
-              <directory>/usr/local/medsavant-client-${project.version}/lib</directory>
-              <filemode>644</filemode>
-              <directoryIncluded>false</directoryIncluded>
-              <username>root</username>
-              <groupname>root</groupname>
-              <dependency>
-                <excludes>
-                  <exclude>${project.groupId}:medsavant-client</exclude>
-                </excludes>
-              </dependency>
+              <!-- Keep this empty mapping so that the directory is created with the right attributes -->
+              <directory>/usr/local/medsavant-client-${project.version}</directory>
             </mapping>
             <mapping>
               <directory>/usr/local/medsavant-client-${project.version}</directory>
-              <filemode>644</filemode>
-              <username>root</username>
-              <groupname>root</groupname>
               <dependency>
                 <includes>
                   <include>${project.groupId}:medsavant-client</include>
                 </includes>
               </dependency>
-            </mapping>
-            <mapping>
-              <directory>/usr/local/medsavant-client-${project.version}</directory>
-              <filemode>644</filemode>
-              <username>root</username>
-              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.png</location>
@@ -112,10 +98,19 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>/usr/local/medsavant-client-${project.version}/lib</directory>
+              <dependency>
+                <excludes>
+                  <exclude>${project.groupId}:medsavant-client</exclude>
+                </excludes>
+              </dependency>
+            </mapping>
+            <mapping>
               <directory>/usr/bin</directory>
               <filemode>755</filemode>
               <username>root</username>
               <groupname>root</groupname>
+              <directoryIncluded>false</directoryIncluded>
               <sources>
                 <softlinkSource>
                   <destination>medsavant</destination>
@@ -125,10 +120,7 @@
             </mapping>
             <mapping>
               <directory>/usr/share/applications</directory>
-              <filemode>644</filemode>
               <directoryIncluded>false</directoryIncluded>
-              <username>root</username>
-              <groupname>root</groupname>
               <sources>
                 <source>
                   <location>${project.build.outputDirectory}/medsavant.desktop</location>
